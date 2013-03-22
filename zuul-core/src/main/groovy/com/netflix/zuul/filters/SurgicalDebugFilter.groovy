@@ -3,8 +3,8 @@ package com.netflix.zuul.filters
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.groovy.ProxyFilter
 import com.netflix.zuul.util.HTTPRequestUtils
-import com.netflix.config.FastProperty
-
+import com.netflix.config.DynamicBooleanProperty
+import com.netflix.config.DynamicPropertyFactory
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,10 +31,12 @@ public abstract class SurgicalDebugFilter extends ProxyFilter {
     }
 
     boolean shouldFilter() {
-        FastProperty.BooleanProperty debugFilterShutoff = new FastProperty.BooleanProperty("api.zuul.debugFilters.disabed", false)
+
+        DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.debugFilters.disabed", false);
+
         if (debugFilterShutoff.get()) return false;
 
-        debugFilterShutoff = new FastProperty.BooleanProperty(filterDisablePropertyName(), false)
+        debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty(filterDisablePropertyName(), false)
         if (debugFilterShutoff.get()) return false;
 
         String isSurgicalFilterRequest = RequestContext.currentContext.getRequest().getHeader("X-Netflix-Surgical-Filter");

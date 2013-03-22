@@ -1,0 +1,88 @@
+sdb
+
+OAUTH_ACCESS
+  ACCESS_TOKEN (key)
+  USER_ID (username)
+  APP_ID
+  OAUTH_TOKEN_SECRET
+
+
+OAUTH_CONSUMERS
+  consumer_key (key)
+  application_name
+  app_id
+  token secret
+
+OAUTH_REQUEST
+  REQUEST_TOKEN
+  SECRET
+
+OAUTH_LOGIN
+  REQUEST_TOKEN (key)
+  EC_CUSTOMER_ID
+  CONSUMER_KEY
+  APPLICATION_NAME
+
+
+
+Mike Cohen
+thanks a lot. I'll make those changes. =-m-=
+4:52 PM
+Nitish Korla
+[Reply] [Reply All] [Forward]
+Actions
+To:
+ Mike Cohen
+
+Thursday, August 16, 2012 3:18 PM
+You replied on 8/16/2012 4:52 PM.
+Hi Mike,
+Made inline correction (changed read_repair_chance=1 from 0). Also, was it consumerkeys that will have ~10,000,000 rows?. Please change keys_cached to 500000 for that
+
+From: Mike Cohen <mcohen@netflix.com>
+Date: Thu, 16 Aug 2012 12:55:55 -0700
+To: Netflix <nkorla@netflix.com>
+Subject: RE: benchmarking cluster cass_apiauth_useast1 up and running in test
+
+Nitish,
+ Here are  my final keyspace andcolumn family definitions. Please let me know if there are any changes that should be made to them.
+
+thanks!
+=-mikey-=
+
+=========================================
+create keyspace zuul_oauth with placement_strategy = 'org.apache.cassandra.locator.NetworkTopologyStrategy' and strategy_options=[{us-east:3}];
+
+create column family zuul_access_tokens with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and rows_cached = 0
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 500000
+   and compaction_strategy=LeveledCompactionStrategy
+   and read_repair_chance = 1.0
+   and compaction_strategy_options = {'sstable_size_in_mb' : '16'};
+
+create column family zuul_consumer_keys with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and rows_cached = 0
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 10000
+   and compaction_strategy=LeveledCompactionStrategy
+   and read_repair_chance = 1.0
+   and compaction_strategy_options = {'sstable_size_in_mb' : '16'};
+
+
+create column family zuul_request_tokens with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and rows_cached = 0
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 10000
+   and compaction_strategy=LeveledCompactionStrategy
+   and read_repair_chance = 1.0
+   and compaction_strategy_options = {'sstable_size_in_mb' : '16'};
+
+create column family zuul_oauth_login with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and rows_cached = 0
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 10000
+   and compaction_strategy=LeveledCompactionStrategy
+   and read_repair_chance = 1.0
+   and compaction_strategy_options = {'sstable_size_in_mb' : '16'};
+

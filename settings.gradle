@@ -1,4 +1,5 @@
 rootProject.name='zuul'
 
 include 'zuul-core', \
-'zuul-webapp-simple'
+       'zuul-netflix', \
+        'zuul-webapp-simple'
