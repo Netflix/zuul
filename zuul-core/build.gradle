@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
@@ -14,6 +15,7 @@ dependencies {
     provided 'junit:junit-dep:4.10'
     provided 'javax.servlet:servlet-api:2.5'
 }
+
 
 javadoc {
     // the exclude isn't working, nor is there a subPackages options as docs suggest there should be

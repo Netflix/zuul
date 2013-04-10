@@ -1,0 +1,7 @@
+proxy features to implement:
+  single host
+  instrumentation
+    sla
+    dependency
+  debug
+    logging per request

@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 

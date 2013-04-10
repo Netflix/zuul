@@ -11,9 +11,14 @@ import com.netflix.zuul.stats.ErrorStatsData;
  */
 public class MonitorRegistry {
 
-    private static MonitorRegistry instance;
-
+    private static  final MonitorRegistry instance = new MonitorRegistry();
     private Monitor publisher;
+
+    public void setPublisher(Monitor publisher) {
+        this.publisher = publisher;
+    }
+
+
 
     public static MonitorRegistry getInstance() {
         return instance;
