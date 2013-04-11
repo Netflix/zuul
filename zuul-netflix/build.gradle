@@ -7,6 +7,7 @@ dependencies {
 
     compile project(':zuul-core')
     compile 'com.netflix.astyanax:astyanax-cassandra:1.56.28'
+    compile 'com.netflix.astyanax:astyanax-thrift:1.56.28'
     compile 'com.netflix.hystrix:hystrix-core:1.2.10'
     compile 'commons-io:commons-io:2.4'
     compile 'commons-fileupload:commons-fileupload:1.2.2'
@@ -14,11 +15,11 @@ dependencies {
     compile 'org.mockito:mockito-all:1.8.5'
     compile 'org.slf4j:slf4j-api:1.7.0'
 
-    compile 'com.netflix.archaius:archaius-core:0.4.1'
+    compile 'com.netflix.archaius:archaius-core:0.5.6'
     compile 'com.netflix.servo:servo-core:0.4.32'
-    compile  'com.netflix.ribbon:ribbon-core:0.1.5'
-    compile 'com.netflix.ribbon:ribbon-eureka:0.1.5'
-    compile 'com.netflix.ribbon:ribbon-httpclient:0.1.5'
+    compile 'com.netflix.ribbon:ribbon-core:0.1.8'
+    compile 'com.netflix.ribbon:ribbon-eureka:0.1.8'
+    compile 'com.netflix.ribbon:ribbon-httpclient:0.1.8'
     compile 'com.netflix.turbine:turbine-core:0.3'
     compile 'org.json:json:20090211'
     provided 'junit:junit-dep:4.10'

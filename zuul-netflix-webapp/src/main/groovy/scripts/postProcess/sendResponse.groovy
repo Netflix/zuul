@@ -3,7 +3,7 @@ package scripts.postProcess
 
 import java.util.zip.GZIPInputStream
 
-import com.netflix.util.Pair
+
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -15,6 +15,8 @@ import com.netflix.zuul.context.RequestContext
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicIntProperty
+import com.netflix.zuul.context.Debug
+import com.netflix.util.Pair
 
 class sendResponse extends ProxyFilter {
 

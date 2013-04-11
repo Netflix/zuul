@@ -2,7 +2,7 @@ package com.netflix.zuul.context;
 
 
 import com.netflix.zuul.util.DeepCopy;
-import com.netflix.zuul.util.Pair;
+import com.netflix.util.Pair;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

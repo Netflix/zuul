@@ -32,9 +32,11 @@ import com.netflix.hystrix.exception.HystrixRuntimeException
 import com.netflix.client.ClientException
 import com.netflix.zuul.util.HTTPRequestUtils
 import com.sun.jersey.core.util.MultivaluedMapImpl
-import com.netflix.zuul.util.Pair
+import com.netflix.util.Pair
 
 import static com.netflix.niws.client.http.HttpClientRequest.*
+import com.netflix.client.ClientFactory
+import com.netflix.client.IClient
 
 class ProxyNFRequest extends ProxyFilter {
 
@@ -64,7 +66,7 @@ class ProxyNFRequest extends ProxyFilter {
         MultivaluedMap<String, String> params = buildProxyRequestQueryParams(request)
         Verb verb = getVerb(request);
         Object requestEntity = getRequestBody(request)
-        RestClient restClient = RestClientFactory.getClient(context.getProxyVIP());
+        IClient restClient = ClientFactory.getNamedClient(context.getProxyVIP());
 
         String uri = request.getRequestURI()
         if (context.requestURI != null) {
@@ -116,7 +118,7 @@ class ProxyNFRequest extends ProxyFilter {
     def HttpClientResponse proxy(RestClient restClient, Verb verb, uri, MultivaluedMap<String, String> headers, MultivaluedMap<String, String> params, InputStream requestEntity) {
         debug(restClient, verb, uri, headers, params, requestEntity)
 
-        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
+//        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
 
         String route = NFRequestContext.getCurrentContext().route
         if(route == null){

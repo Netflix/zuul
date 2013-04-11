@@ -58,7 +58,7 @@ class RequestEventInfoCollectorFilter extends ProxyFilter {
 
         } catch (Exception e) {
             event.put("exception", e.toString());
-            LOG.error(e);
+            LOG.error(e.getMessage(), e);
         }
     }
 

@@ -1,16 +1,15 @@
-package scripts.preProcess
-
-
 import com.netflix.zuul.context.NFRequestContext
-import org.junit.Assert
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
+
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.runners.MockitoJUnitRunner
+import static org.junit.Assert.assertTrue
+import static org.mockito.Mockito.mock
+import static org.mockito.Mockito.when
 import com.netflix.zuul.filters.StaticResponseFilter
 import com.netflix.zuul.context.RequestContext
 
@@ -57,16 +56,16 @@ class Options extends StaticResponseFilter {
 
             Options options = new Options()
 
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
+            HttpServletRequest request = mock(HttpServletRequest.class)
             RequestContext.currentContext.request = request
-            Mockito.when(request.getRequestURI()).thenReturn("/anything")
-            Mockito.when(request.getMethod()).thenReturn("OPTIONS")
+            when(request.getRequestURI()).thenReturn("/anything")
+            when(request.getMethod()).thenReturn("OPTIONS")
             options.run()
 
-            Assert.assertTrue(options.shouldFilter())
+            assertTrue(options.shouldFilter())
 
-            Assert.assertTrue(RequestContext.currentContext.responseBody != null)
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().isEmpty())
+            assertTrue(RequestContext.currentContext.responseBody != null)
+            assertTrue(RequestContext.currentContext.getResponseBody().isEmpty())
         }
 
     }

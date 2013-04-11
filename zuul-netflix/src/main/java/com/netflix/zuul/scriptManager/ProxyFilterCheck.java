@@ -39,11 +39,15 @@ public class ProxyFilterCheck {
     public static void start(ZuulFilterDAO dao) {
 
         INSTANCE = new ProxyFilterCheck(dao);
+
     }
+
 
 
     public ProxyFilterCheck(ZuulFilterDAO dao) {
         this.dao = dao;
+        checkerThread.start();
+
     }
 
     public static ProxyFilterCheck getInstance() {
@@ -128,9 +132,7 @@ public class ProxyFilterCheck {
         System.out.println("filter written " + f.getPath());
     }
 
-    ProxyFilterCheck() {
-        checkerThread.start();
-    }
+
 
 
 }

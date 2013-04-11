@@ -43,9 +43,15 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     private final static String SCRIPTS_FOR_FILTER = "FILTERSCRIPTS_";
     private final static String FILTER_ID = "FILTER_ID_";
 
+    static AstyanaxContext<Keyspace> cassContext;
+
+    public static AstyanaxContext<Keyspace> getCassContext() {
+        return cassContext;
+    }
 
     public ZuulFilterDAOCassandra(AstyanaxContext<Keyspace> context) {
         this(new CassandraGatewayProd(context));
+        cassContext = context;
     }
 
     private ZuulFilterDAOCassandra(CassandraGateway cassandraGateway) {

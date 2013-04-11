@@ -43,7 +43,7 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.util.HTTPRequestUtils
 import com.netflix.zuul.context.Debug
-import com.netflix.zuul.util.Pair
+import com.netflix.util.Pair
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

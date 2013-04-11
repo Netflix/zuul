@@ -1,7 +1,4 @@
-package scripts.preProcess
-
 import com.netflix.zuul.groovy.ProxyFilter
-
 
 
 class filter extends ProxyFilter {

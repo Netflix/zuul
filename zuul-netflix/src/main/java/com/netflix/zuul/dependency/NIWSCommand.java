@@ -89,7 +89,7 @@ public class NIWSCommand extends HystrixCommand<HttpClientResponse> {
                 setEntity(requestEntity).
                 setQueryParams(params).build();
 
-        HttpClientResponse response = restClient.execute(httpClientRequest);
+        HttpClientResponse response = restClient.executeWithLoadBalancer(httpClientRequest);
         context.setProxyResponse(response);
         return response;
     }

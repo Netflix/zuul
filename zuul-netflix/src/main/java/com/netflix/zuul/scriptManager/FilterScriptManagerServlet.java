@@ -57,7 +57,8 @@ public class FilterScriptManagerServlet extends HttpServlet {
      * Default constructor that instantiates default dependencies (ie. the ones that are functional as opposed to those for testing).
      */
     public FilterScriptManagerServlet() {
-        super();
+        this(new ZuulFilterDAOCassandra(ZuulFilterDAOCassandra.getCassContext()));
+
     }
 
     /**

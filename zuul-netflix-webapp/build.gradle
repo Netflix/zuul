@@ -12,6 +12,7 @@ dependencies {
     compile 'com.netflix.karyon:karyon-admin:1.0.3'
     compile 'com.netflix.karyon:karyon-admin-web:1.0.3'
     compile 'com.netflix.karyon:karyon-extensions:1.0.3'
+    compile 'com.netflix.blitz4j:blitz4j:1.23'
 }
 
 javadoc {
