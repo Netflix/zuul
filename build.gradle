@@ -26,6 +26,8 @@ subprojects {
         it.classpath = sourceSets.main.compileClasspath
     }
 
+
+
     idea {
         module {
             languageLevel = '1.7'

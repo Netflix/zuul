@@ -42,11 +42,11 @@ public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilte
         if(filterDisabled.get()) return null;
         Tracer t;
         if (shouldFilter()) {
-            t = TracerFactory.instance().startMicroTracer("API_PROXY::" + this.getClass().getSimpleName());
+            t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
             try {
                 return run();
             } catch (Throwable e) {
-                t.setName("API_PROXY::" + this.getClass().getSimpleName() + " failed");
+                t.setName("ZUUL::" + this.getClass().getSimpleName() + " failed");
                 throw e;
             } finally {
                 t.stopAndLog();

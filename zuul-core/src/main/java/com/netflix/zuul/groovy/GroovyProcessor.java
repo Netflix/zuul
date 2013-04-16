@@ -81,7 +81,6 @@ public class GroovyProcessor {
     }
 
     public void preprocess() throws ProxyException {
-        Binding binding = new Binding();
         try {
             runFilters("pre");
         } catch (Throwable e) {
@@ -170,7 +169,7 @@ public class GroovyProcessor {
                 verify(filter, times(1)).runFilter();
 
             } catch (Throwable e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
 

@@ -13,7 +13,6 @@ import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.CloudInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.Keyspace;
@@ -29,12 +28,11 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
-import com.netflix.discovery.DefaultEurekaClientConfig;
-import com.netflix.discovery.DiscoveryManager;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
 import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.dependency.ribbon.NIWSConfig;
 import com.netflix.zuul.groovy.GroovyFilterFileManager;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
@@ -44,35 +42,27 @@ import com.netflix.zuul.scriptManager.ProxyFilterCheck;
 import com.netflix.zuul.scriptManager.ZuulFilterDAO;
 import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.stats.AmazonInfoHolder;
-import com.netflix.zuul.threads.CheckThreads;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import java.io.IOException;
-import java.util.Properties;
 
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "Dm",
         justification = "Needs to shutdown in case of startup exception")
 
 @Application
 public class StartServer extends GuiceServletContextListener {
-    private static final String SERVER_INIT_TRACER_TEMPLATE = "ZUUL::Initialization::StartServer";
-    private static final String LIBRARY_INIT_TRACER_TEMPLATE = "ZUUL::Initialization::Library-%s";
-    private static final String LIBRARY_INIT_COUNTER_TEMPLATE = "ZUUL::LibraryInitializationFailed-%s";
-    private static final String MBEAN_REGISTER_TRACER_TEMPLATE = "ZUUL::Initialization::RegisterMBean-%s";
-
-    private static final DynamicBooleanProperty checkThreadsEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.threadcheck.enabled", false);
 
     private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.cassandra.enabled", true);
-
-    private static final DynamicBooleanProperty geoEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.geolocation.support.enabled", true);
 
     private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
 
 
     private static GroovyFilterFileManager fileManager;
+
+    private static AstyanaxContext zuulCassContext;
 
 
     public static String CONFIG_NAME = System.getenv("NETFLIX_APP");
@@ -105,24 +95,6 @@ public class StartServer extends GuiceServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
 
-
-
-        long realtime = System.currentTimeMillis();
-
-        String stackName = System.getenv("NETFLIX_STACK");
-
-        String sVipAddress = CONFIG_NAME + "-" + ((stackName != null) ? stackName : "none") + ".netflix.net";
-
-        System.setProperty("netflix.appinfo.name", CONFIG_NAME);
-        System.setProperty("netflix.appinfo.sid", "1");
-        System.setProperty("netflix.appinfo.port", "7001");
-        System.setProperty("netflix.appinfo.statusPageUrlPath", "/Status");
-        System.setProperty("netflix.appinfo.version", "v1.0");
-
-
-        System.setProperty("netflix.appinfo.vipAddress", sVipAddress + ":7001");
-        System.setProperty("netflix.appinfo.statusPageUrlPath", "/Status");
-        System.setProperty("netflix.appinfo.homePageUrlPath", "/admin/filterLoader.jsp");
         try {
             server.start();
         } catch (Exception e) {
@@ -132,7 +104,7 @@ public class StartServer extends GuiceServletContextListener {
         try {
             initialize();
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
         super.contextInitialized(sce);
 
@@ -157,21 +129,12 @@ public class StartServer extends GuiceServletContextListener {
     protected void initialize() throws Exception {
         initProxy();
 
-
-        // now that properties are loaded let's start the JMX adapter before the system initialization stuff
-        LOG.info("Initializing JMX Adapter");
-
-
         initCassandra();
-
 
         // loads and caches Amazon instance metadata
         AmazonInfoHolder.getInfo();
 
         initNIWS();
-
-        if (checkThreadsEnabled.get()) CheckThreads.run();
-
 
 
         ApplicationInfoManager.getInstance().setInstanceStatus(
@@ -195,8 +158,9 @@ public class StartServer extends GuiceServletContextListener {
         }
         String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty("zuul.niws.clientlist", "").get();
         String[] aClientList = clientPropertyList.split("\\|");
+        String namespace = DynamicPropertyFactory.getInstance().getStringProperty("zuul.ribbon.namespace", "ribbon").get();
         for (String client : aClientList) {
-            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client);
+            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
             ClientFactory.registerClientFromProperties(client, clientConfig);
         }
 
@@ -206,6 +170,7 @@ public class StartServer extends GuiceServletContextListener {
 
     //todo add core proxy path, abstract this out to base statrup class to pass in other directories.
     void initProxy() throws IOException, IllegalAccessException, InstantiationException {
+
         RequestContext.setContextClass(NFRequestContext.class);
 
 
@@ -230,7 +195,7 @@ public class StartServer extends GuiceServletContextListener {
 
 
         LOG.info("groovy script file manager started");
-        ProxyFilterCheck.getInstance(); // start check thread
+
     }
 
     void initCassandra() throws Exception {
@@ -254,34 +219,33 @@ public class StartServer extends GuiceServletContextListener {
         }
     }
 
-    private static AstyanaxContext  zuulCassContext;
 
-    public static AstyanaxContext getZuulCassContext() throws Exception{
+    public static AstyanaxContext getZuulCassContext() throws Exception {
 
-        if(zuulCassContext != null) return zuulCassContext;
-            try {
-                AstyanaxContext<Keyspace> context = new AstyanaxContext.Builder()
-                        .forKeyspace(DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.keyspace", "zuul_scripts").get())
-                        .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()
-                                .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
-                        )
-                        .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("cass_connection_pool")
-                                .setPort(DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.port", 7102).get())
-                                .setMaxConnsPerHost(DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.maxConnectionsPerHost", 1).get())
-                                .setSeeds(DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.host", "").get() + ":" +
-                                        DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.port", 7102).get()
-                                )
-                        )
-                        .withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
-                        .buildKeyspace(ThriftFamilyFactory.getInstance());
+        if (zuulCassContext != null) return zuulCassContext;
+        try {
+            AstyanaxContext<Keyspace> context = new AstyanaxContext.Builder()
+                    .forKeyspace(DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.keyspace", "zuul_scripts").get())
+                    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()
+                            .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
+                    )
+                    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("cass_connection_pool")
+                            .setPort(DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.port", 7102).get())
+                            .setMaxConnsPerHost(DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.maxConnectionsPerHost", 1).get())
+                            .setSeeds(DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.host", "").get() + ":" +
+                                    DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.port", 7102).get()
+                            )
+                    )
+                    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
+                    .buildKeyspace(ThriftFamilyFactory.getInstance());
 
-                context.start();
-                zuulCassContext = context;
-                return  context;
-            } catch (Exception e) {
-                logger.error("Exception occurred when initializing Cassandra keyspace: " + e);
-                throw e;
-            }
+            context.start();
+            zuulCassContext = context;
+            return context;
+        } catch (Exception e) {
+            logger.error("Exception occurred when initializing Cassandra keyspace: " + e);
+            throw e;
+        }
 
     }
 

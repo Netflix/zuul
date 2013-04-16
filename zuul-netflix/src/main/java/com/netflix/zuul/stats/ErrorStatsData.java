@@ -41,9 +41,8 @@ public class ErrorStatsData implements NamedCount
 
         ErrorStatsData that = (ErrorStatsData) o;
 
-        if (error_cause != null ? !error_cause.equals(that.error_cause) : that.error_cause != null) return false;
+        return !(error_cause != null ? !error_cause.equals(that.error_cause) : that.error_cause != null);
 
-        return true;
     }
 
     @Override

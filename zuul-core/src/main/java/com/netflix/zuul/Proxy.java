@@ -53,7 +53,7 @@ public class Proxy extends HttpServlet {
                 proxy();
             } catch (ProxyException e) {
                 error(e);
-                postProxy();
+                postProxy();        http://atlas-main.us-east-1.prod.netflix.net:7001/api/v1/graph?q=nf.region,us-east-1,:eq,nf.app,apiproxy,:eq,:and,name,DependencyCommandCircuitBreaker_GeoLookupCommand_countFailure,:eq,:and,:avg,(,nf.zone,),:by,$(nf.zone),:legend&e=now-5m&s=e-5d&w=882&h=529&refresh=1366051428290
                 return;
             }
             try {
