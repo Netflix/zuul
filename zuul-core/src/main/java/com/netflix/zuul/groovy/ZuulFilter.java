@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.monitoring.Tracer;
@@ -19,13 +34,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 10/26/11
  * Time: 4:29 PM
- * To change this template use File | Settings | File Templates.
  */
-public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilter> {
+public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> {
 
     abstract public String filterType();
 
@@ -55,15 +68,15 @@ public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilte
         return null;
     }
 
-    public int compareTo(ProxyFilter proxyFilter) {
+    public int compareTo(ZuulFilter proxyFilter) {
         return this.filterOrder() - proxyFilter.filterOrder();
     }
 
     public static class TestUnit {
         @Mock
-        private ProxyFilter f1;
+        private ZuulFilter f1;
         @Mock
-        private ProxyFilter f2;
+        private ZuulFilter f2;
 
         @Before
         public void before() {
@@ -76,7 +89,7 @@ public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilte
             when(f1.filterOrder()).thenReturn(1);
             when(f2.filterOrder()).thenReturn(10);
 
-            ArrayList<ProxyFilter> list = new ArrayList<ProxyFilter>();
+            ArrayList<ZuulFilter> list = new ArrayList<ZuulFilter>();
             list.add(f1);
             list.add(f2);
 
@@ -88,7 +101,7 @@ public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilte
 
         @Test
         public void testShouldFilter() {
-            class TestProxyFilter extends ProxyFilter {
+            class TestZuulFilter extends ZuulFilter {
 
                 @Override
                 public String filterType() {
@@ -109,8 +122,8 @@ public abstract class ProxyFilter implements IProxyFilter, Comparable<ProxyFilte
                 }
             }
 
-            TestProxyFilter tf1 = spy(new TestProxyFilter());
-            TestProxyFilter tf2 = spy(new TestProxyFilter());
+            TestZuulFilter tf1 = spy(new TestZuulFilter());
+            TestZuulFilter tf2 = spy(new TestZuulFilter());
 
             when(tf1.shouldFilter()).thenReturn(true);
             when(tf2.shouldFilter()).thenReturn(false);

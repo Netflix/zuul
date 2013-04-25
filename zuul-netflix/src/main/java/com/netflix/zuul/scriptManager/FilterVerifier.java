@@ -1,6 +1,21 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.scriptManager;
 
-import com.netflix.zuul.groovy.ProxyFilter;
+import com.netflix.zuul.groovy.ZuulFilter;
 import com.netflix.zuul.ZuulApplicationInfo;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -11,11 +26,9 @@ import org.mockito.MockitoAnnotations;
 import static org.junit.Assert.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 6/12/12
  * Time: 7:12 PM
- * To change this template use File | Settings | File Templates.
  */
 public class FilterVerifier {
     private static final FilterVerifier INSTANCE = new FilterVerifier();
@@ -29,7 +42,7 @@ public class FilterVerifier {
         Class groovyClass = compileGroovy(sFilterCode);
         Object instance = instanciateClass(groovyClass);
         checkProxyFilterInstance(instance);
-        ProxyFilter filter = (ProxyFilter) instance;
+        ZuulFilter filter = (ZuulFilter) instance;
 
 
         String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
@@ -42,8 +55,8 @@ public class FilterVerifier {
     }
 
     void checkProxyFilterInstance(Object proxyFilter) throws InstantiationException {
-        if (!(proxyFilter instanceof ProxyFilter)) {
-            throw new InstantiationException("Code is not a ProxyFilter Class ");
+        if (!(proxyFilter instanceof ZuulFilter)) {
+            throw new InstantiationException("Code is not a ZuulFilter Class ");
         }
     }
 
@@ -55,10 +68,10 @@ public class FilterVerifier {
 
     public static class UnitTest {
 
-        String sGoodGroovyScriptFilter = "import com.netflix.zuul.groovy.ProxyFilter\n" +
+        String sGoodGroovyScriptFilter = "import com.netflix.zuul.groovy.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
-                "class filter extends ProxyFilter {\n" +
+                "class filter extends ZuulFilter {\n" +
                 "\n" +
                 "    @Override\n" +
                 "    String filterType() {\n" +
@@ -81,7 +94,7 @@ public class FilterVerifier {
                 "\n" +
                 "}";
 
-        String sNotProxyFilterGroovy = "import com.netflix.zuul.groovy.ProxyFilter\n" +
+        String sNotProxyFilterGroovy = "import com.netflix.zuul.groovy.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
                 "class filter  {\n" +
@@ -107,10 +120,10 @@ public class FilterVerifier {
                 "\n" +
                 "}";
 
-        String sCompileFailCode = "import com.netflix.zuul.groovy.ProxyFilter\n" +
+        String sCompileFailCode = "import com.netflix.zuul.groovy.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
-                "cclass filter extends ProxyFilter {\n" +
+                "cclass filter extends ZuulFilter {\n" +
                 "\n" +
                 "    @Override\n" +
                 "    String filterType() {\n" +

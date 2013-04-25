@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.groovy;
 
 import groovy.lang.GroovyClassLoader;
@@ -25,29 +40,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 11/3/11
  * Time: 1:59 PM
- * To change this template use File | Settings | File Templates.
  */
-public class GroovyLoader {
-    final static GroovyLoader INSTANCE = new GroovyLoader();
+public class FilterLoader {
+    final static FilterLoader INSTANCE = new FilterLoader();
 
-    private static final Logger LOG = LoggerFactory.getLogger(GroovyLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
-    ConcurrentHashMap<String, ProxyFilter> filterInstanceMap = new ConcurrentHashMap<String, ProxyFilter>();
+    ConcurrentHashMap<String, ZuulFilter> filterInstanceMap = new ConcurrentHashMap<String, ZuulFilter>();
     ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
     ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
-    ConcurrentHashMap<String, List<ProxyFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ProxyFilter>>();
+    ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
 
-    public static GroovyLoader getInstance() {
+    public static FilterLoader getInstance() {
         return INSTANCE;
     }
 
-    public ProxyFilter getFilter(String sCode, String sName) throws IllegalAccessException, InstantiationException {
+    public ZuulFilter getFilter(String sCode, String sName) throws IllegalAccessException, InstantiationException {
 
         if (filterCheck.get(sName) == null) {
             filterCheck.putIfAbsent(sName, sName);
@@ -56,11 +69,11 @@ public class GroovyLoader {
                 filterInstanceMap.remove(sName);
             }
         }
-        ProxyFilter filter = filterInstanceMap.get(sName);
+        ZuulFilter filter = filterInstanceMap.get(sName);
         if (filter == null) {
             Class clazz = loadGroovyClass(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ProxyFilter) clazz.newInstance();
+                filter = (ZuulFilter) clazz.newInstance();
                 filterInstanceMap.putIfAbsent(sCode, filter);
             }
         }
@@ -79,12 +92,12 @@ public class GroovyLoader {
             LOG.debug("reloading groovy " + sName);
             filterInstanceMap.remove(sName);
         }
-        ProxyFilter filter = filterInstanceMap.get(sName);
+        ZuulFilter filter = filterInstanceMap.get(sName);
         if (filter == null) {
             Class clazz = loadGroovyClass(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ProxyFilter) clazz.newInstance();
-                List<ProxyFilter> list = hashFiltersByType.get(filter.filterType());
+                filter = (ZuulFilter) clazz.newInstance();
+                List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
                 }
@@ -98,16 +111,16 @@ public class GroovyLoader {
     }
 
 
-    public List<ProxyFilter> getFiltersByType(String filterType) {
+    public List<ZuulFilter> getFiltersByType(String filterType) {
 
-        List<ProxyFilter> list = hashFiltersByType.get(filterType);
+        List<ZuulFilter> list = hashFiltersByType.get(filterType);
         if (list != null) return list;
 
-        list = new ArrayList<ProxyFilter>();
+        list = new ArrayList<ZuulFilter>();
 
-        Collection<ProxyFilter> filters = filterInstanceMap.values();
-        for (Iterator<ProxyFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
-            ProxyFilter filter = iterator.next();
+        Collection<ZuulFilter> filters = filterInstanceMap.values();
+        for (Iterator<ZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
+            ZuulFilter filter = iterator.next();
             if (filter.filterType().equals(filterType)) {
                 list.add(filter);
             }
@@ -121,7 +134,7 @@ public class GroovyLoader {
 
     Class loadGroovyClass(String sCode, String sName) {
 
-        ClassLoader parent = GroovyLoader.class.getClassLoader();
+        ClassLoader parent = FilterLoader.class.getClassLoader();
         GroovyClassLoader loader = new GroovyClassLoader(parent);
         LOG.warn("compiling filter: " + sName);
         Class groovyClass = loader.parseClass(sCode, sName);
@@ -130,7 +143,7 @@ public class GroovyLoader {
 
 
     GroovyClassLoader getGroovyClassLoader() {
-        ClassLoader parent = GroovyLoader.class.getClassLoader();
+        ClassLoader parent = FilterLoader.class.getClassLoader();
         return new GroovyClassLoader(parent);
     }
 
@@ -153,9 +166,9 @@ public class GroovyLoader {
         groovyObject.invokeMethod("run", args);
     }
 
-    public static class TestProxyFilter extends ProxyFilter {
+    public static class TestZuulFilter extends ZuulFilter {
 
-        public TestProxyFilter() {
+        public TestZuulFilter() {
             super();
         }
 
@@ -184,11 +197,11 @@ public class GroovyLoader {
 
         @Test
         public void testGetFilterFromFile() {
-            GroovyLoader loader = spy(GroovyLoader.getInstance());
+            FilterLoader loader = spy(FilterLoader.getInstance());
             file = mock(File.class);
 
             try {
-                doReturn(TestProxyFilter.class).when(loader).loadGroovyClass(file);
+                doReturn(TestZuulFilter.class).when(loader).loadGroovyClass(file);
                 assertTrue(loader.putFilter(file));
                 assertTrue(loader.filterInstanceMapSize() == 1);
 
@@ -201,13 +214,13 @@ public class GroovyLoader {
 
         @Test
         public void testGetFiltersByType() {
-            GroovyLoader loader = spy(GroovyLoader.getInstance());
+            FilterLoader loader = spy(FilterLoader.getInstance());
 
             try {
-                List<ProxyFilter> list = loader.getFiltersByType("test");
+                List<ZuulFilter> list = loader.getFiltersByType("test");
                 assertTrue(list != null);
                 assertTrue(list.size() == 1);
-                ProxyFilter filter = list.get(0);
+                ZuulFilter filter = list.get(0);
                 assertTrue(filter != null);
                 assertTrue(filter.filterType().equals("test"));
             } catch (Exception e) {
@@ -220,16 +233,16 @@ public class GroovyLoader {
         @Test
         public void testGetFilterFromString() {
 
-            GroovyLoader loader = spy(GroovyLoader.getInstance());
+            FilterLoader loader = spy(FilterLoader.getInstance());
 
             try {
 
                 String string = "";
-                doReturn(TestProxyFilter.class).when(loader).loadGroovyClass(string, string);
-                ProxyFilter filter = loader.getFilter(string, string);
+                doReturn(TestZuulFilter.class).when(loader).loadGroovyClass(string, string);
+                ZuulFilter filter = loader.getFilter(string, string);
 
                 assertNotNull(filter);
-                assertTrue(filter.getClass() == TestProxyFilter.class);
+                assertTrue(filter.getClass() == TestZuulFilter.class);
                 assertTrue(loader.filterInstanceMapSize() == 2);
 
 
@@ -243,7 +256,7 @@ public class GroovyLoader {
         @Test
         public void testLoadGroovyFromString() {
 
-            GroovyLoader loader = spy(GroovyLoader.getInstance());
+            FilterLoader loader = spy(FilterLoader.getInstance());
             try {
 
                 String code = "class test { public String hello(){return \"hello\" } } ";
@@ -266,7 +279,7 @@ public class GroovyLoader {
         @Test
         public void testLoadGroovyFromFile() {
 
-//            GroovyLoader loader = spy(GroovyLoader.getInstance());
+//            FilterLoader loader = spy(FilterLoader.getInstance());
 //            try {
 //
 //                String code = "class test { public String hello(){return \"hello\" } } ";

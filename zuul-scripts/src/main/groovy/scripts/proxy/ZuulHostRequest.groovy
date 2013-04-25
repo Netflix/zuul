@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package scripts.proxy
 
 
@@ -37,7 +52,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.apache.http.*
-import com.netflix.zuul.groovy.ProxyFilter
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.context.RequestContext
@@ -46,12 +61,13 @@ import com.netflix.zuul.context.Debug
 import com.netflix.util.Pair
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import com.netflix.zuul.groovy.ZuulFilter
 
-class ProxyHostRequest extends ProxyFilter {
+class ZuulHostRequest extends ZuulFilter {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProxyHostRequest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ZuulHostRequest.class);
     private static final Runnable CLIENTLOADER = new Runnable(){
         @Override
         void run() {
@@ -89,7 +105,7 @@ class ProxyHostRequest extends ProxyFilter {
         }, 30000, 5000)
     }
 
-    public ProxyHostRequest() {
+    public ZuulHostRequest() {
         super();
     }
 
@@ -99,14 +115,14 @@ class ProxyHostRequest extends ProxyFilter {
                 new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
 
         ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);
-        cm.setMaxTotal(Integer.parseInt(System.getProperty("api.proxy.max.host.connections", "200")));
-        cm.setDefaultMaxPerRoute(Integer.parseInt(System.getProperty("api.proxy.max.host.connections", "20")));
+        cm.setMaxTotal(Integer.parseInt(System.getProperty("zuul.max.host.connections", "200")));
+        cm.setDefaultMaxPerRoute(Integer.parseInt(System.getProperty("zuul.max.host.connections", "20")));
         return cm;
     }
 
     @Override
     String filterType() {
-        return 'proxy'
+        return 'route'
     }
 
     @Override
@@ -184,16 +200,16 @@ class ProxyHostRequest extends ProxyFilter {
         final NFRequestContext ctx = NFRequestContext.getCurrentContext();
 
         // disables overrides to ensure that same override logic is not applied and matched
-        // this would only be necessary if we were re-running the routing filter, but I am leaving it here
+        // this would only be necessary if we were re-running the route filter, but I am leaving it here
         ctx.setDisableOverrides(true);
 
-        // ideally I could re-run the routing, but that is not working out for me
+        // ideally I could re-run the route, but that is not working out for me
         //        new Routing().run();
 
         // for now I will hack this to default to the previously set VIP, with gzip
         ctx.removeProxyHost();
         ctx.setProxyResponseGZipped(true)
-        GroovyProcessor.instance.runFilters("proxy")
+        GroovyProcessor.instance.runFilters("route")
     }
 
     def InputStream debug(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
@@ -438,7 +454,7 @@ class ProxyHostRequest extends ProxyFilter {
         @Test
         public void testHeaderResponse() {
 
-            ProxyHostRequest request = new ProxyHostRequest()
+            ZuulHostRequest request = new ZuulHostRequest()
             Header header = new BasicHeader("test", "test")
             Header header1 = new BasicHeader("content-length", "100")
             Header header2 = new BasicHeader("content-encoding", "test")
@@ -458,7 +474,7 @@ class ProxyHostRequest extends ProxyFilter {
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
             RequestContext.getCurrentContext().setProxyResponseGZipped(true);
-            ProxyHostRequest request = new ProxyHostRequest()
+            ZuulHostRequest request = new ZuulHostRequest()
             request = Mockito.spy(request)
 
 
@@ -482,7 +498,7 @@ class ProxyHostRequest extends ProxyFilter {
             Debug.setDebugRequest(false)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
-            ProxyHostRequest request = new ProxyHostRequest()
+            ZuulHostRequest request = new ZuulHostRequest()
             request = Mockito.spy(request)
             Header[] headers = new Header[2]
             headers[0] = new BasicHeader("test", "test")
@@ -511,7 +527,7 @@ class ProxyHostRequest extends ProxyFilter {
         public void testShouldFilter() {
             RequestContext.currentContext.unset()
             RequestContext.currentContext.setProxyHost(new URL("http://www.moldfarm.com"))
-            ProxyHostRequest filter = new ProxyHostRequest()
+            ZuulHostRequest filter = new ZuulHostRequest()
             Assert.assertTrue(filter.shouldFilter())
         }
 
@@ -521,7 +537,7 @@ class ProxyHostRequest extends ProxyFilter {
             ServletInputStream inn = Mockito.mock(ServletInputStream.class)
             RequestContext.currentContext.request = this.request
 
-            ProxyHostRequest proxyHostRequest = new ProxyHostRequest()
+            ZuulHostRequest proxyHostRequest = new ZuulHostRequest()
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
 
@@ -551,7 +567,7 @@ class ProxyHostRequest extends ProxyFilter {
             this.request = Mockito.mock(HttpServletRequest.class)
             RequestContext.currentContext.request = this.request
 
-            ProxyHostRequest proxyHostRequest = new ProxyHostRequest()
+            ZuulHostRequest proxyHostRequest = new ZuulHostRequest()
 
             Mockito.when(request.getMethod()).thenReturn("GET")
             String verb = proxyHostRequest.getVerb(this.request)
@@ -579,7 +595,7 @@ class ProxyHostRequest extends ProxyFilter {
         @Test
         public void testGetVerb() {
 
-            ProxyHostRequest request = new ProxyHostRequest()
+            ZuulHostRequest request = new ZuulHostRequest()
             String verb = request.getVerb("get")
             Assert.assertEquals('GET', verb)
             verb = request.getVerb("Get")
@@ -615,7 +631,7 @@ class ProxyHostRequest extends ProxyFilter {
         @Test
         public void testGetHost() {
 
-            ProxyHostRequest request = new ProxyHostRequest()
+            ZuulHostRequest request = new ZuulHostRequest()
 
             URL url = new URL("http://www.moldfarm.com")
             RequestContext.currentContext.proxyHost = url

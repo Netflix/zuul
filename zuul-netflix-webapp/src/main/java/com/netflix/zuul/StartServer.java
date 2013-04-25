@@ -1,11 +1,24 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 10/18/11
  * Time: 11:14 AM
- * To change this template use File | Settings | File Templates.
  */
 
 
@@ -30,6 +43,7 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
+import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.dependency.ribbon.NIWSConfig;
@@ -37,11 +51,14 @@ import com.netflix.zuul.groovy.GroovyFilterFileManager;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.zuul.plugins.Counter;
+import com.netflix.zuul.plugins.MetricPoller;
+import com.netflix.zuul.plugins.ServoMonitor;
 import com.netflix.zuul.plugins.Tracer;
-import com.netflix.zuul.scriptManager.ProxyFilterCheck;
+import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.scriptManager.ZuulFilterDAO;
 import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.stats.AmazonInfoHolder;
+import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,25 +73,9 @@ import java.io.IOException;
 public class StartServer extends GuiceServletContextListener {
 
     private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.cassandra.enabled", true);
-
     private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
-
-
-    private static GroovyFilterFileManager fileManager;
-
     private static AstyanaxContext zuulCassContext;
-
-
-    public static String CONFIG_NAME = System.getenv("NETFLIX_APP");
-
-    static {
-        if (CONFIG_NAME == null) {
-            CONFIG_NAME = "nfzuul";
-        }
-    }
-
     protected static final Logger logger = LoggerFactory.getLogger(StartServer.class);
-
     private final KaryonServer server;
 
 
@@ -115,6 +116,7 @@ public class StartServer extends GuiceServletContextListener {
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         try {
             server.close();
+            GroovyFilterFileManager.shutdown();
         } catch (IOException e) {
             logger.error("Error while stopping karyon.", e);
             throw Throwables.propagate(e);
@@ -127,7 +129,10 @@ public class StartServer extends GuiceServletContextListener {
     }
 
     protected void initialize() throws Exception {
-        initProxy();
+
+        initPlugins();
+
+        initZuul();
 
         initCassandra();
 
@@ -136,9 +141,29 @@ public class StartServer extends GuiceServletContextListener {
 
         initNIWS();
 
-
         ApplicationInfoManager.getInstance().setInstanceStatus(
                 InstanceInfo.InstanceStatus.UP);
+    }
+
+    private void initPlugins() {
+
+        LOG.info("Registering Servo Monitor");
+        MonitorRegistry.getInstance().setPublisher(new ServoMonitor());
+
+        LOG.info("Starting Poller");
+        MetricPoller.startPoller();
+
+
+        LOG.info("Registering Servo Tracer");
+        TracerFactory.initialize(new Tracer());
+
+        LOG.info("Registering Servo Counter");
+        CounterFactory.initialize(new Counter());
+
+        LOG.info("Starting CPU stats");
+        final ThreadCpuStats stats = ThreadCpuStats.getInstance();
+        stats.start();
+
     }
 
     private void initNIWS() throws ClientException {
@@ -168,8 +193,8 @@ public class StartServer extends GuiceServletContextListener {
     }
 
 
-    //todo add core proxy path, abstract this out to base statrup class to pass in other directories.
-    void initProxy() throws IOException, IllegalAccessException, InstantiationException {
+    //todo add core route path, abstract this out to base statrup class to pass in other directories.
+    void initZuul() throws IOException, IllegalAccessException, InstantiationException {
 
         RequestContext.setContextClass(NFRequestContext.class);
 
@@ -177,24 +202,23 @@ public class StartServer extends GuiceServletContextListener {
         CounterFactory.initialize(new Counter());
         TracerFactory.initialize(new Tracer());
 
-        LOG.info("starting groovy script file manager");
+        LOG.info("Starting Groovy Filter file manager");
 
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
 
-        final String preProcessPath = config.getString("zuul.script.preprocess.path");
-        final String postProcessPath = config.getString("zuul.script.postprocess.path");
-        final String proxyPath = config.getString("zuul.script.proxy.path");
-        final String customPath = config.getString("zuul.script.custom.path");
+        final String preFiltersPath = config.getString("zuul.filter.pre.path");
+        final String postFiltersPath = config.getString("zuul.filter.post.path");
+        final String routingFiltersPath = config.getString("zuul.filter.routing.path");
+        final String customPath = config.getString("zuul.filter.custom.path");
 
 
         if (customPath == null) {
-            fileManager = new GroovyFilterFileManager(5, preProcessPath, postProcessPath, proxyPath);
+            GroovyFilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath);
         } else {
-            fileManager = new GroovyFilterFileManager(5, preProcessPath, postProcessPath, proxyPath, customPath);
+            GroovyFilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath, customPath);
         }
 
-
-        LOG.info("groovy script file manager started");
+        LOG.info("Groovy Filter file manager started");
 
     }
 
@@ -211,9 +235,12 @@ public class StartServer extends GuiceServletContextListener {
             cassandraProperties.setProperty("default.nfastyanax.maxFailoverCount", DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxFailoverCount", "1").get());
             cassandraProperties.setProperty("default.nfastyanax.failoverWaitTime", DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.failoverWaitTime", "0").get());
 
+            LOG.info("Getting AstyanaxContext");
             AstyanaxContext context = getZuulCassContext();
+            LOG.info("Initializing Cassandra ZuulFilterDAO");
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(context);
-            ProxyFilterCheck.start(dao);
+            LOG.info("Starting ZuulFilter Poller");
+            ZuulFilterPoller.start(dao);
 
 
         }

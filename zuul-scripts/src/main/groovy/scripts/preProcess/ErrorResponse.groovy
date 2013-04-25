@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package scripts.preProcess
 
 
@@ -12,11 +27,11 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ProxyFilter
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.exception.ProxyException
+import com.netflix.zuul.exception.ZuulException
 
-class ErrorResponse extends ProxyFilter {
+class ErrorResponse extends ZuulFilter {
 
     @Override
     String filterType() {
@@ -40,14 +55,14 @@ class ErrorResponse extends ProxyFilter {
         Throwable ex = context.getThrowable()
         try {
             throw ex
-        } catch (ProxyException e) {
+        } catch (ZuulException e) {
             String cause = e.errorCause
             if (cause == null) cause = "UNKNOWN"
-            RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Proxy Error: " + cause)
+            RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Zuul Error: " + cause)
             if(e.nStatusCode == 404){
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             }else{
-                ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Proxy_Error_" + cause)
+                ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_" + cause)
             }
 
             if (overrideStatusCode) {
@@ -61,8 +76,8 @@ class ErrorResponse extends ProxyFilter {
             context.setResponseBody("${getErrorMessage(e, e.nStatusCode)}")
 
         } catch (Throwable throwable) {
-            RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Proxy Error UNKNOWN Cause")
-            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Proxy_Error_UNKNOWN_Cause")
+            RequestContext.getCurrentContext().getResponse().addHeader("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
+            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_UNKNOWN_Cause")
 
             if (overrideStatusCode) {
                 RequestContext.getCurrentContext().setResponseStatusCode(200);

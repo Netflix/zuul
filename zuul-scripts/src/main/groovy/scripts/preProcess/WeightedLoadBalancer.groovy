@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package scripts.preProcess
 
 
@@ -14,31 +29,25 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ProxyFilter
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.config.DynamicStringProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicIntProperty
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.util.HTTPRequestUtils
+import com.netflix.zuul.groovy.ZuulFilter
 
 /**
- * Created with IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 7/9/12
  * Time: 1:19 PM
- * To change this template use File | Settings | File Templates.
  */
 
-/*
-zuul.proxy.alt.route.percent
-zuul.proxy.alt.route.vip
-zuul.proxy.alt.route.host
- */
-class WeightedLoadBalancer extends ProxyFilter {
-    DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty("zuul.proxy.alt.route.vip", null)
-    DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty("zuul.proxy.alt.route.host", null)
-    DynamicIntProperty AltPercent = DynamicPropertyFactory.getInstance().getIntProperty("zuul.proxy.alt.route.permyriad", 0)   //0-10000 is 0-100% of traffic
-    DynamicIntProperty AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("zuul.proxy.alt.route.maxlimit", 500)
+class WeightedLoadBalancer extends ZuulFilter {
+    DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty("zuul.router.alt.route.vip", null)
+    DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty("zuul.router.alt.route.host", null)
+    DynamicIntProperty AltPercent = DynamicPropertyFactory.getInstance().getIntProperty("zuul.router.alt.route.permyriad", 0)   //0-10000 is 0-100% of traffic
+    DynamicIntProperty AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("zuul.router.alt.route.maxlimit", 500)
     String envRegion = System.getenv("EC2_REGION");
 
     Random rand = new Random()

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package scripts.proxy
 
 
@@ -18,14 +33,14 @@ import org.mockito.runners.MockitoJUnitRunner
 import javax.servlet.ServletInputStream
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ProxyFilter
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.niws.client.http.RestClient
 import com.netflix.zuul.context.RequestContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import com.netflix.zuul.context.Debug
-import com.netflix.zuul.exception.ProxyException
+import com.netflix.zuul.exception.ZuulException
 import com.netflix.niws.client.http.HttpClientResponse
 import javax.ws.rs.core.MultivaluedMap
 import com.netflix.hystrix.exception.HystrixRuntimeException
@@ -37,16 +52,17 @@ import com.netflix.util.Pair
 import static com.netflix.niws.client.http.HttpClientRequest.*
 import com.netflix.client.ClientFactory
 import com.netflix.client.IClient
+import com.netflix.zuul.exception.ZuulException
 
-class ProxyNFRequest extends ProxyFilter {
+class ZuulNFRequest extends ZuulFilter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProxyNFRequest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ZuulNFRequest.class);
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
     @Override
     String filterType() {
-        return 'proxy'
+        return 'route'
     }
 
     @Override
@@ -138,9 +154,9 @@ class ProxyNFRequest extends ProxyFilter {
         } catch (HystrixRuntimeException e) {
             if (e?.fallbackException?.cause instanceof ClientException) {
                 ClientException ex = e.fallbackException.cause as ClientException
-                throw new ProxyException(ex, "Proxying error", 500, ex.getErrorType().toString())
+                throw new ZuulException(ex, "Proxying error", 500, ex.getErrorType().toString())
             }
-            throw new ProxyException(e, "Proxying error", 500, e.failureType.toString())
+            throw new ZuulException(e, "Proxying error", 500, e.failureType.toString())
         }
 
     }
@@ -318,7 +334,7 @@ class ProxyNFRequest extends ProxyFilter {
             ServletInputStream inn = Mockito.mock(ServletInputStream.class)
             RequestContext.currentContext.request = this.request
 
-            ProxyNFRequest proxyHostRequest = new ProxyNFRequest()
+            ZuulNFRequest proxyHostRequest = new ZuulNFRequest()
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
 
@@ -348,7 +364,7 @@ class ProxyNFRequest extends ProxyFilter {
         @Test
         public void testHeaderResponse() {
 
-            ProxyNFRequest request = new ProxyNFRequest()
+            ZuulNFRequest request = new ZuulNFRequest()
             Header header = new BasicHeader("test", "test")
             Header header1 = new BasicHeader("content-length", "100")
             Header header2 = new BasicHeader("content-encoding", "test")
@@ -369,7 +385,7 @@ class ProxyNFRequest extends ProxyFilter {
             response = Mockito.mock(HttpServletResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
-            ProxyNFRequest request = new ProxyNFRequest()
+            ZuulNFRequest request = new ZuulNFRequest()
             request = Mockito.spy(request)
 
 
@@ -390,7 +406,7 @@ class ProxyNFRequest extends ProxyFilter {
             response = Mockito.mock(HttpServletResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
-            ProxyNFRequest request = new ProxyNFRequest()
+            ZuulNFRequest request = new ZuulNFRequest()
 
 
             Mockito.when(this.request.getQueryString()).thenReturn("test=string&ik=moo")
@@ -409,7 +425,7 @@ class ProxyNFRequest extends ProxyFilter {
             HttpClientResponse proxyResponse = Mockito.mock(HttpClientResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
-            ProxyNFRequest request = new ProxyNFRequest()
+            ZuulNFRequest request = new ZuulNFRequest()
             request = Mockito.spy(request)
 
 
@@ -435,14 +451,14 @@ class ProxyNFRequest extends ProxyFilter {
         public void testShouldFilter() {
 
             RequestContext.currentContext.setProxyHost(new URL("http://www.moldfarm.com"))
-            ProxyNFRequest filter = new ProxyNFRequest()
+            ZuulNFRequest filter = new ZuulNFRequest()
             Assert.assertFalse(filter.shouldFilter())
         }
 
         @Test
         public void testGetVerb() {
 
-            ProxyNFRequest request = new ProxyNFRequest()
+            ZuulNFRequest request = new ZuulNFRequest()
             Verb verb = request.getVerb("get")
             Assert.assertEquals(Verb.GET, verb)
             verb = request.getVerb("Get")

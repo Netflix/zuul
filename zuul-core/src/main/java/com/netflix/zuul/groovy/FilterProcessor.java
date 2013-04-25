@@ -1,10 +1,24 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ProxyException;
+import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import groovy.lang.Binding;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,36 +40,34 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 10/24/11
  * Time: 12:47 PM
- * To change this template use File | Settings | File Templates.
  */
-public class GroovyProcessor {
+public class FilterProcessor {
 
-    static GroovyProcessor INSTANCE = new GroovyProcessor();
+    static FilterProcessor INSTANCE = new FilterProcessor();
 
-    GroovyProcessor() {
+    FilterProcessor() {
     }
 
-    public static GroovyProcessor getInstance() {
+    public static FilterProcessor getInstance() {
         return INSTANCE;
     }
 
-    public static void setProcessor(GroovyProcessor processor) {
+    public static void setProcessor(FilterProcessor processor) {
         INSTANCE = processor;
     }
 
 
-    public void postProcess() throws ProxyException {
+    public void postRoute() throws ZuulException {
         try {
             runFilters("post");
         } catch (Throwable e) {
-            if (e instanceof ProxyException) {
-                throw (ProxyException) e;
+            if (e instanceof ZuulException) {
+                throw (ZuulException) e;
             }
-            throw new ProxyException(e, 500, "UNCAUGHT_EXCEPTION_IN_POST_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_POST_FILTER_" +e.getClass().getName());
         }
 
     }
@@ -69,25 +81,25 @@ public class GroovyProcessor {
         }
     }
 
-    public void proxy() throws ProxyException {
+    public void route() throws ZuulException {
         try {
-            runFilters("proxy");
+            runFilters("route");
         } catch (Throwable e) {
-            if (e instanceof ProxyException) {
-                throw (ProxyException) e;
+            if (e instanceof ZuulException) {
+                throw (ZuulException) e;
             }
-            throw new ProxyException(e, 500, "UNCAUGHT_EXCEPTION_IN_PROXY_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PROXY_FILTER_" +e.getClass().getName());
         }
     }
 
-    public void preprocess() throws ProxyException {
+    public void preRoute() throws ZuulException {
         try {
             runFilters("pre");
         } catch (Throwable e) {
-            if (e instanceof ProxyException) {
-                throw (ProxyException) e;
+            if (e instanceof ZuulException) {
+                throw (ZuulException) e;
             }
-            throw new ProxyException(e, 500, "UNCAUGHT_EXCEPTION_IN_PRE_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PRE_FILTER_" +e.getClass().getName());
         }
     }
 
@@ -96,10 +108,10 @@ public class GroovyProcessor {
             Debug.addProxyDebug("Invoking {" + sType + "} type filters");
         }
         boolean bResult = false;
-        List<ProxyFilter> list = GroovyLoader.getInstance().getFiltersByType(sType);
+        List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType(sType);
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
-                ProxyFilter proxyFilter = list.get(i);
+                ZuulFilter proxyFilter = list.get(i);
                 Object result  = processProxyFilter(proxyFilter);
                 if(result != null && result instanceof Boolean){
                     bResult |= ((Boolean)result);
@@ -109,15 +121,16 @@ public class GroovyProcessor {
         return bResult;
     }
 
-    public Object processProxyFilter(ProxyFilter filter) throws ProxyException {
+    public Object processProxyFilter(ZuulFilter filter) throws ZuulException {
 
         boolean bDebug = RequestContext.getCurrentContext().debugProxy();
         try {
             long ltime = System.currentTimeMillis();
+
             RequestContext copy = null;
             if (bDebug) {
 
-//                Debug.addProxyDebug("Filter " + filter.filterType() + " " + filter.filterOrder() +  " " +filter.getClass().getSimpleName());
+                Debug.addProxyDebug("Filter " + filter.filterType() + " " + filter.filterOrder() +  " " +filter.getClass().getSimpleName());
                 copy = RequestContext.getCurrentContext().copy();
             }
             Object result = filter.runFilter();
@@ -130,7 +143,7 @@ public class GroovyProcessor {
                 }
             }
             return result;
-        } catch (ProxyException e) {
+        } catch (ZuulException e) {
             if (bDebug) {
                 Debug.addProxyDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
                         " " + e.getMessage());
@@ -141,7 +154,7 @@ public class GroovyProcessor {
                 Debug.addProxyDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
                         " " + e.getMessage());
             }
-            ProxyException ex = new ProxyException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filter.getClass().getSimpleName());
+            ZuulException ex = new ZuulException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filter.getClass().getSimpleName());
             throw ex;
         }
     }
@@ -151,7 +164,7 @@ public class GroovyProcessor {
     public static class UnitTest {
 
         @Mock
-        ProxyFilter filter;
+        ZuulFilter filter;
 
         @Before
         public void before() {
@@ -161,7 +174,7 @@ public class GroovyProcessor {
 
         @Test
         public void testProcessProxyFilter() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
                 processor.processProxyFilter(filter);
@@ -175,7 +188,7 @@ public class GroovyProcessor {
 
         @Test
         public void testProcessProxyFilterException() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
 
             try {
@@ -190,10 +203,10 @@ public class GroovyProcessor {
 
         @Test
         public void testPostProcess() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                processor.postProcess();
+                processor.postRoute();
                 verify(processor, times(1)).runFilters("post");
             } catch (Throwable e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -202,10 +215,10 @@ public class GroovyProcessor {
 
         @Test
         public void testPreProcess() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                processor.preprocess();
+                processor.preRoute();
                 verify(processor, times(1)).runFilters("pre");
             } catch (Throwable e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -214,11 +227,11 @@ public class GroovyProcessor {
 
         @Test
         public void testProxyProcess() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                processor.proxy();
-                verify(processor, times(1)).runFilters("proxy");
+                processor.route();
+                verify(processor, times(1)).runFilters("route");
             } catch (Throwable e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -231,12 +244,12 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                when(processor.runFilters("proxy")).thenThrow(new ProxyException("test", 400, "test"));
-                processor.proxy();
-            } catch (ProxyException e) {
+                when(processor.runFilters("route")).thenThrow(new ZuulException("test", 400, "test"));
+                processor.route();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 400);
             } catch (Throwable e) {
@@ -254,13 +267,13 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
 
             try {
-                when(processor.runFilters("proxy")).thenThrow(new Throwable("test"));
-                processor.proxy();
-            } catch (ProxyException e) {
+                when(processor.runFilters("route")).thenThrow(new Throwable("test"));
+                processor.route();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 500);
             } catch (Throwable e) {
@@ -276,13 +289,13 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
 
             try {
                 when(processor.runFilters("pre")).thenThrow(new Throwable("test"));
-                processor.preprocess();
-            } catch (ProxyException e) {
+                processor.preRoute();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 500);
             } catch (Throwable e) {
@@ -298,12 +311,12 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                when(processor.runFilters("pre")).thenThrow(new ProxyException("test", 400, "test"));
-                processor.preprocess();
-            } catch (ProxyException e) {
+                when(processor.runFilters("pre")).thenThrow(new ZuulException("test", 400, "test"));
+                processor.preRoute();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 400);
             } catch (Throwable e) {
@@ -322,13 +335,13 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
 
             try {
                 when(processor.runFilters("post")).thenThrow(new Throwable("test"));
-                processor.postProcess();
-            } catch (ProxyException e) {
+                processor.postRoute();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 500);
             } catch (Throwable e) {
@@ -344,12 +357,12 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                when(processor.runFilters("post")).thenThrow(new ProxyException("test", 400, "test"));
-                processor.postProcess();
-            } catch (ProxyException e) {
+                when(processor.runFilters("post")).thenThrow(new ZuulException("test", 400, "test"));
+                processor.postRoute();
+            } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
                 assertEquals(e.nStatusCode, 400);
             } catch (Throwable e) {
@@ -363,7 +376,7 @@ public class GroovyProcessor {
 
         @Test
         public void testErrorException() {
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
 
             try {
@@ -383,10 +396,10 @@ public class GroovyProcessor {
             RequestContext.getCurrentContext().setRequest(request);
             RequestContext.getCurrentContext().setResponse(response);
 
-            GroovyProcessor processor = new GroovyProcessor();
+            FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
             try {
-                when(processor.runFilters("error")).thenThrow(new ProxyException("test", 400, "test"));
+                when(processor.runFilters("error")).thenThrow(new ZuulException("test", 400, "test"));
                 processor.error();
                 assertTrue(true);
             } catch (Throwable e) {

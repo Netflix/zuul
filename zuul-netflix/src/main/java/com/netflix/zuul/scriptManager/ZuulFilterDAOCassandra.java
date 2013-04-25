@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.astyanax.AstyanaxContext;
@@ -7,9 +22,9 @@ import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.Row;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.zuul.ZuulApplicationInfo;
-import com.netflix.zuul.dependency.cassandra.ADCCassandraGetRowsByKeys;
-import com.netflix.zuul.dependency.cassandra.ADCCassandraGetRowsByQuery;
-import com.netflix.zuul.dependency.cassandra.ADCCassandraPut;
+import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraGetRowsByKeys;
+import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraGetRowsByQuery;
+import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraPut;
 import com.netflix.zuul.event.ZuulEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +86,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
     public String getFilterIdsRaw(String index) {
         Rows<String, String> result = cassandraGateway.select("select filter_ids from zuul_filter_indices where index_name = '" + index + "'");
-        if (result.isEmpty()) {
+        if (result == null || result.isEmpty()) {
             return "";
         } else {
             Iterator<Row<String, String>> iterator = result.iterator();

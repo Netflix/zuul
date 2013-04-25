@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -11,16 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.netflix.config.ChainedDynamicProperty.*;
-
 /**
- * Created with IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 6/15/12
  * Time: 3:44 PM
- * To change this template use File | Settings | File Templates.
  */
-public class ProxyFilterCheck {
+public class ZuulFilterPoller {
 
     Map<String, FilterInfo> runningFilters = new HashMap<String, FilterInfo>();
     ZuulFilterDAO dao;
@@ -29,7 +40,7 @@ public class ProxyFilterCheck {
     DynamicBooleanProperty canary = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.use.canary.filters", false);
 
 
-    private static  ProxyFilterCheck INSTANCE;
+    private static ZuulFilterPoller INSTANCE;
 
 
     /**
@@ -38,26 +49,26 @@ public class ProxyFilterCheck {
      */
     public static void start(ZuulFilterDAO dao) {
 
-        INSTANCE = new ProxyFilterCheck(dao);
+        INSTANCE = new ZuulFilterPoller(dao);
 
     }
 
 
 
-    public ProxyFilterCheck(ZuulFilterDAO dao) {
+    public ZuulFilterPoller(ZuulFilterDAO dao) {
         this.dao = dao;
         checkerThread.start();
 
     }
 
-    public static ProxyFilterCheck getInstance() {
+    public static ZuulFilterPoller getInstance() {
         return INSTANCE;
     }
 
 
     boolean running = true;
     private long INTERVAL = 30000; //30 seconds
-    Thread checkerThread = new Thread("ProxyFilterChecker") {
+    Thread checkerThread = new Thread("ZuulFilterPoller") {
         public void run() {
             while (running) {
                 try {
@@ -115,12 +126,12 @@ public class ProxyFilterCheck {
 
     private void writeFilterToDisk(FilterInfo newFilter) throws IOException {
 
-        String path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.script.preprocess.path", null).get();
+        String path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.pre.path", null).get();
         if (newFilter.getFilterType().equals("post")) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.script.postprocess.path", null).get();
+            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.post.path", null).get();
         }
-        if (newFilter.getFilterType().equals("proxy")) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.script.proxy.path", null).get();
+        if (newFilter.getFilterType().equals("route")) {
+            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.routing.path", null).get();
         }
 
         File f = new File(path, newFilter.getFilterName() + ".groovy");

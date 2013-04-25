@@ -1,10 +1,24 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul;
 
 
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ProxyException;
-import com.netflix.zuul.groovy.GroovyProcessor;
-import com.netflix.zuul.groovy.ProxyFilter;
+import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.groovy.FilterProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,71 +38,69 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 12/23/11
  * Time: 10:44 AM
- * To change this template use File | Settings | File Templates.
  */
-public class Proxy extends HttpServlet {
-    private ProxyRunner proxyRunner = new ProxyRunner();
+public class ZuulServlet extends HttpServlet {
+    private ZuulRunner zuulRunner = new ZuulRunner();
 
     public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws javax.servlet.ServletException, java.io.IOException {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
 
-            // marks this request as having passed throught the "proxy engine", as opposed to servlets
+            // marks this request as having passed throught the "Zuul engine", as opposed to servlets
             // explicitly bound in web.xml, for which requests will not have the same data attached
             RequestContext.getCurrentContext().setProxyEngineRan();
 
             try {
-                preProxy();
-            } catch (ProxyException e) {
+                preRoute();
+            } catch (ZuulException e) {
                 error(e);
-                postProxy();
+                postRoute();
                 return;
             }
             try {
-                proxy();
-            } catch (ProxyException e) {
+                route();
+            } catch (ZuulException e) {
                 error(e);
-                postProxy();        http://atlas-main.us-east-1.prod.netflix.net:7001/api/v1/graph?q=nf.region,us-east-1,:eq,nf.app,apiproxy,:eq,:and,name,DependencyCommandCircuitBreaker_GeoLookupCommand_countFailure,:eq,:and,:avg,(,nf.zone,),:by,$(nf.zone),:legend&e=now-5m&s=e-5d&w=882&h=529&refresh=1366051428290
+                postRoute();
                 return;
             }
             try {
-                postProxy();
-            } catch (ProxyException e) {
+                postRoute();
+            } catch (ZuulException e) {
                 error(e);
                 return;
             }
 
         } catch (Throwable e) {
-            error(new ProxyException(e, 500, "UNHANDLED_EXCEPTION_" +e.getClass().getName()));
+            error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" +e.getClass().getName()));
         } finally {
 //            RequestContext.getCurrentContext().unset();
         }
     }
 
 
-    void postProxy() throws ProxyException {
-        proxyRunner.postProxy();
+    void postRoute() throws ZuulException {
+        zuulRunner.postRoute();
     }
 
-    void proxy() throws ProxyException {
-        proxyRunner.proxy();
+    void route() throws ZuulException {
+        zuulRunner.route();
     }
 
-    void preProxy() throws ProxyException {
-        proxyRunner.preProxy();
+    void preRoute() throws ZuulException {
+        zuulRunner.preRoute();
     }
 
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        proxyRunner.init(servletRequest, servletResponse);
+        zuulRunner.init(servletRequest, servletResponse);
     }
 
-    void error(ProxyException e) {
+    void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
-        proxyRunner.error();
+        zuulRunner.error();
         e.printStackTrace();
     }
 
@@ -97,21 +108,11 @@ public class Proxy extends HttpServlet {
     public static class UnitTest {
 
         @Mock
-        ProxyFilter filter;
-
-        @Mock
         HttpServletRequest servletRequest;
-
         @Mock
         HttpServletResponse servletResponse;
-
         @Mock
-        FilterChain filterChain;
-
-        @Mock
-        GroovyProcessor processor;
-
-
+        FilterProcessor processor;
         @Mock
         PrintWriter writer;
 
@@ -123,30 +124,30 @@ public class Proxy extends HttpServlet {
         @Test
         public void testProcessProxyFilter() {
 
-            Proxy proxyServlet = new Proxy();
-            proxyServlet = spy(proxyServlet);
+            ZuulServlet zuulServlet = new ZuulServlet();
+            zuulServlet = spy(zuulServlet);
             RequestContext context = spy(RequestContext.getCurrentContext());
 
 
             try {
-                GroovyProcessor.setProcessor(processor);
+                FilterProcessor.setProcessor(processor);
                 RequestContext.testSetCurrentContext(context);
                 when(servletResponse.getWriter()).thenReturn(writer);
 
-                proxyServlet.init(servletRequest, servletResponse);
-                verify(proxyServlet, times(1)).init(servletRequest, servletResponse);
+                zuulServlet.init(servletRequest, servletResponse);
+                verify(zuulServlet, times(1)).init(servletRequest, servletResponse);
                 assertTrue(RequestContext.getCurrentContext().getRequest() instanceof ProxyRequestWrapper);
                 assertEquals(RequestContext.getCurrentContext().getResponse(), servletResponse);
 
-                proxyServlet.preProxy();
-                verify(processor, times(1)).preprocess();
+                zuulServlet.preRoute();
+                verify(processor, times(1)).preRoute();
 
-                proxyServlet.postProxy();
-                verify(processor, times(1)).postProcess();
+                zuulServlet.postRoute();
+                verify(processor, times(1)).postRoute();
 //                verify(context, times(1)).unset();
 
-                proxyServlet.proxy();
-                verify(processor, times(1)).proxy();
+                zuulServlet.route();
+                verify(processor, times(1)).route();
                 RequestContext.testSetCurrentContext(null);
 
             } catch (Exception e) {

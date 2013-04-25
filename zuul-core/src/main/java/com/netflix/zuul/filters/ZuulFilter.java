@@ -1,9 +1,24 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package com.netflix.zuul.filters;
 
 
-import com.netflix.zuul.ProxyRunner;
+import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ProxyException;
+import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,16 +46,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mcohen
+ * @author Mikey Cohen
  * Date: 10/12/11
  * Time: 2:54 PM
- * To change this template use File | Settings | File Templates.
  */
-public class GroovyFilter implements Filter {
+public class ZuulFilter implements Filter {
 
 
-    private ProxyRunner proxyRunner = new ProxyRunner();
+    private ZuulRunner zuulRunner = new ZuulRunner();
 
     public void init(FilterConfig filterConfig) throws ServletException {
 
@@ -51,7 +64,7 @@ public class GroovyFilter implements Filter {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
             try {
                 preProxy();
-            } catch (ProxyException e) {
+            } catch (ZuulException e) {
                 error(e);
                 postProxy();
                 return;
@@ -59,43 +72,43 @@ public class GroovyFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
             try {
                 proxy();
-            } catch (ProxyException e) {
+            } catch (ZuulException e) {
                 error(e);
                 postProxy();
                 return;
             }
             try {
                 postProxy();
-            } catch (ProxyException e) {
+            } catch (ZuulException e) {
                 error(e);
                 return;
             }
         } catch (Throwable e) {
-            error(new ProxyException(e, 500, "UNCAUGHT_EXCEPTION_FROM_FILTER_" +e.getClass().getName()));
+            error(new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_FROM_FILTER_" +e.getClass().getName()));
         } finally {
             RequestContext.getCurrentContext().unset();
         }
     }
 
-    void postProxy() throws ProxyException {
-        proxyRunner.postProxy();
+    void postProxy() throws ZuulException {
+        zuulRunner.postRoute();
     }
 
-    void proxy() throws ProxyException {
-        proxyRunner.proxy();
+    void proxy() throws ZuulException {
+        zuulRunner.route();
     }
 
-    void preProxy() throws ProxyException {
-        proxyRunner.preProxy();
+    void preProxy() throws ZuulException {
+        zuulRunner.preRoute();
     }
 
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        proxyRunner.init(servletRequest, servletResponse);
+        zuulRunner.init(servletRequest, servletResponse);
     }
 
-    void error(ProxyException e) {
+    void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
-        proxyRunner.error();
+        zuulRunner.error();
         e.printStackTrace();
     }
 
@@ -116,7 +129,7 @@ public class GroovyFilter implements Filter {
         @Mock
         FilterChain filterChain;
         @Mock
-        ProxyRunner proxyRunner;
+        ZuulRunner zuulRunner;
 
 
         @Before
@@ -131,18 +144,18 @@ public class GroovyFilter implements Filter {
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
-            GroovyFilter groovyFilter = new GroovyFilter();
-            groovyFilter = spy(groovyFilter);
+            ZuulFilter zuulFilter = new ZuulFilter();
+            zuulFilter = spy(zuulFilter);
 
             try {
-                groovyFilter.proxyRunner = proxyRunner;
+                zuulFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
-                ProxyException e = new ProxyException("test", 510, "test");
-                doThrow(e).when(groovyFilter).proxy();
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulFilter).proxy();
 
-                groovyFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(groovyFilter, times(1)).proxy();
-                verify(groovyFilter, times(1)).error(e);
+                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulFilter, times(1)).proxy();
+                verify(zuulFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -155,21 +168,21 @@ public class GroovyFilter implements Filter {
         @Test
         public void testPreProxyException() {
 
-            GroovyFilter groovyFilter = new GroovyFilter();
-            groovyFilter = spy(groovyFilter);
+            ZuulFilter zuulFilter = new ZuulFilter();
+            zuulFilter = spy(zuulFilter);
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
 
             try {
-                groovyFilter.proxyRunner = proxyRunner;
+                zuulFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
-                ProxyException e = new ProxyException("test", 510, "test");
-                doThrow(e).when(groovyFilter).preProxy();
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulFilter).preProxy();
 
-                groovyFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(groovyFilter, times(1)).preProxy();
-                verify(groovyFilter, times(1)).error(e);
+                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulFilter, times(1)).preProxy();
+                verify(zuulFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -186,18 +199,18 @@ public class GroovyFilter implements Filter {
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
-            GroovyFilter groovyFilter = new GroovyFilter();
-            groovyFilter = spy(groovyFilter);
+            ZuulFilter zuulFilter = new ZuulFilter();
+            zuulFilter = spy(zuulFilter);
 
             try {
-                groovyFilter.proxyRunner = proxyRunner;
+                zuulFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
-                ProxyException e = new ProxyException("test", 510, "test");
-                doThrow(e).when(groovyFilter).postProxy();
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulFilter).postProxy();
 
-                groovyFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(groovyFilter, times(1)).postProxy();
-                verify(groovyFilter, times(1)).error(e);
+                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulFilter, times(1)).postProxy();
+                verify(zuulFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -211,19 +224,19 @@ public class GroovyFilter implements Filter {
         @Test
         public void testProcessProxyFilter() {
 
-            GroovyFilter groovyFilter = new GroovyFilter();
-            groovyFilter = spy(groovyFilter);
+            ZuulFilter zuulFilter = new ZuulFilter();
+            zuulFilter = spy(zuulFilter);
 
             try {
 
-                groovyFilter.proxyRunner = proxyRunner;
+                zuulFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
-                groovyFilter.doFilter(servletRequest, servletResponse, filterChain);
+                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
 
-                verify(proxyRunner, times(1)).init(servletRequest, servletResponse);
-                verify(proxyRunner, times(1)).preProxy();
-                verify(proxyRunner, times(1)).proxy();
-                verify(proxyRunner, times(1)).postProxy();
+                verify(zuulRunner, times(1)).init(servletRequest, servletResponse);
+                verify(zuulRunner, times(1)).preRoute();
+                verify(zuulRunner, times(1)).route();
+                verify(zuulRunner, times(1)).postRoute();
 
 
             } catch (Exception e) {

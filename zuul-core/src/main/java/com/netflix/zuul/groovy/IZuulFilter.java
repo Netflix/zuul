@@ -13,13 +13,16 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.stats.monitoring;
+package com.netflix.zuul.groovy;
 
 /**
  * @author Mikey Cohen
- * Date: 3/18/13
- * Time: 4:33 PM
+ * Date: 10/27/11
+ * Time: 3:03 PM
  */
-public interface Monitor {
-    void register(NamedCount monitorObj);
+public interface IZuulFilter {
+    boolean shouldFilter();
+
+    Object run();
+
 }

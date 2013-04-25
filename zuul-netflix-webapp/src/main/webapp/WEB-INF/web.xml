@@ -6,7 +6,7 @@
            version="2.5">
     <servlet>
         <servlet-name>ProxyServlet</servlet-name>
-        <servlet-class>com.netflix.zuul.Proxy</servlet-class>
+        <servlet-class>com.netflix.zuul.ZuulServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ProxyServlet</servlet-name>

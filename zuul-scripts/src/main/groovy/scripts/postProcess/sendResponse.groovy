@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
 package scripts.postProcess
 
 
@@ -10,7 +25,7 @@ import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ProxyFilter
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.zuul.context.RequestContext
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicBooleanProperty
@@ -18,7 +33,7 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.zuul.context.Debug
 import com.netflix.util.Pair
 
-class sendResponse extends ProxyFilter {
+class sendResponse extends ZuulFilter {
 
     static DynamicBooleanProperty INCLUDE_DEBUG_HEADER =
         DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.include-debug-header", false);
@@ -149,7 +164,7 @@ class sendResponse extends ProxyFilter {
         }
         */
 
-        if (INCLUDE_DEBUG_HEADER.get()) servletResponse.addHeader("X-Netflix-Proxy-Debug-Header", debugHeader)
+        if (INCLUDE_DEBUG_HEADER.get()) servletResponse.addHeader("X-Zuul-Debug-Header", debugHeader)
 
         if (Debug.debugRequest()) {
             proxyResponseHeaders?.each { Pair<String, String> it ->
@@ -196,7 +211,7 @@ class sendResponse extends ProxyFilter {
 
             filter.addResponseHeaders()
 
-            // verifies that all 3 cookies are set into the proxy response
+            // verifies that all 3 cookies are set into the response
             Mockito.verify(response).addHeader(cookie1.first(), cookie1.second())
             Mockito.verify(response).addHeader(cookie2.first(), cookie2.second())
             Mockito.verify(response).addHeader(cookie3.first(), cookie3.second())
