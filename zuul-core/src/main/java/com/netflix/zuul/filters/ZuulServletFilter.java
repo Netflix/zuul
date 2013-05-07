@@ -46,11 +46,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Zuul Servlet filter to run Zuul within a Servlet Filter. The filter invokes pre-routing filters first,
+ * then routing filters, then post routing filters. Handled exceptions in pre-routing and routing
+ * call the error filters, then call post-routing filters. Errors in post-routing only invoke the error filters.
+ * Unhandled exceptions only invoke the error filters
  * @author Mikey Cohen
  * Date: 10/12/11
  * Time: 2:54 PM
  */
-public class ZuulFilter implements Filter {
+public class ZuulServletFilter implements Filter {
 
 
     private ZuulRunner zuulRunner = new ZuulRunner();
@@ -63,22 +67,22 @@ public class ZuulFilter implements Filter {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
             try {
-                preProxy();
+                preRouting();
             } catch (ZuulException e) {
                 error(e);
-                postProxy();
+                postRouting();
                 return;
             }
             filterChain.doFilter(servletRequest, servletResponse);
             try {
-                proxy();
+                routing();
             } catch (ZuulException e) {
                 error(e);
-                postProxy();
+                postRouting();
                 return;
             }
             try {
-                postProxy();
+                postRouting();
             } catch (ZuulException e) {
                 error(e);
                 return;
@@ -90,15 +94,15 @@ public class ZuulFilter implements Filter {
         }
     }
 
-    void postProxy() throws ZuulException {
+    void postRouting() throws ZuulException {
         zuulRunner.postRoute();
     }
 
-    void proxy() throws ZuulException {
+    void routing() throws ZuulException {
         zuulRunner.route();
     }
 
-    void preProxy() throws ZuulException {
+    void preRouting() throws ZuulException {
         zuulRunner.preRoute();
     }
 
@@ -144,18 +148,18 @@ public class ZuulFilter implements Filter {
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
-            ZuulFilter zuulFilter = new ZuulFilter();
-            zuulFilter = spy(zuulFilter);
+            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
+            zuulServletFilter = spy(zuulServletFilter);
 
             try {
-                zuulFilter.zuulRunner = zuulRunner;
+                zuulServletFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
                 ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulFilter).proxy();
+                doThrow(e).when(zuulServletFilter).routing();
 
-                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulFilter, times(1)).proxy();
-                verify(zuulFilter, times(1)).error(e);
+                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulServletFilter, times(1)).routing();
+                verify(zuulServletFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -168,21 +172,21 @@ public class ZuulFilter implements Filter {
         @Test
         public void testPreProxyException() {
 
-            ZuulFilter zuulFilter = new ZuulFilter();
-            zuulFilter = spy(zuulFilter);
+            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
+            zuulServletFilter = spy(zuulServletFilter);
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
 
             try {
-                zuulFilter.zuulRunner = zuulRunner;
+                zuulServletFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
                 ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulFilter).preProxy();
+                doThrow(e).when(zuulServletFilter).preRouting();
 
-                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulFilter, times(1)).preProxy();
-                verify(zuulFilter, times(1)).error(e);
+                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulServletFilter, times(1)).preRouting();
+                verify(zuulServletFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -199,18 +203,18 @@ public class ZuulFilter implements Filter {
             RequestContext.getCurrentContext().setRequest(servletRequest);
             RequestContext.getCurrentContext().setResponse(servletResponse);
 
-            ZuulFilter zuulFilter = new ZuulFilter();
-            zuulFilter = spy(zuulFilter);
+            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
+            zuulServletFilter = spy(zuulServletFilter);
 
             try {
-                zuulFilter.zuulRunner = zuulRunner;
+                zuulServletFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
                 ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulFilter).postProxy();
+                doThrow(e).when(zuulServletFilter).postRouting();
 
-                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulFilter, times(1)).postProxy();
-                verify(zuulFilter, times(1)).error(e);
+                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
+                verify(zuulServletFilter, times(1)).postRouting();
+                verify(zuulServletFilter, times(1)).error(e);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -224,14 +228,14 @@ public class ZuulFilter implements Filter {
         @Test
         public void testProcessProxyFilter() {
 
-            ZuulFilter zuulFilter = new ZuulFilter();
-            zuulFilter = spy(zuulFilter);
+            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
+            zuulServletFilter = spy(zuulServletFilter);
 
             try {
 
-                zuulFilter.zuulRunner = zuulRunner;
+                zuulServletFilter.zuulRunner = zuulRunner;
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
-                zuulFilter.doFilter(servletRequest, servletResponse, filterChain);
+                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
 
                 verify(zuulRunner, times(1)).init(servletRequest, servletResponse);
                 verify(zuulRunner, times(1)).preRoute();

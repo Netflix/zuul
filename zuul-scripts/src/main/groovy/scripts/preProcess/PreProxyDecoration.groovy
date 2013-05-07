@@ -55,8 +55,8 @@ public class PreProxyDecoration extends ZuulFilter {
     Object run() {
         if (RequestContext.currentContext.getRequest().getParameter("url") != null) {
             try {
-                RequestContext.getCurrentContext().proxyHost = new URL(RequestContext.currentContext.getRequest().getParameter("url"))
-                RequestContext.currentContext.setProxyResponseGZipped(true)
+                RequestContext.getCurrentContext().routeHost = new URL(RequestContext.currentContext.getRequest().getParameter("url"))
+                RequestContext.currentContext.setResponseGZipped(true)
             } catch (MalformedURLException e) {
                 throw new ZuulException(e, "Malformed URL", 400, "MALFORMED_URL")
             }
@@ -67,13 +67,13 @@ public class PreProxyDecoration extends ZuulFilter {
 
     void setProxyHeaders() {
         RequestContext context = RequestContext.currentContext
-        context.addProxyRequestHeader("X-Netflix.request.toplevel.uuid", UUID.randomUUID().toString())
-        context.addProxyRequestHeader("X-Forwarded-For", context.getRequest().remoteAddr)
-        context.addProxyRequestHeader("X-Netflix.client-host", context.getRequest().getHeader("Host"))
+        context.addZuulRequestHeader("X-Netflix.request.toplevel.uuid", UUID.randomUUID().toString())
+        context.addZuulRequestHeader("X-Forwarded-For", context.getRequest().remoteAddr)
+        context.addZuulRequestHeader("X-Netflix.client-host", context.getRequest().getHeader("Host"))
         if (context.getRequest().getHeader("X-Forwarded-Proto") != null) {
-            context.addProxyRequestHeader("X-Netflix.client-proto", context.getRequest().getHeader("X-Forwarded-Proto"))
+            context.addZuulRequestHeader("X-Netflix.client-proto", context.getRequest().getHeader("X-Forwarded-Proto"))
         }
-//        context.addProxyRequestHeader("X-Netflix-User-Id", getUserID) //todo double check this requirement
+//        context.addZuulRequestHeader("X-Netflix-User-Id", getUserID) //todo double check this requirement
 
 
     }
@@ -103,7 +103,7 @@ public class PreProxyDecoration extends ZuulFilter {
 
             ppd.setProxyHeaders()
 
-            Map<String, String> headers = RequestContext.currentContext.proxyRequestHeaders
+            Map<String, String> headers = RequestContext.currentContext.zuulRequestHeaders
             Assert.assertNotNull(headers["x-netflix.request.toplevel.uuid"])
             Assert.assertNotNull(headers["x-forwarded-for"])
             Assert.assertNotNull(headers["x-netflix.client-host"])

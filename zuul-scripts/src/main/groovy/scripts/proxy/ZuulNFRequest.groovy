@@ -19,7 +19,6 @@ package scripts.proxy
 import java.util.zip.GZIPInputStream
 
 import com.netflix.zuul.context.NFRequestContext
-import com.netflix.zuul.dependency.NIWSCommand
 import org.apache.http.Header
 import org.apache.http.message.BasicHeader
 import org.junit.Assert
@@ -53,6 +52,13 @@ import static com.netflix.niws.client.http.HttpClientRequest.*
 import com.netflix.client.ClientFactory
 import com.netflix.client.IClient
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.hystrix.HystrixCommand
+import com.netflix.hystrix.HystrixCommand.Setter
+import com.netflix.niws.client.http.HttpClientRequest
+import com.netflix.hystrix.HystrixCommandGroupKey
+import com.netflix.hystrix.HystrixCommandProperties
+import com.netflix.config.DynamicPropertyFactory
+import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
 
 class ZuulNFRequest extends ZuulFilter {
 
@@ -71,18 +77,18 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return NFRequestContext.currentContext.getProxyHost() == null && RequestContext.currentContext.sendProxyResponse()
+        return NFRequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
     }
 
     Object run() {
         NFRequestContext context = NFRequestContext.currentContext
         HttpServletRequest request = context.getRequest();
 
-        MultivaluedMap<String, String> headers = buildProxyRequestHeaders(request)
-        MultivaluedMap<String, String> params = buildProxyRequestQueryParams(request)
+        MultivaluedMap<String, String> headers = buildZuulRequestHeaders(request)
+        MultivaluedMap<String, String> params = buildZuulRequestQueryParams(request)
         Verb verb = getVerb(request);
         Object requestEntity = getRequestBody(request)
-        IClient restClient = ClientFactory.getNamedClient(context.getProxyVIP());
+        IClient restClient = ClientFactory.getNamedClient(context.getRouteVIP());
 
         String uri = request.getRequestURI()
         if (context.requestURI != null) {
@@ -103,7 +109,7 @@ class ZuulNFRequest extends ZuulFilter {
         if (Debug.debugRequest()) {
 
             headers.each {
-                Debug.addRequestDebug("PROXY:: > ${it.key}  ${it.value[0]}")
+                Debug.addRequestDebug("ZUUL:: > ${it.key}  ${it.value[0]}")
             }
             String query = ""
             params.each {
@@ -112,7 +118,7 @@ class ZuulNFRequest extends ZuulFilter {
                 }
             }
 
-            Debug.addRequestDebug("PROXY:: > ${verb.verb()}  ${uri}?${query} HTTP/1.1")
+            Debug.addRequestDebug("ZUUL:: > ${verb.verb()}  ${uri}?${query} HTTP/1.1")
             RequestContext ctx = RequestContext.getCurrentContext()
             if(!ctx.isChunkedRequestBody()) {
                 if (requestEntity != null) {
@@ -125,7 +131,7 @@ class ZuulNFRequest extends ZuulFilter {
     void debugRequestEntity(InputStream inputStream) {
         if (!Debug.debugRequestHeadersOnly()) {
 			String entity = inputStream.getText()
-			Debug.addRequestDebug("PROXY:: > ${entity}")
+			Debug.addRequestDebug("ZUUL:: > ${entity}")
         }
     }
 
@@ -147,7 +153,7 @@ class ZuulNFRequest extends ZuulFilter {
         route = route.replace("/", "_")
 
 
-        NIWSCommand command = new NIWSCommand(restClient, verb, uri, headers, params, requestEntity);
+        RibbonCommand command = new RibbonCommand(restClient, verb, uri, headers, params, requestEntity);
         try {
             HttpClientResponse response = command.execute();
             return response
@@ -178,7 +184,7 @@ class ZuulNFRequest extends ZuulFilter {
 
 
 
-    def MultivaluedMap<String, String> buildProxyRequestQueryParams(HttpServletRequest request) {
+    def MultivaluedMap<String, String> buildZuulRequestQueryParams(HttpServletRequest request) {
 
         Map<String, List<String>> map = HTTPRequestUtils.getInstance().getQueryParams()
 
@@ -194,7 +200,7 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
 
-    def MultivaluedMap<String, String> buildProxyRequestHeaders(HttpServletRequest request) {
+    def MultivaluedMap<String, String> buildZuulRequestHeaders(HttpServletRequest request) {
 
         NFRequestContext context = NFRequestContext.currentContext
 
@@ -205,10 +211,10 @@ class ZuulNFRequest extends ZuulFilter {
             String value = request.getHeader(name);
             if (!name.toLowerCase().contains("content-length")) headers.putSingle(name, value);
         }
-        Map proxyRequestHeaders = context.getProxyRequestHeaders();
+        Map zuulRequestHeaders = context.getZuulRequestHeaders();
 
-        proxyRequestHeaders.keySet().each {
-            headers.putSingle((String) it, (String) proxyRequestHeaders[it])
+        zuulRequestHeaders.keySet().each {
+            headers.putSingle((String) it, (String) zuulRequestHeaders[it])
         }
 
         headers.putSingle("accept-encoding", "deflate, gzip")
@@ -242,15 +248,15 @@ class ZuulNFRequest extends ZuulFilter {
 
         context.setResponseStatusCode(resp.getStatus());
         if (resp.hasEntity()) {
-            context.proxyResponseDataStream = resp.getRawEntity();
+            context.responseDataStream = resp.getRawEntity();
         }
 
         String contentEncoding = resp.getHeaders().get(CONTENT_ENCODING);
 		
 		if (contentEncoding != null && HTTPRequestUtils.getInstance().isGzipped(contentEncoding)) {
-            context.setProxyResponseGZipped(true);
+            context.setResponseGZipped(true);
         } else {
-            context.setProxyResponseGZipped(false);
+            context.setResponseGZipped(false);
         }
 
         if (Debug.debugRequest()) {
@@ -265,20 +271,20 @@ class ZuulNFRequest extends ZuulFilter {
                         context.setOriginContentLength(header);
 
                     if (isValidHeader) {
-                        context.addProxyResponseHeader(key, header);
-                        Debug.addRequestDebug("PROXY_RESPONSE:: < ${key}  ${header}")
+                        context.addZuulResponseHeader(key, header);
+                        Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${key}  ${header}")
                     }
                 }
             }
 
-            if (context.proxyResponseDataStream) {
-                byte[] origBytes = context.getProxyResponseDataStream().bytes
+            if (context.responseDataStream) {
+                byte[] origBytes = context.getResponseDataStream().bytes
                 InputStream inStream = new ByteArrayInputStream(origBytes);
-                if (context.getProxyResponseGZipped())
+                if (context.getResponseGZipped())
                     inStream = new GZIPInputStream(inStream);
                 String responseEntity = inStream.getText()
-                Debug.addRequestDebug("PROXY_RESPONSE:: < ${responseEntity}")
-                context.setProxyResponseDataStream(new ByteArrayInputStream(origBytes))
+                Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${responseEntity}")
+                context.setResponseDataStream(new ByteArrayInputStream(origBytes))
             }
 
         } else {
@@ -292,7 +298,7 @@ class ZuulNFRequest extends ZuulFilter {
                         context.setOriginContentLength(header);
 
                     if (isValidHeader) {
-                        context.addProxyResponseHeader(key, header);
+                        context.addZuulResponseHeader(key, header);
                     }
                 }
             }
@@ -334,17 +340,17 @@ class ZuulNFRequest extends ZuulFilter {
             ServletInputStream inn = Mockito.mock(ServletInputStream.class)
             RequestContext.currentContext.request = this.request
 
-            ZuulNFRequest proxyHostRequest = new ZuulNFRequest()
+            ZuulNFRequest routeHostRequest = new ZuulNFRequest()
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
 
-            InputStream inp = proxyHostRequest.getRequestBody(request)
+            InputStream inp = routeHostRequest.getRequestBody(request)
 
             Assert.assertEquals(inp, inn)
 
             Mockito.when(request.getInputStream()).thenReturn(null)
 
-            inp = proxyHostRequest.getRequestBody(request)
+            inp = routeHostRequest.getRequestBody(request)
             Assert.assertNull(inp)
 
 
@@ -352,7 +358,7 @@ class ZuulNFRequest extends ZuulFilter {
             ServletInputStream inn2 = Mockito.mock(ServletInputStream.class)
             NFRequestContext.currentContext.requestEntity = inn2
 
-            inp = proxyHostRequest.getRequestBody(request)
+            inp = routeHostRequest.getRequestBody(request)
             Assert.assertNotNull(inp)
             Assert.assertEquals(inp, inn2)
 
@@ -377,7 +383,7 @@ class ZuulNFRequest extends ZuulFilter {
         }
 
         @Test
-        public void testbuildProxyRequestHeaders() {
+        public void testbuildZuulRequestHeaders() {
 
             NFRequestContext.getCurrentContext().unset()
 
@@ -393,7 +399,7 @@ class ZuulNFRequest extends ZuulFilter {
 
             Mockito.when(this.request.getHeaderNames()).thenReturn(st)
 
-            MultivaluedMap<String, String> headers = request.buildProxyRequestHeaders(getRequest())
+            MultivaluedMap<String, String> headers = request.buildZuulRequestHeaders(getRequest())
             Assert.assertEquals(headers.size(), 3)
             Assert.assertEquals(headers.getFirst("accept-encoding"), "deflate, gzip")
 
@@ -411,7 +417,7 @@ class ZuulNFRequest extends ZuulFilter {
 
             Mockito.when(this.request.getQueryString()).thenReturn("test=string&ik=moo")
 
-            MultivaluedMap<String, String> map = request.buildProxyRequestQueryParams(this.request);
+            MultivaluedMap<String, String> map = request.buildZuulRequestQueryParams(this.request);
 
             Assert.assertEquals(map['test'], ['string'])
             Assert.assertEquals(map['ik'], ['moo'])
@@ -422,7 +428,7 @@ class ZuulNFRequest extends ZuulFilter {
         public void testSetResponse() {
             request = Mockito.mock(HttpServletRequest.class)
             response = Mockito.mock(HttpServletResponse.class)
-            HttpClientResponse proxyResponse = Mockito.mock(HttpClientResponse.class)
+            HttpClientResponse zuulResponse = Mockito.mock(HttpClientResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
             ZuulNFRequest request = new ZuulNFRequest()
@@ -435,22 +441,22 @@ class ZuulNFRequest extends ZuulFilter {
 
             InputStream inp = Mockito.mock(InputStream.class)
 
-            Mockito.when(proxyResponse.getStatus()).thenReturn(200)
-            Mockito.when(proxyResponse.getRawEntity()).thenReturn(inp)
-            Mockito.when(proxyResponse.hasEntity()).thenReturn(true)
+            Mockito.when(zuulResponse.getStatus()).thenReturn(200)
+            Mockito.when(zuulResponse.getRawEntity()).thenReturn(inp)
+            Mockito.when(zuulResponse.hasEntity()).thenReturn(true)
 
-            Mockito.when(proxyResponse.headers).thenReturn(headers)
-            request.setResponse(proxyResponse)
+            Mockito.when(zuulResponse.headers).thenReturn(headers)
+            request.setResponse(zuulResponse)
 
             Assert.assertEquals(RequestContext.getCurrentContext().getResponseStatusCode(), 200)
-            Assert.assertNotNull(RequestContext.getCurrentContext().proxyResponseDataStream)
-            Assert.assertTrue(RequestContext.getCurrentContext().proxyResponseHeaders.contains(new Pair('test', "test")))
+            Assert.assertNotNull(RequestContext.getCurrentContext().responseDataStream)
+            Assert.assertTrue(RequestContext.getCurrentContext().zuulResponseHeaders.contains(new Pair('test', "test")))
         }
 
         @Test
         public void testShouldFilter() {
 
-            RequestContext.currentContext.setProxyHost(new URL("http://www.moldfarm.com"))
+            RequestContext.currentContext.setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulNFRequest filter = new ZuulNFRequest()
             Assert.assertFalse(filter.shouldFilter())
         }
@@ -490,5 +496,8 @@ class ZuulNFRequest extends ZuulFilter {
             Assert.assertEquals(Verb.HEAD, verb)
         }
     }
+
 }
+
+
 

@@ -56,7 +56,7 @@ class Stats extends ZuulFilter {
         StatsManager sm = StatsManager.manager
         sm.collectRequestStats(RequestContext.getCurrentContext().getRequest());
         sm.collectRouteStats(RequestContext.getCurrentContext().route, status);
-        dumpProxyDebug()
+        dumpRoutingDebug()
         dumpRequestDebug()
     }
 
@@ -67,10 +67,10 @@ class Stats extends ZuulFilter {
         }
     }
 
-    public void dumpProxyDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("proxyDebug");
+    public void dumpRoutingDebug() {
+        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
         rd?.each {
-            println("PROXY_DEBUG::${it}");
+            println("ZUUL_DEBUG::${it}");
         }
     }
 

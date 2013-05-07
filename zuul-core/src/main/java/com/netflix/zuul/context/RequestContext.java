@@ -43,6 +43,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 /**
+ * The Request Context holds request, response,  state information and data for ZuulFilters to access and share.
+ * The RequestContext lives for the duration of the request and is ThreadLocal.
+ * extensions of RequestContext can be substituted by setting the contextClass.
+ * Most methods here are convenience wrapper methods; the RequestContext is an extension of a ConcurrentHashMap
  * @author Mikey Cohen
  * Date: 10/13/11
  * Time: 10:21 AM
@@ -74,14 +78,26 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     }
 
+    /**
+     * Override the default RequestContext
+     * @param clazz
+     */
     public static void setContextClass(Class<? extends RequestContext> clazz) {
         contextClass = clazz;
     }
 
+    /**
+     * set an overriden "test" context
+     * @param context
+     */
     public static void testSetCurrentContext(RequestContext context) {
         testContext = context;
     }
 
+    /**
+     * Get the current RequestContext
+     * @return the current RequestContext
+     */
     public static RequestContext getCurrentContext() {
         if (testContext != null) return testContext;
 
@@ -89,11 +105,21 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return context;
     }
 
-
+    /**
+     * Convenience method to return a boolean value for a given key
+     * @param key
+     * @return  true or false depending what was set. default is false
+     */
     public boolean getBoolean(String key) {
         return getBoolean(key, false);
     }
 
+    /**
+     * Convenience method to return a boolean value for a given key
+     * @param key
+     * @param defaultResponse
+     * @return  true or false depending what was set. default defaultResponse
+     */
     public boolean getBoolean(String key, boolean defaultResponse) {
         Boolean b = (Boolean) get(key);
         if (b != null) {
@@ -102,122 +128,230 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return defaultResponse;
     }
 
-
+    /**
+     * sets a key value to Boolen.TRUE
+     * @param key
+     */
     public void set(String key) {
         put(key, Boolean.TRUE);
     }
 
+    /**
+     * puts the key, value into the map. a null value will remove the key from the map
+     * @param key
+     * @param value
+     */
     public void set(String key, Object value) {
         if (value != null) put(key, value);
         else remove(key);
     }
 
-    public boolean getProxyEngineRan() {
-        return getBoolean("proxyEngineRan");
+    /**
+     * true if  zuulEngineRan
+     * @return
+     */
+    public boolean getZuulEngineRan() {
+        return getBoolean("zuulEngineRan");
     }
 
-    public void setProxyEngineRan() {
-        put("proxyEngineRan", true);
+    /**
+     * sets zuulEngineRan to true
+     */
+    public void setZuulEngineRan() {
+        put("zuulEngineRan", true);
     }
 
+    /**
+     *
+     * @return the HttpServletRequest from the "request" key
+     */
     public HttpServletRequest getRequest() {
         return (HttpServletRequest) get("request");
     }
 
+    /**
+     * sets the HttpServletRequest into the "request" key
+     * @param request
+     */
     public void setRequest(HttpServletRequest request) {
         put("request", request);
     }
 
+    /**
+     *
+     * @return the HttpServletResponse from the "response" key
+     */
     public HttpServletResponse getResponse() {
         return (HttpServletResponse) get("response");
     }
 
+    /**
+     * sets the "response" key to the HttpServletResponse passed in
+     * @param response
+     */
     public void setResponse(HttpServletResponse response) {
         set("response", response);
     }
 
+    /**
+     * returns a set throwable
+     * @return a set throwable
+     */
     public Throwable getThrowable() {
         return (Throwable) get("throwable");
 
     }
 
+    /**
+     * sets a throwable
+     * @param th
+     */
     public void setThrowable(Throwable th) {
         put("throwable", th);
 
     }
 
-    public void setDebugProxy(boolean bDebug) {
-        set("debugProxy", bDebug);
+    /**
+     * sets  debugRouting
+     * @param bDebug
+     */
+    public void setDebugRouting(boolean bDebug) {
+        set("debugRouting", bDebug);
     }
 
-    public boolean debugProxy() {
-        return getBoolean("debugProxy");
+    /**
+     *
+     * @return "debugRouting"
+     */
+    public boolean debugRouting() {
+        return getBoolean("debugRouting");
     }
 
+    /**
+     * sets "debugRequestHeadersOnly" to bHeadersOnly
+     * @param bHeadersOnly
+     */
     public void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
         set("debugRequestHeadersOnly", bHeadersOnly);
 
     }
 
+    /**
+     *
+     * @return "debugRequestHeadersOnly"
+     */
     public boolean debugRequestHeadersOnly() {
         return getBoolean("debugRequestHeadersOnly");
     }
 
-
+    /**
+     * sets "debugRequest"
+     * @param bDebug
+     */
     public void setDebugRequest(boolean bDebug) {
         set("debugRequest", bDebug);
     }
 
+    /**
+     * gets debugRequest
+     * @return debugRequest
+     */
     public boolean debugRequest() {
         return getBoolean("debugRequest");
     }
 
-    public void removeProxyHost() {
-        remove("proxyHost");
+    /**
+     * removes "routeHost" key
+     */
+    public void removeRouteHost() {
+        remove("routeHost");
     }
 
-    public void setProxyHost(URL proxyHost) {
-        set("proxyHost", proxyHost);
+    /**
+     *  sets routeHost
+     * @param routeHost a URL
+     */
+    public void setRouteHost(URL routeHost) {
+        set("routeHost", routeHost);
     }
 
-    public URL getProxyHost() {
-        return (URL) get("proxyHost");
+    /**
+     *
+     * @return "routeHost" URL
+     */
+    public URL getRouteHost() {
+        return (URL) get("routeHost");
     }
 
 
+    /**
+     * sets the "responseBody" value as a String. This is the response sent back to the client.
+     * @param body
+     */
     public void setResponseBody(String body) {
         set("responseBody", body);
     }
 
+    /**
+     *
+     * @return the String response body to be snt back to the requesting client
+     */
     public String getResponseBody() {
         return (String) get("responseBody");
     }
 
-    public void setProxyResponseDataStream(InputStream proxyResponseDataStream) {
-        set("proxyResponseDataStream", proxyResponseDataStream);
+    /**
+     * sets the InputStream of the response into the responseDataStream
+     * @param responseDataStream
+     */
+    public void setResponseDataStream(InputStream responseDataStream) {
+        set("responseDataStream", responseDataStream);
     }
 
-    public void setProxyResponseGZipped(boolean gzipped) {
-        put("proxyResponseGZipped", gzipped);
+    /**
+     * sets the flag responseGZipped if the response is gzipped
+     * @param gzipped
+     */
+    public void setResponseGZipped(boolean gzipped) {
+        put("responseGZipped", gzipped);
     }
 
-    public boolean getProxyResponseGZipped() {
-        return getBoolean("proxyResponseGZipped", true);
+    /**
+     *
+     * @return true if responseGZipped is true (the response is gzipped)
+     */
+    public boolean getResponseGZipped() {
+        return getBoolean("responseGZipped", true);
     }
 
-    public InputStream getProxyResponseDataStream() {
-        return (InputStream) get("proxyResponseDataStream");
+    /**
+     *
+     * @return the InputStream Response
+     */
+    public InputStream getResponseDataStream() {
+        return (InputStream) get("responseDataStream");
     }
 
-    public boolean sendProxyResponse() {
-        return getBoolean("sendProxyResponse", true);
+    /**
+     * If this value if true then the response should be sent to the client.
+     * @return
+     */
+    public boolean sendZuulResponse() {
+        return getBoolean("sendZuulResponse", true);
     }
 
-    public void setSendProxyResponse(boolean bSend) {
-        set("sendProxyResponse", Boolean.valueOf(bSend));
+    /**
+     * sets the sendZuulResponse boolean
+     * @param bSend
+     */
+    public void setSendZuulResponse(boolean bSend) {
+        set("sendZuulResponse", Boolean.valueOf(bSend));
     }
 
-
+    /**
+     * returns the response status code. Default is 200
+     * @return
+     */
     public int getResponseStatusCode() {
         return get("responseStatusCode") != null ? (Integer) get("responseStatusCode") : 200;
     }
@@ -233,30 +367,52 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         set("responseStatusCode", nStatusCode);
     }
 
-    public void addProxyRequestHeader(String name, String value) {
-        getProxyRequestHeaders().put(name.toLowerCase(), value);
+    /**
+     * add a header to be sent to the origin
+     * @param name
+     * @param value
+     */
+    public void addZuulRequestHeader(String name, String value) {
+        getZuulRequestHeaders().put(name.toLowerCase(), value);
     }
 
-    public Map<String, String> getProxyRequestHeaders() {
-        if (get("proxyRequestHeaders") == null) {
-            HashMap<String, String> proxyRequestHeaders = new HashMap<String, String>();
-            putIfAbsent("proxyRequestHeaders", proxyRequestHeaders);
+    /**
+     * return the list of requestHeaders to be sent to the origin
+     * @return the list of requestHeaders to be sent to the origin
+     */
+    public Map<String, String> getZuulRequestHeaders() {
+        if (get("zuulRequestHeaders") == null) {
+            HashMap<String, String> zuulRequestHeaders = new HashMap<String, String>();
+            putIfAbsent("zuulRequestHeaders", zuulRequestHeaders);
         }
-        return (Map<String, String>) get("proxyRequestHeaders");
+        return (Map<String, String>) get("zuulRequestHeaders");
     }
 
-    public void addProxyResponseHeader(String name, String value) {
-        getProxyResponseHeaders().add(new Pair<String, String>(name, value));
+    /**
+     * add a header to be sent to the response
+     * @param name
+     * @param value
+     */
+    public void addZuulResponseHeader(String name, String value) {
+        getZuulResponseHeaders().add(new Pair<String, String>(name, value));
     }
 
-    public List<Pair<String, String>> getProxyResponseHeaders() {
-        if (get("proxyResponseHeaders") == null) {
-            List<Pair<String, String>> proxyRequestHeaders = new ArrayList<Pair<String, String>>();
-            putIfAbsent("proxyResponseHeaders", proxyRequestHeaders);
+    /**
+     * returns the current response header list
+     * @return a List<Pair<String, String>>  of response headers
+     */
+    public List<Pair<String, String>> getZuulResponseHeaders() {
+        if (get("zuulResponseHeaders") == null) {
+            List<Pair<String, String>> zuulRequestHeaders = new ArrayList<Pair<String, String>>();
+            putIfAbsent("zuulResponseHeaders", zuulRequestHeaders);
         }
-        return (List<Pair<String, String>>) get("proxyResponseHeaders");
+        return (List<Pair<String, String>>) get("zuulResponseHeaders");
     }
 
+    /**
+     * the Origin response headers
+     * @return the List<Pair<String, String>> of headers sent back from the origin
+     */
     public List<Pair<String, String>> getOriginResponseHeaders() {
         if (get("originResponseHeaders") == null) {
             List<Pair<String, String>> originResponseHeaders = new ArrayList<Pair<String, String>>();
@@ -265,18 +421,35 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return (List<Pair<String, String>>) get("originResponseHeaders");
     }
 
+    /**
+     * adds a header to the origin response headers
+     * @param name
+     * @param value
+     */
     public void addOriginResponseHeader(String name, String value) {
         getOriginResponseHeaders().add(new Pair<String, String>(name, value));
     }
 
+    /**
+     * returns the content-length of the origin response
+     * @return the content-length of the origin response
+     */
     public Integer getOriginContentLength() {
         return (Integer) get("originContentLength");
     }
 
+    /**
+     * sets the content-length from the origin response
+     * @param v
+     */
     public void setOriginContentLength(Integer v) {
         set("originContentLength", v);
     }
 
+    /**
+     * sets the content-length from the origin response
+     * @param v parses the string into an int
+     */
     public void setOriginContentLength(String v) {
         try {
             final Integer i = Integer.valueOf(v);
@@ -286,24 +459,42 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         }
     }
 
+    /**
+     *
+     * @return true if the request body is chunked
+     */
     public boolean isChunkedRequestBody() {
         final Object v = get("chunkedRequestBody");
         return (v != null) ? (Boolean) v : false;
     }
 
+    /**
+     * sets chunkedRequestBody to true
+     */
     public void setChunkedRequestBody() {
         this.set("chunkedRequestBody", Boolean.TRUE);
     }
 
+    /**
+     *
+     * @return true is the client request can accept gzip encoding. Checks the "accept-encoding" header
+     */
     public boolean isGzipRequested() {
         final String requestEncoding = this.getRequest().getHeader("accept-encoding");
         return requestEncoding != null && requestEncoding.toLowerCase().contains("gzip");
     }
 
+    /**
+     * unsets the threadLocal context. Done at the end of the request.
+     */
     public void unset() {
         threadLocal.remove();
     }
 
+    /**
+     * Mkaes a copy of the RequestContext. This is used for debugging.
+     * @return
+     */
     public RequestContext copy() {
         RequestContext copy = new RequestContext();
         Iterator<String> it = keySet().iterator();
@@ -329,10 +520,18 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return copy;
     }
 
+    /**
+     *
+     * @return Map<String, List<String>>  of the request Query Parameters
+     */
     public Map<String, List<String>> getRequestQueryParams() {
         return (Map<String, List<String>>) get("requestQueryParams");
     }
 
+    /**
+     *  sets the request query params list
+     * @param qp Map<String, List<String>> qp
+     */
     public void setRequestQueryParams(Map<String, List<String>> qp) {
         put("requestQueryParams", qp);
     }
@@ -398,8 +597,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         @Test
         public void testResponseHeaders() {
             RequestContext context = RequestContext.getCurrentContext();
-            context.addProxyRequestHeader("header", "test");
-            Map headerMap = context.getProxyRequestHeaders();
+            context.addZuulRequestHeader("header", "test");
+            Map headerMap = context.getZuulRequestHeaders();
             assertNotNull(headerMap);
             assertEquals(headerMap.get("header"), "test");
         }
@@ -418,9 +617,9 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
             context.setThrowable(th);
             assertEquals(context.getThrowable(), th);
 
-            assertEquals(context.debugProxy(), false);
-            context.setDebugProxy(true);
-            assertEquals(context.debugProxy(), true);
+            assertEquals(context.debugRouting(), false);
+            context.setDebugRouting(true);
+            assertEquals(context.debugRouting(), true);
 
             assertEquals(context.debugRequest(), false);
             context.setDebugRequest(true);
@@ -429,25 +628,25 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
             context.setDebugRequest(false);
             assertEquals(context.debugRequest(), false);
 
-            context.setDebugProxy(false);
-            assertEquals(context.debugProxy(), false);
+            context.setDebugRouting(false);
+            assertEquals(context.debugRouting(), false);
 
 
             try {
                 URL url = new URL("http://www.moldfarm.com");
-                context.setProxyHost(url);
-                assertEquals(context.getProxyHost(), url);
+                context.setRouteHost(url);
+                assertEquals(context.getRouteHost(), url);
             } catch (MalformedURLException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
             InputStream in = mock(InputStream.class);
-            context.setProxyResponseDataStream(in);
-            assertEquals(context.getProxyResponseDataStream(), in);
+            context.setResponseDataStream(in);
+            assertEquals(context.getResponseDataStream(), in);
 
-            assertEquals(context.sendProxyResponse(), true);
-            context.setSendProxyResponse(false);
-            assertEquals(context.sendProxyResponse(), false);
+            assertEquals(context.sendZuulResponse(), true);
+            context.setSendZuulResponse(false);
+            assertEquals(context.sendZuulResponse(), false);
 
             context.setResponseStatusCode(100);
             assertEquals(context.getResponseStatusCode(), 100);

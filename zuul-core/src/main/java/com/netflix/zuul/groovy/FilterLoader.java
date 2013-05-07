@@ -40,6 +40,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 /**
+ * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
+ * It also holds ZuulFilters by filterType.
+ *
  * @author Mikey Cohen
  * Date: 11/3/11
  * Time: 1:59 PM
@@ -55,17 +58,29 @@ public class FilterLoader {
     ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
-
+    /**
+     *
+     * @return Singleton FilterLoader
+     */
     public static FilterLoader getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * Given groovy source and name will compile and store the filter if it detects that the filter code has changed or
+     * the filter doesn't exist. Otherwise it will return an instance of the requested ZuulFilter
+     * @param sCode Groovy source code
+     * @param sName name of the filter
+     * @return the ZuulFilter
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     public ZuulFilter getFilter(String sCode, String sName) throws IllegalAccessException, InstantiationException {
 
         if (filterCheck.get(sName) == null) {
             filterCheck.putIfAbsent(sName, sName);
             if (!sCode.equals(filterClassCode.get(sName))) {
-                LOG.debug("reloading groovy code " + sName);
+                LOG.info("reloading groovy code " + sName);
                 filterInstanceMap.remove(sName);
             }
         }
@@ -74,18 +89,30 @@ public class FilterLoader {
             Class clazz = loadGroovyClass(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = (ZuulFilter) clazz.newInstance();
-                filterInstanceMap.putIfAbsent(sCode, filter);
             }
         }
         return filter;
 
     }
 
+    /**
+     *
+     * @return the total number of Zuul filters
+     */
     public int filterInstanceMapSize() {
         return filterInstanceMap.size();
     }
 
 
+    /**
+     * From a file this will read the Groovy ZuulFilter source code, compile it, and add it to the list of current filters
+     * a true response means that it was successful.
+     * @param file
+     * @return true if the filter in file successfully read, compiled, verified and added to Zuul
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws IOException
+     */
     public boolean putFilter(File file) throws IllegalAccessException, InstantiationException, IOException {
         String sName = file.getAbsolutePath() + file.getName();
         if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
@@ -110,7 +137,11 @@ public class FilterLoader {
         return false;
     }
 
-
+    /**
+     * Returns a list of filters by the filterType specified
+     * @param filterType
+     * @return a List<ZuulFilter>
+     */
     public List<ZuulFilter> getFiltersByType(String filterType) {
 
         List<ZuulFilter> list = hashFiltersByType.get(filterType);
@@ -131,39 +162,40 @@ public class FilterLoader {
         return list;
     }
 
-
+    /**
+     * Compiles Groovy code and returns the Class of the compiles code.
+     * @param sCode
+     * @param sName
+     * @return
+     */
     Class loadGroovyClass(String sCode, String sName) {
 
         ClassLoader parent = FilterLoader.class.getClassLoader();
-        GroovyClassLoader loader = new GroovyClassLoader(parent);
-        LOG.warn("compiling filter: " + sName);
+        GroovyClassLoader loader = getGroovyClassLoader();
+        LOG.warn("Compiling filter: " + sName);
         Class groovyClass = loader.parseClass(sCode, sName);
         return groovyClass;
     }
 
-
+    /**
+     *
+     * @return a new GroovyClassLoader
+     */
     GroovyClassLoader getGroovyClassLoader() {
         ClassLoader parent = FilterLoader.class.getClassLoader();
-        return new GroovyClassLoader(parent);
+        return new GroovyClassLoader();
     }
 
-
+    /**
+     * Compiles groovy class from a file
+     * @param file
+     * @return
+     * @throws IOException
+     */
     Class loadGroovyClass(File file) throws IOException {
         GroovyClassLoader loader = getGroovyClassLoader();
         Class groovyClass = loader.parseClass(file);
         return groovyClass;
-    }
-
-
-    public void test() throws IOException, IllegalAccessException, InstantiationException {
-        ClassLoader parent = getClass().getClassLoader();
-        GroovyClassLoader loader = new GroovyClassLoader(parent);
-        Class groovyClass = loader.parseClass(new File("src/test/groovy/script/HelloWorld.groovy"));
-
-// let's call some method on an instance
-        GroovyObject groovyObject = (GroovyObject) groovyClass.newInstance();
-        Object[] args = {};
-        groovyObject.invokeMethod("run", args);
     }
 
     public static class TestZuulFilter extends ZuulFilter {
@@ -243,7 +275,7 @@ public class FilterLoader {
 
                 assertNotNull(filter);
                 assertTrue(filter.getClass() == TestZuulFilter.class);
-                assertTrue(loader.filterInstanceMapSize() == 2);
+                assertTrue(loader.filterInstanceMapSize() == 1);
 
 
             } catch (Exception e) {

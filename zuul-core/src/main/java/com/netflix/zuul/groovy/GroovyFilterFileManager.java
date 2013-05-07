@@ -35,6 +35,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
+ * This class manages the directory polling for changes and new Groovy filters.
+ * Polling interval and directories are specified in the initialization of the class, and a poller will check
+ * for changes and additions.
  * @author Mikey Cohen
  * Date: 12/7/11
  * Time: 12:09 PM
@@ -53,9 +56,17 @@ public class GroovyFilterFileManager {
     private GroovyFilterFileManager() {
     }
 
-
+    /**
+     * Initialized the GroovyFileManager.
+     * @param pollingIntervalSeconds the polling interval in Seconds
+     * @param directories Any number of paths to directories to be polled may be specified
+     * @throws IOException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     public static void init(int pollingIntervalSeconds, String... directories) throws IOException, IllegalAccessException, InstantiationException {
-        INSTANCE = new GroovyFilterFileManager();
+        if(INSTANCE == null)INSTANCE = new GroovyFilterFileManager();
+
         INSTANCE.aDirectories = directories;
         INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
         INSTANCE.manageFiles();
@@ -63,16 +74,20 @@ public class GroovyFilterFileManager {
 
     }
 
+    /**
+     * Shuts down the poller
+     */
     public static void shutdown(){
         INSTANCE.stopPoller();
     }
+
 
     void stopPoller() {
         bRunning = false;
     }
 
     void startPoller() {
-        poller = new Thread("FilterManagerPoller") {
+        poller = new Thread("GroovyFilterFileManagerPoller") {
             public void run() {
                 while (bRunning) {
                     try {
@@ -87,7 +102,11 @@ public class GroovyFilterFileManager {
         poller.start();
     }
 
-
+    /**
+     * Returns the directory File for a path. A Runtime Exception is thrown if the directory is in valid
+     * @param sPath
+     * @return a File representing the directory path
+     */
     public File getDirectory(String sPath) {
         File directory = new File(sPath);
         if (!directory.isDirectory()) throw new RuntimeException(sPath + " is not a valid directory");
@@ -95,6 +114,10 @@ public class GroovyFilterFileManager {
 
     }
 
+    /**
+     * Returns a List<File> of all Files from all polled directories
+     * @return
+     */
     List<File> getFiles() {
         List<File> list = new ArrayList<File>();
         for (String sDirectory : aDirectories) {
@@ -107,6 +130,14 @@ public class GroovyFilterFileManager {
         return list;
     }
 
+    /**
+     * puts files into the FilterLoader. The FilterLoader will only addd new or changed filters
+     *
+     * @param aFiles a List<File>
+     * @throws IOException
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
     void processGroovyFiles(List<File> aFiles) throws IOException, InstantiationException, IllegalAccessException {
 
         for (File file : aFiles) {
@@ -119,7 +150,9 @@ public class GroovyFilterFileManager {
         processGroovyFiles(aFiles);
     }
 
-
+    /**
+     * Filters only .groovy files
+     */
     static class GroovyFileFilter implements FilenameFilter {
         public boolean accept(File dir, String name) {
             return name.endsWith(".groovy");
@@ -183,8 +216,10 @@ public class GroovyFilterFileManager {
         @Test
         public void testFileManagerInit() throws IOException, InstantiationException, IllegalAccessException {
             GroovyFilterFileManager manager = new GroovyFilterFileManager();
+
             manager = spy(manager);
-            doNothing().when(manager).manageFiles();
+            manager.INSTANCE = manager;
+            doNothing().when(manager.INSTANCE).manageFiles();
             manager.init(1, "test", "test1");
             verify(manager, atLeast(1)).manageFiles();
             verify(manager, times(1)).startPoller();

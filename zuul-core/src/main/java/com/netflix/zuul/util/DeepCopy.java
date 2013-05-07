@@ -18,6 +18,7 @@ package com.netflix.zuul.util;
 import java.io.*;
 
 /**
+ * Deep copy of an Object. The Object must be Serializable
  * @author Mikey Cohen
  * Date: 1/31/12
  * Time: 11:54 AM
@@ -26,6 +27,9 @@ public class DeepCopy {
     /**
      * Returns a copy of the object, or null if the object cannot
      * be serialized.
+     * @param orig an <code>Object</code> value
+     * @return a deep copy of that Object
+     * @exception NotSerializableException if an error occurs
      */
     public static Object copy(Object orig) throws NotSerializableException {
         Object obj = null;

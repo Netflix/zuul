@@ -21,12 +21,22 @@ import java.util.regex.Pattern
 import com.netflix.zuul.groovy.ZuulFilter
 
 /**
+ * Abstract class to return content directly fron Zuul,
+ * If this filter is executed, the  "route" filters will be bypassed,
+ * so the request will not be forwarded to an origin.
+ * the uri() method may return a String or a List of matching URI's.
+ * A matching request uri will return the String in the responseBody() method.
+ *
  * @author Mikey Cohen
  * Date: 2/2/12
  * Time: 1:34 PM
  */
 public abstract class StaticResponseFilter extends ZuulFilter {
 
+    /**
+     * Define a URI eg /static/content/path or List of URIs for this filter to return a static response.
+     * @return String URI or java.util.List of URIs
+     */
     abstract def uri()
 
     abstract String responseBody()
@@ -48,6 +58,11 @@ public abstract class StaticResponseFilter extends ZuulFilter {
         return false
     }
 
+    /**
+     * checks if the path matches the uri()
+     * @param path usually the RequestURI()
+     * @return true if the pattern matches
+     */
     boolean checkPath(String path) {
         def uri = uri()
         if(uri instanceof String){
@@ -66,7 +81,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
         if(ctx.getResponseBody() == null) {
             ctx.setResponseBody(responseBody())
-            ctx.sendProxyResponse = false;
+            ctx.sendZuulResponse = false;
         }
     }
 

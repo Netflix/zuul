@@ -35,30 +35,65 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 
+/**
+ * This class initializes servlet requests and responses into the RequestContext and wraps the FilterProcessor calls
+ * to preRoute(), route(),  postRoute(), and error() methods
+ *
+ * @author mikey@netflix.com
+ * @version 1.0
+ */
 public class ZuulRunner {
+
+    /**
+     * Creates a new <code>ZuulRunner</code> instance.
+     *
+     */
     public ZuulRunner() {
     }
 
+    /**
+     * sets HttpServlet request and HttpResponse
+     * @param servletRequest
+     * @param servletResponse
+     */
+    public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        RequestContext.getCurrentContext().setRequest(new HttpServletRequestWrapper(servletRequest));
+        RequestContext.getCurrentContext().setResponse(servletResponse);
+    }
+
+    /**
+     * executes "post" filterType  ZuulFilters
+     * @throws ZuulException
+     */
     public void postRoute() throws ZuulException {
         FilterProcessor.getInstance().postRoute();
     }
 
+    /**
+     * executes "route" filterType  ZuulFilters
+     * @throws ZuulException
+     */
     public void route() throws ZuulException {
         FilterProcessor.getInstance().route();
     }
 
+    /**
+     * executes "pre" filterType  ZuulFilters
+     * @throws ZuulException
+     */
     public void preRoute() throws ZuulException {
         FilterProcessor.getInstance().preRoute();
     }
 
-    public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        RequestContext.getCurrentContext().setRequest(new ProxyRequestWrapper(servletRequest));
-        RequestContext.getCurrentContext().setResponse(servletResponse);
-    }
-
+    /**
+     * executes "error" filterType  ZuulFilters
+     */
     public void error() {
         FilterProcessor.getInstance().error();
     }
+
+
+
 
 
     @RunWith(MockitoJUnitRunner.class)
@@ -86,7 +121,7 @@ public class ZuulRunner {
         }
 
         @Test
-        public void testProcessProxyFilter() {
+        public void testProcessZuulFilter() {
 
             ZuulRunner runner = new ZuulRunner();
             runner = spy(runner);
@@ -100,7 +135,7 @@ public class ZuulRunner {
 
                 runner.init(servletRequest, servletResponse);
                 verify(runner, times(1)).init(servletRequest, servletResponse);
-                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof ProxyRequestWrapper);
+                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
                 assertEquals(RequestContext.getCurrentContext().getResponse(), servletResponse);
 
                 runner.preRoute();

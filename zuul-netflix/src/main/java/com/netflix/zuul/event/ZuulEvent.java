@@ -15,9 +15,10 @@
  */
 package com.netflix.zuul.event;
 
-import java.util.EventObject;
+
 
 /**
+ * Simple event class
  * @author Mikey Cohen
  * Date: 3/22/13
  * Time: 10:09 AM

@@ -78,7 +78,7 @@ class WeightedLoadBalancer extends ZuulFilter {
         if(AltPercent.get() == 0) return false
         if(AltVIP.get() == null && AltHost.get() == null) return false
         if(NFRequestContext.currentContext.host != null) return false //host calls are not going to be loaltPad calculated here.
-        if(RequestContext.currentContext.sendProxyResponse == false) return false;
+        if(RequestContext.currentContext.sendZuulResponse == false) return false;
         if(AltPercent.get() > AltPercentMaxLimit.get()) return false
 
         if (envRegion.equals('us-east-1')){
@@ -101,8 +101,8 @@ class WeightedLoadBalancer extends ZuulFilter {
     @Override
     Object run() {
         if(AltVIP.get() != null){
-            (NFRequestContext.currentContext).proxyVIP = AltVIP.get()
-            if(NFRequestContext.currentContext.proxyVIP.startsWith("apiproxy")){
+            (NFRequestContext.currentContext).routeVIP = AltVIP.get()
+            if(NFRequestContext.currentContext.routeVIP.startsWith("apiproxy")){
                 NFRequestContext.getCurrentContext().proxyToProxy = true // for proxyToProxy load testing
             }
             return true
@@ -110,7 +110,7 @@ class WeightedLoadBalancer extends ZuulFilter {
         if(AltHost.get() != null){
             try {
                 (NFRequestContext.currentContext).host = new URL(AltHost.get())
-                (NFRequestContext.currentContext).proxyVIP = null
+                (NFRequestContext.currentContext).routeVIP = null
 
             } catch (Exception e) {
                 e.printStackTrace()
@@ -183,7 +183,7 @@ class WeightedLoadBalancer extends ZuulFilter {
             Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
-            Assert.assertTrue(NFRequestContext.currentContext.proxyVIP == "test")
+            Assert.assertTrue(NFRequestContext.currentContext.routeVIP == "test")
             Assert.assertTrue(NFRequestContext.currentContext.host == null)
         }
 
@@ -220,7 +220,7 @@ class WeightedLoadBalancer extends ZuulFilter {
             Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
-            Assert.assertTrue(NFRequestContext.currentContext.proxyVIP == null)
+            Assert.assertTrue(NFRequestContext.currentContext.routeVIP == null)
             Assert.assertTrue(NFRequestContext.currentContext.host != null)
         }
 

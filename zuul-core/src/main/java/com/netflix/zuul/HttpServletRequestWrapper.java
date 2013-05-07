@@ -71,27 +71,27 @@ import static org.mockito.Mockito.when;
  *
  * @author pgurov
  */
-public class ProxyRequestWrapper implements HttpServletRequest {
+public class HttpServletRequestWrapper implements HttpServletRequest {
 
     private final static HashMap<String, String[]> EMPTY_MAP = new HashMap<String, String[]>();
-    protected static final Logger LOG = LoggerFactory.getLogger(ProxyRequestWrapper.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
 
     private HttpServletRequest req;
     private byte[] contentData;
     private HashMap<String, String[]> parameters;
 
-    public ProxyRequestWrapper() {
+    public HttpServletRequestWrapper() {
         //a trick for Groovy
-        throw new IllegalArgumentException("Please use ProxyRequestWrapper(HttpServletRequest request) constructor!");
+        throw new IllegalArgumentException("Please use HttpServletRequestWrapper(HttpServletRequest request) constructor!");
     }
 
-    private ProxyRequestWrapper(HttpServletRequest request, byte[] contentData, HashMap<String, String[]> parameters) {
+    private HttpServletRequestWrapper(HttpServletRequest request, byte[] contentData, HashMap<String, String[]> parameters) {
         req = request;
         this.contentData = contentData;
         this.parameters = parameters;
     }
 
-    public ProxyRequestWrapper(HttpServletRequest request) {
+    public HttpServletRequestWrapper(HttpServletRequest request) {
         if (request == null)
             throw new IllegalArgumentException("The HttpServletRequest is null!");
         req = request;
@@ -110,7 +110,7 @@ public class ProxyRequestWrapper implements HttpServletRequest {
         } catch (IOException e) {
             throw new IllegalStateException("Cannot parse the request!", e);
         }
-        return new ProxyRequestWrapper(req, contentData, parameters);
+        return new HttpServletRequestWrapper(req, contentData, parameters);
     }
 
     /**
@@ -694,7 +694,7 @@ public class ProxyRequestWrapper implements HttpServletRequest {
         @Test
         public void handlesDuplicateParams() {
             when(request.getQueryString()).thenReturn("path=one&key1=val1&path=two");
-            final ProxyRequestWrapper w = new ProxyRequestWrapper(request);
+            final HttpServletRequestWrapper w = new HttpServletRequestWrapper(request);
 
             // getParameters doesn't call parseRequest internally, not sure why
             // so I'm forcing it here
@@ -713,7 +713,7 @@ public class ProxyRequestWrapper implements HttpServletRequest {
             final String body = "hello";
             body(body.getBytes());
 
-            final ProxyRequestWrapper wrapper = new ProxyRequestWrapper(request);
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
             assertEquals(body, IOUtils.toString(wrapper.getInputStream()));
         }
 
@@ -730,7 +730,7 @@ public class ProxyRequestWrapper implements HttpServletRequest {
             gzipOutStream.flush();
             body(byteOutStream.toByteArray());
 
-            final ProxyRequestWrapper wrapper = new ProxyRequestWrapper(request);
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
             assertEquals(body, IOUtils.toString(new GZIPInputStream(wrapper.getInputStream())));
         }
         @Test
@@ -750,7 +750,7 @@ public class ProxyRequestWrapper implements HttpServletRequest {
              
         
             
-            final ProxyRequestWrapper wrapper = new ProxyRequestWrapper(request);
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
             
            
             

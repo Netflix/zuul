@@ -46,7 +46,7 @@ import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.dependency.ribbon.NIWSConfig;
+import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.groovy.GroovyFilterFileManager;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
@@ -169,9 +169,9 @@ public class StartServer extends GuiceServletContextListener {
     private void initNIWS() throws ClientException {
         String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
 
-        if (stack != null && !stack.trim().isEmpty() && NIWSConfig.isAutodetectingBackendVips()) {
-            NIWSConfig.setupDefaultNIWSConfig();
-            ZuulApplicationInfo.setApplicationName(NIWSConfig.getApplicationName());
+        if (stack != null && !stack.trim().isEmpty() && RibbonConfig.isAutodetectingBackendVips()) {
+            RibbonConfig.setupDefaultRibbonConfig();
+            ZuulApplicationInfo.setApplicationName(RibbonConfig.getApplicationName());
         } else {
             DynamicStringProperty DEFAULT_CLIENT =
                     DynamicPropertyFactory.getInstance().getStringProperty("zuul.niws.defaultClient", null);

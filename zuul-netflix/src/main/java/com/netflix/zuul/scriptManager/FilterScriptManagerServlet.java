@@ -188,11 +188,11 @@ public class FilterScriptManagerServlet extends HttpServlet {
             List<FilterInfo> scripts;
             if (Boolean.parseBoolean(request.getParameter("active"))) {
                 // get list of all scripts for this endpoint
-                FilterInfo activeEndpoint = scriptDAO.getActiveScriptForFilter(filter_id);
+                FilterInfo activeEndpoint = scriptDAO.getActiveFilterInfoForFilter(filter_id);
                 scripts = activeEndpoint == null ? Collections.EMPTY_LIST : Collections.singletonList(activeEndpoint);
             } else {
                 // get list of all scripts for this endpoint
-                scripts = scriptDAO.getScriptsForFilter(filter_id);
+                scripts = scriptDAO.getZuulFiltersForFilterId(filter_id);
             }
             if (scripts.size() == 0) {
                 setUsageError(404, "ERROR: No scripts found for endpoint: " + filter_id, response);
@@ -223,7 +223,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             FilterInfo script = null;
             if (revision == null) {
                 // get latest
-                script = scriptDAO.getLatestScriptForFilter(filter_id);
+                script = scriptDAO.getLatestFilterInfoForFilter(filter_id);
             } else {
                 int revisionNumber = -1;
                 try {
@@ -233,7 +233,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     return;
                 }
                 // get the specific revision
-                script = scriptDAO.getScriptForFilter(filter_id, revisionNumber);
+                script = scriptDAO.getFilterInfoForFilter(filter_id, revisionNumber);
             }
 
             // now output script
@@ -299,7 +299,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     return;
                 }
                 try {
-                    FilterInfo filterInfo = scriptDAO.deActivateScript(filter_id, revisionNumber);
+                    FilterInfo filterInfo = scriptDAO.deActivateFilter(filter_id, revisionNumber);
                 } catch (Exception e) {
                     setUsageError(400, "ERROR: " + e.getMessage(), response);
                     return;
@@ -331,7 +331,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     return;
                 }
                 try {
-                    FilterInfo filterInfo = scriptDAO.setScriptActive(filter_id, revisionNumber);
+                    FilterInfo filterInfo = scriptDAO.setFilterActive(filter_id, revisionNumber);
                 } catch (Exception e) {
                     setUsageError(400, "ERROR: " + e.getMessage(), response);
                     return;
@@ -582,7 +582,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* setup mock DAO */
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
             List<FilterInfo> emptyResponse = Collections.emptyList();
-            when(dao.getScriptsForFilter(anyString())).thenReturn(emptyResponse);
+            when(dao.getZuulFiltersForFilterId(anyString())).thenReturn(emptyResponse);
 
             /* construct servlet */
             FilterScriptManagerServlet servlet = getEndpointScriptManagerImplementation(dao);
@@ -615,7 +615,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             scriptsForEndpoint.add(new FilterInfo("name1:type", "code", "type", "name", "disable", "order", "app"));
             scriptsForEndpoint.add(new FilterInfo("name2:type", "code", "type", "name", "disable", "order", "app"));
             scriptsForEndpoint.add(new FilterInfo("name3:type", "code", "type", "name", "disable", "order", "app"));
-            when(dao.getScriptsForFilter(anyString())).thenReturn(scriptsForEndpoint);
+            when(dao.getZuulFiltersForFilterId(anyString())).thenReturn(scriptsForEndpoint);
 
             /* construct servlet */
             FilterScriptManagerServlet servlet = getEndpointScriptManagerImplementation(dao);
@@ -768,7 +768,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* setup mock DAO */
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
             FilterInfo script = mock(FilterInfo.class);
-            when(dao.getScriptForFilter(filter_id, 2)).thenReturn(script);
+            when(dao.getFilterInfoForFilter(filter_id, 2)).thenReturn(script);
             String code = "code";
 
             when(script.getFilterCode()).thenReturn(code);
@@ -799,8 +799,8 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* setup mock DAO */
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
             FilterInfo script = mock(FilterInfo.class);
-            when(dao.getLatestScriptForFilter(filter_id)).thenReturn(script);
-            when(dao.getScriptForFilter(filter_id, 2)).thenReturn(script);
+            when(dao.getLatestFilterInfoForFilter(filter_id)).thenReturn(script);
+            when(dao.getFilterInfoForFilter(filter_id, 2)).thenReturn(script);
             when(script.getFilterCode()).thenReturn("code");
 
             FilterScriptManagerServlet servlet = getEndpointScriptManagerImplementation(dao);
@@ -829,8 +829,8 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* setup mock DAO */
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
             FilterInfo script = mock(FilterInfo.class);
-            when(dao.getLatestScriptForFilter(filter_id)).thenReturn(script);
-            when(dao.getScriptForFilter(filter_id, 2)).thenReturn(script);
+            when(dao.getLatestFilterInfoForFilter(filter_id)).thenReturn(script);
+            when(dao.getFilterInfoForFilter(filter_id, 2)).thenReturn(script);
             when(script.getFilterCode()).thenReturn("code");
 
             FilterScriptManagerServlet servlet = getEndpointScriptManagerImplementation(dao);
@@ -883,7 +883,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             FilterInfo script = mockEndpointScript();
 
             // userAuthenticationRequired should default to true
-            when(dao.setScriptActive(endpoint, 2)).thenReturn(script);
+            when(dao.setFilterActive(endpoint, 2)).thenReturn(script);
 
             // execute the servlet
             FilterScriptManagerServlet servlet = getEndpointScriptManagerImplementation(dao);
@@ -891,7 +891,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
 
             /* verify the default status is used */
             verify(response, never()).setStatus(anyInt());
-            verify(dao).setScriptActive(endpoint, 2);
+            verify(dao).setFilterActive(endpoint, 2);
 
             Map<String, Object> expectedJson = createExpectedJsonMap(script);
 

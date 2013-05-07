@@ -54,8 +54,8 @@ class sendResponse extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return !RequestContext.currentContext.getProxyResponseHeaders().isEmpty() ||
-            RequestContext.currentContext.getProxyResponseDataStream() != null ||
+        return !RequestContext.currentContext.getZuulResponseHeaders().isEmpty() ||
+            RequestContext.currentContext.getResponseDataStream() != null ||
             RequestContext.currentContext.responseBody != null
     }
 
@@ -68,7 +68,7 @@ class sendResponse extends ZuulFilter {
         RequestContext context = RequestContext.currentContext
 
         // there is no body to send
-        if(context.getResponseBody() == null && context.getProxyResponseDataStream() == null) return;
+        if(context.getResponseBody() == null && context.getResponseDataStream() == null) return;
 
         HttpServletResponse servletResponse = context.getResponse()
         servletResponse.setCharacterEncoding("UTF-8")
@@ -87,14 +87,14 @@ class sendResponse extends ZuulFilter {
             if (requestEncoding != null && requestEncoding.equals("gzip"))
                 isGzipRequested = true;
 
-            is = context.getProxyResponseDataStream();
+            is = context.getResponseDataStream();
             InputStream inputStream = is
             if (is != null) {
-                if (context.sendProxyResponse()) {
+                if (context.sendZuulResponse()) {
                     // if origin response is gzipped, and client has not requested gzip, decompress stream
                     // before sending to client
                     // else, stream gzip directly to client
-                    if (context.getProxyResponseGZipped() && !isGzipRequested)
+                    if (context.getResponseGZipped() && !isGzipRequested)
                         try {
                             inputStream = new GZIPInputStream(is);
 
@@ -102,7 +102,7 @@ class sendResponse extends ZuulFilter {
                             println("gzip expected but not received assuming unencoded response" + RequestContext.currentContext.getRequest().getRequestURL().toString())
                             inputStream = is
                         }
-                    else if (context.getProxyResponseGZipped() && isGzipRequested)
+                    else if (context.getResponseGZipped() && isGzipRequested)
                         servletResponse.setHeader(CONTENT_ENCODING, "gzip")
                     writeResponse(inputStream, outStream)
                 }
@@ -147,12 +147,12 @@ class sendResponse extends ZuulFilter {
     private void addResponseHeaders() {
         RequestContext context = RequestContext.getCurrentContext();
         HttpServletResponse servletResponse = context.getResponse();
-        List<Pair<String, String>> proxyResponseHeaders = context.getProxyResponseHeaders();
+        List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
         String debugHeader = ""
 
         List<String> rd
 
-        rd = (List<String>) RequestContext.getCurrentContext().get("proxyDebug");
+        rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
         rd?.each {
             debugHeader += "[[[${it}]]]";
         }
@@ -167,12 +167,12 @@ class sendResponse extends ZuulFilter {
         if (INCLUDE_DEBUG_HEADER.get()) servletResponse.addHeader("X-Zuul-Debug-Header", debugHeader)
 
         if (Debug.debugRequest()) {
-            proxyResponseHeaders?.each { Pair<String, String> it ->
+            zuulResponseHeaders?.each { Pair<String, String> it ->
                 servletResponse.addHeader(it.first(), it.second())
                 Debug.addRequestDebug("OUTBOUND: <  " + it.first() + ":" + it.second())
             }
         } else {
-            proxyResponseHeaders?.each { Pair<String, String> it ->
+            zuulResponseHeaders?.each { Pair<String, String> it ->
                 servletResponse.addHeader(it.first(), it.second())
             }
         }
@@ -182,7 +182,7 @@ class sendResponse extends ZuulFilter {
 
         // only inserts Content-Length if origin provides it and origin response is not gzipped
         if(SET_CONTENT_LENGTH.get()) {
-            if(contentLength != null && !ctx.getProxyResponseGZipped())
+            if(contentLength != null && !ctx.getResponseGZipped())
                 servletResponse.setContentLength(contentLength)
         }
     }
@@ -203,7 +203,7 @@ class sendResponse extends ZuulFilter {
             Pair cookie3 = new Pair('Set-Cookie', 'SecureNetflixId=hi')
 
             List<Pair> originHeaders = [cookie1, cookie2, cookie3]
-            Mockito.when(context.getProxyResponseHeaders()).thenReturn(originHeaders)
+            Mockito.when(context.getZuulResponseHeaders()).thenReturn(originHeaders)
 
             RequestContext.testSetCurrentContext(context);
 

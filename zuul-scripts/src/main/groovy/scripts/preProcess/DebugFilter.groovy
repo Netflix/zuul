@@ -24,7 +24,7 @@ import com.netflix.config.DynamicStringProperty
 
 class DebugFilter extends ZuulFilter {
 
-    static final DynamicBooleanProperty proxyDebug = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.debug.request", false)
+    static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.debug.request", false)
     static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty("zuul.debug.parameter", "debugParameter")
 
     @Override
@@ -40,13 +40,13 @@ class DebugFilter extends ZuulFilter {
     boolean shouldFilter() {
 
         if("true".equals(NFRequestContext.currentContext.getRequest().getParameter(debugParameter.get()))) return true;
-        return proxyDebug.get();
+        return routingDebug.get();
 
     }
 
     Object run() {
         RequestContext.getCurrentContext().setDebugRequest(true)
-        RequestContext.getCurrentContext().setDebugProxy(true)
+        RequestContext.getCurrentContext().setDebugRouting(true)
         return null;
 
     }

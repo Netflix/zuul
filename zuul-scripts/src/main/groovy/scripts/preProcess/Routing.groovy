@@ -63,16 +63,16 @@ class Routing extends ZuulFilter {
 
         staticRouting() //runs the static Zuul
 
-        ((NFRequestContext) RequestContext.currentContext).proxyVIP = defaultClient.get()
+        ((NFRequestContext) RequestContext.currentContext).routeVIP = defaultClient.get()
         String host = defaultHost.get()
-        if(((NFRequestContext) RequestContext.currentContext).proxyVIP == null) ((NFRequestContext) RequestContext.currentContext).proxyVIP  = ZuulApplicationInfo.applicationName
+        if(((NFRequestContext) RequestContext.currentContext).routeVIP == null) ((NFRequestContext) RequestContext.currentContext).routeVIP  = ZuulApplicationInfo.applicationName
         if (host != null) {
             final URL targetUrl = new URL(host)
-            RequestContext.currentContext.setProxyHost(targetUrl);
-            ((NFRequestContext) RequestContext.currentContext).proxyVIP=null
+            RequestContext.currentContext.setRouteHost(targetUrl);
+            ((NFRequestContext) RequestContext.currentContext).routeVIP=null
         }
 
-        if (host == null && RequestContext.currentContext.proxyVIP  == null) {
+        if (host == null && RequestContext.currentContext.routeVIP  == null) {
             throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
         }
 

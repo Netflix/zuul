@@ -16,7 +16,6 @@
 package com.netflix.zuul.context;
 
 import com.netflix.niws.client.http.HttpClientResponse;
-import com.netflix.zuul.context.RequestContext;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,96 +33,113 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Extended RequestContext adding Netflix library specific concepts and data
  * @author Mikey Cohen
  * Date: 12/23/11
  * Time: 1:14 PM
  */
 public class NFRequestContext extends RequestContext {
 
-    private static final String ARCHIVED_PROPS_KEY = "archivedProperties";
     private static final String EVENT_PROPS_KEY = "eventProperties";
+
 
     static {
         RequestContext.setContextClass(NFRequestContext.class);
+
     }
 
+    /**
+     * creates a new NFRequestContext
+     */
     public NFRequestContext(){
         super();
-        put(ARCHIVED_PROPS_KEY, new HashMap<String, String>());
         put(EVENT_PROPS_KEY, new HashMap<String, Object>());
+
     }
 
+    /**
+     * returns a NFRequestContext from the threadLocal
+     * @return
+     */
     public static NFRequestContext getCurrentContext() {
         return (NFRequestContext) RequestContext.threadLocal.get();
     }
 
-
-    public String getProxyVIP() {
-        return (String) get("proxyVIP");
+    /**
+     *  returns the routeVIP; that is the Eureka "vip" of registered instances
+     * @return
+     */
+    public String getRouteVIP() {
+        return (String) get("routeVIP");
     }
 
-    public void setProxyVIP(String sVip) {
-        set("proxyVIP", sVip);
+    /**
+     *  sets routeVIP; that is the Eureka "vip" of registered instances
+     * @return
+     */
+
+    public void setRouteVIP(String sVip) {
+        set("routeVIP", sVip);
     }
 
-    public boolean hasProxyVIPOrHost() {
-        return (getProxyVIP() != null) || (getProxyHost() != null);
+    /**
+     *
+     * @return true if a routeHost or routeVip has been defined
+     */
+    public boolean hasRouteVIPOrHost() {
+        return (getRouteVIP() != null) || (getRouteHost() != null);
     }
 
+    /**
+     * unsets the requestContextVariables
+     */
     public void unset() {
-        if (getProxyResponse() != null) {
-            getProxyResponse().releaseResources();
+        if (getZuulResponse() != null) {
+            getZuulResponse().releaseResources();
         }
         super.unset();
     }
 
-
+    /**
+     * sets the requestEntity; the inputStream of the Request
+     * @param entity
+     */
     public void setRequestEntity(InputStream entity) {
         set("requestEntity", entity);
     }
 
+    /**
+     *
+     * @return the requestEntity; the inputStream of the request
+     */
     public InputStream getRequestEntity() {
         return (InputStream) get("requestEntity");
     }
 
-
-    public void setProxyResponse(HttpClientResponse response) {
-        set("proxyResponse", response);
+    /**
+     * Sets the HttpClientResponse response that comes back from a Ribbon client.
+     * @param response
+     */
+    public void setZuulResponse(HttpClientResponse response) {
+        set("zuulResponse", response);
     }
 
-    public HttpClientResponse getProxyResponse() {
-        return (HttpClientResponse) get("proxyResponse");
+    /**
+     * gets the "zuulResponse"
+     * @return returns the HttpClientResponse from a Ribbon call to an origin
+     */
+    public HttpClientResponse getZuulResponse() {
+        return (HttpClientResponse) get("zuulResponse");
     }
 
-    public Map<String, String> getOAuthHeaders() {
-        return (Map<String, String>) get("oauthHeaders");
-    }
-
-    public void setOAuthHeaders(Map<String, String> headers) {
-        put("oauthHeaders", headers);
-    }
-
+    /**
+     * returns the "route". This is a Zuul defined bucket for collecting request metrics. By default the route is the
+     * first segment of the uri  eg /get/my/stuff : route is "get"
+     * @return
+     */
     public String getRoute() {
         return (String) get("route");
     }
-
-
-    public Boolean areOverridesDisabled() {
-        return (Boolean) get("overridesDisabled");
-    }
-
-    public void setDisableOverrides(Boolean b) {
-        put("overridesDisabled", b);
-    }
-
-    public void setArchivedProperty(String key, String value) {
-        getArchivedProperties().put(key, value);
-    }
-
-    public Map<String, String> getArchivedProperties() {
-        return (Map<String, String>) this.get(ARCHIVED_PROPS_KEY);
-    }
-    
 
     public void setEventProperty(String key, Object value) {
         getEventProperties().put(key, value);
@@ -132,6 +148,7 @@ public class NFRequestContext extends RequestContext {
     public Map<String, Object> getEventProperties() {
         return (Map<String, Object>) this.get(EVENT_PROPS_KEY);
     }
+
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {
@@ -172,10 +189,10 @@ public class NFRequestContext extends RequestContext {
         @Test
         public void testNFRequestContext() {
             NFRequestContext context = NFRequestContext.getCurrentContext();
-            context.setProxyResponse(clientResponse);
-            assertEquals(context.getProxyResponse(), clientResponse);
-            context.setProxyVIP("vip");
-            assertEquals("vip", context.getProxyVIP());
+            context.setZuulResponse(clientResponse);
+            assertEquals(context.getZuulResponse(), clientResponse);
+            context.setRouteVIP("vip");
+            assertEquals("vip", context.getRouteVIP());
         }
     }
 

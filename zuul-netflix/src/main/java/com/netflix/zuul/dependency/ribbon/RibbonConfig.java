@@ -28,18 +28,18 @@ import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Handles NIWS VIP names and addresses.
+ * Handles Eureka VIP names and addresses.
  *
  * @author mhawthorne
  */
-public class NIWSConfig {
+public class RibbonConfig {
 
 
     static String APPLICATION_NAME = null;
 
     static String APPLICATION_STACK = null;
 
-    private static Logger LOG = LoggerFactory.getLogger(NIWSConfig.class);
+    private static Logger LOG = LoggerFactory.getLogger(RibbonConfig.class);
 
 
     private static final DynamicBooleanProperty AUTODETECT_BACKEND_VIPS =
@@ -47,8 +47,15 @@ public class NIWSConfig {
     private static final DynamicStringProperty DEFAULT_CLIENT =
             DynamicPropertyFactory.getInstance().getStringProperty("zuul.niws.defaultClient", null);
 
-
-    public static void setupDefaultNIWSConfig() throws ClientException {
+    /**
+     * This method attempts to set up the default Ribbon origin VIP from properties and environment.
+     * One method is through autoscale name convention. The Autoscaling group name can be set up as follow : zuul-origin_stack.
+     * Zuul will derive the origin VIP  as origin-stack.{zuul.ribbon.vipAddress.template}
+     *
+     * the client may also be specified by the property "zuul.niws.defaultClient"
+     * @throws ClientException
+     */
+    public static void setupDefaultRibbonConfig() throws ClientException {
         final DeploymentContext config = ConfigurationManager.getDeploymentContext();
 
         String stack = config.getDeploymentStack();
@@ -67,8 +74,8 @@ public class NIWSConfig {
 
             setApplicationStack(env);
         }
-        String vip = NIWSConfig.getDefaultVipName();
-        String vipAddr = NIWSConfig.getDefaultVipAddress(getApplicationStack());
+        String vip = RibbonConfig.getDefaultVipName();
+        String vipAddr = RibbonConfig.getDefaultVipAddress(getApplicationStack());
         String namespace = DynamicPropertyFactory.getInstance().getStringProperty("zuul.ribbon.namespace", "ribbon").get();
         
         setIfNotDefined(vip, vipAddr);
@@ -110,31 +117,54 @@ public class NIWSConfig {
         return true;
     }
 
+    /**
+     *
+     * @return the APPLICATION_NAME
+     */
     public static String getApplicationName() {
         return APPLICATION_NAME;
     }
 
+    /**
+     * sets the application name of the origin
+     * @param app_name
+     */
     public static void setApplicationName(String app_name) {
-        NIWSConfig.APPLICATION_NAME = app_name;
+        RibbonConfig.APPLICATION_NAME = app_name;
         if(ZuulApplicationInfo.applicationName == null) ZuulApplicationInfo.applicationName = app_name;
         LOG.info("Setting back end VIP application = " + app_name);
     }
 
+    /**
+     * returns the application_stack
+     * @return
+     */
     public static String getApplicationStack() {
         return APPLICATION_STACK;
     }
 
+    /**
+     * sets the default origin applcation stack
+     * @param stack
+     */
     public static void setApplicationStack(String stack) {
-        NIWSConfig.APPLICATION_STACK = stack;
+        RibbonConfig.APPLICATION_STACK = stack;
         if(ZuulApplicationInfo.getStack()== null) ZuulApplicationInfo.stack= stack;
         LOG.info("Setting back end VIP stack = " + stack);
     }
 
-
+    /**
+     * true if the app shoudl autodetect the origin vip
+     * @return true if the app shoudl autodetect the origin vip
+     */
     public static final boolean isAutodetectingBackendVips() {
         return AUTODETECT_BACKEND_VIPS.get();
     }
 
+    /**
+     * returns the Ribbon property name for the default origin vip
+     * @return
+     */
     public static final String getDefaultVipName() {
         String client = getApplicationName();
         if (client == null) client = DEFAULT_CLIENT.get();
@@ -146,6 +176,12 @@ public class NIWSConfig {
     }
 
 
+    /**
+     * builds the default vip address of the origin based on the stack.
+     * You need to configure zuul.ribbon.vipAddress.template . eg zuul.ribbon.vipAddress.template=%s-%s.netflix.net:8888 where %s(1) is client and %s(2) is stack
+     * @param stack
+     * @return
+     */
     public static final String getDefaultVipAddress(String stack) {
         String client = getApplicationName();
         if (client == null) client = DEFAULT_CLIENT.get();
@@ -162,14 +198,14 @@ public class NIWSConfig {
         @Test
         public void defaultVipAddressForStandardStack() {
             //todo fix
-//            assertEquals("null-prod.netflix.net:7001", NIWSConfig.getDefaultVipAddress("prod"));
+//            assertEquals("null-prod.netflix.net:7001", RibbonConfig.getDefaultVipAddress("prod"));
         }
 
 
         @Test
         public void defaultVipAddressForLatAmStack() {
             //todo fix
-//            assertEquals("null-prod.latam.netflix.net:7001", NIWSConfig.getDefaultVipAddress("prod.latam"));
+//            assertEquals("null-prod.latam.netflix.net:7001", RibbonConfig.getDefaultVipAddress("prod.latam"));
         }
 
 

@@ -33,9 +33,9 @@ import java.util.Map;
  * <p/>
  * Support value types in this implementation are: String, Boolean, Integer/Long/Double, Date, byte[], ByteBuffer
  * <p/>
- * If you need something else that Cassandra supports we'll need to add further functionality to this ADC (ie. not use a Map to pass in values) or create a new one.
+ * If you need something else that Cassandra supports we'll need to add further functionality to this  (ie. not use a Map to pass in values) or create a new one.
  */
-public class ADCCassandraPut<RowKeyType> extends AbstractCassandraAPIDependencyCommand<Void> {
+public class HystrixCassandraPut<RowKeyType> extends AbstractCassandraHystrixCommand<Void> {
 
     private final Keyspace keyspace;
     private final ColumnFamily<RowKeyType, String> columnFamily;
@@ -43,18 +43,18 @@ public class ADCCassandraPut<RowKeyType> extends AbstractCassandraAPIDependencyC
     private final Map<String, Object> attributes;
     private Integer ttlSeconds = null;
 
-    public ADCCassandraPut(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType rowKey, Map<String, Object> attributes) {
+    public HystrixCassandraPut(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType rowKey, Map<String, Object> attributes) {
         this.keyspace = keyspace;
         this.columnFamily = columnFamily;
         this.rowKey = rowKey;
         this.attributes = attributes;
     }
 
-    public ADCCassandraPut(Keyspace keyspace, String columnFamilyName, RowKeyType rowKey, Map<String, Object> attributes) {
+    public HystrixCassandraPut(Keyspace keyspace, String columnFamilyName, RowKeyType rowKey, Map<String, Object> attributes) {
         this(keyspace, columnFamilyName, rowKey, attributes, -1);
     }
     @SuppressWarnings("unchecked")
-    public ADCCassandraPut(Keyspace keyspace, String columnFamilyName, RowKeyType rowKey, Map<String, Object> attributes, int ttlSeconds) {
+    public HystrixCassandraPut(Keyspace keyspace, String columnFamilyName, RowKeyType rowKey, Map<String, Object> attributes, int ttlSeconds) {
         this.keyspace = keyspace;
         this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, rowKey);
         this.rowKey = rowKey;

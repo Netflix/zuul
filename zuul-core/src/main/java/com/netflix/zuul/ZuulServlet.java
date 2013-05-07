@@ -25,6 +25,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,20 +40,23 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Core Zuul servlet which intializes and orchestrates zuulFilter execution
  * @author Mikey Cohen
  * Date: 12/23/11
  * Time: 10:44 AM
  */
 public class ZuulServlet extends HttpServlet {
     private ZuulRunner zuulRunner = new ZuulRunner();
+    private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
+    @Override
     public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws javax.servlet.ServletException, java.io.IOException {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
 
-            // marks this request as having passed throught the "Zuul engine", as opposed to servlets
+            // marks this request as having passed through the "Zuul engine", as opposed to servlets
             // explicitly bound in web.xml, for which requests will not have the same data attached
-            RequestContext.getCurrentContext().setProxyEngineRan();
+            RequestContext.getCurrentContext().setZuulEngineRan();
 
             try {
                 preRoute();
@@ -81,27 +86,47 @@ public class ZuulServlet extends HttpServlet {
         }
     }
 
-
+    /**
+     * executes "post" ZuulFilters
+     * @throws ZuulException
+     */
     void postRoute() throws ZuulException {
         zuulRunner.postRoute();
     }
 
+    /**
+     * executes "route" filters
+     * @throws ZuulException
+     */
     void route() throws ZuulException {
         zuulRunner.route();
     }
 
+    /**
+     * executes "pre" filters
+     * @throws ZuulException
+     */
     void preRoute() throws ZuulException {
         zuulRunner.preRoute();
     }
 
+    /**
+     * initializes request
+     * @param servletRequest
+     * @param servletResponse
+     */
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         zuulRunner.init(servletRequest, servletResponse);
     }
 
+    /**
+     * sets error context info and executes "error" filters
+     * @param e
+     */
     void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
-        e.printStackTrace();
+        LOG.error(e.getMessage(), e);
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -122,7 +147,7 @@ public class ZuulServlet extends HttpServlet {
         }
 
         @Test
-        public void testProcessProxyFilter() {
+        public void testProcessZuulFilter() {
 
             ZuulServlet zuulServlet = new ZuulServlet();
             zuulServlet = spy(zuulServlet);
@@ -136,7 +161,7 @@ public class ZuulServlet extends HttpServlet {
 
                 zuulServlet.init(servletRequest, servletResponse);
                 verify(zuulServlet, times(1)).init(servletRequest, servletResponse);
-                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof ProxyRequestWrapper);
+                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
                 assertEquals(RequestContext.getCurrentContext().getResponse(), servletResponse);
 
                 zuulServlet.preRoute();
@@ -151,7 +176,7 @@ public class ZuulServlet extends HttpServlet {
                 RequestContext.testSetCurrentContext(null);
 
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                LOG.error(e.getMessage(), e);
             }
 
 

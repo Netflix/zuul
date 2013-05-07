@@ -27,6 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
  * @author Mikey Cohen
  * Date: 1/25/12
  * Time: 2:26 PM
@@ -46,8 +47,8 @@ public class Debug {
     }
 
 
-    public static void setDebugProxy(boolean bDebug) {
-        RequestContext.getCurrentContext().setDebugProxy(bDebug);
+    public static void setDebugRouting(boolean bDebug) {
+        RequestContext.getCurrentContext().setDebugRouting(bDebug);
     }
 
 
@@ -55,29 +56,41 @@ public class Debug {
         return RequestContext.getCurrentContext().debugRequest();
     }
 
-    public static boolean debugProxy() {
-        return RequestContext.getCurrentContext().debugProxy();
+    public static boolean debugRouting() {
+        return RequestContext.getCurrentContext().debugRouting();
     }
 
-    public static void addProxyDebug(String line) {
-        List<String> rd = getProxyDebug();
+    public static void addRoutingDebug(String line) {
+        List<String> rd = getRoutingDebug();
         rd.add(line);
     }
 
-    public static List<String> getProxyDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("proxyDebug");
+    /**
+     *
+     * @return Returns the list of routiong debug messages
+     */
+    public static List<String> getRoutingDebug() {
+        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
         if (rd == null) {
             rd = new ArrayList<String>();
-            RequestContext.getCurrentContext().set("proxyDebug", rd);
+            RequestContext.getCurrentContext().set("routingDebug", rd);
         }
         return rd;
     }
 
+    /**
+     * Adds a line to the  Request debug messages
+     * @param line
+     */
     public static void addRequestDebug(String line) {
         List<String> rd = getRequestDebug();
         rd.add(line);
     }
 
+    /**
+     *
+     * @return returns the list of request debug messages
+     */
     public static List<String> getRequestDebug() {
         List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
         if (rd == null) {
@@ -88,19 +101,24 @@ public class Debug {
     }
 
 
-    public static void compareProxyContextState(String filterName, RequestContext copy) {
+    /**
+     * Adds debug details about changes that a given filter made to the request context.
+     * @param filterName
+     * @param copy
+     */
+    public static void compareContextState(String filterName, RequestContext copy) {
         RequestContext context = RequestContext.getCurrentContext();
         Iterator<String> it = context.keySet().iterator();
         String key = it.next();
         while (key != null) {
-            if ((!key.equals("proxyDebug") && !key.equals("requestDebug"))) {
+            if ((!key.equals("routingDebug") && !key.equals("requestDebug"))) {
                 Object newValue = context.get(key);
                 Object oldValue = copy.get(key);
                 if (oldValue == null && newValue != null) {
-                    addProxyDebug("{" + filterName + "} added " + key + "=" + newValue.toString());
+                    addRoutingDebug("{" + filterName + "} added " + key + "=" + newValue.toString());
                 } else if (oldValue != null && newValue != null) {
                     if (!(oldValue.equals(newValue))) {
-                        addProxyDebug("{" +filterName + "} changed " + key + "=" + newValue.toString());
+                        addRoutingDebug("{" +filterName + "} changed " + key + "=" + newValue.toString());
                     }
                 }
             }
@@ -119,15 +137,15 @@ public class Debug {
 
         @Test
         public void testRequestDebug() {
-            assertFalse(debugProxy());
+            assertFalse(debugRouting());
             assertFalse(debugRequest());
-            setDebugProxy(true);
+            setDebugRouting(true);
             setDebugRequest(true);
-            assertTrue(debugProxy());
+            assertTrue(debugRouting());
             assertTrue(debugRequest());
 
-            addProxyDebug("test1");
-            assertTrue(getProxyDebug().contains("test1"));
+            addRoutingDebug("test1");
+            assertTrue(getRoutingDebug().contains("test1"));
 
             addRequestDebug("test2");
             assertTrue(getRequestDebug().contains("test2"));

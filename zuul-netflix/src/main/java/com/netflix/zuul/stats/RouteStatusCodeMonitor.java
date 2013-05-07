@@ -56,6 +56,7 @@ public class RouteStatusCodeMonitor implements NamedCount {
 
 
     public RouteStatusCodeMonitor(String route, int status_code) {
+        if(route == null) route = "";
         this.route = route;
         this.status_code = status_code;
         route_code = route + "_" + status_code;

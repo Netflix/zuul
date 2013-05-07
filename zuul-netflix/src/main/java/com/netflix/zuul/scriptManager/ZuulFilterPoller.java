@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Polls a persistent store for new or changes Filters
  * @author Mikey Cohen
  * Date: 6/15/12
  * Time: 3:44 PM
@@ -54,13 +55,20 @@ public class ZuulFilterPoller {
     }
 
 
-
+    /**
+     * constructor that passes in a dao
+     * @param dao
+     */
     public ZuulFilterPoller(ZuulFilterDAO dao) {
         this.dao = dao;
         checkerThread.start();
 
     }
 
+    /**
+     *
+     * @return a Singleton
+     */
     public static ZuulFilterPoller getInstance() {
         return INSTANCE;
     }
@@ -76,14 +84,14 @@ public class ZuulFilterPoller {
                     if (canary.get()) {
                         HashMap<String, FilterInfo> setFilters = new HashMap<String, FilterInfo>();
 
-                        List<FilterInfo> activeScripts = dao.getAllActiveScripts();
+                        List<FilterInfo> activeScripts = dao.getAllActiveFilters();
                         if (activeScripts != null) {
                             for (FilterInfo newFilter : activeScripts) {
                                 setFilters.put(newFilter.getFilterID(), newFilter);
                             }
                         }
 
-                        List<FilterInfo> canaryScripts = dao.getAllCanaryScripts();
+                        List<FilterInfo> canaryScripts = dao.getAllCanaryFilters();
                         if (canaryScripts != null) {
                             for (FilterInfo newFilter : canaryScripts) {
                                 setFilters.put(newFilter.getFilterID(), newFilter);
@@ -94,7 +102,7 @@ public class ZuulFilterPoller {
                         }
                     }
                     else if (active.get()) {
-                        List<FilterInfo> newFilters = dao.getAllActiveScripts();
+                        List<FilterInfo> newFilters = dao.getAllActiveFilters();
                         if (newFilters == null) continue;
                         for (FilterInfo newFilter : newFilters) {
                             doFilterCheck(newFilter);

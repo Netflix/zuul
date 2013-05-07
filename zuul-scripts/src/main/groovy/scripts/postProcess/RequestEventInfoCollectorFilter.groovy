@@ -129,7 +129,7 @@ class RequestEventInfoCollectorFilter extends ZuulFilter {
             }
 
             // response headers
-            NFRequestContext.getCurrentContext().getProxyResponseHeaders()?.each { Pair<String, String> it ->
+            NFRequestContext.getCurrentContext().getZuulResponseHeaders()?.each { Pair<String, String> it ->
                 event.put("response.header." + it.first().toLowerCase(), it.second())
             }
         } finally {

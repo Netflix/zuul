@@ -26,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import static org.junit.Assert.*;
 
 /**
+ * verifies that the given source code is compilable in Groovy, can be instanciated, and is a ZuulFilter type
  * @author Mikey Cohen
  * Date: 6/12/12
  * Time: 7:12 PM
@@ -33,11 +34,22 @@ import static org.junit.Assert.*;
 public class FilterVerifier {
     private static final FilterVerifier INSTANCE = new FilterVerifier();
 
+    /**
+     *
+     * @return Singleton
+     */
     public static FilterVerifier getInstance() {
         return INSTANCE;
     }
 
-
+    /**
+     * verifies compilation, instanciation and that it is a ZuulFilter
+     * @param sFilterCode
+     * @return a FilterInfo object representing that code
+     * @throws org.codehaus.groovy.control.CompilationFailedException
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     */
     public FilterInfo verifyFilter(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException, IllegalAccessException, InstantiationException {
         Class groovyClass = compileGroovy(sFilterCode);
         Object instance = instanciateClass(groovyClass);
@@ -60,6 +72,12 @@ public class FilterVerifier {
         }
     }
 
+    /**
+     * compiles the Groovy source code
+     * @param sFilterCode
+     * @return
+     * @throws org.codehaus.groovy.control.CompilationFailedException
+     */
     public Class compileGroovy(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);

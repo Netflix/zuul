@@ -72,7 +72,7 @@ class ErrorResponse extends ZuulFilter {
             } else {
                 RequestContext.getCurrentContext().setResponseStatusCode(e.nStatusCode);
             }
-            context.setSendProxyResponse(false)
+            context.setSendZuulResponse(false)
             context.setResponseBody("${getErrorMessage(e, e.nStatusCode)}")
 
         } catch (Throwable throwable) {
@@ -84,7 +84,7 @@ class ErrorResponse extends ZuulFilter {
             } else {
                 RequestContext.getCurrentContext().setResponseStatusCode(500);
             }
-            context.setSendProxyResponse(false)
+            context.setSendZuulResponse(false)
             context.setResponseBody("${getErrorMessage(throwable, 500)}")
 
         } finally {

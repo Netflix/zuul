@@ -22,9 +22,9 @@ import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.Row;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.zuul.ZuulApplicationInfo;
-import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraGetRowsByKeys;
-import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraGetRowsByQuery;
-import com.netflix.zuul.dependency.cassandra.hystrix.ADCCassandraPut;
+import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByKeys;
+import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByQuery;
+import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraPut;
 import com.netflix.zuul.event.ZuulEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +105,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         }
     }
 
+
     public List<String> getFilterIdsIndex(String index) {
 
         String filter_ids = getFilterIdsRaw(index);
@@ -149,8 +150,8 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         return getFilterIdsIndex(FILTER_ID + ZuulApplicationInfo.getApplicationName());
     }
 
-    public FilterInfo getScript(String filter_id, int revision) {
-        List<FilterInfo> filters = getScriptsForFilter(filter_id);
+    public FilterInfo getFilterInfo(String filter_id, int revision) {
+        List<FilterInfo> filters = getZuulFiltersForFilterId(filter_id);
         if (filters == null) return null;
         for (FilterInfo filter : filters) {
             if (filter.getRevision() == revision) return filter;
@@ -163,7 +164,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public List<FilterInfo> getScriptsForFilter(String filter_id) {
+    public List<FilterInfo> getZuulFiltersForFilterId(String filter_id) {
 
         List<FilterInfo> filterInfos = getFiltersForIndex(getScriptsForFilterIndexKey(filter_id));
         if (filterInfos == null) return Collections.emptyList();
@@ -173,12 +174,12 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public FilterInfo getScriptForFilter(String filter_id, int revision) {
-        return getScript(filter_id, revision);
+    public FilterInfo getFilterInfoForFilter(String filter_id, int revision) {
+        return getFilterInfo(filter_id, revision);
     }
 
     @Override
-    public FilterInfo getLatestScriptForFilter(String filter_id) {
+    public FilterInfo getLatestFilterInfoForFilter(String filter_id) {
         int largestRevision = 0;
         FilterInfo latestfilterInfo = null;
         List<FilterInfo> filterInfos = getFiltersForIndex(getScriptsForFilterIndexKey(filter_id));
@@ -195,7 +196,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public FilterInfo getActiveScriptForFilter(String filter_id) {
+    public FilterInfo getActiveFilterInfoForFilter(String filter_id) {
         List<FilterInfo> filterInfos = getFiltersForIndex(ACTIVE_SCRIPTS + ZuulApplicationInfo.getApplicationName());
 
         for (int i = 0; i < filterInfos.size(); i++) {
@@ -217,7 +218,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
 
     @Override
-    public List<FilterInfo> getAllCanaryScripts() {
+    public List<FilterInfo> getAllCanaryFilters() {
 
         List<FilterInfo> filterInfos = getFiltersForIndex(CANARY_SCRIPTS + ZuulApplicationInfo.getApplicationName());
         if (filterInfos == null || filterInfos.size() == 0) {
@@ -230,7 +231,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public List<FilterInfo> getAllActiveScripts() {
+    public List<FilterInfo> getAllActiveFilters() {
         List<FilterInfo> filterInfos = getFiltersForIndex(ACTIVE_SCRIPTS + ZuulApplicationInfo.getApplicationName());
         if (filterInfos == null || filterInfos.size() == 0) {
             return Collections.emptyList();
@@ -277,7 +278,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     @Override
     public FilterInfo addFilter(String filtercode, String filter_type, String filter_name, String disableFilterPropertyName, String filter_order) {
         String filter_id = buildFilterID(filter_type, filter_name);
-        FilterInfo latest = getLatestScriptForFilter(filter_id);
+        FilterInfo latest = getLatestFilterInfoForFilter(filter_id);
         int revision = 1;
         if (latest != null) {
             revision = latest.getRevision() + 1;
@@ -312,7 +313,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         * [2] It acts as a test to ensure that what was entered can be retrieved correctly and that we return exactly what ended up in Cassandra
         * [3] Cassandra doesn't have transactions, so the above logic could have had a race scenario and another thread/instance/client over-written us so this will return whatever is actually in Cassandra
         */
-        return getScriptForFilter(filter_id, revision);
+        return getFilterInfoForFilter(filter_id, revision);
     }
 
     public static String buildFilterID(String filter_type, String filter_name) {
@@ -354,7 +355,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             }
         }
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "CANARY FILTER SET id = " + filter_id + "revision = " + revision));
-        return getScriptForFilter(filter_id, revision);
+        return getFilterInfoForFilter(filter_id, revision);
     }
 
     private void removeFilterIdFromIndex(String index, String filter_id) {
@@ -381,9 +382,9 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public FilterInfo setScriptActive(String filter_id, int revision) throws Exception {
+    public FilterInfo setFilterActive(String filter_id, int revision) throws Exception {
 
-        FilterInfo filter = getScript(filter_id, revision);
+        FilterInfo filter = getFilterInfo(filter_id, revision);
         if (filter == null) throw new Exception("Filter not Found " + filter_id + "revision:" + revision);
 
         //make filters be canaried before they are activated
@@ -395,7 +396,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         ArrayList<Integer> revisionsToDeactivate = new ArrayList<Integer>();
 
 
-        FilterInfo filterInfo = getActiveScriptForFilter(filter_id);
+        FilterInfo filterInfo = getActiveFilterInfoForFilter(filter_id);
         if (filterInfo != null) {
             revisionsToDeactivate.add(filterInfo.getRevision());
             removeFilterIdFromIndex(ACTIVE_SCRIPTS + ZuulApplicationInfo.getApplicationName(), filter_id + "_" + filterInfo.getRevision());
@@ -423,13 +424,13 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             }
         }
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "ACTIVATED NEW ZUUL FILTER id = " + filter_id + " revision = " + revision));
-        return getScriptForFilter(filter_id, revision);
+        return getFilterInfoForFilter(filter_id, revision);
     }
 
     @Override
-    public FilterInfo deActivateScript(String filter_id, int revision) throws Exception {
+    public FilterInfo deActivateFilter(String filter_id, int revision) throws Exception {
 
-        FilterInfo filter = getScript(filter_id, revision);
+        FilterInfo filter = getFilterInfo(filter_id, revision);
         if (filter == null) throw new Exception("Filter not Found " + filter_id + "revision:" + revision);
 
 
@@ -447,7 +448,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         cassandraGateway.upsert(filter_id + "_" + revision, attributesForActivation);
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "DEACTIVATED ZUUL FILTER id = " + filter_id + " revision = " + revision));
 
-        return getScriptForFilter(filter_id, revision);
+        return getFilterInfoForFilter(filter_id, revision);
     }
 
     /**
@@ -478,7 +479,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             HashMap<String, Object> attributes = new HashMap<String, Object>();
             attributes.put("index_name", rowKey);
             attributes.put("filter_ids", filter_ids);
-            new ADCCassandraPut<String>(cassandraContext.getEntity(), "zuul_filter_indices", rowKey, attributes).execute();
+            new HystrixCassandraPut<String>(cassandraContext.getEntity(), "zuul_filter_indices", rowKey, attributes).execute();
         }
 
         /**
@@ -488,7 +489,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @param attributes
          */
         public void upsert(String rowKey, Map<String, Object> attributes) {
-            new ADCCassandraPut<String>(cassandraContext.getEntity(), COLUMN_FAMILY, rowKey, attributes).execute();
+            new HystrixCassandraPut<String>(cassandraContext.getEntity(), COLUMN_FAMILY, rowKey, attributes).execute();
         }
 
         /**
@@ -498,7 +499,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @return
          */
         public Rows<String, String> select(String cql) {
-            return new ADCCassandraGetRowsByQuery<String>(cassandraContext.getEntity(), COLUMN_FAMILY, String.class, cql).execute();
+            return new HystrixCassandraGetRowsByQuery<String>(cassandraContext.getEntity(), COLUMN_FAMILY, String.class, cql).execute();
         }
 
         public Rows<String, String> getByFilterIds(List<String> filterIds) {
@@ -506,7 +507,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             for (int i = 0; i < filterIds.size(); i++) {
                 list[i] = filterIds.get(i);
             }
-            return new ADCCassandraGetRowsByKeys<String>(cassandraContext.getEntity(), COLUMN_FAMILY, list).execute();
+            return new HystrixCassandraGetRowsByKeys<String>(cassandraContext.getEntity(), COLUMN_FAMILY, list).execute();
         }
     }
 
@@ -657,7 +658,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(true);
 
-            List<FilterInfo> list = dao.getScriptsForFilter("/unknown/Filter");
+            List<FilterInfo> list = dao.getZuulFiltersForFilterId("/unknown/Filter");
             assertNotNull(list);
             assertEquals(0, list.size());
         }
@@ -719,7 +720,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
             /* exercise the method we're testing */
-            List<FilterInfo> list = dao.getScriptsForFilter(filter);
+            List<FilterInfo> list = dao.getZuulFiltersForFilterId(filter);
 
             /* validate responses */
             assertEquals(filter, list.get(0).getFilterID());
@@ -745,7 +746,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(true);
 
-            FilterInfo filterInfo = dao.getScriptForFilter("/unknown/filter", 2);
+            FilterInfo filterInfo = dao.getFilterInfoForFilter("/unknown/filter", 2);
             assertNull(filterInfo);
         }
 
@@ -790,7 +791,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
 
             /* exercise the method we're testing */
-            FilterInfo filterInfo = dao.getScriptForFilter(filter, 3);
+            FilterInfo filterInfo = dao.getFilterInfoForFilter(filter, 3);
 
             /* validate responses */
             assertEquals(filter, filterInfo.getFilterID());
@@ -808,7 +809,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(true);
 
-            FilterInfo filterInfo = dao.getLatestScriptForFilter("/unknown/filter");
+            FilterInfo filterInfo = dao.getLatestFilterInfoForFilter("/unknown/filter");
             assertNull(filterInfo);
         }
 
@@ -854,7 +855,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             doReturn("name:type_4").when(dao).getFilterIdsRaw(anyString());
 
             /* exercise the method we're testing */
-            FilterInfo filterInfo = dao.getLatestScriptForFilter(filter);
+            FilterInfo filterInfo = dao.getLatestFilterInfoForFilter(filter);
 
             /* validate responses */
             assertEquals(filter, filterInfo.getFilterID());
@@ -905,7 +906,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             doReturn("name:type_3").when(dao).getFilterIdsRaw(anyString());
 
             /* exercise the method we're testing */
-            FilterInfo filterInfo = dao.getActiveScriptForFilter(filter);
+            FilterInfo filterInfo = dao.getActiveFilterInfoForFilter(filter);
 
             /* validate responses */
             assertEquals(filter, filterInfo.getFilterID());
@@ -1165,7 +1166,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
             FilterInfo filterInfo = null;
             try {
-                filterInfo = dao.setScriptActive(filter, 4);
+                filterInfo = dao.setFilterActive(filter, 4);
             } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -1249,7 +1250,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.getByFilterIds(anyList())).thenReturn( response);
 
             try {
-                dao.setScriptActive(filter, 4);
+                dao.setFilterActive(filter, 4);
             } catch (Exception e) {
                 // expected
             }
@@ -1300,7 +1301,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(gateway.getByFilterIds(anyList())).thenReturn( response);
 
             try {
-                dao.setScriptActive(filter, 3); // activate the script that's already active
+                dao.setFilterActive(filter, 3); // activate the script that's already active
             } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }

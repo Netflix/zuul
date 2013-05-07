@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
 import com.netflix.zuul.context.NFRequestContext
-import com.netflix.zuul.dependency.HostCommand
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -62,6 +61,11 @@ import com.netflix.util.Pair
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.hystrix.HystrixCommand
+import com.netflix.hystrix.HystrixCommand.Setter
+import com.netflix.hystrix.HystrixCommandGroupKey
+import com.netflix.hystrix.HystrixCommandProperties
+import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 
 class ZuulHostRequest extends ZuulFilter {
 
@@ -131,7 +135,7 @@ class ZuulHostRequest extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return RequestContext.currentContext.getProxyHost() != null && RequestContext.currentContext.sendProxyResponse()
+        return RequestContext.currentContext.getRouteHost() != null && RequestContext.currentContext.sendZuulResponse()
     }
 
     private static final void loadClient() {
@@ -177,7 +181,7 @@ class ZuulHostRequest extends ZuulFilter {
 
     Object run() {
         HttpServletRequest request = RequestContext.currentContext.getRequest();
-        Header[] headers = buildProxyRequestHeaders(request)
+        Header[] headers = buildZuulRequestHeaders(request)
         String verb = getVerb(request);
         InputStream requestEntity = getRequestBody(request)
         HttpClient httpclient = CLIENT.get()
@@ -207,8 +211,8 @@ class ZuulHostRequest extends ZuulFilter {
         //        new Routing().run();
 
         // for now I will hack this to default to the previously set VIP, with gzip
-        ctx.removeProxyHost();
-        ctx.setProxyResponseGZipped(true)
+        ctx.removeRouteHost();
+        ctx.setResponseGZipped(true)
         GroovyProcessor.instance.runFilters("route")
     }
 
@@ -216,14 +220,14 @@ class ZuulHostRequest extends ZuulFilter {
 
         if (Debug.debugRequest()) {
 
-            Debug.addRequestDebug("PROXY:: host=${RequestContext.currentContext.getProxyHost()}")
+            Debug.addRequestDebug("ZUUL:: host=${RequestContext.currentContext.getRouteHost()}")
 
             headers.each {
-                Debug.addRequestDebug("PROXY::> ${it.name}  ${it.value}")
+                Debug.addRequestDebug("ZUUL::> ${it.name}  ${it.value}")
             }
             String query = request.queryString
 
-            Debug.addRequestDebug("PROXY:: > ${verb}  ${uri}?${query} HTTP/1.1")
+            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}?${query} HTTP/1.1")
             if (requestEntity != null) {
                 requestEntity = debugRequestEntity(requestEntity)
             }
@@ -236,7 +240,7 @@ class ZuulHostRequest extends ZuulFilter {
         if (Debug.debugRequestHeadersOnly()) return inputStream
         if (inputStream == null) return null
         String entity = inputStream.getText()
-        Debug.addRequestDebug("PROXY::> ${entity}")
+        Debug.addRequestDebug("ZUUL::> ${entity}")
         return new ByteArrayInputStream(entity.bytes)
     }
 
@@ -267,8 +271,8 @@ class ZuulHostRequest extends ZuulFilter {
 
         try {
             httpRequest.setHeaders(headers)
-            HttpResponse proxyResponse = httpProxy(httpclient, httpHost, httpRequest)
-            return proxyResponse
+            HttpResponse zuulResponse = httpProxy(httpclient, httpHost, httpRequest)
+            return zuulResponse
 
 
         } finally {
@@ -293,7 +297,7 @@ class ZuulHostRequest extends ZuulFilter {
 
     HttpHost getHttpHost() {
         HttpHost httpHost
-        URL host = RequestContext.currentContext.getProxyHost()
+        URL host = RequestContext.currentContext.getRouteHost()
 
         httpHost = new HttpHost(host.getHost(), host.getPort(), host.getProtocol())
 
@@ -316,13 +320,13 @@ class ZuulHostRequest extends ZuulFilter {
 
     boolean isValidHeader(String name) {
         if (name.toLowerCase().contains("content-length")) return false;
-        if (!RequestContext.currentContext.proxyResponseGZipped) {
+        if (!RequestContext.currentContext.responseGZipped) {
             if (name.toLowerCase().contains("accept-encoding")) return false;
         }
         return true;
     }
 
-    def Header[] buildProxyRequestHeaders(HttpServletRequest request) {
+    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
 
         def headers = new ArrayList()
         Enumeration headerNames = request.getHeaderNames();
@@ -332,18 +336,18 @@ class ZuulHostRequest extends ZuulFilter {
             if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
         }
 
-        Map proxyRequestHeaders = RequestContext.getCurrentContext().getProxyRequestHeaders();
+        Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
 
-        proxyRequestHeaders.keySet().each {
+        zuulRequestHeaders.keySet().each {
             String name = it.toLowerCase()
             BasicHeader h = headers.find {BasicHeader he -> he.name == name }
             if (h != null) {
                 headers.remove(h)
             }
-            headers.add(new BasicHeader((String) it, (String) proxyRequestHeaders[it]))
+            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
         }
 
-        if (RequestContext.currentContext.proxyResponseGZipped) {
+        if (RequestContext.currentContext.responseGZipped) {
             headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
         }
         return headers
@@ -370,9 +374,9 @@ class ZuulHostRequest extends ZuulFilter {
     void setResponse(HttpResponse response) {
         RequestContext context = RequestContext.getCurrentContext()
 
-        RequestContext.currentContext.set("hostProxyResponse", response)
+        RequestContext.currentContext.set("hostZuulResponse", response)
         RequestContext.getCurrentContext().setResponseStatusCode(response.getStatusLine().statusCode)
-        RequestContext.getCurrentContext().proxyResponseDataStream = response?.entity?.content
+        RequestContext.getCurrentContext().responseDataStream = response?.entity?.content
 
         boolean isOriginResponseGzipped = false
 
@@ -382,31 +386,27 @@ class ZuulHostRequest extends ZuulFilter {
                 break;
             }
         }
-        context.setProxyResponseGZipped(isOriginResponseGzipped);
+        context.setResponseGZipped(isOriginResponseGzipped);
 
 
         if (Debug.debugRequest()) {
             response.getAllHeaders()?.each {Header header ->
                 if (isValidHeader(header)) {
-                    RequestContext.getCurrentContext().addProxyResponseHeader(header.name, header.value);
-                    Debug.addRequestDebug("PROXY_RESPONSE:: < ${header.name}, ${header.value}")
+                    RequestContext.getCurrentContext().addZuulResponseHeader(header.name, header.value);
+                    Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
                 }
             }
 
-            if (context.proxyResponseDataStream) {
-                byte[] origBytes = context.getProxyResponseDataStream().bytes
+            if (context.responseDataStream) {
+                byte[] origBytes = context.getResponseDataStream().bytes
                 ByteArrayInputStream byteStream = new ByteArrayInputStream(origBytes)
                 InputStream inputStream = byteStream
-                if (RequestContext.currentContext.proxyResponseGZipped) {
+                if (RequestContext.currentContext.responseGZipped) {
                     inputStream = new GZIPInputStream(byteStream);
                 }
 
-                // commenting out until we come up with a safe way to log this while avoiding
-                // out of memory exceptions for the catalog index
-//                String responseEntity = inputStream.getText()
-//                Debug.addRequestDebug("PROXY_RESPONSE:: < ${responseEntity}")
 
-                context.setProxyResponseDataStream(new ByteArrayInputStream(origBytes))
+                context.setResponseDataStream(new ByteArrayInputStream(origBytes))
             }
 
         } else {
@@ -418,7 +418,7 @@ class ZuulHostRequest extends ZuulFilter {
                     ctx.setOriginContentLength(header.value)
 
                 if (isValidHeader(header)) {
-                    ctx.addProxyResponseHeader(header.name, header.value);
+                    ctx.addZuulResponseHeader(header.name, header.value);
                 }
             }
         }
@@ -437,6 +437,8 @@ class ZuulHostRequest extends ZuulFilter {
                 return true
         }
     }
+
+
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
@@ -467,13 +469,13 @@ class ZuulHostRequest extends ZuulFilter {
         }
 
         @Test
-        public void testBuildProxyRequestHeaders() {
+        public void testBuildZuulRequestHeaders() {
 
             request = Mockito.mock(HttpServletRequest.class)
             response = Mockito.mock(HttpServletResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
-            RequestContext.getCurrentContext().setProxyResponseGZipped(true);
+            RequestContext.getCurrentContext().setResponseGZipped(true);
             ZuulHostRequest request = new ZuulHostRequest()
             request = Mockito.spy(request)
 
@@ -482,7 +484,7 @@ class ZuulHostRequest extends ZuulFilter {
 
             Mockito.when(this.request.getHeaderNames()).thenReturn(st)
 
-            Header[] headers = request.buildProxyRequestHeaders(getRequest())
+            Header[] headers = request.buildZuulRequestHeaders(getRequest())
             Assert.assertTrue(headers.any {
                 return (it.name == "accept-encoding" &&
                         it.value == "deflate, gzip")
@@ -494,7 +496,7 @@ class ZuulHostRequest extends ZuulFilter {
         public void testSetResponse() {
             request = Mockito.mock(HttpServletRequest.class)
             response = Mockito.mock(HttpServletResponse.class)
-            Debug.setDebugProxy(false)
+            Debug.setDebugRouting(false)
             Debug.setDebugRequest(false)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
@@ -517,16 +519,16 @@ class ZuulHostRequest extends ZuulFilter {
             request.setResponse(httpResponse)
 
             Assert.assertEquals(RequestContext.getCurrentContext().getResponseStatusCode(), 200)
-            Assert.assertEquals(RequestContext.getCurrentContext().proxyResponseDataStream, inp)
-            Assert.assertTrue(RequestContext.getCurrentContext().proxyResponseHeaders.contains(new Pair('test', "test")))
-//            assertNull(RequestContext.getCurrentContext().proxyResponseHeaders['content-length'])
+            Assert.assertEquals(RequestContext.getCurrentContext().responseDataStream, inp)
+            Assert.assertTrue(RequestContext.getCurrentContext().zuulResponseHeaders.contains(new Pair('test', "test")))
+//            assertNull(RequestContext.getCurrentContext().zuulResponseHeaders['content-length'])
 
         }
 
         @Test
         public void testShouldFilter() {
             RequestContext.currentContext.unset()
-            RequestContext.currentContext.setProxyHost(new URL("http://www.moldfarm.com"))
+            RequestContext.currentContext.setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulHostRequest filter = new ZuulHostRequest()
             Assert.assertTrue(filter.shouldFilter())
         }
@@ -537,17 +539,17 @@ class ZuulHostRequest extends ZuulFilter {
             ServletInputStream inn = Mockito.mock(ServletInputStream.class)
             RequestContext.currentContext.request = this.request
 
-            ZuulHostRequest proxyHostRequest = new ZuulHostRequest()
+            ZuulHostRequest routeHostRequest = new ZuulHostRequest()
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
 
-            InputStream inp = proxyHostRequest.getRequestBody(request)
+            InputStream inp = routeHostRequest.getRequestBody(request)
 
             Assert.assertEquals(inp, inn)
 
             Mockito.when(request.getInputStream()).thenReturn(null)
 
-            inp = proxyHostRequest.getRequestBody(request)
+            inp = routeHostRequest.getRequestBody(request)
             Assert.assertNull(inp)
 
 
@@ -555,7 +557,7 @@ class ZuulHostRequest extends ZuulFilter {
             ServletInputStream inn2 = Mockito.mock(ServletInputStream.class)
             NFRequestContext.currentContext.requestEntity = inn2
 
-            inp = proxyHostRequest.getRequestBody(request)
+            inp = routeHostRequest.getRequestBody(request)
             Assert.assertNotNull(inp)
             Assert.assertEquals(inp, inn2)
 
@@ -567,26 +569,26 @@ class ZuulHostRequest extends ZuulFilter {
             this.request = Mockito.mock(HttpServletRequest.class)
             RequestContext.currentContext.request = this.request
 
-            ZuulHostRequest proxyHostRequest = new ZuulHostRequest()
+            ZuulHostRequest routeHostRequest = new ZuulHostRequest()
 
             Mockito.when(request.getMethod()).thenReturn("GET")
-            String verb = proxyHostRequest.getVerb(this.request)
+            String verb = routeHostRequest.getVerb(this.request)
             Assert.assertEquals(verb, 'GET')
 
             Mockito.when(request.getMethod()).thenReturn("get")
-            verb = proxyHostRequest.getVerb(this.request)
+            verb = routeHostRequest.getVerb(this.request)
             Assert.assertEquals(verb, 'GET')
 
             Mockito.when(request.getMethod()).thenReturn("POST")
-            verb = proxyHostRequest.getVerb(this.request)
+            verb = routeHostRequest.getVerb(this.request)
             Assert.assertEquals(verb, 'POST')
 
             Mockito.when(request.getMethod()).thenReturn("PUT")
-            verb = proxyHostRequest.getVerb(this.request)
+            verb = routeHostRequest.getVerb(this.request)
             Assert.assertEquals(verb, 'PUT')
 
             Mockito.when(request.getMethod()).thenReturn("DELETE")
-            verb = proxyHostRequest.getVerb(this.request)
+            verb = routeHostRequest.getVerb(this.request)
             Assert.assertEquals(verb, 'DELETE')
 
         }
@@ -634,7 +636,7 @@ class ZuulHostRequest extends ZuulFilter {
             ZuulHostRequest request = new ZuulHostRequest()
 
             URL url = new URL("http://www.moldfarm.com")
-            RequestContext.currentContext.proxyHost = url
+            RequestContext.currentContext.routeHost = url
             HttpHost host = request.getHttpHost()
             Assert.assertNotNull(host)
             Assert.assertEquals(host.hostName, "www.moldfarm.com")
@@ -642,7 +644,7 @@ class ZuulHostRequest extends ZuulFilter {
             Assert.assertEquals(host.schemeName, "http")
 
             url = new URL("https://www.moldfarm.com:8000")
-            RequestContext.currentContext.proxyHost = url
+            RequestContext.currentContext.routeHost = url
             host = request.getHttpHost()
             Assert.assertNotNull(host)
             Assert.assertEquals(host.hostName, "www.moldfarm.com")
@@ -654,3 +656,5 @@ class ZuulHostRequest extends ZuulFilter {
 
     }
 }
+
+

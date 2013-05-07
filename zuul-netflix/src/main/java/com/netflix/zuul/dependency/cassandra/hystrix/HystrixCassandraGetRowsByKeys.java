@@ -31,7 +31,7 @@ import java.util.Arrays;
  * <p/>
  * Retrieves all columns by default or can be filtered with the <code>withColumns</code> method.
  */
-public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPIDependencyCommand<Rows<RowKeyType, String>> {
+public class HystrixCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraHystrixCommand<Rows<RowKeyType, String>> {
 
     private final Keyspace keyspace;
     private final ColumnFamily<RowKeyType, String> columnFamily;
@@ -53,7 +53,7 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
      * @param columnFamily
      * @param rowKeys
      */
-    public ADCCassandraGetRowsByKeys(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType... rowKeys) {
+    public HystrixCassandraGetRowsByKeys(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType... rowKeys) {
         this.keyspace = keyspace;
         this.columnFamily = columnFamily;
         this.rowKeys = rowKeys;
@@ -75,7 +75,7 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
      * @param endToken
      * @param maxRows
      */
-    public ADCCassandraGetRowsByKeys(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType startKey, RowKeyType endKey, String startToken, String endToken, int maxRows) {
+    public HystrixCassandraGetRowsByKeys(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, RowKeyType startKey, RowKeyType endKey, String startToken, String endToken, int maxRows) {
         this.keyspace = keyspace;
         this.columnFamily = columnFamily;
         this.rowKeys = null;
@@ -94,7 +94,7 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
      * @param rowKeys
      */
     @SuppressWarnings("unchecked")
-    public ADCCassandraGetRowsByKeys(Keyspace keyspace, String columnFamilyName, RowKeyType... rowKeys) {
+    public HystrixCassandraGetRowsByKeys(Keyspace keyspace, String columnFamilyName, RowKeyType... rowKeys) {
         this.keyspace = keyspace;
         this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, rowKeys[0]);
         this.rowKeys = rowKeys;
@@ -117,7 +117,7 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
      * @param maxRows
      */
     @SuppressWarnings("unchecked")
-    public ADCCassandraGetRowsByKeys(Keyspace keyspace, String columnFamilyName, RowKeyType startKey, RowKeyType endKey, String startToken, String endToken, int maxRows) {
+    public HystrixCassandraGetRowsByKeys(Keyspace keyspace, String columnFamilyName, RowKeyType startKey, RowKeyType endKey, String startToken, String endToken, int maxRows) {
         this.keyspace = keyspace;
         this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, startKey);
         this.rowKeys = null;
@@ -164,12 +164,12 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
     /**
      * Restrict the response to only these columns.
      * <p/>
-     * Example usage: new ADCCassandraGetRow(args).withColumns("column1", "column2").execute()
+     * Example usage: new HystrixCassandraGetRow(args).withColumns("column1", "column2").execute()
      *
      * @param columns
      * @return
      */
-    public ADCCassandraGetRowsByKeys<RowKeyType> withColumns(String... columns) {
+    public HystrixCassandraGetRowsByKeys<RowKeyType> withColumns(String... columns) {
         this.columns = columns;
         return this;
     }
@@ -177,12 +177,12 @@ public class ADCCassandraGetRowsByKeys<RowKeyType> extends AbstractCassandraAPID
     /**
      * Optionally define a cache to retrieve values from for fallback if the query fails.
      * <p/>
-     * Idiomatic usage: new ADCCassandraSelect(args).setCache(cache).execute()
+     * Idiomatic usage: new HystrixCassandraSelect(args).setCache(cache).execute()
      *
      * @param cache
      * @return
      */
-    public ADCCassandraGetRowsByKeys<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
+    public HystrixCassandraGetRowsByKeys<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
         this.fallbackCache = cache;
         return this;
     }

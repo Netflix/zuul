@@ -19,13 +19,19 @@ import javax.servlet.ServletInputStream;
 import java.io.IOException;
 
 /**
-* @author mhawthorne
-*/
+ * ServletInputStream wrapper to wrap a byte[] into a ServletInputStream
+ * @author mhawthorne
+ */
 public class ServletInputStreamWrapper extends ServletInputStream {
-
+    
     private byte[] data;
     private int idx = 0;
 
+    /**
+     * Creates a new <code>ServletInputStreamWrapper</code> instance.
+     *
+     * @param data a <code>byte[]</code> value
+     */
     public ServletInputStreamWrapper(byte[] data) {
         if (data == null)
             data = new byte[0];

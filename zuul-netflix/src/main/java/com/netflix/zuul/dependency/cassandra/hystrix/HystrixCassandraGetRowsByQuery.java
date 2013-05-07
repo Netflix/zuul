@@ -29,7 +29,7 @@ import com.netflix.zuul.dependency.cassandra.CassandraCache;
  * <p/>
  * See http://crlog.info/2011/06/13/cassandra-query-language-cql-v1-0-0-updated/
  */
-public class ADCCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraAPIDependencyCommand<Rows<RowKeyType, String>> {
+public class HystrixCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraHystrixCommand<Rows<RowKeyType, String>> {
 
     private final Keyspace keyspace;
     private final ColumnFamily<RowKeyType, String> columnFamily;
@@ -44,7 +44,7 @@ public class ADCCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraAPI
      * @param columnFamily
      * @param cql
      */
-    public ADCCassandraGetRowsByQuery(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, String cql) {
+    public HystrixCassandraGetRowsByQuery(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, String cql) {
         this.keyspace = keyspace;
         this.columnFamily = columnFamily;
         this.cql = cql;
@@ -58,7 +58,7 @@ public class ADCCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraAPI
      * @param cql
      */
     @SuppressWarnings("unchecked")
-    public ADCCassandraGetRowsByQuery(Keyspace keyspace, String columnFamilyName, Class<?> columnFamilyKeyType, String cql) {
+    public HystrixCassandraGetRowsByQuery(Keyspace keyspace, String columnFamilyName, Class<?> columnFamilyKeyType, String cql) {
         this.keyspace = keyspace;
         this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, columnFamilyKeyType);
         this.cql = cql;
@@ -91,7 +91,7 @@ public class ADCCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraAPI
      * @param cache
      * @return
      */
-    public ADCCassandraGetRowsByQuery<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
+    public HystrixCassandraGetRowsByQuery<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
         this.fallbackCache = cache;
         return this;
     }

@@ -22,20 +22,36 @@ import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 
-public abstract class AbstractCassandraAPIDependencyCommand<K> extends HystrixCommand<K> {
+/**
+ * Abstract Hystrix wrapper for Astyanax Cassandra calls
+ * @param <K>
+ */
+public abstract class AbstractCassandraHystrixCommand<K> extends HystrixCommand<K> {
 
 
 
-    public AbstractCassandraAPIDependencyCommand() {
+    public AbstractCassandraHystrixCommand() {
         super(HystrixCommandGroupKey.Factory.asKey("Cassandra"));
 	}
 
 
+    /**
+     * returns a ColumnFamily given a columnFamilyName
+     * @param columnFamilyName
+     * @param rowKey
+     * @return
+     */
     @SuppressWarnings("rawtypes")
     protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Object rowKey) {
         return getColumnFamilyViaColumnName(columnFamilyName, rowKey.getClass());
     }
 
+    /**
+     * returns a ColumnFamily given a columnFamilyName
+     * @param columnFamilyName
+     * @param rowKeyClass
+     * @return
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Class rowKeyClass) {
         if (rowKeyClass == String.class) {
@@ -48,8 +64,5 @@ public abstract class AbstractCassandraAPIDependencyCommand<K> extends HystrixCo
             throw new IllegalArgumentException("RowKeyType is not supported: " + rowKeyClass.getSimpleName() + ". String/Integer/Long are supported, or you can define the ColumnFamily yourself and use the other constructor.");
         }
     }
-
-
-   
 
 }

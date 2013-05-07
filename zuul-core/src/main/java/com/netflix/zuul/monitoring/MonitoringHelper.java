@@ -16,6 +16,7 @@
 package com.netflix.zuul.monitoring;
 
 /**
+ * Dummy implementations of CounterFactory, TracerFactory, and Tracer
  * @author mhawthorne
  */
 public class MonitoringHelper {

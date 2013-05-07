@@ -47,7 +47,7 @@ ACTIVE SCRIPTS
     </tr>
     <%
 
-        List<FilterInfo> filters = scriptDAO.getAllActiveScripts();
+        List<FilterInfo> filters = scriptDAO.getAllActiveFilters();
         for (FilterInfo filter : filters) {
     %>
     <tr>
@@ -90,7 +90,7 @@ CANARY SCRIPTS
     </tr>
     <%
 
-        filters = scriptDAO.getAllCanaryScripts();
+        filters = scriptDAO.getAllCanaryFilters();
         for (FilterInfo filter : filters) {
     %>
     <tr>
@@ -138,7 +138,7 @@ LATEST SCRIPTS
     <%
 
         for (String filterID : filterIds) {
-            FilterInfo filter = scriptDAO.getLatestScriptForFilter(filterID);
+            FilterInfo filter = scriptDAO.getLatestFilterInfoForFilter(filterID);
     %>
     <tr>
         <td><%=filter.getFilterName()%>
@@ -185,7 +185,7 @@ All SCRIPTS
     <%
 
         for (String filterID : filterIds) {
-            filters = scriptDAO.getScriptsForFilter(filterID);
+            filters = scriptDAO.getZuulFiltersForFilterId(filterID);
             for (FilterInfo filter : filters) {
     %>
     <tr>

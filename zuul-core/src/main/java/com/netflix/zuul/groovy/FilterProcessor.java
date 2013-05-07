@@ -25,6 +25,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * This the the core class to execute filters.
  * @author Mikey Cohen
  * Date: 10/24/11
  * Time: 12:47 PM
@@ -47,19 +50,33 @@ import static org.mockito.Mockito.when;
 public class FilterProcessor {
 
     static FilterProcessor INSTANCE = new FilterProcessor();
+    protected static final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
+
 
     FilterProcessor() {
     }
 
+    /**
+     *
+     * @return the singleton FilterProcessor
+     */
     public static FilterProcessor getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * sets a singleton processor in case of a need to override default behavior
+     * @param processor
+     */
     public static void setProcessor(FilterProcessor processor) {
         INSTANCE = processor;
     }
 
-
+    /**
+     * runs "post" filters which are called after "route" filters. ZuulExceptions from ZuulFilters are thrown.
+     * Any other Throwables are caught and a ZuulException is thrown out with a 500 status code
+     * @throws ZuulException
+     */
     public void postRoute() throws ZuulException {
         try {
             runFilters("post");
@@ -72,15 +89,21 @@ public class FilterProcessor {
 
     }
 
+    /**
+     * runs all "error" filters. These are called only if an exception occurs. Exceptions from this are swallowed and logged so as not to bubble up.
+     */
     public void error() {
         try {
             runFilters("error");
         } catch (Throwable e) {
-            e.printStackTrace();
-            //todo weird fallback scenario
+            logger.error(e.getMessage(), e);
         }
     }
 
+    /**
+     * Runs all "route" filters. These filters route calls to an origin.
+     * @throws ZuulException if an exception occurs.
+     */
     public void route() throws ZuulException {
         try {
             runFilters("route");
@@ -92,6 +115,10 @@ public class FilterProcessor {
         }
     }
 
+    /**
+     * runs all "pre" filters. These filters are run before routing to the orgin.
+     * @throws ZuulException
+     */
     public void preRoute() throws ZuulException {
         try {
             runFilters("pre");
@@ -103,9 +130,15 @@ public class FilterProcessor {
         }
     }
 
+    /**
+     * runs all filters of the filterType sType/ Use this method within filters to run custom filters by type
+     * @param sType the filterType.
+     * @return
+     * @throws Throwable throws up an arbitrary exception
+     */
     public Object runFilters(String sType) throws Throwable {
-        if (RequestContext.getCurrentContext().debugProxy()) {
-            Debug.addProxyDebug("Invoking {" + sType + "} type filters");
+        if (RequestContext.getCurrentContext().debugRouting()) {
+            Debug.addRoutingDebug("Invoking {" + sType + "} type filters");
         }
         boolean bResult = false;
         List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType(sType);
@@ -121,23 +154,29 @@ public class FilterProcessor {
         return bResult;
     }
 
+    /**
+     * Processes an individual ZuulFilter. This method adds Debug information. Any uncaught Thowables are caught by this method and converted to a ZuulException with a 500 status code.
+     * @param filter
+     * @return the return value for that filter
+     * @throws ZuulException
+     */
     public Object processProxyFilter(ZuulFilter filter) throws ZuulException {
 
-        boolean bDebug = RequestContext.getCurrentContext().debugProxy();
+        boolean bDebug = RequestContext.getCurrentContext().debugRouting();
         try {
             long ltime = System.currentTimeMillis();
 
             RequestContext copy = null;
             if (bDebug) {
 
-                Debug.addProxyDebug("Filter " + filter.filterType() + " " + filter.filterOrder() +  " " +filter.getClass().getSimpleName());
+                Debug.addRoutingDebug("Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.getClass().getSimpleName());
                 copy = RequestContext.getCurrentContext().copy();
             }
             Object result = filter.runFilter();
             if (bDebug) {
                 if (filter.shouldFilter()) {
-                    Debug.addProxyDebug("Filter {" + filter.getClass().getSimpleName() + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + (System.currentTimeMillis() - ltime) +"ms");
-                    Debug.compareProxyContextState(filter.getClass().getSimpleName(), copy);
+                    Debug.addRoutingDebug("Filter {" + filter.getClass().getSimpleName() + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + (System.currentTimeMillis() - ltime) + "ms");
+                    Debug.compareContextState(filter.getClass().getSimpleName(), copy);
                 } else {
                     //don't show filters not applied.
                 }
@@ -145,13 +184,13 @@ public class FilterProcessor {
             return result;
         } catch (ZuulException e) {
             if (bDebug) {
-                Debug.addProxyDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
+                Debug.addRoutingDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
                         " " + e.getMessage());
             }
             throw e;
         } catch (Throwable e) {
             if (bDebug) {
-                Debug.addProxyDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
+                Debug.addRoutingDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
                         " " + e.getMessage());
             }
             ZuulException ex = new ZuulException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filter.getClass().getSimpleName());

@@ -21,9 +21,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Representation of a script, the endpoint it serves and the mechanism for executing the script.
- * <p/>
- * This class is intended to be instantiated once and executed many times, similar to how a servlet works.
+ * Representation of a ZuulFilter for representing and storing in a database
  */
 @ThreadSafe
 public class FilterInfo implements  Comparable<FilterInfo>{
@@ -41,6 +39,16 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     private final AtomicBoolean isActive = new AtomicBoolean();
     private final AtomicBoolean isCanary = new AtomicBoolean();
 
+    /**
+     * Constructor
+     * @param filter_id
+     * @param filter_code
+     * @param filter_type
+     * @param filter_name
+     * @param disablePropertyName
+     * @param filter_order
+     * @param application_name
+     */
     public FilterInfo(String filter_id, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.filter_code = filter_code;
@@ -53,20 +61,35 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         isCanary.set(false);
     }
 
+    /**
+     *
+     * @return the filter name; the class name of the filter
+     */
     public String getFilterName() {
         return filter_name;
     }
 
+    /**
+     * the Source code for the filter
+     * @return the Source code for the filter
+     */
     public String getFilterCode() {
         return filter_code;
     }
 
 
+    /**
+     *
+     * @return the name of the property to disable the filter.
+     */
     public String getFilterDisablePropertyName() {
         return filter_disablePropertyName;
     }
 
-
+    /**
+     *
+     * @return the filter_type
+     */
     public String getFilterType() {
         return filter_type;
     }
@@ -86,10 +109,28 @@ public class FilterInfo implements  Comparable<FilterInfo>{
                 '}';
     }
 
+    /**
+     * the application name context of the filter. This is for if Zuul is applied to different applications in the same datastor
+     * @return
+     */
     public String getApplication_name() {
         return application_name;
     }
 
+    /**
+     *
+     * @param filter_id
+     * @param revision
+     * @param creationDate
+     * @param isActive
+     * @param isCanary
+     * @param filter_code
+     * @param filter_type
+     * @param filter_name
+     * @param disablePropertyName
+     * @param filter_order
+     * @param application_name
+     */
     public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.revision = revision;
@@ -105,31 +146,63 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     }
 
+    /**
+     *
+     * @return the revision of this filter
+     */
     public int getRevision() {
         return revision;
     }
 
+    /**
+     *
+     * @return creation date
+     */
     public Date getCreationDate() {
         return creationDate;
     }
 
+    /**
+     *
+     * @return true if this filter is active
+     */
     public boolean isActive() {
         return isActive.get();
     }
 
+    /**
+     *
+     * @return true if this filter should be active a "canary" cluster. A "canary" cluster is a separate cluster
+     * where filters may be tested before going to the full production cluster.
+     */
     public boolean isCanary() {
         return isCanary.get();
     }
 
 
+    /**
+     *
+     * @return unique key for the filter
+     */
     public String getFilterID() {
         return filter_id;
     }
 
+    /**
+     *
+     * @return the filter order
+     */
     public String getFilterOrder() {
         return filter_order;
     }
 
+    /**
+     * builds the unique filter_id key
+     * @param application_name
+     * @param filter_type
+     * @param filter_name
+     * @return key is application_name:filter_name:filter_type
+     */
     public static String buildFilterID(String application_name, String filter_type, String filter_name) {
         return application_name + ":" + filter_name + ":" + filter_type;
     }
