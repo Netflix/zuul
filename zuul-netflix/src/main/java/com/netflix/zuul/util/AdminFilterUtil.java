@@ -19,6 +19,7 @@ import com.netflix.zuul.scriptManager.FilterInfo;
 import com.sun.jersey.core.util.StringIgnoreCaseKeyComparator;
 
 /**
+ * Utility method to build form data for the Admin page for uploading and downloading filters
  * @author Mikey Cohen
  * Date: 6/19/12
  * Time: 10:43 AM

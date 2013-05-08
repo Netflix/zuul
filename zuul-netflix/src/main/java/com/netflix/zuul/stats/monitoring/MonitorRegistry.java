@@ -18,6 +18,8 @@ package com.netflix.zuul.stats.monitoring;
 import com.netflix.zuul.stats.ErrorStatsData;
 
 /**
+ * Registry to register a Counter. a Monitor publisher should  be set to get counter information.
+ * If it isn't set, registration will be ignored.
  * @author Mikey Cohen
  * Date: 3/18/13
  * Time: 4:24 PM
@@ -27,6 +29,10 @@ public class MonitorRegistry {
     private static  final MonitorRegistry instance = new MonitorRegistry();
     private Monitor publisher;
 
+    /**
+     * A Monitor implementation should be set here
+     * @param publisher
+     */
     public void setPublisher(Monitor publisher) {
         this.publisher = publisher;
     }

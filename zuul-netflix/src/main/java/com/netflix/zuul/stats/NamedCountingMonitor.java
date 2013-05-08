@@ -47,14 +47,22 @@ public class NamedCountingMonitor implements NamedCount{
 
     public NamedCountingMonitor(String name) {
         this.name = name;
-        tagList = BasicTagList.of(new BasicTag(this.getClass().getName(), name));
+        tagList = BasicTagList.of("ID", name);
     }
 
+    /**
+     * reguisters this objects
+     * @return
+     */
     public NamedCountingMonitor register() {
         MonitorRegistry.getInstance().registerObject(this);
         return this;
     }
 
+    /**
+     * increments the counter
+     * @return
+     */
     public long increment() {
         return this.count.incrementAndGet();
     }
@@ -64,6 +72,10 @@ public class NamedCountingMonitor implements NamedCount{
         return name;
     }
 
+    /**
+     *
+     * @return the current count
+     */
     public long getCount() {
         return this.count.get();
     }

@@ -36,6 +36,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Implementation of a Named counter to monitor and count error causes by route. Route is a defined zuul concept to
+ * categorize requests into buckets. By default this is the first segment of the uri
  * @author Mikey Cohen
  * Date: 2/23/12
  * Time: 4:16 PM
@@ -54,7 +56,11 @@ public class ErrorStatsData implements NamedCount
     @Monitor(name = "count", type = DataSourceType.COUNTER)
     AtomicLong count = new AtomicLong();
 
-
+    /**
+     * create a counter by route and cause of error
+     * @param route
+     * @param cause
+     */
     public ErrorStatsData(String route, String cause) {
         if(null == route || "".equals(route)){
             route = "UNKNOWN";
@@ -62,7 +68,7 @@ public class ErrorStatsData implements NamedCount
         id = route + "_" + cause;
 
         this.error_cause = cause;
-        tagList = BasicTagList.of(new BasicTag(route, cause));
+        tagList = BasicTagList.of(new BasicTag("ID", id));
 
 
 
@@ -84,6 +90,9 @@ public class ErrorStatsData implements NamedCount
         return error_cause != null ? error_cause.hashCode() : 0;
     }
 
+    /**
+     * increments the counter
+     */
     public void update() {
         count.incrementAndGet();
     }

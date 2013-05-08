@@ -16,6 +16,7 @@
 package com.netflix.zuul;
 
 /**
+ * Metadata about the Zuul instance/ application name and "stack"
  * @author Mikey Cohen
  * Date: 2/15/13
  * Time: 1:56 PM

@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Sample poller to poll metrics using Servo's metric publication
  * @author Mikey Cohen
  * Date: 4/18/13
  * Time: 9:20 AM

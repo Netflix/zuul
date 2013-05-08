@@ -39,6 +39,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 
 /**
+ * High level statistics counter manager to count stats on various aspects of  requests
  * @author Mikey Cohen
  * Date: 2/3/12
  * Time: 3:25 PM
@@ -65,9 +66,6 @@ public class StatsManager {
     private final ConcurrentMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>> routeStatusMap =
         new ConcurrentHashMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>>();
 
-    // this is superceded by namedStatusMap and will eventually be removed
-    private final ConcurrentMap<Integer, StatusCodeMonitor> statusMap = new ConcurrentHashMap<Integer, StatusCodeMonitor>();
-
     private final ConcurrentMap<String, NamedCountingMonitor> namedStatusMap =
             new ConcurrentHashMap<String, NamedCountingMonitor>();
 
@@ -80,11 +78,6 @@ public class StatsManager {
     private final ConcurrentMap<String, NamedCountingMonitor> ipVersionCounterMap =
             new ConcurrentHashMap<String, NamedCountingMonitor>();
 
-    private final ConcurrentMap<String, NamedCountingMonitor> countryCounterMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
-
-    private final ConcurrentMap<String, NamedCountingMonitor> transferEncodingCounterMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
 
     protected static StatsManager INSTANCE = new StatsManager();
 
@@ -92,11 +85,18 @@ public class StatsManager {
         return INSTANCE;
     }
 
+    /**
+     *
+     * @param route
+     * @param statusCode
+     * @return the RouteStatusCodeMonitor for the given route and status code
+     */
     public RouteStatusCodeMonitor getRouteStatusCodeMonitor(String route, int statusCode) {
         Map<Integer, RouteStatusCodeMonitor> map = routeStatusMap.get(route);
         if (map == null) return null;
         return map.get(statusCode);
     }
+
 
     private NamedCountingMonitor getHostMonitor(String host) {
         return this.hostCounterMap.get(hostKey(host));
@@ -132,7 +132,14 @@ public class StatsManager {
     }
 
 
-
+    /**
+     * Collects counts statistics about the request: client ip address from the x-forwarded-for header;
+     * ipv4 or ipv6 and  host name from the host header;
+     *
+     *
+     *
+     * @param req
+     */
     public void collectRequestStats(HttpServletRequest req) {
         // ipv4/ipv6 tracking
         String clientIp;
@@ -168,17 +175,6 @@ public class StatsManager {
         if (protocol == null) protocol = req.getScheme();
         incrementNamedCountingMonitor(protocolKey(protocol), this.protocolCounterMap);
 
-        //todo pull out to NF layer
-        /*
-        // country
-        final ISOCountry country = CurrentRequestContext.get().getCountry();
-        String countryId = (country != null) ? country.getId() : "UNKNOWN";
-        incrementNamedCountingMonitor(String.format("country_%s", countryId), this.countryCounterMap);
-        */
-
-        // transfer-encoding
-        if(RequestContext.getCurrentContext().isChunkedRequestBody())
-            incrementNamedCountingMonitor("request_transfer_encoding_chunked", this.transferEncodingCounterMap);
 
     }
 
@@ -204,16 +200,12 @@ public class StatsManager {
         monitor.increment();
     }
 
+    /**
+     * collects and increments counts of status code, route/status code and statuc_code bucket, eg 2xx 3xx 4xxx 5xx
+     * @param route
+     * @param statusCode
+     */
     public void collectRouteStats(String route, int statusCode) {
-        // increments status code counter
-        StatusCodeMonitor sm = statusMap.get(statusCode);
-        if (sm == null) {
-            sm = new StatusCodeMonitor(statusCode);
-            StatusCodeMonitor found = statusMap.putIfAbsent(statusCode, sm);
-            if (found != null) sm = found;
-            else MonitorRegistry.getInstance().registerObject(sm);
-        }
-        sm.update();
 
         // increments 200, 301, 401, 503, etc. status counters
         final String preciseStatusString = String.format("status_%d", statusCode);
@@ -283,19 +275,13 @@ public class StatsManager {
             ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
             assertNotNull(routeStatusMap);
 
-            StatusCodeMonitor statusMonitor = sm.statusMap.get(status);
-            assertNotNull("status monitor is null", statusMonitor);
 
             RouteStatusCodeMonitor routeStatusMonitor = routeStatusMap.get(status);
 
-            assertEquals(routeStatusMonitor.getCount(), 1);
-            assertEquals(statusMonitor.getCount(), 1);
 
             // 2nd request
             sm.collectRouteStats(route, status);
 
-            assertEquals(routeStatusMonitor.getCount(), 2);
-            assertEquals(statusMonitor.getCount(), 2);
         }
 
         @Test

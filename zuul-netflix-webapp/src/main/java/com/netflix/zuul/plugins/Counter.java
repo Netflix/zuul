@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Plugin to hook up a Servo counter to the CounterFactory
  * @author Mikey Cohen
  * Date: 4/10/13
  * Time: 4:50 PM

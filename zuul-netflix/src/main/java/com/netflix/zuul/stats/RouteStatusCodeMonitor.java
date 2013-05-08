@@ -35,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.Assert.*;
 
 /**
+ * counter for per route/status code counting
  * @author Mikey Cohen
  * Date: 2/3/12
  * Time: 3:04 PM
@@ -60,7 +61,7 @@ public class RouteStatusCodeMonitor implements NamedCount {
         this.route = route;
         this.status_code = status_code;
         route_code = route + "_" + status_code;
-        tagList = BasicTagList.of(new BasicTag(route, "" + status_code));
+        tagList = BasicTagList.of(new BasicTag("ID", route_code));
 
     }
 
@@ -93,6 +94,9 @@ public class RouteStatusCodeMonitor implements NamedCount {
         return count.get();
     }
 
+    /**
+     * increment the count
+     */
     public void update() {
         count.incrementAndGet();
     }

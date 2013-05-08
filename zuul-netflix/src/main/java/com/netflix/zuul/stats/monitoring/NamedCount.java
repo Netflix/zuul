@@ -16,6 +16,7 @@
 package com.netflix.zuul.stats.monitoring;
 
 /**
+ * Interface for a named counter
  * @author Mikey Cohen
  * Date: 3/18/13
  * Time: 4:33 PM
