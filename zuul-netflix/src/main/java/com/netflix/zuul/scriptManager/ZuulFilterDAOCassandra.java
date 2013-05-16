@@ -26,15 +26,14 @@ import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByKe
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByQuery;
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraPut;
 import com.netflix.zuul.event.ZuulEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.jcip.annotations.ThreadSafe;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -58,16 +57,18 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     private final static String SCRIPTS_FOR_FILTER = "FILTERSCRIPTS_";
     private final static String FILTER_ID = "FILTER_ID_";
 
-    static AstyanaxContext<Keyspace> cassContext;
+    static Keyspace keyspace;
 
-    public static AstyanaxContext<Keyspace> getCassContext() {
-        return cassContext;
+    public static Keyspace getCassKeyspace() {
+        return keyspace;
     }
 
-    public ZuulFilterDAOCassandra(AstyanaxContext<Keyspace> context) {
-        this(new CassandraGatewayProd(context));
-        cassContext = context;
+
+    public ZuulFilterDAOCassandra(Keyspace keyspace) {
+        this(new CassandraGatewayProd(keyspace));
+        this.keyspace = keyspace;
     }
+
 
     private ZuulFilterDAOCassandra(CassandraGateway cassandraGateway) {
         this.cassandraGateway = cassandraGateway;
@@ -468,18 +469,24 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     @ThreadSafe
     private static class CassandraGatewayProd implements CassandraGateway {
         private static final String COLUMN_FAMILY = "zuul_filters";
-        private final AstyanaxContext<Keyspace> cassandraContext;
+
+        private final Keyspace keyspace;
 
 
-        public CassandraGatewayProd(AstyanaxContext<Keyspace> context){
-            cassandraContext = context;
+        public CassandraGatewayProd(AstyanaxContext<Keyspace> context) {
+            keyspace = context.getEntity();
         }
+
+        public CassandraGatewayProd(Keyspace keyspace) {
+            this.keyspace = keyspace;
+        }
+
         public void updateFilterIndex(String rowKey, String filter_ids) {
 
             HashMap<String, Object> attributes = new HashMap<String, Object>();
             attributes.put("index_name", rowKey);
             attributes.put("filter_ids", filter_ids);
-            new HystrixCassandraPut<String>(cassandraContext.getEntity(), "zuul_filter_indices", rowKey, attributes).execute();
+            new HystrixCassandraPut<String>(keyspace, "zuul_filter_indices", rowKey, attributes).execute();
         }
 
         /**
@@ -489,7 +496,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @param attributes
          */
         public void upsert(String rowKey, Map<String, Object> attributes) {
-            new HystrixCassandraPut<String>(cassandraContext.getEntity(), COLUMN_FAMILY, rowKey, attributes).execute();
+            new HystrixCassandraPut<String>(keyspace, COLUMN_FAMILY, rowKey, attributes).execute();
         }
 
         /**
@@ -499,7 +506,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @return
          */
         public Rows<String, String> select(String cql) {
-            return new HystrixCassandraGetRowsByQuery<String>(cassandraContext.getEntity(), COLUMN_FAMILY, String.class, cql).execute();
+            return new HystrixCassandraGetRowsByQuery<String>(keyspace, COLUMN_FAMILY, String.class, cql).execute();
         }
 
         public Rows<String, String> getByFilterIds(List<String> filterIds) {
@@ -507,7 +514,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             for (int i = 0; i < filterIds.size(); i++) {
                 list[i] = filterIds.get(i);
             }
-            return new HystrixCassandraGetRowsByKeys<String>(cassandraContext.getEntity(), COLUMN_FAMILY, list).execute();
+            return new HystrixCassandraGetRowsByKeys<String>(keyspace, COLUMN_FAMILY, list).execute();
         }
     }
 
@@ -564,7 +571,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(response.size()).thenReturn(1);
 
             /* exercise the method we're testing */
-            String  list = dao.getFilterIdsRaw("index");
+            String list = dao.getFilterIdsRaw("index");
 
             /* validate responses */
             assertEquals(fids, list);
@@ -598,7 +605,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(response.size()).thenReturn(1);
 
             /* exercise the method we're testing */
-            List<String>list = dao.getFilterIdsIndex("index");
+            List<String> list = dao.getFilterIdsIndex("index");
 
             /* validate responses */
             assertEquals(list.size(), 3);
@@ -943,7 +950,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
                 @Override
                 public void updateFilterIndex(String rowKey, String filter_ids) {
-                    //To change body of implemented methods use File | Settings | File Templates.
+
                 }
 
                 @Override
@@ -953,7 +960,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
                 @Override
                 public Rows<String, String> getByFilterIds(List<String> filterIds) {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
 
             };
@@ -1025,7 +1032,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
                 @Override
                 public void updateFilterIndex(String rowKey, String filter_ids) {
-                    //To change body of implemented methods use File | Settings | File Templates.
+
                 }
 
                 @Override
@@ -1035,7 +1042,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
                 @Override
                 public Rows<String, String> getByFilterIds(List<String> filterIds) {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
 
             };
@@ -1046,7 +1053,6 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             dao = spy(dao);
             doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
             doReturn(response).when(testGateway).getByFilterIds(anyList());
-
 
 
             FilterInfo filterInfo = dao.addFilter("script body1", "type", "name", "disable", "order");
@@ -1154,8 +1160,6 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(iterator1.next()).thenReturn(response3row0);
 
 
-
-
             /* exercise the method we're testing */
             ZuulFilterDAOCassandra dao = new ZuulFilterDAOCassandra(gateway);
 
@@ -1168,7 +1172,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             try {
                 filterInfo = dao.setFilterActive(filter, 4);
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
             InOrder inOrder = inOrder(gateway);
@@ -1247,7 +1251,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
             dao = spy(dao);
             doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
-            when(gateway.getByFilterIds(anyList())).thenReturn( response);
+            when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
             try {
                 dao.setFilterActive(filter, 4);
@@ -1298,12 +1302,12 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
             dao = spy(dao);
             doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
-            when(gateway.getByFilterIds(anyList())).thenReturn( response);
+            when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
             try {
-                dao.setFilterActive(filter, 3); // activate the script that's already active
+                dao.setFilterActive(filter, 3); // activate the filter that's already active
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
             InOrder inOrder = inOrder(gateway);

@@ -32,20 +32,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * This the the core class to execute filters.
+ *
  * @author Mikey Cohen
- * Date: 10/24/11
- * Time: 12:47 PM
+ *         Date: 10/24/11
+ *         Time: 12:47 PM
  */
 public class FilterProcessor {
 
@@ -57,7 +52,6 @@ public class FilterProcessor {
     }
 
     /**
-     *
      * @return the singleton FilterProcessor
      */
     public static FilterProcessor getInstance() {
@@ -66,6 +60,7 @@ public class FilterProcessor {
 
     /**
      * sets a singleton processor in case of a need to override default behavior
+     *
      * @param processor
      */
     public static void setProcessor(FilterProcessor processor) {
@@ -75,6 +70,7 @@ public class FilterProcessor {
     /**
      * runs "post" filters which are called after "route" filters. ZuulExceptions from ZuulFilters are thrown.
      * Any other Throwables are caught and a ZuulException is thrown out with a 500 status code
+     *
      * @throws ZuulException
      */
     public void postRoute() throws ZuulException {
@@ -84,7 +80,7 @@ public class FilterProcessor {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             }
-            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_POST_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_POST_FILTER_" + e.getClass().getName());
         }
 
     }
@@ -102,6 +98,7 @@ public class FilterProcessor {
 
     /**
      * Runs all "route" filters. These filters route calls to an origin.
+     *
      * @throws ZuulException if an exception occurs.
      */
     public void route() throws ZuulException {
@@ -111,12 +108,13 @@ public class FilterProcessor {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             }
-            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PROXY_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PROXY_FILTER_" + e.getClass().getName());
         }
     }
 
     /**
      * runs all "pre" filters. These filters are run before routing to the orgin.
+     *
      * @throws ZuulException
      */
     public void preRoute() throws ZuulException {
@@ -126,12 +124,13 @@ public class FilterProcessor {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             }
-            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PRE_FILTER_" +e.getClass().getName());
+            throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PRE_FILTER_" + e.getClass().getName());
         }
     }
 
     /**
      * runs all filters of the filterType sType/ Use this method within filters to run custom filters by type
+     *
      * @param sType the filterType.
      * @return
      * @throws Throwable throws up an arbitrary exception
@@ -145,9 +144,9 @@ public class FilterProcessor {
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 ZuulFilter proxyFilter = list.get(i);
-                Object result  = processProxyFilter(proxyFilter);
-                if(result != null && result instanceof Boolean){
-                    bResult |= ((Boolean)result);
+                Object result = processProxyFilter(proxyFilter);
+                if (result != null && result instanceof Boolean) {
+                    bResult |= ((Boolean) result);
                 }
             }
         }
@@ -156,6 +155,7 @@ public class FilterProcessor {
 
     /**
      * Processes an individual ZuulFilter. This method adds Debug information. Any uncaught Thowables are caught by this method and converted to a ZuulException with a 500 status code.
+     *
      * @param filter
      * @return the return value for that filter
      * @throws ZuulException
@@ -248,7 +248,7 @@ public class FilterProcessor {
                 processor.postRoute();
                 verify(processor, times(1)).runFilters("post");
             } catch (Throwable e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
 
@@ -260,7 +260,7 @@ public class FilterProcessor {
                 processor.preRoute();
                 verify(processor, times(1)).runFilters("pre");
             } catch (Throwable e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
 
@@ -272,7 +272,7 @@ public class FilterProcessor {
                 processor.route();
                 verify(processor, times(1)).runFilters("route");
             } catch (Throwable e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
 

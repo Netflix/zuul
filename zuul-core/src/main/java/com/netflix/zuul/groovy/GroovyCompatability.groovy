@@ -16,17 +16,17 @@
 
 package com.netflix.zuul.groovy
 
-import org.junit.runner.RunWith
-import org.mockito.runners.MockitoJUnitRunner
-import org.mockito.Mock
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.HttpServletRequest
-import org.junit.Test
-
 import com.netflix.zuul.context.RequestContext
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.runners.MockitoJUnitRunner
 
-import static org.junit.Assert.assertNotNull
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertNotNull
 
 /**
  * Unit test class to verify groovy compatibility with RequestContext
@@ -34,7 +34,6 @@ import static org.junit.Assert.assertEquals
  * User: mcohen
  * Date: 1/3/12
  * Time: 4:55 PM
- * To change this template use File | Settings | File Templates.
  */
 class GroovyCompatability {
 

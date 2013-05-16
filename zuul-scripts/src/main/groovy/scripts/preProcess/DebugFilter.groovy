@@ -15,17 +15,18 @@
  */
 package scripts.preProcess
 
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
 import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.constants.ZuulConstants
+import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.groovy.ZuulFilter
 
 class DebugFilter extends ZuulFilter {
 
-    static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.debug.request", false)
-    static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty("zuul.debug.parameter", "debugParameter")
+    static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUG_REQUEST, false)
+    static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_PARAMETER, "debugParameter")
 
     @Override
     String filterType() {
@@ -39,7 +40,7 @@ class DebugFilter extends ZuulFilter {
 
     boolean shouldFilter() {
 
-        if("true".equals(NFRequestContext.currentContext.getRequest().getParameter(debugParameter.get()))) return true;
+        if ("true".equals(NFRequestContext.currentContext.getRequest().getParameter(debugParameter.get()))) return true;
         return routingDebug.get();
 
     }

@@ -46,13 +46,13 @@ public class ZuulRunner {
 
     /**
      * Creates a new <code>ZuulRunner</code> instance.
-     *
      */
     public ZuulRunner() {
     }
 
     /**
      * sets HttpServlet request and HttpResponse
+     *
      * @param servletRequest
      * @param servletResponse
      */
@@ -63,6 +63,7 @@ public class ZuulRunner {
 
     /**
      * executes "post" filterType  ZuulFilters
+     *
      * @throws ZuulException
      */
     public void postRoute() throws ZuulException {
@@ -71,6 +72,7 @@ public class ZuulRunner {
 
     /**
      * executes "route" filterType  ZuulFilters
+     *
      * @throws ZuulException
      */
     public void route() throws ZuulException {
@@ -79,6 +81,7 @@ public class ZuulRunner {
 
     /**
      * executes "pre" filterType  ZuulFilters
+     *
      * @throws ZuulException
      */
     public void preRoute() throws ZuulException {
@@ -91,9 +94,6 @@ public class ZuulRunner {
     public void error() {
         FilterProcessor.getInstance().error();
     }
-
-
-
 
 
     @RunWith(MockitoJUnitRunner.class)
@@ -150,7 +150,7 @@ public class ZuulRunner {
                 RequestContext.testSetCurrentContext(null);
 
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
 

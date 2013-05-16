@@ -17,6 +17,7 @@ package com.netflix.zuul.scriptManager;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.constants.ZuulConstants;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,17 +29,18 @@ import java.util.Map;
 
 /**
  * Polls a persistent store for new or changes Filters
+ *
  * @author Mikey Cohen
- * Date: 6/15/12
- * Time: 3:44 PM
+ *         Date: 6/15/12
+ *         Time: 3:44 PM
  */
 public class ZuulFilterPoller {
 
     Map<String, FilterInfo> runningFilters = new HashMap<String, FilterInfo>();
     ZuulFilterDAO dao;
 
-    DynamicBooleanProperty active = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.use.active.filters", true);
-    DynamicBooleanProperty canary = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.use.canary.filters", false);
+    DynamicBooleanProperty active = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_ACTIVE_FILTERS, true);
+    DynamicBooleanProperty canary = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_CANARY_FILTERS, false);
 
 
     private static ZuulFilterPoller INSTANCE;
@@ -46,6 +48,7 @@ public class ZuulFilterPoller {
 
     /**
      * Starts the check against the ZuulFilter data store for changed or new filters.
+     *
      * @param dao
      */
     public static void start(ZuulFilterDAO dao) {
@@ -57,6 +60,7 @@ public class ZuulFilterPoller {
 
     /**
      * constructor that passes in a dao
+     *
      * @param dao
      */
     public ZuulFilterPoller(ZuulFilterDAO dao) {
@@ -66,7 +70,6 @@ public class ZuulFilterPoller {
     }
 
     /**
-     *
      * @return a Singleton
      */
     public static ZuulFilterPoller getInstance() {
@@ -100,8 +103,7 @@ public class ZuulFilterPoller {
                         for (FilterInfo next : setFilters.values()) {
                             doFilterCheck(next);
                         }
-                    }
-                    else if (active.get()) {
+                    } else if (active.get()) {
                         List<FilterInfo> newFilters = dao.getAllActiveFilters();
                         if (newFilters == null) continue;
                         for (FilterInfo newFilter : newFilters) {
@@ -134,12 +136,12 @@ public class ZuulFilterPoller {
 
     private void writeFilterToDisk(FilterInfo newFilter) throws IOException {
 
-        String path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.pre.path", null).get();
+        String path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_PRE_PATH, null).get();
         if (newFilter.getFilterType().equals("post")) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.post.path", null).get();
+            path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_POST_PATH, null).get();
         }
         if (newFilter.getFilterType().equals("route")) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty("zuul.filter.routing.path", null).get();
+            path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_ROUTING_PATH, null).get();
         }
 
         File f = new File(path, newFilter.getFilterName() + ".groovy");
@@ -150,8 +152,6 @@ public class ZuulFilterPoller {
         file.close();
         System.out.println("filter written " + f.getPath());
     }
-
-
 
 
 }

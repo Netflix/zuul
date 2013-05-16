@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul.stats;
 
-import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,18 +30,16 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 
 /**
  * High level statistics counter manager to count stats on various aspects of  requests
+ *
  * @author Mikey Cohen
- * Date: 2/3/12
- * Time: 3:25 PM
+ *         Date: 2/3/12
+ *         Time: 3:25 PM
  */
 public class StatsManager {
 
@@ -54,8 +51,8 @@ public class StatsManager {
 
     // should match *.amazonaws.com, *.nflxvideo.net, or raw IP addresses.
     private static final Pattern HOST_PATTERN =
-        Pattern.compile("(?:(.+)\\.amazonaws\\.com)|((?:\\d{1,3}\\.?){4})|(ip-\\d+-\\d+-\\d+-\\d+)|" +
-            "(?:(.+)\\.nflxvideo\\.net)|(?:(.+)\\.llnwd\\.net)|(?:(.+)\\.nflximg\\.com)");
+            Pattern.compile("(?:(.+)\\.amazonaws\\.com)|((?:\\d{1,3}\\.?){4})|(ip-\\d+-\\d+-\\d+-\\d+)|" +
+                    "(?:(.+)\\.nflxvideo\\.net)|(?:(.+)\\.llnwd\\.net)|(?:(.+)\\.nflximg\\.com)");
 
     private static final String HOST_HEADER = "host";
 
@@ -64,16 +61,16 @@ public class StatsManager {
     private static final String X_FORWARDED_PROTO_HEADER = "x-forwarded-proto";
 
     private final ConcurrentMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>> routeStatusMap =
-        new ConcurrentHashMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>>();
+            new ConcurrentHashMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> namedStatusMap =
             new ConcurrentHashMap<String, NamedCountingMonitor>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> hostCounterMap =
-        new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<String, NamedCountingMonitor>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> protocolCounterMap =
-        new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<String, NamedCountingMonitor>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> ipVersionCounterMap =
             new ConcurrentHashMap<String, NamedCountingMonitor>();
@@ -86,7 +83,6 @@ public class StatsManager {
     }
 
     /**
-     *
      * @param route
      * @param statusCode
      * @return the RouteStatusCodeMonitor for the given route and status code
@@ -136,15 +132,13 @@ public class StatsManager {
      * Collects counts statistics about the request: client ip address from the x-forwarded-for header;
      * ipv4 or ipv6 and  host name from the host header;
      *
-     *
-     *
      * @param req
      */
     public void collectRequestStats(HttpServletRequest req) {
         // ipv4/ipv6 tracking
         String clientIp;
         final String xForwardedFor = req.getHeader(X_FORWARDED_FOR_HEADER);
-        if(xForwardedFor == null) {
+        if (xForwardedFor == null) {
             clientIp = req.getRemoteAddr();
         } else {
             clientIp = extractClientIpFromXForwardedFor(xForwardedFor);
@@ -152,14 +146,14 @@ public class StatsManager {
 
         final boolean isIPv6 = (clientIp != null) ? isIPv6(clientIp) : false;
 
-        final String ipVersionKey =  isIPv6 ? "ipv6" : "ipv4";
+        final String ipVersionKey = isIPv6 ? "ipv6" : "ipv4";
         incrementNamedCountingMonitor(ipVersionKey, ipVersionCounterMap);
 
         // host header
         String host = req.getHeader(HOST_HEADER);
         if (host != null) {
             int colonIdx;
-            if(isIPv6) {
+            if (isIPv6) {
                 // an ipv6 host might be a raw IP with 7+ colons
                 colonIdx = host.lastIndexOf(":");
             } else {
@@ -191,17 +185,18 @@ public class StatsManager {
      */
     private void incrementNamedCountingMonitor(String name, ConcurrentMap<String, NamedCountingMonitor> map) {
         NamedCountingMonitor monitor = map.get(name);
-        if(monitor == null) {
+        if (monitor == null) {
             monitor = new NamedCountingMonitor(name);
             NamedCountingMonitor conflict = map.putIfAbsent(name, monitor);
-            if(conflict != null) monitor = conflict;
+            if (conflict != null) monitor = conflict;
             else MonitorRegistry.getInstance().registerObject(monitor);
         }
         monitor.increment();
     }
 
     /**
-     * collects and increments counts of status code, route/status code and statuc_code bucket, eg 2xx 3xx 4xxx 5xx
+     * collects and increments counts of status code, route/status code and statuc_code bucket, eg 2xx 3xx 4xx 5xx
+     *
      * @param route
      * @param statusCode
      */
@@ -240,8 +235,8 @@ public class StatsManager {
         RouteStatusCodeMonitor sd = statsMap.get(statusCode);
         if (sd == null) {
             //don't register only 404 status codes (these are garbage endpoints)
-            if(statusCode == 404){
-                if(statsMap.size() == 0){
+            if (statusCode == 404) {
+                if (statsMap.size() == 0) {
                     return;
                 }
             }
@@ -317,7 +312,7 @@ public class StatsManager {
 
         @Test
         public void createsNormalizedHostKey() {
-                        final String host = "api.test.netflix.com";
+            final String host = "api.test.netflix.com";
             assertEquals("host_EC2.amazonaws.com", StatsManager.hostKey("ec2-174-129-179-89.compute-1.amazonaws.com"));
             assertEquals("host_IP", StatsManager.hostKey("12.345.6.789"));
             assertEquals("host_IP", StatsManager.hostKey("ip-10-86-83-168"));

@@ -1,23 +1,26 @@
+<%@ page import="com.netflix.zuul.StartServer" %>
 <%@ page import="com.netflix.zuul.scriptManager.FilterInfo" %>
 <%@ page import="com.netflix.zuul.scriptManager.ZuulFilterDAO" %>
 <%@ page import="com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra" %>
 <%@ page import="com.netflix.zuul.util.AdminFilterUtil" %>
+<%@ page import="org.slf4j.Logger" %>
+<%@ page import="org.slf4j.LoggerFactory" %>
 <%@ page import="java.util.List" %>
-<%@ page import="com.netflix.zuul.StartServer" %>
 <%--
   Created by IntelliJ IDEA.
   User: mcohen
   Date: 6/18/12
   Time: 11:20 AM
-  To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
+    Logger LOG = LoggerFactory.getLogger("filterloader");
+
     ZuulFilterDAO scriptDAO = null;
     try {
-        scriptDAO = new ZuulFilterDAOCassandra(StartServer.getZuulCassContext());
+        scriptDAO = new ZuulFilterDAOCassandra(StartServer.getZuulCassKeyspace());
     } catch (Exception e) {
-        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        LOG.error(e.getMessage(), e);
     }
     List<String> filterIds = scriptDAO.getAllFilterIDs();
 %>

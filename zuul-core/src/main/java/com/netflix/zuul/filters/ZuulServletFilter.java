@@ -27,32 +27,24 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Zuul Servlet filter to run Zuul within a Servlet Filter. The filter invokes pre-routing filters first,
  * then routing filters, then post routing filters. Handled exceptions in pre-routing and routing
  * call the error filters, then call post-routing filters. Errors in post-routing only invoke the error filters.
  * Unhandled exceptions only invoke the error filters
+ *
  * @author Mikey Cohen
- * Date: 10/12/11
- * Time: 2:54 PM
+ *         Date: 10/12/11
+ *         Time: 2:54 PM
  */
 public class ZuulServletFilter implements Filter {
 
@@ -88,7 +80,7 @@ public class ZuulServletFilter implements Filter {
                 return;
             }
         } catch (Throwable e) {
-            error(new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_FROM_FILTER_" +e.getClass().getName()));
+            error(new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_FROM_FILTER_" + e.getClass().getName()));
         } finally {
             RequestContext.getCurrentContext().unset();
         }
@@ -117,7 +109,7 @@ public class ZuulServletFilter implements Filter {
     }
 
     public void destroy() {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
 

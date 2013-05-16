@@ -17,6 +17,7 @@ package com.netflix.zuul.dependency.cassandra;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.constants.ZuulConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -44,7 +45,7 @@ public class DefaultCassandraCache<K> implements CassandraCache<K> {
      */
 
     private final static DynamicIntProperty maxCacheSize =
-            DynamicPropertyFactory.getInstance().getIntProperty("zuul.cassandra.cache.max-size", 1000);
+            DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_CASSANDRA_CACHE_MAX_SIZE, 1000);
 
     private final ConcurrentMap<String, K> cacheMap;
 
@@ -66,6 +67,7 @@ public class DefaultCassandraCache<K> implements CassandraCache<K> {
 
     /**
      * Returns cached query by keys
+     *
      * @param keys
      * @return
      */
@@ -86,6 +88,7 @@ public class DefaultCassandraCache<K> implements CassandraCache<K> {
 
     /**
      * stores a given response by keys
+     *
      * @param response
      * @param keys
      */

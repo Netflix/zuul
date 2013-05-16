@@ -15,9 +15,10 @@
  */
 package scripts.postProcess
 
-
 import com.netflix.util.Pair
 import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -27,12 +28,10 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
+
+import static com.netflix.zuul.constants.ZuulHeaders.*
 
 class Postfilter extends ZuulFilter {
 
@@ -54,21 +53,21 @@ class Postfilter extends ZuulFilter {
     void addStandardResponseHeaders(HttpServletRequest req, HttpServletResponse res) {
         println(originatingURL)
 
-        String origin = req.getHeader("Origin")
+        String origin = req.getHeader(ORIGIN)
         RequestContext context = RequestContext.getCurrentContext()
         List<Pair<String, String>> headers = context.getZuulResponseHeaders()
-        headers.add(new Pair("X-Zuul", "zuul"))
-        headers.add(new Pair("X-Zuul-instance", System.getenv("EC2_INSTANCE_ID") ?: "unknown"))
-        headers.add(new Pair("Connection", "keep-alive"))
-        headers.add(new Pair("X-Originating-URL", originatingURL))
+        headers.add(new Pair(X_ZUUL, "zuul"))
+        headers.add(new Pair(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown"))
+        headers.add(new Pair(CONNECTION, KEEP_ALIVE))
+        headers.add(new Pair(X_ORIGINATING_URL, originatingURL))
 
         // trying to force flushes down to clients without Apache mod_proxy buffering
 //        headers.add(new Pair("Transfer-Encoding", "chunked"));
 //        res.setContentLength(-1);
 
         if (context.get("ErrorHandled") == null && context.responseStatusCode >= 400) {
-            headers.add(new Pair("X-Netflix-Error-Cause", "Error from API Backend"))
-            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Error_from_API_Server")
+            headers.add(new Pair(X_NETFLIX_ERROR_CAUSE, "Error from Origin"))
+            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Error_from_Origin_Server")
 
         }
     }
@@ -76,9 +75,9 @@ class Postfilter extends ZuulFilter {
     String getOriginatingURL() {
         HttpServletRequest request = NFRequestContext.getCurrentContext().getRequest();
 
-        String protocol = request.getHeader("X-Forwarded-Proto")
+        String protocol = request.getHeader(X_FORWARDED_PROTO)
         if (protocol == null) protocol = "http"
-        String host = request.getHeader("Host")
+        String host = request.getHeader(HOST)
         String uri = request.getRequestURI();
         def URL = "${protocol}://${host}${uri}"
         if (request.getQueryString() != null) {

@@ -15,11 +15,16 @@
  */
 package scripts.proxy
 
-
-import java.util.concurrent.atomic.AtomicReference
-import java.util.zip.GZIPInputStream
-
+import com.netflix.config.DynamicIntProperty
+import com.netflix.config.DynamicPropertyFactory
+import com.netflix.util.Pair
+import com.netflix.zuul.constants.ZuulConstants
+import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
+import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.zuul.util.HTTPRequestUtils
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -45,34 +50,23 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
+import java.util.concurrent.atomic.AtomicReference
+import java.util.zip.GZIPInputStream
 import javax.servlet.ServletInputStream
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.apache.http.*
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.config.DynamicIntProperty
-import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.util.HTTPRequestUtils
-import com.netflix.zuul.context.Debug
-import com.netflix.util.Pair
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.hystrix.HystrixCommand
-import com.netflix.hystrix.HystrixCommand.Setter
-import com.netflix.hystrix.HystrixCommandGroupKey
-import com.netflix.hystrix.HystrixCommandProperties
-import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 
 class ZuulHostRequest extends ZuulFilter {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
     private static final Logger LOG = LoggerFactory.getLogger(ZuulHostRequest.class);
-    private static final Runnable CLIENTLOADER = new Runnable(){
+    private static final Runnable CLIENTLOADER = new Runnable() {
         @Override
         void run() {
             loadClient();
@@ -80,10 +74,10 @@ class ZuulHostRequest extends ZuulFilter {
     }
 
     private static final DynamicIntProperty SOCKET_TIMEOUT =
-        DynamicPropertyFactory.getInstance().getIntProperty("zuul.host.socket-timeout-millis", 10000)
+        DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_SOCKET_TIMEOUT_MILLIS, 10000)
 
     private static final DynamicIntProperty CONNECTION_TIMEOUT =
-        DynamicPropertyFactory.getInstance().getIntProperty("zuul.host.connect-timeout-millis", 2000)
+        DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_CONNECT_TIMEOUT_MILLIS, 2000)
 
 
 
@@ -195,7 +189,7 @@ class ZuulHostRequest extends ZuulFilter {
             HttpResponse response = proxy(httpclient, verb, uri, request, headers, requestEntity)
             setResponse(response)
         } catch (Exception e) {
-             throw e;
+            throw e;
         }
         return null
     }
@@ -414,7 +408,7 @@ class ZuulHostRequest extends ZuulFilter {
                 RequestContext ctx = RequestContext.getCurrentContext()
                 ctx.addOriginResponseHeader(header.name, header.value)
 
-                if(header.name.equalsIgnoreCase("content-length"))
+                if (header.name.equalsIgnoreCase("content-length"))
                     ctx.setOriginContentLength(header.value)
 
                 if (isValidHeader(header)) {

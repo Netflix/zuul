@@ -15,46 +15,46 @@
  */
 package com.netflix.zuul.plugins;
 
-import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.monitor.DynamicTimer;
 import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.servo.monitor.Stopwatch;
 import com.netflix.servo.tag.InjectableTag;
 import com.netflix.servo.tag.Tag;
 import com.netflix.zuul.monitoring.TracerFactory;
-import org.apache.commons.lang.time.StopWatch;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * Plugin to hook up Servo Tracers
+ *
  * @author Mikey Cohen
- * Date: 4/10/13
- * Time: 4:51 PM
+ *         Date: 4/10/13
+ *         Time: 4:51 PM
  */
 public class Tracer extends TracerFactory {
 
     static List<Tag> tags = new ArrayList<Tag>(2);
 
-    static{
+    static {
         tags.add(InjectableTag.HOSTNAME);
         tags.add(InjectableTag.IP);
     }
+
     @Override
 
     public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
         return new ServoTracer(name);
     }
 
-    class ServoTracer implements com.netflix.zuul.monitoring.Tracer{
+    class ServoTracer implements com.netflix.zuul.monitoring.Tracer {
 
-        final MonitorConfig config ;
+        final MonitorConfig config;
         final Stopwatch stopwatch;
-        private ServoTracer(String name){
-            config =MonitorConfig.builder(name).withTags(tags).build();
+
+        private ServoTracer(String name) {
+            config = MonitorConfig.builder(name).withTags(tags).build();
             stopwatch = DynamicTimer.start(config, TimeUnit.MICROSECONDS);
         }
 
@@ -65,7 +65,7 @@ public class Tracer extends TracerFactory {
 
         @Override
         public void setName(String name) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
     }
 }

@@ -16,6 +16,7 @@
 package com.netflix.zuul;
 
 
+import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.util.HTTPRequestUtils;
 import org.apache.commons.io.IOUtils;
@@ -31,31 +32,13 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.security.Principal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.*;
+import java.util.zip.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 /**
@@ -154,7 +137,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 mapA.put(key, list);
             }
         }
-        
+
         if (req.getContentLength() > 0) {
             byte[] data = new byte[req.getContentLength()];
             int len = 0, totalLen = 0;
@@ -165,9 +148,9 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                     throw new IOException("Cannot read more than " + totalLen + (totalLen == 1 ? " byte!" : " bytes!"));
             }
             contentData = data;
-        
+
             String enc = req.getCharacterEncoding();
-        
+
             if (enc == null)
                 enc = "UTF-8";
             String s = new String(data, enc), name, value;
@@ -201,8 +184,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
 
         } else if (req.getContentLength() == -1) {
-            final String transferEncoding = req.getHeader("transfer-encoding");
-            if(transferEncoding != null && transferEncoding.equals("chunked"))
+            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
+            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED))
                 RequestContext.getCurrentContext().setChunkedRequestBody();
         }
 
@@ -215,8 +198,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         parameters = map;
 
     }
-    
-    
+
+
     /**
      * This method is safe to call multiple times.
      * Calling it will not interfere with getParameterXXX() or getReader().
@@ -227,7 +210,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
         parseRequest();
 
-        if(RequestContext.getCurrentContext().isChunkedRequestBody()) {
+        if (RequestContext.getCurrentContext().isChunkedRequestBody()) {
             return req.getInputStream();
         } else {
             return new ServletInputStreamWrapper(contentData);
@@ -733,37 +716,36 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
             assertEquals(body, IOUtils.toString(new GZIPInputStream(wrapper.getInputStream())));
         }
+
         @Test
         public void handlesZipRequestBody() throws IOException {
-        	
-        	final String body = "hello";
-        	final byte [] bodyBytes = body.getBytes();
-        	
+
+            final String body = "hello";
+            final byte[] bodyBytes = body.getBytes();
+
             final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream(0);
             ZipOutputStream zOutput = new ZipOutputStream(byteOutStream);
-            
+
             zOutput.putNextEntry(new ZipEntry("f1"));
             zOutput.write(bodyBytes);
             zOutput.finish();
             zOutput.flush();
             body(byteOutStream.toByteArray());
-             
-        
-            
+
+
             final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
-            
-           
-            
+
+
             assertEquals(body, readZipInputStream(wrapper.getInputStream()));
-             
-             
+
+
         }
-        
+
         public String readZipInputStream(InputStream input) throws IOException {
-   
+
             byte[] uploadedBytes = getBytesFromInputStream(input);
             input.close();
-        
+
             /* try to read it as a zip file */
             String uploadFileTxt = null;
             ZipInputStream zInput = new ZipInputStream(new ByteArrayInputStream(uploadedBytes));
@@ -772,11 +754,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 // we have a ZipEntry, so this is a zip file
                 while (zipEntry != null) {
                     byte[] fileBytes = getBytesFromInputStream(zInput);
-                    uploadFileTxt =  new String(fileBytes);
+                    uploadFileTxt = new String(fileBytes);
 
                     zipEntry = zInput.getNextEntry();
                 }
-            } 
+            }
             return uploadFileTxt;
         }
 
@@ -789,8 +771,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             bos.close();
             return bos.toByteArray();
         }
-        
-      
+
 
     }
 

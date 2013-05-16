@@ -60,10 +60,10 @@ public class FilterScriptManagerServlet extends HttpServlet {
 
     /* actions that we permit as an immutable Set */
     private static final Set<String> VALID_GET_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"LIST", "DOWNLOAD"})));
-    private static final Set<String> VALID_PUT_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"UPLOAD", "ACTIVATE", "DEACTIVATE","RUN", "CANARY"})));
+    private static final Set<String> VALID_PUT_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"UPLOAD", "ACTIVATE", "DEACTIVATE", "RUN", "CANARY"})));
 
     /* DAO for performing CRUD operations with scripts */
-    private  ZuulFilterDAO scriptDAO;
+    private ZuulFilterDAO scriptDAO;
 
     /* Controller for executing scripts in development/test */
 
@@ -72,7 +72,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
      * Default constructor that instantiates default dependencies (ie. the ones that are functional as opposed to those for testing).
      */
     public FilterScriptManagerServlet() {
-        this(new ZuulFilterDAOCassandra(ZuulFilterDAOCassandra.getCassContext()));
+        this(new ZuulFilterDAOCassandra(ZuulFilterDAOCassandra.getCassKeyspace()));
 
     }
 
@@ -158,8 +158,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             handleActivateAction(request, response);
         } else if ("CANARY".equals(action)) {
             handleCanaryAction(request, response);
-        }
-        else if ("DEACTIVATE".equals(action)) {
+        } else if ("DEACTIVATE".equals(action)) {
             handledeActivateAction(request, response);
         }
 
@@ -355,10 +354,10 @@ public class FilterScriptManagerServlet extends HttpServlet {
             try {
                 filterInfo = FilterVerifier.getInstance().verifyFilter(filter);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                logger.error(e.getMessage(), e);
                 setUsageError(500, "ERROR: Unable to process uploaded data. " + e.getMessage(), response);
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                logger.error(e.getMessage(), e);
                 setUsageError(500, "ERROR: Bad Filter. " + e.getMessage(), response);
             }
             filterInfo = scriptDAO.addFilter(filter, filterInfo.getFilterType(), filterInfo.getFilterName(), filterInfo.getFilterDisablePropertyName(), filterInfo.getFilterOrder());

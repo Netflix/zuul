@@ -20,12 +20,11 @@ import com.netflix.client.ClientFactory;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.config.*;
 import com.netflix.zuul.ZuulApplicationInfo;
+import com.netflix.zuul.constants.ZuulConstants;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Handles Eureka VIP names and addresses.
@@ -43,16 +42,17 @@ public class RibbonConfig {
 
 
     private static final DynamicBooleanProperty AUTODETECT_BACKEND_VIPS =
-            DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.autodetect-backend-vips", true);
+            DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_AUTODETECT_BACKEND_VIPS, true);
     private static final DynamicStringProperty DEFAULT_CLIENT =
-            DynamicPropertyFactory.getInstance().getStringProperty("zuul.niws.defaultClient", null);
+            DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, null);
 
     /**
      * This method attempts to set up the default Ribbon origin VIP from properties and environment.
      * One method is through autoscale name convention. The Autoscaling group name can be set up as follow : zuul-origin_stack.
      * Zuul will derive the origin VIP  as origin-stack.{zuul.ribbon.vipAddress.template}
+     * <p/>
+     * the client may also be specified by the property ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT
      *
-     * the client may also be specified by the property "zuul.niws.defaultClient"
      * @throws ClientException
      */
     public static void setupDefaultRibbonConfig() throws ClientException {
@@ -76,8 +76,8 @@ public class RibbonConfig {
         }
         String vip = RibbonConfig.getDefaultVipName();
         String vipAddr = RibbonConfig.getDefaultVipAddress(getApplicationStack());
-        String namespace = DynamicPropertyFactory.getInstance().getStringProperty("zuul.ribbon.namespace", "ribbon").get();
-        
+        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_RIBBON_NAMESPACE, "ribbon").get();
+
         setIfNotDefined(vip, vipAddr);
         setIfNotDefined(getApplicationName() + "." + namespace + ".Port", "7001");
         setIfNotDefined(getApplicationName() + "." + namespace + ".AppName", getApplicationName());
@@ -118,7 +118,6 @@ public class RibbonConfig {
     }
 
     /**
-     *
      * @return the APPLICATION_NAME
      */
     public static String getApplicationName() {
@@ -127,16 +126,18 @@ public class RibbonConfig {
 
     /**
      * sets the application name of the origin
+     *
      * @param app_name
      */
     public static void setApplicationName(String app_name) {
         RibbonConfig.APPLICATION_NAME = app_name;
-        if(ZuulApplicationInfo.applicationName == null) ZuulApplicationInfo.applicationName = app_name;
+        if (ZuulApplicationInfo.applicationName == null) ZuulApplicationInfo.applicationName = app_name;
         LOG.info("Setting back end VIP application = " + app_name);
     }
 
     /**
      * returns the application_stack
+     *
      * @return
      */
     public static String getApplicationStack() {
@@ -145,16 +146,18 @@ public class RibbonConfig {
 
     /**
      * sets the default origin applcation stack
+     *
      * @param stack
      */
     public static void setApplicationStack(String stack) {
         RibbonConfig.APPLICATION_STACK = stack;
-        if(ZuulApplicationInfo.getStack()== null) ZuulApplicationInfo.stack= stack;
+        if (ZuulApplicationInfo.getStack() == null) ZuulApplicationInfo.stack = stack;
         LOG.info("Setting back end VIP stack = " + stack);
     }
 
     /**
      * true if the app shoudl autodetect the origin vip
+     *
      * @return true if the app shoudl autodetect the origin vip
      */
     public static final boolean isAutodetectingBackendVips() {
@@ -163,15 +166,16 @@ public class RibbonConfig {
 
     /**
      * returns the Ribbon property name for the default origin vip
+     *
      * @return
      */
     public static final String getDefaultVipName() {
         String client = getApplicationName();
         if (client == null) client = DEFAULT_CLIENT.get();
 
-        String namespace = DynamicPropertyFactory.getInstance().getStringProperty("zuul.ribbon.namespace", "ribbon").get();
+        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_RIBBON_NAMESPACE, "ribbon").get();
 
-        String vipTemplate = "%s."+ namespace +".DeploymentContextBasedVipAddresses";
+        String vipTemplate = "%s." + namespace + ".DeploymentContextBasedVipAddresses";
         return String.format(vipTemplate, client);
     }
 
@@ -179,6 +183,7 @@ public class RibbonConfig {
     /**
      * builds the default vip address of the origin based on the stack.
      * You need to configure zuul.ribbon.vipAddress.template . eg zuul.ribbon.vipAddress.template=%s-%s.netflix.net:8888 where %s(1) is client and %s(2) is stack
+     *
      * @param stack
      * @return
      */
@@ -186,8 +191,9 @@ public class RibbonConfig {
         String client = getApplicationName();
         if (client == null) client = DEFAULT_CLIENT.get();
 
-        String vipAddressTemplate = DynamicPropertyFactory.getInstance().getStringProperty("zuul.ribbon.vipAddress.template", null).get();
-        if(vipAddressTemplate == null) throw new RuntimeException("need to configure zuul.ribbon.vipAddress.template . eg zuul.ribbon.vipAddress.template=%s-%s.netflix.net:8888 where %s(1) is client and %s(2) is stack" );
+        String vipAddressTemplate = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_RIBBON_VIPADDRESS_TEMPLATE, null).get();
+        if (vipAddressTemplate == null)
+            throw new RuntimeException("need to configure zuul.ribbon.vipAddress.template . eg zuul.ribbon.vipAddress.template=%s-%s.netflix.net:8888 where %s(1) is client and %s(2) is stack");
 
         return String.format(vipAddressTemplate, client, stack);
     }

@@ -24,28 +24,19 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
  * It also holds ZuulFilters by filterType.
  *
  * @author Mikey Cohen
- * Date: 11/3/11
- * Time: 1:59 PM
+ *         Date: 11/3/11
+ *         Time: 1:59 PM
  */
 public class FilterLoader {
     final static FilterLoader INSTANCE = new FilterLoader();
@@ -59,7 +50,6 @@ public class FilterLoader {
     ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
     /**
-     *
      * @return Singleton FilterLoader
      */
     public static FilterLoader getInstance() {
@@ -69,6 +59,7 @@ public class FilterLoader {
     /**
      * Given groovy source and name will compile and store the filter if it detects that the filter code has changed or
      * the filter doesn't exist. Otherwise it will return an instance of the requested ZuulFilter
+     *
      * @param sCode Groovy source code
      * @param sName name of the filter
      * @return the ZuulFilter
@@ -96,7 +87,6 @@ public class FilterLoader {
     }
 
     /**
-     *
      * @return the total number of Zuul filters
      */
     public int filterInstanceMapSize() {
@@ -107,6 +97,7 @@ public class FilterLoader {
     /**
      * From a file this will read the Groovy ZuulFilter source code, compile it, and add it to the list of current filters
      * a true response means that it was successful.
+     *
      * @param file
      * @return true if the filter in file successfully read, compiled, verified and added to Zuul
      * @throws IllegalAccessException
@@ -139,6 +130,7 @@ public class FilterLoader {
 
     /**
      * Returns a list of filters by the filterType specified
+     *
      * @param filterType
      * @return a List<ZuulFilter>
      */
@@ -164,6 +156,7 @@ public class FilterLoader {
 
     /**
      * Compiles Groovy code and returns the Class of the compiles code.
+     *
      * @param sCode
      * @param sName
      * @return
@@ -178,7 +171,6 @@ public class FilterLoader {
     }
 
     /**
-     *
      * @return a new GroovyClassLoader
      */
     GroovyClassLoader getGroovyClassLoader() {
@@ -188,6 +180,7 @@ public class FilterLoader {
 
     /**
      * Compiles groovy class from a file
+     *
      * @param file
      * @return
      * @throws IOException
@@ -211,15 +204,15 @@ public class FilterLoader {
 
         @Override
         public int filterOrder() {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+            return 0;
         }
 
         public boolean shouldFilter() {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
+            return false;
         }
 
         public Object run() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return null;
         }
     }
 
@@ -238,7 +231,7 @@ public class FilterLoader {
                 assertTrue(loader.filterInstanceMapSize() == 1);
 
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
         }
@@ -256,7 +249,7 @@ public class FilterLoader {
                 assertTrue(filter != null);
                 assertTrue(filter.filterType().equals("test"));
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
         }
@@ -279,7 +272,7 @@ public class FilterLoader {
 
 
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
         }

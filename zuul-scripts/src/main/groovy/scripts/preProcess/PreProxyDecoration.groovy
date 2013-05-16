@@ -15,7 +15,9 @@
  */
 package scripts.preProcess
 
-
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.groovy.ZuulFilter
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -25,9 +27,8 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.exception.ZuulException
+
+import static com.netflix.zuul.constants.ZuulHeaders.*
 
 /**
  * @author Mikey Cohen
@@ -68,12 +69,11 @@ public class PreProxyDecoration extends ZuulFilter {
     void setProxyHeaders() {
         RequestContext context = RequestContext.currentContext
         context.addZuulRequestHeader("X-Netflix.request.toplevel.uuid", UUID.randomUUID().toString())
-        context.addZuulRequestHeader("X-Forwarded-For", context.getRequest().remoteAddr)
-        context.addZuulRequestHeader("X-Netflix.client-host", context.getRequest().getHeader("Host"))
-        if (context.getRequest().getHeader("X-Forwarded-Proto") != null) {
-            context.addZuulRequestHeader("X-Netflix.client-proto", context.getRequest().getHeader("X-Forwarded-Proto"))
+        context.addZuulRequestHeader(X_FORWARDED_FOR, context.getRequest().remoteAddr)
+        context.addZuulRequestHeader(X_NETFLIX_CLIENT_HOST, context.getRequest().getHeader(HOST))
+        if (context.getRequest().getHeader(X_FORWARDED_PROTO) != null) {
+            context.addZuulRequestHeader(X_NETFLIX_CLIENT_PROTO, context.getRequest().getHeader(X_FORWARDED_PROTO))
         }
-//        context.addZuulRequestHeader("X-Netflix-User-Id", getUserID) //todo double check this requirement
 
 
     }

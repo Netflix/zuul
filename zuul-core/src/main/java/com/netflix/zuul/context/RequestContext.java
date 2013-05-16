@@ -16,8 +16,9 @@
 package com.netflix.zuul.context;
 
 
-import com.netflix.zuul.util.DeepCopy;
 import com.netflix.util.Pair;
+import com.netflix.zuul.constants.ZuulHeaders;
+import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,11 +32,7 @@ import java.io.InputStream;
 import java.io.NotSerializableException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -47,9 +44,10 @@ import static org.mockito.Mockito.mock;
  * The RequestContext lives for the duration of the request and is ThreadLocal.
  * extensions of RequestContext can be substituted by setting the contextClass.
  * Most methods here are convenience wrapper methods; the RequestContext is an extension of a ConcurrentHashMap
+ *
  * @author Mikey Cohen
- * Date: 10/13/11
- * Time: 10:21 AM
+ *         Date: 10/13/11
+ *         Time: 10:21 AM
  */
 public class RequestContext extends ConcurrentHashMap<String, Object> {
 
@@ -80,6 +78,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * Override the default RequestContext
+     *
      * @param clazz
      */
     public static void setContextClass(Class<? extends RequestContext> clazz) {
@@ -88,6 +87,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * set an overriden "test" context
+     *
      * @param context
      */
     public static void testSetCurrentContext(RequestContext context) {
@@ -96,6 +96,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * Get the current RequestContext
+     *
      * @return the current RequestContext
      */
     public static RequestContext getCurrentContext() {
@@ -107,8 +108,9 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * Convenience method to return a boolean value for a given key
+     *
      * @param key
-     * @return  true or false depending what was set. default is false
+     * @return true or false depending what was set. default is false
      */
     public boolean getBoolean(String key) {
         return getBoolean(key, false);
@@ -116,9 +118,10 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * Convenience method to return a boolean value for a given key
+     *
      * @param key
      * @param defaultResponse
-     * @return  true or false depending what was set. default defaultResponse
+     * @return true or false depending what was set. default defaultResponse
      */
     public boolean getBoolean(String key, boolean defaultResponse) {
         Boolean b = (Boolean) get(key);
@@ -130,6 +133,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets a key value to Boolen.TRUE
+     *
      * @param key
      */
     public void set(String key) {
@@ -138,6 +142,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * puts the key, value into the map. a null value will remove the key from the map
+     *
      * @param key
      * @param value
      */
@@ -148,6 +153,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * true if  zuulEngineRan
+     *
      * @return
      */
     public boolean getZuulEngineRan() {
@@ -162,7 +168,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return the HttpServletRequest from the "request" key
      */
     public HttpServletRequest getRequest() {
@@ -171,6 +176,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the HttpServletRequest into the "request" key
+     *
      * @param request
      */
     public void setRequest(HttpServletRequest request) {
@@ -178,7 +184,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return the HttpServletResponse from the "response" key
      */
     public HttpServletResponse getResponse() {
@@ -187,6 +192,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the "response" key to the HttpServletResponse passed in
+     *
      * @param response
      */
     public void setResponse(HttpServletResponse response) {
@@ -195,6 +201,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * returns a set throwable
+     *
      * @return a set throwable
      */
     public Throwable getThrowable() {
@@ -204,6 +211,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets a throwable
+     *
      * @param th
      */
     public void setThrowable(Throwable th) {
@@ -213,6 +221,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets  debugRouting
+     *
      * @param bDebug
      */
     public void setDebugRouting(boolean bDebug) {
@@ -220,7 +229,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return "debugRouting"
      */
     public boolean debugRouting() {
@@ -229,6 +237,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets "debugRequestHeadersOnly" to bHeadersOnly
+     *
      * @param bHeadersOnly
      */
     public void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
@@ -237,7 +246,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return "debugRequestHeadersOnly"
      */
     public boolean debugRequestHeadersOnly() {
@@ -246,6 +254,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets "debugRequest"
+     *
      * @param bDebug
      */
     public void setDebugRequest(boolean bDebug) {
@@ -254,6 +263,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * gets debugRequest
+     *
      * @return debugRequest
      */
     public boolean debugRequest() {
@@ -268,7 +278,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *  sets routeHost
+     * sets routeHost
+     *
      * @param routeHost a URL
      */
     public void setRouteHost(URL routeHost) {
@@ -276,7 +287,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return "routeHost" URL
      */
     public URL getRouteHost() {
@@ -286,6 +296,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the "responseBody" value as a String. This is the response sent back to the client.
+     *
      * @param body
      */
     public void setResponseBody(String body) {
@@ -293,7 +304,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return the String response body to be snt back to the requesting client
      */
     public String getResponseBody() {
@@ -302,6 +312,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the InputStream of the response into the responseDataStream
+     *
      * @param responseDataStream
      */
     public void setResponseDataStream(InputStream responseDataStream) {
@@ -310,6 +321,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the flag responseGZipped if the response is gzipped
+     *
      * @param gzipped
      */
     public void setResponseGZipped(boolean gzipped) {
@@ -317,7 +329,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return true if responseGZipped is true (the response is gzipped)
      */
     public boolean getResponseGZipped() {
@@ -325,7 +336,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return the InputStream Response
      */
     public InputStream getResponseDataStream() {
@@ -334,6 +344,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * If this value if true then the response should be sent to the client.
+     *
      * @return
      */
     public boolean sendZuulResponse() {
@@ -342,6 +353,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the sendZuulResponse boolean
+     *
      * @param bSend
      */
     public void setSendZuulResponse(boolean bSend) {
@@ -350,6 +362,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * returns the response status code. Default is 200
+     *
      * @return
      */
     public int getResponseStatusCode() {
@@ -369,6 +382,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * add a header to be sent to the origin
+     *
      * @param name
      * @param value
      */
@@ -378,6 +392,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * return the list of requestHeaders to be sent to the origin
+     *
      * @return the list of requestHeaders to be sent to the origin
      */
     public Map<String, String> getZuulRequestHeaders() {
@@ -390,6 +405,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * add a header to be sent to the response
+     *
      * @param name
      * @param value
      */
@@ -399,6 +415,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * returns the current response header list
+     *
      * @return a List<Pair<String, String>>  of response headers
      */
     public List<Pair<String, String>> getZuulResponseHeaders() {
@@ -411,6 +428,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * the Origin response headers
+     *
      * @return the List<Pair<String, String>> of headers sent back from the origin
      */
     public List<Pair<String, String>> getOriginResponseHeaders() {
@@ -423,6 +441,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * adds a header to the origin response headers
+     *
      * @param name
      * @param value
      */
@@ -432,6 +451,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * returns the content-length of the origin response
+     *
      * @return the content-length of the origin response
      */
     public Integer getOriginContentLength() {
@@ -440,6 +460,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the content-length from the origin response
+     *
      * @param v
      */
     public void setOriginContentLength(Integer v) {
@@ -448,6 +469,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * sets the content-length from the origin response
+     *
      * @param v parses the string into an int
      */
     public void setOriginContentLength(String v) {
@@ -460,7 +482,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return true if the request body is chunked
      */
     public boolean isChunkedRequestBody() {
@@ -476,11 +497,10 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return true is the client request can accept gzip encoding. Checks the "accept-encoding" header
      */
     public boolean isGzipRequested() {
-        final String requestEncoding = this.getRequest().getHeader("accept-encoding");
+        final String requestEncoding = this.getRequest().getHeader(ZuulHeaders.ACCEPT_ENCODING);
         return requestEncoding != null && requestEncoding.toLowerCase().contains("gzip");
     }
 
@@ -493,6 +513,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     /**
      * Mkaes a copy of the RequestContext. This is used for debugging.
+     *
      * @return
      */
     public RequestContext copy() {
@@ -521,7 +542,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *
      * @return Map<String, List<String>>  of the request Query Parameters
      */
     public Map<String, List<String>> getRequestQueryParams() {
@@ -529,7 +549,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     *  sets the request query params list
+     * sets the request query params list
+     *
      * @param qp Map<String, List<String>> qp
      */
     public void setRequestQueryParams(Map<String, List<String>> qp) {
@@ -637,7 +658,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
                 context.setRouteHost(url);
                 assertEquals(context.getRouteHost(), url);
             } catch (MalformedURLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
 
             InputStream in = mock(InputStream.class);

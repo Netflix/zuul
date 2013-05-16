@@ -15,19 +15,15 @@
  */
 package scripts.preProcess
 
-
-
-import com.netflix.zuul.ZuulApplicationInfo
-import com.netflix.zuul.context.NFRequestContext
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.groovy.FilterProcessor
-import com.netflix.zuul.context.RequestContext
-import com.netflix.config.DynamicStringProperty
 import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.ZuulApplicationInfo
+import com.netflix.zuul.constants.ZuulConstants
+import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.groovy.FilterProcessor
+import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * @author Mikey Cohen
@@ -35,8 +31,8 @@ import com.netflix.zuul.groovy.FilterProcessor
  * Time: 2:03 PM
  */
 class Routing extends ZuulFilter {
-    DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty("zuul.niws.defaultClient", ZuulApplicationInfo.applicationName);
-    DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty("zuul.default.host", null);
+    DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
+    DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
 
 
     @Override
@@ -65,14 +61,14 @@ class Routing extends ZuulFilter {
 
         ((NFRequestContext) RequestContext.currentContext).routeVIP = defaultClient.get()
         String host = defaultHost.get()
-        if(((NFRequestContext) RequestContext.currentContext).routeVIP == null) ((NFRequestContext) RequestContext.currentContext).routeVIP  = ZuulApplicationInfo.applicationName
+        if (((NFRequestContext) RequestContext.currentContext).routeVIP == null) ((NFRequestContext) RequestContext.currentContext).routeVIP = ZuulApplicationInfo.applicationName
         if (host != null) {
             final URL targetUrl = new URL(host)
             RequestContext.currentContext.setRouteHost(targetUrl);
-            ((NFRequestContext) RequestContext.currentContext).routeVIP=null
+            ((NFRequestContext) RequestContext.currentContext).routeVIP = null
         }
 
-        if (host == null && RequestContext.currentContext.routeVIP  == null) {
+        if (host == null && RequestContext.currentContext.routeVIP == null) {
             throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
         }
 

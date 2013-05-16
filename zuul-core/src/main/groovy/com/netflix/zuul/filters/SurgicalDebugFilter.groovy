@@ -15,12 +15,14 @@
  */
 package com.netflix.zuul.filters
 
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.util.HTTPRequestUtils
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.constants.ZuulConstants
+import com.netflix.zuul.constants.ZuulHeaders
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.zuul.util.HTTPRequestUtils
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -51,14 +53,14 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
 
     boolean shouldFilter() {
 
-        DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty("zuul.debugFilters.disabed", false);
+        DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
         if (debugFilterShutoff.get()) return false;
 
         if (isFilterDisabled()) return false;
 
 
-        String isSurgicalFilterRequest = RequestContext.currentContext.getRequest().getHeader("X-Zuul-Surgical-Filter");
+        String isSurgicalFilterRequest = RequestContext.currentContext.getRequest().getHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
         if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
         return patternMatches();
     }
@@ -66,13 +68,13 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
 
     @Override
     Object run() {
-        DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty("zuul.debug.vip", null);
-        DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty("zuul.debug.host", null);
+        DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
+        DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
-        if(routeVip.get() != null || routeHost.get() != null){
+        if (routeVip.get() != null || routeHost.get() != null) {
             RequestContext.currentContext.routeHost = routeHost.get();
             RequestContext.currentContext.routeVIP = routeVip.get();
-            RequestContext.currentContext.addZuulRequestHeader("X-Zuul-Surgical-Filter", "true");
+            RequestContext.currentContext.addZuulRequestHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
             if (HTTPRequestUtils.getInstance().getQueryParams() == null) {
                 RequestContext.getCurrentContext().setRequestQueryParams(new HashMap<String, List<String>>());
             }

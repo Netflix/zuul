@@ -15,9 +15,14 @@
  */
 package scripts.preProcess
 
-
-
+import com.netflix.config.DynamicIntProperty
+import com.netflix.config.DynamicPropertyFactory
+import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.zuul.util.HTTPRequestUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -29,13 +34,6 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.config.DynamicStringProperty
-import com.netflix.config.DynamicPropertyFactory
-import com.netflix.config.DynamicIntProperty
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.util.HTTPRequestUtils
-import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * @author Mikey Cohen
@@ -44,10 +42,10 @@ import com.netflix.zuul.groovy.ZuulFilter
  */
 
 class WeightedLoadBalancer extends ZuulFilter {
-    DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty("zuul.router.alt.route.vip", null)
-    DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty("zuul.router.alt.route.host", null)
-    DynamicIntProperty AltPercent = DynamicPropertyFactory.getInstance().getIntProperty("zuul.router.alt.route.permyriad", 0)   //0-10000 is 0-100% of traffic
-    DynamicIntProperty AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("zuul.router.alt.route.maxlimit", 500)
+    DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_VIP, null)
+    DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_HOST, null)
+    DynamicIntProperty AltPercent = DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_PERMYRIAD, 0)   //0-10000 is 0-100% of traffic
+    DynamicIntProperty AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_MAXLIMIT, 500)
     String envRegion = System.getenv("EC2_REGION");
 
     Random rand = new Random()
@@ -75,13 +73,13 @@ class WeightedLoadBalancer extends ZuulFilter {
     boolean shouldFilter() {
 
 
-        if(AltPercent.get() == 0) return false
-        if(AltVIP.get() == null && AltHost.get() == null) return false
-        if(NFRequestContext.currentContext.host != null) return false //host calls are not going to be loaltPad calculated here.
-        if(RequestContext.currentContext.sendZuulResponse == false) return false;
-        if(AltPercent.get() > AltPercentMaxLimit.get()) return false
+        if (AltPercent.get() == 0) return false
+        if (AltVIP.get() == null && AltHost.get() == null) return false
+        if (NFRequestContext.currentContext.host != null) return false //host calls are not going to be loaltPad calculated here.
+        if (RequestContext.currentContext.sendZuulResponse == false) return false;
+        if (AltPercent.get() > AltPercentMaxLimit.get()) return false
 
-        if (envRegion.equals('us-east-1')){
+        if (envRegion.equals('us-east-1')) {
             switch (country) {
                 case (null):
                 case ("us"):
@@ -100,14 +98,14 @@ class WeightedLoadBalancer extends ZuulFilter {
 
     @Override
     Object run() {
-        if(AltVIP.get() != null){
+        if (AltVIP.get() != null) {
             (NFRequestContext.currentContext).routeVIP = AltVIP.get()
-            if(NFRequestContext.currentContext.routeVIP.startsWith("apiproxy")){
+            if (NFRequestContext.currentContext.routeVIP.startsWith("apiproxy")) {
                 NFRequestContext.getCurrentContext().proxyToProxy = true // for proxyToProxy load testing
             }
             return true
         }
-        if(AltHost.get() != null){
+        if (AltHost.get() != null) {
             try {
                 (NFRequestContext.currentContext).host = new URL(AltHost.get())
                 (NFRequestContext.currentContext).routeVIP = null
@@ -156,30 +154,30 @@ class WeightedLoadBalancer extends ZuulFilter {
         }
 
         @Test
-        public void testMaxLimit(){
+        public void testMaxLimit() {
             request = Mockito.mock(HttpServletRequest.class)
             WeightedLoadBalancer weightedLoadBalancer = new WeightedLoadBalancer()
             weightedLoadBalancer = Mockito.spy(weightedLoadBalancer)
             weightedLoadBalancer.AltPercent = DynamicPropertyFactory.getInstance().getIntProperty("y", 10000)
 
-            weightedLoadBalancer.AltVIP= Mockito.mock(DynamicStringProperty.class)
+            weightedLoadBalancer.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltVIP.get()).thenReturn("test")
-            weightedLoadBalancer.envRegion= "us-east-1"
+            weightedLoadBalancer.envRegion = "us-east-1"
             Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertFalse(weightedLoadBalancer.shouldFilter())
         }
 
         @Test
-        public void testTrueRouting(){
+        public void testTrueRouting() {
             request = Mockito.mock(HttpServletRequest.class)
             WeightedLoadBalancer weightedLoadBalancer = new WeightedLoadBalancer()
             weightedLoadBalancer = Mockito.spy(weightedLoadBalancer)
             weightedLoadBalancer.AltPercent = Mockito.mock(DynamicIntProperty.class)
             Mockito.when(weightedLoadBalancer.AltPercent.get()).thenReturn(new Integer(10000))
-            weightedLoadBalancer.AltVIP= Mockito.mock(DynamicStringProperty.class)
+            weightedLoadBalancer.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltVIP.get()).thenReturn("test")
             weightedLoadBalancer.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
-            weightedLoadBalancer.envRegion= "us-east-1"
+            weightedLoadBalancer.envRegion = "us-east-1"
             Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
@@ -188,16 +186,16 @@ class WeightedLoadBalancer extends ZuulFilter {
         }
 
 //        @Test
-        public void testPercentRouting(){
+        public void testPercentRouting() {
             WeightedLoadBalancer weightedLoadBalancer = new WeightedLoadBalancer()
             weightedLoadBalancer.AltPercent = DynamicPropertyFactory.getInstance().getIntProperty("x", 100)
-            weightedLoadBalancer.AltVIP=  DynamicPropertyFactory.getInstance().getStringProperty("y", "test")
-            weightedLoadBalancer.envRegion= "us-east-1"
+            weightedLoadBalancer.AltVIP = DynamicPropertyFactory.getInstance().getStringProperty("y", "test")
+            weightedLoadBalancer.envRegion = "us-east-1"
 
             int nCount = 0
 
-            for(int i = 0; i < 1000; ++i){
-                if(weightedLoadBalancer.shouldFilter()) nCount++
+            for (int i = 0; i < 1000; ++i) {
+                if (weightedLoadBalancer.shouldFilter()) nCount++
             }
             println(nCount)
             Assert.assertTrue(nCount > 8)
@@ -206,7 +204,7 @@ class WeightedLoadBalancer extends ZuulFilter {
         }
 
         @Test
-        public void testTrueHostRouting(){
+        public void testTrueHostRouting() {
             request = Mockito.mock(HttpServletRequest.class)
             WeightedLoadBalancer weightedLoadBalancer = new WeightedLoadBalancer()
             weightedLoadBalancer = Mockito.spy(weightedLoadBalancer)
@@ -214,9 +212,9 @@ class WeightedLoadBalancer extends ZuulFilter {
             Mockito.when(weightedLoadBalancer.AltPercent.get()).thenReturn(new Integer(10000))
             weightedLoadBalancer.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
 
-            weightedLoadBalancer.AltHost= Mockito.mock(DynamicStringProperty.class)
+            weightedLoadBalancer.AltHost = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltHost.get()).thenReturn("http://www.moldfarm.com")
-            weightedLoadBalancer.envRegion= "us-east-1"
+            weightedLoadBalancer.envRegion = "us-east-1"
             Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()

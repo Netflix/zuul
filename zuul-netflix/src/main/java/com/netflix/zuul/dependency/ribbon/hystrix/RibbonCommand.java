@@ -7,6 +7,7 @@ import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.niws.client.http.HttpClientRequest;
 import com.netflix.niws.client.http.HttpClientResponse;
 import com.netflix.niws.client.http.RestClient;
+import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.NFRequestContext;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -16,9 +17,10 @@ import java.net.URISyntaxException;
 
 /**
  * Hystrix wrapper around Eureka Ribbon command
+ *
  * @author Mikey Cohen
- * Date: 2/6/12
- * Time: 2:54 PM
+ *         Date: 2/6/12
+ *         Time: 2:54 PM
  */
 public class RibbonCommand extends HystrixCommand<HttpClientResponse> {
 
@@ -28,7 +30,6 @@ public class RibbonCommand extends HystrixCommand<HttpClientResponse> {
     MultivaluedMap<String, String> headers;
     MultivaluedMap<String, String> params;
     InputStream requestEntity;
-
 
 
     public RibbonCommand(RestClient restClient,
@@ -54,7 +55,7 @@ public class RibbonCommand extends HystrixCommand<HttpClientResponse> {
                 // 2 others commands that are already thread isolated
                 HystrixCommandProperties.Setter().withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
                         .withExecutionIsolationSemaphoreMaxConcurrentRequests(DynamicPropertyFactory.getInstance().
-                                getIntProperty("zuul.eureka."+commandKey +".semaphore.maxSemaphores", 100).get())));
+                                getIntProperty(ZuulConstants.ZUUL_EUREKA + commandKey + ".semaphore.maxSemaphores", 100).get())));
 
         this.restClient = restClient;
         this.verb = verb;

@@ -15,10 +15,10 @@
  */
 package com.netflix.zuul.groovy;
 
-import com.netflix.zuul.monitoring.Tracer;
-import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.monitoring.Tracer;
+import com.netflix.zuul.monitoring.TracerFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -28,10 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Base abstract class for ZuulFilters. The base class defines abstract methods to define:
@@ -39,17 +36,17 @@ import static org.mockito.Mockito.when;
  * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
  * We also support a "static" type for static responses see  StaticResponseFilter.
  * Any filterType made be created or added and run by calling FilterProcessor.runFilters(type)
- *
+ * <p/>
  * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
  * important for a filter. filterOrders do not need to be sequential.
- *
+ * <p/>
  * ZuulFilters may be disabled using Archius Properties.
- *
+ * <p/>
  * By default ZuulFilters are static; they don't carry state. This may be overridden by overriding the isStaticFilter() property to false
  *
  * @author Mikey Cohen
- * Date: 10/26/11
- * Time: 4:29 PM
+ *         Date: 10/26/11
+ *         Time: 4:29 PM
  */
 public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> {
 
@@ -61,6 +58,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
      * We also support a "static" type for static responses see  StaticResponseFilter.
      * Any filterType made be created or added and run by calling FilterProcessor.runFilters(type)
+     *
      * @return A String representing that type
      */
     abstract public String filterType();
@@ -68,42 +66,47 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
     /**
      * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
      * important for a filter. filterOrders do not need to be sequential.
+     *
      * @return the int order of a filter
      */
     abstract public int filterOrder();
 
     /**
      * By default ZuulFilters are static; they don't carry state. This may be overridden by overriding the isStaticFilter() property to false
+     *
      * @return true by default
      */
-    public boolean isStaticFilter(){
+    public boolean isStaticFilter() {
         return true;
     }
 
     /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
+     *
      * @return
      */
-    public String disablePropertyName(){
-        return "zuul." + this.getClass().getSimpleName() + "." + filterType() +".disable";
+    public String disablePropertyName() {
+        return "zuul." + this.getClass().getSimpleName() + "." + filterType() + ".disable";
     }
 
     /**
      * If true, the filter has been disabled by archaius and will not be run
+     *
      * @return
      */
-    public boolean isFilterDisabled(){
+    public boolean isFilterDisabled() {
         return filterDisabled.get();
 
     }
 
     /**
      * runFilter checks !isFilterDisabled() and shouldFilter(). The run() method is invoked if both are true.
+     *
      * @return the return from Object
      * @throws Throwable
      */
     public Object runFilter() throws Throwable {
-        if(filterDisabled.get()) return null;
+        if (filterDisabled.get()) return null;
         Tracer t;
         if (shouldFilter()) {
             t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
@@ -156,20 +159,20 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
 
                 @Override
                 public String filterType() {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
 
                 @Override
                 public int filterOrder() {
-                    return 0;  //To change body of implemented methods use File | Settings | File Templates.
+                    return 0;
                 }
 
                 public boolean shouldFilter() {
-                    return false;  //To change body of implemented methods use File | Settings | File Templates.
+                    return false;
                 }
 
                 public Object run() {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
             }
 
@@ -185,7 +188,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
                 verify(tf1, times(1)).run();
                 verify(tf2, times(0)).run();
             } catch (Throwable throwable) {
-                throwable.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throwable.printStackTrace();
             }
 
         }

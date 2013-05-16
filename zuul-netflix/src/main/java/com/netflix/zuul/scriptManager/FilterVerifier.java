@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.scriptManager;
 
-import com.netflix.zuul.groovy.ZuulFilter;
 import com.netflix.zuul.ZuulApplicationInfo;
+import com.netflix.zuul.groovy.ZuulFilter;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.junit.Before;
@@ -27,15 +27,15 @@ import static org.junit.Assert.*;
 
 /**
  * verifies that the given source code is compilable in Groovy, can be instanciated, and is a ZuulFilter type
+ *
  * @author Mikey Cohen
- * Date: 6/12/12
- * Time: 7:12 PM
+ *         Date: 6/12/12
+ *         Time: 7:12 PM
  */
 public class FilterVerifier {
     private static final FilterVerifier INSTANCE = new FilterVerifier();
 
     /**
-     *
      * @return Singleton
      */
     public static FilterVerifier getInstance() {
@@ -44,9 +44,11 @@ public class FilterVerifier {
 
     /**
      * verifies compilation, instanciation and that it is a ZuulFilter
+     *
      * @param sFilterCode
      * @return a FilterInfo object representing that code
      * @throws org.codehaus.groovy.control.CompilationFailedException
+     *
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
@@ -59,7 +61,7 @@ public class FilterVerifier {
 
         String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
 
-        return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" +filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
+        return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" + filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
     }
 
     Object instanciateClass(Class groovyClass) throws InstantiationException, IllegalAccessException {
@@ -74,9 +76,11 @@ public class FilterVerifier {
 
     /**
      * compiles the Groovy source code
+     *
      * @param sFilterCode
      * @return
      * @throws org.codehaus.groovy.control.CompilationFailedException
+     *
      */
     public Class compileGroovy(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
@@ -194,14 +198,14 @@ public class FilterVerifier {
                 try {
                     FilterVerifier.INSTANCE.checkProxyFilterInstance(filter);
                 } catch (InstantiationException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e.printStackTrace();
                     assertFalse(true); //we shouldn't get here
                 }
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             }
 
@@ -213,14 +217,14 @@ public class FilterVerifier {
                     FilterVerifier.INSTANCE.checkProxyFilterInstance(filter);
                     assertFalse(true); //we shouldn't get here
                 } catch (InstantiationException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e.printStackTrace();
                     assertTrue(true); //this
                 }
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             }
         }
@@ -240,10 +244,10 @@ public class FilterVerifier {
 
 
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             }
 
@@ -251,10 +255,10 @@ public class FilterVerifier {
                 FilterInfo filterInfo = FilterVerifier.INSTANCE.verifyFilter(sNotProxyFilterGroovy);
                 assertFalse(true);// shouldn't get here
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertTrue(true); //we shouldn't get here
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             }
 
@@ -264,10 +268,10 @@ public class FilterVerifier {
             } catch (CompilationFailedException e) {
                 assertTrue(true); //we shouldn't get here
             } catch (InstantiationException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             } catch (IllegalAccessException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
                 assertFalse(true); //we shouldn't get here
             }
 
