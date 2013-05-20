@@ -4,8 +4,8 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 dependencies {
-
     compile project(':zuul-core')
+
     compile 'com.netflix.astyanax:astyanax-cassandra:1.56.28'
     compile 'com.netflix.astyanax:astyanax-thrift:1.56.28'
     compile 'com.netflix.hystrix:hystrix-core:1.2.10'
@@ -19,14 +19,11 @@ dependencies {
     compile 'com.netflix.ribbon:ribbon-eureka:0.1.11'
     compile 'com.netflix.ribbon:ribbon-httpclient:0.1.11'
     compile 'com.netflix.turbine:turbine-core:0.3'
-    compile 'org.json:json:20090211'
+    compile 'org.json:json:1.0'
     provided 'junit:junit-dep:4.10'
-    provided 'org.powermock:powermock-api-mockito:1.5'
-
-
-
-
+    // provided 'org.powermock:powermock-api-mockito:1.5'
 }
+
 jar {
     from sourceSets.main.allGroovy
 }
