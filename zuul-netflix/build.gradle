@@ -19,7 +19,10 @@ dependencies {
     compile 'com.netflix.ribbon:ribbon-eureka:0.1.11'
     compile 'com.netflix.ribbon:ribbon-httpclient:0.1.11'
     compile 'com.netflix.turbine:turbine-core:0.3'
-    compile 'org.json:json:1.0'
+
+    //compile 'org.json:json:1.0'
+    compile 'org.json:json:20090211'
+
     provided 'junit:junit-dep:4.10'
     // provided 'org.powermock:powermock-api-mockito:1.5'
 }

@@ -1,1 +1,17 @@
 apply from: 'http://artifacts.netflix.com/gradle-netflix-local/artifactory.gradle'
+
+rootProject {
+    afterProject { project ->
+        def compileConf = project.configurations.findByName('compile')
+        if (compileConf==null) {
+            return
+        }
+        def deps = compileConf.dependencies
+        def dep = deps.find { it.group == 'org.json' && it.name == 'json' }
+        if (dep != null) {
+            print "removing ${dep}"
+            deps.remove(dep)
+            project.dependencies.add('compile', "org.json:json:1.0")
+        }
+    }
+}
