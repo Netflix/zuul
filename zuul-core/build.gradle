@@ -15,6 +15,9 @@ dependencies {
 
     provided 'junit:junit-dep:4.10'
     provided 'javax.servlet:servlet-api:2.5'
+
+    // would be nice to only reference the version in one place
+    groovy "org.codehaus.groovy:groovy-all:2.0.2"
 }
 
 
