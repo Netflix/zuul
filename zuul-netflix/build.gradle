@@ -24,7 +24,7 @@ dependencies {
     compile 'org.json:json:20090211'
 
     provided 'junit:junit-dep:4.10'
-    // provided 'org.powermock:powermock-api-mockito:1.5'
+    provided 'org.powermock:powermock-api-mockito:1.5'
 }
 
 jar {
