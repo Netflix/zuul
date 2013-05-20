@@ -4,12 +4,14 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 dependencies {
-
     compile project(':zuul-core')
     compile project(':zuul-netflix')
     compile 'org.codehaus.groovy:groovy-all:2.0.2'
 
+    // would be nice to only reference the version in one place
+    groovy "org.codehaus.groovy:groovy-all:2.0.2"
 }
+
 jar {
     from sourceSets.main.allGroovy
 }
