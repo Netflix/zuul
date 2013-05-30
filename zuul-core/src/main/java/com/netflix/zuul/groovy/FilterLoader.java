@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.groovy;
 
+import com.netflix.zuul.filters.FilterRegistry;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.junit.Test;
@@ -24,11 +25,20 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -43,7 +53,9 @@ public class FilterLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
-    ConcurrentHashMap<String, ZuulFilter> filterInstanceMap = new ConcurrentHashMap<String, ZuulFilter>();
+    private final FilterRegistry filterRegistry = FilterRegistry.instance();
+
+//    ConcurrentHashMap<String, ZuulFilter> filterInstanceMap = new ConcurrentHashMap<String, ZuulFilter>();
     ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
     ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
@@ -72,10 +84,10 @@ public class FilterLoader {
             filterCheck.putIfAbsent(sName, sName);
             if (!sCode.equals(filterClassCode.get(sName))) {
                 LOG.info("reloading groovy code " + sName);
-                filterInstanceMap.remove(sName);
+                filterRegistry.remove(sName);
             }
         }
-        ZuulFilter filter = filterInstanceMap.get(sName);
+        ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
             Class clazz = loadGroovyClass(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
@@ -90,7 +102,7 @@ public class FilterLoader {
      * @return the total number of Zuul filters
      */
     public int filterInstanceMapSize() {
-        return filterInstanceMap.size();
+        return filterRegistry.size();
     }
 
 
@@ -108,9 +120,9 @@ public class FilterLoader {
         String sName = file.getAbsolutePath() + file.getName();
         if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
             LOG.debug("reloading groovy " + sName);
-            filterInstanceMap.remove(sName);
+            filterRegistry.remove(sName);
         }
-        ZuulFilter filter = filterInstanceMap.get(sName);
+        ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
             Class clazz = loadGroovyClass(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
@@ -119,7 +131,7 @@ public class FilterLoader {
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
                 }
-                filterInstanceMap.put(file.getAbsolutePath() + file.getName(), filter);
+                filterRegistry.put(file.getAbsolutePath() + file.getName(), filter);
                 filterClassLastModified.put(sName, file.lastModified());
                 return true;
             }
@@ -141,7 +153,7 @@ public class FilterLoader {
 
         list = new ArrayList<ZuulFilter>();
 
-        Collection<ZuulFilter> filters = filterInstanceMap.values();
+        Collection<ZuulFilter> filters = filterRegistry.getAllFilters();
         for (Iterator<ZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
             ZuulFilter filter = iterator.next();
             if (filter.filterType().equals(filterType)) {
