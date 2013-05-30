@@ -17,13 +17,13 @@ package scripts.preProcess
 
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.FilterProcessor
 import com.netflix.zuul.ZuulApplicationInfo
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.groovy.FilterProcessor
-import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * @author Mikey Cohen

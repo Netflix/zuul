@@ -17,8 +17,7 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.groovy.FilterProcessor;
-import com.netflix.zuul.groovy.ZuulFilter;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -15,10 +15,21 @@
  */
 package scripts.proxy
 
-
-import java.util.zip.GZIPInputStream
-
+import com.netflix.client.ClientException
+import com.netflix.client.ClientFactory
+import com.netflix.client.IClient
+import com.netflix.hystrix.exception.HystrixRuntimeException
+import com.netflix.niws.client.http.HttpClientResponse
+import com.netflix.niws.client.http.RestClient
+import com.netflix.util.Pair
+import com.netflix.zuul.ZuulFilter
+import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
+import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.util.HTTPRequestUtils
+import com.sun.jersey.core.util.MultivaluedMapImpl
 import org.apache.http.Header
 import org.apache.http.message.BasicHeader
 import org.junit.Assert
@@ -28,37 +39,16 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.ServletInputStream
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.niws.client.http.RestClient
-import com.netflix.zuul.context.RequestContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.exception.ZuulException
-import com.netflix.niws.client.http.HttpClientResponse
+import java.util.zip.GZIPInputStream
+import javax.servlet.ServletInputStream
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.core.MultivaluedMap
-import com.netflix.hystrix.exception.HystrixRuntimeException
-import com.netflix.client.ClientException
-import com.netflix.zuul.util.HTTPRequestUtils
-import com.sun.jersey.core.util.MultivaluedMapImpl
-import com.netflix.util.Pair
 
-import static com.netflix.niws.client.http.HttpClientRequest.*
-import com.netflix.client.ClientFactory
-import com.netflix.client.IClient
-import com.netflix.zuul.exception.ZuulException
-import com.netflix.hystrix.HystrixCommand
-import com.netflix.hystrix.HystrixCommand.Setter
-import com.netflix.niws.client.http.HttpClientRequest
-import com.netflix.hystrix.HystrixCommandGroupKey
-import com.netflix.hystrix.HystrixCommandProperties
-import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
+import static com.netflix.niws.client.http.HttpClientRequest.Verb
 
 class ZuulNFRequest extends ZuulFilter {
 
@@ -96,14 +86,14 @@ class ZuulNFRequest extends ZuulFilter {
         }
         //remove double slashes
         uri = uri.replace("//", "/")
-       
+
         HttpClientResponse response = proxy(restClient, verb, uri, headers, params, requestEntity)
         setResponse(response)
         return response
     }
 
-	
-	
+
+
     void debug(RestClient restClient, Verb verb, uri, MultivaluedMap<String, String> headers, MultivaluedMap<String, String> params, InputStream requestEntity) {
 
         if (Debug.debugRequest()) {
@@ -120,7 +110,7 @@ class ZuulNFRequest extends ZuulFilter {
 
             Debug.addRequestDebug("ZUUL:: > ${verb.verb()}  ${uri}?${query} HTTP/1.1")
             RequestContext ctx = RequestContext.getCurrentContext()
-            if(!ctx.isChunkedRequestBody()) {
+            if (!ctx.isChunkedRequestBody()) {
                 if (requestEntity != null) {
                     debugRequestEntity(ctx.request.getInputStream())
                 }
@@ -130,8 +120,8 @@ class ZuulNFRequest extends ZuulFilter {
 
     void debugRequestEntity(InputStream inputStream) {
         if (!Debug.debugRequestHeadersOnly()) {
-			String entity = inputStream.getText()
-			Debug.addRequestDebug("ZUUL:: > ${entity}")
+            String entity = inputStream.getText()
+            Debug.addRequestDebug("ZUUL:: > ${entity}")
         }
     }
 
@@ -143,7 +133,7 @@ class ZuulNFRequest extends ZuulFilter {
 //        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
 
         String route = NFRequestContext.getCurrentContext().route
-        if(route == null){
+        if (route == null) {
             String path = RequestContext.currentContext.requestURI
             if (path == null) {
                 path = RequestContext.currentContext.getRequest() getRequestURI()
@@ -176,7 +166,7 @@ class ZuulNFRequest extends ZuulFilter {
                 requestEntity = request.getInputStream();
             }
         } catch (IOException e) {
-		    LOG.error(e);
+            LOG.error(e);
         }
 
         return requestEntity
@@ -252,8 +242,8 @@ class ZuulNFRequest extends ZuulFilter {
         }
 
         String contentEncoding = resp.getHeaders().get(CONTENT_ENCODING);
-		
-		if (contentEncoding != null && HTTPRequestUtils.getInstance().isGzipped(contentEncoding)) {
+
+        if (contentEncoding != null && HTTPRequestUtils.getInstance().isGzipped(contentEncoding)) {
             context.setResponseGZipped(true);
         } else {
             context.setResponseGZipped(false);
@@ -267,7 +257,7 @@ class ZuulNFRequest extends ZuulFilter {
                 list.each { header ->
                     context.addOriginResponseHeader(key, header)
 
-                    if(key.equalsIgnoreCase("content-length"))
+                    if (key.equalsIgnoreCase("content-length"))
                         context.setOriginContentLength(header);
 
                     if (isValidHeader) {
@@ -294,7 +284,7 @@ class ZuulNFRequest extends ZuulFilter {
                 list.each { header ->
                     context.addOriginResponseHeader(key, header)
 
-                    if(key.equalsIgnoreCase("content-length"))
+                    if (key.equalsIgnoreCase("content-length"))
                         context.setOriginContentLength(header);
 
                     if (isValidHeader) {

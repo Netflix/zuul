@@ -13,12 +13,13 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.http;
 
 
+import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.groovy.FilterProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,14 +37,13 @@ import java.io.PrintWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
  * Core Zuul servlet which intializes and orchestrates zuulFilter execution
+ *
  * @author Mikey Cohen
- * Date: 12/23/11
- * Time: 10:44 AM
+ *         Date: 12/23/11
+ *         Time: 10:44 AM
  */
 public class ZuulServlet extends HttpServlet {
     private ZuulRunner zuulRunner = new ZuulRunner();
@@ -80,7 +80,7 @@ public class ZuulServlet extends HttpServlet {
             }
 
         } catch (Throwable e) {
-            error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" +e.getClass().getName()));
+            error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" + e.getClass().getName()));
         } finally {
 //            RequestContext.getCurrentContext().unset();
         }
@@ -88,6 +88,7 @@ public class ZuulServlet extends HttpServlet {
 
     /**
      * executes "post" ZuulFilters
+     *
      * @throws ZuulException
      */
     void postRoute() throws ZuulException {
@@ -96,6 +97,7 @@ public class ZuulServlet extends HttpServlet {
 
     /**
      * executes "route" filters
+     *
      * @throws ZuulException
      */
     void route() throws ZuulException {
@@ -104,6 +106,7 @@ public class ZuulServlet extends HttpServlet {
 
     /**
      * executes "pre" filters
+     *
      * @throws ZuulException
      */
     void preRoute() throws ZuulException {
@@ -112,6 +115,7 @@ public class ZuulServlet extends HttpServlet {
 
     /**
      * initializes request
+     *
      * @param servletRequest
      * @param servletResponse
      */
@@ -121,6 +125,7 @@ public class ZuulServlet extends HttpServlet {
 
     /**
      * sets error context info and executes "error" filters
+     *
      * @param e
      */
     void error(ZuulException e) {

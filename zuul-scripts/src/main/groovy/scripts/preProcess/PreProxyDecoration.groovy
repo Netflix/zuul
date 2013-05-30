@@ -15,9 +15,9 @@
  */
 package scripts.preProcess
 
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.groovy.ZuulFilter
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith

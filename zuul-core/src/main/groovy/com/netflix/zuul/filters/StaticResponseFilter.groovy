@@ -15,10 +15,10 @@
  */
 package com.netflix.zuul.filters
 
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
+
 import java.util.regex.Pattern
-import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * Abstract class to return content directly fron Zuul,
@@ -65,11 +65,11 @@ public abstract class StaticResponseFilter extends ZuulFilter {
      */
     boolean checkPath(String path) {
         def uri = uri()
-        if(uri instanceof String){
+        if (uri instanceof String) {
             return uri.equals(path)
-        } else if(uri instanceof List){
-           return uri.contains(path)
-        } else if(uri instanceof Pattern){
+        } else if (uri instanceof List) {
+            return uri.contains(path)
+        } else if (uri instanceof Pattern) {
             return uri.matcher(path).matches();
         }
         return false;
@@ -79,7 +79,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
     Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
-        if(ctx.getResponseBody() == null) {
+        if (ctx.getResponseBody() == null) {
             ctx.setResponseBody(responseBody())
             ctx.sendZuulResponse = false;
         }

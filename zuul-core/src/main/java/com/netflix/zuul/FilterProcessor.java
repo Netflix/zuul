@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.groovy;
+package com.netflix.zuul;
 
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.RequestContext;

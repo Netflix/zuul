@@ -289,7 +289,7 @@ public class StatsManager {
 
         @Test
         public void testCollectRequestStats() {
-            final String host = "api.test.netflix.com";
+            final String host = "api.netflix.com";
             final String proto = "https";
 
             final HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
@@ -312,7 +312,7 @@ public class StatsManager {
 
         @Test
         public void createsNormalizedHostKey() {
-            final String host = "api.test.netflix.com";
+
             assertEquals("host_EC2.amazonaws.com", StatsManager.hostKey("ec2-174-129-179-89.compute-1.amazonaws.com"));
             assertEquals("host_IP", StatsManager.hostKey("12.345.6.789"));
             assertEquals("host_IP", StatsManager.hostKey("ip-10-86-83-168"));

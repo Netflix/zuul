@@ -18,12 +18,12 @@ package scripts.proxy
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.util.Pair
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
-import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.zuul.util.HTTPRequestUtils
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost

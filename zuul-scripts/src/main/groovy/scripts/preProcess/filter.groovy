@@ -1,6 +1,6 @@
 package preProcess
 
-import com.netflix.zuul.groovy.ZuulFilter
+import com.netflix.zuul.ZuulFilter
 
 
 class filter extends ZuulFilter {

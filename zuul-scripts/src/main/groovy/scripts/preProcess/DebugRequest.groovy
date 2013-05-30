@@ -15,8 +15,9 @@
  */
 package scripts.preProcess
 
-
-
+import com.netflix.zuul.ZuulFilter
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.RequestContext
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,10 +27,6 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * @author Mikey Cohen
@@ -49,8 +46,8 @@ class DebugRequest extends ZuulFilter {
 
     @Override
     boolean shouldFilter() {
-       return Debug.debugRequest()
-		
+        return Debug.debugRequest()
+
     }
 
     @Override
@@ -71,7 +68,7 @@ class DebugRequest extends ZuulFilter {
         }
 
         final RequestContext ctx = RequestContext.getCurrentContext()
-        if(!ctx.isChunkedRequestBody()) {
+        if (!ctx.isChunkedRequestBody()) {
             InputStream inp = ctx.request.getInputStream()
             String body = null
             if (inp != null) {

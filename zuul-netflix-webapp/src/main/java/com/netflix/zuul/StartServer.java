@@ -47,7 +47,8 @@ import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
-import com.netflix.zuul.groovy.GroovyFilterFileManager;
+import com.netflix.zuul.groovy.GroovyCompiler;
+import com.netflix.zuul.groovy.GroovyFileFilter;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.zuul.plugins.Counter;
@@ -118,7 +119,7 @@ public class StartServer extends GuiceServletContextListener {
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         try {
             server.close();
-            GroovyFilterFileManager.shutdown();
+            FilterFileManager.shutdown();
         } catch (IOException e) {
             logger.error("Error while stopping karyon.", e);
             throw Throwables.propagate(e);
@@ -195,7 +196,7 @@ public class StartServer extends GuiceServletContextListener {
     }
 
 
-    void initZuul() throws IOException, IllegalAccessException, InstantiationException {
+    void initZuul() throws Exception, IllegalAccessException, InstantiationException {
 
         RequestContext.setContextClass(NFRequestContext.class);
 
@@ -212,10 +213,12 @@ public class StartServer extends GuiceServletContextListener {
         final String routingFiltersPath = config.getString(ZUUL_FILTER_ROUTING_PATH);
         final String customPath = config.getString(ZUUL_FILTER_CUSTOM_PATH);
 
+        FilterLoader.getInstance().setCompiler(new GroovyCompiler());
+        FilterFileManager.setFilenameFilter(new GroovyFileFilter());
         if (customPath == null) {
-            GroovyFilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath);
+            FilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath);
         } else {
-            GroovyFilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath, customPath);
+            FilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath, customPath);
         }
 
         LOG.info("Groovy Filter file manager started");

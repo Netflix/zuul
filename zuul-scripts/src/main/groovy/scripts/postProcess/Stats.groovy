@@ -15,7 +15,8 @@
  */
 package scripts.postProcess
 
-
+import com.netflix.zuul.ZuulFilter
+import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.stats.StatsManager
 import org.junit.Assert
 import org.junit.Test
@@ -25,9 +26,6 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
 
 /**
  * @author Mikey Cohen

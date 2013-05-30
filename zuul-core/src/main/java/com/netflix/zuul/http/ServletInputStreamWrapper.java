@@ -13,17 +13,18 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.http;
 
 import javax.servlet.ServletInputStream;
 import java.io.IOException;
 
 /**
  * ServletInputStream wrapper to wrap a byte[] into a ServletInputStream
+ *
  * @author mhawthorne
  */
 public class ServletInputStreamWrapper extends ServletInputStream {
-    
+
     private byte[] data;
     private int idx = 0;
 

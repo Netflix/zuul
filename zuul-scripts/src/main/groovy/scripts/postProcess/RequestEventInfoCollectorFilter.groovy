@@ -15,27 +15,18 @@
  */
 package scripts.postProcess
 
-
-
-
-
 import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
+import com.netflix.config.ConfigurationManager
 import com.netflix.util.Pair
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.stats.AmazonInfoHolder
-
-import javax.servlet.http.Cookie
-import javax.servlet.http.HttpServletRequest
-import com.netflix.zuul.groovy.ZuulFilter
-import org.apache.log4j.LogManager
-import com.netflix.config.ConfigurationManager
-import com.netflix.config.DynamicIntProperty
-import com.netflix.config.DynamicBooleanProperty
-import com.netflix.config.DynamicPropertyFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.servlet.http.HttpServletRequest
 
 /**
  * Collects request data to be sent to ESI, EventBus, Turbine and friends.

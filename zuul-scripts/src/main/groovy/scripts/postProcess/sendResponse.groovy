@@ -19,11 +19,11 @@ import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.util.Pair
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito

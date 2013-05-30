@@ -13,8 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.groovy;
+package com.netflix.zuul;
 
+import com.netflix.zuul.groovy.GroovyFileFilter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
@@ -38,34 +38,40 @@ import static org.mockito.Mockito.*;
  * This class manages the directory polling for changes and new Groovy filters.
  * Polling interval and directories are specified in the initialization of the class, and a poller will check
  * for changes and additions.
+ *
  * @author Mikey Cohen
- * Date: 12/7/11
- * Time: 12:09 PM
+ *         Date: 12/7/11
+ *         Time: 12:09 PM
  */
-public class GroovyFilterFileManager {
+public class FilterFileManager {
 
     String[] aDirectories;
     int pollingIntervalSeconds;
     Thread poller;
     boolean bRunning = true;
 
-    static final GroovyFileFilter GROOVY_FILE_FILTER = new GroovyFileFilter();
+    static FilenameFilter FILENAME_FILTER;
 
-    static GroovyFilterFileManager INSTANCE;
+    static FilterFileManager INSTANCE;
 
-    private GroovyFilterFileManager() {
+    private FilterFileManager() {
+    }
+
+    public static void setFilenameFilter(FilenameFilter filter) {
+        FILENAME_FILTER = filter;
     }
 
     /**
      * Initialized the GroovyFileManager.
+     *
      * @param pollingIntervalSeconds the polling interval in Seconds
-     * @param directories Any number of paths to directories to be polled may be specified
+     * @param directories            Any number of paths to directories to be polled may be specified
      * @throws IOException
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public static void init(int pollingIntervalSeconds, String... directories) throws IOException, IllegalAccessException, InstantiationException {
-        if(INSTANCE == null)INSTANCE = new GroovyFilterFileManager();
+    public static void init(int pollingIntervalSeconds, String... directories) throws Exception, IllegalAccessException, InstantiationException {
+        if (INSTANCE == null) INSTANCE = new FilterFileManager();
 
         INSTANCE.aDirectories = directories;
         INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
@@ -77,7 +83,7 @@ public class GroovyFilterFileManager {
     /**
      * Shuts down the poller
      */
-    public static void shutdown(){
+    public static void shutdown() {
         INSTANCE.stopPoller();
     }
 
@@ -104,6 +110,7 @@ public class GroovyFilterFileManager {
 
     /**
      * Returns the directory File for a path. A Runtime Exception is thrown if the directory is in valid
+     *
      * @param sPath
      * @return a File representing the directory path
      */
@@ -116,13 +123,14 @@ public class GroovyFilterFileManager {
 
     /**
      * Returns a List<File> of all Files from all polled directories
+     *
      * @return
      */
     List<File> getFiles() {
         List<File> list = new ArrayList<File>();
         for (String sDirectory : aDirectories) {
             File directory = getDirectory(sDirectory);
-            File[] aFiles = directory.listFiles(GROOVY_FILE_FILTER);
+            File[] aFiles = directory.listFiles(FILENAME_FILTER);
             if (aFiles != null) {
                 list.addAll(Arrays.asList(aFiles));
             }
@@ -138,30 +146,21 @@ public class GroovyFilterFileManager {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    void processGroovyFiles(List<File> aFiles) throws IOException, InstantiationException, IllegalAccessException {
+    void processGroovyFiles(List<File> aFiles) throws Exception, InstantiationException, IllegalAccessException {
 
         for (File file : aFiles) {
             FilterLoader.getInstance().putFilter(file);
         }
     }
 
-    void manageFiles() throws IOException, IllegalAccessException, InstantiationException {
+    void manageFiles() throws Exception, IllegalAccessException, InstantiationException {
         List<File> aFiles = getFiles();
         processGroovyFiles(aFiles);
     }
 
-    /**
-     * Filters only .groovy files
-     */
-    static class GroovyFileFilter implements FilenameFilter {
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".groovy");
-        }
-    }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {
-
         @Mock
         private File nonGroovyFile;
         @Mock
@@ -175,18 +174,6 @@ public class GroovyFilterFileManager {
             MockitoAnnotations.initMocks(this);
         }
 
-        @Test
-        public void testGroovyFileFilter() {
-
-            when(nonGroovyFile.getName()).thenReturn("file.mikey");
-            when(groovyFile.getName()).thenReturn("file.groovy");
-
-            GroovyFileFilter filter = new GroovyFileFilter();
-
-            assertFalse(filter.accept(nonGroovyFile, "file.mikey"));
-            assertTrue(filter.accept(groovyFile, "file.groovy"));
-
-        }
 
         @Test
         public void testGroovyFileLoad() {
@@ -198,10 +185,11 @@ public class GroovyFilterFileManager {
             aFiles[0] = nonGroovyFile;
             aFiles[1] = groovyFile;
 
-            when(directory.listFiles(GROOVY_FILE_FILTER)).thenReturn(aFiles);
+            when(directory.listFiles(FILENAME_FILTER)).thenReturn(aFiles);
             when(directory.isDirectory()).thenReturn(true);
 
-            GroovyFilterFileManager manager = new GroovyFilterFileManager();
+            FilterFileManager manager = new FilterFileManager();
+            FilterFileManager.setFilenameFilter(new GroovyFileFilter());
             manager = spy(manager);
 
             doReturn(directory).when(manager).getDirectory("test");
@@ -214,8 +202,8 @@ public class GroovyFilterFileManager {
         }
 
         @Test
-        public void testFileManagerInit() throws IOException, InstantiationException, IllegalAccessException {
-            GroovyFilterFileManager manager = new GroovyFilterFileManager();
+        public void testFileManagerInit() throws Exception, InstantiationException, IllegalAccessException {
+            FilterFileManager manager = new FilterFileManager();
 
             manager = spy(manager);
             manager.INSTANCE = manager;

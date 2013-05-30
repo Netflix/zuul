@@ -16,7 +16,7 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.ZuulApplicationInfo;
-import com.netflix.zuul.groovy.ZuulFilter;
+import com.netflix.zuul.ZuulFilter;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.junit.Before;
@@ -90,7 +90,7 @@ public class FilterVerifier {
 
     public static class UnitTest {
 
-        String sGoodGroovyScriptFilter = "import com.netflix.zuul.groovy.ZuulFilter\n" +
+        String sGoodGroovyScriptFilter = "import com.netflix.zuul.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
                 "class filter extends ZuulFilter {\n" +
@@ -116,7 +116,7 @@ public class FilterVerifier {
                 "\n" +
                 "}";
 
-        String sNotProxyFilterGroovy = "import com.netflix.zuul.groovy.ZuulFilter\n" +
+        String sNotProxyFilterGroovy = "import com.netflix.zuul.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
                 "class filter  {\n" +
@@ -142,7 +142,7 @@ public class FilterVerifier {
                 "\n" +
                 "}";
 
-        String sCompileFailCode = "import com.netflix.zuul.groovy.ZuulFilter\n" +
+        String sCompileFailCode = "import com.netflix.zuul.ZuulFilter\n" +
                 "import com.netflix.zuul.context.NFRequestContext\n" +
                 "\n" +
                 "cclass filter extends ZuulFilter {\n" +

@@ -18,11 +18,11 @@ package scripts.preProcess
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.util.HTTPRequestUtils
+import com.netflix.zuul.dependency.ribbon.RibbonConfig
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -59,14 +59,8 @@ class WeightedLoadBalancer extends ZuulFilter {
         return 30
     }
 
-    String getCountry() {
-        String country = HTTPRequestUtils.instance.getValueFromRequestElements("country");
-        if (country == null) return "us"
-        return country;
-    }
-
     /**
-     * Filter only for US countries in us-east-1 for now.  host shouldn't be defined already as well back end response should be set.
+     * returns true if a randomValue is less than the zuul.router.alt.route.permyriad property value
      * @return
      */
     @Override
@@ -79,19 +73,6 @@ class WeightedLoadBalancer extends ZuulFilter {
         if (RequestContext.currentContext.sendZuulResponse == false) return false;
         if (AltPercent.get() > AltPercentMaxLimit.get()) return false
 
-        if (envRegion.equals('us-east-1')) {
-            switch (country) {
-                case (null):
-                case ("us"):
-                case ("ca"):
-                case ("US"):
-                case ("CA"):
-                    break;
-                default:
-                    return false;
-            }
-        }
-
         int randomValue = rand.nextInt(10000)
         return randomValue <= AltPercent.get()
     }
@@ -100,7 +81,7 @@ class WeightedLoadBalancer extends ZuulFilter {
     Object run() {
         if (AltVIP.get() != null) {
             (NFRequestContext.currentContext).routeVIP = AltVIP.get()
-            if (NFRequestContext.currentContext.routeVIP.startsWith("apiproxy")) {
+            if (NFRequestContext.currentContext.routeVIP.startsWith(RibbonConfig.getApplicationName())) {
                 NFRequestContext.getCurrentContext().proxyToProxy = true // for proxyToProxy load testing
             }
             return true
@@ -162,8 +143,6 @@ class WeightedLoadBalancer extends ZuulFilter {
 
             weightedLoadBalancer.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltVIP.get()).thenReturn("test")
-            weightedLoadBalancer.envRegion = "us-east-1"
-            Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertFalse(weightedLoadBalancer.shouldFilter())
         }
 
@@ -177,8 +156,6 @@ class WeightedLoadBalancer extends ZuulFilter {
             weightedLoadBalancer.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltVIP.get()).thenReturn("test")
             weightedLoadBalancer.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
-            weightedLoadBalancer.envRegion = "us-east-1"
-            Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
             Assert.assertTrue(NFRequestContext.currentContext.routeVIP == "test")
@@ -214,8 +191,6 @@ class WeightedLoadBalancer extends ZuulFilter {
 
             weightedLoadBalancer.AltHost = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(weightedLoadBalancer.AltHost.get()).thenReturn("http://www.moldfarm.com")
-            weightedLoadBalancer.envRegion = "us-east-1"
-            Mockito.when(weightedLoadBalancer.country).thenReturn("us")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
             Assert.assertTrue(NFRequestContext.currentContext.routeVIP == null)

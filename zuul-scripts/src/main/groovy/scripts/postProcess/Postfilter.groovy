@@ -16,9 +16,9 @@
 package scripts.postProcess
 
 import com.netflix.util.Pair
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.groovy.ZuulFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before

@@ -13,10 +13,8 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.groovy;
+package com.netflix.zuul;
 
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +25,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,6 +48,17 @@ public class FilterLoader {
     ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
+    static DynamicCodeCompiler COMPILER;
+
+    /**
+     * Sets a Dynamic Code Compiler
+     *
+     * @param compiler
+     */
+    public void setCompiler(DynamicCodeCompiler compiler) {
+        COMPILER = compiler;
+    }
+
     /**
      * @return Singleton FilterLoader
      */
@@ -57,27 +67,27 @@ public class FilterLoader {
     }
 
     /**
-     * Given groovy source and name will compile and store the filter if it detects that the filter code has changed or
+     * Given source and name will compile and store the filter if it detects that the filter code has changed or
      * the filter doesn't exist. Otherwise it will return an instance of the requested ZuulFilter
      *
-     * @param sCode Groovy source code
+     * @param sCode source code
      * @param sName name of the filter
      * @return the ZuulFilter
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public ZuulFilter getFilter(String sCode, String sName) throws IllegalAccessException, InstantiationException {
+    public ZuulFilter getFilter(String sCode, String sName) throws Exception {
 
         if (filterCheck.get(sName) == null) {
             filterCheck.putIfAbsent(sName, sName);
             if (!sCode.equals(filterClassCode.get(sName))) {
-                LOG.info("reloading groovy code " + sName);
+                LOG.info("reloading code " + sName);
                 filterInstanceMap.remove(sName);
             }
         }
         ZuulFilter filter = filterInstanceMap.get(sName);
         if (filter == null) {
-            Class clazz = loadGroovyClass(sCode, sName);
+            Class clazz = COMPILER.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = (ZuulFilter) clazz.newInstance();
             }
@@ -95,7 +105,7 @@ public class FilterLoader {
 
 
     /**
-     * From a file this will read the Groovy ZuulFilter source code, compile it, and add it to the list of current filters
+     * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
      * a true response means that it was successful.
      *
      * @param file
@@ -104,15 +114,15 @@ public class FilterLoader {
      * @throws InstantiationException
      * @throws IOException
      */
-    public boolean putFilter(File file) throws IllegalAccessException, InstantiationException, IOException {
+    public boolean putFilter(File file) throws Exception {
         String sName = file.getAbsolutePath() + file.getName();
         if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
-            LOG.debug("reloading groovy " + sName);
+            LOG.debug("reloading filter " + sName);
             filterInstanceMap.remove(sName);
         }
         ZuulFilter filter = filterInstanceMap.get(sName);
         if (filter == null) {
-            Class clazz = loadGroovyClass(file);
+            Class clazz = COMPILER.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = (ZuulFilter) clazz.newInstance();
                 List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
@@ -154,42 +164,6 @@ public class FilterLoader {
         return list;
     }
 
-    /**
-     * Compiles Groovy code and returns the Class of the compiles code.
-     *
-     * @param sCode
-     * @param sName
-     * @return
-     */
-    Class loadGroovyClass(String sCode, String sName) {
-
-        ClassLoader parent = FilterLoader.class.getClassLoader();
-        GroovyClassLoader loader = getGroovyClassLoader();
-        LOG.warn("Compiling filter: " + sName);
-        Class groovyClass = loader.parseClass(sCode, sName);
-        return groovyClass;
-    }
-
-    /**
-     * @return a new GroovyClassLoader
-     */
-    GroovyClassLoader getGroovyClassLoader() {
-        ClassLoader parent = FilterLoader.class.getClassLoader();
-        return new GroovyClassLoader();
-    }
-
-    /**
-     * Compiles groovy class from a file
-     *
-     * @param file
-     * @return
-     * @throws IOException
-     */
-    Class loadGroovyClass(File file) throws IOException {
-        GroovyClassLoader loader = getGroovyClassLoader();
-        Class groovyClass = loader.parseClass(file);
-        return groovyClass;
-    }
 
     public static class TestZuulFilter extends ZuulFilter {
 
@@ -223,10 +197,12 @@ public class FilterLoader {
         @Test
         public void testGetFilterFromFile() {
             FilterLoader loader = spy(FilterLoader.getInstance());
+            DynamicCodeCompiler compiler = mock(DynamicCodeCompiler.class);
+            loader.setCompiler(compiler);
             file = mock(File.class);
 
             try {
-                doReturn(TestZuulFilter.class).when(loader).loadGroovyClass(file);
+                doReturn(TestZuulFilter.class).when(compiler).compile(file);
                 assertTrue(loader.putFilter(file));
                 assertTrue(loader.filterInstanceMapSize() == 1);
 
@@ -259,11 +235,13 @@ public class FilterLoader {
         public void testGetFilterFromString() {
 
             FilterLoader loader = spy(FilterLoader.getInstance());
+            DynamicCodeCompiler compiler = mock(DynamicCodeCompiler.class);
+            loader.setCompiler(compiler);
 
             try {
 
                 String string = "";
-                doReturn(TestZuulFilter.class).when(loader).loadGroovyClass(string, string);
+                doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
                 ZuulFilter filter = loader.getFilter(string, string);
 
                 assertNotNull(filter);
@@ -274,47 +252,6 @@ public class FilterLoader {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-        }
-
-
-        @Test
-        public void testLoadGroovyFromString() {
-
-            FilterLoader loader = spy(FilterLoader.getInstance());
-            try {
-
-                String code = "class test { public String hello(){return \"hello\" } } ";
-                Class clazz = loader.loadGroovyClass(code, "test");
-                assertNotNull(clazz);
-                assertEquals(clazz.getName(), "test");
-                GroovyObject groovyObject = (GroovyObject) clazz.newInstance();
-                Object[] args = {};
-                String s = (String) groovyObject.invokeMethod("hello", args);
-                assertEquals(s, "hello");
-
-
-            } catch (Exception e) {
-                assertFalse(true);
-            }
-
-        }
-
-
-        @Test
-        public void testLoadGroovyFromFile() {
-
-//            FilterLoader loader = spy(FilterLoader.getInstance());
-//            try {
-//
-//                String code = "class test { public String hello(){return \"hello\" } } ";
-//                Class  clazz = loader.loadGroovyClass(file)
-//                assertNotNull(clazz);
-//                assertEquals(clazz.getName(), "test");
-//
-//            } catch (Exception e) {
-//                assertFalse(true);
-//            }
 
         }
 

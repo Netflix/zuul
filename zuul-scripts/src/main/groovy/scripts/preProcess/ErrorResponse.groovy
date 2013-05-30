@@ -15,8 +15,10 @@
  */
 package scripts.preProcess
 
-
+import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Test
@@ -27,9 +29,6 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.groovy.ZuulFilter
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.exception.ZuulException
 
 class ErrorResponse extends ZuulFilter {
 
@@ -59,9 +58,9 @@ class ErrorResponse extends ZuulFilter {
             String cause = e.errorCause
             if (cause == null) cause = "UNKNOWN"
             RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Zuul Error: " + cause)
-            if(e.nStatusCode == 404){
+            if (e.nStatusCode == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
-            }else{
+            } else {
                 ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_" + cause)
             }
 
