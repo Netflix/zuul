@@ -48,7 +48,7 @@ public class FilterProcessor {
     protected static final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
 
 
-    FilterProcessor() {
+    public FilterProcessor() {
     }
 
     /**
