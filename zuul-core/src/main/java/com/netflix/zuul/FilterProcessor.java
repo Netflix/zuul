@@ -207,7 +207,7 @@ public class FilterProcessor {
 
         @Before
         public void before() {
-            MonitoringHelper.mockForTests();
+            MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
         }
 

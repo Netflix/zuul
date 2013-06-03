@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'jetty'
+
+
+dependencies {
+    compile project(":zuul-core")
+    
+    compile 'log4j:log4j:1.2.17'
+    compile 'org.slf4j:slf4j-log4j12:1.6.1'
+    
+    provided 'junit:junit-dep:4.10'
+    provided 'javax.servlet:servlet-api:2.5'
+}
+
+eclipse {
+  classpath {
+        // include 'provided' dependencies on the classpath
+        plusConfigurations += configurations.provided
+        downloadSources = true
+        downloadJavadoc = true
+  }
+}
+
+
+idea {
+    module {
+        // include 'provided' dependencies on the classpath
+        scopes.PROVIDED.plus += configurations.provided
+    }
+}

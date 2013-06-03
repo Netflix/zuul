@@ -54,18 +54,21 @@ idea {
 def findJar(prefix) {
     def name = ""
     configurations.runtime.each {
-     if(it.name.startsWith(prefix)) {
-         name= it
-     }
+        if(it.name.startsWith(prefix)) {
+            name= it
+        }
     }
     return name;
 }
 
-war {
+tasks.war.doFirst {
     webInf {
-        def scripts = findJar('zuul-scripts')
-        from zipTree(scripts).matching{
-            include '**/**/*.groovy'
+        println "webInf"
+        def jar = findJar('zuul-scripts')
+        println "jar ${jar}"
+        from (zipTree(jar)) {
+            println "from zip ${it}"
+            include '**/*.groovy'
         }
     }
 

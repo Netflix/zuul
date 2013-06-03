@@ -130,7 +130,7 @@ public class ZuulServletFilter implements Filter {
 
         @Before
         public void before() {
-            MonitoringHelper.mockForTests();
+            MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
         }
 

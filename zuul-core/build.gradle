@@ -11,10 +11,13 @@ dependencies {
 
     compile 'com.netflix.archaius:archaius-core:0.5.6'
     compile 'com.netflix.servo:servo-core:0.4.32'
-    compile  'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
+    compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
 
     provided 'junit:junit-dep:4.10'
     provided 'javax.servlet:servlet-api:2.5'
+
+    // would be nice to only reference the version in one place
+    groovy "org.codehaus.groovy:groovy-all:2.0.2"
 }
 
 
