@@ -196,7 +196,7 @@ public class FilterFileManager {
             manager.aDirectories = new String[1];
             manager.aDirectories[0] = "test";
             List files = manager.getFiles();
-            assertTrue(files.size() == 2);
+            assertTrue(files.size() == 1);
 
 
         }
