@@ -1,6 +1,7 @@
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.groovy.ZuulFilter;
+
+import com.netflix.zuul.ZuulFilter;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +19,8 @@ public class FilterRegistry {
 
     private final ConcurrentHashMap<String, ZuulFilter> filters = new ConcurrentHashMap<String, ZuulFilter>();
 
-    private FilterRegistry() {}
+    private FilterRegistry() {
+    }
 
     public ZuulFilter remove(String key) {
         return this.filters.remove(key);
