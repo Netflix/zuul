@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.zuul.groovy.GroovyFileFilter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 /**
@@ -174,32 +172,6 @@ public class FilterFileManager {
             MockitoAnnotations.initMocks(this);
         }
 
-
-        @Test
-        public void testGroovyFileLoad() {
-
-            when(nonGroovyFile.getName()).thenReturn("file.mikey");
-            when(groovyFile.getName()).thenReturn("file.groovy");
-
-            File[] aFiles = new File[2];
-            aFiles[0] = nonGroovyFile;
-            aFiles[1] = groovyFile;
-
-            when(directory.listFiles(FILENAME_FILTER)).thenReturn(aFiles);
-            when(directory.isDirectory()).thenReturn(true);
-
-            FilterFileManager manager = new FilterFileManager();
-            FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            manager = spy(manager);
-
-            doReturn(directory).when(manager).getDirectory("test");
-            manager.aDirectories = new String[1];
-            manager.aDirectories[0] = "test";
-            List files = manager.getFiles();
-            assertTrue(files.size() == 1);
-
-
-        }
 
         @Test
         public void testFileManagerInit() throws Exception, InstantiationException, IllegalAccessException {
