@@ -16,7 +16,10 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterRegistry;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +35,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -54,7 +59,7 @@ public class FilterLoader {
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
-    private final FilterRegistry filterRegistry = FilterRegistry.instance();
+    private FilterRegistry filterRegistry = FilterRegistry.instance();
 
     static DynamicCodeCompiler COMPILER;
 
@@ -65,6 +70,11 @@ public class FilterLoader {
      */
     public void setCompiler(DynamicCodeCompiler compiler) {
         COMPILER = compiler;
+    }
+
+    // overidden by tests
+    public void setFilterRegistry(FilterRegistry r) {
+        this.filterRegistry = r;
     }
 
     /**
@@ -200,67 +210,65 @@ public class FilterLoader {
 
 
     public static class UnitTest {
+
+        @Mock
         File file;
 
-        @Test
-        public void testGetFilterFromFile() {
-            FilterLoader loader = spy(FilterLoader.getInstance());
-            DynamicCodeCompiler compiler = mock(DynamicCodeCompiler.class);
+        @Mock
+        DynamicCodeCompiler compiler;
+
+        @Mock
+        FilterRegistry registry;
+
+        FilterLoader loader;
+
+        TestZuulFilter filter = new TestZuulFilter();
+
+        @Before
+        public void before() {
+            MockitoAnnotations.initMocks(this);
+
+            loader = spy(new FilterLoader());
             loader.setCompiler(compiler);
-            file = mock(File.class);
+            loader.setFilterRegistry(registry);
+        }
 
-            try {
-                doReturn(TestZuulFilter.class).when(compiler).compile(file);
-                assertTrue(loader.putFilter(file));
-                assertTrue(loader.filterInstanceMapSize() == 1);
+        @Test
+        public void testGetFilterFromFile() throws Exception {
+            doReturn(TestZuulFilter.class).when(compiler).compile(file);
+            assertTrue(loader.putFilter(file));
+            verify(registry).put(any(String.class), any(ZuulFilter.class));
+        }
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        @Test
+        public void testGetFiltersByType() throws Exception {
+            doReturn(TestZuulFilter.class).when(compiler).compile(file);
+            assertTrue(loader.putFilter(file));
 
+            verify(registry).put(any(String.class), any(ZuulFilter.class));
+
+            final List<ZuulFilter> filters = new ArrayList<ZuulFilter>();
+            filters.add(filter);
+            when(registry.getAllFilters()).thenReturn(filters);
+
+            List< ZuulFilter > list = loader.getFiltersByType("test");
+            assertTrue(list != null);
+            assertTrue(list.size() == 1);
+            ZuulFilter filter = list.get(0);
+            assertTrue(filter != null);
+            assertTrue(filter.filterType().equals("test"));
         }
 
 
         @Test
-        public void testGetFiltersByType() {
-            FilterLoader loader = spy(FilterLoader.getInstance());
+        public void testGetFilterFromString() throws Exception {
+            String string = "";
+            doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
+            ZuulFilter filter = loader.getFilter(string, string);
 
-            try {
-                List<ZuulFilter> list = loader.getFiltersByType("test");
-                assertTrue(list != null);
-                assertTrue(list.size() == 1);
-                ZuulFilter filter = list.get(0);
-                assertTrue(filter != null);
-                assertTrue(filter.filterType().equals("test"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-
-        @Test
-        public void testGetFilterFromString() {
-
-            FilterLoader loader = spy(FilterLoader.getInstance());
-            DynamicCodeCompiler compiler = mock(DynamicCodeCompiler.class);
-            loader.setCompiler(compiler);
-
-            try {
-
-                String string = "";
-                doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
-                ZuulFilter filter = loader.getFilter(string, string);
-
-                assertNotNull(filter);
-                assertTrue(filter.getClass() == TestZuulFilter.class);
-                assertTrue(loader.filterInstanceMapSize() == 1);
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            assertNotNull(filter);
+            assertTrue(filter.getClass() == TestZuulFilter.class);
+//            assertTrue(loader.filterInstanceMapSize() == 1);
         }
 
 
