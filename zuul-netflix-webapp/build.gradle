@@ -1,0 +1,78 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'war'
+apply plugin: 'jetty'
+
+dependencies {
+
+    compile project(':zuul-core')
+    compile project(':zuul-netflix')
+    compile project(':zuul-scripts')
+
+    runtime project(':zuul-scripts')
+
+    compile 'com.netflix.karyon:karyon-core:1.0.3'
+    compile 'com.netflix.karyon:karyon-admin:1.0.3'
+    compile 'com.netflix.karyon:karyon-admin-web:1.0.3'
+    compile 'com.netflix.karyon:karyon-extensions:1.0.3'
+    compile 'com.netflix.blitz4j:blitz4j:1.23'
+}
+
+javadoc {
+    options {
+        doclet = "org.benjchristensen.doclet.DocletExclude"
+        docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
+        stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
+        windowTitle = "Zuul Javadoc ${project.version}"
+    }
+}
+
+eclipse {
+    classpath {
+        // include 'provided' dependencies on the classpath
+        plusConfigurations += configurations.provided
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+
+idea {
+    module {
+        // include 'provided' dependencies on the classpath
+        languageLevel = '1.7'
+        scopes.PROVIDED.plus += configurations.provided
+    }
+}
+
+def findJar(prefix) {
+    def name = ""
+    configurations.runtime.each {
+        if(it.name.startsWith(prefix)) {
+            name= it
+        }
+    }
+    return name;
+}
+
+tasks.war.doFirst {
+    webInf {
+        def jar = findJar('zuul-scripts')
+        from (zipTree(jar)) {
+            include '**/*.groovy'
+        }
+    }
+}
+
+// runs webapp at root context
+jettyRun.contextPath = '/' 
+
+jettyRun.doFirst {
+    System.setProperty("archaius.deployment.applicationId", "zuul")    
+}
+
+task hack << {
+    println "archaius.deployment.applicationId: " + System.getProperty("archaius.deployment.applicationId")
+}
