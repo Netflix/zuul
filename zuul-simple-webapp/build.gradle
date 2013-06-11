@@ -35,3 +35,7 @@ idea {
 
 // runs webapp at root context
 jettyRun.contextPath = '/' 
+
+jettyRun.doFirst {
+    System.setProperty("zuul.filter.root", "src/main/filters")    
+}

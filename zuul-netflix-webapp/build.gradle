@@ -72,7 +72,3 @@ jettyRun.contextPath = '/'
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")    
 }
-
-task hack << {
-    println "archaius.deployment.applicationId: " + System.getProperty("archaius.deployment.applicationId")
-}
