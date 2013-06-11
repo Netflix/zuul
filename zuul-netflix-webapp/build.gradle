@@ -71,11 +71,4 @@ jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
-
-/*
-    def scriptDir = "../zuul-scripts/src/main/groovy/scripts"
-    System.setProperty("zuul.filter.pre", scriptDir + "/pre")
-    System.setProperty("zuul.filter.route", scriptDir + "/route")
-    System.setProperty("zuul.filter.post", scriptDir + "/post")
-*/
 }
