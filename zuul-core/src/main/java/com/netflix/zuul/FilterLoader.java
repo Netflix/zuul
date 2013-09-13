@@ -62,6 +62,8 @@ public class FilterLoader {
     private FilterRegistry filterRegistry = FilterRegistry.instance();
 
     static DynamicCodeCompiler COMPILER;
+    
+    static FilterFactory FILTER_FACTORY = new DefaultFilterFactory();
 
     /**
      * Sets a Dynamic Code Compiler
@@ -77,6 +79,15 @@ public class FilterLoader {
         this.filterRegistry = r;
     }
 
+    /**
+     * Sets a FilterFactory
+     * 
+     * @param factory
+     */
+    public void setFilterFactory(FilterFactory factory) {
+        FILTER_FACTORY = factory;
+    }
+    
     /**
      * @return Singleton FilterLoader
      */
@@ -107,7 +118,7 @@ public class FilterLoader {
         if (filter == null) {
             Class clazz = COMPILER.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ZuulFilter) clazz.newInstance();
+                filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
             }
         }
         return filter;
@@ -142,7 +153,7 @@ public class FilterLoader {
         if (filter == null) {
             Class clazz = COMPILER.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ZuulFilter) clazz.newInstance();
+                filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
                 List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
