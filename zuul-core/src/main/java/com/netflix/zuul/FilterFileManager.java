@@ -78,6 +78,10 @@ public class FilterFileManager {
 
     }
 
+    public static FilterFileManager getInstance() {
+        return INSTANCE;
+    }
+
     /**
      * Shuts down the poller
      */

@@ -40,16 +40,31 @@ import static org.mockito.Mockito.when;
  * Time: 8:22 AM
  */
 public class HTTPRequestUtils {
-	
-	
-
-    private static Logger logger = LoggerFactory.getLogger(HTTPRequestUtils.class);
     
     private final static HTTPRequestUtils INSTANCE = new HTTPRequestUtils();
     
-    private static final String X_FORWARDED_FOR_HEADER = "x-forwarded-for";
+    public static final String X_FORWARDED_FOR_HEADER = "x-forwarded-for";
 
 
+    /**
+     * Get the IP address of client making the request.
+     *
+     * Uses the "x-forwarded-for" HTTP header if available, otherwise uses the remote
+     * IP of requester.
+     *
+     * @param request <code>HttpServletRequest</code>
+     * @return <code>String</code> IP address
+     */
+    public String getClientIP(HttpServletRequest request) {
+        final String xForwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
+        String clientIP = null;
+        if (xForwardedFor == null) {
+            clientIP = request.getRemoteAddr();
+        } else {
+            clientIP = extractClientIpFromXForwardedFor(xForwardedFor);
+        }
+        return clientIP;
+    }
 
     /**
      * Extract the client IP address from an x-forwarded-for header. Returns null if there is no x-forwarded-for header
@@ -69,10 +84,6 @@ public class HTTPRequestUtils {
             return tokenized[0].trim();
         }
     }
-
-
- 
-
 
     /**
      * return singleton HTTPRequestUtils object
