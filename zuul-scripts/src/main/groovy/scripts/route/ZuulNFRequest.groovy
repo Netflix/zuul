@@ -18,8 +18,9 @@ package scripts.routing
 import com.netflix.client.ClientException
 import com.netflix.client.ClientFactory
 import com.netflix.client.IClient
+import com.netflix.client.http.HttpRequest
+import com.netflix.client.http.HttpResponse
 import com.netflix.hystrix.exception.HystrixRuntimeException
-import com.netflix.niws.client.http.HttpClientResponse
 import com.netflix.niws.client.http.RestClient
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
@@ -42,13 +43,13 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.util.zip.GZIPInputStream
 import javax.servlet.ServletInputStream
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.ws.rs.core.MultivaluedMap
+import java.util.zip.GZIPInputStream
 
-import static com.netflix.niws.client.http.HttpClientRequest.Verb
+import static HttpRequest.Verb
 
 class ZuulNFRequest extends ZuulFilter {
 
@@ -87,7 +88,7 @@ class ZuulNFRequest extends ZuulFilter {
         //remove double slashes
         uri = uri.replace("//", "/")
 
-        HttpClientResponse response = forward(restClient, verb, uri, headers, params, requestEntity)
+        HttpResponse response = forward(restClient, verb, uri, headers, params, requestEntity)
         setResponse(response)
         return response
     }
@@ -127,7 +128,7 @@ class ZuulNFRequest extends ZuulFilter {
 
 
 
-    def HttpClientResponse forward(RestClient restClient, Verb verb, uri, MultivaluedMap<String, String> headers, MultivaluedMap<String, String> params, InputStream requestEntity) {
+    def HttpResponse forward(RestClient restClient, Verb verb, uri, MultivaluedMap<String, String> headers, MultivaluedMap<String, String> params, InputStream requestEntity) {
         debug(restClient, verb, uri, headers, params, requestEntity)
 
 //        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
@@ -145,7 +146,7 @@ class ZuulNFRequest extends ZuulFilter {
 
         RibbonCommand command = new RibbonCommand(restClient, verb, uri, headers, params, requestEntity);
         try {
-            HttpClientResponse response = command.execute();
+            HttpResponse response = command.execute();
             return response
         } catch (HystrixRuntimeException e) {
             if (e?.fallbackException?.cause instanceof ClientException) {
@@ -223,25 +224,25 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
     Verb getVerb(String sMethod) {
-        if (sMethod == null) return RestClient.Verb.GET;
+        if (sMethod == null) return Verb.GET;
         sMethod = sMethod.toLowerCase();
-        if (sMethod.equals("post")) return RestClient.Verb.POST;
-        if (sMethod.equals("put")) return RestClient.Verb.PUT;
-        if (sMethod.equals("delete")) return RestClient.Verb.DELETE;
-        if (sMethod.equals("options")) return RestClient.Verb.OPTIONS;
-        if (sMethod.equals("head")) return RestClient.Verb.HEAD;
+        if (sMethod.equals("post")) return Verb.POST;
+        if (sMethod.equals("put")) return Verb.PUT;
+        if (sMethod.equals("delete")) return Verb.DELETE;
+        if (sMethod.equals("options")) return Verb.OPTIONS;
+        if (sMethod.equals("head")) return Verb.HEAD;
         return Verb.GET;
     }
 
-    void setResponse(HttpClientResponse resp) {
+    void setResponse(HttpResponse resp) {
         RequestContext context = RequestContext.getCurrentContext()
 
         context.setResponseStatusCode(resp.getStatus());
         if (resp.hasEntity()) {
-            context.responseDataStream = resp.getRawEntity();
+            context.responseDataStream = resp.inputStream;
         }
 
-        String contentEncoding = resp.getHeaders().get(CONTENT_ENCODING);
+        String contentEncoding = resp.getHeaders().get(CONTENT_ENCODING)?.first();
 
         if (contentEncoding != null && HTTPRequestUtils.getInstance().isGzipped(contentEncoding)) {
             context.setResponseGZipped(true);
@@ -253,7 +254,7 @@ class ZuulNFRequest extends ZuulFilter {
             resp.getHeaders().keySet().each { key ->
                 boolean isValidHeader = isValidHeader(key)
 
-                java.util.List<java.lang.String> list = resp.getHeaders().get(key, String.class)
+                Collection<String> list = resp.getHeaders().get(key)
                 list.each { header ->
                     context.addOriginResponseHeader(key, header)
 
@@ -280,7 +281,7 @@ class ZuulNFRequest extends ZuulFilter {
         } else {
             resp.getHeaders().keySet().each { key ->
                 boolean isValidHeader = isValidHeader(key)
-                java.util.List<java.lang.String> list = resp.getHeaders().get(key, String.class)
+                Collection<java.lang.String> list = resp.getHeaders().get(key)
                 list.each { header ->
                     context.addOriginResponseHeader(key, header)
 
@@ -418,21 +419,22 @@ class ZuulNFRequest extends ZuulFilter {
         public void testSetResponse() {
             request = Mockito.mock(HttpServletRequest.class)
             response = Mockito.mock(HttpServletResponse.class)
-            HttpClientResponse zuulResponse = Mockito.mock(HttpClientResponse.class)
+            HttpResponse zuulResponse = Mockito.mock(HttpResponse.class)
             RequestContext.getCurrentContext().request = request
             RequestContext.getCurrentContext().response = response
             ZuulNFRequest request = new ZuulNFRequest()
             request = Mockito.spy(request)
 
 
-            MultivaluedMap<String, String> headers = new MultivaluedMapImpl<String, String>()
-            headers.putSingle("test", "test")
-            headers.putSingle("content-length", "100")
+
+            Map<String, Collection<String>> headers = new HashMap<>();
+            headers.put("test", ["test"])
+            headers.put("content-length", ["100"])
 
             InputStream inp = Mockito.mock(InputStream.class)
 
             Mockito.when(zuulResponse.getStatus()).thenReturn(200)
-            Mockito.when(zuulResponse.getRawEntity()).thenReturn(inp)
+            Mockito.when(zuulResponse.getInputStream()).thenReturn(inp)
             Mockito.when(zuulResponse.hasEntity()).thenReturn(true)
 
             Mockito.when(zuulResponse.headers).thenReturn(headers)

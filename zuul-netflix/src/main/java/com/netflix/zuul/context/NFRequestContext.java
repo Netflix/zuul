@@ -15,8 +15,7 @@
  */
 package com.netflix.zuul.context;
 
-import com.netflix.niws.client.http.HttpClientResponse;
-
+import com.netflix.client.http.HttpResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +33,10 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Extended RequestContext adding Netflix library specific concepts and data
+ *
  * @author Mikey Cohen
- * Date: 12/23/11
- * Time: 1:14 PM
+ *         Date: 12/23/11
+ *         Time: 1:14 PM
  */
 public class NFRequestContext extends RequestContext {
 
@@ -51,7 +51,7 @@ public class NFRequestContext extends RequestContext {
     /**
      * creates a new NFRequestContext
      */
-    public NFRequestContext(){
+    public NFRequestContext() {
         super();
         put(EVENT_PROPS_KEY, new HashMap<String, Object>());
 
@@ -59,6 +59,7 @@ public class NFRequestContext extends RequestContext {
 
     /**
      * returns a NFRequestContext from the threadLocal
+     *
      * @return
      */
     public static NFRequestContext getCurrentContext() {
@@ -66,7 +67,8 @@ public class NFRequestContext extends RequestContext {
     }
 
     /**
-     *  returns the routeVIP; that is the Eureka "vip" of registered instances
+     * returns the routeVIP; that is the Eureka "vip" of registered instances
+     *
      * @return
      */
     public String getRouteVIP() {
@@ -74,7 +76,8 @@ public class NFRequestContext extends RequestContext {
     }
 
     /**
-     *  sets routeVIP; that is the Eureka "vip" of registered instances
+     * sets routeVIP; that is the Eureka "vip" of registered instances
+     *
      * @return
      */
 
@@ -83,7 +86,6 @@ public class NFRequestContext extends RequestContext {
     }
 
     /**
-     *
      * @return true if a routeHost or routeVip has been defined
      */
     public boolean hasRouteVIPOrHost() {
@@ -95,13 +97,14 @@ public class NFRequestContext extends RequestContext {
      */
     public void unset() {
         if (getZuulResponse() != null) {
-            getZuulResponse().releaseResources();
+            getZuulResponse().close(); //check this?
         }
         super.unset();
     }
 
     /**
      * sets the requestEntity; the inputStream of the Request
+     *
      * @param entity
      */
     public void setRequestEntity(InputStream entity) {
@@ -109,7 +112,6 @@ public class NFRequestContext extends RequestContext {
     }
 
     /**
-     *
      * @return the requestEntity; the inputStream of the request
      */
     public InputStream getRequestEntity() {
@@ -117,24 +119,27 @@ public class NFRequestContext extends RequestContext {
     }
 
     /**
-     * Sets the HttpClientResponse response that comes back from a Ribbon client.
+     * Sets the HttpResponse response that comes back from a Ribbon client.
+     *
      * @param response
      */
-    public void setZuulResponse(HttpClientResponse response) {
+    public void setZuulResponse(HttpResponse response) {
         set("zuulResponse", response);
     }
 
     /**
      * gets the "zuulResponse"
-     * @return returns the HttpClientResponse from a Ribbon call to an origin
+     *
+     * @return returns the HttpResponse from a Ribbon call to an origin
      */
-    public HttpClientResponse getZuulResponse() {
-        return (HttpClientResponse) get("zuulResponse");
+    public HttpResponse getZuulResponse() {
+        return (HttpResponse) get("zuulResponse");
     }
 
     /**
      * returns the "route". This is a Zuul defined bucket for collecting request metrics. By default the route is the
      * first segment of the uri  eg /get/my/stuff : route is "get"
+     *
      * @return
      */
     public String getRoute() {
@@ -154,7 +159,7 @@ public class NFRequestContext extends RequestContext {
     public static class UnitTest {
 
         @Mock
-        private HttpClientResponse clientResponse;
+        private HttpResponse clientResponse;
 
         @Before
         public void before() {

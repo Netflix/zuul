@@ -13,11 +13,11 @@ dependencies {
 
     runtime project(':zuul-scripts')
 
-    compile 'com.netflix.karyon:karyon-core:1.0.3'
-    compile 'com.netflix.karyon:karyon-admin:1.0.3'
-    compile 'com.netflix.karyon:karyon-admin-web:1.0.3'
-    compile 'com.netflix.karyon:karyon-extensions:1.0.3'
-    compile 'com.netflix.blitz4j:blitz4j:1.23'
+    compile 'com.netflix.karyon:karyon-core:2.0.02'
+    compile 'com.netflix.karyon:karyon-admin:2.0.02'
+    compile 'com.netflix.karyon:karyon-admin-web:2.0.02'
+    compile 'com.netflix.karyon:karyon-extensions:2.0.02'
+    compile 'com.netflix.blitz4j:blitz4j:1.31'
 }
 
 javadoc {
@@ -50,8 +50,8 @@ idea {
 def findJar(prefix) {
     def name = ""
     configurations.runtime.each {
-        if(it.name.startsWith(prefix)) {
-            name= it
+        if (it.name.startsWith(prefix)) {
+            name = it
         }
     }
     return name;
@@ -60,14 +60,14 @@ def findJar(prefix) {
 tasks.war.doFirst {
     webInf {
         def jar = findJar('zuul-scripts')
-        from (zipTree(jar)) {
+        from(zipTree(jar)) {
             include '**/*.groovy'
         }
     }
 }
 
 // runs webapp at root context
-jettyRun.contextPath = '/' 
+jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
