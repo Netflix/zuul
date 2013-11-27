@@ -21,10 +21,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +45,8 @@ import static org.mockito.Mockito.*;
  *         Time: 12:09 PM
  */
 public class FilterFileManager {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FilterFileManager.class);
 
     String[] aDirectories;
     int pollingIntervalSeconds;
@@ -117,10 +122,19 @@ public class FilterFileManager {
      * @return a File representing the directory path
      */
     public File getDirectory(String sPath) {
-        File directory = new File(sPath);
-        if (!directory.isDirectory()) throw new RuntimeException(sPath + " is not a valid directory");
+        File  directory = new File(sPath);
+        if (!directory.isDirectory()) {
+            URL resource = FilterFileManager.class.getClassLoader().getResource(sPath);
+            try {
+                directory = new File(resource.toURI());
+            } catch (Exception e) {
+                LOG.error("Error accessing directory in classloader. path=" + sPath, e);
+            }
+            if (!directory.isDirectory()) {
+                throw new RuntimeException(directory.getAbsolutePath() + " is not a valid directory");
+            }
+        }
         return directory;
-
     }
 
     /**
@@ -131,10 +145,12 @@ public class FilterFileManager {
     List<File> getFiles() {
         List<File> list = new ArrayList<File>();
         for (String sDirectory : aDirectories) {
-            File directory = getDirectory(sDirectory);
-            File[] aFiles = directory.listFiles(FILENAME_FILTER);
-            if (aFiles != null) {
-                list.addAll(Arrays.asList(aFiles));
+            if (sDirectory != null) {
+                File directory = getDirectory(sDirectory);
+                File[] aFiles = directory.listFiles(FILENAME_FILTER);
+                if (aFiles != null) {
+                    list.addAll(Arrays.asList(aFiles));
+                }
             }
         }
         return list;
