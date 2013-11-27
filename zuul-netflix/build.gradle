@@ -6,19 +6,19 @@ apply plugin: 'idea'
 dependencies {
     compile project(':zuul-core')
 
-    compile 'com.netflix.astyanax:astyanax-cassandra:1.56.28'
-    compile 'com.netflix.astyanax:astyanax-thrift:1.56.28'
-    compile 'com.netflix.hystrix:hystrix-core:1.2.10'
+    compile 'com.netflix.astyanax:astyanax-cassandra:1.56.43'
+    compile 'com.netflix.astyanax:astyanax-thrift:1.56.43'
+    compile 'com.netflix.hystrix:hystrix-core:1.3.8'
     compile 'commons-io:commons-io:2.4'
     compile 'commons-fileupload:commons-fileupload:1.2.2'
     compile 'org.codehaus.groovy:groovy-all:2.0.2'
     compile 'org.mockito:mockito-all:1.8.5'
     compile 'org.slf4j:slf4j-api:1.7.0'
 
-    compile 'com.netflix.ribbon:ribbon-core:0.1.11'
-    compile 'com.netflix.ribbon:ribbon-eureka:0.1.11'
-    compile 'com.netflix.ribbon:ribbon-httpclient:0.1.11'
-    compile 'com.netflix.turbine:turbine-core:0.3'
+    compile 'com.netflix.ribbon:ribbon-core:0.3.2'
+    compile 'com.netflix.ribbon:ribbon-eureka:0.3.2'
+    compile 'com.netflix.ribbon:ribbon-httpclient:0.3.2'
+    compile 'com.netflix.turbine:turbine-core:0.4'
 
     //compile 'org.json:json:1.0'
     compile 'org.json:json:20090211'
