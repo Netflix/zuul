@@ -16,6 +16,9 @@
 package com.netflix.zuul.scriptManager;
 
 
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.util.JsonUtility;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.fileupload.FileItemFactory;
@@ -54,6 +57,9 @@ import static org.mockito.Mockito.*;
  */
 @ThreadSafe
 public class FilterScriptManagerServlet extends HttpServlet {
+
+    public static final DynamicBooleanProperty adminEnabled =
+            DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_FILTER_ADMIN_ENABLED, true);
 
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
@@ -144,6 +150,12 @@ public class FilterScriptManagerServlet extends HttpServlet {
      */
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        if (! adminEnabled.get()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Filter admin is disabled. See the zuul.filters.admin.enabled FastProperty.");
+            return;
+        }
+
         // retrieve arguments and validate
         String action = request.getParameter("action");
         /* validate the action and method */

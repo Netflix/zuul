@@ -16,7 +16,7 @@
 package com.netflix.zuul.util;
 
 import com.netflix.zuul.scriptManager.FilterInfo;
-import com.sun.jersey.core.util.StringIgnoreCaseKeyComparator;
+import com.netflix.zuul.scriptManager.FilterScriptManagerServlet;
 
 /**
  * Utility method to build form data for the Admin page for uploading and downloading filters
@@ -35,18 +35,30 @@ public class AdminFilterUtil {
     }
 
     public static String buildDeactivateForm(String filter_id, int revision) {
-        return "<form  method=\"POST\" action=\"scriptmanager?action=DEACTIVATE&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
-                "<input type=\"submit\" value=\"deactivate\"/></form>";
+        if (FilterScriptManagerServlet.adminEnabled.get()) {
+            return "<form  method=\"POST\" action=\"scriptmanager?action=DEACTIVATE&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
+                   "<input type=\"submit\" value=\"deactivate\"/></form>";
+        } else {
+            return "";
+        }
     }
 
     public static String buildActivateForm(String filter_id, int revision) {
-        return "<form  method=\"POST\" action=\"scriptmanager?action=ACTIVATE&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
-                "<input type=\"submit\" value=\"activate\"/></form>";
+        if (FilterScriptManagerServlet.adminEnabled.get()) {
+            return "<form  method=\"POST\" action=\"scriptmanager?action=ACTIVATE&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
+                   "<input type=\"submit\" value=\"activate\"/></form>";
+        } else {
+            return "";
+        }
     }
 
     public static String buildCanaryForm(String filter_id, int revision) {
-        return "<form  method=\"POST\" action=\"scriptmanager?action=CANARY&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
-                "<input type=\"submit\" value=\"canary\"/></form>";
+        if (FilterScriptManagerServlet.adminEnabled.get()) {
+            return "<form  method=\"POST\" action=\"scriptmanager?action=CANARY&filter_id=" + filter_id + "&revision=" + revision + "\" >\n" +
+                   "<input type=\"submit\" value=\"canary\"/></form>";
+        } else {
+            return "";
+        }
     }
 
     public static String buildDownloadLink(String filter_id, int revision) {
