@@ -385,7 +385,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      * @return
      */
     public int getResponseStatusCode() {
-        return get("responseStatusCode") != null ? (Integer) get("responseStatusCode") : 200;
+        return get("responseStatusCode") != null ? (Integer) get("responseStatusCode") : 500;
     }
 
 

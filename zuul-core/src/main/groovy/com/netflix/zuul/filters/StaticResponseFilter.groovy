@@ -15,10 +15,12 @@
  */
 package com.netflix.zuul.filters
 
+import java.util.regex.Pattern
+
+import javax.servlet.http.HttpServletResponse
+
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
-
-import java.util.regex.Pattern
 
 /**
  * Abstract class to return content directly fron Zuul,
@@ -78,6 +80,8 @@ public abstract class StaticResponseFilter extends ZuulFilter {
     @Override
     Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
+        // Set the default response code for static filters to be 200
+        ctx.getResponse().setStatus(HttpServletResponse.SC_OK);
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
         if (ctx.getResponseBody() == null) {
             ctx.setResponseBody(responseBody())
