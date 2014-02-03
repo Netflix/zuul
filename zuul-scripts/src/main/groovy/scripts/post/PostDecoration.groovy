@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package scripts.postProcess
+package scripts.post
 
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
