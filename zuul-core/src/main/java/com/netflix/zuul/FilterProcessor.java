@@ -162,39 +162,58 @@ public class FilterProcessor {
      */
     public Object processZuulFilter(ZuulFilter filter) throws ZuulException {
 
-        boolean bDebug = RequestContext.getCurrentContext().debugRouting();
+        RequestContext ctx = RequestContext.getCurrentContext();
+        boolean bDebug = ctx.debugRouting();
+        long execTime = 0;
+        String filterName = "";
         try {
             long ltime = System.currentTimeMillis();
-
+            filterName = filter.getClass().getSimpleName();
+            
             RequestContext copy = null;
-            if (bDebug) {
+            Object o = null;
+            Throwable t = null;
 
-                Debug.addRoutingDebug("Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.getClass().getSimpleName());
-                copy = RequestContext.getCurrentContext().copy();
-            }
-            Object result = filter.runFilter();
             if (bDebug) {
-                if (filter.shouldFilter()) {
-                    Debug.addRoutingDebug("Filter {" + filter.getClass().getSimpleName() + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + (System.currentTimeMillis() - ltime) + "ms");
-                    Debug.compareContextState(filter.getClass().getSimpleName(), copy);
-                } else {
-                    //don't show filters not applied.
-                }
+                Debug.addRoutingDebug("Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filterName);
+                copy = ctx.copy();
             }
-            return result;
-        } catch (ZuulException e) {
-            if (bDebug) {
-                Debug.addRoutingDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
-                        " " + e.getMessage());
+            
+            ZuulFilterResult result = filter.runFilter();
+            ExecutionStatus s = result.getStatus();
+            execTime = System.currentTimeMillis() - ltime;
+            
+            switch (s) {
+                case FAILED:
+                    t = result.getException();
+                    ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
+                    break;
+                case SUCCESS:
+                    o = result.getResult();
+                    ctx.addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
+                    if (bDebug) {
+                        Debug.addRoutingDebug("Filter {" + filterName + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + execTime + "ms");
+                        Debug.compareContextState(filterName, copy);
+                    }
+                    break;
+                default:
+                    break;
             }
-            throw e;
+            
+            if (t != null) throw t;
+            return o;
         } catch (Throwable e) {
             if (bDebug) {
-                Debug.addRoutingDebug("Running Filter failed " + filter.getClass().getSimpleName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() +
-                        " " + e.getMessage());
+                Debug.addRoutingDebug("Running Filter failed " + filterName + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
             }
-            ZuulException ex = new ZuulException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filter.getClass().getSimpleName());
-            throw ex;
+            
+            if (e instanceof ZuulException) {
+                throw (ZuulException) e;
+            } else {
+                ZuulException ex = new ZuulException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filterName);
+                ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
+                throw ex;
+            }
         }
     }
 
@@ -231,7 +250,9 @@ public class FilterProcessor {
             processor = spy(processor);
 
             try {
-                when(filter.runFilter()).thenThrow(new Exception("Test"));
+                ZuulFilterResult r = new ZuulFilterResult(ExecutionStatus.FAILED);
+                r.setException(new Exception("Test"));
+                when(filter.runFilter()).thenReturn(r);
                 processor.processZuulFilter(filter);
                 assertFalse(true);
             } catch (Throwable e) {

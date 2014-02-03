@@ -96,30 +96,33 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      */
     public boolean isFilterDisabled() {
         return filterDisabled.get();
-
     }
 
     /**
      * runFilter checks !isFilterDisabled() and shouldFilter(). The run() method is invoked if both are true.
      *
-     * @return the return from Object
-     * @throws Throwable
+     * @return the return from ZuulFilterResult
      */
-    public Object runFilter() throws Throwable {
-        if (filterDisabled.get()) return null;
-        Tracer t;
-        if (shouldFilter()) {
-            t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
-            try {
-                return run();
-            } catch (Throwable e) {
-                t.setName("ZUUL::" + this.getClass().getSimpleName() + " failed");
-                throw e;
-            } finally {
-                t.stopAndLog();
+    public ZuulFilterResult runFilter() {
+        ZuulFilterResult zr = new ZuulFilterResult(ExecutionStatus.DISABLED);
+        if (!filterDisabled.get()) {
+            if (shouldFilter()) {
+                Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
+                try {
+                    Object res = run();
+                    zr = new ZuulFilterResult(res, ExecutionStatus.SUCCESS);
+                } catch (Throwable e) {
+                    t.setName("ZUUL::" + this.getClass().getSimpleName() + " failed");
+                    zr = new ZuulFilterResult(ExecutionStatus.FAILED);
+                    zr.setException(e);
+                } finally {
+                    t.stopAndLog();
+                }
+            } else {
+                zr = new ZuulFilterResult(ExecutionStatus.SKIPPED);
             }
         }
-        return null;
+        return zr;
     }
 
     public int compareTo(ZuulFilter filter) {

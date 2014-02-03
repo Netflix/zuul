@@ -58,7 +58,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     private static RequestContext testContext = null;
 
     protected static final ThreadLocal<? extends RequestContext> threadLocal = new ThreadLocal<RequestContext>() {
-
         @Override
         protected RequestContext initialValue() {
             try {
@@ -293,7 +292,27 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return (URL) get("routeHost");
     }
 
+    /**
+     * appends filter name and status to the filter execution history for the
+     * current request
+     * 
+     * @param executedFilters - name of the filter
+     */
+    public void addFilterExecutionSummary(String name, String status, long time) {
+            StringBuilder sb = getFilterExecutionSummary();
+            sb.append(name).append('[').append(status).append(',').append(time).append("],");
+    }
 
+    /**
+     * @return String that represents the filter execution history for the current request
+     */
+    public StringBuilder getFilterExecutionSummary() {
+        if (get("executedFilters") == null) {
+            putIfAbsent("executedFilters", new StringBuilder());
+        }
+        return (StringBuilder) get("executedFilters");
+    }
+    
     /**
      * sets the "responseBody" value as a String. This is the response sent back to the client.
      *
