@@ -300,7 +300,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      */
     public void addFilterExecutionSummary(String name, String status, long time) {
             StringBuilder sb = getFilterExecutionSummary();
-            sb.append(name).append('[').append(status).append(',').append(time).append("],");
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(name).append('[').append(status).append(']').append('[').append(time).append("ms]");
     }
 
     /**

@@ -16,6 +16,10 @@ public final class ZuulFilterResult {
         this.status = status;
     }
 
+    public ZuulFilterResult() {
+        this.status = ExecutionStatus.DISABLED;
+    }
+
     /**
      * @return the result
      */

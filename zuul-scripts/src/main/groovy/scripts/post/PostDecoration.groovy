@@ -59,11 +59,8 @@ class Postfilter extends ZuulFilter {
         headers.add(new Pair(X_ZUUL, "zuul"))
         headers.add(new Pair(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown"))
         headers.add(new Pair(CONNECTION, KEEP_ALIVE))
+        headers.add(new Pair(X_ZUUL_FILTER_EXECUTION_STATUS, context.getFilterExecutionSummary().toString()))
         headers.add(new Pair(X_ORIGINATING_URL, originatingURL))
-
-        // trying to force flushes down to clients without Apache mod_proxy buffering
-//        headers.add(new Pair("Transfer-Encoding", "chunked"));
-//        res.setContentLength(-1);
 
         if (context.get("ErrorHandled") == null && context.responseStatusCode >= 400) {
             headers.add(new Pair(X_NETFLIX_ERROR_CAUSE, "Error from Origin"))

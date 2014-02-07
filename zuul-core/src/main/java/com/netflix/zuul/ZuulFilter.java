@@ -104,7 +104,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      * @return the return from ZuulFilterResult
      */
     public ZuulFilterResult runFilter() {
-        ZuulFilterResult zr = new ZuulFilterResult(ExecutionStatus.DISABLED);
+        ZuulFilterResult zr = new ZuulFilterResult();
         if (!filterDisabled.get()) {
             if (shouldFilter()) {
                 Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
