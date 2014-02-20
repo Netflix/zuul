@@ -137,7 +137,7 @@ public class ZuulRunner {
                 runner.init(servletRequest, servletResponse);
                 verify(runner, times(1)).init(servletRequest, servletResponse);
                 assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
-                assertEquals(RequestContext.getCurrentContext().getResponse(), servletResponse);
+                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
 
                 runner.preRoute();
                 verify(processor, times(1)).preRoute();

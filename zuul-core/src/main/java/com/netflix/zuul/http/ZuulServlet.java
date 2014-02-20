@@ -140,7 +140,7 @@ public class ZuulServlet extends HttpServlet {
         @Mock
         HttpServletRequest servletRequest;
         @Mock
-        HttpServletResponse servletResponse;
+        HttpServletResponseWrapper servletResponse;
         @Mock
         FilterProcessor processor;
         @Mock
@@ -167,7 +167,7 @@ public class ZuulServlet extends HttpServlet {
                 zuulServlet.init(servletRequest, servletResponse);
                 verify(zuulServlet, times(1)).init(servletRequest, servletResponse);
                 assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
-                assertEquals(RequestContext.getCurrentContext().getResponse(), servletResponse);
+                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
 
                 zuulServlet.preRoute();
                 verify(processor, times(1)).preRoute();
