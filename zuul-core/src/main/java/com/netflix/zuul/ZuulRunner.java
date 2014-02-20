@@ -18,6 +18,7 @@ package com.netflix.zuul;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
+import com.netflix.zuul.http.HttpServletResponseWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +59,7 @@ public class ZuulRunner {
     public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         RequestContext.getCurrentContext().setRequest(new HttpServletRequestWrapper(servletRequest));
-        RequestContext.getCurrentContext().setResponse(servletResponse);
+        RequestContext.getCurrentContext().setResponse(new HttpServletResponseWrapper(servletResponse));
     }
 
     /**
