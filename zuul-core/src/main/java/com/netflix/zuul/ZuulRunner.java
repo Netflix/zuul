@@ -15,10 +15,17 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.http.HttpServletRequestWrapper;
-import com.netflix.zuul.http.HttpServletResponseWrapper;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.PrintWriter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,13 +33,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
+import com.netflix.zuul.http.HttpServletResponseWrapper;
 
 
 /**
@@ -57,9 +61,9 @@ public class ZuulRunner {
      * @param servletResponse
      */
     public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        servletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         RequestContext.getCurrentContext().setRequest(new HttpServletRequestWrapper(servletRequest));
         RequestContext.getCurrentContext().setResponse(new HttpServletResponseWrapper(servletResponse));
+        RequestContext.getCurrentContext().setResponseStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -112,7 +116,6 @@ public class ZuulRunner {
         @Mock
         FilterProcessor processor;
 
-
         @Mock
         PrintWriter writer;
 
@@ -127,7 +130,6 @@ public class ZuulRunner {
             ZuulRunner runner = new ZuulRunner();
             runner = spy(runner);
             RequestContext context = spy(RequestContext.getCurrentContext());
-
 
             try {
                 FilterProcessor.setProcessor(processor);
@@ -144,7 +146,6 @@ public class ZuulRunner {
 
                 runner.postRoute();
                 verify(processor, times(1)).postRoute();
-//                verify(context, times(1)).unset();
 
                 runner.route();
                 verify(processor, times(1)).route();
@@ -153,8 +154,6 @@ public class ZuulRunner {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
     }
 }
