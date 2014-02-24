@@ -63,7 +63,7 @@ public class ZuulRunner {
     public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         RequestContext.getCurrentContext().setRequest(new HttpServletRequestWrapper(servletRequest));
         RequestContext.getCurrentContext().setResponse(new HttpServletResponseWrapper(servletResponse));
-        RequestContext.getCurrentContext().setResponseStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        //RequestContext.getCurrentContext().setResponseStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     /**
