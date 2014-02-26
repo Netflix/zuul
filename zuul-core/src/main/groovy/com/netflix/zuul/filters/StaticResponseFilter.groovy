@@ -81,7 +81,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
     Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         // Set the default response code for static filters to be 200
-        ctx.getResponse().setStatus(HttpServletResponse.SC_OK);
+        ctx.setResponseStatusCode(HttpServletResponse.SC_OK)
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
         if (ctx.getResponseBody() == null) {
             ctx.setResponseBody(responseBody())
