@@ -139,10 +139,20 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
         }
 
+        LOG.debug("Path = " + req.getPathInfo());
+        LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+        LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
+
+        LOG.debug("Content-Length header = " + req.getContentLength());
         if (req.getContentLength() > 0) {
 
-            contentData = IOUtils.toByteArray(req.getInputStream());
+            // Read the request body inputstream into a byte array.
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IOUtils.copy(req.getInputStream(), baos);
+            contentData = baos.toByteArray();
+
             try {
+                LOG.debug("Length of contentData byte array = " + contentData.length);
                 if (req.getContentLength() != contentData.length) {
                     LOG.warn("Content-length different from byte array length! cl=" + req.getContentLength() + ", array=" + contentData.length);
                 }
@@ -186,8 +196,12 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
         } else if (req.getContentLength() == -1) {
             final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
-            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED))
+            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
                 RequestContext.getCurrentContext().setChunkedRequestBody();
+                LOG.debug("Set flag that request body is chunked.");
+            }
+        } else {
+            LOG.warn("Content-Length is neither greater than zero or -1. = " + req.getContentLength());
         }
 
         HashMap<String, String[]> map = new HashMap<String, String[]>(mapA.size() * 2);
