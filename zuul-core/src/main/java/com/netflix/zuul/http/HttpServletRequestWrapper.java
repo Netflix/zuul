@@ -106,6 +106,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         return contentData.clone();
     }
 
+
     /**
      * This method is safe to use multiple times.
      * Changing the returned map or the array of any of the map's values will not
@@ -139,21 +140,21 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         }
 
         if (req.getContentLength() > 0) {
-            byte[] data = new byte[req.getContentLength()];
-            int len = 0, totalLen = 0;
-            InputStream is = req.getInputStream();
-            while (totalLen < data.length) {
-                totalLen += (len = is.read(data, totalLen, data.length - totalLen));
-                if (len < 1)
-                    throw new IOException("Cannot read more than " + totalLen + (totalLen == 1 ? " byte!" : " bytes!"));
+
+            contentData = IOUtils.toByteArray(req.getInputStream());
+            try {
+                if (req.getContentLength() != contentData.length) {
+                    LOG.warn("Content-length different from byte array length! cl=" + req.getContentLength() + ", array=" + contentData.length);
+                }
+            } catch(Exception e) {
+                LOG.error("Error checking if request body gzipped!", e);
             }
-            contentData = data;
 
             String enc = req.getCharacterEncoding();
 
             if (enc == null)
                 enc = "UTF-8";
-            String s = new String(data, enc), name, value;
+            String s = new String(contentData, enc), name, value;
             StringTokenizer st = new StringTokenizer(s, "&");
             int i;
 
@@ -198,7 +199,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         parameters = map;
 
     }
-
 
     /**
      * This method is safe to call multiple times.
@@ -513,11 +513,21 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         return req.getCharacterEncoding();
     }
 
-    /* (non-Javadoc)
+    /*
+    * Using length of the actual body's bytes rather than the Content-Length header as its
+    * more reliable.
+    *
     * @see javax.servlet.ServletRequest#getContentLength()
     */
     public int getContentLength() {
-        return req.getContentLength();
+        if (parameters != null) {
+            try {
+                parseRequest();
+            } catch (IOException e) {
+                throw new IllegalStateException("Cannot parse the request!", e);
+            }
+        }
+        return contentData == null ? -1 : contentData.length;
     }
 
     /* (non-Javadoc)
