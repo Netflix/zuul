@@ -527,21 +527,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         return req.getCharacterEncoding();
     }
 
-    /*
-    * Using length of the actual body's bytes rather than the Content-Length header as its
-    * more reliable.
-    *
+    /* (non-Javadoc)
     * @see javax.servlet.ServletRequest#getContentLength()
     */
     public int getContentLength() {
-        if (parameters != null) {
-            try {
-                parseRequest();
-            } catch (IOException e) {
-                throw new IllegalStateException("Cannot parse the request!", e);
-            }
-        }
-        return contentData == null ? -1 : contentData.length;
+        return req.getContentLength();
     }
 
     /* (non-Javadoc)
