@@ -191,10 +191,10 @@ public class FilterProcessor {
                     t = result.getException();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
                     
-                    DynamicCounter.increment(metricPrefix + filterName, "status","fail", "type",filter.filterType());
+                    DynamicCounter.increment(metricPrefix + filterName, "status","fail", "filtertype",filter.filterType());
                     break;
                 case SUCCESS:
-                	DynamicCounter.increment(metricPrefix + filterName, "status","success", "type", filter.filterType());
+                	DynamicCounter.increment(metricPrefix + filterName, "status","success", "filtertype", filter.filterType());
                     o = result.getResult();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
                     if (bDebug) {
@@ -203,7 +203,7 @@ public class FilterProcessor {
                     }
                     break;
                 default:
-                	DynamicCounter.increment(metricPrefix + filterName, "status", "unknown", "type", filter.filterType());
+                	DynamicCounter.increment(metricPrefix + filterName, "status", "skip", "filtertype", filter.filterType());
                     break;
             }
             
@@ -213,7 +213,7 @@ public class FilterProcessor {
             if (bDebug) {
                 Debug.addRoutingDebug("Running Filter failed " + filterName + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
             }
-            DynamicCounter.increment(metricPrefix + filterName, "status", "fail", "type", filter.filterType());
+            DynamicCounter.increment(metricPrefix + filterName, "status", "fail", "filtertype", filter.filterType());
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             } else {
