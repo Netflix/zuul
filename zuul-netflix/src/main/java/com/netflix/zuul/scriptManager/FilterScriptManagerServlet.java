@@ -68,29 +68,33 @@ public class FilterScriptManagerServlet extends HttpServlet {
     private static final Set<String> VALID_GET_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"LIST", "DOWNLOAD"})));
     private static final Set<String> VALID_PUT_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"UPLOAD", "ACTIVATE", "DEACTIVATE", "RUN", "CANARY"})));
 
-    /* DAO for performing CRUD operations with scripts */
-    private ZuulFilterDAO scriptDAO;
 
-    /* Controller for executing scripts in development/test */
+    /* DAO for performing CRUD operations with scripts */
+    private static ZuulFilterDAO scriptDAO;
+
+
+    public static void setScriptDAO(ZuulFilterDAO scriptDAO) {
+        FilterScriptManagerServlet.scriptDAO = scriptDAO;
+    }
 
 
     /**
      * Default constructor that instantiates default dependencies (ie. the ones that are functional as opposed to those for testing).
      */
     public FilterScriptManagerServlet() {
-        this(new ZuulFilterDAOCassandra(ZuulFilterDAOCassandra.getCassKeyspace()));
+        super();
+        if (scriptDAO == null) scriptDAO = new ZuulFilterDAOCassandra(ZuulFilterDAOCassandra.getCassKeyspace());
 
     }
 
     /**
      * Construct with dependency injection for unit-testing (will never be invoked in production since servlets can't have constructors)
      *
-     * @param scriptDAO
+     * @param sd
      */
-    private FilterScriptManagerServlet(ZuulFilterDAO scriptDAO) {
+    private FilterScriptManagerServlet(ZuulFilterDAO sd) {
         super();
-        this.scriptDAO = scriptDAO;
-
+        scriptDAO = sd;
     }
 
     /**
@@ -151,7 +155,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        if (! adminEnabled.get()) {
+        if (!adminEnabled.get()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Filter admin is disabled. See the zuul.filters.admin.enabled FastProperty.");
             return;
         }
