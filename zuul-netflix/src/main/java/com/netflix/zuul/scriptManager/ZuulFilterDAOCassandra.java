@@ -355,6 +355,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
                 cassandraGateway.upsert(filter_id + "_" + revisionToDeactivate, attributesForDeactivation);
             }
         }
+        setChanged();
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "CANARY FILTER SET id = " + filter_id + "revision = " + revision));
         return getFilterInfoForFilter(filter_id, revision);
     }
@@ -424,6 +425,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
                 cassandraGateway.upsert(filter_id + "_" + revisionToDeactivate, attributesForDeactivation);
             }
         }
+        setChanged();
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "ACTIVATED NEW ZUUL FILTER id = " + filter_id + " revision = " + revision));
         return getFilterInfoForFilter(filter_id, revision);
     }
@@ -447,6 +449,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         attributesForActivation.put("active", false);
         attributesForActivation.put("canary", false);
         cassandraGateway.upsert(filter_id + "_" + revision, attributesForActivation);
+        setChanged();
         notifyObservers(new ZuulEvent("ZUUL_SCRIPT_CHANGE", "DEACTIVATED ZUUL FILTER id = " + filter_id + " revision = " + revision));
 
         return getFilterInfoForFilter(filter_id, revision);

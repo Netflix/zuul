@@ -25,6 +25,7 @@ import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.util.HTTPRequestUtils
+import org.apache.http.*
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -53,13 +54,11 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.zip.GZIPInputStream
 import javax.servlet.ServletInputStream
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
-import org.apache.http.*
+import java.util.concurrent.atomic.AtomicReference
+import java.util.zip.GZIPInputStream
 
 class ZuulHostRequest extends ZuulFilter {
 
@@ -83,7 +82,7 @@ class ZuulHostRequest extends ZuulFilter {
 
     private static final AtomicReference<HttpClient> CLIENT = new AtomicReference<HttpClient>(newClient());
 
-    private static final Timer CONNECTION_MANAGER_TIMER = new Timer();
+    private static final Timer CONNECTION_MANAGER_TIMER = new Timer(true);
 
     // cleans expired connections at an interval
     static {
@@ -334,7 +333,7 @@ class ZuulHostRequest extends ZuulFilter {
 
         zuulRequestHeaders.keySet().each {
             String name = it.toLowerCase()
-            BasicHeader h = headers.find {BasicHeader he -> he.name == name }
+            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
             if (h != null) {
                 headers.remove(h)
             }
@@ -384,7 +383,7 @@ class ZuulHostRequest extends ZuulFilter {
 
 
         if (Debug.debugRequest()) {
-            response.getAllHeaders()?.each {Header header ->
+            response.getAllHeaders()?.each { Header header ->
                 if (isValidHeader(header)) {
                     RequestContext.getCurrentContext().addZuulResponseHeader(header.name, header.value);
                     Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
@@ -404,7 +403,7 @@ class ZuulHostRequest extends ZuulFilter {
             }
 
         } else {
-            response.getAllHeaders()?.each {Header header ->
+            response.getAllHeaders()?.each { Header header ->
                 RequestContext ctx = RequestContext.getCurrentContext()
                 ctx.addOriginResponseHeader(header.name, header.value)
 

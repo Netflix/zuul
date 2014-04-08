@@ -15,15 +15,18 @@
  */
 
 
+
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
-import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.util.HTTPRequestUtils
-import org.apache.http.*
+import org.apache.http.Header
+import org.apache.http.HttpHost
+import org.apache.http.HttpRequest
+import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -38,23 +41,13 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
 import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicHttpRequest
-import org.apache.http.message.BasicStatusLine
 import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.servlet.ServletInputStream
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
@@ -78,7 +71,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
     private static final AtomicReference<HttpClient> CLIENT = new AtomicReference<HttpClient>(newClient());
 
-    private static final Timer CONNECTION_MANAGER_TIMER = new Timer();
+    private static final Timer CONNECTION_MANAGER_TIMER = new Timer(true);
 
     // cleans expired connections at an interval
     static {
@@ -305,7 +298,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
         zuulRequestHeaders.keySet().each {
             String name = it.toLowerCase()
-            BasicHeader h = headers.find {BasicHeader he -> he.name == name }
+            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
             if (h != null) {
                 headers.remove(h)
             }
@@ -355,7 +348,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
 
         if (Debug.debugRequest()) {
-            response.getAllHeaders()?.each {Header header ->
+            response.getAllHeaders()?.each { Header header ->
                 if (isValidHeader(header)) {
                     RequestContext.getCurrentContext().addZuulResponseHeader(header.name, header.value);
                     Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
@@ -375,7 +368,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             }
 
         } else {
-            response.getAllHeaders()?.each {Header header ->
+            response.getAllHeaders()?.each { Header header ->
                 RequestContext ctx = RequestContext.getCurrentContext()
                 ctx.addOriginResponseHeader(header.name, header.value)
 
