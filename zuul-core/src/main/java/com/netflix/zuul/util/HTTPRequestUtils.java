@@ -16,12 +16,17 @@
 package com.netflix.zuul.util;
 
 import com.netflix.zuul.context.RequestContext;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,175 +45,201 @@ import static org.mockito.Mockito.when;
  * Time: 8:22 AM
  */
 public class HTTPRequestUtils {
-    
-    private final static HTTPRequestUtils INSTANCE = new HTTPRequestUtils();
-    
-    public static final String X_FORWARDED_FOR_HEADER = "x-forwarded-for";
+
+	private final static HTTPRequestUtils INSTANCE = new HTTPRequestUtils();
+
+	public static final String X_FORWARDED_FOR_HEADER = "x-forwarded-for";
 
 
-    /**
-     * Get the IP address of client making the request.
-     *
-     * Uses the "x-forwarded-for" HTTP header if available, otherwise uses the remote
-     * IP of requester.
-     *
-     * @param request <code>HttpServletRequest</code>
-     * @return <code>String</code> IP address
-     */
-    public String getClientIP(HttpServletRequest request) {
-        final String xForwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
-        String clientIP = null;
-        if (xForwardedFor == null) {
-            clientIP = request.getRemoteAddr();
-        } else {
-            clientIP = extractClientIpFromXForwardedFor(xForwardedFor);
-        }
-        return clientIP;
-    }
+	/**
+	 * Get the IP address of client making the request.
+	 *
+	 * Uses the "x-forwarded-for" HTTP header if available, otherwise uses the remote
+	 * IP of requester.
+	 *
+	 * @param request <code>HttpServletRequest</code>
+	 * @return <code>String</code> IP address
+	 */
+	public String getClientIP(HttpServletRequest request) {
+		final String xForwardedFor = request.getHeader(X_FORWARDED_FOR_HEADER);
+		String clientIP = null;
+		if (xForwardedFor == null) {
+			clientIP = request.getRemoteAddr();
+		} else {
+			clientIP = extractClientIpFromXForwardedFor(xForwardedFor);
+		}
+		return clientIP;
+	}
 
-    /**
-     * Extract the client IP address from an x-forwarded-for header. Returns null if there is no x-forwarded-for header
-     *
-     * @param xForwardedFor a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    public final String extractClientIpFromXForwardedFor(String xForwardedFor) {
-        if (xForwardedFor == null) {
-            return null;
-        }
-        xForwardedFor = xForwardedFor.trim();
-        String tokenized[] = xForwardedFor.split(",");
-        if (tokenized.length == 0) {
-            return null;
-        } else {
-            return tokenized[0].trim();
-        }
-    }
+	/**
+	 * Extract the client IP address from an x-forwarded-for header. Returns null if there is no x-forwarded-for header
+	 *
+	 * @param xForwardedFor a <code>String</code> value
+	 * @return a <code>String</code> value
+	 */
+	public final String extractClientIpFromXForwardedFor(String xForwardedFor) {
+		if (xForwardedFor == null) {
+			return null;
+		}
+		xForwardedFor = xForwardedFor.trim();
+		String tokenized[] = xForwardedFor.split(",");
+		if (tokenized.length == 0) {
+			return null;
+		} else {
+			return tokenized[0].trim();
+		}
+	}
 
-    /**
-     * return singleton HTTPRequestUtils object
-     *
-     * @return a <code>HTTPRequestUtils</code> value
-     */
-    public static HTTPRequestUtils getInstance() {
-        return INSTANCE;
-    }
+	/**
+	 * return singleton HTTPRequestUtils object
+	 *
+	 * @return a <code>HTTPRequestUtils</code> value
+	 */
+	public static HTTPRequestUtils getInstance() {
+		return INSTANCE;
+	}
 
-    /**
-     * returns the Header value for the given sHeaderName
-     *
-     * @param sHeaderName a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    public String getHeaderValue(String sHeaderName) {
-        return RequestContext.getCurrentContext().getRequest().getHeader(sHeaderName);
-    }
+	/**
+	 * returns the Header value for the given sHeaderName
+	 *
+	 * @param sHeaderName a <code>String</code> value
+	 * @return a <code>String</code> value
+	 */
+	public String getHeaderValue(String sHeaderName) {
+		return RequestContext.getCurrentContext().getRequest().getHeader(sHeaderName);
+	}
 
-    /**
-     * returns a form value from a given sHeaderName
-     *
-     * @param sHeaderName a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    public String getFormValue(String sHeaderName) {
-        return RequestContext.getCurrentContext().getRequest().getParameter(sHeaderName);
-    }
+	/**
+	 * returns a form value from a given sHeaderName
+	 *
+	 * @param sHeaderName a <code>String</code> value
+	 * @return a <code>String</code> value
+	 */
+	public String getFormValue(String sHeaderName) {
+		return RequestContext.getCurrentContext().getRequest().getParameter(sHeaderName);
+	}
+	
+	/**
+	 * returns headers as a Map with String keys and Lists of Strings as values
+	 * @return
+	 */
 
-    /**
-     * returns query params as a Map with String keys and Lists of Strings as values
-     * @return
-     */
-    public Map<String, List<String>> getQueryParams() {
+	public Map<String, List<String>> getRequestHeaderMap() {
+		HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+		Map<String,List<String>> headers = new HashMap<String,List<String>>();
+		Enumeration<String> headerNames = request.getHeaderNames();
+		if(headerNames != null) {
+			while (headerNames.hasMoreElements()) {
+				String name = headerNames.nextElement().toLowerCase();
+				String value = request.getHeader(name);
+				
+				List<String> valueList = new ArrayList<String>();
+				if(headers.containsKey(name)) {
+					headers.get(name).add(value);
+				}
+				valueList.add(value);
+				headers.put(name, valueList);
+			}
+		}
+		return Collections.unmodifiableMap(headers);
 
-        Map<String, List<String>> qp = RequestContext.getCurrentContext().getRequestQueryParams();
-        if (qp != null) return qp;
+	}
 
-        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+	/**
+	 * returns query params as a Map with String keys and Lists of Strings as values
+	 * @return
+	 */
+	public Map<String, List<String>> getQueryParams() {
 
-        qp = new HashMap<String, List<String>>();
+		Map<String, List<String>> qp = RequestContext.getCurrentContext().getRequestQueryParams();
+		if (qp != null) return qp;
 
-        if (request.getQueryString() == null) return null;
-        StringTokenizer st = new StringTokenizer(request.getQueryString(), "&");
-        int i;
+		HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
 
-        while (st.hasMoreTokens()) {
-            String s = st.nextToken();
-            i = s.indexOf("=");
-            if (i > 0 && s.length() > i + 1) {
-                String name = s.substring(0, i);
-                String value = s.substring(i + 1);
+		qp = new HashMap<String, List<String>>();
 
-                try {
-                    name = URLDecoder.decode(name, "UTF-8");
-                } catch (Exception e) {
-                }
-                try {
-                    value = URLDecoder.decode(value, "UTF-8");
-                } catch (Exception e) {
-                }
+		if (request.getQueryString() == null) return null;
+		StringTokenizer st = new StringTokenizer(request.getQueryString(), "&");
+		int i;
 
-                List valueList = qp.get(name);
-                if (valueList == null) {
-                    valueList = new LinkedList<String>();
-                    qp.put(name, valueList);
-                }
+		while (st.hasMoreTokens()) {
+			String s = st.nextToken();
+			i = s.indexOf("=");
+			if (i > 0 && s.length() > i + 1) {
+				String name = s.substring(0, i);
+				String value = s.substring(i + 1);
 
-                valueList.add(value);
-            }
-        }
+				try {
+					name = URLDecoder.decode(name, "UTF-8");
+				} catch (Exception e) {
+				}
+				try {
+					value = URLDecoder.decode(value, "UTF-8");
+				} catch (Exception e) {
+				}
 
-        RequestContext.getCurrentContext().setRequestQueryParams(qp);
-        return qp;
-    }
+				List<String> valueList = qp.get(name);
+				if (valueList == null) {
+					valueList = new LinkedList<String>();
+					qp.put(name, valueList);
+				}
 
-    /**
-     * Checks headers, query string, and form body for a given parameter
-     *
-     * @param sName
-     * @return
-     */
-    public String getValueFromRequestElements(String sName) {
-        String sValue = null;
-        if (getQueryParams() != null) {
-            final List<String> v = getQueryParams().get(sName);
-            if (v != null && !v.isEmpty()) sValue = v.iterator().next();
-        }
-        if (sValue != null) return sValue;
-        sValue = getHeaderValue(sName);
-        if (sValue != null) return sValue;
-        sValue = getFormValue(sName);
-        if (sValue != null) return sValue;
-        return null;
-    }
+				valueList.add(value);
+			}
+		}
 
-    /**
-     * return true if the client requested gzip content
-     *
-     * @param contentEncoding a <code>String</code> value
-     * @return true if the content-encoding param containg gzip
-     */
-    public boolean isGzipped(String contentEncoding) {
-        return contentEncoding.contains("gzip");
-    }
-    
-    public static class UnitTest {
+		RequestContext.getCurrentContext().setRequestQueryParams(qp);
+		return qp;
+	}
+
+	/**
+	 * Checks headers, query string, and form body for a given parameter
+	 *
+	 * @param sName
+	 * @return
+	 */
+	public String getValueFromRequestElements(String sName) {
+		String sValue = null;
+		if (getQueryParams() != null) {
+			final List<String> v = getQueryParams().get(sName);
+			if (v != null && !v.isEmpty()) sValue = v.iterator().next();
+		}
+		if (sValue != null) return sValue;
+		sValue = getHeaderValue(sName);
+		if (sValue != null) return sValue;
+		sValue = getFormValue(sName);
+		if (sValue != null) return sValue;
+		return null;
+	}
+
+	/**
+	 * return true if the client requested gzip content
+	 *
+	 * @param contentEncoding a <code>String</code> value
+	 * @return true if the content-encoding param containg gzip
+	 */
+	public boolean isGzipped(String contentEncoding) {
+		return contentEncoding.contains("gzip");
+	}
+
+	public static class UnitTest {
 
 
-        @Test
-        public void detectsGzip() {
-            assertTrue(HTTPRequestUtils.getInstance().isGzipped("gzip"));
-        }
+		@Test
+		public void detectsGzip() {
+			assertTrue(HTTPRequestUtils.getInstance().isGzipped("gzip"));
+		}
 
-        @Test
-        public void detectsNonGzip() {
-            assertFalse(HTTPRequestUtils.getInstance().isGzipped("identity"));
-        }
+		@Test
+		public void detectsNonGzip() {
+			assertFalse(HTTPRequestUtils.getInstance().isGzipped("identity"));
+		}
 
-        @Test
-        public void detectsGzipAmongOtherEncodings() {
-            assertTrue(HTTPRequestUtils.getInstance().isGzipped("gzip, deflate"));
-        }
+		@Test
+		public void detectsGzipAmongOtherEncodings() {
+			assertTrue(HTTPRequestUtils.getInstance().isGzipped("gzip, deflate"));
+		}
 
-    }
+	}
 
 }
