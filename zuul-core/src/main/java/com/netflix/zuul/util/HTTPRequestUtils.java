@@ -118,7 +118,7 @@ public class HTTPRequestUtils {
 	public String getFormValue(String sHeaderName) {
 		return RequestContext.getCurrentContext().getRequest().getParameter(sHeaderName);
 	}
-	
+
 	/**
 	 * returns headers as a Map with String keys and Lists of Strings as values
 	 * @return
@@ -130,15 +130,17 @@ public class HTTPRequestUtils {
 		Enumeration<String> headerNames = request.getHeaderNames();
 		if(headerNames != null) {
 			while (headerNames.hasMoreElements()) {
-				String name = headerNames.nextElement().toLowerCase();
+				String name = headerNames.nextElement();
 				String value = request.getHeader(name);
-				
-				List<String> valueList = new ArrayList<String>();
-				if(headers.containsKey(name)) {
-					headers.get(name).add(value);
+
+				if(name != null && !name.isEmpty() && value != null) {
+					List<String> valueList = new ArrayList<String>();
+					if(headers.containsKey(name)) {
+						headers.get(name).add(value);
+					}
+					valueList.add(value);
+					headers.put(name, valueList);
 				}
-				valueList.add(value);
-				headers.put(name, valueList);
 			}
 		}
 		return Collections.unmodifiableMap(headers);
