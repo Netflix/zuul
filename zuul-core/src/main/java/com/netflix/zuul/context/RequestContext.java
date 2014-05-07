@@ -15,10 +15,24 @@
  */
 package com.netflix.zuul.context;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
-import com.netflix.util.Pair;
-import com.netflix.zuul.constants.ZuulHeaders;
-import com.netflix.zuul.util.DeepCopy;
+import java.io.InputStream;
+import java.io.NotSerializableException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -26,18 +40,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
+import com.netflix.util.Pair;
+import com.netflix.zuul.constants.ZuulHeaders;
+import com.netflix.zuul.util.DeepCopy;
 
 /**
  * The Request Context holds request, response,  state information and data for ZuulFilters to access and share.
@@ -63,7 +68,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
             try {
                 return contextClass.newInstance();
             } catch (Throwable e) {
-                e.printStackTrace();
                 throw new RuntimeException(e);
             }
         }
@@ -72,7 +76,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     public RequestContext() {
         super();
-
     }
 
     /**

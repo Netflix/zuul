@@ -20,7 +20,6 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 
 class DebugFilter extends ZuulFilter {
@@ -40,7 +39,7 @@ class DebugFilter extends ZuulFilter {
 
     boolean shouldFilter() {
 
-        if ("true".equals(NFRequestContext.currentContext.getRequest().getParameter(debugParameter.get()))) return true;
+        if ("true".equals(RequestContext.currentContext.getRequest().getParameter(debugParameter.get()))) return true;
         return routingDebug.get();
 
     }
@@ -49,11 +48,6 @@ class DebugFilter extends ZuulFilter {
         RequestContext.getCurrentContext().setDebugRequest(true)
         RequestContext.getCurrentContext().setDebugRouting(true)
         return null;
-
     }
 
-
 }
-
-
-

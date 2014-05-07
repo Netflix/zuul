@@ -190,11 +190,10 @@ public class FilterProcessor {
                 case FAILED:
                     t = result.getException();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
-                    
                     DynamicCounter.increment(metricPrefix + filterName, "status","fail", "filtertype",filter.filterType());
                     break;
                 case SUCCESS:
-                	DynamicCounter.increment(metricPrefix + filterName, "status","success", "filtertype", filter.filterType());
+                    DynamicCounter.increment(metricPrefix + filterName, "status","success", "filtertype", filter.filterType());
                     o = result.getResult();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
                     if (bDebug) {
@@ -203,7 +202,7 @@ public class FilterProcessor {
                     }
                     break;
                 default:
-                	DynamicCounter.increment(metricPrefix + filterName, "status", "skip", "filtertype", filter.filterType());
+                    DynamicCounter.increment(metricPrefix + filterName, "status", "skip", "filtertype", filter.filterType());
                     break;
             }
             
@@ -223,7 +222,6 @@ public class FilterProcessor {
             }
         }
     }
-
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {
@@ -485,10 +483,5 @@ public class FilterProcessor {
             }
 
         }
-
-
     }
 }
-
-
-
