@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package scripts.route
+package filters.route
 
 import com.netflix.client.ClientException
 import com.netflix.client.ClientFactory
