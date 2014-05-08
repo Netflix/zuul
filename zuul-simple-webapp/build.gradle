@@ -27,7 +27,7 @@ eclipse {
 war {
     webXml = file('src/main/webapp/WEB-INF/web.xml')
     webInf{
-        from('../zuul-scripts/src/main/groovy/scripts') {
+        from('src/main/groovy/filters') {
             into('classes')
         }
     }
@@ -39,9 +39,8 @@ idea {
     }
 }
 
-// runs webapp at root context
-jettyRun.contextPath = '/' 
+jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
-    System.setProperty("zuul.filter.root", "src/main/filters")    
+    System.setProperty("zuul.filter.root", "src/main/groovy/filters")
 }

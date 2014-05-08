@@ -56,8 +56,8 @@ public class StartServer implements ServletContextListener {
     private void initGroovyFilterManager() {
         FilterLoader.getInstance().setCompiler(new GroovyCompiler());
 
-        String scriptRoot = System.getProperty("zuul.filter.root");
-        if (scriptRoot != null) scriptRoot = scriptRoot + File.pathSeparator;
+        String scriptRoot = System.getProperty("zuul.filter.root", "");
+        if (scriptRoot.length() > 0) scriptRoot = scriptRoot + File.separator;
         try {
             FilterFileManager.setFilenameFilter(new GroovyFileFilter());
             FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "post");

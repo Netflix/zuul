@@ -47,7 +47,7 @@ idea {
 war {
     webXml = file('src/main/webapp/WEB-INF/web.xml')
     webInf{
-        from('src/main/groovy/scripts') {
+        from('src/main/groovy/filters') {
             into('classes')
         }
     }
