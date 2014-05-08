@@ -15,11 +15,20 @@
  */
 package com.netflix.zuul.http;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.netflix.zuul.FilterProcessor;
-import com.netflix.zuul.ZuulRunner;
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,14 +38,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.ZuulRunner;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
 
 /**
  * Core Zuul servlet which intializes and orchestrates zuulFilter execution
@@ -46,17 +51,20 @@ import static org.mockito.Mockito.*;
  *         Time: 10:44 AM
  */
 public class ZuulServlet extends HttpServlet {
+    
+    private static final long serialVersionUID = -3374242278843351500L;
     private ZuulRunner zuulRunner = new ZuulRunner();
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
     @Override
-    public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws javax.servlet.ServletException, java.io.IOException {
+    public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws ServletException, IOException {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
 
-            // marks this request as having passed through the "Zuul engine", as opposed to servlets
+            // Marks this request as having passed through the "Zuul engine", as opposed to servlets
             // explicitly bound in web.xml, for which requests will not have the same data attached
-            RequestContext.getCurrentContext().setZuulEngineRan();
+            RequestContext context = RequestContext.getCurrentContext();
+            context.setZuulEngineRan();
 
             try {
                 preRoute();
@@ -82,7 +90,6 @@ public class ZuulServlet extends HttpServlet {
         } catch (Throwable e) {
             error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" + e.getClass().getName()));
         } finally {
-//            RequestContext.getCurrentContext().unset();
         }
     }
 

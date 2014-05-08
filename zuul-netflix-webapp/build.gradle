@@ -9,15 +9,14 @@ dependencies {
 
     compile project(':zuul-core')
     compile project(':zuul-netflix')
-    compile project(':zuul-scripts')
 
-    runtime project(':zuul-scripts')
-
-    compile 'com.netflix.karyon:karyon-core:2.0.02'
-    compile 'com.netflix.karyon:karyon-admin:2.0.02'
-    compile 'com.netflix.karyon:karyon-admin-web:2.0.02'
-    compile 'com.netflix.karyon:karyon-extensions:2.0.02'
-    compile 'com.netflix.blitz4j:blitz4j:1.31'
+    compile 'com.netflix.karyon:karyon-core:+'
+    compile 'com.netflix.karyon:karyon-admin:+'
+    compile 'com.netflix.karyon:karyon-admin-web:+'
+    compile 'com.netflix.karyon:karyon-extensions:+'
+    compile 'com.netflix.blitz4j:blitz4j:+'
+    compile 'com.sun.jersey:jersey-bundle:+'
+    groovy "org.codehaus.groovy:groovy-all:2.2.2"
 }
 
 javadoc {
@@ -31,7 +30,6 @@ javadoc {
 
 eclipse {
     classpath {
-        // include 'provided' dependencies on the classpath
         plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
@@ -41,32 +39,20 @@ eclipse {
 
 idea {
     module {
-        // include 'provided' dependencies on the classpath
         languageLevel = '1.7'
         scopes.PROVIDED.plus += configurations.provided
     }
 }
 
-def findJar(prefix) {
-    def name = ""
-    configurations.runtime.each {
-        if (it.name.startsWith(prefix)) {
-            name = it
-        }
-    }
-    return name;
-}
-
-tasks.war.doFirst {
-    webInf {
-        def jar = findJar('zuul-scripts')
-        from(zipTree(jar)) {
-            include '**/*.groovy'
+war {
+    webXml = file('src/main/webapp/WEB-INF/web.xml')
+    webInf{
+        from('src/main/groovy/filters') {
+            into('classes')
         }
     }
 }
 
-// runs webapp at root context
 jettyRun.contextPath = '/'
 
 jettyRun.doFirst {

@@ -16,7 +16,7 @@
 package scripts.pre
 
 
-import com.netflix.zuul.context.NFRequestContext
+import com.netflix.zuul.context.RequestContext
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,7 +63,7 @@ class Healthcheck extends StaticResponseFilter {
 
         @Test
         public void testHealthcheck() {
-            RequestContext.setContextClass(NFRequestContext.class);
+            RequestContext.setContextClass(RequestContext.class);
             Healthcheck hc = new Healthcheck();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
             HttpServletResponse response = Mockito.mock(HttpServletResponse.class)

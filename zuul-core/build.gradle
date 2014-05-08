@@ -4,41 +4,31 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 dependencies {
-    compile 'commons-io:commons-io:2.4'
-    compile 'org.codehaus.groovy:groovy-all:2.0.2'
-    compile 'org.mockito:mockito-all:1.8.5'
-    compile 'org.slf4j:slf4j-api:1.7.5'
+    compile 'commons-io:commons-io:2.4+'
+    compile 'org.codehaus.groovy:groovy-all:2.2.2'
+    compile 'org.mockito:mockito-all:1.8+'
+    compile 'org.slf4j:slf4j-api:+'
+    provided 'junit:junit-dep:4+'
+    provided 'javax.servlet:servlet-api:+'
+    groovy "org.codehaus.groovy:groovy-all:2.2.2"
 
-    compile 'com.netflix.archaius:archaius-core:0.5.11'
-    compile 'com.netflix.servo:servo-core:0.4.44'
-    compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
-
-    provided 'junit:junit-dep:4.10'
-    provided 'javax.servlet:servlet-api:2.5'
-
-    // would be nice to only reference the version in one place
-    groovy "org.codehaus.groovy:groovy-all:2.0.2"
+    compile 'com.netflix.archaius:archaius-core:+'
+    compile 'com.netflix.servo:servo-core:+'
+    compile 'com.netflix.netflix-commons:netflix-commons-util:+'
 }
 
 
 javadoc {
-    // the exclude isn't working, nor is there a subPackages options as docs suggest there should be
-    // we do not want the com.netflix.hystrix.util package include
-    // exclude '**/util/**'
-
     options {
         doclet = "org.benjchristensen.doclet.DocletExclude"
         docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
         stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
         windowTitle = "Zuul Javadoc ${project.version}"
     }
-    //todo add Zuul logo
-//    options.addStringOption('top').value = '<a href="https://github.com/Netflix/Hystrix"><img width="92" height="79" border="0" align="left" src="http://netflix.github.com/Hystrix/images/hystrix-logo-small.png"></a><h2 class="title" style="padding-top:40px">Hystrix: Latency and Fault Tolerance for Distributed Systems</h2>'
 }
 
 eclipse {
     classpath {
-        // include 'provided' dependencies on the classpath
         plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
@@ -48,7 +38,6 @@ eclipse {
 
 idea {
     module {
-        // include 'provided' dependencies on the classpath
         scopes.PROVIDED.plus += configurations.provided
     }
 }

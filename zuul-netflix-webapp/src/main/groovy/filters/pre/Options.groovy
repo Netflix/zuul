@@ -1,4 +1,3 @@
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.filters.StaticResponseFilter
 import org.junit.Test
@@ -37,9 +36,6 @@ class Options extends StaticResponseFilter {
         return "" // empty response
     }
 
-
-
-
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
@@ -51,7 +47,7 @@ class Options extends StaticResponseFilter {
         @Test
         public void testClientAccessPolicy() {
 
-            RequestContext.setContextClass(NFRequestContext.class);
+            RequestContext.setContextClass(RequestContext.class);
 
             Options options = new Options()
 

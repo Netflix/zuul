@@ -8,34 +8,39 @@ apply plugin: 'jetty'
 dependencies {
     compile project(":zuul-core")
     
-    compile 'log4j:log4j:1.2.17'
-    compile 'org.slf4j:slf4j-log4j12:1.6.1'
-    compile 'org.apache.httpcomponents:httpclient:4.2.2'
+    compile 'log4j:log4j:+'
+    compile 'org.slf4j:slf4j-log4j12:+'
+    compile 'org.apache.httpcomponents:httpclient:4+'
     
-    provided 'junit:junit-dep:4.10'
-    provided 'javax.servlet:servlet-api:2.5'
+    provided 'junit:junit-dep:+'
+    provided 'javax.servlet:servlet-api:+'
 }
 
 eclipse {
   classpath {
-        // include 'provided' dependencies on the classpath
         plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
   }
 }
 
+war {
+    webXml = file('src/main/webapp/WEB-INF/web.xml')
+    webInf{
+        from('src/main/groovy/filters') {
+            into('classes')
+        }
+    }
+}
 
 idea {
     module {
-        // include 'provided' dependencies on the classpath
         scopes.PROVIDED.plus += configurations.provided
     }
 }
 
-// runs webapp at root context
-jettyRun.contextPath = '/' 
+jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
-    System.setProperty("zuul.filter.root", "src/main/filters")    
+    System.setProperty("zuul.filter.root", "src/main/groovy/filters")
 }

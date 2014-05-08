@@ -22,6 +22,34 @@ package com.netflix.zuul;
  */
 
 
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_FAILOVERWAITTIME;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_MAXCONNSPERHOST;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_MAXFAILOVERCOUNT;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_MAXTIMEOUTWHENEXHAUSTED;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_READCONSISTENCY;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_SOCKETTIMEOUT;
+import static com.netflix.zuul.constants.ZuulConstants.DEFAULT_NFASTYANAX_WRITECONSISTENCY;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_HOST;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_KEYSPACE;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_MAXCONNECTIONSPERHOST;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_PORT;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_CUSTOM_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_POST_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_PRE_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_ROUTING_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_CLIENTLIST;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_RIBBON_NAMESPACE;
+
+import java.io.IOException;
+
+import javax.servlet.ServletContextEvent;
+
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
@@ -60,17 +88,6 @@ import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.ServletContextEvent;
-import java.io.IOException;
-
-import static com.netflix.zuul.constants.ZuulConstants.*;
-
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "Dm",
-        justification = "Needs to shutdown in case of startup exception")
 
 @Application
 public class StartServer extends GuiceServletContextListener {
