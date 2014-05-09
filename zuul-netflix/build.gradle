@@ -13,13 +13,13 @@ dependencies {
     compile 'org.json:json:20090211'
     groovy "org.codehaus.groovy:groovy-all:2.2.2"
     
-    compile 'com.netflix.astyanax:astyanax-cassandra:+'
-    compile 'com.netflix.astyanax:astyanax-thrift:+'
-    compile 'com.netflix.hystrix:hystrix-core:+'
-    compile 'com.netflix.ribbon:ribbon-core:+'
-    compile 'com.netflix.ribbon:ribbon-eureka:+'
-    compile 'com.netflix.ribbon:ribbon-httpclient:+'
-    compile 'com.netflix.turbine:turbine-core:+'
+    compile 'com.netflix.astyanax:astyanax-cassandra:latest.release'
+    compile 'com.netflix.astyanax:astyanax-thrift:latest.release'
+    compile 'com.netflix.hystrix:hystrix-core:latest.release'
+    compile 'com.netflix.ribbon:ribbon-core:latest.release'
+    compile 'com.netflix.ribbon:ribbon-eureka:latest.release'
+    compile 'com.netflix.ribbon:ribbon-httpclient:latest.release'
+    compile 'com.netflix.turbine:turbine-core:latest.release'
     
     provided 'junit:junit-dep:+'
     provided 'org.powermock:powermock-api-mockito:+'

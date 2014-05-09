@@ -12,9 +12,9 @@ dependencies {
     provided 'javax.servlet:servlet-api:+'
     groovy "org.codehaus.groovy:groovy-all:2.2.2"
 
-    compile 'com.netflix.archaius:archaius-core:+'
-    compile 'com.netflix.servo:servo-core:+'
-    compile 'com.netflix.netflix-commons:netflix-commons-util:+'
+    compile 'com.netflix.archaius:archaius-core:latest.release'
+    compile 'com.netflix.servo:servo-core:latest.release'
+    compile 'com.netflix.netflix-commons:netflix-commons-util:latest.release'
 }
 
 

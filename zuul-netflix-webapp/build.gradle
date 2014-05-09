@@ -10,12 +10,16 @@ dependencies {
     compile project(':zuul-core')
     compile project(':zuul-netflix')
 
-    compile 'com.netflix.karyon:karyon-core:+'
-    compile 'com.netflix.karyon:karyon-admin:+'
-    compile 'com.netflix.karyon:karyon-admin-web:+'
-    compile 'com.netflix.karyon:karyon-extensions:+'
-    compile 'com.netflix.blitz4j:blitz4j:+'
-    compile 'com.sun.jersey:jersey-bundle:+'
+    compile 'com.netflix.karyon:karyon-core:latest.release'
+    compile 'com.netflix.karyon:karyon-admin:latest.release'
+    compile 'com.netflix.karyon:karyon-admin-web:latest.release'
+    compile 'com.netflix.karyon:karyon-extensions:latest.release'
+    compile 'com.netflix.blitz4j:blitz4j:latest.release'
+    compile 'com.sun.jersey:jersey-core:+'
+    compile 'com.sun.jersey:jersey-server:+'
+    compile 'com.sun.jersey:jersey-client:+'
+    compile 'com.sun.jersey:jersey-servlet:+'
+
     groovy "org.codehaus.groovy:groovy-all:2.2.2"
 }
 
