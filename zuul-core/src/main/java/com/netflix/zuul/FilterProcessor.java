@@ -49,8 +49,11 @@ public class FilterProcessor {
     static FilterProcessor INSTANCE = new FilterProcessor();
     protected static final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
 
+    private FilterUsageNotifier usageNotifier;
+
 
     public FilterProcessor() {
+        usageNotifier = new BasicFilterUsageNotifier();
     }
 
     /**
@@ -67,6 +70,15 @@ public class FilterProcessor {
      */
     public static void setProcessor(FilterProcessor processor) {
         INSTANCE = processor;
+    }
+
+    /**
+     * Override the default filter usage notification impl.
+     *
+     * @param notifier
+     */
+    public void setFilterUsageNotifier(FilterUsageNotifier notifier) {
+        this.usageNotifier = notifier;
     }
 
     /**
@@ -185,15 +197,13 @@ public class FilterProcessor {
             ZuulFilterResult result = filter.runFilter();
             ExecutionStatus s = result.getStatus();
             execTime = System.currentTimeMillis() - ltime;
-            
+
             switch (s) {
                 case FAILED:
                     t = result.getException();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
-                    DynamicCounter.increment(metricPrefix + filterName, "status","fail", "filtertype",filter.filterType());
                     break;
                 case SUCCESS:
-                    DynamicCounter.increment(metricPrefix + filterName, "status","success", "filtertype", filter.filterType());
                     o = result.getResult();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
                     if (bDebug) {
@@ -202,17 +212,19 @@ public class FilterProcessor {
                     }
                     break;
                 default:
-                    DynamicCounter.increment(metricPrefix + filterName, "status", "skip", "filtertype", filter.filterType());
                     break;
             }
             
             if (t != null) throw t;
+
+            usageNotifier.notify(filter, s);
             return o;
+
         } catch (Throwable e) {
             if (bDebug) {
                 Debug.addRoutingDebug("Running Filter failed " + filterName + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
             }
-            DynamicCounter.increment(metricPrefix + filterName, "status", "fail", "filtertype", filter.filterType());
+            usageNotifier.notify(filter, ExecutionStatus.FAILED);
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             } else {
@@ -220,6 +232,18 @@ public class FilterProcessor {
                 ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
                 throw ex;
             }
+        }
+    }
+
+    /**
+     * Publishes a counter metric for each filter on each use.
+     */
+    public static class BasicFilterUsageNotifier implements FilterUsageNotifier {
+        private static final String METRIC_PREFIX = "zuul.filter-";
+
+        @Override
+        public void notify(ZuulFilter filter, ExecutionStatus status) {
+            DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType());
         }
     }
 
