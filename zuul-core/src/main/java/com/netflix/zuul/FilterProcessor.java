@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
@@ -33,6 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+import com.netflix.servo.monitor.DynamicCounter;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -45,10 +46,27 @@ import static org.mockito.Mockito.*;
  */
 public class FilterProcessor {
 
+    static FilterProcessor INSTANCE = new FilterProcessor();
     protected static final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
 
 
     public FilterProcessor() {
+    }
+
+    /**
+     * @return the singleton FilterProcessor
+     */
+    public static FilterProcessor getInstance() {
+        return INSTANCE;
+    }
+
+    /**
+     * sets a singleton processor in case of a need to override default behavior
+     *
+     * @param processor
+     */
+    public static void setProcessor(FilterProcessor processor) {
+        INSTANCE = processor;
     }
 
     /**
@@ -172,19 +190,19 @@ public class FilterProcessor {
                 case FAILED:
                     t = result.getException();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
-                    notifyUsage(filter, ExecutionStatus.FAILED);
+                    DynamicCounter.increment(metricPrefix + filterName, "status","fail", "filtertype",filter.filterType());
                     break;
                 case SUCCESS:
+                    DynamicCounter.increment(metricPrefix + filterName, "status","success", "filtertype", filter.filterType());
                     o = result.getResult();
                     ctx.addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
-                    notifyUsage(filter, ExecutionStatus.FAILED);
                     if (bDebug) {
                         Debug.addRoutingDebug("Filter {" + filterName + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + execTime + "ms");
                         Debug.compareContextState(filterName, copy);
                     }
                     break;
                 default:
-                    notifyUsage(filter, ExecutionStatus.SKIPPED);
+                    DynamicCounter.increment(metricPrefix + filterName, "status", "skip", "filtertype", filter.filterType());
                     break;
             }
             
@@ -195,8 +213,6 @@ public class FilterProcessor {
                 Debug.addRoutingDebug("Running Filter failed " + filterName + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
             }
             DynamicCounter.increment(metricPrefix + filterName, "status", "fail", "filtertype", filter.filterType());
-            notifyUsage(filter, ExecutionStatus.FAILED);
-
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
             } else {
@@ -205,17 +221,6 @@ public class FilterProcessor {
                 throw ex;
             }
         }
-    }
-
-    /**
-     * Override this method to be notified of each usage of a filter.
-     *
-     * @param filter
-     * @param status
-     */
-    public void notifyUsage(ZuulFilter filter, ExecutionStatus status) {
-        final String metricPrefix = "zuul.filter-";
-        DynamicCounter.increment(metricPrefix + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType());
     }
 
     @RunWith(MockitoJUnitRunner.class)

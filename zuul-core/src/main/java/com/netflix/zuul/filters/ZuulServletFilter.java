@@ -16,7 +16,6 @@
 package com.netflix.zuul.filters;
 
 
-import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
@@ -49,11 +48,11 @@ import static org.mockito.Mockito.*;
  */
 public class ZuulServletFilter implements Filter {
 
-    private ZuulRunner zuulRunner = null;
+
+    private ZuulRunner zuulRunner = new ZuulRunner();
 
     public void init(FilterConfig filterConfig) throws ServletException {
-        FilterProcessor processor = new FilterProcessor();
-        zuulRunner = new ZuulRunner(processor);
+
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
