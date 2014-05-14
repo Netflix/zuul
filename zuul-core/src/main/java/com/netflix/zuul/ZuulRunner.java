@@ -47,11 +47,13 @@ import com.netflix.zuul.http.HttpServletResponseWrapper;
  * @version 1.0
  */
 public class ZuulRunner {
+    private FilterProcessor filterProcessor;
 
     /**
      * Creates a new <code>ZuulRunner</code> instance.
      */
-    public ZuulRunner() {
+    public ZuulRunner(FilterProcessor filterProcessor) {
+        this.filterProcessor = filterProcessor;
     }
 
     /**
@@ -72,7 +74,7 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void postRoute() throws ZuulException {
-        FilterProcessor.getInstance().postRoute();
+        filterProcessor.postRoute();
     }
 
     /**
@@ -81,7 +83,7 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void route() throws ZuulException {
-        FilterProcessor.getInstance().route();
+        filterProcessor.route();
     }
 
     /**
@@ -90,14 +92,14 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void preRoute() throws ZuulException {
-        FilterProcessor.getInstance().preRoute();
+        filterProcessor.preRoute();
     }
 
     /**
      * executes "error" filterType  ZuulFilters
      */
     public void error() {
-        FilterProcessor.getInstance().error();
+        filterProcessor.error();
     }
 
 
@@ -127,12 +129,11 @@ public class ZuulRunner {
         @Test
         public void testProcessZuulFilter() {
 
-            ZuulRunner runner = new ZuulRunner();
+            ZuulRunner runner = new ZuulRunner(processor);
             runner = spy(runner);
             RequestContext context = spy(RequestContext.getCurrentContext());
 
             try {
-                FilterProcessor.setProcessor(processor);
                 RequestContext.testSetCurrentContext(context);
                 when(servletResponse.getWriter()).thenReturn(writer);
 

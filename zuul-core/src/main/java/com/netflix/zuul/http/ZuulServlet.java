@@ -53,7 +53,7 @@ import com.netflix.zuul.exception.ZuulException;
 public class ZuulServlet extends HttpServlet {
     
     private static final long serialVersionUID = -3374242278843351500L;
-    private ZuulRunner zuulRunner = new ZuulRunner();
+    private ZuulRunner zuulRunner = null;
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
     @Override
@@ -127,7 +127,14 @@ public class ZuulServlet extends HttpServlet {
      * @param servletResponse
      */
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        FilterProcessor processor = new FilterProcessor();
+        zuulRunner = new ZuulRunner(processor);
         zuulRunner.init(servletRequest, servletResponse);
+    }
+
+    /** For injecting a custom ZuulRunner in testing. */
+    void testSetRunner(ZuulRunner runner) {
+        this.zuulRunner = runner;
     }
 
     /**
@@ -150,12 +157,14 @@ public class ZuulServlet extends HttpServlet {
         HttpServletResponseWrapper servletResponse;
         @Mock
         FilterProcessor processor;
+        ZuulRunner runner;
         @Mock
         PrintWriter writer;
 
         @Before
         public void before() {
             MockitoAnnotations.initMocks(this);
+            runner = new ZuulRunner(processor);
         }
 
         @Test
@@ -165,13 +174,13 @@ public class ZuulServlet extends HttpServlet {
             zuulServlet = spy(zuulServlet);
             RequestContext context = spy(RequestContext.getCurrentContext());
 
-
             try {
-                FilterProcessor.setProcessor(processor);
                 RequestContext.testSetCurrentContext(context);
                 when(servletResponse.getWriter()).thenReturn(writer);
 
                 zuulServlet.init(servletRequest, servletResponse);
+                zuulServlet.testSetRunner(runner);
+
                 verify(zuulServlet, times(1)).init(servletRequest, servletResponse);
                 assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
                 assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
@@ -181,7 +190,6 @@ public class ZuulServlet extends HttpServlet {
 
                 zuulServlet.postRoute();
                 verify(processor, times(1)).postRoute();
-//                verify(context, times(1)).unset();
 
                 zuulServlet.route();
                 verify(processor, times(1)).route();
