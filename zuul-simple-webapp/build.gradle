@@ -8,7 +8,7 @@ apply plugin: 'jetty'
 dependencies {
     compile project(":zuul-core")
     
-    compile 'org.apache.httpcomponents:httpclient:4.3.3'
+    compile 'org.apache.httpcomponents:httpclient:4.3.2'
     provided 'javax.servlet:servlet-api:2.5'
 }
 
