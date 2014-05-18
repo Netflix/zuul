@@ -4,17 +4,18 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 
 dependencies {
-    compile 'commons-io:commons-io:2.4+'
+    compile 'commons-io:commons-io:2.4'
     compile 'org.codehaus.groovy:groovy-all:2.2.2'
-    compile 'org.mockito:mockito-all:1.8+'
-    compile 'org.slf4j:slf4j-api:+'
-    provided 'junit:junit-dep:4+'
-    provided 'javax.servlet:servlet-api:+'
+    compile 'org.mockito:mockito-all:1.9.5'
+    compile 'org.slf4j:slf4j-api:1.7.7'
+    
+    provided 'junit:junit-dep:4.11'
+    provided 'javax.servlet:servlet-api:2.5'
     groovy "org.codehaus.groovy:groovy-all:2.2.2"
 
-    compile 'com.netflix.archaius:archaius-core:latest.release'
-    compile 'com.netflix.servo:servo-core:latest.release'
-    compile 'com.netflix.netflix-commons:netflix-commons-util:latest.release'
+    compile 'com.netflix.archaius:archaius-core:0.6.0'
+    compile 'com.netflix.servo:servo-core:0.7.2'
+    compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.2'
 }
 
 
