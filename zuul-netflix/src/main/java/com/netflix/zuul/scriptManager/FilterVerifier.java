@@ -95,12 +95,10 @@ public class FilterVerifier {
                 "\n" +
                 "class filter extends ZuulFilter {\n" +
                 "\n" +
-                "    @Override\n" +
                 "    String filterType() {\n" +
                 "        return 'pre'\n" +
                 "    }\n" +
                 "\n" +
-                "    @Override\n" +
                 "    int filterOrder() {\n" +
                 "        return 1\n" +
                 "    }\n" +
@@ -121,12 +119,10 @@ public class FilterVerifier {
                 "\n" +
                 "class filter  {\n" +
                 "\n" +
-                "    @Override\n" +
                 "    String filterType() {\n" +
                 "        return 'pre'\n" +
                 "    }\n" +
                 "\n" +
-                "    @Override\n" +
                 "    int filterOrder() {\n" +
                 "        return 1\n" +
                 "    }\n" +
