@@ -77,7 +77,7 @@ public class ZuulFilterPoller {
     }
 
 
-    boolean running = true;
+    volatile boolean running = true;
     private long INTERVAL = 30000; //30 seconds
     Thread checkerThread = new Thread("ZuulFilterPoller") {
         public void run() {

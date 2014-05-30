@@ -51,7 +51,7 @@ public class FilterFileManager {
     String[] aDirectories;
     int pollingIntervalSeconds;
     Thread poller;
-    boolean bRunning = true;
+    volatile boolean bRunning = true;
 
     static FilenameFilter FILENAME_FILTER;
 
