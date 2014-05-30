@@ -27,7 +27,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.*;
 
 /**
@@ -152,8 +152,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
 
             Collections.sort(list);
 
-            assertTrue(list.get(0) == f1);
-
+            assertSame(f2, list.get(0));
         }
 
         @Test
