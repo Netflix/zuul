@@ -567,7 +567,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             Iterator<Row<String, String>> iterator = (Iterator<Row<String, String>>) mock(Iterator.class);
             when(response.iterator()).thenReturn(iterator);
             when(iterator.hasNext()).thenReturn(true, false); // 1 row
-            when(iterator.next()).thenReturn(row0, null);
+            when(iterator.next()).thenReturn(row0, (Row) null);
 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(false);
@@ -601,7 +601,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             Iterator<Row<String, String>> iterator = (Iterator<Row<String, String>>) mock(Iterator.class);
             when(response.iterator()).thenReturn(iterator);
             when(iterator.hasNext()).thenReturn(true, false); // 1 row
-            when(iterator.next()).thenReturn(row0, null);
+            when(iterator.next()).thenReturn(row0, (Row) null);
 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(false);
@@ -643,7 +643,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             Iterator<Row<String, String>> iterator = (Iterator<Row<String, String>>) mock(Iterator.class);
             when(response.iterator()).thenReturn(iterator);
             when(iterator.hasNext()).thenReturn(true, false); // 1 row
-            when(iterator.next()).thenReturn(row0, null);
+            when(iterator.next()).thenReturn(row0, (Row) null);
 
             when(gateway.select(anyString())).thenReturn(response);
             when(response.isEmpty()).thenReturn(false);
@@ -787,7 +787,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             Iterator<Row<String, String>> iterator = (Iterator<Row<String, String>>) mock(Iterator.class);
             when(response.iterator()).thenReturn(iterator);
             when(iterator.hasNext()).thenReturn(true, false); // 2 rows
-            when(iterator.next()).thenReturn(row0, null);
+            when(iterator.next()).thenReturn(row0, (Row) null);
 
 
             when(response.getRowByIndex(0)).thenReturn(row0);
