@@ -356,12 +356,12 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     return;
                 }
                 try {
-                    FilterInfo filterInfo = scriptDAO.setFilterActive(filter_id, revisionNumber);
+                   scriptDAO.setFilterActive(filter_id, revisionNumber);
                 } catch (Exception e) {
                     setUsageError(400, "ERROR: " + e.getMessage(), response);
                     return;
                 }
-                response.sendRedirect("filterLoader.jsp");
+                response.sendRedirect(redirectPath.get());
 
                 //                Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
                 //              response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
@@ -391,10 +391,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
                 setUsageError(500, "ERROR: Unable to process uploaded data.", response);
                 return;
             }
-            response.sendRedirect("filterLoader.jsp");
-
-            //            Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
-            //            response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
+            response.sendRedirect(redirectPath.get());
         }
     }
 
@@ -633,9 +630,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* setup mock DAO */
 
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
-
-            Calendar now = Calendar.getInstance();
-
             List<FilterInfo> scriptsForEndpoint = new ArrayList<FilterInfo>();
             scriptsForEndpoint.add(new FilterInfo("name1:type", "code", "type", "name", "disable", "order", "app"));
             scriptsForEndpoint.add(new FilterInfo("name2:type", "code", "type", "name", "disable", "order", "app"));
@@ -917,9 +911,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
             /* verify the default status is used */
             verify(response, never()).setStatus(anyInt());
             verify(dao).setFilterActive(endpoint, 2);
-
-            Map<String, Object> expectedJson = createExpectedJsonMap(script);
-
         }
 
         @Test
@@ -984,16 +975,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
             when(script.isActive()).thenReturn(false);
             when(script.isCanary()).thenReturn(false);
             return script;
-        }
-
-        private Integer[] getStringAsIntegerArray(String scriptBody) {
-            char[] chars = scriptBody.toCharArray();
-            Integer[] bytes = new Integer[chars.length + 1];
-            for (int i = 0; i < chars.length; i++) {
-                bytes[i] = Integer.valueOf(chars[i]);
-            }
-            bytes[bytes.length - 1] = -1;
-            return bytes;
         }
     }
 }
