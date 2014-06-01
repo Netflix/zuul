@@ -16,11 +16,36 @@
 package com.netflix.zuul.scriptManager;
 
 
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.constants.ZuulConstants;
-import com.netflix.zuul.util.JsonUtility;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import net.jcip.annotations.ThreadSafe;
+
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -33,17 +58,11 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.*;
-
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.DynamicStringProperty;
+import com.netflix.zuul.constants.ZuulConstants;
+import com.netflix.zuul.util.JsonUtility;
 
 /**
  * Servlet for uploading/downloading/managing scripts.
@@ -58,9 +77,9 @@ import static org.mockito.Mockito.*;
 @ThreadSafe
 public class FilterScriptManagerServlet extends HttpServlet {
 
-    public static final DynamicBooleanProperty adminEnabled =
-            DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_FILTER_ADMIN_ENABLED, true);
-
+    public static final DynamicBooleanProperty adminEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_FILTER_ADMIN_ENABLED, true);
+    public static final DynamicStringProperty redirectPath = new DynamicStringProperty(ZuulConstants.ZUUL_FILTER_ADMIN_REDIRECT, "filterLoader.jsp");
+    
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
 
@@ -71,7 +90,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
 
     /* DAO for performing CRUD operations with scripts */
     private static ZuulFilterDAO scriptDAO;
-
 
     public static void setScriptDAO(ZuulFilterDAO scriptDAO) {
         FilterScriptManagerServlet.scriptDAO = scriptDAO;
@@ -191,6 +209,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
         return;
     }
 
+    @SuppressWarnings("unchecked")
     private void handleListAction(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String filter_id = request.getParameter("filter_id");
         if (filter_id == null) {
@@ -222,7 +241,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
                 }
 
                 json.put("filters", scriptsJson);
-
                 response.getWriter().write(JsonUtility.jsonFromMap(json));
             }
         }
@@ -285,16 +303,11 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     setUsageError(400, "ERROR: revision must be an integer.", response);
                     return;
                 }
-                FilterInfo filterInfo = scriptDAO.setCanaryFilter(filter_id, revisionNumber);
-//                Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
-//                response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
-                response.sendRedirect("filterLoader.jsp");
-
+                scriptDAO.setCanaryFilter(filter_id, revisionNumber);
+                response.sendRedirect(redirectPath.get());
             }
         }
-
     }
-
 
     private void handledeActivateAction(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String filter_id = request.getParameter("filter_id");
@@ -314,15 +327,12 @@ public class FilterScriptManagerServlet extends HttpServlet {
                     return;
                 }
                 try {
-                    FilterInfo filterInfo = scriptDAO.deActivateFilter(filter_id, revisionNumber);
+                    scriptDAO.deActivateFilter(filter_id, revisionNumber);
                 } catch (Exception e) {
                     setUsageError(400, "ERROR: " + e.getMessage(), response);
                     return;
                 }
-                response.sendRedirect("filterLoader.jsp");
-
-//                Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
-                //              response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
+                response.sendRedirect(redirectPath.get());
             }
         }
 
@@ -353,7 +363,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
                 }
                 response.sendRedirect("filterLoader.jsp");
 
-//                Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
+                //                Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
                 //              response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
             }
         }
@@ -383,8 +393,8 @@ public class FilterScriptManagerServlet extends HttpServlet {
             }
             response.sendRedirect("filterLoader.jsp");
 
-//            Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
-//            response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
+            //            Map<String, Object> scriptJson = createEndpointScriptJSON(filterInfo);
+            //            response.getWriter().write(JsonUtility.jsonFromMap(scriptJson));
         }
     }
 

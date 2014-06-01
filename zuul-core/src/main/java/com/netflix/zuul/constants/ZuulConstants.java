@@ -48,6 +48,7 @@ public class ZuulConstants {
     public static final String ZUUL_FILTER_ROUTING_PATH = "zuul.filter.routing.path";
     public static final String ZUUL_FILTER_CUSTOM_PATH = "zuul.filter.custom.path";
     public static final String ZUUL_FILTER_ADMIN_ENABLED = "zuul.filter.admin.enabled";
+    public static final String ZUUL_FILTER_ADMIN_REDIRECT = "zuul.filter.admin.redirect.path";
 
 
     public static final String ZUUL_DEBUG_REQUEST = "zuul.debug.request";
