@@ -30,6 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -145,7 +146,7 @@ public class ZuulServletFilter implements Filter {
 
             try {
                 zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
+                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
                 ZuulException e = new ZuulException("test", 510, "test");
                 doThrow(e).when(zuulServletFilter).routing();
 
@@ -172,7 +173,7 @@ public class ZuulServletFilter implements Filter {
 
             try {
                 zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
+                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
                 ZuulException e = new ZuulException("test", 510, "test");
                 doThrow(e).when(zuulServletFilter).preRouting();
 
@@ -200,7 +201,7 @@ public class ZuulServletFilter implements Filter {
 
             try {
                 zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
+                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
                 ZuulException e = new ZuulException("test", 510, "test");
                 doThrow(e).when(zuulServletFilter).postRouting();
 
@@ -226,7 +227,7 @@ public class ZuulServletFilter implements Filter {
             try {
 
                 zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter("moo"));
+                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
                 zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
 
                 verify(zuulRunner, times(1)).init(servletRequest, servletResponse);
