@@ -145,14 +145,16 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
 
             when(f1.filterOrder()).thenReturn(1);
             when(f2.filterOrder()).thenReturn(10);
+            when(f1.compareTo(any(ZuulFilter.class))).thenCallRealMethod();
+            when(f2.compareTo(any(ZuulFilter.class))).thenCallRealMethod();
 
             ArrayList<ZuulFilter> list = new ArrayList<ZuulFilter>();
-            list.add(f1);
             list.add(f2);
+            list.add(f1);
 
             Collections.sort(list);
 
-            assertSame(f2, list.get(0));
+            assertSame(f1, list.get(0));
         }
 
         @Test
