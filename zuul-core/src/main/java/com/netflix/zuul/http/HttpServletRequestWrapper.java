@@ -27,8 +27,11 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLDecoder;
 import java.security.Principal;
@@ -489,71 +492,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     }
 
     /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#authenticate(javax.servlet.http.HttpServletResponse)
-    *
-    * introduced in servlet 3.0
-    *
-    * @param response
-    * @return
-    * @throws IOException
-    * @throws ServletException
-    */
-    public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
-        return req.authenticate(response);
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#login(java.lang.String, java.lang.String)
-    *
-    * introduced in servlet 3.0
-    *
-    * @param username
-    * @param password
-    * @throws ServletException
-    */
-    public void login(String username, String password) throws ServletException {
-        req.login(username, password);
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#logout()
-    *
-    * introduced in servlet 3.0
-    *
-    * @throws ServletException
-    */
-    public void logout() throws ServletException {
-        req.logout();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#getParts()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    * @throws IOException
-    * @throws ServletException
-    */
-    public Collection<Part> getParts() throws IOException, ServletException {
-        return req.getParts();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#getPart(java.lang.String)
-    *
-    * introduced in servlet 3.0
-    *
-    * @param name
-    * @return
-    * @throws IOException
-    * @throws ServletException
-    */
-    public Part getPart(String name) throws IOException, ServletException {
-        return req.getPart(name);
-    }
-
-    /* (non-Javadoc)
     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
     */
     public boolean isRequestedSessionIdValid() {
@@ -622,87 +560,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     */
     public int getLocalPort() {
         return req.getLocalPort();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#getServletContext()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    */
-    public ServletContext getServletContext() {
-        return req.getServletContext();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#startAsync()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    * @throws IllegalStateException
-    */
-    public AsyncContext startAsync() throws IllegalStateException {
-        return req.startAsync();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#startAsync(javax.servlet.ServletRequest, javax.servlet.ServletResponse)
-    *
-    * introduced in servlet 3.0
-    *
-    * @param servletRequest
-    * @param servletResponse
-    * @return
-    * @throws IllegalStateException
-    */
-    public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException {
-        return req.startAsync(servletRequest, servletResponse);
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#isAsyncStarted()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    */
-    public boolean isAsyncStarted() {
-        return req.isAsyncStarted();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#isAsyncSupported()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    */
-    public boolean isAsyncSupported() {
-        return req.isAsyncSupported();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#getAsyncContext()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    */
-    public AsyncContext getAsyncContext() {
-        return req.getAsyncContext();
-    }
-
-    /* (non-Javadoc)
-    * @see javax.servlet.ServletRequest#getDispatcherType()
-    *
-    * introduced in servlet 3.0
-    *
-    * @return
-    */
-    public DispatcherType getDispatcherType() {
-        return req.getDispatcherType();
     }
 
     /* (non-Javadoc)
@@ -897,12 +754,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
 
         }
-
-        @Test
-        public void handlesAsync() throws IOException {
-            //TODO: write this test.
-        }
-
 
         public String readZipInputStream(InputStream input) throws IOException {
 

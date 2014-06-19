@@ -10,7 +10,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.6'
     
     provided 'junit:junit-dep:4.10'
-    provided 'javax.servlet:javax.servlet-api:3.0.1'
+    provided 'javax.servlet:servlet-api:2.5'
     groovy "org.codehaus.groovy:groovy-all:2.3.1"
 
     compile 'com.netflix.archaius:archaius-core:0.6.0'
