@@ -17,8 +17,6 @@ package com.netflix.zuul;
 
 import rx.Observable;
 
-public interface Filter {
-    public int getOrder();
-
-    public Observable<Boolean> shouldFilter(IngressRequest ingressReq);
+public abstract class PostFilter implements Filter {
+    public abstract Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse resp);
 }

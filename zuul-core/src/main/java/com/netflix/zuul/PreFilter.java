@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.netflix.zuul;
 
 import rx.Observable;
 
-public interface Filter {
-    public int getOrder();
-
-    public Observable<Boolean> shouldFilter(IngressRequest ingressReq);
+public abstract class PreFilter implements Filter {
+    public abstract Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq);
 }
