@@ -1,0 +1,7 @@
+dependencies { 
+    compile 'com.netflix.karyon:karyon-core:2.1.00-RC2'
+    compile 'com.netflix.rxjava:rxjava-core:0.19.2'
+    testCompile 'junit:junit-dep:4.10'
+    testCompile 'org.mockito:mockito-core:1.8.5'
+}
+

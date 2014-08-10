@@ -7,9 +7,11 @@ buildscript {
 
 allprojects {
     repositories { mavenCentral() }
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
 }
 
-apply plugin: 'idea'
+
 apply from: file('gradle/convention.gradle')
 apply from: file('gradle/maven.gradle')
 apply from: file('gradle/license.gradle')
@@ -17,11 +19,28 @@ apply from: file('gradle/release.gradle')
 
 subprojects {
 
-    group = "com.netflix.${githubProjectName}"
+    apply plugin: 'java'
+    group = "com.netflix.zuul"
+    
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     sourceSets.test.java.srcDir 'src/main/java'
 
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
+    }
+
+    eclipse { 
+        classpath { 
+            downloadSources = true
+            downloadJavadoc = true
+        }
+   }
+
+    idea { 
+        module { 
+            scopes.PROVIDED.minus += configurations.compile
+        }
     }
 }
