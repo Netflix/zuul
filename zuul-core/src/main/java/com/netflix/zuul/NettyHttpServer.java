@@ -1,12 +1,12 @@
 /**
  * Copyright 2014 Netflix, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,6 @@ import io.reactivex.netty.pipeline.PipelineConfigurators;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-
-import java.util.Map;
 
 public class NettyHttpServer {
     static final int DEFAULT_PORT = 8090;
@@ -43,19 +41,12 @@ public class NettyHttpServer {
                             doOnNext(egressResp ->  System.out.println("onNext Egress Resp : " + egressResp)).
                             doOnError(ex -> System.out.println("onError Egress Resp : " + ex)).
                             doOnCompleted(() -> System.out.println("onCompleted Egress Resp")).
+                            ignoreElements().
                             cast(Void.class);
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
         System.out.println("Started Zuul Netty HTTP Server!!");
         return server;
-    }
-
-    public void printRequestHeader(HttpServerRequest<ByteBuf> request) {
-        System.out.println("New request received");
-        System.out.println(request.getHttpMethod() + " " + request.getUri() + ' ' + request.getHttpVersion());
-        for (Map.Entry<String, String> header : request.getHeaders().entries()) {
-            System.out.println(header.getKey() + ": " + header.getValue());
-        }
     }
 
     public static void main(final String[] args) {
