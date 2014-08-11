@@ -15,5 +15,17 @@
  */
 package com.netflix.zuul;
 
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+
 public class IngressRequest {
+    private final HttpServerRequest<ByteBuf> nettyRequest;
+
+    private IngressRequest(HttpServerRequest<ByteBuf> nettyRequest) {
+        this.nettyRequest = nettyRequest;
+    }
+
+    public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest) {
+        return new IngressRequest(nettyRequest);
+    }
 }
