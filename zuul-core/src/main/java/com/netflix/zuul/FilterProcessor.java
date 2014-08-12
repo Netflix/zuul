@@ -27,15 +27,16 @@ public class FilterProcessor {
         this.filterStore = filterStore;
     }
 
-    public Observable<EgressResponse> applyAllFilters(IngressRequest ingressReq) {
+    public Observable<EgressResponse> applyAllFilters(IngressRequest ingressReq, EgressResponse egressResp) {
         FiltersForRoute filtersForRoute = filterStore.getFilters(ingressReq);
         return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                 applyRoutingFilters(egressReq, filtersForRoute.getRouteFilters())).flatMap(ingressResp ->
-                applyPostFilters(ingressResp, filtersForRoute.getPostFilters()));
+                applyPostFilters(ingressResp, egressResp, filtersForRoute.getPostFilters()));
     }
 
     private Observable<EgressRequest> applyPreFilters(IngressRequest ingressReq, List<PreFilter> preFilters) {
-        Observable<EgressRequest> observableReq = Observable.empty();
+        System.out.println("IngressReq : " + ingressReq + ", preFilters : " + preFilters.size());
+        Observable<EgressRequest> observableReq = Observable.just(EgressRequest.copiedFrom(ingressReq));
         if (preFilters != null && preFilters.size() != 0) {
             for (PreFilter filter: preFilters) {
                 observableReq = observableReq.flatMap(egressReq -> filter.shouldFilter(ingressReq).flatMap(shouldFilter -> {
@@ -50,26 +51,19 @@ public class FilterProcessor {
         return observableReq;
     }
 
-    //at the moment, this chains all n route filters and only returns the last
-    //is there a use case for any sort of intelligent combining (amb?, flatMap?)
     private Observable<IngressResponse> applyRoutingFilters(EgressRequest egressReq, List<RouteFilter> routeFilters) {
-        Observable<IngressResponse> observableResp = Observable.empty();
-        if (routeFilters != null && routeFilters.size() != 0) {
-            for (RouteFilter filter: routeFilters) {
-                observableResp = observableResp.flatMap(ingressResp -> filter.shouldFilter(egressReq).flatMap(shouldFilter -> {
-                    if (shouldFilter) {
-                        return filter.apply(egressReq, ingressResp);
-                    } else {
-                        return Observable.just(ingressResp);
-                    }
-                }));
-            }
+        System.out.println("EgressReq : " + egressReq + ", routeFilters : " + routeFilters.size());
+        if (routeFilters == null || routeFilters.size() != 1) {
+            return Observable.error(new ZuulException("Only define 1 RouteFilter. You have defined : " + (routeFilters == null ? 0 : routeFilters.size())));
+        } else {
+            RouteFilter routeFilter = routeFilters.get(0);
+            return routeFilter.apply(egressReq);
         }
-        return observableResp;
     }
 
-    private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, List<PostFilter> postFilters) {
-        Observable<EgressResponse> observableResp = Observable.empty();
+    private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, EgressResponse initialEgressResp, List<PostFilter> postFilters) {
+        System.out.println("IngressResp : " + ingressResp + ", postFilters : " + postFilters.size());
+        Observable<EgressResponse> observableResp = Observable.just(initialEgressResp);
         if (postFilters != null && postFilters.size() != 0) {
             for (PostFilter filter: postFilters) {
                 observableResp = observableResp.flatMap(egressResp -> filter.shouldFilter(ingressResp).flatMap(shouldFilter -> {

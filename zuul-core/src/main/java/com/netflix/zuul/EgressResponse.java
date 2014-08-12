@@ -15,5 +15,21 @@
  */
 package com.netflix.zuul;
 
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+
 public class EgressResponse {
+    private final HttpServerResponse<ByteBuf> nettyResponse;
+
+    private EgressResponse(HttpServerResponse<ByteBuf> nettyResponse) {
+        this.nettyResponse = nettyResponse;
+    }
+
+    public static EgressResponse from(HttpServerResponse<ByteBuf> nettyResp) {
+        return new EgressResponse(nettyResp);
+    }
+
+    public void addHeader(String name, String value) {
+        nettyResponse.getHeaders().addHeader(name, value);
+    }
 }

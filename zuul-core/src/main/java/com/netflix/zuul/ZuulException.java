@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.netflix.zuul;
 
-import rx.Observable;
-
-public abstract class PreFilter implements Filter<IngressRequest> {
-
-    public abstract Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq);
+public class ZuulException extends Throwable {
+    public ZuulException(String msg) {
+        super(msg);
+    }
 }

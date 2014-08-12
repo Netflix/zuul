@@ -17,10 +17,8 @@ package com.netflix.zuul;
 
 import rx.Observable;
 
-public interface Filter<I, O> {
+public interface Filter<I> {
     public int getOrder();
 
     public Observable<Boolean> shouldFilter(I ingressReq);
-
-    public Observable<O> apply(I input, O eutput);
 }

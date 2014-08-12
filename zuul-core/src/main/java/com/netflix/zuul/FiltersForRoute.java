@@ -18,7 +18,8 @@ package com.netflix.zuul;
 import java.util.List;
 
 /**
- * Simple data holder that defines all filters for a given route.
+ * Simple data holder that defines all filters for a given route and enforces
+ * sortedness by {@link com.netflix.zuul.Filter#getOrder()}.
  */
 public class FiltersForRoute {
     private final List<PreFilter> preFilters;
@@ -27,8 +28,11 @@ public class FiltersForRoute {
 
     public FiltersForRoute(List<PreFilter> preFilters, List<RouteFilter> routeFilters, List<PostFilter> postFilters) {
         this.preFilters = preFilters;
+        this.preFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
         this.routeFilters = routeFilters;
+        this.routeFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
         this.postFilters = postFilters;
+        this.postFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
     }
 
     public List<PreFilter> getPreFilters() {

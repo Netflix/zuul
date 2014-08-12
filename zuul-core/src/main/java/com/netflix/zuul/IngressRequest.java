@@ -28,4 +28,8 @@ public class IngressRequest {
     public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest) {
         return new IngressRequest(nettyRequest);
     }
+
+    /* package-private */ HttpServerRequest<ByteBuf> getNettyRequest() {
+        return nettyRequest;
+    }
 }

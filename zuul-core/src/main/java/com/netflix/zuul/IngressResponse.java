@@ -15,5 +15,21 @@
  */
 package com.netflix.zuul;
 
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.client.HttpClientResponse;
+
 public class IngressResponse {
+    private HttpClientResponse<ByteBuf> nettyResponse;
+
+    protected IngressResponse(HttpClientResponse<ByteBuf> nettyResponse) {
+        this.nettyResponse = nettyResponse;
+    }
+
+    public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
+        return new IngressResponse(nettyResponse);
+    }
+
+    /* package-private */ HttpClientResponse<ByteBuf> getNettyResponse() {
+        return nettyResponse;
+    }
 }

@@ -37,12 +37,13 @@ public class NettyHttpServer {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.newHttpServerBuilder(port,
                 (HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) -> {
                     final IngressRequest ingressReq = IngressRequest.from(request);
-                    return filterProcessor.applyAllFilters(ingressReq).
-                            doOnNext(egressResp ->  System.out.println("onNext Egress Resp : " + egressResp)).
+                    final EgressResponse egressResp = EgressResponse.from(response);
+                    return filterProcessor.applyAllFilters(ingressReq, egressResp).
+                            doOnNext(n ->  System.out.println("onNext Egress Resp : " + n)).
                             doOnError(ex -> System.out.println("onError Egress Resp : " + ex)).
                             doOnCompleted(() -> System.out.println("onCompleted Egress Resp")).
                             ignoreElements().
-                            cast(Void.class);
+                            cast(Void.class).finallyDo(response::close);
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
         System.out.println("Started Zuul Netty HTTP Server!!");
