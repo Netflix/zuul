@@ -42,8 +42,11 @@ public class EgressResponse {
             addHeader(entry.getKey(), entry.getValue());
         }
 
-        if (ingressResp.containsContent()) {
-            nettyResponse.write(ingressResp.getByteBuf());
+        if (ingressResp.getContentLength() > 0) {
+            ingressResp.getContent().forEach(byteBuf -> {
+                byteBuf.retain();
+                nettyResponse.write(byteBuf);
+            });
         }
         return this;
     }

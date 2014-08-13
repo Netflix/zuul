@@ -135,14 +135,14 @@ public class FilterProcessorTest {
         }
     };
     private final HttpClientResponse<ByteBuf> rxNettyResp = new HttpClientResponse<>(nettyResp, PublishSubject.create());
-    private final Observable<IngressResponse> ingressResp = IngressResponse.from(rxNettyResp);
+    private final IngressResponse ingressResp = IngressResponse.from(rxNettyResp);
 
     private final PreFilter successPreFilter = createPreFilter(1, true, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "DONE");
         return Observable.just(egressReq);
     });
 
-    private final RouteFilter successRouteFilter = createRouteFilter(1, true, egressReq -> ingressResp);
+    private final RouteFilter successRouteFilter = createRouteFilter(1, true, egressReq -> Observable.just(ingressResp));
 
     private final PostFilter successPostFilter = createPostFilter(1, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "DONE");

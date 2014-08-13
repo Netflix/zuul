@@ -24,12 +24,12 @@ import rx.Observable;
 public class IngressResponse {
     private final HttpResponseHeaders headers;
     private final HttpResponseStatus status;
-    private final ByteBuf byteBuf;
+    private final Observable<ByteBuf> content;
 
-    protected IngressResponse(HttpResponseHeaders headers, HttpResponseStatus status, ByteBuf byteBuf) {
+    protected IngressResponse(HttpResponseHeaders headers, HttpResponseStatus status, Observable<ByteBuf> content) {
         this.headers = headers;
         this.status = status;
-        this.byteBuf = byteBuf;
+        this.content = content;
     }
 
     public HttpResponseHeaders getHeaders() {
@@ -40,35 +40,31 @@ public class IngressResponse {
         return this.status;
     }
 
-    public ByteBuf getByteBuf() {
-        return this.byteBuf;
+    public Observable<ByteBuf> getContent() {
+        return this.content;
     }
 
-    public static Observable<IngressResponse> from(HttpClientResponse<ByteBuf> nettyResponse) {
+    public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
         System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
-        int contentLength = getContentLength(nettyResponse);
-        if (contentLength == 0) {
-            return Observable.just(new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), null));
-        } else {
-            return nettyResponse.getContent().map(byteBuf -> {
-                //Must retain in order to maintain proper reference count.
-                //See https://github.com/Netflix/RxNetty/issues/203 for the rationale.
-                byteBuf.retain();
-                return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf);
-            });
-        }
+        return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent());
+//        int contentLength = getContentLength(nettyResponse);
+//        if (contentLength == 0) {
+//            return Observable.just(new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), null));
+//        } else {
+//            return nettyResponse.getContent().map(byteBuf -> {
+//                //Must retain in order to maintain proper reference count.
+//                //See https://github.com/Netflix/RxNetty/issues/203 for the rationale.
+//                byteBuf.retain();
+//                return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf);
+//            });
+//        }
     }
 
-    private static int getContentLength(HttpClientResponse<ByteBuf> nettyResp) {
-        HttpResponseHeaders headers = nettyResp.getHeaders();
+    /* package-private */ int getContentLength() {
         if (headers.contains("Content-Length")) {
             return headers.getIntHeader("Content-Length");
         } else {
             return 0;
         }
-    }
-
-    public boolean containsContent() {
-        return byteBuf != null;
     }
 }

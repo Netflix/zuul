@@ -76,7 +76,7 @@ public class NettyHttpServer {
         RouteFilter routeFilter = new RouteFilter() {
             @Override
             public Observable<IngressResponse> apply(EgressRequest egressReq) {
-                return RxNetty.createHttpGet("http://api.test.netflix.com:80/" + egressReq.getUri()).flatMap(IngressResponse::from);
+                return RxNetty.createHttpGet("http://api.test.netflix.com:80/" + egressReq.getUri()).map(IngressResponse::from);
             }
 
             @Override
