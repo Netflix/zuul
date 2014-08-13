@@ -17,37 +17,34 @@ package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import rx.Observable;
 
 import java.util.Map;
 
 public class EgressResponse {
-    private final HttpServerResponse<ByteBuf> nettyResponse;
+    private final HttpServerResponse<ByteBuf> nettyResp;
+    private final Observable<ByteBuf> content;
 
-    private EgressResponse(HttpServerResponse<ByteBuf> nettyResponse) {
-        this.nettyResponse = nettyResponse;
+    private EgressResponse(HttpServerResponse<ByteBuf> nettyResp, Observable<ByteBuf> content) {
+        this.nettyResp = nettyResp;
+        this.content = content;
     }
 
-    public static EgressResponse from(HttpServerResponse<ByteBuf> nettyResp) {
-        return new EgressResponse(nettyResp);
+    public static EgressResponse from(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp) {
+        nettyResp.setStatus(ingressResp.getStatus());
+
+        for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
+            nettyResp.getHeaders().add(entry.getKey(), entry.getValue());
+        }
+
+        return new EgressResponse(nettyResp, ingressResp.getContent());
+    }
+
+    public Observable<ByteBuf> getContent() {
+        return content;
     }
 
     public void addHeader(String name, String value) {
-        nettyResponse.getHeaders().addHeader(name, value);
-    }
-
-    public EgressResponse copyFrom(IngressResponse ingressResp) {
-        nettyResponse.setStatus(ingressResp.getStatus());
-
-        for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
-            addHeader(entry.getKey(), entry.getValue());
-        }
-
-        if (ingressResp.getContentLength() > 0) {
-            ingressResp.getContent().forEach(byteBuf -> {
-                byteBuf.retain();
-                nettyResponse.write(byteBuf);
-            });
-        }
-        return this;
+        nettyResp.getHeaders().addHeader(name, value);
     }
 }

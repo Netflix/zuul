@@ -48,12 +48,4 @@ public class IngressResponse {
         System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
         return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent());
     }
-
-    /* package-private */ int getContentLength() {
-        if (headers.contains("Content-Length")) {
-            return headers.getIntHeader("Content-Length");
-        } else {
-            return 0;
-        }
-    }
 }

@@ -22,6 +22,7 @@ import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import rx.Observable;
+import rx.functions.Func1;
 
 public class NettyHttpServer {
     static final int DEFAULT_PORT = 8090;
@@ -38,10 +39,17 @@ public class NettyHttpServer {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.newHttpServerBuilder(port,
                 (HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) -> {
                     final IngressRequest ingressReq = IngressRequest.from(request);
-                    final EgressResponse egressResp = EgressResponse.from(response);
-                    return filterProcessor.applyAllFilters(ingressReq, egressResp).
-                            single().
-                            flatMap(r -> response.close());
+                    return filterProcessor.applyAllFilters(ingressReq, response).
+                            flatMap(EgressResponse::getContent).
+                            map(new Func1<ByteBuf, Void>() {
+                                @Override
+                                public Void call(ByteBuf byteBuf) {
+                                    byteBuf.retain();
+                                    response.write(byteBuf);
+                                    return null;
+                                }
+                            }).
+                            doOnCompleted(response::close);
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
         System.out.println("Started Zuul Netty HTTP Server!!");

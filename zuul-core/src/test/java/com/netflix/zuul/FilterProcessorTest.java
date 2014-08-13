@@ -24,7 +24,9 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.reactivex.netty.protocol.http.client.HttpClientResponse;
+import io.reactivex.netty.protocol.http.server.HttpResponseHeaders;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -40,14 +42,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 public class FilterProcessorTest {
     @Mock FilterStore mockFilterStore;
     @Mock FiltersForRoute mockFilters;
-    @Mock EgressResponse mockEgressResp;
+    @Mock HttpServerResponse<ByteBuf> mockRxNettyResp;
+    @Mock HttpResponseHeaders mockRespHeaders;
     private FilterProcessor processor;
 
     private final HttpRequest nettyReq = new HttpRequest() {
@@ -166,14 +168,14 @@ public class FilterProcessorTest {
         processor = new FilterProcessor(mockFilterStore);
 
         when(mockFilterStore.getFilters(ingressReq)).thenReturn(mockFilters);
-        when(mockEgressResp.copyFrom(any(IngressResponse.class))).thenReturn(mockEgressResp);
+        when(mockRxNettyResp.getHeaders()).thenReturn(mockRespHeaders);
     }
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
     private final Action1<EgressResponse> onNextAssert = (egressResp) -> {
         System.out.println("onNext : " + egressResp);
-        assertSame(mockEgressResp, egressResp);
+        verify(mockRxNettyResp, times(1)).setStatus(HttpResponseStatus.OK);
     };
     private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); ex.printStackTrace(); fail(ex.getMessage());};
     private final Action0 onCompletedUnlatch = () -> { System.out.println("onCompleted"); latch.countDown();};
@@ -182,6 +184,7 @@ public class FilterProcessorTest {
         return new PreFilter() {
             @Override
             public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
+                System.out.println("Executing preFilter : " + this);
                 return behavior.call(ingressReq, egressReq);
             }
 
@@ -211,6 +214,7 @@ public class FilterProcessorTest {
 
             @Override
             public Observable<IngressResponse> apply(EgressRequest input) {
+                System.out.println("Executing routeFilter : " + this);
                 return behavior.call(input);
             }
         };
@@ -220,6 +224,7 @@ public class FilterProcessorTest {
         return new PostFilter() {
             @Override
             public Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse egressResp) {
+                System.out.println("Executing postFilter : " + this);
                 return behavior.call(ingressResp, egressResp);
             }
 
@@ -241,7 +246,7 @@ public class FilterProcessorTest {
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(new ArrayList<>());
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -253,37 +258,37 @@ public class FilterProcessorTest {
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockEgressResp, times(1)).addHeader("POST", "DONE");
+        verify(mockRespHeaders, times(1)).addHeader("POST", "DONE");
     }
 
-    @Test
+    @Test(timeout=1000)
     public void testApplyTwoPreOneRouteTwoPost() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, successPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockEgressResp, times(2)).addHeader("POST", "DONE");
+        verify(mockRespHeaders, times(2)).addHeader("POST", "DONE");
     }
 
-    @Test
+    @Test(timeout=1000)
     public void testShouldFilterWorks() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, shouldNotPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockEgressResp, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
     }
 
 //    @Test

@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul;
 
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import rx.Observable;
 
 import java.util.List;
@@ -27,11 +29,11 @@ public class FilterProcessor {
         this.filterStore = filterStore;
     }
 
-    public Observable<EgressResponse> applyAllFilters(IngressRequest ingressReq, EgressResponse egressResp) {
+    public Observable<EgressResponse> applyAllFilters(IngressRequest ingressReq, HttpServerResponse<ByteBuf> nettyResp) {
         FiltersForRoute filtersForRoute = filterStore.getFilters(ingressReq);
         return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                 applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                applyPostFilters(ingressResp, egressResp, filtersForRoute.getPostFilters()));
+                applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters()));
     }
 
     private Observable<EgressRequest> applyPreFilters(IngressRequest ingressReq, List<PreFilter> preFilters) {
@@ -58,10 +60,10 @@ public class FilterProcessor {
         }
     }
 
-    private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, EgressResponse initialEgressResp, List<PostFilter> postFilters) {
-        System.out.println("IngressResp : " + ingressResp + ", initialEgressResp : " + initialEgressResp + ", postFilters : " + postFilters.size());
+    private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, List<PostFilter> postFilters) {
+        System.out.println("IngressResp : " + ingressResp + ", nettyResp : " + nettyResp + ", postFilters : " + postFilters.size());
 
-        Observable<EgressResponse> initialEgressRespObservable = Observable.just(initialEgressResp.copyFrom(ingressResp));
+        Observable<EgressResponse> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, nettyResp));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
                 postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
                     if (shouldFilter) {
