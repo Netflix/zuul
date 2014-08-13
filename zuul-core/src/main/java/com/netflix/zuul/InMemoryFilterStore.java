@@ -16,10 +16,29 @@
 package com.netflix.zuul;
 
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class InMemoryFilterStore implements FilterStore {
+    private final CopyOnWriteArrayList<PreFilter> preFilters = new CopyOnWriteArrayList<>();
+    private final AtomicReference<RouteFilter> routeFilter = new AtomicReference<>();
+    private final CopyOnWriteArrayList<PostFilter> postFilters = new CopyOnWriteArrayList<>();
+
     @Override
     public FiltersForRoute getFilters(IngressRequest ingressReq) {
-        return new FiltersForRoute(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        return new FiltersForRoute(preFilters, routeFilter.get(), postFilters);
+    }
+
+    @Override
+    public void addFilter(Filter filter) {
+        if (filter instanceof PreFilter) {
+            preFilters.add((PreFilter) filter);
+        } else if (filter instanceof PostFilter) {
+            postFilters.add((PostFilter) filter);
+        } else if (filter instanceof RouteFilter) {
+            routeFilter.lazySet((RouteFilter) filter);
+        } else {
+            System.err.println("Unknown filter type : " + filter + " : " + filter.getClass().getCanonicalName());
+        }
     }
 }

@@ -16,20 +16,42 @@
 package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.client.HttpClientResponse;
+import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
+import rx.Observable;
 
 public class IngressResponse {
-    private HttpClientResponse<ByteBuf> nettyResponse;
+    //private HttpClientResponse<ByteBuf> nettyResponse;
+    private final HttpResponseHeaders headers;
+    private final HttpResponseStatus status;
+    private final ByteBuf byteBuf;
 
-    protected IngressResponse(HttpClientResponse<ByteBuf> nettyResponse) {
-        this.nettyResponse = nettyResponse;
+    protected IngressResponse(HttpResponseHeaders headers, HttpResponseStatus status, ByteBuf byteBuf) {
+        this.headers = headers;
+        this.status = status;
+        this.byteBuf = byteBuf;
+
     }
 
-    public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
-        return new IngressResponse(nettyResponse);
+    public HttpResponseHeaders getHeaders() {
+        return this.headers;
     }
 
-    /* package-private */ HttpClientResponse<ByteBuf> getNettyResponse() {
-        return nettyResponse;
+    public HttpResponseStatus getStatus() {
+        return this.status;
     }
+
+    public ByteBuf getByteBuf() {
+        return this.byteBuf;
+    }
+
+    public static Observable<IngressResponse> from(HttpClientResponse<ByteBuf> nettyResponse) {
+        System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
+        return nettyResponse.getContent().map(byteBuf -> new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf));
+    }
+
+ //   /* package-private */ HttpClientResponse<ByteBuf> getNettyResponse() {
+    //    return nettyResponse;
+    //}
 }

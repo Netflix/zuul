@@ -46,4 +46,8 @@ public class EgressRequest {
         System.out.println("Adding header to EgressRequest : " + name + " -> " + value);
         nettyRequest = nettyRequest.withHeader(name, value);
     }
+
+    public String getUri() {
+        return nettyRequest.getUri();
+    }
 }

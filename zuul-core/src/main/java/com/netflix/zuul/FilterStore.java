@@ -17,4 +17,5 @@ package com.netflix.zuul;
 
 public interface FilterStore {
     FiltersForRoute getFilters(IngressRequest ingressReq);
+    void addFilter(Filter filter);
 }

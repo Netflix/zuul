@@ -16,7 +16,11 @@
 package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import rx.Observable;
+
+import java.util.Map;
 
 public class EgressResponse {
     private final HttpServerResponse<ByteBuf> nettyResponse;
@@ -31,5 +35,27 @@ public class EgressResponse {
 
     public void addHeader(String name, String value) {
         nettyResponse.getHeaders().addHeader(name, value);
+    }
+
+    public EgressResponse copyFrom(IngressResponse ingressResp) {
+        //HttpClientResponse<ByteBuf> nettyClientResp = ingressResp.getNettyResponse();
+
+        System.out.println("Copying status : " + ingressResp.getStatus());
+        nettyResponse.setStatus(ingressResp.getStatus());
+
+        for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
+            System.out.println("Copying header : " + entry.getKey() + " -> " + entry.getValue());
+            addHeader(entry.getKey(), entry.getValue());
+        }
+
+        nettyResponse.write(ingressResp.getByteBuf());
+//        Observable<ByteBuf> content = nettyClientResp.getContent();
+//        System.out.println("Got obs content : " + content);
+//
+//        content.forEach(c -> {
+//            System.out.println("Writing content : " + c);
+//            nettyResponse.write(c);
+//        });
+        return this;
     }
 }

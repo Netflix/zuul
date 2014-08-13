@@ -18,9 +18,14 @@ package com.netflix.zuul;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.pipeline.PipelineConfigurators;
+import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import rx.Observable;
+import rx.functions.Func1;
+
+import java.nio.charset.Charset;
 
 public class NettyHttpServer {
     static final int DEFAULT_PORT = 8090;
@@ -39,11 +44,11 @@ public class NettyHttpServer {
                     final IngressRequest ingressReq = IngressRequest.from(request);
                     final EgressResponse egressResp = EgressResponse.from(response);
                     return filterProcessor.applyAllFilters(ingressReq, egressResp).
-                            doOnNext(n ->  System.out.println("onNext Egress Resp : " + n)).
+                            doOnNext(n -> System.out.println("onNext Egress Resp : " + n)).
                             doOnError(ex -> System.out.println("onError Egress Resp : " + ex)).
-                            doOnCompleted(() -> System.out.println("onCompleted Egress Resp")).
+                            doOnCompleted(() -> {System.out.println("onCompleted Egress Resp"); response.close(true);}).
                             ignoreElements().
-                            cast(Void.class).finallyDo(response::close);
+                            cast(Void.class);
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
         System.out.println("Started Zuul Netty HTTP Server!!");
@@ -54,6 +59,65 @@ public class NettyHttpServer {
         FilterStore filterStore = new InMemoryFilterStore();
         FilterProcessor filterProcessor = new FilterProcessor(filterStore);
         NettyHttpServer server = new NettyHttpServer(DEFAULT_PORT, filterProcessor);
+
+        PreFilter preFilter = new PreFilter() {
+            @Override
+            public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
+                System.out.println("PreFilter doing a no-op");
+                return Observable.just(egressReq);
+            }
+
+            @Override
+            public int getOrder() {
+                return 1;
+            }
+
+            @Override
+            public Observable<Boolean> shouldFilter(IngressRequest ingressReq) {
+                return Observable.just(true);
+            }
+        };
+
+        filterStore.addFilter(preFilter);
+
+        RouteFilter routeFilter = new RouteFilter() {
+            @Override
+            public Observable<IngressResponse> apply(EgressRequest egressReq) {
+                return RxNetty.createHttpGet("http://api.test.netflix.com:80/" + egressReq.getUri()).flatMap(IngressResponse::from);
+            }
+
+            @Override
+            public int getOrder() {
+                return 1;
+            }
+
+            @Override
+            public Observable<Boolean> shouldFilter(EgressRequest ingressReq) {
+                return Observable.just(true);
+            }
+        };
+
+        filterStore.addFilter(routeFilter);
+
+        PostFilter postFilter = new PostFilter() {
+            @Override
+            public Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse egressResp) {
+                System.out.println("PostFilter doing a no-op");
+                return Observable.just(egressResp);
+            }
+
+            @Override
+            public int getOrder() {
+                return 1;
+            }
+
+            @Override
+            public Observable<Boolean> shouldFilter(IngressResponse ingressReq) {
+                return Observable.just(true);
+            }
+        };
+
+        filterStore.addFilter(postFilter);
 
         server.createServer().startAndWait();
     }

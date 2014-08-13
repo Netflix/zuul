@@ -23,14 +23,13 @@ import java.util.List;
  */
 public class FiltersForRoute {
     private final List<PreFilter> preFilters;
-    private final List<RouteFilter> routeFilters;
+    private final RouteFilter routeFilter;
     private final List<PostFilter> postFilters;
 
-    public FiltersForRoute(List<PreFilter> preFilters, List<RouteFilter> routeFilters, List<PostFilter> postFilters) {
+    public FiltersForRoute(List<PreFilter> preFilters, RouteFilter routeFilter, List<PostFilter> postFilters) {
         this.preFilters = preFilters;
         this.preFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
-        this.routeFilters = routeFilters;
-        this.routeFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
+        this.routeFilter = routeFilter;
         this.postFilters = postFilters;
         this.postFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
     }
@@ -39,8 +38,8 @@ public class FiltersForRoute {
         return preFilters;
     }
 
-    public List<RouteFilter> getRouteFilters() {
-        return routeFilters;
+    public RouteFilter getRouteFilter() {
+        return routeFilter;
     }
 
     public List<PostFilter> getPostFilters() {
