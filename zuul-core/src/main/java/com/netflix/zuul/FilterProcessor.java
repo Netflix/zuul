@@ -42,6 +42,7 @@ public class FilterProcessor {
                 if (shouldFilter) {
                     return egressReqObservable.flatMap(egressReq -> preFilter.apply(ingressReq, egressReq));
                 } else {
+                    //System.out.println("Discarding preFilter with order : " + preFilter.getOrder());
                     return egressReqObservable;
                 }
             });
@@ -58,7 +59,7 @@ public class FilterProcessor {
     }
 
     private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, EgressResponse initialEgressResp, List<PostFilter> postFilters) {
-        System.out.println("IngressResp : " + ingressResp + ", postFilters : " + postFilters.size());
+        System.out.println("IngressResp : " + ingressResp + ", initialEgressResp : " + initialEgressResp + ", postFilters : " + postFilters.size());
 
         Observable<EgressResponse> initialEgressRespObservable = Observable.just(initialEgressResp.copyFrom(ingressResp));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
@@ -66,6 +67,7 @@ public class FilterProcessor {
                     if (shouldFilter) {
                         return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp));
                     } else {
+                        //System.out.println("Discarding PostFilter with order : " + postFilter.getOrder());
                         return egressRespObservable;
                     }
                 })).flatMap(o -> o);

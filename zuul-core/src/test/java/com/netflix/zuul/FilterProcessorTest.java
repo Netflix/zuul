@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
@@ -142,10 +143,20 @@ public class FilterProcessorTest {
         return Observable.just(egressReq);
     });
 
+    private final PreFilter shouldNotPreFilter = createPreFilter(2, false, (ingressReq, egressReq) -> {
+        egressReq.addHeader("PRE", "SHOULDNOT");
+        return Observable.just(egressReq);
+    });
+
     private final RouteFilter successRouteFilter = createRouteFilter(1, true, egressReq -> Observable.just(ingressResp));
 
     private final PostFilter successPostFilter = createPostFilter(1, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "DONE");
+        return Observable.just(egressResp);
+    });
+
+    private final PostFilter shouldNotPostFilter = createPostFilter(2, false, (ingressResp, egressResp) -> {
+        egressResp.addHeader("POST", "SHOULDNOT");
         return Observable.just(egressResp);
     });
 
@@ -155,12 +166,16 @@ public class FilterProcessorTest {
         processor = new FilterProcessor(mockFilterStore);
 
         when(mockFilterStore.getFilters(ingressReq)).thenReturn(mockFilters);
+        when(mockEgressResp.copyFrom(any(IngressResponse.class))).thenReturn(mockEgressResp);
     }
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
-    private final Action1<EgressResponse> onNextPrint = (egressResp) -> System.out.println("onNext : " + egressResp);
-    private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); fail(ex.getMessage());};
+    private final Action1<EgressResponse> onNextAssert = (egressResp) -> {
+        System.out.println("onNext : " + egressResp);
+        assertSame(mockEgressResp, egressResp);
+    };
+    private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); ex.printStackTrace(); fail(ex.getMessage());};
     private final Action0 onCompletedUnlatch = () -> { System.out.println("onCompleted"); latch.countDown();};
 
     private PreFilter createPreFilter(final int order, final boolean shouldFilter, Func2<IngressRequest, EgressRequest, Observable<EgressRequest>> behavior) {
@@ -227,39 +242,50 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(new ArrayList<>());
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
-        result.subscribe(onNextPrint, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
     }
 
-//    @Test(timeout=1000)
-//    public void testApplyMultipleRoutesIsFailure() throws InterruptedException {
-//        assertEquals(0, 9);
-//    }
-
-    @Test
+    @Test(timeout=1000)
     public void testApplyOnePreOneRouteOnePost() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
-        result.subscribe(onNextPrint, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
 
         latch.await();
         verify(mockEgressResp, times(1)).addHeader("POST", "DONE");
     }
 
-//    @Test
-//    public void testApplyTwoPreTwoRouteTwoPost() {
-//        assertEquals(0, 9);
-//    }
-//
-//    @Test
-//    public void testShouldFilterWorks() {
-//        assertEquals(0, 9);
-//    }
-//
+    @Test
+    public void testApplyTwoPreOneRouteTwoPost() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockEgressResp, times(2)).addHeader("POST", "DONE");
+    }
+
+    @Test
+    public void testShouldFilterWorks() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, shouldNotPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockEgressResp);
+        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockEgressResp, times(1)).addHeader(eq("POST"), anyString());
+    }
+
 //    @Test
 //    public void testErrorInPreFilter() {
 //        assertEquals(0, 9);

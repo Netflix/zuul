@@ -47,17 +47,6 @@ public class IngressResponse {
     public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
         System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
         return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent());
-//        int contentLength = getContentLength(nettyResponse);
-//        if (contentLength == 0) {
-//            return Observable.just(new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), null));
-//        } else {
-//            return nettyResponse.getContent().map(byteBuf -> {
-//                //Must retain in order to maintain proper reference count.
-//                //See https://github.com/Netflix/RxNetty/issues/203 for the rationale.
-//                byteBuf.retain();
-//                return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf);
-//            });
-//        }
     }
 
     /* package-private */ int getContentLength() {
