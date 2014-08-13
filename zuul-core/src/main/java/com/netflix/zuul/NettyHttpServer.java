@@ -18,14 +18,10 @@ package com.netflix.zuul;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.pipeline.PipelineConfigurators;
-import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import rx.Observable;
-import rx.functions.Func1;
-
-import java.nio.charset.Charset;
 
 public class NettyHttpServer {
     static final int DEFAULT_PORT = 8090;
@@ -44,11 +40,8 @@ public class NettyHttpServer {
                     final IngressRequest ingressReq = IngressRequest.from(request);
                     final EgressResponse egressResp = EgressResponse.from(response);
                     return filterProcessor.applyAllFilters(ingressReq, egressResp).
-                            doOnNext(n -> System.out.println("onNext Egress Resp : " + n)).
-                            doOnError(ex -> System.out.println("onError Egress Resp : " + ex)).
-                            doOnCompleted(() -> {System.out.println("onCompleted Egress Resp"); response.close(true);}).
-                            ignoreElements().
-                            cast(Void.class);
+                            single().
+                            flatMap(r -> response.close());
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
         System.out.println("Started Zuul Netty HTTP Server!!");

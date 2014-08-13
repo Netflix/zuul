@@ -16,7 +16,6 @@
 package com.netflix.zuul;
 
 import rx.Observable;
-import rx.functions.Func2;
 
 import java.util.List;
 
@@ -52,7 +51,7 @@ public class FilterProcessor {
     private Observable<IngressResponse> applyRoutingFilter(EgressRequest egressReq, RouteFilter routeFilter) {
         System.out.println("EgressReq : " + egressReq);
         if (routeFilter == null) {
-            return Observable.error(new ZuulException("You should define a RouteFilter."));
+            return Observable.error(new ZuulException("You must define a RouteFilter."));
         } else {
             return routeFilter.apply(egressReq);
         }
@@ -62,14 +61,13 @@ public class FilterProcessor {
         System.out.println("IngressResp : " + ingressResp + ", postFilters : " + postFilters.size());
 
         Observable<EgressResponse> initialEgressRespObservable = Observable.just(initialEgressResp.copyFrom(ingressResp));
-        return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
-            return postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
-                if (shouldFilter) {
-                    return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp));
-                } else {
-                    return egressRespObservable;
-                }
-            });
-        }).flatMap(o -> o);
+        return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
+                postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
+                    if (shouldFilter) {
+                        return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp));
+                    } else {
+                        return egressRespObservable;
+                    }
+                })).flatMap(o -> o);
     }
 }

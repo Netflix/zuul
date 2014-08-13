@@ -22,7 +22,6 @@ import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 import rx.Observable;
 
 public class IngressResponse {
-    //private HttpClientResponse<ByteBuf> nettyResponse;
     private final HttpResponseHeaders headers;
     private final HttpResponseStatus status;
     private final ByteBuf byteBuf;
@@ -31,7 +30,6 @@ public class IngressResponse {
         this.headers = headers;
         this.status = status;
         this.byteBuf = byteBuf;
-
     }
 
     public HttpResponseHeaders getHeaders() {
@@ -48,10 +46,11 @@ public class IngressResponse {
 
     public static Observable<IngressResponse> from(HttpClientResponse<ByteBuf> nettyResponse) {
         System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
-        return nettyResponse.getContent().map(byteBuf -> new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf));
+        return nettyResponse.getContent().map(byteBuf -> {
+            //Must retain in order to maintain proper reference count.
+            //See https://github.com/Netflix/RxNetty/issues/203 for the rationale.
+            byteBuf.retain();
+            return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), byteBuf);
+        });
     }
-
- //   /* package-private */ HttpClientResponse<ByteBuf> getNettyResponse() {
-    //    return nettyResponse;
-    //}
 }
