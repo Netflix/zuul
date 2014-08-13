@@ -61,6 +61,13 @@ public class NettyHttpServer {
         FilterProcessor filterProcessor = new FilterProcessor(filterStore);
         NettyHttpServer server = new NettyHttpServer(DEFAULT_PORT, filterProcessor);
 
+        //This is for testing only and will get removed once we have user-defined scripts hooked in
+        addJavaFilters(filterStore);
+
+        server.createServer().startAndWait();
+    }
+
+    private static void addJavaFilters(FilterStore filterStore) {
         PreFilter preFilter = new PreFilter() {
             @Override
             public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
@@ -119,7 +126,5 @@ public class NettyHttpServer {
         };
 
         filterStore.addFilter(postFilter);
-
-        server.createServer().startAndWait();
     }
 }
