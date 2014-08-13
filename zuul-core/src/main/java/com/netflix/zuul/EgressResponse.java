@@ -42,7 +42,9 @@ public class EgressResponse {
             addHeader(entry.getKey(), entry.getValue());
         }
 
-        nettyResponse.write(ingressResp.getByteBuf());
+        if (ingressResp.containsContent()) {
+            nettyResponse.write(ingressResp.getByteBuf());
+        }
         return this;
     }
 }
