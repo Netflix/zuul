@@ -31,19 +31,15 @@ public class EgressRequest {
     public static EgressRequest copiedFrom(IngressRequest ingressReq) {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getNettyRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
-        System.out.println("Setting up new HTTP Request : " + nettyReq.getHttpMethod() + " : " + nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
-            System.out.println("Adding HTTP Request header : " + entry.getKey() + " -> " + entry.getValue());
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
-        System.out.println("Copying Observable source of HTTP content");
         //TODO - do I need a Subject involved here in case IngressRequest has already starting consuming the content?
         clientReq = clientReq.withContentSource(nettyReq.getContent());
         return new EgressRequest(clientReq);
     }
 
     public void addHeader(String name, String value) {
-        System.out.println("Adding header to EgressRequest : " + name + " -> " + value);
         nettyRequest = nettyRequest.withHeader(name, value);
     }
 

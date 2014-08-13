@@ -36,11 +36,9 @@ public class EgressResponse {
     }
 
     public EgressResponse copyFrom(IngressResponse ingressResp) {
-        System.out.println("Copying status : " + ingressResp.getStatus());
         nettyResponse.setStatus(ingressResp.getStatus());
 
         for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
-            System.out.println("Copying header : " + entry.getKey() + " -> " + entry.getValue());
             addHeader(entry.getKey(), entry.getValue());
         }
 
