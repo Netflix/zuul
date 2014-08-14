@@ -21,6 +21,12 @@ import rx.Observable;
 
 import java.util.List;
 
+
+/**
+ * TODO: It would be better to use OP.single(), rather than Observable.error(ERROR).startWith(OP).take(1)
+ * However, doing this around a Netty operation results in not being able to get at the ByteBuf.  We should look at
+ * RxNetty to see if we can issue the onCompleted() before the resource release()
+ */
 public class FilterProcessor {
 
     private final FilterStore filterStore;
