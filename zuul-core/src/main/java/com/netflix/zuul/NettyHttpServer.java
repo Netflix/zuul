@@ -27,8 +27,6 @@ import rx.Observable;
 import rx.functions.Func1;
 
 public class NettyHttpServer {
-    static final int DEFAULT_PORT = 8090;
-
     private final int port;
     private final FilterProcessor filterProcessor;
 
@@ -56,73 +54,5 @@ public class NettyHttpServer {
 
         System.out.println("Started Zuul Netty HTTP Server!!");
         return server;
-    }
-
-    public static void main(final String[] args) {
-        FilterStore filterStore = new InMemoryFilterStore();
-        FilterProcessor filterProcessor = new FilterProcessor(filterStore);
-        NettyHttpServer server = new NettyHttpServer(DEFAULT_PORT, filterProcessor);
-
-        //This is for testing only and will get removed once we have user-defined scripts hooked in
-        addJavaFilters(filterStore);
-
-        server.createServer().startAndWait();
-    }
-
-    private static void addJavaFilters(FilterStore filterStore) {
-        PreFilter preFilter = new PreFilter() {
-            @Override
-            public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
-                System.out.println("PreFilter doing a no-op");
-                return Observable.just(egressReq);
-            }
-
-            @Override
-            public int getOrder() {
-                return 1;
-            }
-
-            @Override
-            public Observable<Boolean> shouldFilter(IngressRequest ingressReq) {
-                return Observable.just(true);
-            }
-        };
-
-        filterStore.addFilter(preFilter);
-
-        RouteFilter routeFilter = new RouteFilter() {
-            @Override
-            public Observable<IngressResponse> apply(EgressRequest egressReq) {
-                HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
-                return httpClient.submit(egressReq.getUnderlyingNettyReq()).map(IngressResponse::from);
-            }
-
-            @Override
-            public Observable<Boolean> shouldFilter(EgressRequest ingressReq) {
-                return Observable.just(true);
-            }
-        };
-
-        filterStore.addFilter(routeFilter);
-
-        PostFilter postFilter = new PostFilter() {
-            @Override
-            public Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse egressResp) {
-                System.out.println("PostFilter doing a no-op");
-                return Observable.just(egressResp);
-            }
-
-            @Override
-            public int getOrder() {
-                return 1;
-            }
-
-            @Override
-            public Observable<Boolean> shouldFilter(IngressResponse ingressReq) {
-                return Observable.just(true);
-            }
-        };
-
-        filterStore.addFilter(postFilter);
     }
 }

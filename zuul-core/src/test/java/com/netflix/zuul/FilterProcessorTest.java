@@ -443,6 +443,7 @@ public class FilterProcessorTest {
         assertTrue(alreadyProcessedOnNext.get());
     }
 
+    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testPreFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(doublePreFilter));
@@ -451,14 +452,15 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
+    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testRouteFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
@@ -467,14 +469,15 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
+    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testPostFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
@@ -483,11 +486,11 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 

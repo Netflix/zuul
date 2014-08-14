@@ -37,12 +37,10 @@ public class FilterProcessor {
     }
 
     private Observable<EgressRequest> applyPreFilters(IngressRequest ingressReq, List<PreFilter> preFilters) {
-        System.out.println("IngressReq : " + ingressReq + ", preFilters : " + preFilters.size());
-
         return Observable.from(preFilters).reduce(Observable.just(EgressRequest.copiedFrom(ingressReq)), (egressReqObservable, preFilter) -> {
             return preFilter.shouldFilter(ingressReq).flatMap(shouldFilter -> {
                 if (shouldFilter) {
-                    return egressReqObservable.flatMap(egressReq -> preFilter.apply(ingressReq, egressReq).single());
+                    return egressReqObservable.flatMap(egressReq -> oneOrError(preFilter.apply(ingressReq, egressReq), "Empty prefilter"));
                 } else {
                     //System.out.println("Discarding preFilter with order : " + preFilter.getOrder());
                     return egressReqObservable;
@@ -52,26 +50,27 @@ public class FilterProcessor {
     }
 
     private Observable<IngressResponse> applyRoutingFilter(EgressRequest egressReq, RouteFilter routeFilter) {
-        System.out.println("EgressReq : " + egressReq);
         if (routeFilter == null) {
             return Observable.error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return routeFilter.apply(egressReq).single();
+            return oneOrError(routeFilter.apply(egressReq), "Empty route filter");
         }
     }
 
     private Observable<EgressResponse> applyPostFilters(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, List<PostFilter> postFilters) {
-        System.out.println("IngressResp : " + ingressResp + ", nettyResp : " + nettyResp + ", postFilters : " + postFilters.size());
-
         Observable<EgressResponse> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, nettyResp));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
                 postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
                     if (shouldFilter) {
-                        return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp).single());
+                        return egressRespObservable.flatMap(egressResp -> oneOrError(postFilter.apply(ingressResp, egressResp), "Empty postfilter"));
                     } else {
                         //System.out.println("Discarding PostFilter with order : " + postFilter.getOrder());
                         return egressRespObservable;
                     }
                 })).flatMap(o -> o);
+    }
+
+    private <T> Observable<T> oneOrError(Observable<T> in, String errorMsg) {
+        return Observable.<T>error(new ZuulException(errorMsg)).startWith(in).take(1);
     }
 }
