@@ -23,10 +23,11 @@ public class InMemoryFilterStore implements FilterStore {
     private final CopyOnWriteArrayList<PreFilter> preFilters = new CopyOnWriteArrayList<>();
     private final AtomicReference<RouteFilter> routeFilter = new AtomicReference<>();
     private final CopyOnWriteArrayList<PostFilter> postFilters = new CopyOnWriteArrayList<>();
+    private final AtomicReference<ErrorFilter> errorFilter = new AtomicReference<>();
 
     @Override
     public FiltersForRoute getFilters(IngressRequest ingressReq) {
-        return new FiltersForRoute(preFilters, routeFilter.get(), postFilters);
+        return new FiltersForRoute(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 
     @Override
@@ -37,6 +38,8 @@ public class InMemoryFilterStore implements FilterStore {
             postFilters.add((PostFilter) filter);
         } else if (filter instanceof RouteFilter) {
             routeFilter.lazySet((RouteFilter) filter);
+        } else if (filter instanceof ErrorFilter) {
+            errorFilter.lazySet((ErrorFilter) filter);
         } else {
             System.err.println("Unknown filter type : " + filter + " : " + filter.getClass().getCanonicalName());
         }

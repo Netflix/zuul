@@ -32,6 +32,7 @@ public class EgressResponse {
 
     public static EgressResponse from(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp) {
         nettyResp.setStatus(ingressResp.getStatus());
+        System.out.println("Received response : " + ingressResp.getStatus());
 
         for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
             nettyResp.getHeaders().add(entry.getKey(), entry.getValue());

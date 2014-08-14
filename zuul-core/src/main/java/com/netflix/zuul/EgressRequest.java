@@ -35,7 +35,6 @@ public class EgressRequest {
             //System.out.println("Adding header to EgressRequest : " + entry.getKey() + " -> " + entry.getValue());
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
-        //TODO - do I need a Subject involved here in case IngressRequest has already starting consuming the content?
         clientReq = clientReq.withContentSource(nettyReq.getContent());
         return new EgressRequest(clientReq);
     }

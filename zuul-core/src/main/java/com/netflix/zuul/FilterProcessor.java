@@ -33,7 +33,7 @@ public class FilterProcessor {
         FiltersForRoute filtersForRoute = filterStore.getFilters(ingressReq);
         return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                 applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters()));
+                applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(ex -> filtersForRoute.getErrorFilter().apply(ex));
     }
 
     private Observable<EgressRequest> applyPreFilters(IngressRequest ingressReq, List<PreFilter> preFilters) {
@@ -42,7 +42,7 @@ public class FilterProcessor {
         return Observable.from(preFilters).reduce(Observable.just(EgressRequest.copiedFrom(ingressReq)), (egressReqObservable, preFilter) -> {
             return preFilter.shouldFilter(ingressReq).flatMap(shouldFilter -> {
                 if (shouldFilter) {
-                    return egressReqObservable.flatMap(egressReq -> preFilter.apply(ingressReq, egressReq));
+                    return egressReqObservable.flatMap(egressReq -> preFilter.apply(ingressReq, egressReq).single());
                 } else {
                     //System.out.println("Discarding preFilter with order : " + preFilter.getOrder());
                     return egressReqObservable;
@@ -56,7 +56,7 @@ public class FilterProcessor {
         if (routeFilter == null) {
             return Observable.error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return routeFilter.apply(egressReq);
+            return routeFilter.apply(egressReq).single();
         }
     }
 
@@ -67,7 +67,7 @@ public class FilterProcessor {
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
                 postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
                     if (shouldFilter) {
-                        return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp));
+                        return egressRespObservable.flatMap(egressResp -> postFilter.apply(ingressResp, egressResp).single());
                     } else {
                         //System.out.println("Discarding PostFilter with order : " + postFilter.getOrder());
                         return egressRespObservable;

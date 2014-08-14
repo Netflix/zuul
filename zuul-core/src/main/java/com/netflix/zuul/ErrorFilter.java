@@ -17,12 +17,17 @@ package com.netflix.zuul;
 
 import rx.Observable;
 
-//possible other name - OriginFilter, OriginRoutingFilter???
-public abstract class RouteFilter implements Filter<EgressRequest> {
-    public abstract Observable<IngressResponse> apply(EgressRequest egressReq);
+public abstract class ErrorFilter implements Filter<Object> {
 
     @Override
-    public final int getOrder() {
+    public Observable<Boolean> shouldFilter(Object o) {
+        return Observable.just(true);
+    }
+
+    @Override
+    public int getOrder() {
         return 1;
     }
+
+    public abstract Observable<EgressResponse> apply(Throwable ex);
 }

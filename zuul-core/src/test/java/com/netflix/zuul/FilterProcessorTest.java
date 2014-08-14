@@ -41,7 +41,9 @@ import rx.subjects.PublishSubject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
@@ -140,6 +142,45 @@ public class FilterProcessorTest {
     private final HttpClientResponse<ByteBuf> rxNettyResp = new HttpClientResponse<>(nettyResp, PublishSubject.create());
     private final IngressResponse ingressResp = IngressResponse.from(rxNettyResp);
 
+    private final HttpResponse nettyErrorResp = new HttpResponse() {
+        @Override
+        public HttpResponseStatus getStatus() {
+            return HttpResponseStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        @Override
+        public HttpResponse setStatus(HttpResponseStatus status) {
+            return this;
+        }
+
+        @Override
+        public HttpResponse setProtocolVersion(HttpVersion version) {
+            return this;
+        }
+
+        @Override
+        public HttpVersion getProtocolVersion() {
+            return HttpVersion.HTTP_1_1;
+        }
+
+        @Override
+        public HttpHeaders headers() {
+            return HttpHeaders.EMPTY_HEADERS;
+        }
+
+        @Override
+        public DecoderResult getDecoderResult() {
+            return DecoderResult.SUCCESS;
+        }
+
+        @Override
+        public void setDecoderResult(DecoderResult result) {
+
+        }
+    };
+    private final HttpClientResponse<ByteBuf> rxNettyErrorResp = new HttpClientResponse<>(nettyErrorResp, PublishSubject.create());
+    private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp);
+
     private final PreFilter successPreFilter = createPreFilter(1, true, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "DONE");
         return Observable.just(egressReq);
@@ -150,7 +191,27 @@ public class FilterProcessorTest {
         return Observable.just(egressReq);
     });
 
+    private final PreFilter emptyPreFilter = createPreFilter(3, true, (ingressReq, egressReq) -> Observable.empty());
+
+    private final PreFilter doublePreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
+        egressReq.addHeader("PRE", "DOUBLE");
+        return Observable.from(egressReq, egressReq);
+    });
+
+    private final PreFilter errorPreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
+        egressReq.addHeader("PRE", "ERROR");
+        return Observable.error(new RuntimeException("pre unit test"));
+    });
+
     private final RouteFilter successRouteFilter = createRouteFilter(1, true, egressReq -> Observable.just(ingressResp));
+
+    private final RouteFilter shouldNotFilter = createRouteFilter(2, false, egressReq -> Observable.just(ingressResp));
+
+    private final RouteFilter emptyRouteFilter = createRouteFilter(3, true, egressReq -> Observable.empty());
+
+    private final RouteFilter doubleRouteFilter = createRouteFilter(4, true, egressReq -> Observable.from(ingressResp, ingressResp));
+
+    private final RouteFilter errorRouteFilter = createRouteFilter(5, true, egressReq -> Observable.error(new RuntimeException("route unit test")));
 
     private final PostFilter successPostFilter = createPostFilter(1, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "DONE");
@@ -162,6 +223,27 @@ public class FilterProcessorTest {
         return Observable.just(egressResp);
     });
 
+    private final PostFilter emptyPostFilter = createPostFilter(3, true, (ingressResp, egressResp) -> Observable.empty());
+
+    private final PostFilter doublePostFilter = createPostFilter(4, true, (ingressResp, egressResp) -> {
+        egressResp.addHeader("POST", "DOUBLE");
+        return Observable.from(egressResp, egressResp);
+    });
+
+    private final PostFilter errorPostFilter = createPostFilter(5, true, (ingressResp, egressResp) -> {
+        egressResp.addHeader("POST", "ERROR");
+        return Observable.error(new RuntimeException("post unit test"));
+    });
+
+    private final ErrorFilter errorFilter = new ErrorFilter() {
+        @Override
+        public Observable<EgressResponse> apply(Throwable ex) {
+            EgressResponse egressResp = EgressResponse.from(ingressErrorResp, mockRxNettyResp);
+            egressResp.addHeader("ERROR", "TRUE");
+            return Observable.just(egressResp);
+        }
+    };
+
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -172,11 +254,27 @@ public class FilterProcessorTest {
     }
 
     private final CountDownLatch latch = new CountDownLatch(1);
+    private final AtomicBoolean alreadyProcessedOnNext = new AtomicBoolean(false);
 
-    private final Action1<EgressResponse> onNextAssert = (egressResp) -> {
-        System.out.println("onNext : " + egressResp);
-        verify(mockRxNettyResp, times(1)).setStatus(HttpResponseStatus.OK);
-    };
+    private Action1<EgressResponse> onNextAssert(HttpResponseStatus status) {
+        return (egressResp) -> {
+            System.out.println("onNext : " + egressResp);
+            if (alreadyProcessedOnNext.compareAndSet(false, true)) {
+                verify(mockRxNettyResp, times(1)).setStatus(status);
+            } else {
+                fail("Only expecting 1 onNext");
+            }
+        };
+    }
+
+    private Action1<EgressResponse> onNextAssertOk() {
+        return onNextAssert(HttpResponseStatus.OK);
+    }
+
+    private Action1<EgressResponse> onNextAssertError() {
+        return onNextAssert(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); ex.printStackTrace(); fail(ex.getMessage());};
     private final Action0 onCompletedUnlatch = () -> { System.out.println("onCompleted"); latch.countDown();};
 
@@ -202,11 +300,6 @@ public class FilterProcessorTest {
 
     private RouteFilter createRouteFilter(final int order, final boolean shouldFilter, Func1<EgressRequest, Observable<IngressResponse>> behavior) {
         return new RouteFilter() {
-            @Override
-            public int getOrder() {
-                return order;
-            }
-
             @Override
             public Observable<Boolean> shouldFilter(EgressRequest ingressReq) {
                 return Observable.just(shouldFilter);
@@ -245,11 +338,13 @@ public class FilterProcessorTest {
         when(mockFilters.getPreFilters()).thenReturn(new ArrayList<>());
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(new ArrayList<>());
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
+        assertTrue(alreadyProcessedOnNext.get());
     }
 
     @Test(timeout=1000)
@@ -257,12 +352,15 @@ public class FilterProcessorTest {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         verify(mockRespHeaders, times(1)).addHeader("POST", "DONE");
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
     }
 
     @Test(timeout=1000)
@@ -270,12 +368,15 @@ public class FilterProcessorTest {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, successPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         verify(mockRespHeaders, times(2)).addHeader("POST", "DONE");
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
     }
 
     @Test(timeout=1000)
@@ -283,36 +384,190 @@ public class FilterProcessorTest {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, shouldNotPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssert, onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
     }
 
-//    @Test
-//    public void testErrorInPreFilter() {
-//        assertEquals(0, 9);
-//    }
-//
-//    @Test
-//    public void testErrorInPreAndPostFilters() {
-//        assertEquals(0, 9);
-//    }
-//
-//    @Test
-//    public void testErrorInRouteFilter() {
-//        assertEquals(0, 9);
-//    }
-//
-//    @Test
-//    public void testErrorInRouteAndPostFilters() {
-//        assertEquals(0, 9);
-//    }
-//
-//    @Test
-//    public void testErrorInPostFilter() {
-//        assertEquals(0, 9);
-//    }
+    @Test(timeout=1000)
+    public void testPreFilterIsEmpty() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(emptyPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testRouteFilterIsEmpty() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(emptyRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testPostFilterIsEmpty() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(emptyPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testPreFilterEmitsTwice() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(doublePreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testRouteFilterEmitsTwice() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(doubleRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testPostFilterEmitsTwice() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(doublePostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testErrorInPreFilter() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(errorPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testErrorInPreAndPostFilters() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(errorPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testErrorInRouteFilter() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(errorRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testErrorInRouteAndPostFilters() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(errorRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
+
+    @Test(timeout=1000)
+    public void testErrorInPostFilter() throws InterruptedException {
+        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
+        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
+        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
+        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
+
+        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+
+        latch.await();
+        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
+        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
+        assertTrue(alreadyProcessedOnNext.get());
+    }
 }

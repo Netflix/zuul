@@ -20,5 +20,5 @@ import rx.Observable;
 public interface Filter<I> {
     public int getOrder();
 
-    public Observable<Boolean> shouldFilter(I ingressReq);
+    public Observable<Boolean> shouldFilter(I input);
 }

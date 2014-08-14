@@ -25,13 +25,15 @@ public class FiltersForRoute {
     private final List<PreFilter> preFilters;
     private final RouteFilter routeFilter;
     private final List<PostFilter> postFilters;
+    private final ErrorFilter errorFilter;
 
-    public FiltersForRoute(List<PreFilter> preFilters, RouteFilter routeFilter, List<PostFilter> postFilters) {
+    public FiltersForRoute(List<PreFilter> preFilters, RouteFilter routeFilter, List<PostFilter> postFilters, ErrorFilter errorFilter) {
         this.preFilters = preFilters;
         this.preFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
         this.routeFilter = routeFilter;
         this.postFilters = postFilters;
         this.postFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
+        this.errorFilter = errorFilter;
     }
 
     public List<PreFilter> getPreFilters() {
@@ -44,5 +46,9 @@ public class FiltersForRoute {
 
     public List<PostFilter> getPostFilters() {
         return postFilters;
+    }
+
+    public ErrorFilter getErrorFilter() {
+        return errorFilter;
     }
 }

@@ -98,11 +98,6 @@ public class NettyHttpServer {
             }
 
             @Override
-            public int getOrder() {
-                return 1;
-            }
-
-            @Override
             public Observable<Boolean> shouldFilter(EgressRequest ingressReq) {
                 return Observable.just(true);
             }

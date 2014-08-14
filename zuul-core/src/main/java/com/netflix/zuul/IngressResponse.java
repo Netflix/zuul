@@ -45,7 +45,7 @@ public class IngressResponse {
     }
 
     public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
-        System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
+        //System.out.println("Received response : " + nettyResponse + " : " + nettyResponse.getStatus());
         return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent());
     }
 }
