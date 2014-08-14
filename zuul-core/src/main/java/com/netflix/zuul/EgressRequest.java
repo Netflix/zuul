@@ -32,6 +32,7 @@ public class EgressRequest {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getNettyRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
+            //System.out.println("Adding header to EgressRequest : " + entry.getKey() + " -> " + entry.getValue());
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         //TODO - do I need a Subject involved here in case IngressRequest has already starting consuming the content?
@@ -45,5 +46,9 @@ public class EgressRequest {
 
     public String getUri() {
         return nettyRequest.getUri();
+    }
+
+    public HttpClientRequest<ByteBuf> getUnderlyingNettyReq() {
+        return nettyRequest;
     }
 }

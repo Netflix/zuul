@@ -18,6 +18,8 @@ package com.netflix.zuul;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.pipeline.PipelineConfigurators;
+import io.reactivex.netty.protocol.http.client.HttpClient;
+import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
@@ -91,7 +93,8 @@ public class NettyHttpServer {
         RouteFilter routeFilter = new RouteFilter() {
             @Override
             public Observable<IngressResponse> apply(EgressRequest egressReq) {
-                return RxNetty.createHttpGet("http://api.test.netflix.com:80/" + egressReq.getUri()).map(IngressResponse::from);
+                HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
+                return httpClient.submit(egressReq.getUnderlyingNettyReq()).map(IngressResponse::from);
             }
 
             @Override
