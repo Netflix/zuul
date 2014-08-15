@@ -17,6 +17,6 @@ package com.netflix.zuul;
 
 import java.io.IOException;
 
-public interface FilterStore {
-    FiltersForRoute getFilters(IngressRequest ingressReq) throws IOException;
+public interface FilterStore<Request, Response> {
+    FiltersForRoute<Request, Response> getFilters(IngressRequest ingressReq) throws IOException;
 }

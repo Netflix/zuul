@@ -49,11 +49,11 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 public class FilterProcessorTest {
-    @Mock FilterStore mockFilterStore;
-    @Mock FiltersForRoute mockFilters;
+    @Mock FilterStore<Void, Void> mockFilterStore;
+    @Mock FiltersForRoute<Void, Void> mockFilters;
     @Mock HttpServerResponse<ByteBuf> mockRxNettyResp;
     @Mock HttpResponseHeaders mockRespHeaders;
-    private FilterProcessor processor;
+    private FilterProcessor<Void, Void> processor;
 
     private final HttpRequest nettyReq = new HttpRequest() {
         @Override
@@ -182,64 +182,64 @@ public class FilterProcessorTest {
     private final HttpClientResponse<ByteBuf> rxNettyErrorResp = new HttpClientResponse<>(nettyErrorResp, PublishSubject.create());
     private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp);
 
-    private final PreFilter successPreFilter = createPreFilter(1, true, (ingressReq, egressReq) -> {
+    private final PreFilter<Void> successPreFilter = createPreFilter(1, true, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "DONE");
         return Observable.just(egressReq);
     });
 
-    private final PreFilter shouldNotPreFilter = createPreFilter(2, false, (ingressReq, egressReq) -> {
+    private final PreFilter<Void> shouldNotPreFilter = createPreFilter(2, false, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "SHOULDNOT");
         return Observable.just(egressReq);
     });
 
-    private final PreFilter emptyPreFilter = createPreFilter(3, true, (ingressReq, egressReq) -> Observable.empty());
+    private final PreFilter<Void> emptyPreFilter = createPreFilter(3, true, (ingressReq, egressReq) -> Observable.empty());
 
-    private final PreFilter doublePreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
+    private final PreFilter<Void> doublePreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "DOUBLE");
         return Observable.from(egressReq, egressReq);
     });
 
-    private final PreFilter errorPreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
+    private final PreFilter<Void> errorPreFilter = createPreFilter(4, true, (ingressReq, egressReq) -> {
         egressReq.addHeader("PRE", "ERROR");
         return Observable.error(new RuntimeException("pre unit test"));
     });
 
-    private final RouteFilter successRouteFilter = createRouteFilter(1, true, egressReq -> Observable.just(ingressResp));
+    private final RouteFilter<Void> successRouteFilter = createRouteFilter(1, true, egressReq -> Observable.just(ingressResp));
 
-    private final RouteFilter shouldNotFilter = createRouteFilter(2, false, egressReq -> Observable.just(ingressResp));
+    private final RouteFilter<Void> shouldNotFilter = createRouteFilter(2, false, egressReq -> Observable.just(ingressResp));
 
-    private final RouteFilter emptyRouteFilter = createRouteFilter(3, true, egressReq -> Observable.empty());
+    private final RouteFilter<Void> emptyRouteFilter = createRouteFilter(3, true, egressReq -> Observable.empty());
 
-    private final RouteFilter doubleRouteFilter = createRouteFilter(4, true, egressReq -> Observable.from(ingressResp, ingressResp));
+    private final RouteFilter<Void> doubleRouteFilter = createRouteFilter(4, true, egressReq -> Observable.from(ingressResp, ingressResp));
 
-    private final RouteFilter errorRouteFilter = createRouteFilter(5, true, egressReq -> Observable.error(new RuntimeException("route unit test")));
+    private final RouteFilter<Void> errorRouteFilter = createRouteFilter(5, true, egressReq -> Observable.error(new RuntimeException("route unit test")));
 
-    private final PostFilter successPostFilter = createPostFilter(1, true, (ingressResp, egressResp) -> {
+    private final PostFilter<Void> successPostFilter = createPostFilter(1, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "DONE");
         return Observable.just(egressResp);
     });
 
-    private final PostFilter shouldNotPostFilter = createPostFilter(2, false, (ingressResp, egressResp) -> {
+    private final PostFilter<Void> shouldNotPostFilter = createPostFilter(2, false, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "SHOULDNOT");
         return Observable.just(egressResp);
     });
 
-    private final PostFilter emptyPostFilter = createPostFilter(3, true, (ingressResp, egressResp) -> Observable.empty());
+    private final PostFilter<Void> emptyPostFilter = createPostFilter(3, true, (ingressResp, egressResp) -> Observable.empty());
 
-    private final PostFilter doublePostFilter = createPostFilter(4, true, (ingressResp, egressResp) -> {
+    private final PostFilter<Void> doublePostFilter = createPostFilter(4, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "DOUBLE");
         return Observable.from(egressResp, egressResp);
     });
 
-    private final PostFilter errorPostFilter = createPostFilter(5, true, (ingressResp, egressResp) -> {
+    private final PostFilter<Void> errorPostFilter = createPostFilter(5, true, (ingressResp, egressResp) -> {
         egressResp.addHeader("POST", "ERROR");
         return Observable.error(new RuntimeException("post unit test"));
     });
 
-    private final ErrorFilter errorFilter = new ErrorFilter() {
+    private final ErrorFilter<Void> errorFilter = new ErrorFilter<Void>() {
         @Override
-        public Observable<EgressResponse> apply(Throwable ex) {
-            EgressResponse egressResp = EgressResponse.from(ingressErrorResp, mockRxNettyResp);
+        public Observable<EgressResponse<Void>> apply(Throwable ex) {
+            EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp, mockRxNettyResp, null);
             egressResp.addHeader("ERROR", "TRUE");
             return Observable.just(egressResp);
         }
@@ -248,7 +248,7 @@ public class FilterProcessorTest {
     @Before
     public void init() throws IOException {
         MockitoAnnotations.initMocks(this);
-        processor = new FilterProcessor(mockFilterStore);
+        processor = new FilterProcessor<Void, Void>(mockFilterStore, null, null);
 
         when(mockFilterStore.getFilters(ingressReq)).thenReturn(mockFilters);
         when(mockRxNettyResp.getHeaders()).thenReturn(mockRespHeaders);
@@ -257,7 +257,7 @@ public class FilterProcessorTest {
     private final CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean alreadyProcessedOnNext = new AtomicBoolean(false);
 
-    private Action1<EgressResponse> onNextAssert(HttpResponseStatus status) {
+    private Action1<EgressResponse<Void>> onNextAssert(HttpResponseStatus status) {
         return (egressResp) -> {
             System.out.println("onNext : " + egressResp);
             if (alreadyProcessedOnNext.compareAndSet(false, true)) {
@@ -268,21 +268,21 @@ public class FilterProcessorTest {
         };
     }
 
-    private Action1<EgressResponse> onNextAssertOk() {
+    private Action1<EgressResponse<Void>> onNextAssertOk() {
         return onNextAssert(HttpResponseStatus.OK);
     }
 
-    private Action1<EgressResponse> onNextAssertError() {
+    private Action1<EgressResponse<Void>> onNextAssertError() {
         return onNextAssert(HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
     private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); ex.printStackTrace(); fail(ex.getMessage());};
     private final Action0 onCompletedUnlatch = () -> { System.out.println("onCompleted"); latch.countDown();};
 
-    private PreFilter createPreFilter(final int order, final boolean shouldFilter, Func2<IngressRequest, EgressRequest, Observable<EgressRequest>> behavior) {
-        return new PreFilter() {
+    private PreFilter<Void> createPreFilter(final int order, final boolean shouldFilter, Func2<IngressRequest, EgressRequest<Void>, Observable<EgressRequest<Void>>> behavior) {
+        return new PreFilter<Void>() {
             @Override
-            public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
+            public Observable<EgressRequest<Void>> apply(IngressRequest ingressReq, EgressRequest<Void> egressReq) {
                 System.out.println("Executing preFilter : " + this);
                 return behavior.call(ingressReq, egressReq);
             }
@@ -299,25 +299,25 @@ public class FilterProcessorTest {
         };
     }
 
-    private RouteFilter createRouteFilter(final int order, final boolean shouldFilter, Func1<EgressRequest, Observable<IngressResponse>> behavior) {
-        return new RouteFilter() {
+    private RouteFilter<Void> createRouteFilter(final int order, final boolean shouldFilter, Func1<EgressRequest<Void>, Observable<IngressResponse>> behavior) {
+        return new RouteFilter<Void>() {
             @Override
-            public Observable<Boolean> shouldFilter(EgressRequest ingressReq) {
+            public Observable<Boolean> shouldFilter(EgressRequest<Void> ingressReq) {
                 return Observable.just(shouldFilter);
             }
 
             @Override
-            public Observable<IngressResponse> apply(EgressRequest input) {
+            public Observable<IngressResponse> apply(EgressRequest<Void> input) {
                 System.out.println("Executing routeFilter : " + this);
                 return behavior.call(input);
             }
         };
     }
 
-    private PostFilter createPostFilter(final int order, final boolean shouldFilter, Func2<IngressResponse, EgressResponse, Observable<EgressResponse>> behavior) {
-        return new PostFilter() {
+    private PostFilter<Void> createPostFilter(final int order, final boolean shouldFilter, Func2<IngressResponse, EgressResponse<Void>, Observable<EgressResponse<Void>>> behavior) {
+        return new PostFilter<Void>() {
             @Override
-            public Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse egressResp) {
+            public Observable<EgressResponse<Void>> apply(IngressResponse ingressResp, EgressResponse<Void> egressResp) {
                 System.out.println("Executing postFilter : " + this);
                 return behavior.call(ingressResp, egressResp);
             }
@@ -341,7 +341,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(new ArrayList<>());
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -355,7 +355,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -371,7 +371,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -387,7 +387,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -403,7 +403,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -419,7 +419,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -435,7 +435,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(emptyPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -452,7 +452,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -469,7 +469,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -486,7 +486,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(doublePostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -502,7 +502,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -518,7 +518,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -534,7 +534,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -550,7 +550,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();
@@ -566,7 +566,7 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
         result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
 
         latch.await();

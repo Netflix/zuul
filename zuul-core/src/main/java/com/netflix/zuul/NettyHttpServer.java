@@ -18,19 +18,16 @@ package com.netflix.zuul;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.pipeline.PipelineConfigurators;
-import io.reactivex.netty.protocol.http.client.HttpClient;
-import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import rx.Observable;
 import rx.functions.Func1;
 
-public class NettyHttpServer {
+public class NettyHttpServer<Request, Response> {
     private final int port;
-    private final FilterProcessor filterProcessor;
+    private final FilterProcessor<Request, Response> filterProcessor;
 
-    public NettyHttpServer(int port, FilterProcessor filterProcessor) {
+    public NettyHttpServer(int port, FilterProcessor<Request, Response> filterProcessor) {
         this.port = port;
         this.filterProcessor = filterProcessor;
     }

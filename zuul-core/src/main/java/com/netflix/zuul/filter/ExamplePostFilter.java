@@ -20,10 +20,10 @@ import com.netflix.zuul.IngressResponse;
 import com.netflix.zuul.PostFilter;
 import rx.Observable;
 
-public class ExamplePostFilter extends PostFilter {
+public class ExamplePostFilter<T> extends PostFilter<T> {
 
     @Override
-    public Observable<EgressResponse> apply(IngressResponse ingressResp, EgressResponse egressResp) {
+    public Observable<EgressResponse<T>> apply(IngressResponse ingressResp, EgressResponse<T> egressResp) {
         System.out.println(this + " post filter");
         return Observable.just(egressResp);
     }

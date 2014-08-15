@@ -20,10 +20,10 @@ import com.netflix.zuul.IngressRequest;
 import com.netflix.zuul.PreFilter;
 import rx.Observable;
 
-public class ExamplePreFilter extends PreFilter {
+public class ExamplePreFilter<T> extends PreFilter<T> {
 
     @Override
-    public Observable<EgressRequest> apply(IngressRequest ingressReq, EgressRequest egressReq) {
+    public Observable<EgressRequest<T>> apply(IngressRequest ingressReq, EgressRequest<T> egressReq) {
         System.out.println(this + " pre filter");
         return Observable.just(egressReq);
     }

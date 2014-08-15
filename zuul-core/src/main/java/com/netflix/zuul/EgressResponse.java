@@ -17,20 +17,23 @@ package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import rx.Observable;
 
 import java.util.Map;
 
-public class EgressResponse {
+import rx.Observable;
+
+public class EgressResponse<T> {
     private final HttpServerResponse<ByteBuf> nettyResp;
     private final Observable<ByteBuf> content;
+    private final T state;
 
-    private EgressResponse(HttpServerResponse<ByteBuf> nettyResp, Observable<ByteBuf> content) {
+    private EgressResponse(HttpServerResponse<ByteBuf> nettyResp, Observable<ByteBuf> content, T state) {
         this.nettyResp = nettyResp;
         this.content = content;
+        this.state = state;
     }
 
-    public static EgressResponse from(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp) {
+    public static <T> EgressResponse<T> from(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, T state) {
         nettyResp.setStatus(ingressResp.getStatus());
         System.out.println("Received response : " + ingressResp.getStatus());
 
@@ -38,7 +41,7 @@ public class EgressResponse {
             nettyResp.getHeaders().add(entry.getKey(), entry.getValue());
         }
 
-        return new EgressResponse(nettyResp, ingressResp.getContent());
+        return new EgressResponse<T>(nettyResp, ingressResp.getContent(), state);
     }
 
     public Observable<ByteBuf> getContent() {
@@ -47,5 +50,9 @@ public class EgressResponse {
 
     public void addHeader(String name, String value) {
         nettyResp.getHeaders().addHeader(name, value);
+    }
+    
+    public T get() {
+        return state;
     }
 }

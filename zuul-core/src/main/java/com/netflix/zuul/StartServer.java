@@ -20,9 +20,6 @@ public class StartServer {
 
     public static void main(final String[] args) {
         FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        FilterProcessor filterProcessor = new FilterProcessor(filterStore);
-        NettyHttpServer server = new NettyHttpServer(DEFAULT_PORT, filterProcessor);
-
-        server.createServer().startAndWait();
+        ZuulServer.start(DEFAULT_PORT, filterStore);
     }
 }

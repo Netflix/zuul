@@ -16,6 +16,8 @@
 package com.netflix.zuul;
 
 public class ZuulException extends Throwable {
+    private static final long serialVersionUID = 1681070811387639304L;
+
     public ZuulException(String msg) {
         super(msg);
     }
