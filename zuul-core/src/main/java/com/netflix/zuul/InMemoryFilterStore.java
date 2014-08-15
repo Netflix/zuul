@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul;
 
-import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,7 +29,6 @@ public class InMemoryFilterStore implements FilterStore {
         return new FiltersForRoute(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 
-    @Override
     public void addFilter(Filter filter) {
         if (filter instanceof PreFilter) {
             preFilters.add((PreFilter) filter);

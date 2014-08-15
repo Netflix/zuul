@@ -19,6 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import rx.Observable;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -36,10 +37,15 @@ public class FilterProcessor {
     }
 
     public Observable<EgressResponse> applyAllFilters(IngressRequest ingressReq, HttpServerResponse<ByteBuf> nettyResp) {
-        FiltersForRoute filtersForRoute = filterStore.getFilters(ingressReq);
-        return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
-                applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(ex -> filtersForRoute.getErrorFilter().apply(ex));
+        try {
+            FiltersForRoute filtersForRoute = filterStore.getFilters(ingressReq);
+            return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
+                    applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
+                    applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(ex -> filtersForRoute.getErrorFilter().apply(ex));
+        } catch (IOException ioe) {
+            System.err.println("Couldn't load the filters");
+            return Observable.error(new ZuulException("Could not load filters"));
+        }
     }
 
     private Observable<EgressRequest> applyPreFilters(IngressRequest ingressReq, List<PreFilter> preFilters) {

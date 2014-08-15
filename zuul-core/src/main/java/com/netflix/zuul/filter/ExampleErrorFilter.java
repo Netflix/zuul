@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filter;
 
-import java.io.IOException;
+import com.netflix.zuul.EgressResponse;
+import com.netflix.zuul.ErrorFilter;
+import rx.Observable;
 
-public interface FilterStore {
-    FiltersForRoute getFilters(IngressRequest ingressReq) throws IOException;
+public class ExampleErrorFilter extends ErrorFilter {
+
+    @Override
+    public Observable<EgressResponse> apply(Throwable ex) {
+        return Observable.just(null);
+    }
 }
