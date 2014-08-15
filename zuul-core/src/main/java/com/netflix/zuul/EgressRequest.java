@@ -21,14 +21,16 @@ import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.Map;
 
-public class EgressRequest {
+public class EgressRequest<T> {
     private HttpClientRequest<ByteBuf> nettyRequest;
-
-    private EgressRequest(HttpClientRequest<ByteBuf> nettyRequest) {
+    private final T state;
+    
+    private EgressRequest(HttpClientRequest<ByteBuf> nettyRequest, T state) {
         this.nettyRequest = nettyRequest;
+        this.state = state;
     }
 
-    public static EgressRequest copiedFrom(IngressRequest ingressReq) {
+    public static <T> EgressRequest<T> copiedFrom(IngressRequest ingressReq, T requestState) {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getNettyRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
@@ -36,7 +38,7 @@ public class EgressRequest {
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         clientReq = clientReq.withContentSource(nettyReq.getContent());
-        return new EgressRequest(clientReq);
+        return new EgressRequest<T>(clientReq, requestState);
     }
 
     public void addHeader(String name, String value) {
@@ -50,4 +52,9 @@ public class EgressRequest {
     public HttpClientRequest<ByteBuf> getUnderlyingNettyReq() {
         return nettyRequest;
     }
+    
+    public T get() {
+        return state;
+    }
+    
 }

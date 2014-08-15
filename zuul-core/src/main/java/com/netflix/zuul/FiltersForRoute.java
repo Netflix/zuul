@@ -21,13 +21,13 @@ import java.util.List;
  * Simple data holder that defines all filters for a given route and enforces
  * sortedness by {@link com.netflix.zuul.Filter#getOrder()}.
  */
-public class FiltersForRoute {
-    private final List<PreFilter> preFilters;
-    private final RouteFilter routeFilter;
-    private final List<PostFilter> postFilters;
-    private final ErrorFilter errorFilter;
+public class FiltersForRoute<Request, Response> {
+    private final List<PreFilter<Request>> preFilters;
+    private final RouteFilter<Request> routeFilter;
+    private final List<PostFilter<Response>> postFilters;
+    private final ErrorFilter<Response> errorFilter;
 
-    public FiltersForRoute(List<PreFilter> preFilters, RouteFilter routeFilter, List<PostFilter> postFilters, ErrorFilter errorFilter) {
+    public FiltersForRoute(List<PreFilter<Request>> preFilters, RouteFilter<Request> routeFilter, List<PostFilter<Response>> postFilters, ErrorFilter<Response> errorFilter) {
         this.preFilters = preFilters;
         this.preFilters.sort((f1, f2) -> f1.getOrder() - f2.getOrder());
         this.routeFilter = routeFilter;
@@ -36,19 +36,19 @@ public class FiltersForRoute {
         this.errorFilter = errorFilter;
     }
 
-    public List<PreFilter> getPreFilters() {
+    public List<PreFilter<Request>> getPreFilters() {
         return preFilters;
     }
 
-    public RouteFilter getRouteFilter() {
+    public RouteFilter<Request> getRouteFilter() {
         return routeFilter;
     }
 
-    public List<PostFilter> getPostFilters() {
+    public List<PostFilter<Response>> getPostFilters() {
         return postFilters;
     }
 
-    public ErrorFilter getErrorFilter() {
+    public ErrorFilter<Response> getErrorFilter() {
         return errorFilter;
     }
 }

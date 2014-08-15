@@ -23,17 +23,17 @@ import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import rx.Observable;
 
-public class ExampleRouteFilter extends RouteFilter {
+public class ExampleRouteFilter<T> extends RouteFilter<T> {
 
     @Override
-    public Observable<IngressResponse> apply(EgressRequest egressReq) {
+    public Observable<IngressResponse> apply(EgressRequest<T> egressReq) {
         System.out.println(this + " route filter");
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
         return httpClient.submit(egressReq.getUnderlyingNettyReq()).map(IngressResponse::from);
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(EgressRequest input) {
+    public Observable<Boolean> shouldFilter(EgressRequest<T> input) {
         return Observable.just(true);
     }
 }
