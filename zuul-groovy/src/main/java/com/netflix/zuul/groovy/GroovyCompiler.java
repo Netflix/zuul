@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.netflix.zuul.groovy;
 
-import com.netflix.zuul.FilterStore;
-import com.netflix.zuul.ZuulServer;
+import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
+import java.io.IOException;
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8090;
+public class GroovyCompiler {
 
-    public static void main(final String[] args) {
-        FilterStore filterStore = new GroovyFileSystemFilterStore(new File("zuul-groovy/src/main/groovy/com/netflix/zuul/groovy/filter"), 15L);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
+    public Class<?> compile(File file) throws IOException {
+        GroovyClassLoader loader = getGroovyClassLoader();
+        Class groovyClass = loader.parseClass(file);
+        return groovyClass;
+    }
+
+    private GroovyClassLoader getGroovyClassLoader() {
+        return new GroovyClassLoader();
     }
 }

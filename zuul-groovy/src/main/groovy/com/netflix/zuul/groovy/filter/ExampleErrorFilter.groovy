@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy;
+package com.netflix.zuul.groovy.filter;
 
-import com.netflix.zuul.FilterStore;
-import com.netflix.zuul.ZuulServer;
+import com.netflix.zuul.EgressResponse;
+import com.netflix.zuul.ErrorFilter;
+import rx.Observable;
 
-import java.io.File;
+public class ExampleErrorFilter extends ErrorFilter {
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8090;
-
-    public static void main(final String[] args) {
-        FilterStore filterStore = new GroovyFileSystemFilterStore(new File("zuul-groovy/src/main/groovy/com/netflix/zuul/groovy/filter"), 15L);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
+    @Override
+    public Observable<EgressResponse> apply(Throwable ex) {
+        Observable.just(null);
     }
 }
