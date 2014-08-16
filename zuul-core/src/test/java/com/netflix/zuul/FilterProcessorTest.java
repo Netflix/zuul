@@ -245,10 +245,17 @@ public class FilterProcessorTest {
         }
     };
 
+    private final FilterStateFactory<Void> voidStateFactory = new FilterStateFactory<Void>() {
+        @Override
+        public Void create() {
+            return null;
+        }
+    };
+
     @Before
     public void init() throws IOException {
         MockitoAnnotations.initMocks(this);
-        processor = new FilterProcessor<Void, Void>(mockFilterStore, null, null);
+        processor = new FilterProcessor<Void, Void>(mockFilterStore, voidStateFactory, voidStateFactory);
 
         when(mockFilterStore.getFilters(ingressReq)).thenReturn(mockFilters);
         when(mockRxNettyResp.getHeaders()).thenReturn(mockRespHeaders);
