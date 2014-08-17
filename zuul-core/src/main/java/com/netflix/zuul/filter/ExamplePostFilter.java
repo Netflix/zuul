@@ -23,7 +23,7 @@ import rx.Observable;
 public class ExamplePostFilter<T> extends PostFilter<T> {
 
     @Override
-    public Observable<EgressResponse<T>> apply(IngressResponse ingressResp, EgressResponse<T> egressResp) {
+    public Observable<EgressResponse<T>> apply(EgressResponse<T> egressResp) {
         System.out.println(this + " post filter");
         return Observable.just(egressResp);
     }
@@ -34,7 +34,7 @@ public class ExamplePostFilter<T> extends PostFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(IngressResponse input) {
+    public Observable<Boolean> shouldFilter(EgressResponse<T> input) {
         return Observable.just(true);
     }
 }

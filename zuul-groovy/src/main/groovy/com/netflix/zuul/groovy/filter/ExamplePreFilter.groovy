@@ -16,14 +16,13 @@
 package com.netflix.zuul.groovy.filter;
 
 import com.netflix.zuul.EgressRequest;
-import com.netflix.zuul.IngressRequest;
 import com.netflix.zuul.PreFilter;
 import rx.Observable;
 
 public class ExamplePreFilter<T> extends PreFilter<T> {
 
     @Override
-    public Observable<EgressRequest<T>> apply(IngressRequest ingressReq, EgressRequest<T> egressReq) {
+    public Observable<EgressRequest<T>> apply(EgressRequest<T> egressReq) {
         println("pre filter " + this)
         Observable.just(egressReq)
     }
@@ -34,7 +33,7 @@ public class ExamplePreFilter<T> extends PreFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(IngressRequest input) {
+    public Observable<Boolean> shouldFilter(EgressRequest<T> input) {
         Observable.just(true)
     }
 }

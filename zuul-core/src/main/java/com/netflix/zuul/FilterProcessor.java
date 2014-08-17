@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import rx.Observable;
+import rx.functions.Func1;
 
 
 /**
@@ -55,14 +56,13 @@ public class FilterProcessor<Request, Response> {
 
     private Observable<EgressRequest<Request>> applyPreFilters(IngressRequest ingressReq, List<PreFilter<Request>> preFilters) {
         return Observable.from(preFilters).reduce(Observable.just(EgressRequest.copiedFrom(ingressReq, requestState.create())), (egressReqObservable, preFilter) -> {
-            return preFilter.shouldFilter(ingressReq).flatMap(shouldFilter -> {
+            return egressReqObservable.flatMap(egressReq -> preFilter.shouldFilter(egressReq).flatMap(shouldFilter -> {
                 if (shouldFilter) {
-                    return egressReqObservable.flatMap(egressReq -> oneOrError(preFilter.apply(ingressReq, egressReq), "Empty prefilter"));
+                    return oneOrError(preFilter.apply(egressReq), "Empty pre filter");
                 } else {
-                    //System.out.println("Discarding preFilter with order : " + preFilter.getOrder());
-                    return egressReqObservable;
+                    return Observable.just(egressReq);
                 }
-            });
+            }));
         }).flatMap(o -> o);
     }
 
@@ -76,15 +76,15 @@ public class FilterProcessor<Request, Response> {
 
     private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, List<PostFilter<Response>> postFilters) {
         Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, nettyResp, responseState.create()));
-        return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) ->
-                postFilter.shouldFilter(ingressResp).flatMap(shouldFilter -> {
-                    if (shouldFilter) {
-                        return egressRespObservable.flatMap(egressResp -> oneOrError(postFilter.apply(ingressResp, egressResp), "Empty postfilter"));
-                    } else {
-                        //System.out.println("Discarding PostFilter with order : " + postFilter.getOrder());
-                        return egressRespObservable;
-                    }
-                })).flatMap(o -> o);
+        return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
+            return egressRespObservable.flatMap(egressResp -> postFilter.shouldFilter(egressResp).flatMap(shouldFilter -> {
+                if (shouldFilter) {
+                    return oneOrError(postFilter.apply(egressResp), "Empty post filter");
+                } else {
+                    return Observable.just(egressResp);
+                }
+            }));
+        }).flatMap(o -> o);
     }
 
     private <T> Observable<T> oneOrError(Observable<T> in, String errorMsg) {

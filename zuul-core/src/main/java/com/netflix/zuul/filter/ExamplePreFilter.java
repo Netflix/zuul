@@ -23,7 +23,7 @@ import rx.Observable;
 public class ExamplePreFilter<T> extends PreFilter<T> {
 
     @Override
-    public Observable<EgressRequest<T>> apply(IngressRequest ingressReq, EgressRequest<T> egressReq) {
+    public Observable<EgressRequest<T>> apply(EgressRequest<T> egressReq) {
         System.out.println(this + " pre filter");
         return Observable.just(egressReq);
     }
@@ -34,7 +34,7 @@ public class ExamplePreFilter<T> extends PreFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(IngressRequest input) {
+    public Observable<Boolean> shouldFilter(EgressRequest<T> input) {
         return Observable.just(true);
     }
 }

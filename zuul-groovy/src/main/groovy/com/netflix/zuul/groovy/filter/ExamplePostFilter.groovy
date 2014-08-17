@@ -16,14 +16,13 @@
 package com.netflix.zuul.groovy.filter;
 
 import com.netflix.zuul.EgressResponse;
-import com.netflix.zuul.IngressResponse;
 import com.netflix.zuul.PostFilter;
 import rx.Observable;
 
 public class ExamplePostFilter<T> extends PostFilter<T> {
 
     @Override
-    public Observable<EgressResponse<T>> apply(IngressResponse ingressResp, EgressResponse<T> egressResp) {
+    public Observable<EgressResponse<T>> apply(EgressResponse<T> egressResp) {
         println("post filter " + this)
         Observable.just(egressResp)
     }
@@ -34,7 +33,7 @@ public class ExamplePostFilter<T> extends PostFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(IngressResponse input) {
+    public Observable<Boolean> shouldFilter(EgressResponse<T> input) {
         Observable.just(true)
     }
 }
