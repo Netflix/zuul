@@ -64,9 +64,9 @@ public class FilterProcessor<Request, Response> {
 
     private Observable<IngressResponse> applyRoutingFilter(EgressRequest<Request> egressReq, RouteFilter<Request> routeFilter) {
         if (routeFilter == null) {
-            return Observable.error(new ZuulException("You must define a RouteFilter."));
+            return Observable.<IngressResponse>error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return oneOrError(routeFilter.routeToIngress(egressReq), "Empty route filter");
+            return oneOrError(routeFilter.execute(egressReq), "Empty route filter");
         }
     }
 

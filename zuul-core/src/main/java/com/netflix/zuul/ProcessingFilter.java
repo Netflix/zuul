@@ -19,13 +19,13 @@ import rx.Observable;
 
 /**
  * Base interface which contains logic for processing a request/response
- * @param <I> input type
+ * @param <T> input type
  */
-public interface ProcessingFilter<I> extends Filter {
+public interface ProcessingFilter<T> extends Filter {
     /**
      * Given an input, execute the filter and return the output
      * @param input input to filter
      * @return filter output
      */
-    public Observable<I> execute(Observable<I> input);
+    public Observable<T> execute(Observable<T> input);
 }

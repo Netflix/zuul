@@ -19,14 +19,14 @@ import rx.Observable;
 
 /**
  * Filter which does IO work, and returns Observable values
- * @param <I> input type
+ * @param <T> input type
  */
-public abstract class IoFilter<I> implements ProcessingFilter<I> {
-    public abstract Observable<Boolean> shouldFilter(I input);
-    public abstract Observable<I> apply(I input);
+public abstract class IoFilter<T> implements ProcessingFilter<T> {
+    public abstract Observable<Boolean> shouldFilter(T input);
+    public abstract Observable<T> apply(T input);
 
     @Override
-    public Observable<I> execute(Observable<I> input) {
+    public Observable<T> execute(Observable<T> input) {
         return input.flatMap(t -> shouldFilter(t).flatMap(shouldFilter -> {
             if (shouldFilter) {
                 return apply(t);

@@ -326,7 +326,7 @@ public class FilterProcessorTest {
     private RouteFilter<Void> createRouteFilter(Func1<EgressRequest<Void>, Observable<IngressResponse>> behavior) {
         return new IoRouteFilter<Void>() {
             @Override
-            public Observable<IngressResponse> routeToIngress(EgressRequest<Void> egressReq) {
+            public Observable<IngressResponse> routeToOrigin(EgressRequest<Void> egressReq) {
                 System.out.println("Executing routeFilter : " + this);
                 return behavior.call(egressReq);
             }

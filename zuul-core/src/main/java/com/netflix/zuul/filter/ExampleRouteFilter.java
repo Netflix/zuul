@@ -26,7 +26,7 @@ import rx.Observable;
 public class ExampleRouteFilter<T> extends IoRouteFilter<T> {
 
     @Override
-    public Observable<IngressResponse> routeToIngress(EgressRequest<T> egressReq) {
+    public Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
         System.out.println(this + " route filter");
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
         return httpClient.submit(egressReq.getUnderlyingNettyReq()).map(IngressResponse::from);

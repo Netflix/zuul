@@ -15,4 +15,4 @@
  */
 package com.netflix.zuul;
 
-public abstract class ComputationErrorFilter<I> implements ErrorFilter<I> { }
+public abstract class ComputationErrorFilter<T> implements ErrorFilter<T> { }

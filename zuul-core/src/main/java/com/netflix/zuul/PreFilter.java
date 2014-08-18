@@ -16,4 +16,4 @@
 
 package com.netflix.zuul;
 
-public interface PreFilter<I> extends ProcessingFilter<EgressRequest<I>> { }
+public interface PreFilter<T> extends ProcessingFilter<EgressRequest<T>> { }

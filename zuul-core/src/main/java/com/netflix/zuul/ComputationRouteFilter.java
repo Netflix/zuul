@@ -15,4 +15,13 @@
  */
 package com.netflix.zuul;
 
-public abstract class ComputationRouteFilter<T> implements RouteFilter<T> { }
+import rx.Observable;
+
+public abstract class ComputationRouteFilter<Request> implements RouteFilter<Request> {
+    public abstract IngressResponse provideResponse(EgressRequest<Request> egressReq);
+
+    @Override
+    public Observable<IngressResponse> execute(EgressRequest<Request> egressReq) {
+        return Observable.just(provideResponse(egressReq));
+    }
+}

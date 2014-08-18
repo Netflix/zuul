@@ -15,6 +15,13 @@
  */
 package com.netflix.zuul;
 
-public abstract class IoRouteFilter<T> implements RouteFilter<T> {
+import rx.Observable;
 
+public abstract class IoRouteFilter<Request> implements RouteFilter<Request> {
+    public abstract Observable<IngressResponse> routeToOrigin(EgressRequest<Request> egressReq);
+
+    @Override
+    public Observable<IngressResponse> execute(EgressRequest<Request> egressReq) {
+        return routeToOrigin(egressReq);
+    }
 }
