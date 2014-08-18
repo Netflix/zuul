@@ -17,17 +17,6 @@ package com.netflix.zuul;
 
 import rx.Observable;
 
-public abstract class ErrorFilter<T> implements Filter<Object> {
-
-    @Override
-    public Observable<Boolean> shouldFilter(Object o) {
-        return Observable.just(true);
-    }
-
-    @Override
-    public int getOrder() {
-        return 1;
-    }
-
-    public abstract Observable<EgressResponse<T>> apply(Throwable ex);
+public interface ErrorFilter<T> extends Filter {
+    public Observable<EgressResponse<T>> handleError(Throwable ex);
 }

@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy.filter;
+package com.netflix.zuul.groovy.filter
 
+import com.netflix.zuul.ComputationPostFilter;
 import com.netflix.zuul.EgressResponse;
-import com.netflix.zuul.PostFilter;
-import rx.Observable;
 
-public class ExamplePostFilter<T> extends PostFilter<T> {
+public class ExamplePostFilter<T> extends ComputationPostFilter<T> {
 
     @Override
-    public Observable<EgressResponse<T>> apply(EgressResponse<T> egressResp) {
+    public EgressResponse<T> apply(EgressResponse<T> egressResp) {
         println("post filter " + this)
-        Observable.just(egressResp)
+        egressResp
     }
 
     @Override
@@ -33,7 +32,7 @@ public class ExamplePostFilter<T> extends PostFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(EgressResponse<T> input) {
-        Observable.just(true)
+    public Boolean shouldFilter(EgressResponse<T> input) {
+        true
     }
 }

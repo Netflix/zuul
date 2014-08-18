@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy.filter;
+package com.netflix.zuul.groovy.filter
 
+import com.netflix.zuul.ComputationErrorFilter;
 import com.netflix.zuul.EgressResponse;
-import com.netflix.zuul.ErrorFilter;
 import rx.Observable;
 
-public class ExampleErrorFilter extends ErrorFilter {
+public class ExampleErrorFilter extends ComputationErrorFilter {
+    @Override
+    Observable<EgressResponse> handleError(Throwable ex) {
+        return Observable.just(null)
+    }
 
     @Override
-    public Observable<EgressResponse> apply(Throwable ex) {
-        Observable.just(null);
+    int getOrder() {
+        return 1
     }
 }

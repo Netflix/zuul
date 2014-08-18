@@ -16,9 +16,4 @@
 
 package com.netflix.zuul;
 
-import rx.Observable;
-
-public abstract class PreFilter<T> implements Filter<EgressRequest<T>> {
-
-    public abstract Observable<EgressRequest<T>> apply(EgressRequest<T> egressReq);
-}
+public interface PreFilter<I> extends ProcessingFilter<EgressRequest<I>> { }

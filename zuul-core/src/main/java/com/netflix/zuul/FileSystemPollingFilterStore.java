@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class FileSystemPollingFilterStore implements FilterStore {
     private final File location;
     private boolean pollingActive = true;
-    private final ConcurrentHashMap<String, Filter<?>> compiledFilters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Filter> compiledFilters = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> modDateMap = new ConcurrentHashMap<>();
 
     public FileSystemPollingFilterStore(File location, long pollIntervalSeconds) {
@@ -69,9 +69,9 @@ public abstract class FileSystemPollingFilterStore implements FilterStore {
         return new FiltersForRoute(preFilters, routeFilters.get(0), postFilters, (errorFilters.size() == 0) ? null : errorFilters.get(0));
     }
 
-    private static <T extends Filter> List<T> pickFilters(Collection<Filter<?>> filters, Class<T> clazz) {
+    private static <T extends Filter> List<T> pickFilters(Collection<Filter> filters, Class<T> clazz) {
         List<T> picked = new ArrayList<>();
-        for (Filter<?> compiledFilter: filters) {
+        for (Filter compiledFilter: filters) {
             if (clazz.isAssignableFrom(compiledFilter.getClass())) {
                 picked.add((T) compiledFilter);
             }

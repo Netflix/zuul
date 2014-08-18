@@ -15,14 +15,19 @@
  */
 package com.netflix.zuul.filter;
 
+import com.netflix.zuul.ComputationErrorFilter;
 import com.netflix.zuul.EgressResponse;
-import com.netflix.zuul.ErrorFilter;
 import rx.Observable;
 
-public class ExampleErrorFilter extends ErrorFilter {
+public class ExampleErrorFilter extends ComputationErrorFilter {
 
     @Override
-    public Observable<EgressResponse> apply(Throwable ex) {
-        return Observable.just(null);
+    public int getOrder() {
+        return 1;
+    }
+
+    @Override
+    public Observable<EgressResponse> handleError(Throwable ex) {
+        return null;
     }
 }

@@ -16,24 +16,24 @@
 package com.netflix.zuul.groovy.filter;
 
 import com.netflix.zuul.EgressRequest;
-import com.netflix.zuul.IngressResponse;
-import com.netflix.zuul.RouteFilter;
+import com.netflix.zuul.IngressResponse
+import com.netflix.zuul.IoRouteFilter;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import rx.Observable;
 
-public class ExampleRouteFilter<T> extends RouteFilter<T> {
+public class ExampleRouteFilter<T> extends IoRouteFilter<T> {
 
     @Override
-    public Observable<IngressResponse> apply(EgressRequest<T> egressReq) {
+    Observable<IngressResponse> routeToIngress(EgressRequest<T> egressReq) {
         println("route filter " + this)
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80)
         httpClient.submit(egressReq.getUnderlyingNettyReq()).map({IngressResponse.from(it) })
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(EgressRequest<T> input) {
-        Observable.just(true)
+    int getOrder() {
+        return 1
     }
 }

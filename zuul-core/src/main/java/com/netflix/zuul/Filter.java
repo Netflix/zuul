@@ -15,10 +15,9 @@
  */
 package com.netflix.zuul;
 
-import rx.Observable;
-
-public interface Filter<I> {
+/**
+ * Marker interface
+ */
+public interface Filter {
     public int getOrder();
-
-    public Observable<Boolean> shouldFilter(I input);
 }

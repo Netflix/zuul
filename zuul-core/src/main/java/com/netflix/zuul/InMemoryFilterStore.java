@@ -30,7 +30,7 @@ public class InMemoryFilterStore<Request, Response> implements FilterStore<Reque
     }
 
     @SuppressWarnings("unchecked")
-    public void addFilter(Filter<?> filter) {
+    public void addFilter(Filter filter) {
         if (filter instanceof PreFilter) {
             preFilters.add((PreFilter<Request>) filter);
         } else if (filter instanceof PostFilter) {

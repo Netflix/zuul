@@ -15,17 +15,15 @@
  */
 package com.netflix.zuul.filter;
 
+import com.netflix.zuul.ComputationPostFilter;
 import com.netflix.zuul.EgressResponse;
-import com.netflix.zuul.IngressResponse;
-import com.netflix.zuul.PostFilter;
-import rx.Observable;
 
-public class ExamplePostFilter<T> extends PostFilter<T> {
+public class ExamplePostFilter<T> extends ComputationPostFilter<T> {
 
     @Override
-    public Observable<EgressResponse<T>> apply(EgressResponse<T> egressResp) {
+    public EgressResponse<T> apply(EgressResponse<T> egressResp) {
         System.out.println(this + " post filter");
-        return Observable.just(egressResp);
+        return egressResp;
     }
 
     @Override
@@ -34,7 +32,7 @@ public class ExamplePostFilter<T> extends PostFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(EgressResponse<T> input) {
-        return Observable.just(true);
+    public Boolean shouldFilter(EgressResponse<T> input) {
+        return true;
     }
 }

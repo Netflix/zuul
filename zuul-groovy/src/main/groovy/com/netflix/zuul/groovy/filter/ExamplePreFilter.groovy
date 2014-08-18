@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy.filter;
+package com.netflix.zuul.groovy.filter
 
+import com.netflix.zuul.ComputationPreFilter;
 import com.netflix.zuul.EgressRequest;
-import com.netflix.zuul.PreFilter;
-import rx.Observable;
 
-public class ExamplePreFilter<T> extends PreFilter<T> {
+public class ExamplePreFilter<T> extends ComputationPreFilter<T> {
 
     @Override
-    public Observable<EgressRequest<T>> apply(EgressRequest<T> egressReq) {
+    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
         println("pre filter " + this)
-        Observable.just(egressReq)
+        egressReq
     }
 
     @Override
@@ -33,7 +32,7 @@ public class ExamplePreFilter<T> extends PreFilter<T> {
     }
 
     @Override
-    public Observable<Boolean> shouldFilter(EgressRequest<T> input) {
-        Observable.just(true)
+    public Boolean shouldFilter(EgressRequest<T> input) {
+        true
     }
 }

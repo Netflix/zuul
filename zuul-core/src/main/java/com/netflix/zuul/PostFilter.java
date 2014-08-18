@@ -15,8 +15,4 @@
  */
 package com.netflix.zuul;
 
-import rx.Observable;
-
-public abstract class PostFilter<T> implements Filter<EgressResponse<T>> {
-    public abstract Observable<EgressResponse<T>> apply(EgressResponse<T> egressResp);
-}
+public interface PostFilter<T> extends ProcessingFilter<EgressResponse<T>> { }

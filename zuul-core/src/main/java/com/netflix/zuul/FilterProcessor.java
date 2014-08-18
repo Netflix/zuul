@@ -47,7 +47,8 @@ public class FilterProcessor<Request, Response> {
             FiltersForRoute<Request, Response> filtersForRoute = filterStore.getFilters(ingressReq);
             return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                    applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(ex -> filtersForRoute.getErrorFilter().apply(ex));
+                    applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
+                    ex -> filtersForRoute.getErrorFilter().handleError(ex));
         } catch (IOException ioe) {
             System.err.println("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters"));
@@ -55,14 +56,9 @@ public class FilterProcessor<Request, Response> {
     }
 
     private Observable<EgressRequest<Request>> applyPreFilters(IngressRequest ingressReq, List<PreFilter<Request>> preFilters) {
-        return Observable.from(preFilters).reduce(Observable.just(EgressRequest.copiedFrom(ingressReq, requestState.create())), (egressReqObservable, preFilter) -> {
-            return egressReqObservable.flatMap(egressReq -> preFilter.shouldFilter(egressReq).flatMap(shouldFilter -> {
-                if (shouldFilter) {
-                    return oneOrError(preFilter.apply(egressReq), "Empty pre filter");
-                } else {
-                    return Observable.just(egressReq);
-                }
-            }));
+        Observable<EgressRequest<Request>> initialEgressReqObservable = Observable.just(EgressRequest.copiedFrom(ingressReq, requestState.create()));
+        return Observable.from(preFilters).reduce(initialEgressReqObservable, (egressReqObservable, preFilter) -> {
+            return oneOrError(preFilter.execute(egressReqObservable), "Empty pre filter");
         }).flatMap(o -> o);
     }
 
@@ -70,20 +66,14 @@ public class FilterProcessor<Request, Response> {
         if (routeFilter == null) {
             return Observable.error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return oneOrError(routeFilter.apply(egressReq), "Empty route filter");
+            return oneOrError(routeFilter.routeToIngress(egressReq), "Empty route filter");
         }
     }
 
     private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, List<PostFilter<Response>> postFilters) {
         Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, nettyResp, responseState.create()));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
-            return egressRespObservable.flatMap(egressResp -> postFilter.shouldFilter(egressResp).flatMap(shouldFilter -> {
-                if (shouldFilter) {
-                    return oneOrError(postFilter.apply(egressResp), "Empty post filter");
-                } else {
-                    return Observable.just(egressResp);
-                }
-            }));
+            return oneOrError(postFilter.execute(egressRespObservable), "Empty post filter");
         }).flatMap(o -> o);
     }
 

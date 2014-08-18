@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter;
+package com.netflix.zuul;
 
-import com.netflix.zuul.EgressRequest;
-import com.netflix.zuul.ComputationPreFilter;
+import rx.Observable;
 
-public class ExamplePreFilter<T> extends ComputationPreFilter<T> {
-
-    @Override
-    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
-        System.out.println(this + " pre filter");
-        return egressReq;
-    }
-
-    @Override
-    public int getOrder() {
-        return 1;
-    }
-
-    @Override
-    public Boolean shouldFilter(EgressRequest<T> input) {
-        return true;
-    }
+/**
+ * Base interface which contains logic for processing a request/response
+ * @param <I> input type
+ */
+public interface ProcessingFilter<I> extends Filter {
+    /**
+     * Given an input, execute the filter and return the output
+     * @param input input to filter
+     * @return filter output
+     */
+    public Observable<I> execute(Observable<I> input);
 }
