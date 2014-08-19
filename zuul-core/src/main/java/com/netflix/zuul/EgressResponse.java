@@ -16,32 +16,29 @@
 package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import rx.Observable;
 
 public class EgressResponse<T> {
-    private final HttpServerResponse<ByteBuf> nettyResp;
+    private final HttpResponseStatus status;
+    private final Map<String, String> headers;
     private final Observable<ByteBuf> content;
     private final T state;
 
-    private EgressResponse(HttpServerResponse<ByteBuf> nettyResp, Observable<ByteBuf> content, T state) {
-        this.nettyResp = nettyResp;
+    private EgressResponse(HttpResponseStatus status, Map<String, String> headers, Observable<ByteBuf> content, T state) {
+        this.status = status;
+        this.headers = headers;
         this.content = content;
         this.state = state;
     }
 
-    public static <T> EgressResponse<T> from(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, T state) {
-        nettyResp.setStatus(ingressResp.getStatus());
-        System.out.println("Received response : " + ingressResp.getStatus());
-
-        for (Map.Entry<String, String> entry: ingressResp.getHeaders().entries()) {
-            nettyResp.getHeaders().add(entry.getKey(), entry.getValue());
-        }
-
-        return new EgressResponse<T>(nettyResp, ingressResp.getContent(), state);
+    public static <T> EgressResponse<T> from(IngressResponse ingressResp, T state) {
+        return new EgressResponse<T>(ingressResp.getStatus(), convertHeaders(ingressResp.getHeaders()), ingressResp.getContent(), state);
     }
 
     public Observable<ByteBuf> getContent() {
@@ -49,10 +46,30 @@ public class EgressResponse<T> {
     }
 
     public void addHeader(String name, String value) {
-        nettyResp.getHeaders().addHeader(name, value);
+        headers.put(name, value);
     }
     
     public T get() {
         return state;
+    }
+
+    public static <T> EgressResponse<T> withStatus(int statusCode) {
+        return new EgressResponse<>(HttpResponseStatus.valueOf(statusCode), new HashMap<>(), Observable.empty(), null);
+    }
+
+    public HttpResponseStatus getStatus() {
+        return status;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    private static Map<String, String> convertHeaders(HttpResponseHeaders clientHeaders) {
+        Map<String, String> headers = new HashMap<>();
+        for (Map.Entry<String, String> entry: clientHeaders.entries()) {
+            headers.put(entry.getKey(), entry.getValue());
+        }
+        return headers;
     }
 }

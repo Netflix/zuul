@@ -17,16 +17,15 @@ package com.netflix.zuul.groovy.filter
 
 import com.netflix.zuul.ComputationErrorFilter;
 import com.netflix.zuul.EgressResponse;
-import rx.Observable;
 
 public class ExampleErrorFilter extends ComputationErrorFilter {
     @Override
-    Observable<EgressResponse> handleError(Throwable ex) {
-        return Observable.just(null)
+    EgressResponse provideResponse(Throwable ex) {
+        EgressResponse.withStatus(500)
     }
 
     @Override
     int getOrder() {
-        return 1
+        1
     }
 }

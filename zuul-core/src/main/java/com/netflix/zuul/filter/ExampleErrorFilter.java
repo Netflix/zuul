@@ -17,9 +17,8 @@ package com.netflix.zuul.filter;
 
 import com.netflix.zuul.ComputationErrorFilter;
 import com.netflix.zuul.EgressResponse;
-import rx.Observable;
 
-public class ExampleErrorFilter extends ComputationErrorFilter {
+public class ExampleErrorFilter<T> extends ComputationErrorFilter<T> {
 
     @Override
     public int getOrder() {
@@ -27,7 +26,7 @@ public class ExampleErrorFilter extends ComputationErrorFilter {
     }
 
     @Override
-    public Observable<EgressResponse> handleError(Throwable ex) {
-        return null;
+    public EgressResponse<T> provideResponse(Throwable ex) {
+        return EgressResponse.withStatus(500);
     }
 }

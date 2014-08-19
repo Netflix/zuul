@@ -15,4 +15,13 @@
  */
 package com.netflix.zuul;
 
-public abstract class IoErrorFilter<T> extends IoFilter<EgressRequest<T>> implements ErrorFilter<T> { }
+import rx.Observable;
+
+public abstract class IoErrorFilter<T> implements ErrorFilter<T> {
+    public abstract Observable<EgressResponse<T>> handleError(Throwable ex);
+
+    @Override
+    public Observable<EgressResponse<T>> execute(Throwable ex) {
+        return handleError(ex);
+    }
+}

@@ -42,13 +42,13 @@ public class FilterProcessor<Request, Response> {
         this.responseState = responseState;
     }
 
-    public Observable<EgressResponse<Response>> applyAllFilters(IngressRequest ingressReq, HttpServerResponse<ByteBuf> nettyResp) {
+    public Observable<EgressResponse<Response>> applyAllFilters(IngressRequest ingressReq) {
         try {
             FiltersForRoute<Request, Response> filtersForRoute = filterStore.getFilters(ingressReq);
             return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                    applyPostFilters(ingressResp, nettyResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
-                    ex -> filtersForRoute.getErrorFilter().handleError(ex));
+                    applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
+                    ex -> applyErrorFilter(ex, filtersForRoute.getErrorFilter()));
         } catch (IOException ioe) {
             System.err.println("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters"));
@@ -70,11 +70,19 @@ public class FilterProcessor<Request, Response> {
         }
     }
 
-    private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, HttpServerResponse<ByteBuf> nettyResp, List<PostFilter<Response>> postFilters) {
-        Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, nettyResp, responseState.create()));
+    private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, List<PostFilter<Response>> postFilters) {
+        Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, responseState.create()));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
             return oneOrError(postFilter.execute(egressRespObservable), "Empty post filter");
         }).flatMap(o -> o);
+    }
+
+    private Observable<EgressResponse<Response>> applyErrorFilter(Throwable ex, ErrorFilter<Response> errorFilter) {
+        if (errorFilter == null) {
+            return Observable.<EgressResponse<Response>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
+        } else {
+            return oneOrError(errorFilter.execute(ex), "Empty error filter");
+        }
     }
 
     private <T> Observable<T> oneOrError(Observable<T> in, String errorMsg) {

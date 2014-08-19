@@ -21,7 +21,10 @@ import io.reactivex.netty.pipeline.PipelineConfigurators;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import rx.Observable;
 import rx.functions.Func1;
+
+import java.util.Map;
 
 public class NettyHttpServer<Request, Response> {
     private final int port;
@@ -36,8 +39,18 @@ public class NettyHttpServer<Request, Response> {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.newHttpServerBuilder(port,
                 (HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) -> {
                     final IngressRequest ingressReq = IngressRequest.from(request);
-                    return filterProcessor.applyAllFilters(ingressReq, response).
-                            flatMap(EgressResponse::getContent).
+                    return filterProcessor.applyAllFilters(ingressReq).
+                            flatMap(egressResp -> {
+                                response.setStatus(egressResp.getStatus());
+                                System.out.println("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+
+                                for (Map.Entry<String, String> entry: egressResp.getHeaders().entrySet()) {
+                                    System.out.println("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                                    response.getHeaders().add(entry.getKey(), entry.getValue());
+                                }
+
+                                return egressResp.getContent();
+                            }).
                             map(new Func1<ByteBuf, Void>() {
                                 @Override
                                 public Void call(ByteBuf byteBuf) {

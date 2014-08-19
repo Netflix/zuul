@@ -15,4 +15,13 @@
  */
 package com.netflix.zuul;
 
-public abstract class ComputationErrorFilter<T> implements ErrorFilter<T> { }
+import rx.Observable;
+
+public abstract class ComputationErrorFilter<T> implements ErrorFilter<T> {
+    public abstract EgressResponse<T> provideResponse(Throwable ex);
+
+    @Override
+    public Observable<EgressResponse<T>> execute(Throwable ex) {
+        return Observable.just(provideResponse(ex));
+    }
+}

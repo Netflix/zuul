@@ -40,9 +40,12 @@ import rx.subjects.PublishSubject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
@@ -233,12 +236,12 @@ public class FilterProcessorTest {
         return Observable.error(new RuntimeException("post unit test"));
     });
 
-    private final ErrorFilter<Void> errorFilter = new ErrorFilter<Void>() {
+    private final ErrorFilter<Void> errorFilter = new ComputationErrorFilter<Void>() {
         @Override
-        public Observable<EgressResponse<Void>> handleError(Throwable ex) {
-            EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp, mockRxNettyResp, null);
+        public EgressResponse<Void> provideResponse(Throwable ex) {
+            EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp, null);
             egressResp.addHeader("ERROR", "TRUE");
-            return Observable.just(egressResp);
+            return egressResp;
         }
 
         @Override
@@ -261,27 +264,38 @@ public class FilterProcessorTest {
     private final CountDownLatch latch = new CountDownLatch(1);
     private final AtomicBoolean alreadyProcessedOnNext = new AtomicBoolean(false);
 
-    private Action1<EgressResponse<Void>> onNextAssert(HttpResponseStatus status) {
+    private Action1<EgressResponse<Void>> onNextAssert(HttpResponseStatus status, Map<String, String> headers) {
         return (egressResp) -> {
             System.out.println("onNext : " + egressResp);
+            System.out.println("HEADERS : " + egressResp.getHeaders());
             if (alreadyProcessedOnNext.compareAndSet(false, true)) {
-                verify(mockRxNettyResp, times(1)).setStatus(status);
+                assertEquals(status, egressResp.getStatus());
+                assertEquals(headers.size(), egressResp.getHeaders().size());
+                for (String expectedKey: headers.keySet()) {
+                    assertEquals(headers.get(expectedKey), egressResp.getHeaders().get(expectedKey));
+                }
             } else {
                 fail("Only expecting 1 onNext");
             }
         };
     }
 
-    private Action1<EgressResponse<Void>> onNextAssertOk() {
-        return onNextAssert(HttpResponseStatus.OK);
+    private Action1<EgressResponse<Void>> onNextAssertOk(Map<String, String> headers) {
+        return onNextAssert(HttpResponseStatus.OK, headers);
     }
 
-    private Action1<EgressResponse<Void>> onNextAssertError() {
-        return onNextAssert(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+    private Action1<EgressResponse<Void>> onNextAssertError(Map<String, String> headers) {
+        return onNextAssert(HttpResponseStatus.INTERNAL_SERVER_ERROR, headers);
     }
 
     private final Action1<Throwable> onErrorFail = (ex) -> { System.out.println("onError : " + ex); ex.printStackTrace(); fail(ex.getMessage());};
     private final Action0 onCompletedUnlatch = () -> { System.out.println("onCompleted"); latch.countDown();};
+
+    private Map<String, String> mapWith(String k, String v) {
+        Map<String, String> m = new HashMap<>();
+        m.put(k, v);
+        return m;
+    }
 
     private PreFilter<Void> createPreFilter(final int order, final boolean shouldFilter, Func1<EgressRequest<Void>, EgressRequest<Void>> behavior) {
         return new ComputationPreFilter<Void>() {
@@ -385,8 +399,8 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(new ArrayList<>());
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(new HashMap<>()), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         assertTrue(alreadyProcessedOnNext.get());
@@ -399,12 +413,11 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+
+        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader("POST", "DONE");
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -415,12 +428,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(2)).addHeader("POST", "DONE");
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -431,12 +442,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -447,12 +456,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -463,12 +470,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -479,12 +484,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(emptyPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -496,12 +499,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -513,12 +514,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -530,12 +529,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(doublePostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertOk(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertOk(mapWith("POST", "DOUBLE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(0)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -546,12 +543,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -562,12 +557,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -578,12 +571,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -594,12 +585,10 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(0)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 
@@ -610,12 +599,12 @@ public class FilterProcessorTest {
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(errorPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq, mockRxNettyResp);
-        result.subscribe(onNextAssertError(), onErrorFail, onCompletedUnlatch);
+        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
+        Map<String, String> expectedMap = new HashMap<>();
+        expectedMap.put("ERROR", "TRUE");
+        result.subscribe(onNextAssertError(expectedMap), onErrorFail, onCompletedUnlatch);
 
         latch.await();
-        verify(mockRespHeaders, times(1)).addHeader(eq("POST"), anyString());
-        verify(mockRespHeaders, times(1)).addHeader(eq("ERROR"), anyString());
         assertTrue(alreadyProcessedOnNext.get());
     }
 }

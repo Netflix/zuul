@@ -18,5 +18,5 @@ package com.netflix.zuul;
 import rx.Observable;
 
 public interface ErrorFilter<T> extends Filter {
-    public Observable<EgressResponse<T>> handleError(Throwable ex);
+    public Observable<EgressResponse<T>> execute(Throwable ex);
 }
