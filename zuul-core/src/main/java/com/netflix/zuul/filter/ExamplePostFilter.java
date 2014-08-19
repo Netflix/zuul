@@ -30,9 +30,4 @@ public class ExamplePostFilter<T> extends ComputationPostFilter<T> {
     public int getOrder() {
         return 1;
     }
-
-    @Override
-    public Boolean shouldFilter(EgressResponse<T> input) {
-        return true;
-    }
 }

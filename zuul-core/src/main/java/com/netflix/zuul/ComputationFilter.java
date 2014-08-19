@@ -18,17 +18,10 @@ package com.netflix.zuul;
 import rx.Observable;
 
 public abstract class ComputationFilter<T> implements ProcessingFilter<T> {
-    public abstract Boolean shouldFilter(T input);
     public abstract T apply(T input);
 
     @Override
     public Observable<T> execute(Observable<T> input) {
-        return input.map(result -> {
-            if (shouldFilter(result)) {
-                return apply(result);
-            } else {
-                return result;
-            }
-        });
+        return input.map(this::apply);
     }
 }

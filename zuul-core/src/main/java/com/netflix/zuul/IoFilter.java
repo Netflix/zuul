@@ -22,17 +22,10 @@ import rx.Observable;
  * @param <T> input type
  */
 public abstract class IoFilter<T> implements ProcessingFilter<T> {
-    public abstract Observable<Boolean> shouldFilter(T input);
     public abstract Observable<T> apply(T input);
 
     @Override
     public Observable<T> execute(Observable<T> input) {
-        return input.flatMap(t -> shouldFilter(t).flatMap(shouldFilter -> {
-            if (shouldFilter) {
-                return apply(t);
-            } else {
-                return input;
-            }
-        }));
+        return input.flatMap(this::apply);
     }
 }

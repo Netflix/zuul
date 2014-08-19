@@ -30,9 +30,4 @@ public class ExamplePreFilter<T> extends ComputationPreFilter<T> {
     public int getOrder() {
         1
     }
-
-    @Override
-    public Boolean shouldFilter(EgressRequest<T> input) {
-        true
-    }
 }

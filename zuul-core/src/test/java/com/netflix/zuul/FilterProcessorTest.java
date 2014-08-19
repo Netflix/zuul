@@ -184,24 +184,19 @@ public class FilterProcessorTest {
     private final HttpClientResponse<ByteBuf> rxNettyErrorResp = new HttpClientResponse<>(nettyErrorResp, PublishSubject.create());
     private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp);
 
-    private final PreFilter<Void> successPreFilter = createPreFilter(1, true, egressReq -> {
+    private final PreFilter<Void> successPreFilter = createPreFilter(1, egressReq -> {
         egressReq.addHeader("PRE", "DONE");
         return egressReq;
     });
 
-    private final PreFilter<Void> shouldNotPreFilter = createPreFilter(2, false, egressReq -> {
-        egressReq.addHeader("PRE", "SHOULDNOT");
-        return egressReq;
-    });
+    private final PreFilter<Void> emptyPreFilter = createIoPreFilter(2, egressReq -> Observable.empty());
 
-    private final PreFilter<Void> emptyPreFilter = createIoPreFilter(3, true, egressReq -> Observable.empty());
-
-    private final PreFilter<Void> doublePreFilter = createIoPreFilter(4, true, egressReq -> {
+    private final PreFilter<Void> doublePreFilter = createIoPreFilter(3, egressReq -> {
         egressReq.addHeader("PRE", "DOUBLE");
         return Observable.from(egressReq, egressReq);
     });
 
-    private final PreFilter<Void> errorPreFilter = createIoPreFilter(5, true, egressReq -> {
+    private final PreFilter<Void> errorPreFilter = createIoPreFilter(4, egressReq -> {
         egressReq.addHeader("PRE", "ERROR");
         return Observable.error(new RuntimeException("pre unit test"));
     });
@@ -214,24 +209,19 @@ public class FilterProcessorTest {
 
     private final RouteFilter<Void> errorRouteFilter = createRouteFilter(egressReq -> Observable.error(new RuntimeException("route unit test")));
 
-    private final PostFilter<Void> successPostFilter = createPostFilter(1, true, egressResp -> {
+    private final PostFilter<Void> successPostFilter = createPostFilter(1, egressResp -> {
         egressResp.addHeader("POST", "DONE");
         return egressResp;
     });
 
-    private final PostFilter<Void> shouldNotPostFilter = createPostFilter(2, false, egressResp -> {
-        egressResp.addHeader("POST", "SHOULDNOT");
-        return egressResp;
-    });
+    private final PostFilter<Void> emptyPostFilter = createIoPostFilter(2, egressResp -> Observable.empty());
 
-    private final PostFilter<Void> emptyPostFilter = createIoPostFilter(3, true, egressResp -> Observable.empty());
-
-    private final PostFilter<Void> doublePostFilter = createIoPostFilter(4, true, egressResp -> {
+    private final PostFilter<Void> doublePostFilter = createIoPostFilter(3, egressResp -> {
         egressResp.addHeader("POST", "DOUBLE");
         return Observable.from(egressResp, egressResp);
     });
 
-    private final PostFilter<Void> errorPostFilter = createIoPostFilter(5, true, egressResp -> {
+    private final PostFilter<Void> errorPostFilter = createIoPostFilter(4, egressResp -> {
         egressResp.addHeader("POST", "ERROR");
         return Observable.error(new RuntimeException("post unit test"));
     });
@@ -297,7 +287,7 @@ public class FilterProcessorTest {
         return m;
     }
 
-    private PreFilter<Void> createPreFilter(final int order, final boolean shouldFilter, Func1<EgressRequest<Void>, EgressRequest<Void>> behavior) {
+    private PreFilter<Void> createPreFilter(final int order, Func1<EgressRequest<Void>, EgressRequest<Void>> behavior) {
         return new ComputationPreFilter<Void>() {
             @Override
             public EgressRequest<Void> apply(EgressRequest<Void> egressReq) {
@@ -309,21 +299,11 @@ public class FilterProcessorTest {
             public int getOrder() {
                 return order;
             }
-
-            @Override
-            public Boolean shouldFilter(EgressRequest<Void> egressReq) {
-                return shouldFilter;
-            }
         };
     }
 
-    private PreFilter<Void> createIoPreFilter(final int order, final boolean shouldFilter, Func1<EgressRequest<Void>, Observable<EgressRequest<Void>>> behavior) {
+    private PreFilter<Void> createIoPreFilter(final int order, Func1<EgressRequest<Void>, Observable<EgressRequest<Void>>> behavior) {
         return new IoPreFilter<Void>() {
-            @Override
-            public Observable<Boolean> shouldFilter(EgressRequest<Void> input) {
-                return Observable.just(shouldFilter);
-            }
-
             @Override
             public Observable<EgressRequest<Void>> apply(EgressRequest<Void> input) {
                 System.out.println("Executing preFilter: " + this);
@@ -352,7 +332,7 @@ public class FilterProcessorTest {
         };
     }
 
-    private PostFilter<Void> createPostFilter(final int order, final boolean shouldFilter, Func1<EgressResponse<Void>, EgressResponse<Void>> behavior) {
+    private PostFilter<Void> createPostFilter(final int order, Func1<EgressResponse<Void>, EgressResponse<Void>> behavior) {
         return new ComputationPostFilter<Void>() {
             @Override
             public EgressResponse<Void> apply(EgressResponse<Void> egressResp) {
@@ -364,21 +344,11 @@ public class FilterProcessorTest {
             public int getOrder() {
                 return order;
             }
-
-            @Override
-            public Boolean shouldFilter(EgressResponse<Void> egressReq) {
-                return shouldFilter;
-            }
         };
     }
 
-    private PostFilter<Void> createIoPostFilter(final int order, final boolean shouldFilter, Func1<EgressResponse<Void>, Observable<EgressResponse<Void>>> behavior) {
+    private PostFilter<Void> createIoPostFilter(final int order, Func1<EgressResponse<Void>, Observable<EgressResponse<Void>>> behavior) {
         return new IoPostFilter<Void>() {
-            @Override
-            public Observable<Boolean> shouldFilter(EgressResponse<Void> input) {
-                return Observable.just(shouldFilter);
-            }
-
             @Override
             public Observable<EgressResponse<Void>> apply(EgressResponse<Void> input) {
                 System.out.println("Executing postFilter : " + this);
@@ -426,20 +396,6 @@ public class FilterProcessorTest {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, successPreFilter));
         when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
         when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, successPostFilter));
-        when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
-
-        Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
-        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
-
-        latch.await();
-        assertTrue(alreadyProcessedOnNext.get());
-    }
-
-    @Test(timeout=1000)
-    public void testShouldFilterWorks() throws InterruptedException {
-        when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter, shouldNotPreFilter));
-        when(mockFilters.getRouteFilter()).thenReturn(successRouteFilter);
-        when(mockFilters.getPostFilters()).thenReturn(Arrays.asList(successPostFilter, shouldNotPostFilter));
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
