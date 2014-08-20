@@ -80,7 +80,7 @@ public abstract class FileSystemPollingFilterStore implements FilterStore {
     }
 
     private void refreshInMemoryFilters() throws IOException {
-        System.out.println("Woke up and scanning files at : " + location);
+        //System.out.println("Woke up and scanning files at : " + location);
         Map<File, Long> onDiskLastModDateMap = createMapOnFiltersOnDisk();
         List<String> deletedFromDisk = getFilesDeletedFromDisk(onDiskLastModDateMap);
         for (String pathToDelete: deletedFromDisk) {

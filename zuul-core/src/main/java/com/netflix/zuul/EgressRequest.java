@@ -38,11 +38,15 @@ public class EgressRequest<T> {
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         clientReq = clientReq.withContentSource(nettyReq.getContent());
-        return new EgressRequest<T>(clientReq, requestState);
+        return new EgressRequest<>(clientReq, requestState);
     }
 
     public void addHeader(String name, String value) {
         nettyRequest = nettyRequest.withHeader(name, value);
+    }
+
+    public String getHeaderValue(String name) {
+        return nettyRequest.getHeaders().get(name);
     }
 
     public String getUri() {
