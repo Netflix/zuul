@@ -45,7 +45,7 @@ public class NettyHttpServer<Request, Response> {
                                 System.out.println("Setting Outgoing HTTP Status : " + egressResp.getStatus());
 
                                 for (Map.Entry<String, String> entry: egressResp.getHeaders().entrySet()) {
-                                    System.out.println("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                                    //System.out.println("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
                                     response.getHeaders().add(entry.getKey(), entry.getValue());
                                 }
 
