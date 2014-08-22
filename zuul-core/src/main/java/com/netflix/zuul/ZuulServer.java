@@ -29,9 +29,14 @@ public class ZuulServer {
 
     public static <Request, Response> void start(int port, FilterStore<Request, Response> filterStore, FilterStateFactory<Request> request, FilterStateFactory<Response> response) {
         FilterProcessor<Request, Response> filterProcessor = new FilterProcessor<>(filterStore, request, response);
-        NettyHttpServer<Request, Response> server = new NettyHttpServer<>(port, filterProcessor);
+        //        ZuulRxNettyServer<Request, Response> server = new ZuulRxNettyServer<>(port, filterProcessor);
+        try {
+            ZuulKaryonServer.createServer(port, filterProcessor).startAndAwait();
+        } catch (Exception e) {
+            throw new RuntimeException("all hell hath broken loose", e);
+            // TODO why is there a checked exception here?!
+        }
 
-        server.createServer().startAndWait();
     }
 
     private static final DefaultStateFactory DEFAULT_STATE_FACTORY = new DefaultStateFactory();

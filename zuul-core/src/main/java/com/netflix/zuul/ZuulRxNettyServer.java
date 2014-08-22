@@ -26,11 +26,11 @@ import rx.functions.Func1;
 
 import java.util.Map;
 
-public class NettyHttpServer<Request, Response> {
+public class ZuulRxNettyServer<Request, Response> {
     private final int port;
     private final FilterProcessor<Request, Response> filterProcessor;
 
-    public NettyHttpServer(int port, FilterProcessor<Request, Response> filterProcessor) {
+    public ZuulRxNettyServer(int port, FilterProcessor<Request, Response> filterProcessor) {
         this.port = port;
         this.filterProcessor = filterProcessor;
     }
