@@ -1,27 +1,49 @@
-ext.githubProjectName = rootProject.name
+ext.githubProjectName = 'zuul'
 
-buildscript {
-    repositories { mavenCentral() }
-    apply from: file('gradle/buildscript.gradle'), to: buildscript
-}
-
-allprojects {
-    repositories { mavenCentral() }
-}
-
-apply plugin: 'idea'
 apply from: file('gradle/convention.gradle')
 apply from: file('gradle/maven.gradle')
 apply from: file('gradle/license.gradle')
 apply from: file('gradle/release.gradle')
 
+buildscript {
+    repositories { 
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+    repositories { 
+        mavenLocal()
+        mavenCentral() 
+    }
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 subprojects {
-
-    group = "com.netflix.${githubProjectName}"
-
-    sourceSets.test.java.srcDir 'src/main/java'
-
+    apply plugin: 'java'
+    group = "com.netflix.zuul"
+    
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
+    }
+
+    eclipse { 
+        classpath { 
+            downloadSources = true
+            downloadJavadoc = true
+        }
+   }
+
+    idea { 
+        module { 
+            scopes.PROVIDED.minus += configurations.compile
+        }
     }
 }
