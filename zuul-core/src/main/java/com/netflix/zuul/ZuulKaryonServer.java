@@ -99,7 +99,7 @@ public class ZuulKaryonServer {
 
         @Override
         public Observable<Void> route(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
-            final IngressRequest ingressReq = IngressRequest.from(request);
+            final IngressRequest ingressReq = IngressRequest.from(request, response.getChannelHandlerContext());
             return filterProcessor.applyAllFilters(ingressReq).
                     flatMap(egressResp -> {
                         response.setStatus(egressResp.getStatus());

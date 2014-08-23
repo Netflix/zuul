@@ -16,17 +16,21 @@
 package com.netflix.zuul;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.Map;
 
 public class EgressRequest<T> {
+
     private HttpClientRequest<ByteBuf> nettyRequest;
+    private final ChannelHandlerContext channelHandlerContext;
     private final T state;
     
-    private EgressRequest(HttpClientRequest<ByteBuf> nettyRequest, T state) {
+    private EgressRequest(HttpClientRequest<ByteBuf> nettyRequest, ChannelHandlerContext channelHandlerContext, T state) {
         this.nettyRequest = nettyRequest;
+        this.channelHandlerContext = channelHandlerContext;
         this.state = state;
     }
 
@@ -38,7 +42,7 @@ public class EgressRequest<T> {
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         clientReq = clientReq.withContentSource(nettyReq.getContent());
-        return new EgressRequest<>(clientReq, requestState);
+        return new EgressRequest<>(clientReq, ingressReq.getNettyChannelContext(), requestState);
     }
 
     public void addHeader(String name, String value) {
@@ -60,5 +64,8 @@ public class EgressRequest<T> {
     public T get() {
         return state;
     }
-    
+
+    public ChannelHandlerContext getNettyChannelContext() {
+        return channelHandlerContext;
+    }
 }
