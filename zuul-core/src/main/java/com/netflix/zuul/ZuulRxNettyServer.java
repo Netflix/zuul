@@ -21,7 +21,6 @@ import io.reactivex.netty.pipeline.PipelineConfigurators;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import rx.Observable;
 import rx.functions.Func1;
 
 import java.util.Map;
@@ -38,7 +37,7 @@ public class ZuulRxNettyServer<Request, Response> {
     public HttpServer<ByteBuf, ByteBuf> createServer() {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.newHttpServerBuilder(port,
                 (HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) -> {
-                    final IngressRequest ingressReq = IngressRequest.from(request);
+                    final IngressRequest ingressReq = IngressRequest.from(request, response.getChannelHandlerContext());
                     return filterProcessor.applyAllFilters(ingressReq).
                             flatMap(egressResp -> {
                                 response.setStatus(egressResp.getStatus());
