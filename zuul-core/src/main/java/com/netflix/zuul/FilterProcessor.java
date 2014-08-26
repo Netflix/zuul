@@ -52,7 +52,7 @@ public class FilterProcessor<Request, Response> {
     private Observable<EgressRequest<Request>> applyPreFilters(IngressRequest ingressReq, List<PreFilter<Request>> preFilters) {
         Observable<EgressRequest<Request>> initialEgressReqObservable = Observable.just(EgressRequest.copiedFrom(ingressReq, requestState.create()));
         return Observable.from(preFilters).reduce(initialEgressReqObservable, (egressReqObservable, preFilter) -> {
-            return preFilter.execute(egressReqObservable).single();
+            return preFilter.execute(egressReqObservable);
         }).flatMap(o -> o);
     }
 
@@ -60,14 +60,15 @@ public class FilterProcessor<Request, Response> {
         if (routeFilter == null) {
             return Observable.<IngressResponse>error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return routeFilter.execute(egressReq).single();
+            return routeFilter.execute(egressReq);
         }
     }
 
     private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, List<PostFilter<Response>> postFilters) {
+        System.out.println("Executing post filters on : " + ingressResp);
         Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, responseState.create()));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
-            return postFilter.execute(egressRespObservable).single();
+            return postFilter.execute(egressRespObservable);
         }).flatMap(o -> o);
     }
 
@@ -75,7 +76,7 @@ public class FilterProcessor<Request, Response> {
         if (errorFilter == null) {
             return Observable.<EgressResponse<Response>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
         } else {
-            return errorFilter.execute(ex).single();
+            return errorFilter.execute(ex);
         }
     }
 }
