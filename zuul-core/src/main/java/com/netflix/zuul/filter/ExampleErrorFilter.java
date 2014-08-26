@@ -27,8 +27,7 @@ public class ExampleErrorFilter<T> extends ComputationErrorFilter<T> {
 
     @Override
     public EgressResponse<T> provideResponse(Throwable ex) {
-        System.out.println("EX : " + ex.getMessage());
-        ex.printStackTrace();
+        System.out.println("Error filter handling : " + ex);
         return EgressResponse.withStatus(500);
     }
 }

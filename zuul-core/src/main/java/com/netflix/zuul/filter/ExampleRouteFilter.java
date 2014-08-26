@@ -31,9 +31,7 @@ public class ExampleRouteFilter<T> extends IoRouteFilter<T> {
         System.out.println(this + " route filter");
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
         Observable<HttpClientResponse<ByteBuf>> resp = httpClient.submit(egressReq.getHttpClientRequest());
-        //System.out.println("RESP : " + resp.toBlocking().single().getStatus());
         Observable<IngressResponse> mapped = resp.map(IngressResponse::from);
-        //System.out.println("Mapped : " + mapped);
         return mapped;
     }
 

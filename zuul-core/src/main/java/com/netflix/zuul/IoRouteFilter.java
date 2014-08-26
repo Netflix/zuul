@@ -22,6 +22,7 @@ public abstract class IoRouteFilter<Request> implements RouteFilter<Request> {
 
     @Override
     public Observable<IngressResponse> execute(EgressRequest<Request> egressReq) {
+        System.out.println("Route to origin with : " + egressReq);
         return routeToOrigin(egressReq);
     }
 }

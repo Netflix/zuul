@@ -19,6 +19,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import rx.functions.Action1;
 
 import java.net.SocketAddress;
 import java.util.ArrayList;
