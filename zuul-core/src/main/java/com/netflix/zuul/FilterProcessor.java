@@ -15,21 +15,11 @@
  */
 package com.netflix.zuul;
 
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-
 import java.io.IOException;
 import java.util.List;
 
 import rx.Observable;
-import rx.functions.Func1;
 
-
-/**
- * TODO: It would be better to use OP.single(), rather than Observable.error(ERROR).startWith(OP).take(1)
- * However, doing this around a Netty operation results in not being able to get at the ByteBuf.  We should look at
- * RxNetty to see if we can issue the onCompleted() before the resource release()
- */
 public class FilterProcessor<Request, Response> {
 
     private final FilterStore<Request, Response> filterStore;
@@ -58,7 +48,7 @@ public class FilterProcessor<Request, Response> {
     private Observable<EgressRequest<Request>> applyPreFilters(IngressRequest ingressReq, List<PreFilter<Request>> preFilters) {
         Observable<EgressRequest<Request>> initialEgressReqObservable = Observable.just(EgressRequest.copiedFrom(ingressReq, requestState.create()));
         return Observable.from(preFilters).reduce(initialEgressReqObservable, (egressReqObservable, preFilter) -> {
-            return oneOrError(preFilter.execute(egressReqObservable), "Empty pre filter");
+            return preFilter.execute(egressReqObservable).single();
         }).flatMap(o -> o);
     }
 
@@ -66,14 +56,14 @@ public class FilterProcessor<Request, Response> {
         if (routeFilter == null) {
             return Observable.<IngressResponse>error(new ZuulException("You must define a RouteFilter."));
         } else {
-            return oneOrError(routeFilter.execute(egressReq), "Empty route filter");
+            return routeFilter.execute(egressReq).single();
         }
     }
 
     private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, List<PostFilter<Response>> postFilters) {
         Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, responseState.create()));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
-            return oneOrError(postFilter.execute(egressRespObservable), "Empty post filter");
+            return postFilter.execute(egressRespObservable).single();
         }).flatMap(o -> o);
     }
 
@@ -81,11 +71,7 @@ public class FilterProcessor<Request, Response> {
         if (errorFilter == null) {
             return Observable.<EgressResponse<Response>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
         } else {
-            return oneOrError(errorFilter.execute(ex), "Empty error filter");
+            return errorFilter.execute(ex).single();
         }
-    }
-
-    private <T> Observable<T> oneOrError(Observable<T> in, String errorMsg) {
-        return Observable.<T>error(new ZuulException(errorMsg)).startWith(in).take(1);
     }
 }

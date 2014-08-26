@@ -447,7 +447,6 @@ public class FilterProcessorTest {
         assertTrue(alreadyProcessedOnNext.get());
     }
 
-    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testPreFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(doublePreFilter));
@@ -456,13 +455,12 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
-        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         assertTrue(alreadyProcessedOnNext.get());
     }
 
-    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testRouteFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
@@ -471,13 +469,12 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
-        result.subscribe(onNextAssertOk(mapWith("POST", "DONE")), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         assertTrue(alreadyProcessedOnNext.get());
     }
 
-    //silently ignores all emissions after first
     @Test(timeout=1000)
     public void testPostFilterEmitsTwice() throws InterruptedException {
         when(mockFilters.getPreFilters()).thenReturn(Arrays.asList(successPreFilter));
@@ -486,7 +483,7 @@ public class FilterProcessorTest {
         when(mockFilters.getErrorFilter()).thenReturn(errorFilter);
 
         Observable<EgressResponse<Void>> result = processor.applyAllFilters(ingressReq);
-        result.subscribe(onNextAssertOk(mapWith("POST", "DOUBLE")), onErrorFail, onCompletedUnlatch);
+        result.subscribe(onNextAssertError(mapWith("ERROR", "TRUE")), onErrorFail, onCompletedUnlatch);
 
         latch.await();
         assertTrue(alreadyProcessedOnNext.get());
