@@ -1,34 +1,28 @@
+package com.netflix.zuul.metrics;
+
+import com.netflix.zuul.IngressRequest;
+
 /**
  * Copyright 2014 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter;
-
-import com.netflix.zuul.ComputationErrorFilter;
-import com.netflix.zuul.EgressResponse;
-
-public class ExampleErrorFilter<T> extends ComputationErrorFilter<T> {
-
-    @Override
-    public int getOrder() {
-        return 1;
+public class ZuulMetrics {
+    public static void markSuccess(IngressRequest ingressReq, long duration) {
+        System.out.println(ingressReq.getHttpServerRequest().getUri() + "[" + duration + "ms]");
     }
 
-    @Override
-    public EgressResponse<T> provideResponse(Throwable ex) {
-        System.out.println("EX : " + ex.getMessage());
-        ex.printStackTrace();
-        return EgressResponse.withStatus(500);
+    public static void markError(IngressRequest ingressReq, long duration) {
+        System.out.println(ingressReq.getHttpServerRequest().getUri() + "[" + duration + "ms]");
     }
 }

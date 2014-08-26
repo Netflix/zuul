@@ -38,7 +38,11 @@ public class FilterProcessor<Request, Response> {
             return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
                     applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
-                    ex -> applyErrorFilter(ex, filtersForRoute.getErrorFilter()));
+                    ex -> {
+                        System.out.println("Received Exception : " + ex);
+                        ex.printStackTrace();
+                        return applyErrorFilter(ex, filtersForRoute.getErrorFilter());
+                    });
         } catch (IOException ioe) {
             System.err.println("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters"));

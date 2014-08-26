@@ -21,13 +21,13 @@ import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 public class IngressRequest {
 
-    private final HttpServerRequest<ByteBuf> nettyRequest;
+    private final HttpServerRequest<ByteBuf> httpServerRequest;
 
     // TODO: Remove when HttpServerRequest provides a way to get to the ChanelHandlerContext. Issue: https://github.com/ReactiveX/RxNetty/issues/214
     private final ChannelHandlerContext nettyChannelContext;
 
-    private IngressRequest(HttpServerRequest<ByteBuf> nettyRequest, ChannelHandlerContext nettyChannelContext) {
-        this.nettyRequest = nettyRequest;
+    private IngressRequest(HttpServerRequest<ByteBuf> httpServerRequest, ChannelHandlerContext nettyChannelContext) {
+        this.httpServerRequest = httpServerRequest;
         this.nettyChannelContext = nettyChannelContext;
     }
 
@@ -39,13 +39,11 @@ public class IngressRequest {
         return new IngressRequest(nettyRequest, null);
     }
 
-    /* package-private */ HttpServerRequest<ByteBuf> getNettyRequest() {
-        return nettyRequest;
+    public HttpServerRequest<ByteBuf> getHttpServerRequest() {
+        return httpServerRequest;
     }
 
     /* package-private */ ChannelHandlerContext getNettyChannelContext() {
         return nettyChannelContext;
     }
-
-
 }

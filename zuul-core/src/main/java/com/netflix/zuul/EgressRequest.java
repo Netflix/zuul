@@ -26,53 +26,35 @@ import java.util.List;
 import java.util.Map;
 
 public class EgressRequest<T> {
-    private HttpClientRequest<ByteBuf> nettyClientRequest;
-    private final HttpServerRequest<ByteBuf> nettyServerRequest;
+    private HttpClientRequest<ByteBuf> httpClientRequest;
+    private final HttpServerRequest<ByteBuf> httpServerRequest;
     private final ChannelHandlerContext channelHandlerContext;
     private final T state;
     
-    private EgressRequest(HttpClientRequest<ByteBuf> nettyClientRequest, HttpServerRequest<ByteBuf> nettyServerRequest, ChannelHandlerContext channelHandlerContext, T state) {
-        this.nettyClientRequest = nettyClientRequest;
-        this.nettyServerRequest = nettyServerRequest;
+    private EgressRequest(HttpClientRequest<ByteBuf> httpClientRequest, HttpServerRequest<ByteBuf> httpServerRequest, ChannelHandlerContext channelHandlerContext, T state) {
+        this.httpClientRequest = httpClientRequest;
+        this.httpServerRequest = httpServerRequest;
         this.channelHandlerContext = channelHandlerContext;
         this.state = state;
     }
 
     public static <T> EgressRequest<T> copiedFrom(IngressRequest ingressReq, T requestState) {
-        HttpServerRequest<ByteBuf> nettyReq = ingressReq.getNettyRequest();
+        HttpServerRequest<ByteBuf> nettyReq = ingressReq.getHttpServerRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
             //System.out.println("Adding header to EgressRequest : " + entry.getKey() + " -> " + entry.getValue());
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         clientReq = clientReq.withContentSource(nettyReq.getContent());
-        return new EgressRequest<>(clientReq, ingressReq.getNettyRequest(), ingressReq.getNettyChannelContext(), requestState);
+        return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), ingressReq.getNettyChannelContext(), requestState);
     }
 
-    public void addHeader(String name, String value) {
-        nettyClientRequest = nettyClientRequest.withHeader(name, value);
+    public HttpClientRequest<ByteBuf> getHttpClientRequest() {
+        return httpClientRequest;
     }
 
-    public String getHeaderValue(String name) {
-        return nettyClientRequest.getHeaders().get(name);
-    }
-
-    public String getUri() {
-        return nettyClientRequest.getUri();
-    }
-
-    public List<String> getParameter(String name) {
-        Map<String, List<String>> params = nettyServerRequest.getQueryParameters();
-        return params == null ? new ArrayList<>() : params.get(name);
-    }
-
-    public String getIpAddress() {
-        SocketAddress remoteAddr = channelHandlerContext.channel().remoteAddress();
-        return remoteAddr == null ? null : remoteAddr.toString();
-    }
-
-    public HttpClientRequest<ByteBuf> getUnderlyingNettyReq() {
-        return nettyClientRequest;
+    public HttpServerRequest<ByteBuf> getHttpServerRequest() {
+        return httpServerRequest;
     }
     
     public T get() {
