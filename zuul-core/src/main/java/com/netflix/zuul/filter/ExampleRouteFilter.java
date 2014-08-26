@@ -21,7 +21,6 @@ import com.netflix.zuul.IoRouteFilter;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.client.HttpClient;
-import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import rx.Observable;
 
 public class ExampleRouteFilter<T> extends IoRouteFilter<T> {
@@ -30,9 +29,7 @@ public class ExampleRouteFilter<T> extends IoRouteFilter<T> {
     public Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
         System.out.println(this + " route filter");
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
-        Observable<HttpClientResponse<ByteBuf>> resp = httpClient.submit(egressReq.getHttpClientRequest());
-        Observable<IngressResponse> mapped = resp.map(IngressResponse::from);
-        return mapped;
+        return httpClient.submit(egressReq.getHttpClientRequest()).map(IngressResponse::from);
     }
 
     @Override

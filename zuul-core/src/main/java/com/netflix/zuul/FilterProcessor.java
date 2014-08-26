@@ -39,8 +39,6 @@ public class FilterProcessor<Request, Response> {
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
                     applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
                     ex -> {
-                        System.out.println("Received Exception : " + ex);
-                        ex.printStackTrace();
                         return applyErrorFilter(ex, filtersForRoute.getErrorFilter());
                     });
         } catch (IOException ioe) {
@@ -65,7 +63,6 @@ public class FilterProcessor<Request, Response> {
     }
 
     private Observable<EgressResponse<Response>> applyPostFilters(IngressResponse ingressResp, List<PostFilter<Response>> postFilters) {
-        System.out.println("Executing post filters on : " + ingressResp);
         Observable<EgressResponse<Response>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp, responseState.create()));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
             return postFilter.execute(egressRespObservable);
