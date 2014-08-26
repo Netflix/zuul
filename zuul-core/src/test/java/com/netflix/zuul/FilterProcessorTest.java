@@ -185,19 +185,19 @@ public class FilterProcessorTest {
     private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp);
 
     private final PreFilter<Void> successPreFilter = createPreFilter(1, egressReq -> {
-        egressReq.addHeader("PRE", "DONE");
+        egressReq.getHttpClientRequest().getHeaders().add("PRE", "DONE");
         return egressReq;
     });
 
     private final PreFilter<Void> emptyPreFilter = createIoPreFilter(2, egressReq -> Observable.empty());
 
     private final PreFilter<Void> doublePreFilter = createIoPreFilter(3, egressReq -> {
-        egressReq.addHeader("PRE", "DOUBLE");
+        egressReq.getHttpClientRequest().getHeaders().add("PRE", "DOUBLE");
         return Observable.from(egressReq, egressReq);
     });
 
     private final PreFilter<Void> errorPreFilter = createIoPreFilter(4, egressReq -> {
-        egressReq.addHeader("PRE", "ERROR");
+        egressReq.getHttpClientRequest().getHeaders().add("PRE", "ERROR");
         return Observable.error(new RuntimeException("pre unit test"));
     });
 
