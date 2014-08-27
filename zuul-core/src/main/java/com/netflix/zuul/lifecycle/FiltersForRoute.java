@@ -15,9 +15,11 @@
  */
 package com.netflix.zuul.lifecycle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.netflix.zuul.filter.ErrorFilter;
+import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.filter.PostFilter;
 import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
@@ -55,5 +57,14 @@ public class FiltersForRoute<Request, Response> {
 
     public ErrorFilter<Response> getErrorFilter() {
         return errorFilter;
+    }
+
+    public List<Filter> all() {
+        List<Filter> all = new ArrayList<>();
+        all.addAll(preFilters);
+        all.add(routeFilter);
+        all.addAll(postFilters);
+        all.add(errorFilter);
+        return all;
     }
 }

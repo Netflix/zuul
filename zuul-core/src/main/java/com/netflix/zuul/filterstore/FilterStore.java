@@ -15,11 +15,23 @@
  */
 package com.netflix.zuul.filterstore;
 
+import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
+
 import java.io.IOException;
 
 import com.netflix.zuul.lifecycle.FiltersForRoute;
 import com.netflix.zuul.lifecycle.IngressRequest;
 
-public interface FilterStore<Request, Response> {
-    FiltersForRoute<Request, Response> getFilters(IngressRequest ingressReq) throws IOException;
+public abstract class FilterStore<Request, Response> {
+    protected abstract FiltersForRoute<Request, Response> fetchFilters(IngressRequest ingressReq) throws IOException;
+
+    public FiltersForRoute<Request, Response> getFilters(IngressRequest ingressReq) throws IOException {
+        FiltersForRoute<Request, Response> filters = fetchFilters(ingressReq);
+        for (Filter f: filters.all()) {
+            ZuulFilterMetricsPublisher filterMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveFilterPublisher(f.getClass());
+        }
+        return filters;
+    }
 }
