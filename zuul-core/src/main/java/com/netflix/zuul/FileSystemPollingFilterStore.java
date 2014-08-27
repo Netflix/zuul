@@ -41,6 +41,8 @@ public abstract class FileSystemPollingFilterStore implements FilterStore {
                     try {
                         sleep(pollIntervalSeconds * 1000);
                         refreshInMemoryFilters();
+                    } catch (InterruptedException ex) {
+                        interrupt();
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
