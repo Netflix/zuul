@@ -18,6 +18,7 @@ package com.netflix.zuul;
 import java.io.IOException;
 import java.util.List;
 
+import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public class FilterProcessor<Request, Response> {
@@ -33,14 +34,18 @@ public class FilterProcessor<Request, Response> {
     }
 
     public Observable<EgressResponse<Response>> applyAllFilters(IngressRequest ingressReq) {
+        final long startTime = System.currentTimeMillis();
         try {
             FiltersForRoute<Request, Response> filtersForRoute = filterStore.getFilters(ingressReq);
             return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                    applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).onErrorResumeNext(
+                    applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).doOnCompleted(() ->
+                        ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
+                    ).onErrorResumeNext(
                     ex -> {
+                        ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
                         return applyErrorFilter(ex, filtersForRoute.getErrorFilter());
-                    });
+                    }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
         } catch (IOException ioe) {
             System.err.println("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters"));
@@ -74,6 +79,20 @@ public class FilterProcessor<Request, Response> {
             return Observable.<EgressResponse<Response>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
         } else {
             return errorFilter.execute(ex);
+        }
+    }
+
+    private static void recordHttpStatusCode(IngressRequest ingressReq, int statusCode, long startTime) {
+        if (statusCode >= 100 && statusCode < 200) {
+            ZuulMetrics.mark1xx(ingressReq, System.currentTimeMillis() - startTime);
+        } else if (statusCode >= 200 && statusCode < 300) {
+            ZuulMetrics.mark2xx(ingressReq, System.currentTimeMillis() - startTime);
+        } else if (statusCode >= 300 && statusCode < 400) {
+            ZuulMetrics.mark3xx(ingressReq, System.currentTimeMillis() - startTime);
+        } else if (statusCode >= 400 && statusCode < 500) {
+            ZuulMetrics.mark4xx(ingressReq, System.currentTimeMillis() - startTime);
+        } else if (statusCode >= 500 && statusCode < 600) {
+            ZuulMetrics.mark5xx(ingressReq, System.currentTimeMillis() - startTime);
         }
     }
 }

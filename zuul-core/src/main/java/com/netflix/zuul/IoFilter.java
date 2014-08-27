@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 /**
@@ -26,6 +27,12 @@ public abstract class IoFilter<T> implements ProcessingFilter<T> {
 
     @Override
     public Observable<T> execute(Observable<T> input) {
-        return input.flatMap(this::apply);
+        return input.flatMap(t -> {
+            final long startTime = System.currentTimeMillis();
+            return apply(t).doOnError(ex ->
+                    ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime)).doOnCompleted(() ->
+                    ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime));
+
+        });
     }
 }
