@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public abstract class IoErrorFilter<T> implements ErrorFilter<T> {
@@ -22,6 +23,14 @@ public abstract class IoErrorFilter<T> implements ErrorFilter<T> {
 
     @Override
     public Observable<EgressResponse<T>> execute(Throwable ex) {
-        return handleError(ex);
+        final long startTime = System.currentTimeMillis();
+        try {
+            Observable<EgressResponse<T>> resp = handleError(ex);
+            ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
+            return resp;
+        } catch (Throwable filterEx) {
+            ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime);
+            throw filterEx;
+        }
     }
 }

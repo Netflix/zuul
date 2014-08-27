@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public abstract class IoRouteFilter<Request> implements RouteFilter<Request> {
@@ -22,7 +23,9 @@ public abstract class IoRouteFilter<Request> implements RouteFilter<Request> {
 
     @Override
     public Observable<IngressResponse> execute(EgressRequest<Request> egressReq) {
-        System.out.println("Route to origin with : " + egressReq);
-        return routeToOrigin(egressReq);
+        final long startTime = System.currentTimeMillis();
+        return routeToOrigin(egressReq).doOnError(ex ->
+                ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime)).doOnCompleted(() ->
+                ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime));
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public abstract class ComputationFilter<T> implements ProcessingFilter<T> {
@@ -22,6 +23,16 @@ public abstract class ComputationFilter<T> implements ProcessingFilter<T> {
 
     @Override
     public Observable<T> execute(Observable<T> input) {
-        return input.map(this::apply);
+        return input.map(t -> {
+            final long startTime = System.currentTimeMillis();
+            try {
+                T result = apply(t);
+                ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
+                return result;
+            } catch (Throwable ex) {
+                ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime);
+                throw ex;
+            }
+        });
     }
 }
