@@ -107,6 +107,18 @@ public class ZuulMetrics {
         metricsThread.start();
     }
 
+    public static NumerusRollingNumber getGlobalExecutionMetrics() {
+        return globalExecution;
+    }
+
+    public static NumerusRollingNumber getGlobalStatusCodeMetrics() {
+        return globalStatusCode;
+    }
+
+    public static NumerusRollingPercentile getGlobalLatencyMetrics() {
+        return globalLatency;
+    }
+
     private static class MetricPollingThread extends Thread {
 
         final int pollInMs;

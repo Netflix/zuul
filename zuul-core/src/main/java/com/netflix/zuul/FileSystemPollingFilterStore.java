@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class FileSystemPollingFilterStore implements FilterStore {
+public abstract class FileSystemPollingFilterStore extends FilterStore {
     private final File location;
     private boolean pollingActive = true;
     private final ConcurrentHashMap<String, Filter> compiledFilters = new ConcurrentHashMap<>();
@@ -57,7 +57,7 @@ public abstract class FileSystemPollingFilterStore implements FilterStore {
     protected abstract Class<?> getClassFromFilterFile(File f) throws IOException;
 
     @Override
-    public FiltersForRoute getFilters(IngressRequest ingressReq) throws IOException {
+    public FiltersForRoute fetchFilters(IngressRequest ingressReq) throws IOException {
         List<PreFilter> preFilters = pickFilters(compiledFilters.values(), PreFilter.class);
         List<RouteFilter> routeFilters = pickFilters(compiledFilters.values(), RouteFilter.class);
         List<PostFilter> postFilters = pickFilters(compiledFilters.values(), PostFilter.class);
