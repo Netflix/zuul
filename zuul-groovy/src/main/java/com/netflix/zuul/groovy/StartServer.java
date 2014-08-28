@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.groovy;
 
-import com.netflix.zuul.FilterStore;
 import com.netflix.zuul.ZuulServer;
+import com.netflix.zuul.filterstore.FilterStore;
 
 import java.io.File;
 

@@ -16,13 +16,13 @@
 
 package com.netflix.zuul.metrics;
 
-import com.netflix.numerus.NumerusRollingNumber;
-import com.netflix.numerus.NumerusRollingPercentile;
-import com.netflix.zuul.Filter;
-import com.netflix.zuul.IngressRequest;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.netflix.numerus.NumerusRollingNumber;
+import com.netflix.numerus.NumerusRollingPercentile;
+import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
 /**
  * TODO: propertize magic numbers

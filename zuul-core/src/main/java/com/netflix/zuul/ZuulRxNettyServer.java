@@ -21,9 +21,13 @@ import io.reactivex.netty.pipeline.PipelineConfigurators;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import rx.functions.Func1;
 
 import java.util.Map;
+
+import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.IngressRequest;
+
+import rx.functions.Func1;
 
 public class ZuulRxNettyServer<Request, Response> {
     private final int port;

@@ -15,8 +15,9 @@
  */
 package com.netflix.zuul.groovy;
 
-import com.netflix.zuul.FileSystemPollingFilterStore;
-import com.netflix.zuul.FilterStore;
+import com.netflix.zuul.filterstore.FileSystemPollingFilterStore;
+import com.netflix.zuul.filterstore.FilterStore;
+
 import org.codehaus.groovy.jsr223.GroovyCompiledScript;
 
 import java.io.File;

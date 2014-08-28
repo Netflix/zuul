@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy.filter;
+package com.netflix.zuul.filter;
 
-import com.netflix.zuul.filter.RouteFilterIO;
 import com.netflix.zuul.lifecycle.EgressRequest;
 import com.netflix.zuul.lifecycle.IngressResponse;
 
@@ -27,14 +26,14 @@ import rx.Observable;
 public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
 
     @Override
-    Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
-        println("route filter " + this)
-        HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80)
-        httpClient.submit(egressReq.getHttpClientRequest()).map({IngressResponse.from(it) })
+    public Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
+        System.out.println(this + " route filter");
+        HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
+        return httpClient.submit(egressReq.getHttpClientRequest()).map(IngressResponse::from);
     }
 
     @Override
-    int getOrder() {
-        return 1
+    public int getOrder() {
+        return 1;
     }
 }
