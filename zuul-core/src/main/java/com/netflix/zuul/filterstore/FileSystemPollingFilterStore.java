@@ -71,6 +71,10 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
         List<PostFilter> postFilters = pickFilters(compiledFilters.values(), PostFilter.class);
         List<ErrorFilter> errorFilters = pickFilters(compiledFilters.values(), ErrorFilter.class);
         if (routeFilters.size() != 1) {
+            System.err.println("Found " + routeFilters.size() + " route filters");
+            for (RouteFilter routeFilter: routeFilters) {
+                System.err.println(" RouteFilter : " + routeFilter.getClass().getSimpleName());
+            }
             throw new IllegalStateException("No route filter provided - not a valid configuration!");
         }
         if (errorFilters.size() > 1) {
