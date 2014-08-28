@@ -62,9 +62,13 @@ public class FiltersForRoute<Request, Response> {
     public List<Filter> all() {
         List<Filter> all = new ArrayList<>();
         all.addAll(preFilters);
-        all.add(routeFilter);
+        if (routeFilter != null) {
+            all.add(routeFilter);
+        }
         all.addAll(postFilters);
-        all.add(errorFilter);
+        if (errorFilter != null) {
+            all.add(errorFilter);
+        }
         return all;
     }
 }
