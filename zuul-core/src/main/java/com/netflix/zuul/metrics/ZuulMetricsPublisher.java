@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.metrics;
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
+import com.netflix.zuul.Filter;
 
-    public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        //ZuulMetrics.reportMetrics(10000);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
+public class ZuulMetricsPublisher {
+
+    public ZuulGlobalMetricsPublisher getGlobalMetricsPublisher() {
+        System.out.println("Using default No-op global metrics publisher");
+        return () -> { //do nothing
+        };
+    }
+
+    public ZuulFilterMetricsPublisher getFilterMetricsPublisher(Class<? extends Filter> filterClass) {
+        System.out.println("Using default no-op filter metrics publisher for : " + filterClass.getSimpleName());
+        return () -> { //do nothing
+        };
     }
 }

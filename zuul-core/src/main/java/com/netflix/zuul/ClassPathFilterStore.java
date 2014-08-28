@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-public class ClassPathFilterStore implements FilterStore {
+public class ClassPathFilterStore extends FilterStore {
     private final String packagePrefix;
     private final InMemoryFilterStore backingFilterStore;
     private AtomicBoolean filterStoreInitialized = new AtomicBoolean(false);
@@ -36,7 +36,7 @@ public class ClassPathFilterStore implements FilterStore {
     }
 
     @Override
-    public FiltersForRoute getFilters(IngressRequest ingressReq) throws IOException {
+    public FiltersForRoute fetchFilters(IngressRequest ingressReq) throws IOException {
         System.out.println("Getting filters from the classpath with prefix : " + packagePrefix);
         if (filterStoreInitialized.get()) {
             return backingFilterStore.getFilters(ingressReq);
