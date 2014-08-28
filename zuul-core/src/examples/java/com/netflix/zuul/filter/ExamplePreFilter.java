@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filter;
 
-import com.netflix.zuul.filterstore.ClassPathFilterStore;
-import com.netflix.zuul.filterstore.FilterStore;
+import com.netflix.zuul.lifecycle.EgressRequest;
 
+public class ExamplePreFilter<T> extends PreFilterSynchronous<T> {
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
+    @Override
+    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
+        System.out.println(this + " pre filter");
+        return egressReq;
+    }
 
-    public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        //ZuulMetrics.reportMetrics(10000);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
+    @Override
+    public int getOrder() {
+        return 1;
     }
 }

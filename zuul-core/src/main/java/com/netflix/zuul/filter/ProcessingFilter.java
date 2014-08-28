@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filter;
 
-import com.netflix.zuul.filterstore.ClassPathFilterStore;
-import com.netflix.zuul.filterstore.FilterStore;
+import rx.Observable;
 
-
-public class StartServer {
-    static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
-
-    public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        //ZuulMetrics.reportMetrics(10000);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
-    }
+/**
+ * Base interface which contains logic for processing a request/response
+ * @param <T> input type
+ */
+public interface ProcessingFilter<T> extends Filter {
+    /**
+     * Given an input, execute the filter and return the output
+     * @param input input to filter
+     * @return filter output
+     */
+    public Observable<T> execute(Observable<T> input);
 }

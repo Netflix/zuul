@@ -15,10 +15,10 @@
  */
 package com.netflix.zuul.groovy.filter
 
-import com.netflix.zuul.ComputationPostFilter;
-import com.netflix.zuul.EgressResponse;
+import com.netflix.zuul.filter.PostFilterSynchronous;
+import com.netflix.zuul.lifecycle.EgressResponse;
 
-public class ExamplePostFilter<T> extends ComputationPostFilter<T> {
+public class ExamplePostFilter<T> extends PostFilterSynchronous<T> {
 
     @Override
     public EgressResponse<T> apply(EgressResponse<T> egressResp) {

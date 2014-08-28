@@ -32,6 +32,8 @@ import com.netflix.karyon.archaius.ArchaiusBootstrap;
 import com.netflix.karyon.eureka.KaryonEurekaModule;
 import com.netflix.karyon.transport.http.AbstractHttpModule;
 import com.netflix.karyon.transport.http.HttpRequestRouter;
+import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
 public class ZuulKaryonServer {
 

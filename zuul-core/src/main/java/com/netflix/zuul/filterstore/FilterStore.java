@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filterstore;
 
-import com.netflix.zuul.filterstore.ClassPathFilterStore;
-import com.netflix.zuul.filterstore.FilterStore;
+import java.io.IOException;
 
+import com.netflix.zuul.lifecycle.FiltersForRoute;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
-
-    public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        //ZuulMetrics.reportMetrics(10000);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
-    }
+public interface FilterStore<Request, Response> {
+    FiltersForRoute<Request, Response> getFilters(IngressRequest ingressReq) throws IOException;
 }
