@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
@@ -57,6 +59,9 @@ public class ZuulKaryonServer {
         ZuulKaryonServer.port = port;
         ZuulKaryonServer.filterProcessor = filterProcessor;
         /* DON'T DO THIS AT HOME */
+
+        ZuulGlobalMetricsPublisher zuulGlobalMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveGlobalPublisher();
+
 
         return new KaryonServer(ZuulApp.class); // I need this to be an instance, not a class ... I hate annotations
     }

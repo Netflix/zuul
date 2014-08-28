@@ -26,14 +26,14 @@ import com.netflix.zuul.filter.RouteFilter;
 import com.netflix.zuul.lifecycle.FiltersForRoute;
 import com.netflix.zuul.lifecycle.IngressRequest;
 
-public class InMemoryFilterStore<Request, Response> implements FilterStore<Request, Response> {
+public class InMemoryFilterStore<Request, Response> extends FilterStore<Request, Response> {
     private final CopyOnWriteArrayList<PreFilter<Request>> preFilters = new CopyOnWriteArrayList<>();
     private final AtomicReference<RouteFilter<Request>> routeFilter = new AtomicReference<>();
     private final CopyOnWriteArrayList<PostFilter<Response>> postFilters = new CopyOnWriteArrayList<>();
     private final AtomicReference<ErrorFilter<Response>> errorFilter = new AtomicReference<>();
 
     @Override
-    public FiltersForRoute<Request, Response> getFilters(IngressRequest ingressReq) {
+    public FiltersForRoute<Request, Response> fetchFilters(IngressRequest ingressReq) {
         return new FiltersForRoute<Request, Response>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 

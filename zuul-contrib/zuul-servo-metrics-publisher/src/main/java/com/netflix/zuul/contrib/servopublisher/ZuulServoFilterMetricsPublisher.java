@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.contrib.servopublisher;
 
-import com.netflix.zuul.filterstore.ClassPathFilterStore;
-import com.netflix.zuul.filterstore.FilterStore;
+import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
 
-public class StartServer {
-    static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
+public class ZuulServoFilterMetricsPublisher implements ZuulFilterMetricsPublisher {
+    private final Class<? extends Filter> filterClass;
 
-    public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
-        //ZuulMetrics.reportMetrics(10000);
-        ZuulServer.start(DEFAULT_PORT, filterStore);
+    public ZuulServoFilterMetricsPublisher(Class<? extends Filter> filterClass) {
+        this.filterClass = filterClass;
+    }
+
+    @Override
+    public void initialize() {
+        System.out.println("Initializing Servo publishing for filter : " + filterClass.getSimpleName());
     }
 }
