@@ -15,21 +15,32 @@
  */
 package com.netflix.zuul.filter;
 
+import com.netflix.client.config.IClientConfig;
+import com.netflix.client.config.IClientConfigKey;
+import com.netflix.client.netty.RibbonTransport;
+import com.netflix.client.netty.http.NettyHttpClient;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList;
 import com.netflix.zuul.lifecycle.EgressRequest;
 import com.netflix.zuul.lifecycle.IngressResponse;
-
 import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.RxNetty;
-import io.reactivex.netty.protocol.http.client.HttpClient;
 import rx.Observable;
 
 public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
 
+    private final NettyHttpClient<ByteBuf, ByteBuf> originClient;
+
+    public ExampleRouteFilter() {
+        IClientConfig config = IClientConfig.Builder.newBuilder().withDefaultValues()
+                                                    .withDeploymentContextBasedVipAddresses("api-test.netflix.net:7001").build()
+                                                    .set(IClientConfigKey.Keys.NIWSServerListClassName,
+                                                         DiscoveryEnabledNIWSServerList.class.getName());
+        originClient = RibbonTransport.newHttpClient(config);
+    }
+
     @Override
     public Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
         System.out.println(this + " route filter");
-        HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80);
-        return httpClient.submit(egressReq.getHttpClientRequest()).map(IngressResponse::from);
+        return originClient.submit(egressReq.getHttpClientRequest()).map(IngressResponse::from);
     }
 
     @Override

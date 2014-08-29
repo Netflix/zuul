@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.google.inject.Module;
 import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 import io.netty.buffer.ByteBuf;
@@ -29,13 +30,14 @@ import rx.functions.Func1;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.netflix.governator.annotations.Modules;
 import com.netflix.karyon.KaryonBootstrap;
-import com.netflix.karyon.KaryonServer;
 import com.netflix.karyon.archaius.ArchaiusBootstrap;
 import com.netflix.karyon.eureka.KaryonEurekaModule;
 import com.netflix.karyon.transport.http.AbstractHttpModule;
 import com.netflix.karyon.transport.http.HttpRequestRouter;
 import com.netflix.zuul.lifecycle.FilterProcessor;
 import com.netflix.zuul.lifecycle.IngressRequest;
+
+import java.util.Map;
 
 public class ZuulKaryonServer {
 
@@ -53,7 +55,14 @@ public class ZuulKaryonServer {
     private static FilterProcessor<?, ?> filterProcessor;
     /* DON'T DO THIS AT HOME */
 
-    public static <Request, Response> KaryonServer createServer(int port, FilterProcessor<Request, Response> filterProcessor) {
+    public static <Request, Response> void startZuulServer(int port,
+                                                           FilterProcessor<Request, Response> filterProcessor) {
+        startZuulServerWithAdditionalModule(port, filterProcessor);
+    }
+
+    public static <Request, Response> void startZuulServerWithAdditionalModule(int port,
+                                                                               FilterProcessor<Request, Response> filterProcessor,
+                                                                               Module... additionalModules) {
         System.out.println("**** Starting Zuul with Karyon 2");
         /* DON'T DO THIS AT HOME */
         ZuulKaryonServer.port = port;
@@ -62,8 +71,7 @@ public class ZuulKaryonServer {
 
         ZuulGlobalMetricsPublisher zuulGlobalMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveGlobalPublisher();
 
-
-        return new KaryonServer(ZuulApp.class); // I need this to be an instance, not a class ... I hate annotations
+        new ZuulBootstrap(ZuulApp.class, additionalModules).startAndAwait(); // I need this to be an instance, not a class ... I hate annotations
     }
 
     @ArchaiusBootstrap
