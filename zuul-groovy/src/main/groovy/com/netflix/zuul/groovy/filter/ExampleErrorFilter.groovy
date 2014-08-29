@@ -15,10 +15,10 @@
  */
 package com.netflix.zuul.groovy.filter
 
-import com.netflix.zuul.ComputationErrorFilter;
-import com.netflix.zuul.EgressResponse;
+import com.netflix.zuul.filter.ErrorFilterComputation;
+import com.netflix.zuul.lifecycle.EgressResponse;
 
-public class ExampleErrorFilter extends ComputationErrorFilter {
+public class ExampleErrorFilter extends ErrorFilterComputation {
     @Override
     EgressResponse provideResponse(Throwable ex) {
         EgressResponse.withStatus(500)

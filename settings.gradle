@@ -1,3 +1,4 @@
 rootProject.name='zuul'
 include 'zuul-core', \
-'zuul-groovy'
+'zuul-groovy', \
+'zuul-contrib:zuul-servo-metrics-publisher'

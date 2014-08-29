@@ -16,6 +16,17 @@
 package com.netflix.zuul;
 
 import com.google.inject.Module;
+import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+
+import java.util.Map;
+
+import rx.Observable;
+import rx.functions.Func1;
+
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.netflix.governator.annotations.Modules;
 import com.netflix.karyon.KaryonBootstrap;
@@ -23,11 +34,8 @@ import com.netflix.karyon.archaius.ArchaiusBootstrap;
 import com.netflix.karyon.eureka.KaryonEurekaModule;
 import com.netflix.karyon.transport.http.AbstractHttpModule;
 import com.netflix.karyon.transport.http.HttpRequestRouter;
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.server.HttpServerRequest;
-import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import rx.Observable;
-import rx.functions.Func1;
+import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
 import java.util.Map;
 
@@ -60,6 +68,8 @@ public class ZuulKaryonServer {
         ZuulKaryonServer.port = port;
         ZuulKaryonServer.filterProcessor = filterProcessor;
         /* DON'T DO THIS AT HOME */
+
+        ZuulGlobalMetricsPublisher zuulGlobalMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveGlobalPublisher();
 
         new ZuulBootstrap(ZuulApp.class, additionalModules).startAndAwait(); // I need this to be an instance, not a class ... I hate annotations
     }

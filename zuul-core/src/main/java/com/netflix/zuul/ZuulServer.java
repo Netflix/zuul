@@ -19,6 +19,10 @@ import com.google.inject.Module;
 
 import java.util.HashMap;
 
+import com.netflix.zuul.filterstore.FilterStore;
+import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.FilterStateFactory;
+
 public class ZuulServer {
 
     public static void start(int port, FilterStore<HashMap<String, Object>, HashMap<String, Object>> filterStore) {
