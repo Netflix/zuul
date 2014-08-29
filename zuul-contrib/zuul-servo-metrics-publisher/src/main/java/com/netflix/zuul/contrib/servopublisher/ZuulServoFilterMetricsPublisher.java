@@ -15,12 +15,27 @@
  */
 package com.netflix.zuul.contrib.servopublisher;
 
+import com.netflix.numerus.NumerusRollingNumber;
+import com.netflix.numerus.NumerusRollingPercentile;
+import com.netflix.servo.DefaultMonitorRegistry;
+import com.netflix.servo.monitor.BasicCompositeMonitor;
+import com.netflix.servo.monitor.Monitor;
+import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.servo.tag.BasicTagList;
+import com.netflix.servo.tag.Tag;
+import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.metrics.ZuulExecutionEvent;
 import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZuulServoFilterMetricsPublisher implements ZuulFilterMetricsPublisher {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class ZuulServoFilterMetricsPublisher extends AbstractZuulServoMetricsPublisher implements ZuulFilterMetricsPublisher {
     private final static Logger logger = LoggerFactory.getLogger(ZuulServoFilterMetricsPublisher.class);
 
     private final Class<? extends Filter> filterClass;
@@ -32,5 +47,73 @@ public class ZuulServoFilterMetricsPublisher implements ZuulFilterMetricsPublish
     @Override
     public void initialize() {
         logger.info("Initializing Servo publishing for filter : " + filterClass.getSimpleName());
+
+        List<Monitor<?>> monitors = getServoMonitors();
+
+        // publish metrics together under a single composite (it seems this name is ignored)
+        MonitorConfig commandMetricsConfig = MonitorConfig.builder("Zuul").build();
+        BasicCompositeMonitor commandMetricsMonitor = new BasicCompositeMonitor(commandMetricsConfig, monitors);
+
+        DefaultMonitorRegistry.getInstance().register(commandMetricsMonitor);
+    }
+
+    private List<Monitor<?>> getServoMonitors() {
+        List<Monitor<?>> monitors = new ArrayList<>();
+
+        NumerusRollingNumber filterExecutionMetrics = ZuulMetrics.getFilterExecutionMetrics(filterClass);
+        monitors.add(getCumulativeCountForEvent("countSuccess", filterExecutionMetrics, ZuulExecutionEvent.SUCCESS));
+        monitors.add(getCumulativeCountForEvent("countFailure", filterExecutionMetrics, ZuulExecutionEvent.FAILURE));
+
+        NumerusRollingPercentile filterLatencyMetrics = ZuulMetrics.getFilterLatencyMetrics(filterClass);
+        monitors.add(getGaugeForEvent("latency_percentile_5", filterLatencyMetrics, 5));
+        monitors.add(getGaugeForEvent("latency_percentile_25", filterLatencyMetrics, 25));
+        monitors.add(getGaugeForEvent("latency_percentile_50", filterLatencyMetrics, 50));
+        monitors.add(getGaugeForEvent("latency_percentile_75", filterLatencyMetrics, 75));
+        monitors.add(getGaugeForEvent("latency_percentile_90", filterLatencyMetrics, 90));
+        monitors.add(getGaugeForEvent("latency_percentile_95", filterLatencyMetrics, 95));
+        monitors.add(getGaugeForEvent("latency_percentile_99", filterLatencyMetrics, 99));
+        monitors.add(getGaugeForEvent("latency_percentile_995", filterLatencyMetrics, 99.5));
+
+        return monitors;
+    }
+
+    @Override
+    protected TagList getServoTags() {
+        Tag servoTypeTag = new Tag() {
+            @Override
+            public String getKey() {
+                return "type";
+            }
+
+            @Override
+            public String getValue() {
+                return "Zuul";
+            }
+
+            @Override
+            public String tagString() {
+                return "Zuul";
+            }
+        };
+
+        Tag servoInstanceTag = new Tag() {
+
+            @Override
+            public String getKey() {
+                return "instance";
+            }
+
+            @Override
+            public String getValue() {
+                return filterClass.getSimpleName();
+            }
+
+            @Override
+            public String tagString() {
+                return filterClass.getSimpleName();
+            }
+        };
+
+        return new BasicTagList(Arrays.asList(servoTypeTag, servoInstanceTag));
     }
 }

@@ -49,46 +49,7 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
         DefaultMonitorRegistry.getInstance().register(commandMetricsMonitor);
     }
 
-    protected Tag getServoTypeTag() {
-        return new Tag() {
-            @Override
-            public String getKey() {
-                return "type";
-            }
-
-            @Override
-            public String getValue() {
-                return "Zuul";
-            }
-
-            @Override
-            public String tagString() {
-                return "Zuul";
-            }
-        };
-    }
-
-    protected Tag getServoInstanceTag() {
-        return new Tag() {
-            @Override
-            public String getKey() {
-                return "instance";
-            }
-
-            @Override
-            public String getValue() {
-                return "Zuul";
-            }
-
-            @Override
-            public String tagString() {
-                return "Zuul";
-            }
-        };
-    }
-
     private List<Monitor<?>> getServoMonitors() {
-
         List<Monitor<?>> monitors = new ArrayList<>();
 
         monitors.add(getCumulativeCountForEvent("countSuccess", ZuulMetrics.getGlobalExecutionMetrics(), ZuulExecutionEvent.SUCCESS));

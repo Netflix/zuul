@@ -123,6 +123,14 @@ public class ZuulMetrics {
         return globalLatency;
     }
 
+    public static NumerusRollingNumber getFilterExecutionMetrics(Class<? extends Filter> filterClass) {
+        return filterExecutions.get(filterClass);
+    }
+
+    public static NumerusRollingPercentile getFilterLatencyMetrics(Class<? extends Filter> filterClass) {
+        return filterLatencies.get(filterClass);
+    }
+
     private static class MetricPollingThread extends Thread {
 
         final int pollInMs;
