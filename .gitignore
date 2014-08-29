@@ -44,7 +44,7 @@ Thumbs.db
 /target
 */target
 /build
-*/build
+**/build
 .m2
 
 # IntelliJ specific files/directories
