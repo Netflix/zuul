@@ -16,6 +16,5 @@
 package com.netflix.zuul.metrics;
 
 public interface ZuulGlobalMetricsPublisher {
-
     abstract public void initialize();
 }

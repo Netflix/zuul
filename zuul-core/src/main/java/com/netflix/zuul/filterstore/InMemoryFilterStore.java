@@ -15,9 +15,6 @@
  */
 package com.netflix.zuul.filterstore;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.filter.PostFilter;
@@ -25,8 +22,15 @@ import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
 import com.netflix.zuul.lifecycle.FiltersForRoute;
 import com.netflix.zuul.lifecycle.IngressRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class InMemoryFilterStore<Request, Response> extends FilterStore<Request, Response> {
+    private final static Logger logger = LoggerFactory.getLogger(InMemoryFilterStore.class);
+
     private final CopyOnWriteArrayList<PreFilter<Request>> preFilters = new CopyOnWriteArrayList<>();
     private final AtomicReference<RouteFilter<Request>> routeFilter = new AtomicReference<>();
     private final CopyOnWriteArrayList<PostFilter<Response>> postFilters = new CopyOnWriteArrayList<>();
@@ -34,7 +38,7 @@ public class InMemoryFilterStore<Request, Response> extends FilterStore<Request,
 
     @Override
     public FiltersForRoute<Request, Response> fetchFilters(IngressRequest ingressReq) {
-        return new FiltersForRoute<Request, Response>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
+        return new FiltersForRoute<>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 
     @SuppressWarnings("unchecked")
@@ -48,7 +52,7 @@ public class InMemoryFilterStore<Request, Response> extends FilterStore<Request,
         } else if (filter instanceof ErrorFilter) {
             errorFilter.lazySet((ErrorFilter<Response>) filter);
         } else {
-            System.err.println("Unknown filter type : " + filter + " : " + filter.getClass().getCanonicalName());
+            logger.error("Unknown filter type : " + filter + " : " + filter.getClass().getCanonicalName());
         }
     }
 }

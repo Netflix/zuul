@@ -15,11 +15,6 @@
  */
 package com.netflix.zuul.lifecycle;
 
-import java.io.IOException;
-import java.util.List;
-
-import rx.Observable;
-
 import com.netflix.zuul.ZuulException;
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.PostFilter;
@@ -27,8 +22,16 @@ import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
 import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.metrics.ZuulMetrics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
+
+import java.io.IOException;
+import java.util.List;
 
 public class FilterProcessor<Request, Response> {
+
+    private final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
 
     private final FilterStore<Request, Response> filterStore;
     private final FilterStateFactory<Request> requestState; 
@@ -54,7 +57,7 @@ public class FilterProcessor<Request, Response> {
                         return applyErrorFilter(ex, filtersForRoute.getErrorFilter());
                     }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
         } catch (IOException ioe) {
-            System.err.println("Couldn't load the filters");
+            logger.error("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters"));
         }
     }

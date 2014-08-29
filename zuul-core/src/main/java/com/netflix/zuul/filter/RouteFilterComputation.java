@@ -15,11 +15,10 @@
  */
 package com.netflix.zuul.filter;
 
-import rx.Observable;
-
 import com.netflix.zuul.lifecycle.EgressRequest;
 import com.netflix.zuul.lifecycle.IngressResponse;
 import com.netflix.zuul.metrics.ZuulMetrics;
+import rx.Observable;
 
 public abstract class RouteFilterComputation<Request> implements RouteFilter<Request> {
     public abstract IngressResponse provideResponse(EgressRequest<Request> egressReq);

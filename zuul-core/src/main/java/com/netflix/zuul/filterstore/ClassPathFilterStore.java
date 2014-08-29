@@ -15,6 +15,12 @@
  */
 package com.netflix.zuul.filterstore;
 
+import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.lifecycle.FiltersForRoute;
+import com.netflix.zuul.lifecycle.IngressRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -25,11 +31,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import com.netflix.zuul.filter.Filter;
-import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
-
 public class ClassPathFilterStore extends FilterStore {
+    private final Logger logger = LoggerFactory.getLogger(ClassPathFilterStore.class);
+
     private final String packagePrefix;
     private final InMemoryFilterStore backingFilterStore;
     private AtomicBoolean filterStoreInitialized = new AtomicBoolean(false);
@@ -41,11 +45,11 @@ public class ClassPathFilterStore extends FilterStore {
 
     @Override
     public FiltersForRoute fetchFilters(IngressRequest ingressReq) throws IOException {
-        System.out.println("Getting filters from the classpath with prefix : " + packagePrefix);
+        logger.info("Getting filters from the classpath with prefix : " + packagePrefix);
         if (filterStoreInitialized.get()) {
             return backingFilterStore.getFilters(ingressReq);
         } else {
-            System.out.println("Classpath has not been scanned yet, doing that now");
+            logger.info("Classpath has not been scanned yet, doing that now");
             boolean noErrorsOccurred = true;
             try {
                 List<File> files = new ArrayList<>();
@@ -61,17 +65,17 @@ public class ClassPathFilterStore extends FilterStore {
                             Class<?> clazz = Class.forName(className);
                             if (Filter.class.isAssignableFrom(clazz)) {
                                 Filter filter = (Filter) clazz.newInstance();
-                                System.out.println("Got filter : " + filter);
+                                logger.info("Found filter : " + filter);
                                 backingFilterStore.addFilter(filter);
                             }
                         } catch (ClassNotFoundException cnfe) {
-                            System.out.println("Couldn't get class from : " + f);
+                            logger.error("Couldn't get class from : " + f);
                             noErrorsOccurred = false;
                         } catch (InstantiationException ie) {
-                            System.out.println("Couldn't instantiate class from : " + f);
+                            logger.error("Couldn't instantiate class from : " + f);
                             noErrorsOccurred = false;
                         } catch (IllegalAccessException iae) {
-                            System.out.println("Illegal access when creating class from : " + f);
+                            logger.error("Illegal access when creating class from : " + f);
                             noErrorsOccurred = false;
                         }
                     }
@@ -81,7 +85,7 @@ public class ClassPathFilterStore extends FilterStore {
                 }
                 return backingFilterStore.getFilters(ingressReq);
             } catch (IOException ioe) {
-                System.err.println("Error getting the classpath - no filters found!");
+                logger.error("Error getting the classpath - no filters found!");
                 throw ioe;
             }
         }

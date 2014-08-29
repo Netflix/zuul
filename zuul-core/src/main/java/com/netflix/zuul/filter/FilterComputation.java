@@ -15,9 +15,8 @@
  */
 package com.netflix.zuul.filter;
 
-import rx.Observable;
-
 import com.netflix.zuul.metrics.ZuulMetrics;
+import rx.Observable;
 
 public abstract class FilterComputation<T> implements ProcessingFilter<T> {
     public abstract T apply(T input);

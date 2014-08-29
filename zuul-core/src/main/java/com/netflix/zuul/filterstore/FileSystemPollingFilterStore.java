@@ -15,6 +15,16 @@
  */
 package com.netflix.zuul.filterstore;
 
+import com.netflix.zuul.filter.ErrorFilter;
+import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.filter.PostFilter;
+import com.netflix.zuul.filter.PreFilter;
+import com.netflix.zuul.filter.RouteFilter;
+import com.netflix.zuul.lifecycle.FiltersForRoute;
+import com.netflix.zuul.lifecycle.IngressRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -26,15 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.netflix.zuul.filter.ErrorFilter;
-import com.netflix.zuul.filter.Filter;
-import com.netflix.zuul.filter.PostFilter;
-import com.netflix.zuul.filter.PreFilter;
-import com.netflix.zuul.filter.RouteFilter;
-import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
-
 public abstract class FileSystemPollingFilterStore extends FilterStore {
+    private final static Logger logger = LoggerFactory.getLogger(FileSystemPollingFilterStore.class);
+
     private final File location;
     private boolean pollingActive = true;
     private final ConcurrentHashMap<String, Filter> compiledFilters = new ConcurrentHashMap<>();
@@ -44,7 +48,7 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
         this.location = location;
         Thread poller = new Thread(getClass().getName() + "-Poller") {
             public void run() {
-                System.out.println("Polling thread starting up!");
+                logger.info("Filesystem-scanning thread starting up and looking for filters at :" + location.getAbsolutePath());
                 while(pollingActive) {
                     try {
                         sleep(pollIntervalSeconds * 1000);
@@ -71,9 +75,9 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
         List<PostFilter> postFilters = pickFilters(compiledFilters.values(), PostFilter.class);
         List<ErrorFilter> errorFilters = pickFilters(compiledFilters.values(), ErrorFilter.class);
         if (routeFilters.size() != 1) {
-            System.err.println("Found " + routeFilters.size() + " route filters");
+            logger.error("Found " + routeFilters.size() + " route filters");
             for (RouteFilter routeFilter: routeFilters) {
-                System.err.println(" RouteFilter : " + routeFilter.getClass().getSimpleName());
+                logger.error(" RouteFilter : " + routeFilter.getClass().getSimpleName());
             }
             throw new IllegalStateException("No route filter provided - not a valid configuration!");
         }
@@ -94,11 +98,13 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
     }
 
     private void refreshInMemoryFilters() throws IOException {
-        //System.out.println("Woke up and scanning files at : " + location);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Woke up and scanning files at : " + location);
+        }
         Map<File, Long> onDiskLastModDateMap = createMapOnFiltersOnDisk();
         List<String> deletedFromDisk = getFilesDeletedFromDisk(onDiskLastModDateMap);
         for (String pathToDelete: deletedFromDisk) {
-            System.out.println("Removing filter from processor : " + pathToDelete);
+            logger.info("Removing filter from processor : " + pathToDelete);
             if (compiledFilters.containsKey(pathToDelete)) {
                 compiledFilters.remove(pathToDelete);
             }
@@ -114,16 +120,16 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
                     if (Filter.class.isAssignableFrom(filterClass)) {
                         Filter filter = (Filter) filterClass.newInstance();
                         if (modDateMap.containsKey(pathToUpdate)) {
-                            System.out.println("Updated : " + pathToUpdate + " : " + fileOnDisk.lastModified() + " : " + filter);
+                            logger.info("Updated : " + pathToUpdate + " : " + fileOnDisk.lastModified() + " : " + filter);
                         } else {
-                            System.out.println("Added : " + pathToUpdate + " : " + fileOnDisk.lastModified() + " : " + filter);
+                            logger.info("Added : " + pathToUpdate + " : " + fileOnDisk.lastModified() + " : " + filter);
                         }
                         compiledFilters.put(pathToUpdate, filter);
                         modDateMap.put(pathToUpdate, fileOnDisk.lastModified());
                     }
                 }
             } catch (Exception ex){
-                System.err.println("Error loading Filter from : " + fileOnDisk + " : " + ex.getMessage());
+                logger.error("Error loading Filter from : " + fileOnDisk + " : " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
@@ -147,17 +153,17 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
 
     private Map<File, Long> createMapOnFiltersOnDisk() throws IOException {
         List<File> allFiltersOnDisk = getAllMatchingFilters(location, getFileFilter(), new ArrayList<File>());
-        //System.out.println("Found " + allFiltersOnDisk.size() + " files at location : " + location);
+        logger.debug("Found " + allFiltersOnDisk.size() + " files at location : " + location);
         Map<File, Long> onDiskLastModDateMap = new HashMap<>();
         for (File f: allFiltersOnDisk) {
             onDiskLastModDateMap.put(f, f.lastModified());
-            //System.out.println("On Disk : " + f.getCanonicalPath() + " -> " + f.lastModified());
+            logger.debug("On Disk : " + f.getCanonicalPath() + " -> " + f.lastModified());
         }
         return onDiskLastModDateMap;
     }
 
     private List<File> getAllMatchingFilters(File location, FileFilter fileFilter, List<File> initialList) throws IOException {
-        //System.out.println("Exploring files at : " + location.getCanonicalPath());
+        logger.debug("Exploring files at : " + location.getCanonicalPath());
         if (location.isDirectory()) {
             List<File> filesSoFar = new ArrayList<>(initialList);
             for (File f: location.listFiles(fileFilter)) {

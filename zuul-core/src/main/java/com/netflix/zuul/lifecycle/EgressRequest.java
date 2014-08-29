@@ -19,10 +19,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class EgressRequest<T> {
+    private final static Logger logger = LoggerFactory.getLogger(EgressRequest.class);
+
     private HttpClientRequest<ByteBuf> httpClientRequest;
     private final HttpServerRequest<ByteBuf> httpServerRequest;
     private final ChannelHandlerContext channelHandlerContext;
@@ -39,7 +43,9 @@ public class EgressRequest<T> {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getHttpServerRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
-            //System.out.println("Adding header to EgressRequest : " + entry.getKey() + " -> " + entry.getValue());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Adding header to EgressRequest : " + entry.getKey() + " -> " + entry.getValue());
+            }
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
         clientReq = clientReq.withContentSource(nettyReq.getContent());
