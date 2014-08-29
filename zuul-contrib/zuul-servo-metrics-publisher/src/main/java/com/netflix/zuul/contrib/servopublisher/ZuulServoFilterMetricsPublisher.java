@@ -61,18 +61,22 @@ public class ZuulServoFilterMetricsPublisher extends AbstractZuulServoMetricsPub
         List<Monitor<?>> monitors = new ArrayList<>();
 
         NumerusRollingNumber filterExecutionMetrics = ZuulMetrics.getFilterExecutionMetrics(filterClass);
-        monitors.add(getCumulativeCountForEvent("countSuccess", filterExecutionMetrics, ZuulExecutionEvent.SUCCESS));
-        monitors.add(getCumulativeCountForEvent("countFailure", filterExecutionMetrics, ZuulExecutionEvent.FAILURE));
+        if (filterExecutionMetrics != null) {
+            monitors.add(getCumulativeCountForEvent("countSuccess", filterExecutionMetrics, ZuulExecutionEvent.SUCCESS));
+            monitors.add(getCumulativeCountForEvent("countFailure", filterExecutionMetrics, ZuulExecutionEvent.FAILURE));
+        }
 
         NumerusRollingPercentile filterLatencyMetrics = ZuulMetrics.getFilterLatencyMetrics(filterClass);
-        monitors.add(getGaugeForEvent("latency_percentile_5", filterLatencyMetrics, 5));
-        monitors.add(getGaugeForEvent("latency_percentile_25", filterLatencyMetrics, 25));
-        monitors.add(getGaugeForEvent("latency_percentile_50", filterLatencyMetrics, 50));
-        monitors.add(getGaugeForEvent("latency_percentile_75", filterLatencyMetrics, 75));
-        monitors.add(getGaugeForEvent("latency_percentile_90", filterLatencyMetrics, 90));
-        monitors.add(getGaugeForEvent("latency_percentile_95", filterLatencyMetrics, 95));
-        monitors.add(getGaugeForEvent("latency_percentile_99", filterLatencyMetrics, 99));
-        monitors.add(getGaugeForEvent("latency_percentile_995", filterLatencyMetrics, 99.5));
+        if (filterLatencyMetrics != null) {
+            monitors.add(getGaugeForEvent("latency_percentile_5", filterLatencyMetrics, 5));
+            monitors.add(getGaugeForEvent("latency_percentile_25", filterLatencyMetrics, 25));
+            monitors.add(getGaugeForEvent("latency_percentile_50", filterLatencyMetrics, 50));
+            monitors.add(getGaugeForEvent("latency_percentile_75", filterLatencyMetrics, 75));
+            monitors.add(getGaugeForEvent("latency_percentile_90", filterLatencyMetrics, 90));
+            monitors.add(getGaugeForEvent("latency_percentile_95", filterLatencyMetrics, 95));
+            monitors.add(getGaugeForEvent("latency_percentile_99", filterLatencyMetrics, 99));
+            monitors.add(getGaugeForEvent("latency_percentile_995", filterLatencyMetrics, 99.5));
+        }
 
         return monitors;
     }
