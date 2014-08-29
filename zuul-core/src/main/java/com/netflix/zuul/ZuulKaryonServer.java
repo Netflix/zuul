@@ -15,23 +15,21 @@
  */
 package com.netflix.zuul;
 
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.server.HttpServerRequest;
-import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-
-import java.util.Map;
-
-import rx.Observable;
-import rx.functions.Func1;
-
+import com.google.inject.Module;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.netflix.governator.annotations.Modules;
 import com.netflix.karyon.KaryonBootstrap;
-import com.netflix.karyon.KaryonServer;
 import com.netflix.karyon.archaius.ArchaiusBootstrap;
 import com.netflix.karyon.eureka.KaryonEurekaModule;
 import com.netflix.karyon.transport.http.AbstractHttpModule;
 import com.netflix.karyon.transport.http.HttpRequestRouter;
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import rx.Observable;
+import rx.functions.Func1;
+
+import java.util.Map;
 
 public class ZuulKaryonServer {
 
@@ -49,14 +47,21 @@ public class ZuulKaryonServer {
     private static FilterProcessor<?, ?> filterProcessor;
     /* DON'T DO THIS AT HOME */
 
-    public static <Request, Response> KaryonServer createServer(int port, FilterProcessor<Request, Response> filterProcessor) {
+    public static <Request, Response> void startZuulServer(int port,
+                                                           FilterProcessor<Request, Response> filterProcessor) {
+        startZuulServerWithAdditionalModule(port, filterProcessor);
+    }
+
+    public static <Request, Response> void startZuulServerWithAdditionalModule(int port,
+                                                                               FilterProcessor<Request, Response> filterProcessor,
+                                                                               Module... additionalModules) {
         System.out.println("**** Starting Zuul with Karyon 2");
         /* DON'T DO THIS AT HOME */
         ZuulKaryonServer.port = port;
         ZuulKaryonServer.filterProcessor = filterProcessor;
         /* DON'T DO THIS AT HOME */
 
-        return new KaryonServer(ZuulApp.class); // I need this to be an instance, not a class ... I hate annotations
+        new ZuulBootstrap(ZuulApp.class, additionalModules).startAndAwait(); // I need this to be an instance, not a class ... I hate annotations
     }
 
     @ArchaiusBootstrap
