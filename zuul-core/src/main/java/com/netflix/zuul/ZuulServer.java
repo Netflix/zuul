@@ -16,12 +16,11 @@
 package com.netflix.zuul;
 
 import com.google.inject.Module;
-
-import java.util.HashMap;
-
 import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.lifecycle.FilterProcessor;
 import com.netflix.zuul.lifecycle.FilterStateFactory;
+
+import java.util.HashMap;
 
 public class ZuulServer {
 

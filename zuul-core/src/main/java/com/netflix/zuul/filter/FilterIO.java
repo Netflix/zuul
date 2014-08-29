@@ -15,9 +15,8 @@
  */
 package com.netflix.zuul.filter;
 
-import rx.Observable;
-
 import com.netflix.zuul.metrics.ZuulMetrics;
+import rx.Observable;
 
 /**
  * Filter which does IO work, and returns Observable values

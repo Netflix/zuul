@@ -17,8 +17,12 @@ package com.netflix.zuul.contrib.servopublisher;
 
 import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZuulServoFilterMetricsPublisher implements ZuulFilterMetricsPublisher {
+    private final static Logger logger = LoggerFactory.getLogger(ZuulServoFilterMetricsPublisher.class);
+
     private final Class<? extends Filter> filterClass;
 
     public ZuulServoFilterMetricsPublisher(Class<? extends Filter> filterClass) {
@@ -27,6 +31,6 @@ public class ZuulServoFilterMetricsPublisher implements ZuulFilterMetricsPublish
 
     @Override
     public void initialize() {
-        System.out.println("Initializing Servo publishing for filter : " + filterClass.getSimpleName());
+        logger.info("Initializing Servo publishing for filter : " + filterClass.getSimpleName());
     }
 }

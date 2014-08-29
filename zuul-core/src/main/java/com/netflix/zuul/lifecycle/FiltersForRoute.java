@@ -15,14 +15,14 @@
  */
 package com.netflix.zuul.lifecycle;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.filter.PostFilter;
 import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Simple data holder that defines all filters for a given route and enforces

@@ -26,17 +26,19 @@ import com.netflix.zuul.metrics.ZuulExecutionEvent;
 import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import com.netflix.zuul.metrics.ZuulStatusCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPublisher implements ZuulGlobalMetricsPublisher {
+    private final static Logger logger = LoggerFactory.getLogger(ZuulServoGlobalMetricsPublisher.class);
+
     @Override
     public void initialize() {
-        System.out.println("Initializing Servo publisher for Zuul global metrics");
+        logger.info("Initializing Servo publisher for Zuul global metrics");
 
         List<Monitor<?>> monitors = getServoMonitors();
 

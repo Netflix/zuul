@@ -16,17 +16,23 @@
 package com.netflix.zuul.metrics;
 
 import com.netflix.zuul.filter.Filter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZuulMetricsPublisher {
 
+    private final static Logger logger = LoggerFactory.getLogger(ZuulMetricsPublisher.class);
+
     public ZuulGlobalMetricsPublisher getGlobalMetricsPublisher() {
-        System.out.println("Using default No-op global metrics publisher");
+        logger.debug("Using default No-op global metrics publisher");
         return () -> { //do nothing
         };
     }
 
     public ZuulFilterMetricsPublisher getFilterMetricsPublisher(Class<? extends Filter> filterClass) {
-        System.out.println("Using default no-op filter metrics publisher for : " + filterClass.getSimpleName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Using default no-op filter metrics publisher for : " + filterClass.getSimpleName());
+        }
         return () -> { //do nothing
         };
     }

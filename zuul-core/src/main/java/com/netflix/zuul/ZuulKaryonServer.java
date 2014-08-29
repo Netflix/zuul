@@ -16,17 +16,6 @@
 package com.netflix.zuul;
 
 import com.google.inject.Module;
-import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
-import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.server.HttpServerRequest;
-import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-
-import java.util.Map;
-
-import rx.Observable;
-import rx.functions.Func1;
-
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.netflix.governator.annotations.Modules;
 import com.netflix.karyon.KaryonBootstrap;
@@ -36,6 +25,15 @@ import com.netflix.karyon.transport.http.AbstractHttpModule;
 import com.netflix.karyon.transport.http.HttpRequestRouter;
 import com.netflix.zuul.lifecycle.FilterProcessor;
 import com.netflix.zuul.lifecycle.IngressRequest;
+import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
+import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.functions.Func1;
 
 import java.util.Map;
 
@@ -55,6 +53,8 @@ public class ZuulKaryonServer {
     private static FilterProcessor<?, ?> filterProcessor;
     /* DON'T DO THIS AT HOME */
 
+    private static final Logger logger = LoggerFactory.getLogger(ZuulKaryonServer.class);
+
     public static <Request, Response> void startZuulServer(int port,
                                                            FilterProcessor<Request, Response> filterProcessor) {
         startZuulServerWithAdditionalModule(port, filterProcessor);
@@ -63,7 +63,7 @@ public class ZuulKaryonServer {
     public static <Request, Response> void startZuulServerWithAdditionalModule(int port,
                                                                                FilterProcessor<Request, Response> filterProcessor,
                                                                                Module... additionalModules) {
-        System.out.println("**** Starting Zuul with Karyon 2");
+        logger.info("**** Starting Zuul with Karyon 2");
         /* DON'T DO THIS AT HOME */
         ZuulKaryonServer.port = port;
         ZuulKaryonServer.filterProcessor = filterProcessor;
@@ -118,10 +118,14 @@ public class ZuulKaryonServer {
             return filterProcessor.applyAllFilters(ingressReq).
                     flatMap(egressResp -> {
                         response.setStatus(egressResp.getStatus());
-                        System.out.println("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+                        }
 
                         for (Map.Entry<String, String> entry: egressResp.getHeaders().entrySet()) {
-                            //System.out.println("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                            }
                             response.getHeaders().add(entry.getKey(), entry.getValue());
                         }
 

@@ -18,11 +18,10 @@ package com.netflix.zuul.lifecycle;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
+import rx.Observable;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import rx.Observable;
 
 public class EgressResponse<T> {
     private final HttpResponseStatus status;

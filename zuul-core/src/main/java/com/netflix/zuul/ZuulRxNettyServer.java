@@ -15,21 +15,23 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.IngressRequest;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.pipeline.PipelineConfigurators;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.functions.Func1;
 
 import java.util.Map;
 
-import com.netflix.zuul.lifecycle.FilterProcessor;
-import com.netflix.zuul.lifecycle.IngressRequest;
-
-import rx.functions.Func1;
-
 public class ZuulRxNettyServer<Request, Response> {
+    private static final Logger logger = LoggerFactory.getLogger(ZuulRxNettyServer.class);
+
     private final int port;
     private final FilterProcessor<Request, Response> filterProcessor;
 
@@ -45,10 +47,14 @@ public class ZuulRxNettyServer<Request, Response> {
                     return filterProcessor.applyAllFilters(ingressReq).
                             flatMap(egressResp -> {
                                 response.setStatus(egressResp.getStatus());
-                                System.out.println("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+                                }
 
                                 for (Map.Entry<String, String> entry: egressResp.getHeaders().entrySet()) {
-                                    //System.out.println("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                                    if (logger.isDebugEnabled()) {
+                                        logger.debug("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                                    }
                                     response.getHeaders().add(entry.getKey(), entry.getValue());
                                 }
 
@@ -65,7 +71,7 @@ public class ZuulRxNettyServer<Request, Response> {
                             doOnCompleted(response::close);
                 }).pipelineConfigurator(PipelineConfigurators.<ByteBuf, ByteBuf>httpServerConfigurator()).build();
 
-        System.out.println("Started Zuul Netty HTTP Server!!");
+        logger.info("Started Zuul Netty HTTP Server!!");
         return server;
     }
 }

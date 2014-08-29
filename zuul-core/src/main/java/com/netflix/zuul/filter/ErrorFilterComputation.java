@@ -15,10 +15,9 @@
  */
 package com.netflix.zuul.filter;
 
-import rx.Observable;
-
 import com.netflix.zuul.lifecycle.EgressResponse;
 import com.netflix.zuul.metrics.ZuulMetrics;
+import rx.Observable;
 
 public abstract class ErrorFilterComputation<T> implements ErrorFilter<T> {
     public abstract EgressResponse<T> provideResponse(Throwable ex);

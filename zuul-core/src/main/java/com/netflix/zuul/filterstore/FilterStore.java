@@ -16,13 +16,12 @@
 package com.netflix.zuul.filterstore;
 
 import com.netflix.zuul.filter.Filter;
+import com.netflix.zuul.lifecycle.FiltersForRoute;
+import com.netflix.zuul.lifecycle.IngressRequest;
 import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 
 import java.io.IOException;
-
-import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
 
 public abstract class FilterStore<Request, Response> {
     protected abstract FiltersForRoute<Request, Response> fetchFilters(IngressRequest ingressReq) throws IOException;

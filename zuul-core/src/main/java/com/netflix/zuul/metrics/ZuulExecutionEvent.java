@@ -35,8 +35,4 @@ public enum ZuulExecutionEvent implements NumerusRollingNumberEvent {
     public NumerusRollingNumberEvent[] getValues() {
         return values();
     }
-
-    public String str() {
-        return name();
-    }
 }
