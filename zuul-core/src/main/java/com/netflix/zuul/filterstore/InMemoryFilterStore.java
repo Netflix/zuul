@@ -28,29 +28,29 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class InMemoryFilterStore<Request, Response> extends FilterStore<Request, Response> {
+public class InMemoryFilterStore<State> extends FilterStore<State> {
     private final static Logger logger = LoggerFactory.getLogger(InMemoryFilterStore.class);
 
-    private final CopyOnWriteArrayList<PreFilter<Request>> preFilters = new CopyOnWriteArrayList<>();
-    private final AtomicReference<RouteFilter<Request>> routeFilter = new AtomicReference<>();
-    private final CopyOnWriteArrayList<PostFilter<Response>> postFilters = new CopyOnWriteArrayList<>();
-    private final AtomicReference<ErrorFilter<Response>> errorFilter = new AtomicReference<>();
+    private final CopyOnWriteArrayList<PreFilter<State>> preFilters = new CopyOnWriteArrayList<>();
+    private final AtomicReference<RouteFilter<State>> routeFilter = new AtomicReference<>();
+    private final CopyOnWriteArrayList<PostFilter<State>> postFilters = new CopyOnWriteArrayList<>();
+    private final AtomicReference<ErrorFilter<State>> errorFilter = new AtomicReference<>();
 
     @Override
-    public FiltersForRoute<Request, Response> fetchFilters(IngressRequest ingressReq) {
+    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) {
         return new FiltersForRoute<>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 
     @SuppressWarnings("unchecked")
     public void addFilter(Filter filter) {
         if (filter instanceof PreFilter) {
-            preFilters.add((PreFilter<Request>) filter);
+            preFilters.add((PreFilter<State>) filter);
         } else if (filter instanceof PostFilter) {
-            postFilters.add((PostFilter<Response>) filter);
+            postFilters.add((PostFilter<State>) filter);
         } else if (filter instanceof RouteFilter) {
-            routeFilter.lazySet((RouteFilter<Request>) filter);
+            routeFilter.lazySet((RouteFilter<State>) filter);
         } else if (filter instanceof ErrorFilter) {
-            errorFilter.lazySet((ErrorFilter<Response>) filter);
+            errorFilter.lazySet((ErrorFilter<State>) filter);
         } else {
             logger.error("Unknown filter type : " + filter + " : " + filter.getClass().getCanonicalName());
         }

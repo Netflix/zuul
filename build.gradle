@@ -34,6 +34,16 @@ subprojects {
         it.classpath = sourceSets.main.compileClasspath
     }
 
+    // make 'examples' use the same classpath
+    configurations { 
+        examplesCompile.extendsFrom compile
+        examplesRuntime.extendsFrom runtime
+    }
+
+    sourceSets { 
+        examples
+    }
+
     eclipse { 
         classpath { 
             downloadSources = true

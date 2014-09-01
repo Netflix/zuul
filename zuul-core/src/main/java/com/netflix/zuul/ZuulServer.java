@@ -24,36 +24,23 @@ import java.util.HashMap;
 
 public class ZuulServer {
 
-    public static void start(int port, FilterStore<HashMap<String, Object>, HashMap<String, Object>> filterStore) {
+    public static void start(int port, FilterStore<HashMap<String, Object>> filterStore) {
         startWithAdditionalModules(port, filterStore);
     }
 
-    public static void startWithAdditionalModules(int port, FilterStore<HashMap<String, Object>,
-                                                  HashMap<String, Object>> filterStore,
+    public static void startWithAdditionalModules(int port, FilterStore<HashMap<String, Object>> filterStore,
                                                   Module... additionalModules) {
         startWithAdditionalModules(port, filterStore, DEFAULT_STATE_FACTORY, additionalModules);
     }
 
-    public static <T> void start(int port, FilterStore<T, T> filterStore, FilterStateFactory<T> typeFactory) {
+    public static <T> void start(int port, FilterStore<T> filterStore, FilterStateFactory<T> typeFactory) {
         startWithAdditionalModules(port, filterStore, typeFactory);
     }
 
-    public static <T> void startWithAdditionalModules(int port, FilterStore<T, T> filterStore,
-                                                      FilterStateFactory<T> typeFactory, Module... additionalModules) {
-        startWithAdditionalModules(port, filterStore, typeFactory, typeFactory, additionalModules);
-    }
-
-    public static <Request, Response> void start(int port, FilterStore<Request, Response> filterStore,
-                                                 FilterStateFactory<Request> request,
-                                                 FilterStateFactory<Response> response) {
-        startWithAdditionalModules(port, filterStore, request, response);
-    }
-
-    public static <Request, Response> void startWithAdditionalModules(int port, FilterStore<Request, Response> filterStore,
-                                                                      FilterStateFactory<Request> request,
-                                                                      FilterStateFactory<Response> response,
+    public static <T> void startWithAdditionalModules(int port, FilterStore<T> filterStore,
+                                                                      FilterStateFactory<T> stateFactory,
                                                                       Module... additionalModules) {
-        FilterProcessor<Request, Response> filterProcessor = new FilterProcessor<>(filterStore, request, response);
+        FilterProcessor<T> filterProcessor = new FilterProcessor<>(filterStore, stateFactory);
         //ZuulRxNettyServer<Request, Response> server = new ZuulRxNettyServer<>(port, filterProcessor);
         ZuulKaryonServer.startZuulServerWithAdditionalModule(port, filterProcessor, additionalModules);
     }

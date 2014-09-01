@@ -21,15 +21,17 @@ import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 import rx.Observable;
 
-public class IngressResponse {
+public class IngressResponse<T> {
     private final HttpResponseHeaders headers;
     private final HttpResponseStatus status;
     private final Observable<ByteBuf> content;
+    private final T state;
 
-    protected IngressResponse(HttpResponseHeaders headers, HttpResponseStatus status, Observable<ByteBuf> content) {
+    protected IngressResponse(HttpResponseHeaders headers, HttpResponseStatus status, Observable<ByteBuf> content, T state) {
         this.headers = headers;
         this.status = status;
         this.content = content;
+        this.state = state;
     }
 
     public HttpResponseHeaders getHeaders() {
@@ -44,7 +46,11 @@ public class IngressResponse {
         return this.content;
     }
 
-    public static IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse) {
-        return new IngressResponse(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent());
+    public static <T> IngressResponse from(HttpClientResponse<ByteBuf> nettyResponse, T state) {
+        return new IngressResponse<>(nettyResponse.getHeaders(), nettyResponse.getStatus(), nettyResponse.getContent(), state);
+    }
+
+    public T getState() {
+        return this.state;
     }
 }

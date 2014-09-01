@@ -15,10 +15,17 @@
  */
 package com.netflix.zuul.lifecycle;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
+import com.netflix.zuul.filter.ErrorFilter;
+import com.netflix.zuul.filter.ErrorFilterComputation;
+import com.netflix.zuul.filter.PostFilter;
+import com.netflix.zuul.filter.PostFilterIO;
+import com.netflix.zuul.filter.PostFilterSynchronous;
+import com.netflix.zuul.filter.PreFilter;
+import com.netflix.zuul.filter.PreFilterIO;
+import com.netflix.zuul.filter.PreFilterSynchronous;
+import com.netflix.zuul.filter.RouteFilter;
+import com.netflix.zuul.filter.RouteFilterIO;
+import com.netflix.zuul.filterstore.FilterStore;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -31,6 +38,15 @@ import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.server.HttpResponseHeaders;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import rx.Observable;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,35 +56,15 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import rx.Observable;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.subjects.PublishSubject;
-
-import com.netflix.zuul.filter.ErrorFilter;
-import com.netflix.zuul.filter.ErrorFilterComputation;
-import com.netflix.zuul.filter.PostFilter;
-import com.netflix.zuul.filter.PostFilterIO;
-import com.netflix.zuul.filter.PostFilterSynchronous;
-import com.netflix.zuul.filter.PreFilter;
-import com.netflix.zuul.filter.PreFilterIO;
-import com.netflix.zuul.filter.PreFilterSynchronous;
-import com.netflix.zuul.filter.RouteFilter;
-import com.netflix.zuul.filter.RouteFilterIO;
-import com.netflix.zuul.filterstore.FilterStore;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 public class FilterProcessorTest {
-    @Mock FilterStore<Void, Void> mockFilterStore;
-    @Mock FiltersForRoute<Void, Void> mockFilters;
+    @Mock FilterStore<Void> mockFilterStore;
+    @Mock FiltersForRoute<Void> mockFilters;
     @Mock HttpServerResponse<ByteBuf> mockRxNettyResp;
     @Mock HttpResponseHeaders mockRespHeaders;
-    private FilterProcessor<Void, Void> processor;
+    private FilterProcessor<Void> processor;
 
     private final HttpRequest nettyReq = new HttpRequest() {
         @Override
@@ -156,7 +152,7 @@ public class FilterProcessorTest {
         }
     };
     private final HttpClientResponse<ByteBuf> rxNettyResp = new HttpClientResponse<>(nettyResp, PublishSubject.create());
-    private final IngressResponse ingressResp = IngressResponse.from(rxNettyResp);
+    private final IngressResponse ingressResp = IngressResponse.from(rxNettyResp, null);
 
     private final HttpResponse nettyErrorResp = new HttpResponse() {
         @Override
@@ -195,7 +191,7 @@ public class FilterProcessorTest {
         }
     };
     private final HttpClientResponse<ByteBuf> rxNettyErrorResp = new HttpClientResponse<>(nettyErrorResp, PublishSubject.create());
-    private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp);
+    private final IngressResponse ingressErrorResp = IngressResponse.from(rxNettyErrorResp, null);
 
     private final PreFilter<Void> successPreFilter = createPreFilter(1, egressReq -> {
         egressReq.getHttpClientRequest().getHeaders().add("PRE", "DONE");
@@ -242,7 +238,7 @@ public class FilterProcessorTest {
     private final ErrorFilter<Void> errorFilter = new ErrorFilterComputation<Void>() {
         @Override
         public EgressResponse<Void> provideResponse(Throwable ex) {
-            EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp, null);
+            EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp);
             egressResp.addHeader("ERROR", "TRUE");
             return egressResp;
         }
@@ -258,7 +254,7 @@ public class FilterProcessorTest {
     @Before
     public void init() throws IOException {
         MockitoAnnotations.initMocks(this);
-        processor = new FilterProcessor<Void, Void>(mockFilterStore, voidStateFactory, voidStateFactory);
+        processor = new FilterProcessor<Void>(mockFilterStore, voidStateFactory);
 
         when(mockFilterStore.getFilters(ingressReq)).thenReturn(mockFilters);
         when(mockRxNettyResp.getHeaders()).thenReturn(mockRespHeaders);
