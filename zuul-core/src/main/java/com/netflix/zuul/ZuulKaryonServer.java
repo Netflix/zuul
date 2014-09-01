@@ -50,18 +50,16 @@ public class ZuulKaryonServer {
     
     /* DON'T DO THIS AT HOME */
     private static int port = 8888;
-    private static FilterProcessor<?, ?> filterProcessor;
+    private static FilterProcessor<?> filterProcessor;
     /* DON'T DO THIS AT HOME */
 
     private static final Logger logger = LoggerFactory.getLogger(ZuulKaryonServer.class);
 
-    public static <Request, Response> void startZuulServer(int port,
-                                                           FilterProcessor<Request, Response> filterProcessor) {
+    public static <State> void startZuulServer(int port, FilterProcessor<State> filterProcessor) {
         startZuulServerWithAdditionalModule(port, filterProcessor);
     }
 
-    public static <Request, Response> void startZuulServerWithAdditionalModule(int port,
-                                                                               FilterProcessor<Request, Response> filterProcessor,
+    public static <State> void startZuulServerWithAdditionalModule(int port, FilterProcessor<State> filterProcessor,
                                                                                Module... additionalModules) {
         logger.info("**** Starting Zuul with Karyon 2");
         /* DON'T DO THIS AT HOME */
@@ -104,11 +102,11 @@ public class ZuulKaryonServer {
         }
     }
 
-    private static class ZuulRouter<Request, Response> implements HttpRequestRouter<ByteBuf, ByteBuf> {
+    private static class ZuulRouter<State> implements HttpRequestRouter<ByteBuf, ByteBuf> {
 
-        private final FilterProcessor<Request, Response> filterProcessor;
+        private final FilterProcessor<State> filterProcessor;
 
-        public ZuulRouter(FilterProcessor<Request, Response> filterProcessor) {
+        public ZuulRouter(FilterProcessor<State> filterProcessor) {
             this.filterProcessor = filterProcessor;
         }
 

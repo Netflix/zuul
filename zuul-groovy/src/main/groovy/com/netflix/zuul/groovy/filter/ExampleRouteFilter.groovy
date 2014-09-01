@@ -30,7 +30,7 @@ public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
     Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
         println("route filter " + this)
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80)
-        httpClient.submit(egressReq.getHttpClientRequest()).map({IngressResponse.from(it) })
+        httpClient.submit(egressReq.getHttpClientRequest()).map({IngressResponse.from(it, egressReq.get()) })
     }
 
     @Override

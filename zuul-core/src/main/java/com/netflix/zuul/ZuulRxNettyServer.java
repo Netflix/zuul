@@ -29,13 +29,13 @@ import rx.functions.Func1;
 
 import java.util.Map;
 
-public class ZuulRxNettyServer<Request, Response> {
+public class ZuulRxNettyServer<State> {
     private static final Logger logger = LoggerFactory.getLogger(ZuulRxNettyServer.class);
 
     private final int port;
-    private final FilterProcessor<Request, Response> filterProcessor;
+    private final FilterProcessor<State> filterProcessor;
 
-    public ZuulRxNettyServer(int port, FilterProcessor<Request, Response> filterProcessor) {
+    public ZuulRxNettyServer(int port, FilterProcessor<State> filterProcessor) {
         this.port = port;
         this.filterProcessor = filterProcessor;
     }
