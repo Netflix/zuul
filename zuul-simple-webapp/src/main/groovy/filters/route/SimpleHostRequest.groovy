@@ -189,9 +189,9 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             headers.each {
                 Debug.addRequestDebug("ZUUL::> ${it.name}  ${it.value}")
             }
-            String query = request.queryString
+            String query = request.queryString != null ? "?" + request.queryString : ""
 
-            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}?${query} HTTP/1.1")
+            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}${query} HTTP/1.1")
             if (requestEntity != null) {
                 requestEntity = debugRequestEntity(requestEntity)
             }
