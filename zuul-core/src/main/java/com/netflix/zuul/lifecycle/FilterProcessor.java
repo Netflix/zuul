@@ -52,7 +52,7 @@ public class FilterProcessor<State> {
                     ).onErrorResumeNext(
                     ex -> {
                         ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
-                        return applyErrorFilter(ex, filtersForRoute.getErrorFilter());
+                        return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
                     }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
         } catch (IOException ioe) {
             logger.error("Couldn't load the filters");
@@ -82,11 +82,11 @@ public class FilterProcessor<State> {
         }).flatMap(o -> o);
     }
 
-    private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, ErrorFilter<State> errorFilter) {
+    private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
         if (errorFilter == null) {
             return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
         } else {
-            return errorFilter.execute(ex);
+            return errorFilter.execute(ex, ingressReq);
         }
     }
 

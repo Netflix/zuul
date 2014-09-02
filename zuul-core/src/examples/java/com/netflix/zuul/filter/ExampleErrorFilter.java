@@ -16,6 +16,7 @@
 package com.netflix.zuul.filter;
 
 import com.netflix.zuul.lifecycle.EgressResponse;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
 public class ExampleErrorFilter<T> extends ErrorFilterComputation<T> {
 
@@ -25,7 +26,7 @@ public class ExampleErrorFilter<T> extends ErrorFilterComputation<T> {
     }
 
     @Override
-    public EgressResponse<T> provideResponse(Throwable ex) {
+    public EgressResponse<T> provideResponse(Throwable ex, IngressRequest ingressReq) {
         System.out.println("Error filter handling : " + ex);
         return EgressResponse.withStatus(500);
     }

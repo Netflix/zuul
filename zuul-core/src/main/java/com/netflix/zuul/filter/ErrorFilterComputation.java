@@ -16,17 +16,18 @@
 package com.netflix.zuul.filter;
 
 import com.netflix.zuul.lifecycle.EgressResponse;
+import com.netflix.zuul.lifecycle.IngressRequest;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public abstract class ErrorFilterComputation<T> implements ErrorFilter<T> {
-    public abstract EgressResponse<T> provideResponse(Throwable ex);
+    public abstract EgressResponse<T> provideResponse(Throwable ex, IngressRequest ingressReq);
 
     @Override
-    public Observable<EgressResponse<T>> execute(Throwable ex) {
+    public Observable<EgressResponse<T>> execute(Throwable ex, IngressRequest ingressReq) {
         final long startTime = System.currentTimeMillis();
         try {
-            Observable<EgressResponse<T>> resp = Observable.just(provideResponse(ex));
+            Observable<EgressResponse<T>> resp = Observable.just(provideResponse(ex, ingressReq));
             ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
             return resp;
         } catch (Throwable filterEx) {
