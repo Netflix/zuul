@@ -237,7 +237,7 @@ public class FilterProcessorTest {
 
     private final ErrorFilter<Void> errorFilter = new ErrorFilterComputation<Void>() {
         @Override
-        public EgressResponse<Void> provideResponse(Throwable ex) {
+        public EgressResponse<Void> provideResponse(Throwable ex, IngressRequest ingressReq) {
             EgressResponse<Void> egressResp = EgressResponse.from(ingressErrorResp);
             egressResp.addHeader("ERROR", "TRUE");
             return egressResp;
