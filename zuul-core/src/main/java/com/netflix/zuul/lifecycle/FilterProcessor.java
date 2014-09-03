@@ -49,8 +49,7 @@ public class FilterProcessor<State> {
                     applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
                     applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).doOnCompleted(() ->
                         ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
-                    ).onErrorResumeNext(
-                    ex -> {
+                    ).onErrorResumeNext(ex -> {
                         ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
                         return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
                     }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
@@ -75,7 +74,7 @@ public class FilterProcessor<State> {
         }
     }
 
-    private Observable<EgressResponse<State>> applyPostFilters(IngressResponse ingressResp, List<PostFilter<State>> postFilters) {
+    private Observable<EgressResponse<State>> applyPostFilters(IngressResponse<State> ingressResp, List<PostFilter<State>> postFilters) {
         Observable<EgressResponse<State>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp));
         return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
             return postFilter.execute(egressRespObservable);
