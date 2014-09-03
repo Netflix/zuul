@@ -84,7 +84,7 @@ public class FilterProcessor<State> {
 
     private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
         if (errorFilter == null) {
-            return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage()));
+            return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage(), ex));
         } else {
             return errorFilter.execute(ex, ingressReq);
         }

@@ -21,4 +21,8 @@ public class ZuulException extends Throwable {
     public ZuulException(String msg) {
         super(msg);
     }
+
+    public ZuulException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }
