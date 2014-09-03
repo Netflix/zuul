@@ -38,7 +38,7 @@ public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
     }
 
     @Override
-    public Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
+    public Observable<IngressResponse<T>> routeToOrigin(EgressRequest<T> egressReq) {
         System.out.println(this + " route filter");
         return originClient.submit(egressReq.getHttpClientRequest()).map(httpResp ->
                 IngressResponse.from(httpResp, egressReq.get()));

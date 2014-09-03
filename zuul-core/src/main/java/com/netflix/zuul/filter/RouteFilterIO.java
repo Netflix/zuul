@@ -21,10 +21,10 @@ import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
 public abstract class RouteFilterIO<T> implements RouteFilter<T> {
-    public abstract Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq);
+    public abstract Observable<IngressResponse<T>> routeToOrigin(EgressRequest<T> egressReq);
 
     @Override
-    public Observable<IngressResponse> execute(EgressRequest<T> egressReq) {
+    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq) {
         final long startTime = System.currentTimeMillis();
         return routeToOrigin(egressReq).doOnError(ex ->
                 ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime)).doOnCompleted(() ->

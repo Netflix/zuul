@@ -55,7 +55,7 @@ public class FilterProcessor<State> {
                     }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
         } catch (IOException ioe) {
             logger.error("Couldn't load the filters");
-            return Observable.error(new ZuulException("Could not load filters"));
+            return Observable.error(new ZuulException("Could not load filters", 500));
         }
     }
 
@@ -66,9 +66,9 @@ public class FilterProcessor<State> {
         }).flatMap(o -> o);
     }
 
-    private Observable<IngressResponse> applyRoutingFilter(EgressRequest<State> egressReq, RouteFilter<State> routeFilter) {
+    private Observable<IngressResponse<State>> applyRoutingFilter(EgressRequest<State> egressReq, RouteFilter<State> routeFilter) {
         if (routeFilter == null) {
-            return Observable.<IngressResponse>error(new ZuulException("You must define a RouteFilter."));
+            return Observable.<IngressResponse<State>>error(new ZuulException("You must define a RouteFilter.", 500));
         } else {
             return routeFilter.execute(egressReq);
         }
@@ -83,7 +83,7 @@ public class FilterProcessor<State> {
 
     private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
         if (errorFilter == null) {
-            return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage(), ex));
+            return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage(), ex, 500));
         } else {
             return errorFilter.execute(ex, ingressReq);
         }
