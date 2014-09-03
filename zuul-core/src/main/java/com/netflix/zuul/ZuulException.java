@@ -19,18 +19,37 @@ public class ZuulException extends Throwable {
     private static final long serialVersionUID = 1681070811387639304L;
 
     private final int statusCode;
+    private final String causeType;
 
     public ZuulException(String msg, int statusCode) {
         super(msg);
         this.statusCode = statusCode;
+        this.causeType = null;
+    }
+
+    public ZuulException(String msg, int statusCode, String causeType) {
+        super(msg);
+        this.statusCode = statusCode;
+        this.causeType = causeType;
     }
 
     public ZuulException(String msg, Throwable cause, int statusCode) {
         super(msg, cause);
         this.statusCode = statusCode;
+        this.causeType = null;
+    }
+
+    public ZuulException(String msg, Throwable cause, int statusCode, String causeType) {
+        super(msg, cause);
+        this.statusCode = statusCode;
+        this.causeType = causeType;
     }
 
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public String getCauseType() {
+        return causeType;
     }
 }
