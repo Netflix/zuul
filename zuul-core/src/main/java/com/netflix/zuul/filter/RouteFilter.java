@@ -21,5 +21,5 @@ import rx.Observable;
 
 //possible other name - OriginFilter, OriginRoutingFilter???
 public interface RouteFilter<T> extends Filter {
-    public Observable<IngressResponse> execute(EgressRequest<T> egressReq);
+    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq);
 }

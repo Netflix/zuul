@@ -20,14 +20,14 @@ import com.netflix.zuul.lifecycle.IngressResponse;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
-public abstract class RouteFilterComputation<Request> implements RouteFilter<Request> {
-    public abstract IngressResponse provideResponse(EgressRequest<Request> egressReq);
+public abstract class RouteFilterComputation<T> implements RouteFilter<T> {
+    public abstract IngressResponse<T> provideResponse(EgressRequest<T> egressReq);
 
     @Override
-    public Observable<IngressResponse> execute(EgressRequest<Request> egressReq) {
+    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq) {
         final long startTime = System.currentTimeMillis();
         try {
-            Observable<IngressResponse> resp = Observable.just(provideResponse(egressReq));
+            Observable<IngressResponse<T>> resp = Observable.just(provideResponse(egressReq));
             ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
             return resp;
         } catch (Throwable ex) {

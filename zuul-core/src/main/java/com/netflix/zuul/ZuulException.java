@@ -18,11 +18,19 @@ package com.netflix.zuul;
 public class ZuulException extends Throwable {
     private static final long serialVersionUID = 1681070811387639304L;
 
-    public ZuulException(String msg) {
+    private final int statusCode;
+
+    public ZuulException(String msg, int statusCode) {
         super(msg);
+        this.statusCode = statusCode;
     }
 
-    public ZuulException(String msg, Throwable cause) {
+    public ZuulException(String msg, Throwable cause, int statusCode) {
         super(msg, cause);
+        this.statusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
     }
 }
