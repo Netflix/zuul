@@ -29,6 +29,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
+import java.nio.charset.Charset
 import java.util.zip.GZIPInputStream
 import javax.servlet.http.HttpServletResponse
 
@@ -77,7 +78,7 @@ class sendResponse extends ZuulFilter {
         try {
             if (RequestContext.currentContext.responseBody != null) {
                 String body = RequestContext.currentContext.responseBody
-                writeResponse(new ByteArrayInputStream(body.bytes), outStream)
+                writeResponse(new ByteArrayInputStream(body.getBytes(Charset.forName("UTF-8"))), outStream)
                 return;
             }
 
