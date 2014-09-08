@@ -22,16 +22,18 @@ import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 import rx.Observable;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EgressResponse<T> {
     private final HttpResponseStatus status;
-    private final Map<String, String> headers;
+    private final Map<String, List<String>> headers;
     private final Observable<ByteBuf> content;
     private final T state;
 
-    private EgressResponse(HttpResponseStatus status, Map<String, String> headers, Observable<ByteBuf> content, T state) {
+    private EgressResponse(HttpResponseStatus status, Map<String, List<String>> headers, Observable<ByteBuf> content, T state) {
         this.status = status;
         this.headers = headers;
         this.content = content;
@@ -47,7 +49,13 @@ public class EgressResponse<T> {
     }
 
     public void addHeader(String name, String value) {
-        headers.put(name, value);
+        List<String> currentHeaderList = headers.get(name);
+        if (currentHeaderList == null) {
+            headers.put(name, Arrays.asList(value));
+        } else {
+            currentHeaderList.add(value);
+            headers.put(name, currentHeaderList);
+        }
     }
     
     public T get() {
@@ -58,7 +66,7 @@ public class EgressResponse<T> {
         return new EgressResponse<>(HttpResponseStatus.valueOf(statusCode), new HashMap<>(), Observable.empty(), null);
     }
 
-    public static <T> EgressResponse<T> from(int statusCode, Map<String, String> headerMap, String content) {
+    public static <T> EgressResponse<T> from(int statusCode, Map<String, List<String>> headerMap, String content) {
         HttpResponseStatus nettyStatus = HttpResponseStatus.valueOf(statusCode);
         Observable<ByteBuf> nettyContent = Observable.from(content).map(s -> Unpooled.copiedBuffer(s, Charset.defaultCharset()));
         return new EgressResponse<>(nettyStatus, headerMap, nettyContent, null);
@@ -68,14 +76,14 @@ public class EgressResponse<T> {
         return status;
     }
 
-    public Map<String, String> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
-    private static Map<String, String> convertHeaders(HttpResponseHeaders clientHeaders) {
-        Map<String, String> headers = new HashMap<>();
-        for (Map.Entry<String, String> entry: clientHeaders.entries()) {
-            headers.put(entry.getKey(), entry.getValue());
+    private static Map<String, List<String>> convertHeaders(HttpResponseHeaders clientHeaders) {
+        Map<String, List<String>> headers = new HashMap<>();
+        for (String key: clientHeaders.names()) {
+            headers.put(key, clientHeaders.getAll(key));
         }
         return headers;
     }

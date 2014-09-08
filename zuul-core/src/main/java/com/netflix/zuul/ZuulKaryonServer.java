@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 
-import java.util.Map;
+import java.util.List;
 
 public class ZuulKaryonServer {
 
@@ -120,11 +120,14 @@ public class ZuulKaryonServer {
                             logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                         }
 
-                        for (Map.Entry<String, String> entry: egressResp.getHeaders().entrySet()) {
+                        for (String headerName : egressResp.getHeaders().keySet()) {
+                            List<String> headerValues = egressResp.getHeaders().get(headerName);
                             if (logger.isDebugEnabled()) {
-                                logger.debug("Setting Outgoing HTTP Header : " + entry.getKey() + " -> " + entry.getValue());
+                                for (String headerValue : headerValues) {
+                                    logger.debug("Setting Outgoing HTTP Header : " + headerName + " -> " + headerValue);
+                                }
                             }
-                            response.getHeaders().add(entry.getKey(), entry.getValue());
+                            response.getHeaders().add(headerName, headerValues);
                         }
 
                         return egressResp.getContent();
