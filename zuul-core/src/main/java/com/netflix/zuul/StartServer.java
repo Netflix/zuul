@@ -22,7 +22,7 @@ public class StartServer {
     static final int DEFAULT_PORT = 8001; // because eureka-client.properties defines this (donchya love non-local reasoning)
 
     public static void main(final String[] args) {
-        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter");
+        FilterStore filterStore = new ClassPathFilterStore("com.netflix.zuul.filter.example");
         //ZuulMetrics.reportMetrics(10000);
         ZuulServer.start(DEFAULT_PORT, filterStore);
     }

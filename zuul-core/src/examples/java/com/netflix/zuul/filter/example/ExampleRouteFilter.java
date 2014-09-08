@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter;
+package com.netflix.zuul.filter.example;
 
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.client.netty.RibbonTransport;
 import com.netflix.client.netty.http.NettyHttpClient;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList;
+import com.netflix.zuul.filter.RouteFilterIO;
 import com.netflix.zuul.lifecycle.EgressRequest;
 import com.netflix.zuul.lifecycle.IngressResponse;
 import io.netty.buffer.ByteBuf;
