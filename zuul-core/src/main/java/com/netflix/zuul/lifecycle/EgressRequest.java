@@ -16,7 +16,6 @@
 package com.netflix.zuul.lifecycle;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import org.slf4j.Logger;
@@ -29,13 +28,11 @@ public class EgressRequest<T> {
 
     private HttpClientRequest<ByteBuf> httpClientRequest;
     private final HttpServerRequest<ByteBuf> httpServerRequest;
-    private final ChannelHandlerContext channelHandlerContext;
     private final T state;
     
-    private EgressRequest(HttpClientRequest<ByteBuf> httpClientRequest, HttpServerRequest<ByteBuf> httpServerRequest, ChannelHandlerContext channelHandlerContext, T state) {
+    private EgressRequest(HttpClientRequest<ByteBuf> httpClientRequest, HttpServerRequest<ByteBuf> httpServerRequest, T state) {
         this.httpClientRequest = httpClientRequest;
         this.httpServerRequest = httpServerRequest;
-        this.channelHandlerContext = channelHandlerContext;
         this.state = state;
     }
 
@@ -48,8 +45,9 @@ public class EgressRequest<T> {
             }
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
-        clientReq = clientReq.withContentSource(nettyReq.getContent());
-        return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), ingressReq.getNettyChannelContext(), requestState);
+        //TODO add this back with appropriate eager subscription
+        //clientReq = clientReq.withContentSource(nettyReq.getContent());
+        return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), requestState);
     }
 
     public HttpClientRequest<ByteBuf> getHttpClientRequest() {
@@ -62,9 +60,5 @@ public class EgressRequest<T> {
     
     public T get() {
         return state;
-    }
-
-    public ChannelHandlerContext getNettyChannelContext() {
-        return channelHandlerContext;
     }
 }

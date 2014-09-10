@@ -16,34 +16,21 @@
 package com.netflix.zuul.lifecycle;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 public class IngressRequest {
 
     private final HttpServerRequest<ByteBuf> httpServerRequest;
 
-    // TODO: Remove when HttpServerRequest provides a way to get to the ChanelHandlerContext. Issue: https://github.com/ReactiveX/RxNetty/issues/214
-    private final ChannelHandlerContext nettyChannelContext;
-
-    private IngressRequest(HttpServerRequest<ByteBuf> httpServerRequest, ChannelHandlerContext nettyChannelContext) {
+    private IngressRequest(HttpServerRequest<ByteBuf> httpServerRequest) {
         this.httpServerRequest = httpServerRequest;
-        this.nettyChannelContext = nettyChannelContext;
     }
 
-    public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest, ChannelHandlerContext nettyChannelContext) {
-        return new IngressRequest(nettyRequest, nettyChannelContext);
-    }
-
-    /*Visible for testing*/ static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest) {
-        return new IngressRequest(nettyRequest, null);
+    public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest) {
+        return new IngressRequest(nettyRequest);
     }
 
     public HttpServerRequest<ByteBuf> getHttpServerRequest() {
         return httpServerRequest;
-    }
-
-    /* package-private */ ChannelHandlerContext getNettyChannelContext() {
-        return nettyChannelContext;
     }
 }
