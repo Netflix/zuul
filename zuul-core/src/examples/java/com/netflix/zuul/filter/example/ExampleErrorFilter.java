@@ -13,20 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter;
+package com.netflix.zuul.filter.example;
 
+import com.netflix.zuul.filter.ErrorFilterComputation;
 import com.netflix.zuul.lifecycle.EgressResponse;
+import com.netflix.zuul.lifecycle.IngressRequest;
 
-public class ExamplePostFilter<T> extends PostFilterSynchronous<T> {
-
-    @Override
-    public EgressResponse<T> apply(EgressResponse<T> egressResp) {
-        System.out.println(this + " post filter");
-        return egressResp;
-    }
+public class ExampleErrorFilter<T> extends ErrorFilterComputation<T> {
 
     @Override
     public int getOrder() {
         return 1;
+    }
+
+    @Override
+    public EgressResponse<T> provideResponse(Throwable ex, IngressRequest ingressReq) {
+        System.out.println("Error filter handling : " + ex);
+        return EgressResponse.withStatus(500);
     }
 }

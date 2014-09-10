@@ -45,48 +45,45 @@ public class FilterProcessor<State> {
         final long startTime = System.currentTimeMillis();
         try {
             FiltersForRoute<State> filtersForRoute = filterStore.getFilters(ingressReq);
-            return applyPreFilters(ingressReq, filtersForRoute.getPreFilters()).flatMap(egressReq ->
-                    applyRoutingFilter(egressReq, filtersForRoute.getRouteFilter())).flatMap(ingressResp ->
-                    applyPostFilters(ingressResp, filtersForRoute.getPostFilters())).doOnCompleted(() ->
-                        ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
-                    ).onErrorResumeNext(ex -> {
-                        ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
-                        return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
-                    }).doOnNext(egressResp -> recordHttpStatusCode(ingressReq, egressResp.getStatus().code(), startTime));
-        } catch (IOException ioe) {
+            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, stateFactory.create());
+            Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
+            Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter());
+            Observable<EgressResponse<State>> initialEgressResp = ingressResp.map(EgressResponse::from);
+            Observable<EgressResponse<State>> egressResp = applyPostFilters(initialEgressResp, filtersForRoute.getPostFilters());
+            return egressResp.doOnCompleted(() ->
+                ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
+            ).onErrorResumeNext(ex -> {
+                ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
+                return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
+            }).doOnNext(httpResp -> recordHttpStatusCode(ingressReq, httpResp.getStatus().code(), startTime));
+        } catch (IOException ex) {
             logger.error("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters", 500));
         }
     }
 
-    private Observable<EgressRequest<State>> applyPreFilters(IngressRequest ingressReq, List<PreFilter<State>> preFilters) {
-        Observable<EgressRequest<State>> initialEgressReqObservable = Observable.just(EgressRequest.copiedFrom(ingressReq, stateFactory.create()));
-        return Observable.from(preFilters).reduce(initialEgressReqObservable, (egressReqObservable, preFilter) -> {
-            return preFilter.execute(egressReqObservable);
-        }).flatMap(o -> o);
-    }
-
-    private Observable<IngressResponse<State>> applyRoutingFilter(EgressRequest<State> egressReq, RouteFilter<State> routeFilter) {
-        if (routeFilter == null) {
-            return Observable.<IngressResponse<State>>error(new ZuulException("You must define a RouteFilter.", 500));
-        } else {
-            return routeFilter.execute(egressReq);
+    private Observable<EgressRequest<State>> applyPreFilters(final EgressRequest<State> initialEgressReq, final List<PreFilter<State>> preFilters) {
+        Observable<EgressRequest<State>> req = Observable.just(initialEgressReq);
+        for (PreFilter<State> preFilter: preFilters) {
+            req = preFilter.execute(req).single();
         }
+        return req;
     }
 
-    private Observable<EgressResponse<State>> applyPostFilters(IngressResponse<State> ingressResp, List<PostFilter<State>> postFilters) {
-        Observable<EgressResponse<State>> initialEgressRespObservable = Observable.just(EgressResponse.from(ingressResp));
-        return Observable.from(postFilters).reduce(initialEgressRespObservable, (egressRespObservable, postFilter) -> {
-            return postFilter.execute(egressRespObservable);
-        }).flatMap(o -> o);
+    private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq, final RouteFilter<State> routeFilter) {
+        return egressReq.flatMap(routeFilter::execute).single();
+    }
+
+    private Observable<EgressResponse<State>> applyPostFilters(final Observable<EgressResponse<State>> initialEgressResp, final List<PostFilter<State>> postFilters) {
+        Observable<EgressResponse<State>> resp = initialEgressResp;
+        for (PostFilter<State> postFilter: postFilters) {
+            resp = postFilter.execute(resp).single();
+        }
+        return resp;
     }
 
     private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
-        if (errorFilter == null) {
-            return Observable.<EgressResponse<State>>error(new ZuulException("Unhandled exception: " + ex.getMessage(), ex, 500));
-        } else {
-            return errorFilter.execute(ex, ingressReq);
-        }
+        return errorFilter.execute(ex, ingressReq);
     }
 
     private static void recordHttpStatusCode(IngressRequest ingressReq, int statusCode, long startTime) {

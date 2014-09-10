@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter;
+package com.netflix.zuul.filter.example;
 
-import com.netflix.zuul.lifecycle.EgressRequest;
+import com.netflix.zuul.filter.PostFilterSynchronous;
+import com.netflix.zuul.lifecycle.EgressResponse;
 
-public class ExamplePreFilter<T> extends PreFilterSynchronous<T> {
+public class ExamplePostFilter<T> extends PostFilterSynchronous<T> {
 
     @Override
-    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
-        System.out.println(this + " pre filter");
-        return egressReq;
+    public EgressResponse<T> apply(EgressResponse<T> egressResp) {
+        System.out.println(this + " post filter");
+        return egressResp;
     }
 
     @Override

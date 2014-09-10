@@ -43,7 +43,7 @@ public class ZuulRxNettyServer<State> {
     public HttpServer<ByteBuf, ByteBuf> createServer() {
         HttpServer<ByteBuf, ByteBuf> server = RxNetty.newHttpServerBuilder(port,
                 (HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) -> {
-                    final IngressRequest ingressReq = IngressRequest.from(request, response.getChannelHandlerContext());
+                    final IngressRequest ingressReq = IngressRequest.from(request);
                     return filterProcessor.applyAllFilters(ingressReq).
                             flatMap(egressResp -> {
                                 response.setStatus(egressResp.getStatus());

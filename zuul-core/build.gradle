@@ -2,7 +2,7 @@ dependencies {
     compile 'com.netflix.karyon:karyon-governator:2.1.00-RC2'
     compile 'com.netflix.ribbon:ribbon:2.0-RC7'
     compile 'com.netflix.ribbon:ribbon-eureka:2.0-RC7'
-    compile 'com.netflix.rxnetty:rx-netty:0.3.11'
+    compile 'com.netflix.rxnetty:rx-netty:0.3.13'
     compile 'com.netflix.rxjava:rxjava-core:0.19.2'
     compile 'com.netflix.numerus:numerus:1.1'
     compile 'org.slf4j:slf4j-simple:1.7.7'
