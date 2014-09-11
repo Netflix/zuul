@@ -45,7 +45,6 @@ public class EgressRequest<T> {
             }
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
-        //TODO add this back with appropriate eager subscription
         clientReq = clientReq.withContentSource(nettyReq.getContent().map(ByteBuf::retain));
         return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), requestState);
     }

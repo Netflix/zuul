@@ -56,4 +56,9 @@ subprojects {
             scopes.PROVIDED.minus += configurations.compile
         }
     }
+
+    task sourceJar(type:Jar) { 
+        from sourceSets.main.allSource
+        classifier = 'source'
+    }
 }
