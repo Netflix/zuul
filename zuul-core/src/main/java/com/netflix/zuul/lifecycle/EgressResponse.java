@@ -16,12 +16,10 @@
 package com.netflix.zuul.lifecycle;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 import rx.Observable;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -66,10 +64,9 @@ public class EgressResponse<T> {
         return new EgressResponse<>(HttpResponseStatus.valueOf(statusCode), new HashMap<>(), Observable.empty(), null);
     }
 
-    public static <T> EgressResponse<T> from(int statusCode, Map<String, List<String>> headerMap, String content) {
+    public static <T> EgressResponse<T> from(int statusCode, Map<String, List<String>> headerMap, Observable<ByteBuf> content) {
         HttpResponseStatus nettyStatus = HttpResponseStatus.valueOf(statusCode);
-        Observable<ByteBuf> nettyContent = Observable.from(content).map(s -> Unpooled.copiedBuffer(s, Charset.defaultCharset()));
-        return new EgressResponse<>(nettyStatus, headerMap, nettyContent, null);
+        return new EgressResponse<>(nettyStatus, headerMap, content, null);
     }
 
     public HttpResponseStatus getStatus() {
