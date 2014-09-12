@@ -22,9 +22,11 @@ import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
 import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.metrics.ZuulMetrics;
+import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.Subscription;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +47,12 @@ public class FilterProcessor<State> {
         final long startTime = System.currentTimeMillis();
         try {
             FiltersForRoute<State> filtersForRoute = filterStore.getFilters(ingressReq);
-            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, stateFactory.create());
+            Observable<ByteBuf> eagerContent = ingressReq.getHttpServerRequest().getContent().map(byteBuf -> {
+                byteBuf.retain();
+                return byteBuf;
+            }).onErrorResumeNext(ex -> Observable.empty()).cache();
+            Subscription eagerContentSubscription = eagerContent.subscribe();
+            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, eagerContent, stateFactory.create());
             Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
             Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter());
             Observable<EgressResponse<State>> initialEgressResp = ingressResp.map(EgressResponse::from);
