@@ -83,7 +83,9 @@ public class FilterProcessor<State> {
     }
 
     private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
-        return errorFilter.execute(ex, ingressReq);
+        if (errorFilter != null) {
+            return errorFilter.execute(ex, ingressReq);
+        } else return Observable.error(ex);
     }
 
     private static void recordHttpStatusCode(IngressRequest ingressReq, int statusCode, long startTime) {
