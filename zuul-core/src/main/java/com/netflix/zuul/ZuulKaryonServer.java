@@ -146,12 +146,15 @@ public class ZuulKaryonServer {
         @Override
         public Observable<Void> route(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
             final IngressRequest ingressReq = IngressRequest.from(request);
+            //System.out.println(request.getHttpMethod().name() + " " + request.getUri());
             return filterProcessor.applyAllFilters(ingressReq).
                     flatMap(egressResp -> {
                         response.setStatus(egressResp.getStatus());
                         if (logger.isDebugEnabled()) {
                             logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                         }
+                        logger.info(egressResp.getStatus().code() + " " + request.getHttpMethod().name() + " " + request.getUri());
+
 
                         for (String headerName : egressResp.getHeaders().keySet()) {
                             List<String> headerValues = egressResp.getHeaders().get(headerName);
