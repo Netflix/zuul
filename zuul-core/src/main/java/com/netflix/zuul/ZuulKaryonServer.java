@@ -29,6 +29,8 @@ import com.netflix.zuul.lifecycle.IngressRequest;
 import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.server.HttpServerBuilder;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
@@ -147,6 +149,11 @@ public class ZuulKaryonServer {
         public Observable<Void> route(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
             final IngressRequest ingressReq = IngressRequest.from(request);
             logger.info(request.getHttpMethod().name() + " " + request.getUri() + " " + request.getNettyChannel().remoteAddress().toString());
+            if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
+                response.setStatus(HttpResponseStatus.OK);
+                response.close();
+                return Observable.empty();
+            }
             return filterProcessor.applyAllFilters(ingressReq).
                     flatMap(egressResp -> {
                         response.setStatus(egressResp.getStatus());
