@@ -37,7 +37,7 @@ import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.functions.Func1;
+import rx.Subscription;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -151,10 +151,12 @@ public class ZuulKaryonServer {
             logger.info(request.getHttpMethod().name() + " " + request.getUri() + " " + request.getNettyChannel().remoteAddress().toString());
             if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
                 response.setStatus(HttpResponseStatus.OK);
+                Subscription eagerSubscription = request.getContent().subscribe();
                 response.close();
                 return Observable.empty();
             }
-            return filterProcessor.applyAllFilters(ingressReq).
+
+            Observable<ByteBuf> responseContent = filterProcessor.applyAllFilters(ingressReq).
                     flatMap(egressResp -> {
                         response.setStatus(egressResp.getStatus());
                         if (logger.isDebugEnabled()) {
@@ -174,15 +176,15 @@ public class ZuulKaryonServer {
                         }
 
                         return egressResp.getContent();
-                    }).map(new Func1<ByteBuf, Void>() {
-                        @Override
-                        public Void call(ByteBuf byteBuf) {
-                            byteBuf.retain();
-                            response.write(byteBuf);
-                            return null;
-                        }
-                    }).
-                    doOnCompleted(response::close);
+                    });
+
+            Observable<Void> writeResponseContent = responseContent.map(byteBuf -> {
+                byteBuf.retain();
+                response.write(byteBuf);
+                return byteBuf;
+            }).ignoreElements().cast(Void.class).doOnCompleted(response::close);
+
+            return writeResponseContent;
         }
     }
 }

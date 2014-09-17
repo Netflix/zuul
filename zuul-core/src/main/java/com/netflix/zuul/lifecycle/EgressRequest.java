@@ -20,6 +20,7 @@ import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import java.util.Map;
 
@@ -28,15 +29,17 @@ public class EgressRequest<T> {
 
     private HttpClientRequest<ByteBuf> httpClientRequest;
     private final HttpServerRequest<ByteBuf> httpServerRequest;
+    private final Observable<ByteBuf> requestContent;
     private final T state;
     
-    private EgressRequest(HttpClientRequest<ByteBuf> httpClientRequest, HttpServerRequest<ByteBuf> httpServerRequest, T state) {
+    private EgressRequest(HttpClientRequest<ByteBuf> httpClientRequest, HttpServerRequest<ByteBuf> httpServerRequest, Observable<ByteBuf> requestContent, T state) {
         this.httpClientRequest = httpClientRequest;
         this.httpServerRequest = httpServerRequest;
+        this.requestContent = requestContent;
         this.state = state;
     }
 
-    public static <T> EgressRequest<T> copiedFrom(IngressRequest ingressReq, T requestState) {
+    public static <T> EgressRequest<T> copiedFrom(IngressRequest ingressReq, Observable<ByteBuf> incomingContent, T requestState) {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getHttpServerRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());
         for (Map.Entry<String, String> entry: nettyReq.getHeaders().entries()) {
@@ -45,8 +48,8 @@ public class EgressRequest<T> {
             }
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
-        clientReq = clientReq.withContentSource(nettyReq.getContent().map(ByteBuf::retain));
-        return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), requestState);
+        clientReq = clientReq.withContentSource(incomingContent);
+        return new EgressRequest<>(clientReq, ingressReq.getHttpServerRequest(), incomingContent, requestState);
     }
 
     public HttpClientRequest<ByteBuf> getHttpClientRequest() {
@@ -55,6 +58,10 @@ public class EgressRequest<T> {
 
     public HttpServerRequest<ByteBuf> getHttpServerRequest() {
         return httpServerRequest;
+    }
+
+    public Observable<ByteBuf> getRequestContent() {
+        return requestContent;
     }
     
     public T get() {
