@@ -39,7 +39,8 @@ public class EgressResponse<T> {
     }
 
     public static <T> EgressResponse<T> from(IngressResponse<T> ingressResp) {
-        return new EgressResponse<T>(ingressResp.getStatus(), convertHeaders(ingressResp.getHeaders()), ingressResp.getContent(), ingressResp.getState());
+        return new EgressResponse<>(ingressResp.getStatus(), convertHeaders(ingressResp.getHeaders()),
+                                     ingressResp.getContent(), ingressResp.getState());
     }
 
     public Observable<ByteBuf> getContent() {

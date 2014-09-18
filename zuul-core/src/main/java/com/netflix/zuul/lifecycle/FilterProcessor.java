@@ -26,7 +26,6 @@ import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.Subscription;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,14 +46,16 @@ public class FilterProcessor<State> {
         final long startTime = System.currentTimeMillis();
         try {
             FiltersForRoute<State> filtersForRoute = filterStore.getFilters(ingressReq);
-            Observable<ByteBuf> eagerContent = ingressReq.getHttpServerRequest().getContent().map(byteBuf -> {
-                byteBuf.retain();
-                return byteBuf;
-            }).onErrorResumeNext(ex -> Observable.empty()).cache();
-            Subscription eagerContentSubscription = eagerContent.subscribe();
-            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, eagerContent, stateFactory.create());
+
+            UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+            ingressReq.getHttpServerRequest().getContent().map(ByteBuf::retain).subscribe(cachedContent); // Caches data if arrived before client writes it out, else passes through
+
+
+            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, cachedContent,
+                                                                             stateFactory.create());
             Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
-            Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter());
+            Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter(),
+                                                                              cachedContent);
             Observable<EgressResponse<State>> initialEgressResp = ingressResp.map(EgressResponse::from);
             Observable<EgressResponse<State>> egressResp = applyPostFilters(initialEgressResp, filtersForRoute.getPostFilters());
             return egressResp.doOnCompleted(() ->
@@ -77,8 +78,10 @@ public class FilterProcessor<State> {
         return req;
     }
 
-    private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq, final RouteFilter<State> routeFilter) {
-        return egressReq.flatMap(routeFilter::execute).single();
+    private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq,
+                                                                final RouteFilter<State> routeFilter,
+                                                                final UnicastDisposableCachingSubject<ByteBuf> ingressContent) {
+        return egressReq.flatMap(routeFilter::execute).single().doOnTerminate(ingressContent::dispose);
     }
 
     private Observable<EgressResponse<State>> applyPostFilters(final Observable<EgressResponse<State>> initialEgressResp, final List<PostFilter<State>> postFilters) {
