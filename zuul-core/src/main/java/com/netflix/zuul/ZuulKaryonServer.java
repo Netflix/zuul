@@ -30,6 +30,8 @@ import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.netty.protocol.http.server.HttpServerBuilder;
+import io.reactivex.netty.protocol.http.server.HttpServerPipelineConfigurator;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import org.slf4j.Logger;
@@ -100,6 +102,11 @@ public class ZuulKaryonServer {
         @Override
         protected void bindRequestRouter(AnnotatedBindingBuilder<HttpRequestRouter<ByteBuf, ByteBuf>> bind) {
             bind.toInstance(new ZuulRouter(ZuulKaryonServer.filterProcessor));
+        }
+
+        @Override
+        public void configurePipeline(HttpServerBuilder<ByteBuf, ByteBuf> serverBuilder) {
+            serverBuilder.pipelineConfigurator(new HttpServerPipelineConfigurator<>());
         }
 
         private static class ZuulRouter<State> implements HttpRequestRouter<ByteBuf, ByteBuf> {
