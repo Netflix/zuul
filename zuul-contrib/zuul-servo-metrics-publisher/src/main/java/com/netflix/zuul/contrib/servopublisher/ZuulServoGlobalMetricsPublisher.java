@@ -45,10 +45,11 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
         List<Monitor<?>> monitors = getServoMonitors();
 
         // publish metrics together under a single composite (it seems this name is ignored)
-        MonitorConfig commandMetricsConfig = MonitorConfig.builder("Zuul").build();
-        BasicCompositeMonitor commandMetricsMonitor = new BasicCompositeMonitor(commandMetricsConfig, monitors);
+        MonitorConfig globalMetricsConfig = MonitorConfig.builder("Zuul").build();
 
-        DefaultMonitorRegistry.getInstance().register(commandMetricsMonitor);
+        BasicCompositeMonitor globalMetricsMonitor = new BasicCompositeMonitor(globalMetricsConfig, monitors);
+
+        DefaultMonitorRegistry.getInstance().register(globalMetricsMonitor);
     }
 
     private List<Monitor<?>> getServoMonitors() {
