@@ -36,9 +36,6 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
         final IngressRequest ingressReq = IngressRequest.from(request);
-        logger.info(request.getHttpMethod().name() + " " + request.getUri() + " " + request.getNettyChannel()
-                                                                                           .remoteAddress()
-                                                                                           .toString());
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
             response.setStatus(HttpResponseStatus.OK);
             return response.close();
