@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class FileSystemPollingFilterStore extends FilterStore {
+public abstract class FileSystemPollingFilterStore<State> extends FilterStore<State> {
     private final static Logger logger = LoggerFactory.getLogger(FileSystemPollingFilterStore.class);
 
     private final File location;
@@ -69,7 +69,7 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
     protected abstract Class<?> getClassFromFilterFile(File f) throws IOException;
 
     @Override
-    public FiltersForRoute fetchFilters(IngressRequest ingressReq) throws IOException {
+    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
         List<PreFilter> preFilters = pickFilters(compiledFilters.values(), PreFilter.class);
         List<RouteFilter> routeFilters = pickFilters(compiledFilters.values(), RouteFilter.class);
         List<PostFilter> postFilters = pickFilters(compiledFilters.values(), PostFilter.class);
@@ -84,14 +84,20 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
         if (errorFilters.size() > 1) {
             throw new IllegalStateException("More than 1 error filter provided - not a valid configuration");
         }
-        return new FiltersForRoute(preFilters, routeFilters.get(0), postFilters, (errorFilters.size() == 0) ? null : errorFilters.get(0));
+
+        @SuppressWarnings({"rawtype", "unchecked"})
+        FiltersForRoute<State> filtersForRoute = new FiltersForRoute(preFilters, routeFilters.get(0), postFilters,
+                                                              (errorFilters.size() == 0) ? null : errorFilters.get(0));
+        return filtersForRoute;
     }
 
     private static <T extends Filter> List<T> pickFilters(Collection<Filter> filters, Class<T> clazz) {
         List<T> picked = new ArrayList<>();
         for (Filter compiledFilter: filters) {
             if (clazz.isAssignableFrom(compiledFilter.getClass())) {
-                picked.add((T) compiledFilter);
+                @SuppressWarnings("unchecked")
+                T typedCompiledFilter = (T) compiledFilter;
+                picked.add(typedCompiledFilter);
             }
         }
         return picked;
@@ -152,7 +158,7 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
     }
 
     private Map<File, Long> createMapOnFiltersOnDisk() throws IOException {
-        List<File> allFiltersOnDisk = getAllMatchingFilters(location, getFileFilter(), new ArrayList<File>());
+        List<File> allFiltersOnDisk = getAllMatchingFilters(location, getFileFilter(), new ArrayList<>());
         logger.debug("Found " + allFiltersOnDisk.size() + " files at location : " + location);
         Map<File, Long> onDiskLastModDateMap = new HashMap<>();
         for (File f: allFiltersOnDisk) {
@@ -178,10 +184,6 @@ public abstract class FileSystemPollingFilterStore extends FilterStore {
 
     private boolean isNewerThanCached(File f) throws IOException {
         Long lastKnownModifiedDate = modDateMap.get(f.getCanonicalPath());
-        if (lastKnownModifiedDate != null) {
-            return f.lastModified() > lastKnownModifiedDate;
-        } else {
-            return true;
-        }
+        return lastKnownModifiedDate == null || f.lastModified() > lastKnownModifiedDate;
     }
 }

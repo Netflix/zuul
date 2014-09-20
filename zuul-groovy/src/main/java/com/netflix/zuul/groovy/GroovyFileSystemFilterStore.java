@@ -21,7 +21,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 
-public class GroovyFileSystemFilterStore extends FileSystemPollingFilterStore {
+public class GroovyFileSystemFilterStore<State> extends FileSystemPollingFilterStore<State> {
+
     private final GroovyCompiler groovyCompiler;
 
     public GroovyFileSystemFilterStore(File location, long pollingInternalInSeconds) {

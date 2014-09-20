@@ -48,6 +48,14 @@ public class FilterProcessor<State> {
             FiltersForRoute<State> filtersForRoute = filterStore.getFilters(ingressReq);
 
             UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+            /**
+             * Why do we retain here?
+             * After the onNext on the content returns, RxNetty releases the sent ByteBuf. This ByteBuf is kept out of
+             * the scope of the onNext for consumption of the client in the route. The client when eventually writes
+             * this ByteBuf over the wire expects the ByteBuf to be usable (i.e. ref count => 1). If this retain() call
+             * is removed, the ref count will be 0 after the onNext on the content returns and hence it will be unusable
+             * by the client in the route.
+             */
             ingressReq.getHttpServerRequest().getContent().map(ByteBuf::retain).subscribe(cachedContent); // Caches data if arrived before client writes it out, else passes through
 
 
@@ -81,7 +89,21 @@ public class FilterProcessor<State> {
     private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq,
                                                                 final RouteFilter<State> routeFilter,
                                                                 final UnicastDisposableCachingSubject<ByteBuf> ingressContent) {
-        return egressReq.flatMap(routeFilter::execute).single().doOnTerminate(ingressContent::dispose);
+        return egressReq.flatMap(routeFilter::execute).single()
+                        .doOnTerminate(() -> ingressContent.dispose(byteBuf -> {
+                            /**
+                             * Why do we release here?
+                             *
+                             * All ByteBuf which were never consumed are disposed and sent here. This means that the
+                             * client in the route never consumed this ByteBuf. Before sending this ByteBuf to the
+                             * content subject, we do a retain (see above for reason) expecting the client in the route
+                             * to release it when written over the wire. In this case, though, the client never consumed
+                             * it and hence never released corresponding to the retain done by us.
+                             */
+                            if (byteBuf.refCnt() > 1) { // 1 refCount will be from the subject putting into the cache.
+                                byteBuf.release();
+                            }
+                        }));
     }
 
     private Observable<EgressResponse<State>> applyPostFilters(final Observable<EgressResponse<State>> initialEgressResp, final List<PostFilter<State>> postFilters) {

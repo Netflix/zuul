@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter.example;
+package com.netflix.zuul.filter.example.error;
 
 import com.netflix.zuul.filter.ErrorFilterComputation;
 import com.netflix.zuul.lifecycle.EgressResponse;
