@@ -23,13 +23,15 @@ public class ZuulArgumentParser {
         port = portDefault;
         packagePrefix = packagePrefixDefault;
 
-        if (programArgs.length == 1) {
+        if (programArgs.length > 0) {
             try {
                 port = Integer.parseInt(programArgs[0]);
             } catch (NumberFormatException e) {
                 System.err.println("Usage: java " + mainRunnerClassName + " [<port>] [<comma separated package prefixes for filters>]");
             }
-        } else if (programArgs.length > 1) {
+        }
+
+        if (programArgs.length > 1) {
             packagePrefix = programArgs[1].split(",");
         }
     }
