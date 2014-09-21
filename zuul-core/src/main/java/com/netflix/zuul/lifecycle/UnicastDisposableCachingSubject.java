@@ -4,6 +4,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 import rx.Observer;
 import rx.Subscriber;
+import rx.functions.Action1;
 import rx.internal.operators.NotificationLite;
 import rx.observers.Subscribers;
 import rx.subjects.Subject;
@@ -35,21 +36,25 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
 
     /**
      * Disposes the items held by this subject which were not given out to the lone subscriber.
+     *
+     * @param disposedElementsProcessor All elements that were disposed are passed to this processor.
      */
-    public void dispose() {
+    public void dispose(Action1<T> disposedElementsProcessor) {
         if (state.casState(State.STATES.UNSUBSCRIBED, State.STATES.DISPOSED)) {
-            _dispose();
+            _dispose(disposedElementsProcessor);
         } else if (state.casState(State.STATES.SUBSCRIBED, State.STATES.DISPOSED)) {
             state.observerRef.onCompleted(); // Complete the existing subscription in case it is still not unsubscribed.
-            _dispose();
+            _dispose(disposedElementsProcessor);
         }
     }
 
-    private void _dispose() {
-        Subscriber<T> noOpSub = new PassThruObserver<>(Subscribers.empty(), state); // Any buffering post buffer draining must not be lying in the buffer
+    private void _dispose(Action1<T> disposedElementsProcessor) {
+        Subscriber<T> noOpSub = new PassThruObserver<>(Subscribers.create(disposedElementsProcessor,
+                                                                          throwable -> { }),
+                                                       state); // Any buffering post buffer draining must not be lying in the buffer
         state.buffer.sendAllNotifications(noOpSub); // It is important to empty the buffer before setting the observer.
-        // If not done, there can be two threads draining the buffer
-        // (PassThroughObserver on any notification) and this thread.
+                                                    // If not done, there can be two threads draining the buffer
+                                                    // (PassThroughObserver on any notification) and this thread.
         state.setObserverRef(noOpSub); // All future notifications are not sent anywhere.
     }
 

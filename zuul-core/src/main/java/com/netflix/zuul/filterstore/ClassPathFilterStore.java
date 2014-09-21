@@ -25,27 +25,28 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-public class ClassPathFilterStore extends FilterStore {
+public class ClassPathFilterStore<State> extends FilterStore<State> {
     private final Logger logger = LoggerFactory.getLogger(ClassPathFilterStore.class);
 
-    private final String packagePrefix;
-    private final InMemoryFilterStore backingFilterStore;
+    private final String[] packagePrefixes;
+    private final InMemoryFilterStore<State> backingFilterStore;
     private AtomicBoolean filterStoreInitialized = new AtomicBoolean(false);
 
-    public ClassPathFilterStore(String packagePrefix) {
-        this.packagePrefix = packagePrefix;
-        backingFilterStore = new InMemoryFilterStore();
+    public ClassPathFilterStore(String... packagePrefixes) {
+        this.packagePrefixes = packagePrefixes;
+        backingFilterStore = new InMemoryFilterStore<>();
     }
 
     @Override
-    public FiltersForRoute fetchFilters(IngressRequest ingressReq) throws IOException {
-        logger.info("Getting filters from the classpath with prefix : " + packagePrefix);
+    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
+        logger.info("Getting filters from the classpath with prefix : " + Arrays.toString(packagePrefixes));
         if (filterStoreInitialized.get()) {
             return backingFilterStore.getFilters(ingressReq);
         } else {
@@ -57,8 +58,10 @@ public class ClassPathFilterStore extends FilterStore {
                 while (classPathRoots.hasMoreElements()) {
                     URL classPathRoot = classPathRoots.nextElement();
                     File rootFile = new File(classPathRoot.getPath());
-                    Predicate<String> fileMatcher = getMatcher(rootFile, packagePrefix);
-                    addAllNestedFiles(files, rootFile, fileMatcher);
+                    for (String packagePrefix: packagePrefixes) {
+                        Predicate<String> fileMatcher = getMatcher(rootFile, packagePrefix);
+                        addAllNestedFiles(files, rootFile, fileMatcher);
+                    }
                     for (File f : files) {
                         try {
                             String className = getClassNameFromFileName(f, rootFile);
@@ -93,8 +96,11 @@ public class ClassPathFilterStore extends FilterStore {
 
     private void addAllNestedFiles(List<File> fileList, File root, Predicate<String> matcher) {
         if (root.isDirectory()) {
-            for (File leaf: root.listFiles()) {
-                addAllNestedFiles(fileList, leaf, matcher);
+            File[] files = root.listFiles();
+            if (null != files) { // listFiles() returns null if the file isn't a directory or an I/O exception occurs.
+                for (File leaf: files) {
+                    addAllNestedFiles(fileList, leaf, matcher);
+                }
             }
         } else {
             if (matcher.test(root.getAbsolutePath())) {

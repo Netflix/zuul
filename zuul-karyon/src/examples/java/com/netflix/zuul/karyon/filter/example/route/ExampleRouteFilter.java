@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.filter.example;
+package com.netflix.zuul.karyon.filter.example.route;
 
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
@@ -24,6 +24,7 @@ import com.netflix.zuul.filter.RouteFilterIO;
 import com.netflix.zuul.lifecycle.EgressRequest;
 import com.netflix.zuul.lifecycle.IngressResponse;
 import io.netty.buffer.ByteBuf;
+import io.reactivex.netty.protocol.http.client.HttpClientPipelineConfigurator;
 import rx.Observable;
 
 public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
@@ -35,7 +36,7 @@ public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
                                                     .withDeploymentContextBasedVipAddresses("api-test.netflix.net:7001").build()
                                                     .set(IClientConfigKey.Keys.NIWSServerListClassName,
                                                          DiscoveryEnabledNIWSServerList.class.getName());
-        originClient = RibbonTransport.newHttpClient(config);
+        originClient = RibbonTransport.newHttpClient(new HttpClientPipelineConfigurator<>(), config);
     }
 
     @Override

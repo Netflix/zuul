@@ -1,0 +1,13 @@
+
+dependencies { 
+    compile project(':zuul-core')
+    compile 'com.netflix.ribbon:ribbon:2.0-RC7'
+    compile 'com.netflix.ribbon:ribbon-eureka:2.0-RC7'
+    compile 'com.netflix.karyon:karyon-governator:2.1.00-RC5'
+    compile 'com.netflix.karyon:karyon-eureka:2.1.00-RC5'
+    compile 'com.netflix.karyon:karyon-servo:2.1.00-RC5'
+    compile 'com.netflix.karyon:karyon-archaius:2.1.00-RC5'
+    compile 'org.codehaus.groovy:groovy-all:2.3.3'
+    testCompile 'junit:junit-dep:4.10'
+    testCompile 'org.mockito:mockito-core:1.8.5'
+}
