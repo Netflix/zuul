@@ -34,6 +34,15 @@ public class ZuulKaryon {
     private ZuulKaryon() {
     }
 
+    public static KaryonServer newZuulServer(String appName, int port, FilterStore<HashMap<String, Object>> filterStore) {
+        return fromZuulServer(Zuul.newZuulServer(port, filterStore));
+    }
+
+    public static <T> KaryonServer newZuulServer(String appName, int port, FilterStore<T> filterStore,
+                                                 FilterStateFactory<T> filterStateFactory) {
+        return fromZuulServer(Zuul.newZuulServer(port, filterStore, filterStateFactory));
+    }
+
     public static KaryonServer newZuulServer(int port, FilterStore<HashMap<String, Object>> filterStore) {
         return fromZuulServer(Zuul.newZuulServer(port, filterStore));
     }
@@ -44,10 +53,14 @@ public class ZuulKaryon {
     }
 
     public static KaryonServer fromZuulServer(HttpServer<ByteBuf, ByteBuf> zuulServer) {
+        return fromZuulServer("zuul", zuulServer);
+    }
+
+    public static KaryonServer fromZuulServer(String appName, HttpServer<ByteBuf, ByteBuf> zuulServer) {
         return Karyon.forHttpServer(zuulServer,
                                     new KaryonBootstrapSuite(),
                                     KaryonEurekaModule.asSuite(),
-                                    new ArchaiusSuite("zuul"),
+                                    new ArchaiusSuite(appName),
                                     KaryonServoModule.asSuite());
     }
 
