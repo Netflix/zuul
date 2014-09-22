@@ -40,6 +40,11 @@ public class Zuul {
         return newZuulServerBuilder(port, filterStore, filterStateFactory).build();
     }
 
+    public static HttpServerBuilder<ByteBuf, ByteBuf> newZuulServerBuilder(int port,
+                                                                           FilterStore<HashMap<String, Object>> filterStore) {
+        return newZuulServerBuilder(port, filterStore, DEFAULT_STATE_FACTORY);
+    }
+
     public static <T> HttpServerBuilder<ByteBuf, ByteBuf> newZuulServerBuilder(int port, FilterStore<T> filterStore,
                                                                                FilterStateFactory<T> filterStateFactory) {
         FilterProcessor<T> filterProcessor = new FilterProcessor<>(filterStore, filterStateFactory);
