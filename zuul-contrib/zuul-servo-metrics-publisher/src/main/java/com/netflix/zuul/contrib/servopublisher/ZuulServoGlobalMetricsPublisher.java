@@ -21,9 +21,7 @@ import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.monitor.BasicCompositeMonitor;
 import com.netflix.servo.monitor.Monitor;
 import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.Tag;
-import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.metrics.ZuulExecutionEvent;
 import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetrics;
@@ -32,11 +30,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPublisher implements ZuulGlobalMetricsPublisher {
     private final static Logger logger = LoggerFactory.getLogger(ZuulServoGlobalMetricsPublisher.class);
+
+    private final Tag servoClassTag;
+    private final Tag servoIdTag;
+
+    public ZuulServoGlobalMetricsPublisher() {
+        this.servoClassTag = new Tag() {
+
+            @Override
+            public String getKey() {
+                return "class";
+            }
+
+            @Override
+            public String getValue() {
+                return "ZuulExecution";
+            }
+
+            @Override
+            public String tagString() {
+                return "ZuulExecution";
+            }
+        };
+
+        this.servoIdTag = new Tag() {
+
+            @Override
+            public String getKey() {
+                return "id";
+            }
+
+            @Override
+            public String getValue() {
+                return "global";
+            }
+
+            @Override
+            public String tagString() {
+                return "global";
+            }
+        };
+    }
 
     @Override
     public void initialize() {
@@ -45,7 +83,7 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
         List<Monitor<?>> monitors = getServoMonitors();
 
         // publish metrics together under a single composite (it seems this name is ignored)
-        MonitorConfig globalMetricsConfig = MonitorConfig.builder("Zuul").build();
+        MonitorConfig globalMetricsConfig = MonitorConfig.builder("ZuulExecution").build();
 
         BasicCompositeMonitor globalMetricsMonitor = new BasicCompositeMonitor(globalMetricsConfig, monitors);
 
@@ -86,24 +124,12 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
     }
 
     @Override
-    protected TagList getServoTags() {
-        Tag servoTypeTag = new Tag() {
-            @Override
-            public String getKey() {
-                return "type";
-            }
+    protected Tag getServoClassTag() {
+        return servoClassTag;
+    }
 
-            @Override
-            public String getValue() {
-                return "Zuul";
-            }
-
-            @Override
-            public String tagString() {
-                return "Zuul";
-            }
-        };
-
-        return new BasicTagList(Arrays.asList(servoTypeTag));
+    @Override
+    protected Tag getServoIdTag() {
+        return servoIdTag;
     }
 }

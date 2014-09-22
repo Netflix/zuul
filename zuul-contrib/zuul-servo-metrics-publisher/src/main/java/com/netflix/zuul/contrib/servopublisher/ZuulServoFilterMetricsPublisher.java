@@ -21,9 +21,7 @@ import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.monitor.BasicCompositeMonitor;
 import com.netflix.servo.monitor.Monitor;
 import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.Tag;
-import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.metrics.ZuulExecutionEvent;
 import com.netflix.zuul.metrics.ZuulFilterMetricsPublisher;
@@ -32,16 +30,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ZuulServoFilterMetricsPublisher extends AbstractZuulServoMetricsPublisher implements ZuulFilterMetricsPublisher {
     private final static Logger logger = LoggerFactory.getLogger(ZuulServoFilterMetricsPublisher.class);
 
     private final Class<? extends Filter> filterClass;
+    private final Tag servoClassTag;
+    private final Tag servoIdTag;
 
     public ZuulServoFilterMetricsPublisher(Class<? extends Filter> filterClass) {
         this.filterClass = filterClass;
+        this.servoClassTag = new Tag() {
+
+            @Override
+            public String getKey() {
+                return "class";
+            }
+
+            @Override
+            public String getValue() {
+                return "ZuulFilter";
+            }
+
+            @Override
+            public String tagString() {
+                return "ZuulFilter";
+            }
+        };
+
+        this.servoIdTag = new Tag() {
+
+            @Override
+            public String getKey() {
+                return "id";
+            }
+
+            @Override
+            public String getValue() {
+                return filterClass.getSimpleName();
+            }
+
+            @Override
+            public String tagString() {
+                return filterClass.getSimpleName();
+            }
+        };
     }
 
     @Override
@@ -82,42 +116,12 @@ public class ZuulServoFilterMetricsPublisher extends AbstractZuulServoMetricsPub
     }
 
     @Override
-    protected TagList getServoTags() {
-        Tag servoTypeTag = new Tag() {
-            @Override
-            public String getKey() {
-                return "type";
-            }
+    protected Tag getServoClassTag() {
+        return servoClassTag;
+    }
 
-            @Override
-            public String getValue() {
-                return "Zuul";
-            }
-
-            @Override
-            public String tagString() {
-                return "Zuul";
-            }
-        };
-
-        Tag servoInstanceTag = new Tag() {
-
-            @Override
-            public String getKey() {
-                return "instance";
-            }
-
-            @Override
-            public String getValue() {
-                return filterClass.getSimpleName();
-            }
-
-            @Override
-            public String tagString() {
-                return filterClass.getSimpleName();
-            }
-        };
-
-        return new BasicTagList(Arrays.asList(servoTypeTag, servoInstanceTag));
+    @Override
+    protected Tag getServoIdTag() {
+        return servoIdTag;
     }
 }
