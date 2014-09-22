@@ -24,56 +24,25 @@ import com.netflix.servo.monitor.Counter;
 import com.netflix.servo.monitor.Gauge;
 import com.netflix.servo.monitor.Monitor;
 import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.tag.BasicTag;
-import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.Tag;
-import com.netflix.servo.tag.TagList;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 
 public abstract class AbstractZuulServoMetricsPublisher {
 
-    abstract protected TagList getServoTags();
+    abstract protected Tag getServoClassTag();
+    abstract protected Tag getServoIdTag();
 
     protected Monitor<?> getCumulativeCountForEvent(String name, final NumerusRollingNumber metric, final NumerusRollingNumberEvent event) {
-        List<Tag> tags = new ArrayList<>();
-        Map<String, String> tagMap = getServoTags().asMap();
-
-        for (String k: tagMap.keySet()) {
-            String v = tagMap.get(k);
-            tags.add(new BasicTag(k, v));
-        }
-        tags.add(DataSourceType.COUNTER);
-
-        TagList cumulativeCountTagList = new BasicTagList(tags);
-        MonitorConfig config = MonitorConfig.builder(name).build().withAdditionalTags(cumulativeCountTagList);
-
-        return new CounterMetric(config) {
+        return new CounterMetric(MonitorConfig.builder(name).withTag(getServoClassTag()).withTag(getServoIdTag()).build()) {
             @Override
-            public Long getValue() {
+            public Number getValue() {
                 return metric.getCumulativeSum(event);
             }
-
         };
     }
 
     protected Monitor<?> getGaugeForEvent(String name, NumerusRollingPercentile metric, double percentile) {
-        List<Tag> tags = new ArrayList<>();
-        Map<String, String> tagMap = getServoTags().asMap();
-
-        for (String k: tagMap.keySet()) {
-            String v = tagMap.get(k);
-            tags.add(new BasicTag(k, v));
-        }
-        tags.add(DataSourceType.GAUGE);
-
-        TagList gaugeTagList = new BasicTagList(tags);
-        MonitorConfig config = MonitorConfig.builder(name).build().withAdditionalTags(gaugeTagList);
-
-        return new GaugeMetric(config) {
+        return new GaugeMetric(MonitorConfig.builder(name).withTag(getServoClassTag()).withTag(getServoIdTag()).build()) {
             @Override
             public Number getValue() {
                 return metric.getPercentile(percentile);
@@ -83,7 +52,7 @@ public abstract class AbstractZuulServoMetricsPublisher {
 
     protected abstract class CounterMetric extends AbstractMonitor<Number> implements Counter {
         public CounterMetric(MonitorConfig config) {
-            super(config);
+            super(config.withAdditionalTag(DataSourceType.COUNTER).withAdditionalTag(getServoClassTag()).withAdditionalTag(getServoIdTag()));
         }
 
         @Override
@@ -107,7 +76,7 @@ public abstract class AbstractZuulServoMetricsPublisher {
 
     protected abstract class GaugeMetric extends AbstractMonitor<Number> implements Gauge<Number> {
         public GaugeMetric(MonitorConfig config) {
-            super(config);
+            super(config.withAdditionalTag(DataSourceType.GAUGE).withAdditionalTag(getServoClassTag()).withAdditionalTag(getServoIdTag()));
         }
 
         @Override
