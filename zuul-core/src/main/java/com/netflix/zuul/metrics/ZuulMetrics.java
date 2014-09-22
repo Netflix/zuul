@@ -124,11 +124,23 @@ public class ZuulMetrics {
     }
 
     public static NumerusRollingNumber getFilterExecutionMetrics(Class<? extends Filter> filterClass) {
-        return filterExecutions.get(filterClass);
+        if (filterExecutions.get(filterClass) != null) {
+            return filterExecutions.get(filterClass);
+        } else {
+            NumerusRollingNumber startingFilterExecution = new NumerusRollingNumber(ZuulExecutionEvent.INIT, () -> 10000, () -> 100);
+            filterExecutions.put(filterClass, startingFilterExecution);
+            return startingFilterExecution;
+        }
     }
 
     public static NumerusRollingPercentile getFilterLatencyMetrics(Class<? extends Filter> filterClass) {
-        return filterLatencies.get(filterClass);
+        if (filterLatencies.get(filterClass) != null) {
+            return filterLatencies.get(filterClass);
+        } else {
+            NumerusRollingPercentile startingFilterLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
+            filterLatencies.put(filterClass, startingFilterLatency);
+            return startingFilterLatency;
+        }
     }
 
     private static class MetricPollingThread extends Thread {

@@ -80,36 +80,37 @@ public class ZuulServoFilterMetricsPublisher extends AbstractZuulServoMetricsPub
 
     @Override
     public void initialize() {
-        logger.info("Initializing Servo publishing for filter : " + filterClass.getSimpleName());
+        String filterName = filterClass.getSimpleName();
+        logger.info("Initializing Servo publishing for filter : " + filterName);
 
-        List<Monitor<?>> monitors = getServoMonitors();
+        List<Monitor<?>> monitors = getServoMonitors("ZuulFilter_" + filterName + "_");
 
         // publish metrics together under a single composite (it seems this name is ignored)
-        MonitorConfig commandMetricsConfig = MonitorConfig.builder("Zuul").build();
-        BasicCompositeMonitor commandMetricsMonitor = new BasicCompositeMonitor(commandMetricsConfig, monitors);
+        MonitorConfig filterMetricsConfig = MonitorConfig.builder("ZuulFilter_" + filterName).build();
+        BasicCompositeMonitor filterMetricsMonitor = new BasicCompositeMonitor(filterMetricsConfig, monitors);
 
-        DefaultMonitorRegistry.getInstance().register(commandMetricsMonitor);
+        DefaultMonitorRegistry.getInstance().register(filterMetricsMonitor);
     }
 
-    private List<Monitor<?>> getServoMonitors() {
+    private List<Monitor<?>> getServoMonitors(String prefix) {
         List<Monitor<?>> monitors = new ArrayList<>();
 
         NumerusRollingNumber filterExecutionMetrics = ZuulMetrics.getFilterExecutionMetrics(filterClass);
         if (filterExecutionMetrics != null) {
-            monitors.add(getCumulativeCountForEvent("countSuccess", filterExecutionMetrics, ZuulExecutionEvent.SUCCESS));
-            monitors.add(getCumulativeCountForEvent("countFailure", filterExecutionMetrics, ZuulExecutionEvent.FAILURE));
+            monitors.add(getCumulativeCountForEvent(prefix + "countSuccess", filterExecutionMetrics, ZuulExecutionEvent.SUCCESS));
+            monitors.add(getCumulativeCountForEvent(prefix + "countFailure", filterExecutionMetrics, ZuulExecutionEvent.FAILURE));
         }
 
         NumerusRollingPercentile filterLatencyMetrics = ZuulMetrics.getFilterLatencyMetrics(filterClass);
         if (filterLatencyMetrics != null) {
-            monitors.add(getGaugeForEvent("latency_percentile_5", filterLatencyMetrics, 5));
-            monitors.add(getGaugeForEvent("latency_percentile_25", filterLatencyMetrics, 25));
-            monitors.add(getGaugeForEvent("latency_percentile_50", filterLatencyMetrics, 50));
-            monitors.add(getGaugeForEvent("latency_percentile_75", filterLatencyMetrics, 75));
-            monitors.add(getGaugeForEvent("latency_percentile_90", filterLatencyMetrics, 90));
-            monitors.add(getGaugeForEvent("latency_percentile_95", filterLatencyMetrics, 95));
-            monitors.add(getGaugeForEvent("latency_percentile_99", filterLatencyMetrics, 99));
-            monitors.add(getGaugeForEvent("latency_percentile_995", filterLatencyMetrics, 99.5));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_5", filterLatencyMetrics, 5));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_25", filterLatencyMetrics, 25));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_50", filterLatencyMetrics, 50));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_75", filterLatencyMetrics, 75));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_90", filterLatencyMetrics, 90));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_95", filterLatencyMetrics, 95));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_99", filterLatencyMetrics, 99));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_995", filterLatencyMetrics, 99.5));
         }
 
         return monitors;
