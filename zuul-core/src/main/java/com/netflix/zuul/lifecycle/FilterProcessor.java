@@ -69,7 +69,10 @@ public class FilterProcessor<State> {
             return egressResp.doOnCompleted(() ->
                 ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
             ).onErrorResumeNext(ex -> {
-                ZuulMetrics.markError(ingressReq, System.currentTimeMillis() - startTime);
+                long duration = System.currentTimeMillis() - startTime;
+                logger.error("*** Unhandled Zuul Error : " + ingressReq.getHttpServerRequest().getUri() + " : " + duration + " ms : " + ex.getMessage());
+                ex.printStackTrace();
+                ZuulMetrics.markError(ingressReq, duration);
                 return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
             }).doOnNext(httpResp -> recordHttpStatusCode(ingressReq, httpResp.getStatus().code(), startTime));
         } catch (IOException ex) {
