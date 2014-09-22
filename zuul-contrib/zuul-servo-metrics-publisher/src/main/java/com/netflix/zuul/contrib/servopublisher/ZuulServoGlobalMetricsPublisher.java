@@ -80,7 +80,7 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
     public void initialize() {
         logger.info("Initializing Servo publisher for Zuul global metrics");
 
-        List<Monitor<?>> monitors = getServoMonitors();
+        List<Monitor<?>> monitors = getServoMonitors("ZuulExecution_global_");
 
         // publish metrics together under a single composite (it seems this name is ignored)
         MonitorConfig globalMetricsConfig = MonitorConfig.builder("ZuulExecution").build();
@@ -90,34 +90,34 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
         DefaultMonitorRegistry.getInstance().register(globalMetricsMonitor);
     }
 
-    private List<Monitor<?>> getServoMonitors() {
+    private List<Monitor<?>> getServoMonitors(String prefix) {
         List<Monitor<?>> monitors = new ArrayList<>();
 
         NumerusRollingNumber globalExecutionMetrics = ZuulMetrics.getGlobalExecutionMetrics();
         if (globalExecutionMetrics != null) {
-            monitors.add(getCumulativeCountForEvent("countSuccess", globalExecutionMetrics, ZuulExecutionEvent.SUCCESS));
-            monitors.add(getCumulativeCountForEvent("countFailure", globalExecutionMetrics, ZuulExecutionEvent.FAILURE));
+            monitors.add(getCumulativeCountForEvent(prefix + "countSuccess", globalExecutionMetrics, ZuulExecutionEvent.SUCCESS));
+            monitors.add(getCumulativeCountForEvent(prefix + "countFailure", globalExecutionMetrics, ZuulExecutionEvent.FAILURE));
         }
 
         NumerusRollingNumber globalStatusCodeMetrics = ZuulMetrics.getGlobalStatusCodeMetrics();
         if (globalStatusCodeMetrics != null) {
-            monitors.add(getCumulativeCountForEvent("count1xx", globalStatusCodeMetrics, ZuulStatusCode.OneXX));
-            monitors.add(getCumulativeCountForEvent("count2xx", globalStatusCodeMetrics, ZuulStatusCode.TwoXX));
-            monitors.add(getCumulativeCountForEvent("count3xx", globalStatusCodeMetrics, ZuulStatusCode.ThreeXX));
-            monitors.add(getCumulativeCountForEvent("count4xx", globalStatusCodeMetrics, ZuulStatusCode.FourXX));
-            monitors.add(getCumulativeCountForEvent("count5xx", globalStatusCodeMetrics, ZuulStatusCode.FiveXX));
+            monitors.add(getCumulativeCountForEvent(prefix + "count1xx", globalStatusCodeMetrics, ZuulStatusCode.OneXX));
+            monitors.add(getCumulativeCountForEvent(prefix + "count2xx", globalStatusCodeMetrics, ZuulStatusCode.TwoXX));
+            monitors.add(getCumulativeCountForEvent(prefix + "count3xx", globalStatusCodeMetrics, ZuulStatusCode.ThreeXX));
+            monitors.add(getCumulativeCountForEvent(prefix + "count4xx", globalStatusCodeMetrics, ZuulStatusCode.FourXX));
+            monitors.add(getCumulativeCountForEvent(prefix + "count5xx", globalStatusCodeMetrics, ZuulStatusCode.FiveXX));
         }
 
         NumerusRollingPercentile globalLatencyMetrics = ZuulMetrics.getGlobalLatencyMetrics();
         if (globalLatencyMetrics != null) {
-            monitors.add(getGaugeForEvent("latency_percentile_5", globalLatencyMetrics, 5));
-            monitors.add(getGaugeForEvent("latency_percentile_25", globalLatencyMetrics, 25));
-            monitors.add(getGaugeForEvent("latency_percentile_50", globalLatencyMetrics, 50));
-            monitors.add(getGaugeForEvent("latency_percentile_75", globalLatencyMetrics, 75));
-            monitors.add(getGaugeForEvent("latency_percentile_90", globalLatencyMetrics, 90));
-            monitors.add(getGaugeForEvent("latency_percentile_95", globalLatencyMetrics, 95));
-            monitors.add(getGaugeForEvent("latency_percentile_99", globalLatencyMetrics, 99));
-            monitors.add(getGaugeForEvent("latency_percentile_995", globalLatencyMetrics, 99.5));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_5", globalLatencyMetrics, 5));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_25", globalLatencyMetrics, 25));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_50", globalLatencyMetrics, 50));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_75", globalLatencyMetrics, 75));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_90", globalLatencyMetrics, 90));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_95", globalLatencyMetrics, 95));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_99", globalLatencyMetrics, 99));
+            monitors.add(getGaugeForEvent(prefix + "latency_percentile_995", globalLatencyMetrics, 99.5));
         }
 
         return monitors;
