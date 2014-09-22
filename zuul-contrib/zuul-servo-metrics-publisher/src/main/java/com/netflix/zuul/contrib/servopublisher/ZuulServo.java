@@ -20,6 +20,8 @@ import com.netflix.zuul.ZuulArgumentParser;
 import com.netflix.zuul.filterstore.ClassPathFilterStore;
 import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.lifecycle.FilterStateFactory;
+import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
+import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 import com.netflix.zuul.metrics.ZuulPlugins;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServer;
@@ -39,6 +41,7 @@ public class ZuulServo {
 
     public static HttpServer<ByteBuf, ByteBuf> forZuulServer(HttpServer<ByteBuf, ByteBuf> zuulServer) {
         ZuulPlugins.getInstance().registerMetricsPublisher(ZuulServoMetricsPublisher.getInstance());
+        ZuulGlobalMetricsPublisher globalMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveGlobalPublisher();
         return zuulServer;
     }
 
