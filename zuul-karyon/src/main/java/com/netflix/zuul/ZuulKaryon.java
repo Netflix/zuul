@@ -26,6 +26,8 @@ import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.lifecycle.FilterStateFactory;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServer;
+import io.reactivex.netty.protocol.http.server.HttpServerBuilder;
+import io.reactivex.netty.servo.ServoEventsListenerFactory;
 
 import java.util.HashMap;
 
@@ -35,21 +37,21 @@ public class ZuulKaryon {
     }
 
     public static KaryonServer newZuulServer(String appName, int port, FilterStore<HashMap<String, Object>> filterStore) {
-        return fromZuulServer(Zuul.newZuulServer(port, filterStore));
+        return newZuulServer(appName, port, filterStore, Zuul.DEFAULT_STATE_FACTORY);
     }
 
     public static <T> KaryonServer newZuulServer(String appName, int port, FilterStore<T> filterStore,
                                                  FilterStateFactory<T> filterStateFactory) {
-        return fromZuulServer(Zuul.newZuulServer(port, filterStore, filterStateFactory));
+        return fromZuulServer(newZuulServerBuilder(appName, port, filterStore, filterStateFactory).build());
     }
 
     public static KaryonServer newZuulServer(int port, FilterStore<HashMap<String, Object>> filterStore) {
-        return fromZuulServer(Zuul.newZuulServer(port, filterStore));
+        return newZuulServer("zuul", port, filterStore);
     }
 
     public static <T> KaryonServer newZuulServer(int port, FilterStore<T> filterStore,
                                                  FilterStateFactory<T> filterStateFactory) {
-        return fromZuulServer(Zuul.newZuulServer(port, filterStore, filterStateFactory));
+        return newZuulServer("zuul", port, filterStore, filterStateFactory);
     }
 
     public static KaryonServer fromZuulServer(HttpServer<ByteBuf, ByteBuf> zuulServer) {
@@ -62,6 +64,19 @@ public class ZuulKaryon {
                                     KaryonEurekaModule.asSuite(),
                                     new ArchaiusSuite(appName),
                                     KaryonServoModule.asSuite());
+    }
+
+    private static HttpServerBuilder<ByteBuf, ByteBuf> newZuulServerBuilder(String appName, int port,
+                                                                            FilterStore<HashMap<String, Object>> filterStore) {
+        return newZuulServerBuilder(appName, port, filterStore, Zuul.DEFAULT_STATE_FACTORY);
+    }
+
+    private static <T> HttpServerBuilder<ByteBuf, ByteBuf> newZuulServerBuilder(String appName, int port,
+                                                                                FilterStore<T> filterStore,
+                                                                                FilterStateFactory<T> filterStateFactory) {
+        return Zuul.newZuulServerBuilder(port, filterStore, filterStateFactory)
+                   .withMetricEventsListenerFactory(new ServoEventsListenerFactory(appName + "-rxnetty-client",
+                                                                                   appName + "-rxnetty-server"));
     }
 
     public static void main(String[] args) {
