@@ -70,8 +70,6 @@ public class FilterProcessor<State> {
                 ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
             ).onErrorResumeNext(ex -> {
                 long duration = System.currentTimeMillis() - startTime;
-                logger.error("*** Unhandled Zuul Error : " + ingressReq.getHttpServerRequest().getUri() + " : " + duration + " ms : " + ex.getMessage());
-                ex.printStackTrace();
                 ZuulMetrics.markError(ingressReq, duration);
                 return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
             }).doOnNext(httpResp -> recordHttpStatusCode(ingressReq, httpResp.getStatus().code(), startTime));
