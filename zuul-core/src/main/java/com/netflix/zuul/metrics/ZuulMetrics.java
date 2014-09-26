@@ -36,6 +36,7 @@ public class ZuulMetrics {
 
     private static NumerusRollingNumber globalExecution = new NumerusRollingNumber(ZuulExecutionEvent.INIT, () -> 10000, () -> 100);
     private static NumerusRollingPercentile globalLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
+    private static NumerusRollingNumber globalStatusCodeClass = new NumerusRollingNumber(ZuulStatusCodeClass.INIT, () -> 10000, () -> 100);
     private static NumerusRollingNumber globalStatusCode = new NumerusRollingNumber(ZuulStatusCode.INIT, () -> 10000, () -> 100);
     private static Map<Class<? extends Filter>, NumerusRollingNumber> filterExecutions = new ConcurrentHashMap<>();
     private static Map<Class<? extends Filter>, NumerusRollingPercentile> filterLatencies = new ConcurrentHashMap<>();
@@ -50,28 +51,13 @@ public class ZuulMetrics {
         globalLatency.addValue((int) duration);
     }
 
-    public static void mark1xx(IngressRequest ingressReq, long duration) {
-        markStatusCode(ingressReq, duration, ZuulStatusCode.OneXX);
-    }
+    public static void markStatus(int statusCode, IngressRequest ingressReq, long duration) {
+        final ZuulStatusCode zuulStatusCode = ZuulStatusCode.from(statusCode);
+        final ZuulStatusCodeClass zuulStatusCodeClass = zuulStatusCode.getStatusClass();
 
-    public static void mark2xx(IngressRequest ingressReq, long duration) {
-        markStatusCode(ingressReq, duration, ZuulStatusCode.TwoXX);
-    }
+        globalStatusCode.increment(zuulStatusCode);
+        globalStatusCodeClass.increment(zuulStatusCodeClass);
 
-    public static void mark3xx(IngressRequest ingressReq, long duration) {
-        markStatusCode(ingressReq, duration, ZuulStatusCode.ThreeXX);
-    }
-
-    public static void mark4xx(IngressRequest ingressReq, long duration) {
-        markStatusCode(ingressReq, duration, ZuulStatusCode.FourXX);
-    }
-
-    public static void mark5xx(IngressRequest ingressReq, long duration) {
-        markStatusCode(ingressReq, duration, ZuulStatusCode.FiveXX);
-    }
-
-    private static void markStatusCode(IngressRequest ingressReq, long duration, ZuulStatusCode statusCodeType) {
-        globalStatusCode.increment(statusCodeType);
     }
 
     public static void markFilterFailure(Class<? extends Filter> filterClass, long duration) {
@@ -106,13 +92,12 @@ public class ZuulMetrics {
         }
     }
 
-    public static void reportMetrics(int pollInMs) {
-        Thread metricsThread = new MetricPollingThread(pollInMs);
-        metricsThread.start();
-    }
-
     public static NumerusRollingNumber getGlobalExecutionMetrics() {
         return globalExecution;
+    }
+
+    public static NumerusRollingNumber getGlobalStatusCodeClassMetrics() {
+        return globalStatusCodeClass;
     }
 
     public static NumerusRollingNumber getGlobalStatusCodeMetrics() {
@@ -140,44 +125,6 @@ public class ZuulMetrics {
             NumerusRollingPercentile startingFilterLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
             filterLatencies.put(filterClass, startingFilterLatency);
             return startingFilterLatency;
-        }
-    }
-
-    private static class MetricPollingThread extends Thread {
-
-        final int pollInMs;
-
-        public MetricPollingThread(int pollInMs) {
-            this.pollInMs = pollInMs;
-        }
-
-        @Override
-        public void run() {
-            logger.info("Metrics thread started : " + getName());
-            while(!Thread.currentThread().isInterrupted()) {
-                StringBuilder bldr = new StringBuilder();
-                bldr.append("Metrics at : ").append(System.currentTimeMillis()).append("\n");
-                try {
-                    bldr.append("** GLOBAL Success ").append(globalExecution.getCumulativeSum(ZuulExecutionEvent.SUCCESS)).append(", Last 10s : ").append(globalExecution.getRollingSum(ZuulExecutionEvent.SUCCESS)).append("\n");
-                    bldr.append("** GLOBAL Failure ").append(globalExecution.getCumulativeSum(ZuulExecutionEvent.FAILURE)).append(", Last 10s : ").append(globalExecution.getRollingSum(ZuulExecutionEvent.FAILURE)).append("\n");
-                    bldr.append("** GLOBAL 1xx ").append(globalStatusCode.getCumulativeSum(ZuulStatusCode.OneXX)).append(", Last 10s : ").append(globalStatusCode.getRollingSum(ZuulStatusCode.OneXX)).append("\n");
-                    bldr.append("** GLOBAL 2xx ").append(globalStatusCode.getCumulativeSum(ZuulStatusCode.TwoXX)).append(", Last 10s : ").append(globalStatusCode.getRollingSum(ZuulStatusCode.TwoXX)).append("\n");
-                    bldr.append("** GLOBAL 3xx ").append(globalStatusCode.getCumulativeSum(ZuulStatusCode.ThreeXX)).append(", Last 10s : ").append(globalStatusCode.getRollingSum(ZuulStatusCode.ThreeXX)).append("\n");
-                    bldr.append("** GLOBAL 4xx ").append(globalStatusCode.getCumulativeSum(ZuulStatusCode.FourXX)).append(", Last 10s : ").append(globalStatusCode.getRollingSum(ZuulStatusCode.FourXX)).append("\n");
-                    bldr.append("** GLOBAL 5xx ").append(globalStatusCode.getCumulativeSum(ZuulStatusCode.FiveXX)).append(", Last 10s : ").append(globalStatusCode.getRollingSum(ZuulStatusCode.FiveXX)).append("\n");
-                    bldr.append("** GLOBAL Latency : 50p ").append(globalLatency.getPercentile(50.0)).append(", 90p ").append(globalLatency.getPercentile(90.0)).append(", 99p ").append(globalLatency.getPercentile(99.0)).append("\n");
-
-                    for (Class<? extends Filter> filterClass: filterExecutions.keySet()) {
-                        NumerusRollingNumber counter = filterExecutions.get(filterClass);
-                        NumerusRollingPercentile percentile = filterLatencies.get(filterClass);
-                        bldr.append("** ").append(filterClass.getSimpleName()).append(" SUCCESS ").append(counter.getCumulativeSum(ZuulExecutionEvent.SUCCESS)).append(", FAILURE ").append(counter.getCumulativeSum(ZuulExecutionEvent.FAILURE)).append(", MEDIAN ").append(percentile.getPercentile(50.0)).append(", 90p ").append(percentile.getPercentile(90.0)).append("\n");
-                    }
-                    logger.info(bldr.toString());
-                    Thread.sleep(pollInMs);
-                } catch (InterruptedException ex) {
-                    interrupt();
-                }
-            }
         }
     }
 }

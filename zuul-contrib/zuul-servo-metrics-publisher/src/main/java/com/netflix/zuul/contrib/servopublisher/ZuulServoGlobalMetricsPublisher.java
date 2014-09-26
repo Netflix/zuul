@@ -26,6 +26,7 @@ import com.netflix.zuul.metrics.ZuulExecutionEvent;
 import com.netflix.zuul.metrics.ZuulGlobalMetricsPublisher;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import com.netflix.zuul.metrics.ZuulStatusCode;
+import com.netflix.zuul.metrics.ZuulStatusCodeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,13 +100,20 @@ public class ZuulServoGlobalMetricsPublisher extends AbstractZuulServoMetricsPub
             monitors.add(getCumulativeCountForEvent(prefix + "countFailure", globalExecutionMetrics, ZuulExecutionEvent.FAILURE));
         }
 
+        NumerusRollingNumber globalStatusCodeClassMetrics = ZuulMetrics.getGlobalStatusCodeClassMetrics();
+        if (globalStatusCodeClassMetrics != null) {
+            for (ZuulStatusCodeClass statusCodeClass: ZuulStatusCodeClass.values()) {
+                Monitor<?> m = getCumulativeCountForEvent(prefix + "class_count" + statusCodeClass.str(), globalStatusCodeClassMetrics, statusCodeClass);
+                monitors.add(m);
+            }
+        }
+
         NumerusRollingNumber globalStatusCodeMetrics = ZuulMetrics.getGlobalStatusCodeMetrics();
         if (globalStatusCodeMetrics != null) {
-            monitors.add(getCumulativeCountForEvent(prefix + "count1xx", globalStatusCodeMetrics, ZuulStatusCode.OneXX));
-            monitors.add(getCumulativeCountForEvent(prefix + "count2xx", globalStatusCodeMetrics, ZuulStatusCode.TwoXX));
-            monitors.add(getCumulativeCountForEvent(prefix + "count3xx", globalStatusCodeMetrics, ZuulStatusCode.ThreeXX));
-            monitors.add(getCumulativeCountForEvent(prefix + "count4xx", globalStatusCodeMetrics, ZuulStatusCode.FourXX));
-            monitors.add(getCumulativeCountForEvent(prefix + "count5xx", globalStatusCodeMetrics, ZuulStatusCode.FiveXX));
+            for (ZuulStatusCode statusCode: ZuulStatusCode.values()) {
+                Monitor<?> m = getCumulativeCountForEvent(prefix + "count" + statusCode.str(), globalStatusCodeMetrics, statusCode);
+                monitors.add(m);
+            }
         }
 
         NumerusRollingPercentile globalLatencyMetrics = ZuulMetrics.getGlobalLatencyMetrics();

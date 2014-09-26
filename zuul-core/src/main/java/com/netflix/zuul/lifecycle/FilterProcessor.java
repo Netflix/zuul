@@ -72,7 +72,7 @@ public class FilterProcessor<State> {
                 long duration = System.currentTimeMillis() - startTime;
                 ZuulMetrics.markError(ingressReq, duration);
                 return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
-            }).doOnNext(httpResp -> recordHttpStatusCode(ingressReq, httpResp.getStatus().code(), startTime));
+            }).doOnNext(httpResp -> ZuulMetrics.markStatus(httpResp.getStatus().code(), ingressReq, startTime));
         } catch (IOException ex) {
             logger.error("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters", 500));
@@ -119,19 +119,5 @@ public class FilterProcessor<State> {
         if (errorFilter != null) {
             return errorFilter.execute(ex, ingressReq);
         } else return Observable.error(ex);
-    }
-
-    private static void recordHttpStatusCode(IngressRequest ingressReq, int statusCode, long startTime) {
-        if (statusCode >= 100 && statusCode < 200) {
-            ZuulMetrics.mark1xx(ingressReq, System.currentTimeMillis() - startTime);
-        } else if (statusCode >= 200 && statusCode < 300) {
-            ZuulMetrics.mark2xx(ingressReq, System.currentTimeMillis() - startTime);
-        } else if (statusCode >= 300 && statusCode < 400) {
-            ZuulMetrics.mark3xx(ingressReq, System.currentTimeMillis() - startTime);
-        } else if (statusCode >= 400 && statusCode < 500) {
-            ZuulMetrics.mark4xx(ingressReq, System.currentTimeMillis() - startTime);
-        } else if (statusCode >= 500 && statusCode < 600) {
-            ZuulMetrics.mark5xx(ingressReq, System.currentTimeMillis() - startTime);
-        }
     }
 }
