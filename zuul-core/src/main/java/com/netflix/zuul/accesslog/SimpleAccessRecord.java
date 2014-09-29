@@ -1,26 +1,27 @@
 package com.netflix.zuul.accesslog;
 
-import java.net.SocketAddress;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author Nitesh Kant
  */
 public class SimpleAccessRecord implements AccessRecord {
 
+    private final LocalDateTime timestamp;
     private final int statusCode;
     private final String httpMethod;
-    private final String uri;
-    private final SocketAddress remoteAddress;
+    private final String path;
 
-    public SimpleAccessRecord(int statusCode, String httpMethod, String uri, SocketAddress remoteAddress) {
+    public SimpleAccessRecord(LocalDateTime timestamp, int statusCode, String httpMethod, String path) {
+        this.timestamp = timestamp;
         this.statusCode = statusCode;
         this.httpMethod = httpMethod;
-        this.uri = uri;
-        this.remoteAddress = remoteAddress;
+        this.path = path;
     }
 
     @Override
     public String toLogLine() {
-        return statusCode + " " + httpMethod + " " + uri + " " + remoteAddress.toString();
+        return timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + " " + statusCode + " " + httpMethod + " " + path;
     }
 }

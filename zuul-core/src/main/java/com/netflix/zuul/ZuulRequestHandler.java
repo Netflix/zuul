@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,10 +49,10 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                                       logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                                   }
 
-                                  accessLogPublisher.publish(new SimpleAccessRecord(egressResp.getStatus().code(),
-                                                                                    request.getHttpMethod().name(),
-                                                                                    request.getUri(),
-                                                                                    request.getNettyChannel().remoteAddress()));
+                                  accessLogPublisher.publish(new SimpleAccessRecord(LocalDateTime.now(),
+                                          egressResp.getStatus().code(),
+                                          request.getHttpMethod().name(),
+                                          request.getPath()));
 
                                   for (String headerName : egressResp.getHeaders().keySet()) {
                                       List<String> headerValues = egressResp.getHeaders().get(headerName);
