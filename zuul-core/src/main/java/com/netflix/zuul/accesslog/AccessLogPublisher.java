@@ -13,7 +13,7 @@ import rx.subjects.PublishSubject;
  */
 public class AccessLogPublisher {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessLogPublisher.class);
+    private static final Logger logger = LoggerFactory.getLogger("ACCESS");
 
     private PublishSubject<AccessRecord> recordSubject = PublishSubject.create();
 
