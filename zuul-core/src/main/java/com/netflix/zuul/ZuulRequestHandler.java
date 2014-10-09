@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBuf> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZuulRequestHandler.class);
+    private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
     private final FilterProcessor<State> filterProcessor;
     private final AccessLogPublisher accessLogPublisher;
@@ -42,11 +42,17 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
             return response.close();
         }
 
+        if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
+            for (String headerName: request.getHeaders().names()) {
+                HTTP_DEBUG_LOGGER.info("Incoming HTTP Header : " + headerName + " -> " + request.getHeaders().get(headerName));
+            }
+        }
+
         return filterProcessor.applyAllFilters(ingressReq)
                               .flatMap(egressResp -> {
                                   response.setStatus(egressResp.getStatus());
-                                  if (logger.isDebugEnabled()) {
-                                      logger.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
+                                  if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
+                                      HTTP_DEBUG_LOGGER.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                                   }
 
                                   accessLogPublisher.publish(new SimpleAccessRecord(LocalDateTime.now(),
@@ -56,9 +62,9 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
 
                                   for (String headerName : egressResp.getHeaders().keySet()) {
                                       List<String> headerValues = egressResp.getHeaders().get(headerName);
-                                      if (logger.isDebugEnabled()) {
+                                      if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
                                           for (String headerValue : headerValues) {
-                                              logger.debug("Setting Outgoing HTTP Header : " + headerName + " -> "
+                                              HTTP_DEBUG_LOGGER.info("Setting Outgoing HTTP Header : " + headerName + " -> "
                                                            + headerValue);
                                           }
                                       }
