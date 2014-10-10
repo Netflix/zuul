@@ -22,6 +22,10 @@ import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.lifecycle.IngressRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.Scheduler;
+import rx.Subscriber;
+import rx.schedulers.Schedulers;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ZuulMetrics {
 
     private static final Logger logger = LoggerFactory.getLogger(ZuulMetrics.class);
+    private static final Scheduler metricsScheduler = Schedulers.computation();
 
     private static NumerusRollingNumber globalExecution = new NumerusRollingNumber(ZuulExecutionEvent.INIT, () -> 10000, () -> 100);
     private static NumerusRollingPercentile globalLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
@@ -42,22 +47,30 @@ public class ZuulMetrics {
     private static Map<Class<? extends Filter>, NumerusRollingPercentile> filterLatencies = new ConcurrentHashMap<>();
 
     public static void markSuccess(IngressRequest ingressReq, long duration) {
-        globalExecution.increment(ZuulExecutionEvent.SUCCESS);
-        globalLatency.addValue((int) duration);
+        Observable.create((Subscriber<? super Object> subscriber) -> {
+            globalExecution.increment(ZuulExecutionEvent.SUCCESS);
+            globalLatency.addValue((int) duration);
+            subscriber.onCompleted();
+        }).subscribeOn(metricsScheduler).subscribe();
     }
 
     public static void markError(IngressRequest ingressReq, long duration) {
-        globalExecution.increment(ZuulExecutionEvent.FAILURE);
-        globalLatency.addValue((int) duration);
+        Observable.create((Subscriber<? super Object> subscriber) -> {
+            globalExecution.increment(ZuulExecutionEvent.FAILURE);
+            globalLatency.addValue((int) duration);
+            subscriber.onCompleted();
+        }).subscribeOn(metricsScheduler).subscribe();
     }
 
     public static void markStatus(int statusCode, IngressRequest ingressReq, long duration) {
-        final ZuulStatusCode zuulStatusCode = ZuulStatusCode.from(statusCode);
-        final ZuulStatusCodeClass zuulStatusCodeClass = zuulStatusCode.getStatusClass();
+        Observable.create((Subscriber<? super Object> subscriber) -> {
+            final ZuulStatusCode zuulStatusCode = ZuulStatusCode.from(statusCode);
+            final ZuulStatusCodeClass zuulStatusCodeClass = zuulStatusCode.getStatusClass();
 
-        globalStatusCode.increment(zuulStatusCode);
-        globalStatusCodeClass.increment(zuulStatusCodeClass);
-
+            globalStatusCode.increment(zuulStatusCode);
+            globalStatusCodeClass.increment(zuulStatusCodeClass);
+            subscriber.onCompleted();
+        }).subscribeOn(metricsScheduler).subscribe();
     }
 
     public static void markFilterFailure(Class<? extends Filter> filterClass, long duration) {
@@ -73,23 +86,26 @@ public class ZuulMetrics {
     }
 
     private static void markFilter(Class<? extends Filter> filterClass, long duration, ZuulExecutionEvent executionType) {
-        NumerusRollingNumber filterCounter = filterExecutions.get(filterClass);
-        if (filterCounter != null) {
-            filterCounter.increment(executionType);
-        } else {
-            NumerusRollingNumber newFilterCounter = new NumerusRollingNumber(executionType, () -> 10000, () -> 100);
-            filterExecutions.put(filterClass, newFilterCounter);
-        }
+        Observable.create((Subscriber<? super Object> subscriber) -> {
+            NumerusRollingNumber filterCounter = filterExecutions.get(filterClass);
+            if (filterCounter != null) {
+                filterCounter.increment(executionType);
+            } else {
+                NumerusRollingNumber newFilterCounter = new NumerusRollingNumber(executionType, () -> 10000, () -> 100);
+                filterExecutions.put(filterClass, newFilterCounter);
+            }
 
-        NumerusRollingPercentile filterLatency = filterLatencies.get(filterClass);
+            NumerusRollingPercentile filterLatency = filterLatencies.get(filterClass);
 
-        if (filterLatency != null) {
-            filterLatency.addValue((int) duration);
-        } else {
-            NumerusRollingPercentile newFilterLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
-            newFilterLatency.addValue((int) duration);
-            filterLatencies.put(filterClass, newFilterLatency);
-        }
+            if (filterLatency != null) {
+                filterLatency.addValue((int) duration);
+            } else {
+                NumerusRollingPercentile newFilterLatency = new NumerusRollingPercentile(() -> 10000, () -> 100, () -> 1000, () -> true);
+                newFilterLatency.addValue((int) duration);
+                filterLatencies.put(filterClass, newFilterLatency);
+            }
+            subscriber.onCompleted();
+        }).subscribeOn(metricsScheduler).subscribe();
     }
 
     public static NumerusRollingNumber getGlobalExecutionMetrics() {
