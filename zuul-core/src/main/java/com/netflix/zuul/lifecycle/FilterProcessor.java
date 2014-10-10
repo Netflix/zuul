@@ -33,6 +33,7 @@ import java.util.List;
 public class FilterProcessor<State> {
 
     private final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
+    private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
     private final FilterStore<State> filterStore;
     private final FilterStateFactory<State> stateFactory;
@@ -90,21 +91,39 @@ public class FilterProcessor<State> {
     private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq,
                                                                 final RouteFilter<State> routeFilter,
                                                                 final UnicastDisposableCachingSubject<ByteBuf> ingressContent) {
-        return egressReq.flatMap(routeFilter::execute).single()
-                        .doOnTerminate(() -> ingressContent.dispose(byteBuf -> {
-                            /**
-                             * Why do we release here?
-                             *
-                             * All ByteBuf which were never consumed are disposed and sent here. This means that the
-                             * client in the route never consumed this ByteBuf. Before sending this ByteBuf to the
-                             * content subject, we do a retain (see above for reason) expecting the client in the route
-                             * to release it when written over the wire. In this case, though, the client never consumed
-                             * it and hence never released corresponding to the retain done by us.
-                             */
-                            if (byteBuf.refCnt() > 1) { // 1 refCount will be from the subject putting into the cache.
-                                byteBuf.release();
+        return egressReq.flatMap(req -> {
+            if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
+                for (String headerName : req.getHttpClientRequest().getHeaders().names()) {
+                    for (String headerValue : req.getHttpClientRequest().getHeaders().getAll(headerName)) {
+                        HTTP_DEBUG_LOGGER.debug("Origin req header : " + headerName + " -> " + headerValue);
+                    }
+                }
+            }
+            return routeFilter.execute(req);
+        }).single().
+                doOnNext(resp -> {
+                    if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
+                        for (String headerName : resp.getHeaders().names()) {
+                            for (String headerValue : resp.getHeaders().getAll(headerName)) {
+                                HTTP_DEBUG_LOGGER.debug("Origin resp header : " + headerName + " -> " + headerValue);
                             }
-                        }));
+                        }
+                    }
+                }).
+                doOnTerminate(() -> ingressContent.dispose(byteBuf -> {
+                    /**
+                     * Why do we release here?
+                     *
+                     * All ByteBuf which were never consumed are disposed and sent here. This means that the
+                     * client in the route never consumed this ByteBuf. Before sending this ByteBuf to the
+                     * content subject, we do a retain (see above for reason) expecting the client in the route
+                     * to release it when written over the wire. In this case, though, the client never consumed
+                     * it and hence never released corresponding to the retain done by us.
+                     */
+                    if (byteBuf.refCnt() > 1) { // 1 refCount will be from the subject putting into the cache.
+                        byteBuf.release();
+                    }
+                }));
     }
 
     private Observable<EgressResponse<State>> applyPostFilters(final Observable<EgressResponse<State>> initialEgressResp, final List<PostFilter<State>> postFilters) {
