@@ -20,7 +20,6 @@ import com.netflix.karyon.KaryonBootstrapSuite;
 import com.netflix.karyon.KaryonServer;
 import com.netflix.karyon.archaius.ArchaiusSuite;
 import com.netflix.karyon.eureka.KaryonEurekaModule;
-import com.netflix.karyon.servo.KaryonServoModule;
 import com.netflix.zuul.filterstore.ClassPathFilterStore;
 import com.netflix.zuul.filterstore.FilterStore;
 import com.netflix.zuul.lifecycle.FilterStateFactory;
@@ -62,8 +61,7 @@ public class ZuulKaryon {
         return Karyon.forHttpServer(zuulServer,
                                     new KaryonBootstrapSuite(),
                                     KaryonEurekaModule.asSuite(),
-                                    new ArchaiusSuite(appName),
-                                    KaryonServoModule.asSuite());
+                                    new ArchaiusSuite(appName));
     }
 
     private static HttpServerBuilder<ByteBuf, ByteBuf> newZuulServerBuilder(String appName, int port,
