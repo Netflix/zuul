@@ -8,6 +8,9 @@ dependencies {
     compile 'com.netflix.karyon:karyon-servo:2.1.00-RC5'
     compile 'com.netflix.karyon:karyon-archaius:2.1.00-RC5'
     compile 'org.codehaus.groovy:groovy-all:2.3.3'
+    // TODO: direct deps on rxnetty should be removed when karyon is released with latest rxnetty
+    compile 'com.netflix.rxnetty:rx-netty-servo:0.3.18'
+    compile 'com.netflix.rxnetty:rx-netty-contexts:0.3.18'
     testCompile 'junit:junit-dep:4.10'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
