@@ -13,6 +13,8 @@ import rx.subjects.PublishSubject;
  */
 public class AccessLogPublisher {
 
+    private static final boolean disableAccessLogs = Boolean.getBoolean("zuul.access.log.disable");
+
     private static final Logger logger = LoggerFactory.getLogger("ACCESS");
 
     private PublishSubject<AccessRecord> recordSubject = PublishSubject.create();
@@ -30,6 +32,8 @@ public class AccessLogPublisher {
     }
 
     public void publish(AccessRecord record) {
-        recordSubject.onNext(record);
+        if (!disableAccessLogs) {
+            recordSubject.onNext(record);
+        }
     }
 }
