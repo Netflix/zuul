@@ -264,7 +264,7 @@ class ZuulHostRequest extends ZuulFilter {
 
         try {
             httpRequest.setHeaders(headers)
-            HttpResponse zuulResponse = httpRequest(httpclient, httpHost, httpRequest)
+            HttpResponse zuulResponse = executeHttpRequest(httpclient, httpHost, httpRequest)
             return zuulResponse
 
 
@@ -277,7 +277,7 @@ class ZuulHostRequest extends ZuulFilter {
 
     }
 
-    HttpResponse httpRequest(HttpClient httpclient, HttpHost httpHost, HttpRequest httpRequest) {
+    HttpResponse executeHttpRequest(HttpClient httpclient, HttpHost httpHost, HttpRequest httpRequest) {
         HostCommand command = new HostCommand(httpclient, httpHost, httpRequest)
         command.execute();
     }
@@ -649,5 +649,3 @@ class ZuulHostRequest extends ZuulFilter {
 
     }
 }
-
-
