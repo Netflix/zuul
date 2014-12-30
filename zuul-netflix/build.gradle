@@ -19,6 +19,7 @@ dependencies {
     compile 'com.netflix.turbine:turbine-core:[0.4,)'
     
     provided 'org.powermock:powermock-api-mockito:1.5.4'
+    provided 'junit:junit-dep:4.10'
 }
 
 jar {

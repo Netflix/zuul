@@ -21,6 +21,7 @@ dependencies {
     compile 'com.sun.jersey:jersey-servlet:1.17.1'
 
     groovy "org.codehaus.groovy:groovy-all:2.2.2"
+    provided 'junit:junit-dep:4.10'
 }
 
 javadoc {
