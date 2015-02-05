@@ -90,6 +90,7 @@ public class ZuulServlet extends HttpServlet {
         } catch (Throwable e) {
             error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" + e.getClass().getName()));
         } finally {
+            RequestContext.getCurrentContext().unset();
         }
     }
 
