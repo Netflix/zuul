@@ -18,6 +18,9 @@ package com.netflix.zuul.lifecycle;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
+/**
+ * Class that represents an incoming HTTP request and wraps an RxNetty {@link HttpServerRequest}
+ */
 public class IngressRequest {
 
     private final HttpServerRequest<ByteBuf> httpServerRequest;
