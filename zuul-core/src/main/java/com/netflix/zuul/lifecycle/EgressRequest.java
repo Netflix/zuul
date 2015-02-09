@@ -24,6 +24,12 @@ import rx.Observable;
 
 import java.util.Map;
 
+/**
+ * Class that represents a request we are making to the origin server.  Use the {@link EgressRequest#copiedFrom} method to
+ * copy the relevant fields from an {@link IngressRequest} and then filters can be applied to a {@link EgressRequest} until
+ * it is ready to create an actual HTTP request against the origin.
+ * @param <T>
+ */
 public class EgressRequest<T> {
     private final static Logger logger = LoggerFactory.getLogger(EgressRequest.class);
 
@@ -39,6 +45,14 @@ public class EgressRequest<T> {
         this.state = state;
     }
 
+    /**
+     * Copy over all references from an {@link IngressRequest} to create a fresh {@link EgressRequest}.
+     * @param ingressReq initial {@link IngressRequest}
+     * @param incomingContent stream of HTTP content to pass to origin
+     * @param requestState encapsulation of state within the filter chain
+     * @param <T> type of requestState
+     * @return a fresh {@link EgressRequest} that filters may work with
+     */
     public static <T> EgressRequest<T> copiedFrom(IngressRequest ingressReq, Observable<ByteBuf> incomingContent, T requestState) {
         HttpServerRequest<ByteBuf> nettyReq = ingressReq.getHttpServerRequest();
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(nettyReq.getHttpMethod(), nettyReq.getUri());

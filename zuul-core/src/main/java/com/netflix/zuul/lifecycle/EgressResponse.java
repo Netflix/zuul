@@ -25,6 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Copy of {@link IngressResponse} that filters may work with
+ * @param <T>
+ */
 public class EgressResponse<T> {
     private final HttpResponseStatus status;
     private final Map<String, List<String>> headers;

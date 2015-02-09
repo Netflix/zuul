@@ -21,6 +21,10 @@ import io.reactivex.netty.protocol.http.client.HttpClientResponse;
 import io.reactivex.netty.protocol.http.client.HttpResponseHeaders;
 import rx.Observable;
 
+/**
+ * Wrapper around response from origin
+ * @param <T>
+ */
 public class IngressResponse<T> {
     private final HttpResponseHeaders headers;
     private final HttpResponseStatus status;

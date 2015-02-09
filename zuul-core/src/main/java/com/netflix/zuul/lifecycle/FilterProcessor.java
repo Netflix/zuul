@@ -30,6 +30,27 @@ import rx.Observable;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * This class is responsible for wiring together the entire filter chain.  A class which invokes this class must
+ * convert the HTTP objects into Zuul domain objects prior to calling {@link #applyAllFilters}.
+ *
+ * The flow:
+ * 1) Given an incoming {@link IngressRequest}, first copy the reference to the content.  RxNetty attempts to discard it ASAP,
+ * so we need to capture this reference before we do any other work.  From the content and {@link IngressRequest},
+ * create a {@link EgressRequest}.
+ * 2) Apply all of the {@link PreFilter}s to the {@link EgressRequest}.  These filters are intended to provide whatever logic
+ * is required to modify an HTTP request before the routing decision is made.
+ * 3) Apply the single {@link RouteFilter} to the {@link EgressRequest}.  This is a mandatory filter that performs the
+ * actual HTTP call to the origin.  It is also responsible for mapping the HTTP response object into a {@link IngressResponse}.
+ * 4) Concert the {@link IngressResponse} into a {@link EgressResponse}.
+ * 5) Apply all of the {@link PostFilter}s to the {@link EgressResponse}.  These filters are intended to provide any necessary logic
+ * that might inspect/modify an HTTP response.  After all of these filters have been applied, the {@link EgressResponse} is
+ * ready to be handed back so that the caling class can write it out into the actual HTTP response mechanism.
+ * Error) At any point along the way, if a filter throws an error, the {@link ErrorFilter} is invoked.  An {@link ErrorFilter}
+ * provides a whole {@link EgressResponse} and ends the entire chain.  If you desire more granular error-handling, you should wire that up
+ * in a filter yourself.
+ * @param <State>
+ */
 public class FilterProcessor<State> {
 
     private final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
