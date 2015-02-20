@@ -1,5 +1,7 @@
 package com.netflix.zuul.lifecycle;
 
+import rx.functions.Action0;
+import rx.observers.SerializedObserver;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 import rx.Observer;
@@ -20,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  *
  * @author Nitesh Kant
  */
-final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends Subject<T, T> {
+public final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends Subject<T, T> {
 
     private final State<T> state;
 
@@ -32,6 +34,11 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
     public static <T extends ReferenceCounted> UnicastDisposableCachingSubject<T> create() {
         State<T> state = new State<>();
         return new UnicastDisposableCachingSubject<>(state);
+    }
+
+    @Override
+    public boolean hasObservers() {
+        return state.isState(State.STATES.SUBSCRIBED);
     }
 
     /**
@@ -49,13 +56,12 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
     }
 
     private void _dispose(Action1<T> disposedElementsProcessor) {
-        Subscriber<T> noOpSub = new PassThruObserver<>(Subscribers.create(disposedElementsProcessor,
-                                                                          throwable -> { }),
-                                                       state); // Any buffering post buffer draining must not be lying in the buffer
-        state.buffer.sendAllNotifications(noOpSub); // It is important to empty the buffer before setting the observer.
-                                                    // If not done, there can be two threads draining the buffer
-                                                    // (PassThroughObserver on any notification) and this thread.
-        state.setObserverRef(noOpSub); // All future notifications are not sent anywhere.
+        Subscriber<T> actualSub = Subscribers.create(disposedElementsProcessor);
+        state.buffer.sendAllNotifications(actualSub);
+        state.setObserverRef(actualSub);
+        // Any notifications that went into the buffer between the prior sendAllNotifications and swapping
+        // the observer, will otherwise be lost.
+        state.buffer.sendAllNotifications(state.observerRef); // Subscriber is always serialized (via setObserverRef) so this will not produce concurrent notifications.
     }
 
     /** The common state. */
@@ -74,7 +80,7 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
 
         /** Following Observers are associated with the states:
          * UNSUBSCRIBED => {@link BufferedObserver}
-         * SUBSCRIBED => {@link PassThruObserver}
+         * SUBSCRIBED => actual subscriber
          * DISPOSED => {@link Subscribers#empty()}
          */
         private volatile Observer<? super T> observerRef = new BufferedObserver();
@@ -100,11 +106,11 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
         }
 
         public void setObserverRef(Observer<? super T> o) { // Guarded by casState()
-            observerRef = o;
+            observerRef = new SerializedObserver<>(o);
         }
 
-        public boolean casObserverRef(Observer<? super T> expected, Observer<? super T> next) {
-            return OBSERVER_UPDATER.compareAndSet(this, expected, next);
+        public boolean isState(STATES other) {
+            return state == other.ordinal();
         }
 
         /**
@@ -144,13 +150,19 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
             if (state.casState(State.STATES.UNSUBSCRIBED, State.STATES.SUBSCRIBED)) {
 
                 // drain queued notifications before subscription
-                // we do this here before PassThruObserver so the consuming thread can do this before putting itself in
+                // we do this here before subscriber so the consuming thread can do this before putting itself in
                 // the line of the producer
                 state.buffer.sendAllNotifications(subscriber);
-
-                // register real observer for pass-thru ... and drain any further events received on first notification
-                state.setObserverRef(new PassThruObserver<>(subscriber, state));
-                subscriber.add(Subscriptions.create(() -> state.setObserverRef(Subscribers.empty())));
+                subscriber.add(Subscriptions.create(new Action0() {
+                    @Override
+                    public void call() {
+                        state.setObserverRef(Subscribers.empty());
+                    }
+                }));
+                state.setObserverRef(subscriber);
+                // Any notifications that went into the buffer between the prior sendAllNotifications and swapping
+                // the observer, will otherwise be lost.
+                state.buffer.sendAllNotifications(state.observerRef); // Subscriber is always serialized (via setObserverRef) so this will not produce concurrent notifications.
             } else if(State.STATES.SUBSCRIBED.ordinal() == state.state) {
                 subscriber.onError(new IllegalStateException("Content can only have one subscription. Use Observable.publish() if you want to multicast."));
             } else if(State.STATES.DISPOSED.ordinal() == state.state) {
@@ -175,53 +187,6 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
         state.observerRef.onNext(t);
     }
 
-    /**
-     * This is a temporary observer between buffering and the actual that gets into the line of notifications
-     * from the producer and will drain the queue of any items received during the race of the initial drain and
-     * switching this.
-     *
-     * It will then immediately swap itself out for the actual (after a single notification), but since this is
-     * now being done on the same producer thread no further buffering will occur.
-     */
-    private static final class PassThruObserver<T> extends Subscriber<T> {
-
-        private final Observer<? super T> actual;
-        // this assumes single threaded synchronous notifications (the Rx contract for a single Observer)
-        private final ByteBufAwareBuffer<T> buffer; // Same buffer instance from the original BufferedObserver.
-        private final State<T> state;
-
-        PassThruObserver(Observer<? super T> actual, State<T> state) {
-            this.actual = actual;
-            buffer = state.buffer;
-            this.state = state;
-        }
-
-        @Override
-        public void onCompleted() {
-            drainIfNeededAndSwitchToActual();
-            actual.onCompleted();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            drainIfNeededAndSwitchToActual();
-            actual.onError(e);
-        }
-
-        @Override
-        public void onNext(T t) {
-            drainIfNeededAndSwitchToActual();
-            actual.onNext(t);
-        }
-
-        private void drainIfNeededAndSwitchToActual() {
-            buffer.sendAllNotifications(this);
-            // now we can safely change over to the actual and get rid of the pass-thru
-            // but only if not unsubscribed
-            state.casObserverRef(this, actual);
-        }
-    }
-
     private static final class ByteBufAwareBuffer<T> {
 
         private final ConcurrentLinkedQueue<Object> actual = new ConcurrentLinkedQueue<>();
@@ -232,11 +197,11 @@ final class UnicastDisposableCachingSubject<T extends ReferenceCounted> extends 
             actual.add(toAdd);
         }
 
-        public void sendAllNotifications(Subscriber<? super T> subscriber) {
+        public void sendAllNotifications(Observer<? super T> observer) {
             Object notification; // Can be onComplete notification, onError notification or just the actual "T".
             while ((notification = actual.poll()) != null) {
                 try {
-                    nl.accept(subscriber, notification);
+                    nl.accept(observer, notification);
                 } finally {
                     ReferenceCountUtil.release(notification); // If it is the actual T for onNext and is a ByteBuf, it will be released.
                 }
