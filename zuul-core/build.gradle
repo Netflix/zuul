@@ -1,5 +1,5 @@
 dependencies { 
-    compile 'com.netflix.rxnetty:rx-netty:0.3.18'
+    compile 'io.reactivex:rxnetty:0.4.6'
     compile 'com.netflix.numerus:numerus:1.1'
     compile 'org.slf4j:slf4j-simple:1.7.7'
     testCompile 'junit:junit-dep:4.10'
