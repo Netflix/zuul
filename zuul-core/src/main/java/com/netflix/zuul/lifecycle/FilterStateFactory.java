@@ -15,8 +15,10 @@
  */
 package com.netflix.zuul.lifecycle;
 
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+
 public interface FilterStateFactory<T> {
 
-    public T create();
+    public T create(HttpServerRequest httpServerRequest);
     
 }

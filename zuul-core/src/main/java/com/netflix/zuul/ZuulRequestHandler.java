@@ -68,11 +68,14 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                     if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
                         HTTP_DEBUG_LOGGER.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                     }
+
+                    // Write to access log.
                     accessLogPublisher.publish(new SimpleAccessRecord(LocalDateTime.now(),
                             egressResp.getStatus().code(),
                             request.getHttpMethod().name(),
                             request.getPath()));
-                    //now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
+
+                    // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
                     for (String headerName : egressResp.getHeaders().keySet()) {
                         List<String> headerValues = egressResp.getHeaders().get(headerName);
                         if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {

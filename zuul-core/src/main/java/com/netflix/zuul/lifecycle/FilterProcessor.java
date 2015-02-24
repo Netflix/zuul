@@ -81,12 +81,14 @@ public class FilterProcessor<State> {
             ingressReq.getHttpServerRequest().getContent().map(ByteBuf::retain).subscribe(cachedContent); // Caches data if arrived before client writes it out, else passes through
 
 
-            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(ingressReq, cachedContent,
-                                                                             stateFactory.create());
+            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(
+                    ingressReq, cachedContent, stateFactory.create(ingressReq.getHttpServerRequest()));
+
             Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
             Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter(),
                                                                               cachedContent);
             Observable<EgressResponse<State>> initialEgressResp = ingressResp.map(EgressResponse::from);
+
             Observable<EgressResponse<State>> egressResp = applyPostFilters(initialEgressResp, filtersForRoute.getPostFilters());
             return egressResp.doOnCompleted(() ->
                 ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
