@@ -1,5 +1,7 @@
 package com.netflix.zuul.lifecycle;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.netty.channel.Channel;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
@@ -19,14 +21,11 @@ import java.util.Map;
  * Date: 2/23/15
  * Time: 1:41 PM
  */
+@Singleton
 public class EdgeZuulFilterStateFactory implements FilterStateFactory<EdgeRequestContext>
 {
-    //@Inject
+    @Inject
     private OriginManager originManager;
-
-    public EdgeZuulFilterStateFactory(OriginManager originManager) {
-        this.originManager = originManager;
-    }
 
     @Override
     public EdgeRequestContext create(HttpServerRequest httpServerRequest)

@@ -24,12 +24,18 @@ import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerBuilder;
 import io.reactivex.netty.protocol.http.server.HttpServerPipelineConfigurator;
+import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.HashMap;
 
 public class Zuul {
 
-    public static final FilterStateFactory<HashMap<String, Object>> DEFAULT_STATE_FACTORY = HashMap::new;
+    public static final FilterStateFactory<HashMap<String, Object>> DEFAULT_STATE_FACTORY = new FilterStateFactory() {
+        @Override
+        public Object create(HttpServerRequest httpServerRequest) {
+            return new HashMap();
+        }
+    };
 
     public static HttpServer<ByteBuf, ByteBuf> newZuulServer(int port, FilterStore<HashMap<String, Object>> filterStore) {
         return newZuulServer(port, filterStore, DEFAULT_STATE_FACTORY);

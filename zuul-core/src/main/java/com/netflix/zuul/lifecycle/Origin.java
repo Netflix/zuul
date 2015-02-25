@@ -16,25 +16,22 @@ public class Origin
     private static final Logger LOG = LoggerFactory.getLogger(Origin.class);
 
     private final String vip;
-    private final TempLoadBalancer loadBalancer;
+    private final LoadBalancer loadBalancer;
 
-    public Origin(String vip)
+    public Origin(String vip, LoadBalancer loadBalancer)
     {
         if (vip == null) {
             throw new IllegalArgumentException("Requires a non-null VIP.");
         }
         this.vip = vip;
-        loadBalancer = new TempLoadBalancer(vip);
-        loadBalancer.init();
-
-
+        this.loadBalancer = loadBalancer;
     }
 
     public String getVip() {
         return vip;
     }
 
-    public TempLoadBalancer getLoadBalancer() {
+    public LoadBalancer getLoadBalancer() {
         return loadBalancer;
     }
 

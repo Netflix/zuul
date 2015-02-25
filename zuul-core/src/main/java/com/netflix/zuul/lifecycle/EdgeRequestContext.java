@@ -1,7 +1,6 @@
 package com.netflix.zuul.lifecycle;
 
 
-import com.google.inject.Inject;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class EdgeRequestContext
 {
-    @Inject
     private OriginManager originManager;
 
     private final ZuulMessage requestMessage;
