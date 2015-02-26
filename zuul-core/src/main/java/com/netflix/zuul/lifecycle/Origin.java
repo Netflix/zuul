@@ -1,5 +1,6 @@
 package com.netflix.zuul.lifecycle;
 
+import com.netflix.zuul.context.RequestContext;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -35,9 +36,9 @@ public class Origin
         return loadBalancer;
     }
 
-    public Observable<IngressResponse<ByteBuf>> request(EgressRequest<EdgeRequestContext> egressReq)
+    public Observable<IngressResponse<ByteBuf>> request(EgressRequest<RequestContext> egressReq)
     {
-        EdgeRequestContext ctx = egressReq.get();
+        RequestContext ctx = egressReq.get();
 
         HttpClient<ByteBuf, ByteBuf> client = getLoadBalancer().getNextServer();
 

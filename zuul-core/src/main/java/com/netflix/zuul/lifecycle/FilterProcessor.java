@@ -15,7 +15,10 @@
  */
 package com.netflix.zuul.lifecycle;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.netflix.zuul.ZuulException;
+import com.netflix.zuul.context.FilterStateFactory;
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.PostFilter;
 import com.netflix.zuul.filter.PreFilter;
@@ -51,6 +54,7 @@ import java.util.List;
  * in a filter yourself.
  * @param <State>
  */
+@Singleton
 public class FilterProcessor<State> {
 
     private final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
@@ -59,6 +63,7 @@ public class FilterProcessor<State> {
     private final FilterStore<State> filterStore;
     private final FilterStateFactory<State> stateFactory;
 
+    @Inject
     public FilterProcessor(FilterStore<State> filterStore, FilterStateFactory<State> stateFactory) {
         this.filterStore = filterStore;
         this.stateFactory = stateFactory;

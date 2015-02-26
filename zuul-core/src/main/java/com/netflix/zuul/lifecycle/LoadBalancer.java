@@ -10,5 +10,6 @@ import io.reactivex.netty.protocol.http.client.HttpClient;
  */
 public interface LoadBalancer
 {
+    public void init();
     public HttpClient<ByteBuf, ByteBuf> getNextServer();
 }

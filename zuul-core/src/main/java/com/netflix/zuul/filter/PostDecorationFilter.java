@@ -1,6 +1,6 @@
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EdgeRequestContext;
+import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.lifecycle.EgressResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,15 +14,15 @@ import org.slf4j.LoggerFactory;
  * Time: 10:00 AM
  */
 public abstract class PostDecorationFilter
-        extends FilterComputation<EgressResponse<EdgeRequestContext>>
-        implements PostFilter<EdgeRequestContext>
+        extends FilterComputation<EgressResponse<RequestContext>>
+        implements PostFilter<RequestContext>
 {
     protected final Logger LOG = LoggerFactory.getLogger("zuul.filter." + this.getClass().getSimpleName());
 
-    public abstract void apply(EdgeRequestContext ctx);
+    public abstract void apply(RequestContext ctx);
 
     @Override
-    public EgressResponse<EdgeRequestContext> apply(EgressResponse<EdgeRequestContext> output)
+    public EgressResponse<RequestContext> apply(EgressResponse<RequestContext> output)
     {
         this.apply(output.get());
         return output;

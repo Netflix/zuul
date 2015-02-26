@@ -22,11 +22,16 @@ public class OriginManager
     private final DynamicStringProperty ORIGIN_VIPS = DynamicPropertyFactory.getInstance().getStringProperty("zuul.origins", "");
     private final Map<String, Origin> origins = new ConcurrentHashMap<>();
 
-    @Inject
-    private LoadBalancerFactory loadBalancerFactory;
+    private final LoadBalancerFactory loadBalancerFactory;
 
-    public OriginManager()
+    @Inject
+    public OriginManager(LoadBalancerFactory loadBalancerFactory)
     {
+        if (loadBalancerFactory == null) {
+            throw new IllegalArgumentException("OriginManager.loadBalancerFactory is null.");
+        }
+        this.loadBalancerFactory = loadBalancerFactory;
+
         try {
             String[] vips = ORIGIN_VIPS.get().split(",");
             for (String vip : vips) {
@@ -34,8 +39,13 @@ public class OriginManager
                     vip = vip.trim();
                     if (vip.length() > 0) {
                         LOG.info("Registering Origin for vip=" + vip);
-                        LoadBalancer lb = loadBalancerFactory.create(vip);
-                        this.origins.put(vip, new Origin(vip, lb));
+                        try {
+                            LoadBalancer lb = loadBalancerFactory.create(vip);
+                            this.origins.put(vip, new Origin(vip, lb));
+                        } catch (Exception e) {
+                            // TODO - resolve why this is failing on first attempts at startup.
+                            LOG.error("Error creating loadbalancer for vip=" + vip, e);
+                        }
                     }
                 }
             }

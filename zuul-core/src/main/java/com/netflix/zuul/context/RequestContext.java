@@ -1,6 +1,7 @@
-package com.netflix.zuul.lifecycle;
+package com.netflix.zuul.context;
 
 
+import com.netflix.zuul.lifecycle.ZuulMessage;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.HashMap;
@@ -10,10 +11,8 @@ import java.util.Map;
  * NOTE: Not threadsafe, and not intended to be used concurrently.
  */
 @SuppressWarnings("serial")
-public class EdgeRequestContext
+public class RequestContext
 {
-    private OriginManager originManager;
-
     private final ZuulMessage requestMessage;
     private final ZuulMessage responseMessage;
     private final HashMap<String, Object> attributes = new HashMap<>();
@@ -21,13 +20,10 @@ public class EdgeRequestContext
 
     private HttpServerRequest httpServerRequest;
 
-    public EdgeRequestContext(ZuulMessage requestMessage, ZuulMessage responseMessage)
+    public RequestContext(ZuulMessage requestMessage, ZuulMessage responseMessage)
     {
         this.requestMessage = requestMessage;
         this.responseMessage = responseMessage;
-
-        // Inject any helper objects into the context for use of filters.
-        helpers.put("origin_manager", originManager);
     }
 
     public ZuulMessage getRequestMessage() {

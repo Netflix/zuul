@@ -1,7 +1,10 @@
-package com.netflix.zuul.lifecycle;
+package com.netflix.zuul.context;
 
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import com.netflix.zuul.lifecycle.Headers;
+import com.netflix.zuul.lifecycle.HttpQueryParams;
+import com.netflix.zuul.lifecycle.HttpRequestMessage;
+import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import io.netty.channel.Channel;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
@@ -11,24 +14,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A FilterStateFactory implementation that creates new EdgeRequestContext instances for each request,
- * and adds various manager and helper instances into it.
- *
- * This is mainly useful as not able to use DI on the groovy filters, so we have DI inject the instances on this class
- * and then pass them to filters in the EdgeRequestContext.getHelpers().
- *
  * User: michaels@netflix.com
- * Date: 2/23/15
- * Time: 1:41 PM
+ * Date: 2/25/15
+ * Time: 4:03 PM
  */
-@Singleton
-public class EdgeZuulFilterStateFactory implements FilterStateFactory<EdgeRequestContext>
+public class RequestContextFactory implements FilterStateFactory<RequestContext>
 {
+    private RequestContextDecorator decorator;
+
     @Inject
-    private OriginManager originManager;
+    public RequestContextFactory(RequestContextDecorator decorator) {
+        this.decorator = decorator;
+    }
 
     @Override
-    public EdgeRequestContext create(HttpServerRequest httpServerRequest)
+    public RequestContext create(HttpServerRequest httpServerRequest)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
@@ -43,11 +43,14 @@ public class EdgeZuulFilterStateFactory implements FilterStateFactory<EdgeReques
         );
         HttpResponseMessage httpRespMsg = new HttpResponseMessage(httpReqMsg, 500);
 
-        EdgeRequestContext ctx = new EdgeRequestContext(httpReqMsg, httpRespMsg);
+        // Create the new context object.
+        RequestContext ctx = new RequestContext(httpReqMsg, httpRespMsg);
         ctx.internal_setHttpServerRequest(httpServerRequest);
 
-        // Inject any helper objects into the context for use of filters.
-        ctx.getHelpers().put("origin_manager", originManager);
+        // Optionally decorate it.
+        if (decorator != null) {
+            ctx = decorator.decorate(ctx);
+        }
 
         return ctx;
     }

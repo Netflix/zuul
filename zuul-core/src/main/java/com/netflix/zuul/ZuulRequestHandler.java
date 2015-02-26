@@ -1,5 +1,7 @@
 package com.netflix.zuul;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
 import com.netflix.zuul.lifecycle.FilterProcessor;
@@ -22,17 +24,26 @@ import java.util.List;
  *
  * @author Nitesh Kant
  */
+@Singleton
 public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBuf> {
 
     private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
-    private final FilterProcessor<State> filterProcessor;
+    @Inject
+    private FilterProcessor<State> filterProcessor;
+
     private final AccessLogPublisher accessLogPublisher;
 
-    public ZuulRequestHandler(FilterProcessor<State> filterProcessor) {
-        this.filterProcessor = filterProcessor;
+
+    public ZuulRequestHandler() {
         accessLogPublisher = new AccessLogPublisher();
     }
+
+//    @Inject
+//    public ZuulRequestHandler(FilterProcessor<State> filterProcessor) {
+//        this.filterProcessor = filterProcessor;
+//        accessLogPublisher = new AccessLogPublisher();
+//    }
 
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
