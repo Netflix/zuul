@@ -20,13 +20,14 @@ import com.netflix.zuul.filterstore.FileSystemPollingFilterStore;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.List;
 
 public class GroovyFileSystemFilterStore<State> extends FileSystemPollingFilterStore<State> {
 
     private final GroovyCompiler groovyCompiler;
 
-    public GroovyFileSystemFilterStore(File location, long pollingInternalInSeconds) {
-        super(location, pollingInternalInSeconds);
+    public GroovyFileSystemFilterStore(List<File> locations, long pollingInternalInSeconds) {
+        super(locations, pollingInternalInSeconds);
         this.groovyCompiler = new GroovyCompiler();
     }
 
