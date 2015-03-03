@@ -1,5 +1,7 @@
 package com.netflix.zuul.accesslog;
 
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Scheduler;
@@ -13,7 +15,8 @@ import rx.subjects.PublishSubject;
  */
 public class AccessLogPublisher {
 
-    private static final boolean disableAccessLogs = Boolean.getBoolean("zuul.access.log.disable");
+    private static final DynamicBooleanProperty DISABLE = DynamicPropertyFactory.getInstance()
+            .getBooleanProperty("zuul.access.log.disable", false);
 
     private static final Logger logger = LoggerFactory.getLogger("ACCESS");
 
@@ -32,7 +35,7 @@ public class AccessLogPublisher {
     }
 
     public void publish(AccessRecord record) {
-        if (!disableAccessLogs) {
+        if (! DISABLE.get()) {
             recordSubject.onNext(record);
         }
     }

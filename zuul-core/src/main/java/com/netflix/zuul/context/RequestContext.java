@@ -26,11 +26,11 @@ public class RequestContext
         this.responseMessage = responseMessage;
     }
 
-    public ZuulMessage getRequestMessage() {
+    public ZuulMessage getRequest() {
         return requestMessage;
     }
 
-    public ZuulMessage getResponseMessage() {
+    public ZuulMessage getResponse() {
         return responseMessage;
     }
 
