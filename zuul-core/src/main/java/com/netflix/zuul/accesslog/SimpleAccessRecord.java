@@ -20,9 +20,9 @@ public class SimpleAccessRecord implements AccessRecord {
     private final static char DELIM = '\t';
 
     private final static DynamicStringListProperty LOG_REQ_HEADERS =
-            new DynamicStringListProperty("zuul.access.log.requestheaders", "host");
+            new DynamicStringListProperty("zuul.access.log.requestheaders", "host,x-forwarded-for");
     private final static DynamicStringListProperty LOG_RESP_HEADERS =
-            new DynamicStringListProperty("zuul.access.log.responseheaders", "server,content-type");
+            new DynamicStringListProperty("zuul.access.log.responseheaders", "server,via,content-type");
 
 
     private final LocalDateTime timestamp;
