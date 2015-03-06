@@ -12,7 +12,7 @@ public class ZuulMessage
     private final Headers headers;
 
     public ZuulMessage() {
-        this(new Headers());
+        this.headers = new Headers();
     }
 
     public ZuulMessage(Headers headers) {

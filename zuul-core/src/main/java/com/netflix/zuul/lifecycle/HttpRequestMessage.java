@@ -19,8 +19,9 @@ public class HttpRequestMessage extends ZuulMessage
     private String uri;
     private HttpQueryParams queryParams;
     private String clientIp;
+    private String protocol;
 
-    public HttpRequestMessage(String method, String uri, HttpQueryParams queryParams, Headers headers, String clientIp)
+    public HttpRequestMessage(String method, String uri, HttpQueryParams queryParams, Headers headers, String clientIp, String protocol)
     {
         super(headers);
 
@@ -28,6 +29,7 @@ public class HttpRequestMessage extends ZuulMessage
         this.uri = uri;
         this.queryParams = queryParams;
         this.clientIp = clientIp;
+        this.protocol = protocol;
     }
 
     public String getMethod() {
@@ -53,6 +55,14 @@ public class HttpRequestMessage extends ZuulMessage
     }
     public void setClientIp(String clientIp) {
         this.clientIp = clientIp;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     public Map<String, Set<Cookie>> parseCookies()

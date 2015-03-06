@@ -39,7 +39,8 @@ public class RequestContextFactory implements FilterStateFactory<RequestContext>
                 httpServerRequest.getUri(),
                 copyQueryParams(httpServerRequest),
                 copyHeaders(httpServerRequest),
-                clientIp
+                clientIp,
+                httpServerRequest.getHttpVersion().toString()
         );
         HttpResponseMessage httpRespMsg = new HttpResponseMessage(httpReqMsg, 500);
 
