@@ -61,4 +61,13 @@ subprojects {
         from sourceSets.main.allSource
         classifier = 'source'
     }
+
+    task cleanLibs(type: Delete) {
+        delete 'ide-lib'
+    }
+
+    task stageLibs(dependsOn:'cleanLibs', type: Copy) {
+        into "ide-lib"
+        from configurations.all
+    }
 }
