@@ -57,7 +57,7 @@ public class SimpleAccessRecord implements AccessRecord {
                 .append(DELIM).append(statusCode)
                 .append(DELIM).append(httpMethod)
                 .append(DELIM).append(path)
-                .append(DELIM).append(query == null ? "-" : query)
+                .append(DELIM).append(query == null || query.equals("") ? "-" : query)
                 .append(DELIM).append(durationNs / 1000) // Converting duration to microseconds.
                 .append(DELIM).append(responseBodySize);
 
