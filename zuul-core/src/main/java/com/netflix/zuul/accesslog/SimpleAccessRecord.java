@@ -53,11 +53,12 @@ public class SimpleAccessRecord implements AccessRecord {
     public String toLogLine() {
         StringBuilder sb = new StringBuilder();
 
+        String pathAndQuery = query == null || query.equals("") ? path : path + "?" + query;
+
         sb.append(timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                .append(DELIM).append(statusCode)
                 .append(DELIM).append(httpMethod)
-                .append(DELIM).append(path)
-                .append(DELIM).append(query == null || query.equals("") ? "-" : query)
+                .append(DELIM).append(pathAndQuery)
+                .append(DELIM).append(statusCode)
                 .append(DELIM).append(durationNs / 1000) // Converting duration to microseconds.
                 .append(DELIM).append(responseBodySize);
 
