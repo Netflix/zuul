@@ -4,8 +4,10 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
+import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.lifecycle.FilterProcessor;
 import com.netflix.zuul.lifecycle.IngressRequest;
+import com.netflix.zuul.metrics.RequestMetricsPublisher;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -36,6 +38,9 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
 
     @Inject
     private AccessLogPublisher accessLogPublisher;
+
+    @Inject
+    private RequestMetricsPublisher requestMetricsPublisher;
 
     @Inject
     private HealthCheckRequestHandler healthCheckHandler;
@@ -96,11 +101,18 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                         response.getHeaders().add(headerName, headerValues);
                     }
 
+                    // Publish request-level metrics.
+                    // TODO - We're having to publish the metrics BEFORE the response body has been written to client here which
+                    // sucks. But we don't have access to the State/RequestContext later on after the response bytes are written...
+                    if (requestMetricsPublisher != null) {
+                        requestMetricsPublisher.collectAndPublish((RequestContext) egressResp.get());
+                    }
+
                     //now work with the HTTP response content - note this may be a stream of response data as in a chunked response
                     return egressResp.getContent();
                 })
                 //for each piece of content, write it out to the {@link HttpServerResponse}
-                // TODO - are we handling chunked responses from origins here?
+                        // TODO - are we handling chunked responses from origins here?
                 .map(byteBuf -> {
                     byteBuf.retain();
                     // Record size of response body written.

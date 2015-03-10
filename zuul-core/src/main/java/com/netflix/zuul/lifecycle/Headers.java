@@ -37,6 +37,22 @@ public class Headers
         return null;
     }
 
+    /**
+     * Get the first value found for this key even if there are multiple. If none, then
+     * return the specified defaultValue.
+     *
+     * @param name
+     * @return
+     */
+    public String getFirst(String name, String defaultValue)
+    {
+        String value = getFirst(name);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
     public List<String> get(String name)
     {
         return delegate.get(name.toLowerCase());

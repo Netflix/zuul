@@ -101,7 +101,9 @@ public class FilterProcessor<State> {
                 long duration = System.currentTimeMillis() - startTime;
                 ZuulMetrics.markError(ingressReq, duration);
                 return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
-            }).doOnNext(httpResp -> ZuulMetrics.markStatus(httpResp.getStatus().code(), ingressReq, startTime));
+            }).doOnNext(httpResp ->
+                ZuulMetrics.markStatus(httpResp.getStatus().code(), ingressReq, startTime)
+            );
         } catch (IOException ex) {
             logger.error("Couldn't load the filters");
             return Observable.error(new ZuulException("Could not load filters", 500));
