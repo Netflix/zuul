@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.util.Map;
+
 /**
  * User: michaels@netflix.com
  * Date: 2/20/15
@@ -43,8 +45,20 @@ public class Origin
         HttpClient<ByteBuf, ByteBuf> client = getLoadBalancer().getNextServer();
 
         return client.submit(egressReq.getHttpClientRequest())
-                .map(resp ->
-                                (IngressResponse<ByteBuf>) IngressResponse.from(resp, ctx)
+                .map(resp -> {
+                            // Copy the response headers and info into the RequestContext for use by post filters.
+                            HttpResponseMessage zuulResp = (HttpResponseMessage) egressReq.get().getResponse();
+                            if (resp.getStatus() != null) {
+                                zuulResp.setStatus(resp.getStatus().code());
+                            }
+                            Headers zuulRespHeaders = zuulResp.getHeaders();
+                            for (Map.Entry<String, String> entry : resp.getHeaders().entries()) {
+                                zuulRespHeaders.add(entry.getKey(), entry.getValue());
+                            }
+
+                            // Convert the RxNetty response into a Zuul IngressResponse.
+                            return (IngressResponse<ByteBuf>) IngressResponse.from(resp, ctx);
+                        }
                 )
                 .doOnError(t ->
                                 // TODO - Integrate ocelli for retry logic here.

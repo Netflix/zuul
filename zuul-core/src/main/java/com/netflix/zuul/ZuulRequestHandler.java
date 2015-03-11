@@ -6,6 +6,7 @@ import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import com.netflix.zuul.lifecycle.IngressRequest;
 import com.netflix.zuul.metrics.RequestMetricsPublisher;
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -84,21 +85,21 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
 
                 //first set the status
                 .flatMap(egressResp -> {
-                    response.setStatus(egressResp.getStatus());
+                    HttpResponseMessage zuulResp = (HttpResponseMessage) ((RequestContext) egressResp.get()).getResponse();
+
+                    // Set the response status code.
+                    response.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
                     if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
                         HTTP_DEBUG_LOGGER.debug("Setting Outgoing HTTP Status : " + egressResp.getStatus());
                     }
 
                     // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
-                    for (String headerName : egressResp.getHeaders().keySet()) {
-                        List<String> headerValues = egressResp.getHeaders().get(headerName);
+                    for (Map.Entry<String, String> entry : zuulResp.getHeaders().entries()) {
                         if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
-                            for (String headerValue : headerValues) {
-                                HTTP_DEBUG_LOGGER.info("Setting Outgoing HTTP Header : " + headerName + " -> "
-                                        + headerValue);
-                            }
+                            HTTP_DEBUG_LOGGER.info("Setting Outgoing HTTP Header : {} -> {}",
+                                    entry.getKey(), entry.getValue());
                         }
-                        response.getHeaders().add(headerName, headerValues);
+                        response.getHeaders().add(entry.getKey(), entry.getValue());
                     }
 
                     // Publish request-level metrics.
@@ -131,8 +132,6 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                             // TODO - publish this duration to metrics.
 
                             // Write to access log.
-                            // TODO - can we do this after finishing writing out the response body so that we can log
-                            // the response size?
                             accessLogPublisher.publish(new SimpleAccessRecord(LocalDateTime.now(),
                                     response.getStatus().code(),
                                     request.getHttpMethod().name(),
