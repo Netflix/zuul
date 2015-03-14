@@ -56,16 +56,22 @@ public class Origin
                                 zuulRespHeaders.add(entry.getKey(), entry.getValue());
                             }
 
+                            ctx.getAttributes().put("origin_http_status", Integer.toString(resp.getStatus().code()));
+
                             // Convert the RxNetty response into a Zuul IngressResponse.
                             return (IngressResponse<ByteBuf>) IngressResponse.from(resp, ctx);
                         }
                 )
-                .doOnError(t ->
-                                // TODO - Integrate ocelli for retry logic here.
+                .doOnError(t -> {
+                            // TODO - Integrate ocelli for retry logic here.
 
-                                // TODO - Check what ProxyFilter does for failures like this.
+                            // TODO - Add NIWS Attempts data to context.
 
-                                LOG.error("Error making http request.", t)
+                            // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
+                            ctx.getAttributes().put("error", t);
+
+                            LOG.error("Error making http request.", t);
+                        }
                 );
     }
 }

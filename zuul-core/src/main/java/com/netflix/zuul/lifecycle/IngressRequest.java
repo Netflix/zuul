@@ -15,25 +15,33 @@
  */
 package com.netflix.zuul.lifecycle;
 
+import com.netflix.zuul.context.RequestContext;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 /**
+ * TODO - completely replace with RequestContext?
  * Class that represents an incoming HTTP request and wraps an RxNetty {@link HttpServerRequest}
  */
 public class IngressRequest {
 
     private final HttpServerRequest<ByteBuf> httpServerRequest;
+    private final RequestContext context;
 
-    private IngressRequest(HttpServerRequest<ByteBuf> httpServerRequest) {
+    private IngressRequest(HttpServerRequest<ByteBuf> httpServerRequest, RequestContext context) {
         this.httpServerRequest = httpServerRequest;
+        this.context = context;
     }
 
-    public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest) {
-        return new IngressRequest(nettyRequest);
+    public static IngressRequest from(HttpServerRequest<ByteBuf> nettyRequest, RequestContext context) {
+        return new IngressRequest(nettyRequest, context);
     }
 
     public HttpServerRequest<ByteBuf> getHttpServerRequest() {
         return httpServerRequest;
+    }
+
+    public RequestContext getRequestContext() {
+        return context;
     }
 }

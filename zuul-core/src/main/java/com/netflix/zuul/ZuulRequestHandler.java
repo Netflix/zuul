@@ -2,13 +2,12 @@ package com.netflix.zuul;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.netflix.zuul.accesslog.AccessLogPublisher;
-import com.netflix.zuul.accesslog.SimpleAccessRecord;
+import com.netflix.zuul.context.FilterStateFactory;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.lifecycle.FilterProcessor;
+import com.netflix.zuul.lifecycle.HttpRequestMessage;
 import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import com.netflix.zuul.lifecycle.IngressRequest;
-import com.netflix.zuul.metrics.RequestMetricsPublisher;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -19,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,30 +36,44 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
     private FilterProcessor<State> filterProcessor;
 
     @Inject
-    private AccessLogPublisher accessLogPublisher;
-
-    @Inject
-    private RequestMetricsPublisher requestMetricsPublisher;
+    private FilterStateFactory<State> stateFactory;
 
     @Inject
     private HealthCheckRequestHandler healthCheckHandler;
 
+    @Inject
+    private RequestCompleteHandler requestCompleteHandler;
+
+
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
 
-        // TODO - Refactor this healthcheck impl to a standard karyon impl?
-        // Handle healthcheck requests.
-        if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
-            return healthCheckHandler.handle(request, response);
-        }
+        final long startTime = System.nanoTime();
 
         /**
          * Convert the RxNetty {@link HttpServerRequest} into a Zuul domain object - a {@link IngressRequest}
          * this is synchronous
          */
-        final IngressRequest ingressReq = IngressRequest.from(request);
+        final RequestContext context = (RequestContext) stateFactory.create(request);
+        final IngressRequest ingressReq = IngressRequest.from(request, context);
+        final HttpRequestMessage zuulReq = (HttpRequestMessage) context.getRequest();
+        final HttpResponseMessage zuulResp = (HttpResponseMessage) context.getResponse();
 
-        final long startTime = System.nanoTime();
+
+        // TODO - Refactor this healthcheck impl to a standard karyon impl?
+        // Handle healthcheck requests.
+        if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
+
+            Observable<Void> o = healthCheckHandler.handle(request, response);
+            long durationNs = System.nanoTime() - startTime;
+
+            // Ensure some response info is correct in RequestContext for logging/metrics purposes.
+            zuulResp.setStatus(response.getStatus().code());
+
+            requestCompleteHandler.handle(context, durationNs, 0);
+
+            return o;
+        }
 
         if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
             for (String headerName: request.getHeaders().names()) {
@@ -83,9 +95,7 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
          */
         return filterProcessor.applyAllFilters(ingressReq)
 
-                //first set the status
                 .flatMap(egressResp -> {
-                    HttpResponseMessage zuulResp = (HttpResponseMessage) ((RequestContext) egressResp.get()).getResponse();
 
                     // Set the response status code.
                     response.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
@@ -100,13 +110,6 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                                     entry.getKey(), entry.getValue());
                         }
                         response.getHeaders().add(entry.getKey(), entry.getValue());
-                    }
-
-                    // Publish request-level metrics.
-                    // TODO - We're having to publish the metrics BEFORE the response body has been written to client here which
-                    // sucks. But we don't have access to the State/RequestContext later on after the response bytes are written...
-                    if (requestMetricsPublisher != null) {
-                        requestMetricsPublisher.collectAndPublish((RequestContext) egressResp.get());
                     }
 
                     //now work with the HTTP response content - note this may be a stream of response data as in a chunked response
@@ -129,19 +132,14 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
                             long durationNs = System.nanoTime() - startTime;
                             int responseBodySize = bytesWritten.get();
 
-                            // TODO - publish this duration to metrics.
+                            // Ensure some response info is correct in RequestContext for logging/metrics purposes.
+                            zuulResp.setStatus(response.getStatus().code());
 
-                            // Write to access log.
-                            accessLogPublisher.publish(new SimpleAccessRecord(LocalDateTime.now(),
-                                    response.getStatus().code(),
-                                    request.getHttpMethod().name(),
-                                    request.getPath(),
-                                    request.getQueryString(),
-                                    durationNs,
-                                    responseBodySize,
-                                    request.getHeaders(),
-                                    response.getHeaders()
-                            ));
+                            try {
+                                requestCompleteHandler.handle(context, durationNs, responseBodySize);
+                            } catch (Exception e) {
+                                LOG.error("Error in RequestCompleteHandler.", e);
+                            }
                         }
                 );
     }

@@ -18,7 +18,6 @@ package com.netflix.zuul.lifecycle;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.zuul.ZuulException;
-import com.netflix.zuul.context.FilterStateFactory;
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.PostFilter;
 import com.netflix.zuul.filter.PreFilter;
@@ -61,12 +60,11 @@ public class FilterProcessor<State> {
     private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
     private final FilterStore<State> filterStore;
-    private final FilterStateFactory<State> stateFactory;
+
 
     @Inject
-    public FilterProcessor(FilterStore<State> filterStore, FilterStateFactory<State> stateFactory) {
+    public FilterProcessor(FilterStore<State> filterStore) {
         this.filterStore = filterStore;
-        this.stateFactory = stateFactory;
     }
 
     public Observable<EgressResponse<State>> applyAllFilters(IngressRequest ingressReq) {
@@ -87,7 +85,7 @@ public class FilterProcessor<State> {
 
 
             EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(
-                    ingressReq, cachedContent, stateFactory.create(ingressReq.getHttpServerRequest()));
+                    ingressReq, cachedContent, (State) ingressReq.getRequestContext());
 
             Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
             Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter(),

@@ -1,13 +1,11 @@
 package com.netflix.zuul.accesslog;
 
 import com.netflix.config.DynamicStringListProperty;
-import io.reactivex.netty.protocol.http.server.HttpRequestHeaders;
-import io.reactivex.netty.protocol.http.server.HttpResponseHeaders;
+import com.netflix.zuul.lifecycle.Headers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * TODO - Allow logging arbitrary attributes from RequestContext.
@@ -28,21 +26,19 @@ public class SimpleAccessRecord implements AccessRecord {
     private final LocalDateTime timestamp;
     private final int statusCode;
     private final String httpMethod;
-    private final String path;
-    private final String query;
+    private final String uri;
     private final long durationNs;
     private final int responseBodySize;
-    private final HttpRequestHeaders requestHeaders;
-    private final HttpResponseHeaders responseHeaders;
+    private final Headers requestHeaders;
+    private final Headers responseHeaders;
 
-    public SimpleAccessRecord(LocalDateTime timestamp, int statusCode, String httpMethod, String path, String query,
+    public SimpleAccessRecord(LocalDateTime timestamp, int statusCode, String httpMethod, String uri,
                               long durationNs, int responseBodySize,
-                              HttpRequestHeaders requestHeaders, HttpResponseHeaders responseHeaders) {
+                              Headers requestHeaders, Headers responseHeaders) {
         this.timestamp = timestamp;
         this.statusCode = statusCode;
         this.httpMethod = httpMethod;
-        this.path = path;
-        this.query = query;
+        this.uri = uri;
         this.durationNs = durationNs;
         this.responseBodySize = responseBodySize;
         this.requestHeaders = requestHeaders;
@@ -53,27 +49,26 @@ public class SimpleAccessRecord implements AccessRecord {
     public String toLogLine() {
         StringBuilder sb = new StringBuilder();
 
-        String pathAndQuery = query == null || query.equals("") ? path : path + "?" + query;
-
         sb.append(timestamp.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
                 .append(DELIM).append(httpMethod)
-                .append(DELIM).append(pathAndQuery)
+                .append(DELIM).append(uri)
                 .append(DELIM).append(statusCode)
                 .append(DELIM).append(durationNs / 1000) // Converting duration to microseconds.
                 .append(DELIM).append(responseBodySize);
 
-        includeMatchingHeaders(sb, LOG_RESP_HEADERS.get(), name -> responseHeaders.getHeader(name));
-        includeMatchingHeaders(sb, LOG_REQ_HEADERS.get(), name -> requestHeaders.getHeader(name));
+        includeMatchingHeaders(sb, LOG_RESP_HEADERS.get(), responseHeaders);
+        includeMatchingHeaders(sb, LOG_REQ_HEADERS.get(), requestHeaders);
 
         return sb.toString();
     }
 
-    void includeMatchingHeaders(StringBuilder builder, List<String> requiredHeaders, Function<String, String> getHeader)
+    void includeMatchingHeaders(StringBuilder builder, List<String> requiredHeaders, Headers headers)
     {
         for (String headerName : requiredHeaders) {
-            String value = getHeader.apply(headerName);
-            if (value == null) value = "-";
-            builder.append(DELIM).append('\"').append(value).append('\"');
+            for (String value : headers.get(headerName)) {
+                if (value == null) value = "-";
+                builder.append(DELIM).append('\"').append(value).append('\"');
+            }
         }
     }
 }
