@@ -25,18 +25,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * An implementation of {@link RequestHandler} for zuul.
  *
  * @author Nitesh Kant
+ * @author Mike Smith
  */
 @Singleton
-public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBuf> {
+public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZuulRequestHandler.class);
     private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
     @Inject
-    private FilterProcessor<State> filterProcessor;
+    private FilterProcessor<RequestContext> filterProcessor;
 
     @Inject
-    private FilterStateFactory<State> stateFactory;
+    private FilterStateFactory<RequestContext> stateFactory;
 
     @Inject
     private HealthCheckRequestHandler healthCheckHandler;
@@ -54,7 +55,7 @@ public class ZuulRequestHandler<State> implements RequestHandler<ByteBuf, ByteBu
          * Convert the RxNetty {@link HttpServerRequest} into a Zuul domain object - a {@link IngressRequest}
          * this is synchronous
          */
-        final RequestContext context = (RequestContext) stateFactory.create(request);
+        final RequestContext context = stateFactory.create(request);
         final IngressRequest ingressReq = IngressRequest.from(request, context);
         final HttpRequestMessage zuulReq = (HttpRequestMessage) context.getRequest();
         final HttpResponseMessage zuulResp = (HttpResponseMessage) context.getResponse();
