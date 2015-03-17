@@ -65,7 +65,8 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         // Handle healthcheck requests.
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
 
-            Observable<Void> o = healthCheckHandler.handle(request, response);
+            Observable<Void> o = healthCheckHandler.handle(request, response)
+                    .doOnCompleted(response::close);
             long durationNs = System.nanoTime() - startTime;
 
             // Ensure some response info is correct in RequestContext for logging/metrics purposes.

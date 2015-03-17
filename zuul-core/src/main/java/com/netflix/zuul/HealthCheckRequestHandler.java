@@ -18,14 +18,8 @@ public class HealthCheckRequestHandler implements RequestHandler<ByteBuf, ByteBu
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response)
     {
         response.getHeaders().set("Content-Type", "text/plain");
-        if (StartupState.getInstance().isStarted()) {
-            response.setStatus(HttpResponseStatus.OK);
-            response.writeString("OK");
-        }
-        else {
-            response.setStatus(HttpResponseStatus.SERVICE_UNAVAILABLE);
-            response.writeString("NOT STARTED");
-        }
+        response.setStatus(HttpResponseStatus.OK);
+        response.writeString("OK");
         return response.close();
     }
 }

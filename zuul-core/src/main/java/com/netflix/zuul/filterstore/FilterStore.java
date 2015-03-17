@@ -23,10 +23,14 @@ import com.netflix.zuul.metrics.ZuulMetricsPublisherFactory;
 
 import java.io.IOException;
 
-public abstract class FilterStore<State> {
+public abstract class FilterStore<State>
+{
+    public abstract void init();
+
     protected abstract FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException;
 
-    public FiltersForRoute<State> getFilters(IngressRequest ingressReq) throws IOException {
+    public FiltersForRoute<State> getFilters(IngressRequest ingressReq) throws IOException
+    {
         FiltersForRoute<State> filters = fetchFilters(ingressReq);
         for (Filter f: filters.all()) {
             ZuulFilterMetricsPublisher filterMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveFilterPublisher(f.getClass());

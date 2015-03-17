@@ -32,12 +32,28 @@ public abstract class FileSystemPollingFilterStore<State> extends FilterStore<St
     private final static Logger logger = LoggerFactory.getLogger(FileSystemPollingFilterStore.class);
 
     private final List<File> locations;
+    private final long pollIntervalSeconds;
     private boolean pollingActive = true;
     private final ConcurrentHashMap<String, Filter> compiledFilters = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> modDateMap = new ConcurrentHashMap<>();
 
     public FileSystemPollingFilterStore(List<File> locations, long pollIntervalSeconds) {
         this.locations = locations;
+        this.pollIntervalSeconds = pollIntervalSeconds;
+    }
+
+    @Override
+    public void init()
+    {
+        // Run refreshing the filters inline now.
+        try {
+            refreshInMemoryFilters();
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Error initializing the FilterStore. locations=" + getLocationsAsText(), e);
+        }
+
+        // And then setup and start a polling thread.
         Thread poller = new Thread(getClass().getName() + "-Poller") {
             public void run() {
                 logger.info("Filesystem-scanning thread starting up and looking for filters at :" + getLocationsAsText());
@@ -57,6 +73,8 @@ public abstract class FileSystemPollingFilterStore<State> extends FilterStore<St
     }
 
     public String getLocationsAsText() {
+        if (locations == null)
+            return "";
         return locations.stream().map(f -> f.getAbsolutePath()).collect(Collectors.joining(","));
     }
 

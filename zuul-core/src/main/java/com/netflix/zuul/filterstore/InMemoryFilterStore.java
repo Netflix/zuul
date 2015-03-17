@@ -37,6 +37,12 @@ public class InMemoryFilterStore<State> extends FilterStore<State> {
     private final AtomicReference<ErrorFilter<State>> errorFilter = new AtomicReference<>();
 
     @Override
+    public void init()
+    {
+        // Noop.
+    }
+
+    @Override
     public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) {
         return new FiltersForRoute<>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -37,7 +36,6 @@ public class ClassPathFilterStore<State> extends FilterStore<State> {
 
     private final String[] packagePrefixes;
     private final InMemoryFilterStore<State> backingFilterStore;
-    private AtomicBoolean filterStoreInitialized = new AtomicBoolean(false);
 
     public ClassPathFilterStore(String... packagePrefixes) {
         this.packagePrefixes = packagePrefixes;
@@ -45,53 +43,45 @@ public class ClassPathFilterStore<State> extends FilterStore<State> {
     }
 
     @Override
-    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
-        logger.info("Getting filters from the classpath with prefix : " + Arrays.toString(packagePrefixes));
-        if (filterStoreInitialized.get()) {
-            return backingFilterStore.getFilters(ingressReq);
-        } else {
-            logger.info("Classpath has not been scanned yet, doing that now");
-            boolean noErrorsOccurred = true;
-            try {
-                List<File> files = new ArrayList<>();
-                Enumeration<URL> classPathRoots = ClassLoader.getSystemClassLoader().getResources("");
-                while (classPathRoots.hasMoreElements()) {
-                    URL classPathRoot = classPathRoots.nextElement();
-                    File rootFile = new File(classPathRoot.getPath());
-                    for (String packagePrefix: packagePrefixes) {
-                        Predicate<String> fileMatcher = getMatcher(rootFile, packagePrefix);
-                        addAllNestedFiles(files, rootFile, fileMatcher);
-                    }
-                    for (File f : files) {
-                        try {
-                            String className = getClassNameFromFileName(f, rootFile);
-                            Class<?> clazz = Class.forName(className);
-                            if (Filter.class.isAssignableFrom(clazz)) {
-                                Filter filter = (Filter) clazz.newInstance();
-                                logger.info("Found filter : " + filter);
-                                backingFilterStore.addFilter(filter);
-                            }
-                        } catch (ClassNotFoundException cnfe) {
-                            logger.error("Couldn't get class from : " + f);
-                            noErrorsOccurred = false;
-                        } catch (InstantiationException ie) {
-                            logger.error("Couldn't instantiate class from : " + f);
-                            noErrorsOccurred = false;
-                        } catch (IllegalAccessException iae) {
-                            logger.error("Illegal access when creating class from : " + f);
-                            noErrorsOccurred = false;
+    public void init()
+    {
+        logger.info("Loading filters from the classpath with prefix : " + Arrays.toString(packagePrefixes));
+        try {
+            List<File> files = new ArrayList<>();
+            Enumeration<URL> classPathRoots = ClassLoader.getSystemClassLoader().getResources("");
+            while (classPathRoots.hasMoreElements()) {
+                URL classPathRoot = classPathRoots.nextElement();
+                File rootFile = new File(classPathRoot.getPath());
+                for (String packagePrefix: packagePrefixes) {
+                    Predicate<String> fileMatcher = getMatcher(rootFile, packagePrefix);
+                    addAllNestedFiles(files, rootFile, fileMatcher);
+                }
+                for (File f : files) {
+                    try {
+                        String className = getClassNameFromFileName(f, rootFile);
+                        Class<?> clazz = Class.forName(className);
+                        if (Filter.class.isAssignableFrom(clazz)) {
+                            Filter filter = (Filter) clazz.newInstance();
+                            logger.info("Found filter : " + filter);
+                            backingFilterStore.addFilter(filter);
                         }
+                    } catch (ClassNotFoundException cnfe) {
+                        logger.error("Couldn't get class from : " + f);
+                    } catch (InstantiationException ie) {
+                        logger.error("Couldn't instantiate class from : " + f);
+                    } catch (IllegalAccessException iae) {
+                        logger.error("Illegal access when creating class from : " + f);
                     }
                 }
-                if (noErrorsOccurred) {
-                    filterStoreInitialized.compareAndSet(false, true);
-                }
-                return backingFilterStore.getFilters(ingressReq);
-            } catch (IOException ioe) {
-                logger.error("Error getting the classpath - no filters found!");
-                throw ioe;
             }
+        } catch (IOException e) {
+            throw new RuntimeException("Error initializing filters from classpath. prefixes=" + Arrays.toString(packagePrefixes), e);
         }
+    }
+
+    @Override
+    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
+        return backingFilterStore.getFilters(ingressReq);
     }
 
     private void addAllNestedFiles(List<File> fileList, File root, Predicate<String> matcher) {
