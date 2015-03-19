@@ -1,6 +1,7 @@
 package com.netflix.zuul.lifecycle;
 
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.metrics.Timing;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import org.slf4j.Logger;
@@ -44,6 +45,9 @@ public class Origin
 
         HttpClient<ByteBuf, ByteBuf> client = getLoadBalancer().getNextServer();
 
+        Timing timing = ctx.getRequestProxyTiming();
+        timing.start();
+
         return client.submit(egressReq.getHttpClientRequest())
                 .map(resp -> {
                             // Copy the response headers and info into the RequestContext for use by post filters.
@@ -72,6 +76,6 @@ public class Origin
 
                             LOG.error("Error making http request.", t);
                         }
-                );
+                ).finallyDo(() -> timing.end() );
     }
 }

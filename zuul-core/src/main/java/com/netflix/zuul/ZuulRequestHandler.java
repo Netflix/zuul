@@ -2,12 +2,15 @@ package com.netflix.zuul;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.netflix.servo.monitor.DynamicTimer;
+import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.context.FilterStateFactory;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.lifecycle.FilterProcessor;
 import com.netflix.zuul.lifecycle.HttpRequestMessage;
 import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import com.netflix.zuul.lifecycle.IngressRequest;
+import com.netflix.zuul.metrics.Timing;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -60,13 +63,16 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         final HttpRequestMessage zuulReq = (HttpRequestMessage) context.getRequest();
         final HttpResponseMessage zuulResp = (HttpResponseMessage) context.getResponse();
 
+        final Timing timing = context.getRequestTiming();
+        timing.start();
 
         // TODO - Refactor this healthcheck impl to a standard karyon impl?
         // Handle healthcheck requests.
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
 
             Observable<Void> o = healthCheckHandler.handle(request, response)
-                    .doOnCompleted(response::close);
+                    .doOnCompleted(response::close)
+                    .finallyDo(() -> timing.end());
             long durationNs = System.nanoTime() - startTime;
 
             // Ensure some response info is correct in RequestContext for logging/metrics purposes.
@@ -114,11 +120,14 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                         response.getHeaders().add(entry.getKey(), entry.getValue());
                     }
 
+                    // Record the execution time reported by Origin.
+                    recordReportedOriginDuration(context);
+
                     //now work with the HTTP response content - note this may be a stream of response data as in a chunked response
                     return egressResp.getContent();
                 })
                 //for each piece of content, write it out to the {@link HttpServerResponse}
-                        // TODO - are we handling chunked responses from origins here?
+                // TODO - are we handling chunked responses from origins here?
                 .map(byteBuf -> {
                     byteBuf.retain();
                     // Record size of response body written.
@@ -133,6 +142,10 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                         () -> {
                             long durationNs = System.nanoTime() - startTime;
                             int responseBodySize = bytesWritten.get();
+                            timing.end();
+
+                            // Publish request timings.
+                            publishTimings(context);
 
                             // Ensure some response info is correct in RequestContext for logging/metrics purposes.
                             zuulResp.setStatus(response.getStatus().code());
@@ -144,5 +157,56 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                             }
                         }
                 );
+    }
+
+    protected void publishTimings(RequestContext context)
+    {
+        // Request timings.
+        long totalRequestTime = context.getRequestTiming().getDuration();
+        long requestProxyTime = context.getRequestProxyTiming().getDuration();
+        int originReportedDuration = context.getOriginReportedDuration();
+
+        // Approximation of time spent just within Zuul's own processing of the request.
+        long totalInternalTime = totalRequestTime - requestProxyTime;
+
+        // Approximation of time added to request by addition of Zuul+NIWS
+        // (ie. the time added compared to if ELB sent request direct to Origin).
+        // if -1, means we don't have that metric.
+        long totalTimeAddedToOrigin = -1;
+        if (originReportedDuration > -1) {
+            totalTimeAddedToOrigin = totalRequestTime - originReportedDuration;
+        }
+
+        // Publish
+        final String METRIC_TIMINGS_REQ_PREFIX = "zuul.timings.request.";
+        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "total", totalRequestTime);
+        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "proxy", requestProxyTime);
+        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "internal", totalInternalTime);
+        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "added", totalTimeAddedToOrigin);
+    }
+
+    private void recordRequestTiming(String name, long time) {
+        if(time > -1) {
+            DynamicTimer.record(MonitorConfig.builder(name).build(), time);
+        }
+    }
+
+    /**
+     * Record the duration that origin reports (if available).
+     *
+     * @param context
+     */
+    private void recordReportedOriginDuration(RequestContext context)
+    {
+        HttpResponseMessage resp = (HttpResponseMessage) context.getResponse();
+        String reportedExecTimeStr = resp.getHeaders().getFirst("X-Netflix.execution-time");
+        if (reportedExecTimeStr != null) {
+            try {
+                int reportedExecTime = Integer.parseInt(reportedExecTimeStr);
+                context.setOriginReportedDuration(reportedExecTime);
+            } catch (Exception e) {
+                LOG.error("Error parsing the X-Netflix.execution-time response header. value={}", reportedExecTimeStr);
+            }
+        }
     }
 }

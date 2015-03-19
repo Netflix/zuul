@@ -2,6 +2,7 @@ dependencies {
     compile 'io.reactivex:rxnetty:0.4.6'
     compile 'com.netflix.numerus:numerus:1.1'
     compile 'com.netflix.archaius:archaius-core:0.6.5'
+    compile 'com.netflix.servo:servo-core:0.8+'
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.inject:guice:3.0'
     compile 'org.slf4j:slf4j-simple:1.7.7'
