@@ -66,19 +66,23 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         final Timing timing = context.getRequestTiming();
         timing.start();
 
-        // TODO - Refactor this healthcheck impl to a standard karyon impl?
+        // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
         // Handle healthcheck requests.
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
 
             Observable<Void> o = healthCheckHandler.handle(request, response)
                     .doOnCompleted(response::close)
-                    .finallyDo(() -> timing.end());
-            long durationNs = System.nanoTime() - startTime;
+                    .finallyDo(() -> {
 
-            // Ensure some response info is correct in RequestContext for logging/metrics purposes.
-            zuulResp.setStatus(response.getStatus().code());
+                                timing.end();
+                                long durationNs = System.nanoTime() - startTime;
 
-            requestCompleteHandler.handle(context, durationNs, 0);
+                                // Ensure some response info is correct in RequestContext for logging/metrics purposes.
+                                zuulResp.setStatus(response.getStatus().code());
+
+                                requestCompleteHandler.handle(context, durationNs, 0);
+                            }
+                    );
 
             return o;
         }
