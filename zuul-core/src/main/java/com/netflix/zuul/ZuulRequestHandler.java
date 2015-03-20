@@ -71,7 +71,11 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
 
             Observable<Void> o = healthCheckHandler.handle(request, response)
-                    .doOnCompleted(response::close)
+                    .doOnCompleted(() -> {
+                        LOG.debug("Calling response.close()");
+                        response.close();
+                        LOG.debug("Called response.close()");
+                    })
                     .finallyDo(() -> {
 
                                 timing.end();
@@ -141,7 +145,11 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                 })
                 .ignoreElements()
                 .cast(Void.class)
-                .doOnCompleted(response::close)
+                .doOnCompleted(() -> {
+                    LOG.debug("Calling response.close()");
+                    response.close();
+                    LOG.debug("Called response.close()");
+                })
                 .finallyDo(
                         () -> {
                             long durationNs = System.nanoTime() - startTime;

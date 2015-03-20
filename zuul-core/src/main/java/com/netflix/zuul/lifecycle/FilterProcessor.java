@@ -149,6 +149,7 @@ public class FilterProcessor<State> {
                      * it and hence never released corresponding to the retain done by us.
                      */
                     if (byteBuf.refCnt() > 1) { // 1 refCount will be from the subject putting into the cache.
+                        if (logger.isDebugEnabled()) logger.debug("Releasing the ingressContent byteBuf.");
                         byteBuf.release();
                     }
                 }));
