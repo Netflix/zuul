@@ -1,6 +1,7 @@
 package com.netflix.zuul.lifecycle;
 
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.metrics.Timing;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.client.HttpClient;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * User: michaels@netflix.com
@@ -19,16 +21,24 @@ public class Origin
 {
     private static final Logger LOG = LoggerFactory.getLogger(Origin.class);
 
+    private final String name;
     private final String vip;
     private final LoadBalancer loadBalancer;
+    private final OriginStats stats;
 
-    public Origin(String vip, LoadBalancer loadBalancer)
+    public Origin(String originName, String vip, LoadBalancer loadBalancer, OriginStats stats)
     {
+        if (originName == null) {
+            throw new IllegalArgumentException("Requires a non-null originName.");
+        }
         if (vip == null) {
             throw new IllegalArgumentException("Requires a non-null VIP.");
         }
+
+        this.name = originName;
         this.vip = vip;
         this.loadBalancer = loadBalancer;
+        this.stats = stats;
     }
 
     public String getVip() {
@@ -45,9 +55,13 @@ public class Origin
 
         HttpClient<ByteBuf, ByteBuf> client = getLoadBalancer().getNextServer();
 
-        Timing timing = ctx.getRequestProxyTiming();
+        final AtomicBoolean isSuccess = new AtomicBoolean(true);
+        final Timing timing = ctx.getRequestProxyTiming();
+
+        // Ideally want to move this into a "onStart" handler...
         timing.start();
 
+        // Construct.
         return client.submit(egressReq.getHttpClientRequest())
                 .map(resp -> {
                             // Copy the response headers and info into the RequestContext for use by post filters.
@@ -67,6 +81,8 @@ public class Origin
                         }
                 )
                 .doOnError(t -> {
+                            isSuccess.set(false);
+
                             // TODO - Integrate ocelli for retry logic here.
 
                             // TODO - Add NIWS Attempts data to context.
@@ -76,6 +92,10 @@ public class Origin
 
                             LOG.error("Error making http request.", t);
                         }
-                ).finallyDo(() -> timing.end() );
+                ).finallyDo(() -> {
+                    timing.end();
+                    if (stats != null)
+                        stats.completed(isSuccess.get(), timing.getDuration());
+                });
     }
 }

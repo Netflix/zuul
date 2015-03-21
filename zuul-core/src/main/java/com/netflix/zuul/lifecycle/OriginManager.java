@@ -2,8 +2,9 @@ package com.netflix.zuul.lifecycle;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.config.DynamicStringProperty;
+import com.netflix.config.DynamicStringMapProperty;
+import com.netflix.zuul.metrics.OriginStats;
+import com.netflix.zuul.metrics.OriginStatsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,30 +20,42 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OriginManager
 {
     private final static Logger LOG = LoggerFactory.getLogger(OriginManager.class);
-    private final DynamicStringProperty ORIGIN_VIPS = DynamicPropertyFactory.getInstance().getStringProperty("zuul.origins", "");
+    private final DynamicStringMapProperty ORIGINS = new DynamicStringMapProperty("zuul.origins", "");
+
     private final Map<String, Origin> origins = new ConcurrentHashMap<>();
 
     private final LoadBalancerFactory loadBalancerFactory;
+    private final OriginStatsFactory originStatsFactory;
 
     @Inject
-    public OriginManager(LoadBalancerFactory loadBalancerFactory)
+    public OriginManager(LoadBalancerFactory loadBalancerFactory, OriginStatsFactory originStatsFactory)
     {
         if (loadBalancerFactory == null) {
             throw new IllegalArgumentException("OriginManager.loadBalancerFactory is null.");
         }
         this.loadBalancerFactory = loadBalancerFactory;
+        this.originStatsFactory = originStatsFactory;
 
         try {
-            String[] vips = ORIGIN_VIPS.get().split(",");
-            for (String vip : vips) {
+            Map<String, String> originMappings = ORIGINS.getMap();
+            for (String originName : originMappings.keySet())
+            {
+                String vip = originMappings.get(originName);
                 if (vip != null) {
                     vip = vip.trim();
                     if (vip.length() > 0) {
                         LOG.info("Registering Origin for vip=" + vip);
                         try {
                             LoadBalancer lb = loadBalancerFactory.create(vip);
-                            this.origins.put(vip, new Origin(vip, lb));
-                        } catch (Exception e) {
+
+                            OriginStats originStats = null;
+                            if (originStatsFactory != null) {
+                                originStats = originStatsFactory.create(originName);
+                            }
+
+                            this.origins.put(originName, new Origin(originName, vip, lb, originStats));
+                        }
+                        catch (Exception e) {
                             // TODO - resolve why this is failing on first attempts at startup.
                             LOG.error("Error creating loadbalancer for vip=" + vip, e);
                         }
@@ -51,7 +64,7 @@ public class OriginManager
             }
         }
         catch(Exception e) {
-            String msg = "Error initialising OriginManager. origin.vips property=" + String.valueOf(ORIGIN_VIPS.get());
+            String msg = "Error initialising OriginManager. zuul.origins property=" + String.valueOf(ORIGINS.get());
             LOG.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
