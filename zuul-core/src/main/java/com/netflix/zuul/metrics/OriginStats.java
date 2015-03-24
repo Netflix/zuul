@@ -7,5 +7,6 @@ package com.netflix.zuul.metrics;
  */
 public interface OriginStats
 {
+    public void started();
     public void completed(boolean success, long totalTimeMS);
 }

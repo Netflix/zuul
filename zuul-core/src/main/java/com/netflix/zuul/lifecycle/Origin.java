@@ -58,8 +58,9 @@ public class Origin
         final AtomicBoolean isSuccess = new AtomicBoolean(true);
         final Timing timing = ctx.getRequestProxyTiming();
 
-        // Ideally want to move this into a "onStart" handler...
+        // TODO - Ideally want to move this into a "onStart" handler... but how?
         timing.start();
+        stats.started();
 
         // Construct.
         return client.submit(egressReq.getHttpClientRequest())
