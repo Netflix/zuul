@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,7 +46,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
     @Inject
     private HealthCheckRequestHandler healthCheckHandler;
 
-    @Inject
+    @Inject @Nullable
     private RequestCompleteHandler requestCompleteHandler;
 
 
@@ -84,7 +85,8 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                                 // Ensure some response info is correct in RequestContext for logging/metrics purposes.
                                 zuulResp.setStatus(response.getStatus().code());
 
-                                requestCompleteHandler.handle(context, durationNs, 0);
+                                if (requestCompleteHandler != null)
+                                    requestCompleteHandler.handle(context, durationNs, 0);
                             }
                     );
 
@@ -163,7 +165,8 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
                             zuulResp.setStatus(response.getStatus().code());
 
                             try {
-                                requestCompleteHandler.handle(context, durationNs, responseBodySize);
+                                if (requestCompleteHandler != null)
+                                    requestCompleteHandler.handle(context, durationNs, responseBodySize);
                             } catch (Exception e) {
                                 LOG.error("Error in RequestCompleteHandler.", e);
                             }

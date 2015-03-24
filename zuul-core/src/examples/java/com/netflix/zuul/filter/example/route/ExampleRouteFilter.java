@@ -15,8 +15,10 @@
  */
 package com.netflix.zuul.filter.example.route;
 
+import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.filter.RouteFilterIO;
 import com.netflix.zuul.lifecycle.EgressRequest;
+import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import com.netflix.zuul.lifecycle.IngressResponse;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
@@ -37,7 +39,15 @@ public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
     @Override
     public Observable<IngressResponse<T>> routeToOrigin(EgressRequest<T> egressReq) {
         return originClient.submit(egressReq.getHttpClientRequest())
-                           .map(httpResp -> IngressResponse.from(httpResp, egressReq.get()));
+                           .map(httpResp -> {
+                               // TODO - we're mid refactoring to use RequestContext, so have to additionally
+                               // set the status on context.response here.
+                               RequestContext ctx = (RequestContext) egressReq.get();
+                               ((HttpResponseMessage) ctx.getResponse()).setStatus(httpResp.getStatus().code());
+
+                               // Convert the client response to an IngressResponse.
+                               return IngressResponse.from(httpResp, egressReq.get());
+                           });
     }
 
     @Override
