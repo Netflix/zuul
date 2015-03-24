@@ -8,6 +8,7 @@ import com.netflix.zuul.metrics.OriginStatsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +36,11 @@ public class OriginManager
         }
         this.loadBalancerFactory = loadBalancerFactory;
         this.originStatsFactory = originStatsFactory;
+    }
 
+    @PostConstruct
+    public void initialize()
+    {
         try {
             Map<String, String> originMappings = ORIGINS.getMap();
             for (String originName : originMappings.keySet())
