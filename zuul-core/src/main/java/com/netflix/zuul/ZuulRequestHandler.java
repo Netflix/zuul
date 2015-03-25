@@ -71,11 +71,11 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
 
             Observable<Void> o = healthCheckHandler.handle(request, response)
-                    .doOnCompleted(() -> {
-                        LOG.debug("Calling response.close()");
-                        response.close();
-                        LOG.debug("Called response.close()");
-                    })
+//                    .doOnCompleted(() -> {
+//                        LOG.debug("Calling response.close()");
+//                        response.close();
+//                        LOG.debug("Called response.close()");
+//                    })
                     .finallyDo(() -> {
 
                                 timing.end();

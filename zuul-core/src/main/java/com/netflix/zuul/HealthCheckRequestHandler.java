@@ -20,6 +20,7 @@ public class HealthCheckRequestHandler implements RequestHandler<ByteBuf, ByteBu
         response.getHeaders().set("Content-Type", "text/plain");
         response.setStatus(HttpResponseStatus.OK);
         response.writeString("OK");
-        return response.close();
+        //return response.close();
+        return Observable.empty();
     }
 }
