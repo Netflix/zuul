@@ -31,6 +31,7 @@ import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerBuilder;
 import io.reactivex.netty.protocol.http.server.RequestHandler;
 import io.reactivex.netty.servo.ServoEventsListenerFactory;
+import io.reactivex.netty.spectator.SpectatorEventsListenerFactory;
 import netflix.adminresources.resources.KaryonWebAdminModule;
 import netflix.karyon.Karyon;
 import netflix.karyon.ShutdownModule;
@@ -159,6 +160,8 @@ public class StartServer
 
             // Karyon deps.
             //bind(MetricEventsListenerFactory.class).to(ZuulServoEventsListenerFactory.class);
+            //bind(MetricEventsListenerFactory.class).to(ServoEventsListenerFactory.class);
+            bind(MetricEventsListenerFactory.class).to(SpectatorEventsListenerFactory.class);
             bind(HealthCheckInvocationStrategy.class).to(SyncHealthCheckInvocationStrategy.class);
             bind(HealthCheckHandler.class).to(AlwaysHealthyHealthCheck.class);
 
@@ -187,7 +190,6 @@ public class StartServer
             // Setup zuul metrics publishing.
             ZuulPlugins.getInstance().registerMetricsPublisher(ZuulServoMetricsPublisher.getInstance());
             ZuulMetricsPublisherFactory.createOrRetrieveGlobalPublisher();
-            bind(MetricEventsListenerFactory.class).to(ServoEventsListenerFactory.class);
 
             // Inject access log and request-metrics implementations.
             bind(AccessLogPublisher.class).asEagerSingleton();
