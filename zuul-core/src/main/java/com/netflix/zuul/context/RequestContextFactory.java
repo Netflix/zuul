@@ -8,6 +8,7 @@ import com.netflix.zuul.lifecycle.HttpResponseMessage;
 import io.netty.channel.Channel;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
+import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -23,7 +24,7 @@ public class RequestContextFactory implements FilterStateFactory<RequestContext>
     private RequestContextDecorator decorator;
 
     @Inject
-    public RequestContextFactory(RequestContextDecorator decorator) {
+    public RequestContextFactory(@Nullable RequestContextDecorator decorator) {
         this.decorator = decorator;
     }
 

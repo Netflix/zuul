@@ -4,8 +4,17 @@ dependencies {
     compile 'com.netflix.archaius:archaius-core:0.6.5'
     compile 'com.netflix.servo:servo-core:0.8+'
     compile 'com.google.guava:guava:18.0'
-    compile 'com.google.inject:guice:3.0'
     compile 'org.slf4j:slf4j-simple:1.7.7'
+
+    // Use guice-4 while debugging a startup error that is hidden by guice-3's lack of java8 lambda support.
+    //compile 'com.google.inject:guice:3.0'
+    compile(group: 'com.google.inject', name: 'guice', version: '4.0-beta5')
+    compile(group: 'com.google.inject.extensions', name: 'guice-multibindings', version: '4.0-beta5')
+    compile(group: 'com.google.inject.extensions', name: 'guice-grapher', version: '4.0-beta5')
+    compile(group: 'com.google.inject.extensions', name: 'guice-assistedinject', version: '4.0-beta5')
+    compile(group: 'com.google.inject.extensions', name: 'guice-servlet', version: '4.0-beta5')
+    compile(group: 'com.google.inject.extensions', name: 'guice-throwingproviders', version: '4.0-beta5')
+
     testCompile 'junit:junit-dep:4.10'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
