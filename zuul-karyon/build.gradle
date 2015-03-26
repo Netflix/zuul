@@ -15,6 +15,8 @@ dependencies {
     // TODO: direct deps on rxnetty should be removed when karyon is released with latest rxnetty
     compile 'io.reactivex:rxnetty-servo:0.4.6'
     compile 'io.reactivex:rxnetty-contexts:0.4.6'
+    compile 'io.reactivex:rxnetty-spectator:0.4.6'
+
 
     compile group: 'com.netflix.nfglue', name: 'nfglue-atlas', version: 'latest.release'
     runtime group: 'com.netflix.nfglue', name: 'nfglue-blitz4j', version: 'latest.release'
