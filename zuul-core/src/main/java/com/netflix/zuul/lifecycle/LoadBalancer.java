@@ -1,7 +1,6 @@
 package com.netflix.zuul.lifecycle;
 
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.protocol.http.client.HttpClient;
+import io.reactivex.netty.client.RxClient;
 
 /**
  * User: michaels
@@ -11,5 +10,5 @@ import io.reactivex.netty.protocol.http.client.HttpClient;
 public interface LoadBalancer
 {
     public void init();
-    public HttpClient<ByteBuf, ByteBuf> getNextServer();
+    public RxClient.ServerInfo getNextServer();
 }

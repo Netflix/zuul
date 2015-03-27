@@ -32,9 +32,9 @@ public abstract class FilterStore<State>
     public FiltersForRoute<State> getFilters(IngressRequest ingressReq) throws IOException
     {
         FiltersForRoute<State> filters = fetchFilters(ingressReq);
-        for (Filter f: filters.all()) {
-            ZuulFilterMetricsPublisher filterMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveFilterPublisher(f.getClass());
-        }
+//        for (Filter f: filters.all()) {
+//            ZuulFilterMetricsPublisher filterMetricsPublisher = ZuulMetricsPublisherFactory.createOrRetrieveFilterPublisher(f.getClass());
+//        }
         return filters;
     }
 }
