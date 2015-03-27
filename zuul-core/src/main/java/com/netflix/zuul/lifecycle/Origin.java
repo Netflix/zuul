@@ -8,6 +8,8 @@ import com.netflix.zuul.metrics.Timing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.client.RxClient;
+import io.reactivex.netty.metrics.MetricEventsListener;
+import io.reactivex.netty.metrics.MetricEventsListenerFactory;
 import io.reactivex.netty.protocol.http.client.CompositeHttpClient;
 import io.reactivex.netty.protocol.http.client.CompositeHttpClientBuilder;
 import io.reactivex.netty.protocol.http.client.HttpClient;
@@ -39,7 +41,7 @@ public class Origin
     private final OriginStats stats;
     private CompositeHttpClient<ByteBuf, ByteBuf> client;
 
-    public Origin(String originName, String vip, LoadBalancer loadBalancer, OriginStats stats)
+    public Origin(String originName, String vip, LoadBalancer loadBalancer, OriginStats stats, MetricEventsListenerFactory metricEventsListenerFactory)
     {
         if (originName == null) {
             throw new IllegalArgumentException("Requires a non-null originName.");
@@ -53,6 +55,10 @@ public class Origin
         this.loadBalancer = loadBalancer;
         this.stats = stats;
         this.client = createCompositeHttpClient();
+
+        // Configure rxnetty httpclient metrics for this client.
+        MetricEventsListener httpClientListener = metricEventsListenerFactory.forHttpClient(client);
+        this.client.subscribe(httpClientListener);
     }
 
     public String getVip() {
@@ -134,8 +140,6 @@ public class Origin
                                 .build()
                 )
                 .build();
-
-        //client.subscribe(httpClientListener);
 
         return client;
     }

@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.netflix.config.DynamicStringMapProperty;
 import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.metrics.OriginStatsFactory;
+import io.reactivex.netty.metrics.MetricEventsListenerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,17 +28,21 @@ public class OriginManager
 
     private final LoadBalancerFactory loadBalancerFactory;
     private final OriginStatsFactory originStatsFactory;
+    private final MetricEventsListenerFactory metricEventsListenerFactory;
 
     @Inject
-    public OriginManager(LoadBalancerFactory loadBalancerFactory, OriginStatsFactory originStatsFactory)
+    public OriginManager(LoadBalancerFactory loadBalancerFactory, OriginStatsFactory originStatsFactory,
+                         MetricEventsListenerFactory metricEventsListenerFactory)
     {
         if (loadBalancerFactory == null) {
             throw new IllegalArgumentException("OriginManager.loadBalancerFactory is null.");
         }
         this.loadBalancerFactory = loadBalancerFactory;
         this.originStatsFactory = originStatsFactory;
+        this.metricEventsListenerFactory = metricEventsListenerFactory;
     }
 
+    // TODO - @WarmUp
     @PostConstruct
     public void initialize()
     {
@@ -58,7 +63,7 @@ public class OriginManager
                                 originStats = originStatsFactory.create(originName);
                             }
 
-                            this.origins.put(originName, new Origin(originName, vip, lb, originStats));
+                            this.origins.put(originName, new Origin(originName, vip, lb, originStats, metricEventsListenerFactory));
                         }
                         catch (Exception e) {
                             // TODO - resolve why this is failing on first attempts at startup.
