@@ -1,8 +1,8 @@
 dependencies { 
-    compile 'io.reactivex:rxnetty:0.4.6'
+
     compile 'com.netflix.numerus:numerus:1.1'
     compile 'com.netflix.archaius:archaius-core:0.6.5'
-    compile 'com.netflix.servo:servo-core:0.8+'
+    //compile 'com.netflix.servo:servo-core:0.8+'
     compile 'com.google.guava:guava:18.0'
     compile 'org.slf4j:slf4j-simple:1.7.7'
 
@@ -14,6 +14,22 @@ dependencies {
     compile(group: 'com.google.inject.extensions', name: 'guice-assistedinject', version: '4.0-beta5')
     compile(group: 'com.google.inject.extensions', name: 'guice-servlet', version: '4.0-beta5')
     compile(group: 'com.google.inject.extensions', name: 'guice-throwingproviders', version: '4.0-beta5')
+
+
+    karyonVer = "2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-core:${karyonVer}"
+    compile "com.netflix.karyon2:karyon-governator:${karyonVer}"
+    compile "com.netflix.karyon2:karyon-eureka:${karyonVer}"
+    compile "com.netflix.karyon2:karyon-servo:${karyonVer}"
+    compile "com.netflix.karyon2:karyon-archaius:${karyonVer}"
+    compile "com.netflix.karyon2:karyon-admin-web:${karyonVer}"
+
+
+    // TODO: direct deps on rxnetty should be removed when karyon is released with latest rxnetty
+    compile 'io.reactivex:rxnetty:0.4.6'
+    compile 'io.reactivex:rxnetty-servo:0.4.6'
+    compile 'io.reactivex:rxnetty-contexts:0.4.6'
+    compile 'io.reactivex:rxnetty-spectator:0.4.6'
 
     testCompile 'junit:junit-dep:4.10'
     testCompile 'org.mockito:mockito-core:1.8.5'

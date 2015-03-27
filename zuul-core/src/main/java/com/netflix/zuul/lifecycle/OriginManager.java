@@ -3,6 +3,7 @@ package com.netflix.zuul.lifecycle;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.config.DynamicStringMapProperty;
+import com.netflix.governator.annotations.WarmUp;
 import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.metrics.OriginStatsFactory;
 import io.reactivex.netty.metrics.MetricEventsListenerFactory;
@@ -43,7 +44,8 @@ public class OriginManager
     }
 
     // TODO - @WarmUp
-    @PostConstruct
+    //@PostConstruct
+    @WarmUp
     public void initialize()
     {
         try {
