@@ -10,15 +10,11 @@ import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.client.RxClient;
 import io.reactivex.netty.metrics.MetricEventsListener;
 import io.reactivex.netty.metrics.MetricEventsListenerFactory;
-import io.reactivex.netty.protocol.http.client.CompositeHttpClient;
-import io.reactivex.netty.protocol.http.client.CompositeHttpClientBuilder;
-import io.reactivex.netty.protocol.http.client.HttpClient;
-import io.reactivex.netty.protocol.http.client.HttpClientPipelineConfigurator;
+import io.reactivex.netty.protocol.http.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,10 +65,8 @@ public class Origin
         return loadBalancer;
     }
 
-    public Observable<IngressResponse<ByteBuf>> request(EgressRequest<RequestContext> egressReq)
+    public Observable<RequestContext> request(RequestContext ctx)
     {
-        RequestContext ctx = egressReq.get();
-
         RxClient.ServerInfo serverInfo = getLoadBalancer().getNextServer();
 
         final AtomicBoolean isSuccess = new AtomicBoolean(true);
@@ -83,25 +77,12 @@ public class Origin
         if (stats != null)
             stats.started();
 
+        HttpClientRequest<ByteBuf> clientRequest = RxNettyUtils.createHttpClientRequest(ctx);
+
         // Construct.
-        return client.submit(serverInfo, egressReq.getHttpClientRequest())
-                .map(resp -> {
-                            // Copy the response headers and info into the RequestContext for use by post filters.
-                            HttpResponseMessage zuulResp = (HttpResponseMessage) egressReq.get().getResponse();
-                            if (resp.getStatus() != null) {
-                                zuulResp.setStatus(resp.getStatus().code());
-                            }
-                            Headers zuulRespHeaders = zuulResp.getHeaders();
-                            for (Map.Entry<String, String> entry : resp.getHeaders().entries()) {
-                                zuulRespHeaders.add(entry.getKey(), entry.getValue());
-                            }
+        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(serverInfo, clientRequest);
 
-                            ctx.getAttributes().put("origin_http_status", Integer.toString(resp.getStatus().code()));
-
-                            // Convert the RxNetty response into a Zuul IngressResponse.
-                            return (IngressResponse<ByteBuf>) IngressResponse.from(resp, ctx);
-                        }
-                )
+        return RxNettyUtils.bufferHttpClientResponse(respObs, ctx)
                 .doOnError(t -> {
                             isSuccess.set(false);
 
@@ -113,14 +94,13 @@ public class Origin
                             ctx.getAttributes().put("error", t);
 
                             LOG.error("Error making http request.", t);
-                        }
-                ).finallyDo(() -> {
-                    timing.end();
-                    if (stats != null)
-                        stats.completed(isSuccess.get(), timing.getDuration());
-                });
+                    }
+            ).finallyDo(() -> {
+                timing.end();
+                if (stats != null)
+                    stats.completed(isSuccess.get(), timing.getDuration());
+            });
     }
-
 
     private CompositeHttpClient<ByteBuf, ByteBuf> createCompositeHttpClient()
     {
@@ -129,7 +109,9 @@ public class Origin
         HttpClientPipelineConfigurator<ByteBuf, ByteBuf> clientPipelineConfigurator = new HttpClientPipelineConfigurator<>(
                 HttpClientPipelineConfigurator.MAX_INITIAL_LINE_LENGTH_DEFAULT,
                 maxHeaderSize,
-                HttpClientPipelineConfigurator.MAX_CHUNK_SIZE_DEFAULT);
+                HttpClientPipelineConfigurator.MAX_CHUNK_SIZE_DEFAULT,
+                // don't validate headers.
+                false);
 
         CompositeHttpClient<ByteBuf, ByteBuf> client = new CompositeHttpClientBuilder<ByteBuf, ByteBuf>(new Bootstrap())
                 .withMaxConnections(ORIGIN_MAX_CONNS_PER_HOST.get())

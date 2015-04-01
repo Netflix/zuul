@@ -15,13 +15,8 @@
  */
 package com.netflix.zuul.filterstore;
 
-import com.netflix.zuul.filter.ErrorFilter;
-import com.netflix.zuul.filter.Filter;
-import com.netflix.zuul.filter.PostFilter;
-import com.netflix.zuul.filter.PreFilter;
-import com.netflix.zuul.filter.RouteFilter;
+import com.netflix.zuul.filter.*;
 import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +38,7 @@ public class InMemoryFilterStore<State> extends FilterStore<State> {
     }
 
     @Override
-    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) {
+    public FiltersForRoute<State> fetchFilters() {
         return new FiltersForRoute<>(preFilters, routeFilter.get(), postFilters, errorFilter.get());
     }
 

@@ -17,7 +17,6 @@ package com.netflix.zuul.filterstore;
 
 import com.netflix.zuul.filter.Filter;
 import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +79,8 @@ public class ClassPathFilterStore<State> extends FilterStore<State> {
     }
 
     @Override
-    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
-        return backingFilterStore.getFilters(ingressReq);
+    public FiltersForRoute<State> fetchFilters() throws IOException {
+        return backingFilterStore.getFilters();
     }
 
     private void addAllNestedFiles(List<File> fileList, File root, Predicate<String> matcher) {

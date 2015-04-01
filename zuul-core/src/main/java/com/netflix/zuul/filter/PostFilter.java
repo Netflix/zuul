@@ -15,6 +15,4 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressResponse;
-
-public interface PostFilter<T> extends ProcessingFilter<EgressResponse<T>> { }
+public interface PostFilter<T> extends ProcessingFilter<T> { }

@@ -15,10 +15,8 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressResponse;
-import com.netflix.zuul.lifecycle.IngressRequest;
 import rx.Observable;
 
 public interface ErrorFilter<T> extends Filter {
-    public Observable<EgressResponse<T>> execute(Throwable ex, IngressRequest ingressReq);
+    public Observable<T> execute(Throwable ex, T context);
 }

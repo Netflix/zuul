@@ -15,6 +15,4 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressResponse;
-
-public abstract class PostFilterSynchronous<T> extends FilterComputation<EgressResponse<T>> implements PostFilter<T> { }
+public abstract class PostFilterSynchronous<T> extends FilterComputation<T> implements PostFilter<T> { }

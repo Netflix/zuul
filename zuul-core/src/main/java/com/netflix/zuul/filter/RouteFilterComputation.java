@@ -15,19 +15,23 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressRequest;
-import com.netflix.zuul.lifecycle.IngressResponse;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
+/**
+ * TODO - is this class basically a replacement for StaticResponse filters?
+ *
+ * @param <T>
+ */
 public abstract class RouteFilterComputation<T> implements RouteFilter<T> {
-    public abstract IngressResponse<T> provideResponse(EgressRequest<T> egressReq);
+
+    public abstract T provideResponse(T context);
 
     @Override
-    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq) {
+    public Observable<T> execute(T context) {
         final long startTime = System.currentTimeMillis();
         try {
-            Observable<IngressResponse<T>> resp = Observable.just(provideResponse(egressReq));
+            Observable<T> resp = Observable.just(provideResponse(context));
             ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
             return resp;
         } catch (Throwable ex) {

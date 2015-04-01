@@ -17,17 +17,18 @@ package com.netflix.zuul.lifecycle;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.netflix.zuul.ZuulException;
+import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.filter.ErrorFilter;
 import com.netflix.zuul.filter.PostFilter;
 import com.netflix.zuul.filter.PreFilter;
 import com.netflix.zuul.filter.RouteFilter;
 import com.netflix.zuul.filterstore.FilterStore;
-import com.netflix.zuul.metrics.ZuulMetrics;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,121 +52,103 @@ import java.util.List;
  * Error) At any point along the way, if a filter throws an error, the {@link ErrorFilter} is invoked.  An {@link ErrorFilter}
  * provides a whole {@link EgressResponse} and ends the entire chain.  If you desire more granular error-handling, you should wire that up
  * in a filter yourself.
- * @param <State>
  */
 @Singleton
-public class FilterProcessor<State> {
+public class FilterProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
-    private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
-    private final FilterStore<State> filterStore;
+    private final FilterStore<RequestContext> filterStore;
 
 
     @Inject
-    public FilterProcessor(FilterStore<State> filterStore) {
+    public FilterProcessor(FilterStore<RequestContext> filterStore) {
         this.filterStore = filterStore;
     }
 
-    public Observable<EgressResponse<State>> applyAllFilters(IngressRequest ingressReq) {
-        final long startTime = System.currentTimeMillis();
+    /**
+     * TODO - Why is the filter chain constructed for each request? Why not only once?
+     *
+     */
+    public Observable<RequestContext> applyAllFilters(RequestContext ctx) {
+
+        // Load the filters to be used.
+        final FiltersForRoute<RequestContext> filtersForRoute;
         try {
-            FiltersForRoute<State> filtersForRoute = filterStore.getFilters(ingressReq);
-
-            UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
-            /**
-             * Why do we retain here?
-             * After the onNext on the content returns, RxNetty releases the sent ByteBuf. This ByteBuf is kept out of
-             * the scope of the onNext for consumption of the client in the route. The client when eventually writes
-             * this ByteBuf over the wire expects the ByteBuf to be usable (i.e. ref count => 1). If this retain() call
-             * is removed, the ref count will be 0 after the onNext on the content returns and hence it will be unusable
-             * by the client in the route.
-             */
-            ingressReq.getHttpServerRequest().getContent().map(ByteBuf::retain).subscribe(cachedContent); // Caches data if arrived before client writes it out, else passes through
-
-
-            EgressRequest<State> initialEgressReq = EgressRequest.copiedFrom(
-                    ingressReq, cachedContent, (State) ingressReq.getRequestContext());
-
-            Observable<EgressRequest<State>> egressReq = applyPreFilters(initialEgressReq, filtersForRoute.getPreFilters());
-            Observable<IngressResponse<State>> ingressResp = applyRouteFilter(egressReq, filtersForRoute.getRouteFilter(),
-                                                                              cachedContent);
-            Observable<EgressResponse<State>> initialEgressResp = ingressResp.map(EgressResponse::from);
-
-            Observable<EgressResponse<State>> egressResp = applyPostFilters(initialEgressResp, filtersForRoute.getPostFilters());
-            return egressResp.doOnCompleted(() ->
-                ZuulMetrics.markSuccess(ingressReq, System.currentTimeMillis() - startTime)
-            ).onErrorResumeNext(ex -> {
-                long duration = System.currentTimeMillis() - startTime;
-                ZuulMetrics.markError(ingressReq, duration);
-                return applyErrorFilter(ex, ingressReq, filtersForRoute.getErrorFilter());
-            }).doOnNext(httpResp ->
-                ZuulMetrics.markStatus(httpResp.getStatus().code(), ingressReq, startTime)
-            );
-        } catch (IOException ex) {
-            logger.error("Couldn't load the filters");
-            return Observable.error(new ZuulException("Could not load filters", 500));
+            filtersForRoute = filterStore.getFilters();
         }
-    }
-
-    private Observable<EgressRequest<State>> applyPreFilters(final EgressRequest<State> initialEgressReq, final List<PreFilter<State>> preFilters) {
-        Observable<EgressRequest<State>> req = Observable.just(initialEgressReq);
-        for (PreFilter<State> preFilter: preFilters) {
-            req = preFilter.execute(req).single();
+        catch (IOException e) {
+            logger.error("Couldn't load the filters.", e);
+            throw new RuntimeException("Error loading filters.", e);
         }
-        return req;
+
+        PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
+        //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+
+        // Subscribe to the response-content observable (retaining the ByteBufS first).
+        ctx.internal_getHttpServerRequest().getContent().map(ByteBuf::retain).subscribe(cachedContent);
+
+        // Only apply the filters once the request body has been fully read and buffered.
+        Observable<RequestContext> chain = cachedContent
+                .reduce((bb1, bb2) -> {
+                    // Buffer the request body into a single virtual ByteBuf.
+                    // TODO - apply some max size to this.
+                    return Unpooled.wrappedBuffer(bb1, bb2);
+
+                })
+                .map(bodyBuffer -> {
+                    // Set the body on Request object.
+                    byte[] body = RxNettyUtils.byteBufToBytes(bodyBuffer);
+                    ctx.getRequest().setBody(body);
+
+                    // Release the ByteBufS
+                    if (bodyBuffer.refCnt() > 0) {
+                        if (logger.isDebugEnabled()) logger.debug("Releasing the server-request ByteBuf.");
+                        bodyBuffer.release();
+                    }
+                    return ctx;
+                });
+
+        // Apply PRE filters.
+        chain = applyPreFilters(chain, filtersForRoute.getPreFilters());
+
+        // Route/Proxy.
+        chain = applyRouteFilter(chain, filtersForRoute.getRouteFilter());
+
+        // Apply POST filters.
+        chain = applyPostFilters(chain, filtersForRoute.getPostFilters());
+
+        // Apply error filter if an error during processing.
+        chain.onErrorResumeNext(ex -> {
+            return applyErrorFilter(ex, ctx, filtersForRoute.getErrorFilter());
+        });
+
+        return chain;
     }
 
-    private Observable<IngressResponse<State>> applyRouteFilter(final Observable<EgressRequest<State>> egressReq,
-                                                                final RouteFilter<State> routeFilter,
-                                                                final UnicastDisposableCachingSubject<ByteBuf> ingressContent) {
-        return egressReq.flatMap(req -> {
-            if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
-                for (String headerName : req.getHttpClientRequest().getHeaders().names()) {
-                    for (String headerValue : req.getHttpClientRequest().getHeaders().getAll(headerName)) {
-                        HTTP_DEBUG_LOGGER.debug("Origin req header : " + headerName + " -> " + headerValue);
-                    }
-                }
-            }
-            return routeFilter.execute(req);
-        }).single().
-                doOnNext(resp -> {
-                    if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
-                        for (String headerName : resp.getHeaders().names()) {
-                            for (String headerValue : resp.getHeaders().getAll(headerName)) {
-                                HTTP_DEBUG_LOGGER.debug("Origin resp header : " + headerName + " -> " + headerValue);
-                            }
-                        }
-                    }
-                }).
-                doOnTerminate(() -> ingressContent.dispose(byteBuf -> {
-                    /**
-                     * Why do we release here?
-                     *
-                     * All ByteBuf which were never consumed are disposed and sent here. This means that the
-                     * client in the route never consumed this ByteBuf. Before sending this ByteBuf to the
-                     * content subject, we do a retain (see above for reason) expecting the client in the route
-                     * to release it when written over the wire. In this case, though, the client never consumed
-                     * it and hence never released corresponding to the retain done by us.
-                     */
-                    if (byteBuf.refCnt() > 1) { // 1 refCount will be from the subject putting into the cache.
-                        if (logger.isDebugEnabled()) logger.debug("Releasing the ingressContent byteBuf.");
-                        byteBuf.release();
-                    }
-                }));
-    }
-
-    private Observable<EgressResponse<State>> applyPostFilters(final Observable<EgressResponse<State>> initialEgressResp, final List<PostFilter<State>> postFilters) {
-        Observable<EgressResponse<State>> resp = initialEgressResp;
-        for (PostFilter<State> postFilter: postFilters) {
-            resp = postFilter.execute(resp).single();
+    private Observable<RequestContext> applyPreFilters(Observable<RequestContext> chain, final List<PreFilter<RequestContext>> preFilters) {
+        for (PreFilter<RequestContext> preFilter: preFilters) {
+            chain = preFilter.execute(chain).single();
         }
-        return resp;
+        return chain;
     }
 
-    private Observable<EgressResponse<State>> applyErrorFilter(Throwable ex, IngressRequest ingressReq, ErrorFilter<State> errorFilter) {
+    private Observable<RequestContext> applyRouteFilter(final Observable<RequestContext> chain,
+                                                                final RouteFilter<RequestContext> routeFilter)
+    {
+        return chain.flatMap(ctx -> routeFilter.execute(ctx).single());
+    }
+
+    private Observable<RequestContext> applyPostFilters(Observable<RequestContext> chain, final List<PostFilter<RequestContext>> postFilters) {
+        for (PostFilter<RequestContext> postFilter: postFilters) {
+            chain = postFilter.execute(chain).single();
+        }
+        return chain;
+    }
+
+    private Observable<RequestContext> applyErrorFilter(Throwable ex, RequestContext ctx, ErrorFilter<RequestContext> errorFilter) {
         if (errorFilter != null) {
-            return errorFilter.execute(ex, ingressReq);
+            return errorFilter.execute(ex, ctx);
         } else return Observable.error(ex);
     }
 }

@@ -15,11 +15,9 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressRequest;
-import com.netflix.zuul.lifecycle.IngressResponse;
 import rx.Observable;
 
 //possible other name - OriginFilter, OriginRoutingFilter???
 public interface RouteFilter<T> extends Filter {
-    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq);
+    public Observable<T> execute(T context);
 }

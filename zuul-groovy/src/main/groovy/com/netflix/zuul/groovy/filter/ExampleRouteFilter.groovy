@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.groovy.filter;
+package com.netflix.zuul.groovy.filter
 
-import com.netflix.zuul.filter.RouteFilterIO;
-import com.netflix.zuul.lifecycle.EgressRequest;
-import com.netflix.zuul.lifecycle.IngressResponse;
+import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.filter.RouteFilterIO
+import com.netflix.zuul.lifecycle.RxNettyUtils
+import io.netty.buffer.ByteBuf
+import io.reactivex.netty.RxNetty
+import io.reactivex.netty.protocol.http.client.HttpClient
+import io.reactivex.netty.protocol.http.client.HttpClientRequest
+import rx.Observable
 
-import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.RxNetty;
-import io.reactivex.netty.protocol.http.client.HttpClient;
-import rx.Observable;
-
-public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
+public class ExampleRouteFilter extends RouteFilterIO<RequestContext> {
 
     @Override
-    Observable<IngressResponse> routeToOrigin(EgressRequest<T> egressReq) {
+    Observable<RequestContext> routeToOrigin(RequestContext ctx) {
         println("route filter " + this)
         HttpClient<ByteBuf, ByteBuf> httpClient = RxNetty.createHttpClient("api.test.netflix.com", 80)
-        httpClient.submit(egressReq.getHttpClientRequest()).map({IngressResponse.from(it, egressReq.get()) })
+        HttpClientRequest<ByteBuf> clientReq = RxNettyUtils.createHttpClientRequest(ctx)
+
+        // Construct.
+        return RxNettyUtils.bufferHttpClientResponse(httpClient.submit(clientReq), ctx)
     }
 
     @Override

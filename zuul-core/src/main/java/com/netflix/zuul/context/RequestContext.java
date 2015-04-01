@@ -3,6 +3,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.lifecycle.ZuulMessage;
 import com.netflix.zuul.metrics.Timing;
+import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 
 import java.util.HashMap;
@@ -19,7 +20,7 @@ public class RequestContext
     private final HashMap<String, Object> attributes = new HashMap<>();
     private final HashMap<String, Object> helpers = new HashMap<>();
 
-    private HttpServerRequest httpServerRequest;
+    private HttpServerRequest<ByteBuf> httpServerRequest;
 
     public RequestContext(ZuulMessage requestMessage, ZuulMessage responseMessage)
     {
@@ -45,11 +46,11 @@ public class RequestContext
 
 
     // TODO - these methods are temp while I refactor the filter and Ingress/Egress interfaces.
-    void internal_setHttpServerRequest(HttpServerRequest httpServerRequest) {
+    void internal_setHttpServerRequest(HttpServerRequest<ByteBuf> httpServerRequest) {
         this.httpServerRequest = httpServerRequest;
     }
 
-    public HttpServerRequest internal_getHttpServerRequest() {
+    public HttpServerRequest<ByteBuf> internal_getHttpServerRequest() {
         return httpServerRequest;
     }
 

@@ -15,6 +15,4 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressRequest;
-
-public abstract class PreFilterSynchronous<T> extends FilterComputation<EgressRequest<T>> implements PreFilter<T> { }
+public abstract class PreFilterSynchronous<T> extends FilterComputation<T> implements PreFilter<T> { }

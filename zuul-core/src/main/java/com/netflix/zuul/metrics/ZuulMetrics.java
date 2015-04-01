@@ -19,13 +19,8 @@ package com.netflix.zuul.metrics;
 import com.netflix.numerus.NumerusRollingNumber;
 import com.netflix.numerus.NumerusRollingPercentile;
 import com.netflix.zuul.filter.Filter;
-import com.netflix.zuul.lifecycle.IngressRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,17 +40,17 @@ public class ZuulMetrics {
     private static Map<Class<? extends Filter>, NumerusRollingNumber> filterExecutions = new ConcurrentHashMap<>();
     private static Map<Class<? extends Filter>, NumerusRollingPercentile> filterLatencies = new ConcurrentHashMap<>();
 
-    public static void markSuccess(IngressRequest ingressReq, long duration) {
+    public static void markSuccess(long duration) {
         globalExecution.increment(ZuulExecutionEvent.SUCCESS);
         globalLatency.addValue((int) duration);
     }
 
-    public static void markError(IngressRequest ingressReq, long duration) {
+    public static void markError(long duration) {
         globalExecution.increment(ZuulExecutionEvent.FAILURE);
         globalLatency.addValue((int) duration);
     }
 
-    public static void markStatus(int statusCode, IngressRequest ingressReq, long duration) {
+    public static void markStatus(int statusCode, long duration) {
         final ZuulStatusCode zuulStatusCode = ZuulStatusCode.from(statusCode);
         final ZuulStatusCodeClass zuulStatusCodeClass = zuulStatusCode.getStatusClass();
 

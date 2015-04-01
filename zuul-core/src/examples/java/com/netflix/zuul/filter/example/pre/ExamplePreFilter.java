@@ -16,12 +16,11 @@
 package com.netflix.zuul.filter.example.pre;
 
 import com.netflix.zuul.filter.PreFilterSynchronous;
-import com.netflix.zuul.lifecycle.EgressRequest;
 
 public class ExamplePreFilter<T> extends PreFilterSynchronous<T> {
 
     @Override
-    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
+    public T apply(T egressReq) {
         System.out.println(this + " pre filter");
         return egressReq;
     }

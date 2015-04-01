@@ -15,19 +15,21 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressRequest;
-import com.netflix.zuul.lifecycle.IngressResponse;
 import com.netflix.zuul.metrics.ZuulMetrics;
 import rx.Observable;
 
-public abstract class RouteFilterIO<T> implements RouteFilter<T> {
-    public abstract Observable<IngressResponse<T>> routeToOrigin(EgressRequest<T> egressReq);
+public abstract class RouteFilterIO<T> implements RouteFilter<T>
+{
+    public abstract Observable<T> routeToOrigin(T context);
 
     @Override
-    public Observable<IngressResponse<T>> execute(EgressRequest<T> egressReq) {
+    public Observable<T> execute(T context)
+    {
         final long startTime = System.currentTimeMillis();
-        return routeToOrigin(egressReq).doOnError(ex ->
-                ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime)).doOnCompleted(() ->
-                ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime));
+        return routeToOrigin(context).doOnError(ex -> {
+                ZuulMetrics.markFilterFailure(getClass(), System.currentTimeMillis() - startTime);
+        }).doOnCompleted(() -> {
+                ZuulMetrics.markFilterSuccess(getClass(), System.currentTimeMillis() - startTime);
+        });
     }
 }

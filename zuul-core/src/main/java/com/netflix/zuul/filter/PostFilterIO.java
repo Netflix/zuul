@@ -15,6 +15,4 @@
  */
 package com.netflix.zuul.filter;
 
-import com.netflix.zuul.lifecycle.EgressResponse;
-
-public abstract class PostFilterIO<T> extends FilterIO<EgressResponse<T>> implements PostFilter<T> { }
+public abstract class PostFilterIO<T> extends FilterIO<T> implements PostFilter<T> { }

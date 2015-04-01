@@ -17,16 +17,15 @@ package com.netflix.zuul.filter.example.route;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.filter.RouteFilterIO;
-import com.netflix.zuul.lifecycle.EgressRequest;
-import com.netflix.zuul.lifecycle.HttpResponseMessage;
-import com.netflix.zuul.lifecycle.IngressResponse;
+import com.netflix.zuul.lifecycle.RxNettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.RxNetty;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import io.reactivex.netty.protocol.http.client.HttpClientPipelineConfigurator;
+import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import rx.Observable;
 
-public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
+public class ExampleRouteFilter extends RouteFilterIO<RequestContext> {
 
     private final HttpClient<ByteBuf, ByteBuf> originClient;
 
@@ -37,17 +36,10 @@ public class ExampleRouteFilter<T> extends RouteFilterIO<T> {
     }
 
     @Override
-    public Observable<IngressResponse<T>> routeToOrigin(EgressRequest<T> egressReq) {
-        return originClient.submit(egressReq.getHttpClientRequest())
-                           .map(httpResp -> {
-                               // TODO - we're mid refactoring to use RequestContext, so have to additionally
-                               // set the status on context.response here.
-                               RequestContext ctx = (RequestContext) egressReq.get();
-                               ((HttpResponseMessage) ctx.getResponse()).setStatus(httpResp.getStatus().code());
-
-                               // Convert the client response to an IngressResponse.
-                               return IngressResponse.from(httpResp, egressReq.get());
-                           });
+    public Observable<RequestContext> routeToOrigin(RequestContext ctx)
+    {
+        HttpClientRequest<ByteBuf> clientReq = RxNettyUtils.createHttpClientRequest(ctx);
+        return RxNettyUtils.bufferHttpClientResponse(originClient.submit(clientReq), ctx);
     }
 
     @Override

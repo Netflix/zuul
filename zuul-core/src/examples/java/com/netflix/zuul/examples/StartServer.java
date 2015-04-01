@@ -180,7 +180,7 @@ public class StartServer
             bind(new TypeLiteral<FilterStateFactory<RequestContext>>()
             {
             }).to(RequestContextFactory.class);
-            bind(new TypeLiteral<FilterProcessor<RequestContext>>()
+            bind(new TypeLiteral<FilterProcessor>()
             {
             }).asEagerSingleton();
 

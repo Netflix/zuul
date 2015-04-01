@@ -26,6 +26,7 @@ public class HttpRequestMessage extends ZuulMessage
         super(headers);
 
         this.method = method;
+        // TODO - are queryparams getting appended twice onto uri because of this....
         this.uri = uri;
         this.queryParams = queryParams;
         this.clientIp = clientIp;

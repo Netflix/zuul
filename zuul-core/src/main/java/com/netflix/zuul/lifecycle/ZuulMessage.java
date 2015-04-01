@@ -1,7 +1,5 @@
 package com.netflix.zuul.lifecycle;
 
-import rx.Observable;
-
 /**
  * User: michaels@netflix.com
  * Date: 2/20/15
@@ -10,6 +8,7 @@ import rx.Observable;
 public class ZuulMessage
 {
     private final Headers headers;
+    private byte[] body = null;
 
     public ZuulMessage() {
         this.headers = new Headers();
@@ -23,8 +22,13 @@ public class ZuulMessage
         return headers;
     }
 
-    public Observable getBody() {
-        // TODO
-        throw new UnsupportedOperationException();
+    public byte[] getBody()
+    {
+        return this.body;
+    }
+
+    public void setBody(byte[] body)
+    {
+        this.body = body;
     }
 }

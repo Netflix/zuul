@@ -16,12 +16,11 @@
 package com.netflix.zuul.filter.example.post;
 
 import com.netflix.zuul.filter.PostFilterSynchronous;
-import com.netflix.zuul.lifecycle.EgressResponse;
 
 public class ExamplePostFilter<T> extends PostFilterSynchronous<T> {
 
     @Override
-    public EgressResponse<T> apply(EgressResponse<T> egressResp) {
+    public T apply(T egressResp) {
         System.out.println(this + " post filter");
         return egressResp;
     }

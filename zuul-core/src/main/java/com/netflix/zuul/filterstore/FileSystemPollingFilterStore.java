@@ -17,7 +17,6 @@ package com.netflix.zuul.filterstore;
 
 import com.netflix.zuul.filter.*;
 import com.netflix.zuul.lifecycle.FiltersForRoute;
-import com.netflix.zuul.lifecycle.IngressRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +82,7 @@ public abstract class FileSystemPollingFilterStore<State> extends FilterStore<St
     protected abstract Class<?> getClassFromFilterFile(File f) throws IOException;
 
     @Override
-    public FiltersForRoute<State> fetchFilters(IngressRequest ingressReq) throws IOException {
+    public FiltersForRoute<State> fetchFilters() throws IOException {
         List<PreFilter> preFilters = pickFilters(compiledFilters.values(), PreFilter.class);
         List<RouteFilter> routeFilters = pickFilters(compiledFilters.values(), RouteFilter.class);
         List<PostFilter> postFilters = pickFilters(compiledFilters.values(), PostFilter.class);

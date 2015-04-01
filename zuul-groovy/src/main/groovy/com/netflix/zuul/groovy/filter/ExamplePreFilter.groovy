@@ -16,14 +16,13 @@
 package com.netflix.zuul.groovy.filter
 
 import com.netflix.zuul.filter.PreFilterSynchronous;
-import com.netflix.zuul.lifecycle.EgressRequest;
 
 public class ExamplePreFilter<T> extends PreFilterSynchronous<T> {
 
     @Override
-    public EgressRequest<T> apply(EgressRequest<T> egressReq) {
+    public T apply(T state) {
         println("pre filter " + this)
-        egressReq
+        state
     }
 
     @Override
