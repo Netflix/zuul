@@ -44,6 +44,9 @@ class PreDecorationFilter extends ZuulFilter {
         // sets origin
         ctx.setRouteHost(new URL("http://apache.org/"));
 
+        // set origin host header
+        ctx.addZuulRequestHeader("Host","apache.org");
+
         // sets custom header to send to the origin
         ctx.addOriginResponseHeader("cache-control", "max-age=3600");
     }

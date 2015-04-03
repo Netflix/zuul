@@ -278,6 +278,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
     boolean isValidHeader(String name) {
         if (name.toLowerCase().contains("content-length")) return false;
+        if (name.toLowerCase().equals("host")) return false; // set host according to origin vhost
         if (!RequestContext.currentContext.responseGZipped) {
             if (name.toLowerCase().contains("accept-encoding")) return false;
         }
