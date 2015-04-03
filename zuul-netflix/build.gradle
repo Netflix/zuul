@@ -1,7 +1,4 @@
-apply plugin: 'java'
 apply plugin: 'groovy'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 
 dependencies {
     compile project(':zuul-core')
@@ -37,15 +34,7 @@ javadoc {
 
 eclipse {
     classpath {
-        plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
-    }
-}
-
-
-idea {
-    module {
-        scopes.PROVIDED.plus += configurations.provided
     }
 }
