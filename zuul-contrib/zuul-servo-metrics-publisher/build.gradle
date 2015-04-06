@@ -1,4 +1,4 @@
 dependencies { 
     compile project(':zuul-core')
-    compile 'com.netflix.servo:servo-core:0.6+'
+    compile 'com.netflix.servo:servo-core:0.6.+'
 }
