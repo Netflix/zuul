@@ -33,6 +33,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.*;
@@ -60,8 +61,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     protected static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
 
     private HttpServletRequest req;
-    private byte[] contentData;
-    private HashMap<String, String[]> parameters;
+    private byte[] contentData = null;
+    private HashMap<String, String[]> parameters = null;
 
     public HttpServletRequestWrapper() {
         //a trick for Groovy
@@ -148,8 +149,17 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
             // Read the request body inputstream into a byte array.
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(req.getInputStream(), baos);
-            contentData = baos.toByteArray();
+            try {
+                IOUtils.copy(req.getInputStream(), baos);
+                contentData = baos.toByteArray();
+            } catch (SocketTimeoutException e) {
+                // This can happen if the request body is smaller than the size specified in the
+                // Content-Length header, and using tomcat APR connector.
+                LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
+                if (contentData == null) {
+                    contentData = new byte[0];
+                }
+            }
 
             try {
                 LOG.debug("Length of contentData byte array = " + contentData.length);
