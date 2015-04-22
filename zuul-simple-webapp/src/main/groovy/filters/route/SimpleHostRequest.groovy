@@ -317,7 +317,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         def headers = new ArrayList()
         Enumeration headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String name = (String) headerNames.nextElement();
+            String name = ((String) headerNames.nextElement()).toLowerCase();
             String value = request.getHeader(name);
             if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
         }
