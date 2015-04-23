@@ -49,11 +49,14 @@ import static org.mockito.Mockito.*;
  */
 public class ZuulServletFilter implements Filter {
 
-
-    private ZuulRunner zuulRunner = new ZuulRunner();
+    private ZuulRunner zuulRunner;
 
     public void init(FilterConfig filterConfig) throws ServletException {
 
+        String bufferReqsStr = filterConfig.getInitParameter("buffer-requests");
+        boolean bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
+
+        zuulRunner = new ZuulRunner(bufferReqs);
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {

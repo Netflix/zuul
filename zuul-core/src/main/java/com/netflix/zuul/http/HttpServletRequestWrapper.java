@@ -99,12 +99,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     /**
      * This method is safe to use multiple times.
-     * Changing the returned array will not interfere with this class operation.
      *
-     * @return The cloned content data.
+     * @return The request body data.
      */
     public byte[] getContentData() {
-        return contentData.clone();
+        return contentData;
     }
 
 
@@ -140,12 +139,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
         }
 
-        LOG.debug("Path = " + req.getPathInfo());
-        LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
-        LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
-
-        LOG.debug("Content-Length header = " + req.getContentLength());
-        if (req.getContentLength() > 0) {
+        if (shouldBufferBody()) {
 
             // Read the request body inputstream into a byte array.
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -204,14 +198,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 }
             }
 
-        } else if (req.getContentLength() == -1) {
-            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
-            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
-                RequestContext.getCurrentContext().setChunkedRequestBody();
-                LOG.debug("Set flag that request body is chunked.");
-            }
-        } else {
-            LOG.warn("Content-Length is neither greater than zero or -1. = " + req.getContentLength());
         }
 
         HashMap<String, String[]> map = new HashMap<String, String[]>(mapA.size() * 2);
@@ -224,6 +210,34 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     }
 
+    private boolean shouldBufferBody() {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Path = " + req.getPathInfo());
+            LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+            LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
+            LOG.debug("Content-Length header = " + req.getContentLength());
+        }
+
+        boolean should = false;
+        if (req.getContentLength() > 0) {
+            should = true;
+        }
+        else if (req.getContentLength() == -1) {
+            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
+            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
+                RequestContext.getCurrentContext().setChunkedRequestBody();
+                should = true;
+            }
+        }
+
+        if (! should) {
+            LOG.warn("Not buffering request body.  CL=" + req.getContentLength() + ", TE=" + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+        }
+
+        return should;
+    }
+
     /**
      * This method is safe to call multiple times.
      * Calling it will not interfere with getParameterXXX() or getReader().
@@ -234,11 +248,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
         parseRequest();
 
-        if (RequestContext.getCurrentContext().isChunkedRequestBody()) {
-            return req.getInputStream();
-        } else {
-            return new ServletInputStreamWrapper(contentData);
-        }
+        return new ServletInputStreamWrapper(contentData);
     }
 
     /**
