@@ -1,7 +1,4 @@
-apply plugin: 'java'
 apply plugin: 'groovy'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'war'
 apply plugin: 'jetty'
 
@@ -20,8 +17,8 @@ dependencies {
     compile 'com.sun.jersey:jersey-client:1.17.1'
     compile 'com.sun.jersey:jersey-servlet:1.17.1'
 
-    groovy "org.codehaus.groovy:groovy-all:2.2.2"
-    provided 'junit:junit-dep:4.10'
+    compile "org.codehaus.groovy:groovy-all:2.2.2"
+    providedCompile 'junit:junit-dep:4.10'
 }
 
 javadoc {
@@ -35,17 +32,8 @@ javadoc {
 
 eclipse {
     classpath {
-        plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
-    }
-}
-
-
-idea {
-    module {
-        languageLevel = '1.7'
-        scopes.PROVIDED.plus += configurations.provided
     }
 }
 

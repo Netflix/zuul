@@ -35,6 +35,8 @@ import org.apache.http.conn.ClientConnectionManager
 import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
+import org.apache.http.conn.ssl.SSLSocketFactory
+import org.apache.http.conn.ssl.TrustStrategy
 import org.apache.http.entity.InputStreamEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
@@ -44,10 +46,15 @@ import org.apache.http.message.BasicHttpRequest
 import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import javax.servlet.http.HttpServletRequest
+import java.security.SecureRandom
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
@@ -97,11 +104,32 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(
                 new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
+        schemeRegistry.register(getSSLScheme())
 
         ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);
         cm.setMaxTotal(Integer.parseInt(System.getProperty("zuul.max.host.connections", "200")));
         cm.setDefaultMaxPerRoute(Integer.parseInt(System.getProperty("zuul.max.host.connections", "20")));
         return cm;
+    }
+
+    private static final Scheme getSSLScheme(){
+        def nullTrustManager = [
+                checkClientTrusted: { chain, authType ->  },
+                checkServerTrusted: { chain, authType ->  },
+                getAcceptedIssuers: { null }
+        ]
+
+        def nullHostnameVerifier = [
+                verify: { hostname, session -> true }
+        ]
+
+        SSLContext sc = SSLContext.getInstance("SSL")
+        sc.init(null, [nullTrustManager as X509TrustManager] as TrustManager[], new SecureRandom())
+
+        SSLSocketFactory sf=new SSLSocketFactory(sc)
+        sf.hostnameVerifier=SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER
+        return new Scheme("https",sf,443)
+
     }
 
     @Override
@@ -189,9 +217,9 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             headers.each {
                 Debug.addRequestDebug("ZUUL::> ${it.name}  ${it.value}")
             }
-            String query = request.queryString
+            String query = request.queryString != null ? "?" + request.queryString : ""
 
-            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}?${query} HTTP/1.1")
+            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}${query} HTTP/1.1")
             if (requestEntity != null) {
                 requestEntity = debugRequestEntity(requestEntity)
             }
@@ -289,7 +317,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         def headers = new ArrayList()
         Enumeration headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String name = (String) headerNames.nextElement();
+            String name = ((String) headerNames.nextElement()).toLowerCase();
             String value = request.getHeader(name);
             if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
         }
