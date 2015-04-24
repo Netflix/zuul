@@ -33,6 +33,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.*;
@@ -60,8 +61,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     protected static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
 
     private HttpServletRequest req;
-    private byte[] contentData;
-    private HashMap<String, String[]> parameters;
+    private byte[] contentData = null;
+    private HashMap<String, String[]> parameters = null;
 
     public HttpServletRequestWrapper() {
         //a trick for Groovy
@@ -98,12 +99,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     /**
      * This method is safe to use multiple times.
-     * Changing the returned array will not interfere with this class operation.
      *
-     * @return The cloned content data.
+     * @return The request body data.
      */
     public byte[] getContentData() {
-        return contentData.clone();
+        return contentData;
     }
 
 
@@ -139,17 +139,21 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
         }
 
-        LOG.debug("Path = " + req.getPathInfo());
-        LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
-        LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
-
-        LOG.debug("Content-Length header = " + req.getContentLength());
-        if (req.getContentLength() > 0) {
+        if (shouldBufferBody()) {
 
             // Read the request body inputstream into a byte array.
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(req.getInputStream(), baos);
-            contentData = baos.toByteArray();
+            try {
+                IOUtils.copy(req.getInputStream(), baos);
+                contentData = baos.toByteArray();
+            } catch (SocketTimeoutException e) {
+                // This can happen if the request body is smaller than the size specified in the
+                // Content-Length header, and using tomcat APR connector.
+                LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
+                if (contentData == null) {
+                    contentData = new byte[0];
+                }
+            }
 
             try {
                 LOG.debug("Length of contentData byte array = " + contentData.length);
@@ -194,14 +198,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 }
             }
 
-        } else if (req.getContentLength() == -1) {
-            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
-            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
-                RequestContext.getCurrentContext().setChunkedRequestBody();
-                LOG.debug("Set flag that request body is chunked.");
-            }
-        } else {
-            LOG.warn("Content-Length is neither greater than zero or -1. = " + req.getContentLength());
         }
 
         HashMap<String, String[]> map = new HashMap<String, String[]>(mapA.size() * 2);
@@ -214,6 +210,34 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     }
 
+    private boolean shouldBufferBody() {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Path = " + req.getPathInfo());
+            LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+            LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
+            LOG.debug("Content-Length header = " + req.getContentLength());
+        }
+
+        boolean should = false;
+        if (req.getContentLength() > 0) {
+            should = true;
+        }
+        else if (req.getContentLength() == -1) {
+            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
+            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
+                RequestContext.getCurrentContext().setChunkedRequestBody();
+                should = true;
+            }
+        }
+
+        if (! should) {
+            LOG.warn("Not buffering request body.  CL=" + req.getContentLength() + ", TE=" + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+        }
+
+        return should;
+    }
+
     /**
      * This method is safe to call multiple times.
      * Calling it will not interfere with getParameterXXX() or getReader().
@@ -224,11 +248,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
         parseRequest();
 
-        if (RequestContext.getCurrentContext().isChunkedRequestBody()) {
-            return req.getInputStream();
-        } else {
-            return new ServletInputStreamWrapper(contentData);
-        }
+        return new ServletInputStreamWrapper(contentData);
     }
 
     /**

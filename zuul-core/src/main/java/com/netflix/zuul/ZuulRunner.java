@@ -15,17 +15,10 @@
  */
 package com.netflix.zuul;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
+import com.netflix.zuul.http.HttpServletResponseWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +26,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.http.HttpServletRequestWrapper;
-import com.netflix.zuul.http.HttpServletResponseWrapper;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
+
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -48,10 +43,21 @@ import com.netflix.zuul.http.HttpServletResponseWrapper;
  */
 public class ZuulRunner {
 
+    private boolean bufferRequests;
+
     /**
      * Creates a new <code>ZuulRunner</code> instance.
      */
     public ZuulRunner() {
+        this.bufferRequests = true;
+    }
+
+    /**
+     *
+     * @param bufferRequests - whether to wrap the ServletRequest in HttpServletRequestWrapper and buffer the body.
+     */
+    public ZuulRunner(boolean bufferRequests) {
+        this.bufferRequests = bufferRequests;
     }
 
     /**
@@ -61,9 +67,15 @@ public class ZuulRunner {
      * @param servletResponse
      */
     public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
-        RequestContext.getCurrentContext().setRequest(new HttpServletRequestWrapper(servletRequest));
-        RequestContext.getCurrentContext().setResponse(new HttpServletResponseWrapper(servletResponse));
-        //RequestContext.getCurrentContext().setResponseStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        RequestContext ctx = RequestContext.getCurrentContext();
+        if (bufferRequests) {
+            ctx.setRequest(new HttpServletRequestWrapper(servletRequest));
+        } else {
+            ctx.setRequest(servletRequest);
+        }
+
+        ctx.setResponse(new HttpServletResponseWrapper(servletResponse));
     }
 
     /**
