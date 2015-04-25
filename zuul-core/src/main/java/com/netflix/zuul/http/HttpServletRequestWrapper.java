@@ -231,10 +231,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
         }
 
-        if (! should) {
-            LOG.warn("Not buffering request body.  CL=" + req.getContentLength() + ", TE=" + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
-        }
-
         return should;
     }
 
