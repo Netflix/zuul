@@ -25,7 +25,6 @@ import com.netflix.niws.client.http.RestClient
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
 import com.netflix.zuul.exception.ZuulException
@@ -68,11 +67,11 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return NFRequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
+        return RequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
     }
 
     Object run() {
-        NFRequestContext context = NFRequestContext.currentContext
+        RequestContext context = RequestContext.currentContext
         HttpServletRequest request = context.getRequest();
 
         MultivaluedMap<String, String> headers = buildZuulRequestHeaders(request)
@@ -133,7 +132,7 @@ class ZuulNFRequest extends ZuulFilter {
 
 //        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
 
-        String route = NFRequestContext.getCurrentContext().route
+        String route = RequestContext.getCurrentContext().route
         if (route == null) {
             String path = RequestContext.currentContext.requestURI
             if (path == null) {
@@ -162,7 +161,7 @@ class ZuulNFRequest extends ZuulFilter {
     def getRequestBody(HttpServletRequest request) {
         Object requestEntity = null;
         try {
-            requestEntity = NFRequestContext.currentContext.requestEntity
+            requestEntity = RequestContext.currentContext.requestEntity
             if (requestEntity == null) {
                 requestEntity = request.getInputStream();
             }
@@ -193,7 +192,7 @@ class ZuulNFRequest extends ZuulFilter {
 
     def MultivaluedMap<String, String> buildZuulRequestHeaders(HttpServletRequest request) {
 
-        NFRequestContext context = NFRequestContext.currentContext
+        RequestContext context = RequestContext.currentContext
 
         MultivaluedMap<String, String> headers = new MultivaluedMapImpl<String, String>();
         Enumeration headerNames = request.getHeaderNames();
@@ -320,11 +319,6 @@ class ZuulNFRequest extends ZuulFilter {
         @Mock
         HttpServletRequest request
 
-        @Before
-        public void before() {
-            RequestContext.setContextClass(NFRequestContext.class);
-        }
-
         @Test
         public void testGetRequestBody() {
             this.request = Mockito.mock(HttpServletRequest.class)
@@ -347,7 +341,7 @@ class ZuulNFRequest extends ZuulFilter {
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
             ServletInputStream inn2 = Mockito.mock(ServletInputStream.class)
-            NFRequestContext.currentContext.requestEntity = inn2
+            RequestContext.currentContext.requestEntity = inn2
 
             inp = routeHostRequest.getRequestBody(request)
             Assert.assertNotNull(inp)
@@ -376,7 +370,7 @@ class ZuulNFRequest extends ZuulFilter {
         @Test
         public void testbuildZuulRequestHeaders() {
 
-            NFRequestContext.getCurrentContext().unset()
+            RequestContext.getCurrentContext().unset()
 
             request = Mockito.mock(HttpServletRequest.class)
             response = Mockito.mock(HttpServletResponse.class)

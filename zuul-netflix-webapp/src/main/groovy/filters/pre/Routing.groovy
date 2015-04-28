@@ -21,7 +21,6 @@ import com.netflix.zuul.FilterProcessor
 import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
 
@@ -59,13 +58,13 @@ class Routing extends ZuulFilter {
 
         staticRouting() //runs the static Zuul
 
-        ((NFRequestContext) RequestContext.currentContext).routeVIP = defaultClient.get()
+        RequestContext.currentContext.routeVIP = defaultClient.get()
         String host = defaultHost.get()
-        if (((NFRequestContext) RequestContext.currentContext).routeVIP == null) ((NFRequestContext) RequestContext.currentContext).routeVIP = ZuulApplicationInfo.applicationName
+        if (RequestContext.currentContext.routeVIP == null) RequestContext.currentContext.routeVIP = ZuulApplicationInfo.applicationName
         if (host != null) {
             final URL targetUrl = new URL(host)
             RequestContext.currentContext.setRouteHost(targetUrl);
-            ((NFRequestContext) RequestContext.currentContext).routeVIP = null
+            RequestContext.currentContext.routeVIP = null
         }
 
         if (host == null && RequestContext.currentContext.routeVIP == null) {
@@ -81,6 +80,6 @@ class Routing extends ZuulFilter {
             uri = uri - "/"
         }
 
-        ((NFRequestContext) RequestContext.currentContext).route = uri.substring(0, uri.indexOf("/") + 1)
+        RequestContext.currentContext.route = uri.substring(0, uri.indexOf("/") + 1)
     }
 }

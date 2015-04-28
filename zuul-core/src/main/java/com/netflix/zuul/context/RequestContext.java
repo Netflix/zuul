@@ -40,6 +40,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.client.http.HttpResponse;
 import com.netflix.util.Pair;
 import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.util.DeepCopy;
@@ -72,6 +73,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
             }
         }
     };
+
+    private static final String EVENT_PROPS_KEY = "eventProperties";
 
 
     public RequestContext() {
@@ -298,8 +301,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     /**
      * appends filter name and status to the filter execution history for the
      * current request
-     * 
-     * @param executedFilters - name of the filter
      */
     public void addFilterExecutionSummary(String name, String status, long time) {
             StringBuilder sb = getFilterExecutionSummary();
@@ -531,6 +532,9 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      * unsets the threadLocal context. Done at the end of the request.
      */
     public void unset() {
+        if (getZuulResponse() != null) {
+            getZuulResponse().close(); //check this?
+        }
         threadLocal.remove();
     }
 
@@ -580,6 +584,78 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         put("requestQueryParams", qp);
     }
 
+
+
+    /**
+     * returns the routeVIP; that is the Eureka "vip" of registered instances
+     *
+     * @return
+     */
+    public String getRouteVIP() {
+        return (String) get("routeVIP");
+    }
+
+    /**
+     * sets routeVIP; that is the Eureka "vip" of registered instances
+     *
+     * @return
+     */
+
+    public void setRouteVIP(String sVip) {
+        set("routeVIP", sVip);
+    }
+
+    /**
+     * sets the requestEntity; the inputStream of the Request
+     *
+     * @param entity
+     */
+    public void setRequestEntity(InputStream entity) {
+        set("requestEntity", entity);
+    }
+
+    /**
+     * @return the requestEntity; the inputStream of the request
+     */
+    public InputStream getRequestEntity() {
+        return (InputStream) get("requestEntity");
+    }
+
+    /**
+     * Sets the HttpResponse response that comes back from a Ribbon client.
+     *
+     * @param response
+     */
+    public void setZuulResponse(HttpResponse response) {
+        set("zuulResponse", response);
+    }
+
+    /**
+     * gets the "zuulResponse"
+     *
+     * @return returns the HttpResponse from a Ribbon call to an origin
+     */
+    public HttpResponse getZuulResponse() {
+        return (HttpResponse) get("zuulResponse");
+    }
+
+    /**
+     * returns the "route". This is a Zuul defined bucket for collecting request metrics. By default the route is the
+     * first segment of the uri  eg /get/my/stuff : route is "get"
+     *
+     * @return
+     */
+    public String getRoute() {
+        return (String) get("route");
+    }
+
+    public void setEventProperty(String key, Object value) {
+        getEventProperties().put(key, value);
+    }
+
+    public Map<String, Object> getEventProperties() {
+        return (Map<String, Object>) this.get(EVENT_PROPS_KEY);
+    }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {

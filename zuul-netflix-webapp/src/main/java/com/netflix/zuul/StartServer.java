@@ -54,7 +54,6 @@ import com.netflix.config.DynamicStringProperty;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
-import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.dependency.cassandra.CassandraHelper;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
@@ -178,8 +177,6 @@ public class StartServer extends GuiceServletContextListener {
     }
 
     void initZuul() throws Exception, IllegalAccessException, InstantiationException {
-
-        RequestContext.setContextClass(NFRequestContext.class);
 
         CounterFactory.initialize(new Counter());
         TracerFactory.initialize(new Tracer());

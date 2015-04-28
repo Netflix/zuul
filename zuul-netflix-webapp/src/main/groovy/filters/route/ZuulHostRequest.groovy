@@ -21,7 +21,6 @@ import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.util.HTTPRequestUtils
@@ -194,7 +193,7 @@ class ZuulHostRequest extends ZuulFilter {
     }
 
     def fallback() {
-        final NFRequestContext ctx = NFRequestContext.getCurrentContext();
+        final RequestContext ctx = RequestContext.getCurrentContext();
 
         // disables overrides to ensure that same override logic is not applied and matched
         // this would only be necessary if we were re-running the route filter, but I am leaving it here
@@ -301,7 +300,7 @@ class ZuulHostRequest extends ZuulFilter {
     def getRequestBody(HttpServletRequest request) {
         Object requestEntity = null;
         try {
-            requestEntity = NFRequestContext.currentContext.requestEntity
+            requestEntity = RequestContext.currentContext.requestEntity
             if (requestEntity == null) {
                 requestEntity = request.getInputStream();
             }
@@ -441,11 +440,6 @@ class ZuulHostRequest extends ZuulFilter {
         @Mock
         HttpServletRequest request
 
-        @Before
-        public void before() {
-            RequestContext.setContextClass(NFRequestContext.class);
-        }
-
         @Test
         public void testHeaderResponse() {
 
@@ -548,7 +542,7 @@ class ZuulHostRequest extends ZuulFilter {
 
             Mockito.when(request.getInputStream()).thenReturn(inn)
             ServletInputStream inn2 = Mockito.mock(ServletInputStream.class)
-            NFRequestContext.currentContext.requestEntity = inn2
+            RequestContext.currentContext.requestEntity = inn2
 
             inp = routeHostRequest.getRequestBody(request)
             Assert.assertNotNull(inp)

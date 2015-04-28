@@ -16,7 +16,6 @@
 package filters.pre
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.stats.ErrorStatsManager
@@ -198,7 +197,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorXMLv10() {
-            RequestContext.setContextClass(NFRequestContext.class);
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
             RequestContext.currentContext.request = request
@@ -215,7 +213,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorXMLv10OverrideErrorStatus() {
-            RequestContext.setContextClass(NFRequestContext.class);
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
             RequestContext.currentContext.request = request
@@ -232,7 +229,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorXML() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -248,7 +244,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorXMLv20() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -265,7 +260,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorJSON() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -282,7 +276,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorJSONv20() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -300,7 +293,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorJSONv20Callback() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -318,7 +310,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorJSONCallback() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
@@ -336,7 +327,6 @@ v=1 or unspecified:
 
         @Test
         public void testErrorJSONv20OverrideErrorStatus() {
-            RequestContext.setContextClass(NFRequestContext.class);
             RequestContext.currentContext.unset();
             ErrorResponse errorResponse = new ErrorResponse();
             HttpServletRequest request = Mockito.mock(HttpServletRequest.class)

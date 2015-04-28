@@ -91,7 +91,7 @@ public class FilterVerifier {
     public static class UnitTest {
 
         String sGoodGroovyScriptFilter = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.NFRequestContext\n" +
+                "import com.netflix.zuul.context.RequestContext\n" +
                 "\n" +
                 "class filter extends ZuulFilter {\n" +
                 "\n" +
@@ -115,7 +115,7 @@ public class FilterVerifier {
                 "}";
 
         String sNotZuulFilterGroovy = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.NFRequestContext\n" +
+                "import com.netflix.zuul.context.RequestContext\n" +
                 "\n" +
                 "class filter  {\n" +
                 "\n" +
@@ -139,7 +139,7 @@ public class FilterVerifier {
                 "}";
 
         String sCompileFailCode = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.NFRequestContext\n" +
+                "import com.netflix.zuul.context.RequestContext\n" +
                 "\n" +
                 "cclass filter extends ZuulFilter {\n" +
                 "\n" +

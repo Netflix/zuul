@@ -17,7 +17,6 @@ package filters.post
 
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
@@ -40,7 +39,7 @@ class Postfilter extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        if (true.equals(NFRequestContext.getCurrentContext().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
+        if (true.equals(RequestContext.getCurrentContext().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
         return true
     }
 
@@ -70,7 +69,7 @@ class Postfilter extends ZuulFilter {
     }
 
     String getOriginatingURL() {
-        HttpServletRequest request = NFRequestContext.getCurrentContext().getRequest();
+        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
 
         String protocol = request.getHeader(X_FORWARDED_PROTO)
         if (protocol == null) protocol = "http"

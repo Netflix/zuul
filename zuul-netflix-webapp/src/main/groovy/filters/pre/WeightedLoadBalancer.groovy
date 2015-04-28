@@ -20,7 +20,6 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
 import org.junit.Assert
@@ -69,7 +68,7 @@ class WeightedLoadBalancer extends ZuulFilter {
 
         if (AltPercent.get() == 0) return false
         if (AltVIP.get() == null && AltHost.get() == null) return false
-        if (NFRequestContext.currentContext.host != null) return false //host calls are not going to be loaltPad calculated here.
+        if (RequestContext.currentContext.host != null) return false //host calls are not going to be loaltPad calculated here.
         if (RequestContext.currentContext.sendZuulResponse == false) return false;
         if (AltPercent.get() > AltPercentMaxLimit.get()) return false
 
@@ -80,16 +79,16 @@ class WeightedLoadBalancer extends ZuulFilter {
     @Override
     Object run() {
         if (AltVIP.get() != null) {
-            (NFRequestContext.currentContext).routeVIP = AltVIP.get()
-            if (NFRequestContext.currentContext.routeVIP.startsWith(RibbonConfig.getApplicationName())) {
-                NFRequestContext.getCurrentContext().zuulToZuul = true // for zuulToZuul load testing
+            RequestContext.currentContext.routeVIP = AltVIP.get()
+            if (RequestContext.currentContext.routeVIP.startsWith(RibbonConfig.getApplicationName())) {
+                RequestContext.getCurrentContext().zuulToZuul = true // for zuulToZuul load testing
             }
             return true
         }
         if (AltHost.get() != null) {
             try {
-                (NFRequestContext.currentContext).host = new URL(AltHost.get())
-                (NFRequestContext.currentContext).routeVIP = null
+                (RequestContext.currentContext).host = new URL(AltHost.get())
+                (RequestContext.currentContext).routeVIP = null
 
             } catch (Exception e) {
                 e.printStackTrace()
@@ -113,8 +112,6 @@ class WeightedLoadBalancer extends ZuulFilter {
 
         @Before
         public void before() {
-            // not sure why, but I need to call this explicitly
-            RequestContext.setContextClass(NFRequestContext.class);
 
             MockitoAnnotations.initMocks(this);
             RequestContext.currentContext.unset()
@@ -158,8 +155,8 @@ class WeightedLoadBalancer extends ZuulFilter {
             weightedLoadBalancer.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
-            Assert.assertTrue(NFRequestContext.currentContext.routeVIP == "test")
-            Assert.assertTrue(NFRequestContext.currentContext.host == null)
+            Assert.assertTrue(RequestContext.currentContext.routeVIP == "test")
+            Assert.assertTrue(RequestContext.currentContext.host == null)
         }
 
 //        @Test
@@ -193,8 +190,8 @@ class WeightedLoadBalancer extends ZuulFilter {
             Mockito.when(weightedLoadBalancer.AltHost.get()).thenReturn("http://www.moldfarm.com")
             Assert.assertTrue(weightedLoadBalancer.shouldFilter())
             weightedLoadBalancer.run()
-            Assert.assertTrue(NFRequestContext.currentContext.routeVIP == null)
-            Assert.assertTrue(NFRequestContext.currentContext.host != null)
+            Assert.assertTrue(RequestContext.currentContext.routeVIP == null)
+            Assert.assertTrue(RequestContext.currentContext.host != null)
         }
 
     }

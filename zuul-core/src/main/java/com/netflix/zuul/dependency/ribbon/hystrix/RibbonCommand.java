@@ -8,7 +8,7 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.niws.client.http.RestClient;
 import com.netflix.zuul.constants.ZuulConstants;
-import com.netflix.zuul.context.NFRequestContext;
+import com.netflix.zuul.context.RequestContext;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.InputStream;
@@ -79,7 +79,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
     HttpResponse forward() throws Exception {
 
-        NFRequestContext context = NFRequestContext.getCurrentContext();
+        RequestContext context = RequestContext.getCurrentContext();
 
 
         HttpRequest.Builder builder = HttpRequest.newBuilder().
