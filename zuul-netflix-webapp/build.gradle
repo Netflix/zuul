@@ -5,6 +5,7 @@ apply plugin: 'jetty'
 dependencies {
 
     compile project(':zuul-core')
+    compile project(':zuul-servlet-api')
 
     compile 'com.netflix.karyon:karyon-core:2.0.02'
     compile 'com.netflix.karyon:karyon-admin:2.0.02'
