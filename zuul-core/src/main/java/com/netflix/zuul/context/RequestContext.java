@@ -15,8 +15,9 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
@@ -450,6 +451,48 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         return (List<Pair<String, String>>) get("zuulResponseHeaders");
     }
 
+    public boolean addZuulResponseHeaderIfNew(String name, String value) {
+        List<Pair<String, String>> headers = getZuulResponseHeaders();
+
+        // Check if any existing header(s) with this name.
+        boolean isNew = ! hasZuulResponseHeader(name);
+
+        // Add as a new header.
+        if (isNew) {
+            headers.add(new Pair<String, String>(name, value));
+        }
+        return isNew;
+    }
+
+    public void addZuulResponseHeadersIfNew(List<Pair<String, String>> newHeaders)
+    {
+        List<Pair<String, String>> existingHeaders = getZuulResponseHeaders();
+
+        // If any existing header(s) with same name, then don't add new one.
+        List<Pair<String, String>> toAdd = new ArrayList<Pair<String, String>>();
+        for (Pair<String, String> newHeader : newHeaders) {
+            boolean isNew = ! hasZuulResponseHeader(newHeader.first());
+
+            if (isNew) {
+                toAdd.add(newHeader);
+            }
+        }
+
+        // Add the marked new headers.
+        existingHeaders.addAll(toAdd);
+    }
+
+    public boolean hasZuulResponseHeader(String name)
+    {
+        for (Pair<String, String> existingHeader : getZuulResponseHeaders()) {
+            String existingName = existingHeader.first();
+            if (existingName!=null && existingName.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * the Origin response headers
      *
@@ -583,8 +626,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     public void setRequestQueryParams(Map<String, List<String>> qp) {
         put("requestQueryParams", qp);
     }
-
-
 
     /**
      * returns the routeVIP; that is the Eureka "vip" of registered instances
@@ -721,6 +762,61 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
             Map headerMap = context.getZuulRequestHeaders();
             assertNotNull(headerMap);
             assertEquals(headerMap.get("header"), "test");
+        }
+
+
+        @Test
+        public void testAddZuulResponseHeaderIfNew()
+        {
+            RequestContext context = new RequestContext();
+            context.addZuulResponseHeader("name1", "oldvalue1");
+            context.addZuulResponseHeaderIfNew("name1", "newvalue1");
+            assertTrue(containsZuulResponseHeader(context, "name1", "oldvalue1"));
+            assertFalse(containsZuulResponseHeader(context, "name1", "newvalue1"));
+
+            context = new RequestContext();
+            context.addZuulResponseHeaderIfNew("name1", "newvalue1");
+            assertTrue(containsZuulResponseHeader(context, "name1", "newvalue1"));
+        }
+
+        @Test
+        public void testAddZuulResponseHeadersIfNew()
+        {
+            RequestContext context = new RequestContext();
+            context.addZuulResponseHeader("name1", "oldvalue1");
+
+            ArrayList<Pair<String, String>> newHeaders = new ArrayList<Pair<String, String>>();
+            newHeaders.add(new Pair("name1", "newvalue1"));
+            newHeaders.add(new Pair("name2", "newvalue2"));
+            context.addZuulResponseHeadersIfNew(newHeaders);
+
+            assertTrue(containsZuulResponseHeader(context, "name1", "oldvalue1"));
+            assertFalse(containsZuulResponseHeader(context, "name1", "newvalue1"));
+            assertTrue(containsZuulResponseHeader(context, "name2", "newvalue2"));
+        }
+
+        @Test
+        public void testHasZuulResponseHeader()
+        {
+            RequestContext context = new RequestContext();
+
+            context.addZuulResponseHeader("name1", "oldvalue1");
+            context.addZuulResponseHeader("name2", "oldvalue2");
+
+            assertTrue(context.hasZuulResponseHeader("name1"));
+            assertTrue(context.hasZuulResponseHeader("name2"));
+            assertFalse(context.hasZuulResponseHeader("name3"));
+            assertFalse(context.hasZuulResponseHeader(null));
+        }
+
+        private boolean containsZuulResponseHeader(RequestContext context, String name, String value)
+        {
+            for (Pair<String, String> header : context.getZuulResponseHeaders()) {
+                if (header.first().equals(name) && header.second().equals(value)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Test

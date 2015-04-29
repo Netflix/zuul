@@ -33,7 +33,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl
 import org.apache.http.Header
 import org.apache.http.message.BasicHeader
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock

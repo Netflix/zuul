@@ -13,10 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.util;
-
-import com.netflix.zuul.scriptManager.FilterInfo;
-import com.netflix.zuul.scriptManager.FilterScriptManagerServlet;
+package com.netflix.zuul.scriptManager;
 
 /**
  * Utility method to build form data for the Admin page for uploading and downloading filters

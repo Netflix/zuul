@@ -19,11 +19,7 @@ package com.netflix.zuul.groovy
 import com.netflix.zuul.context.RequestContext
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertNotNull
@@ -41,18 +37,8 @@ class GroovyCompatability {
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
-        @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
-
         @Test
         public void testRequestContext() {
-            RequestContext.getCurrentContext().setRequest(request)
-            RequestContext.getCurrentContext().setResponse(response)
-            assertNotNull(RequestContext.getCurrentContext().getRequest())
-            assertNotNull(RequestContext.getCurrentContext().getResponse())
-            assertEquals(RequestContext.getCurrentContext().request, request)
             RequestContext.getCurrentContext().test = "moo"
             assertNotNull(RequestContext.getCurrentContext().test)
             assertEquals(RequestContext.getCurrentContext().test, "moo")

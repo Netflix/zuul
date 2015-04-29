@@ -50,6 +50,7 @@ public class ZuulServlet extends HttpServlet {
     
     private static final long serialVersionUID = -3374242278843351500L;
     private ZuulRunner zuulRunner;
+    private boolean bufferReqs;
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
 
@@ -58,9 +59,9 @@ public class ZuulServlet extends HttpServlet {
         super.init(config);
 
         String bufferReqsStr = config.getInitParameter("buffer-requests");
-        boolean bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
+        bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
 
-        zuulRunner = new ZuulRunner(bufferReqs);
+        zuulRunner = new ZuulRunner();
     }
 
     @Override
@@ -135,6 +136,13 @@ public class ZuulServlet extends HttpServlet {
      * @param servletResponse
      */
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+
+        // Optionally buffer the request.
+        if (bufferReqs) {
+            servletRequest = new HttpServletRequestWrapper(servletRequest);
+        }
+        servletResponse = new HttpServletResponseWrapper(servletResponse);
+
         zuulRunner.init(servletRequest, servletResponse);
     }
 

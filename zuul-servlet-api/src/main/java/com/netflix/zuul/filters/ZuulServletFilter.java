@@ -19,10 +19,13 @@ package com.netflix.zuul.filters;
 import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
+import com.netflix.zuul.http.HttpServletResponseWrapper;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -50,13 +53,14 @@ import static org.mockito.Mockito.*;
 public class ZuulServletFilter implements Filter {
 
     private ZuulRunner zuulRunner;
+    private boolean bufferReqs;
 
     public void init(FilterConfig filterConfig) throws ServletException {
 
         String bufferReqsStr = filterConfig.getInitParameter("buffer-requests");
-        boolean bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
+        bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
 
-        zuulRunner = new ZuulRunner(bufferReqs);
+        zuulRunner = new ZuulRunner();
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -103,6 +107,13 @@ public class ZuulServletFilter implements Filter {
     }
 
     void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+
+        // Optionally buffer the request.
+        if (bufferReqs) {
+            servletRequest = new HttpServletRequestWrapper(servletRequest);
+        }
+        servletResponse = new HttpServletResponseWrapper(servletResponse);
+
         zuulRunner.init(servletRequest, servletResponse);
     }
 
@@ -233,7 +244,9 @@ public class ZuulServletFilter implements Filter {
                 when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
                 zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
 
-                verify(zuulRunner, times(1)).init(servletRequest, servletResponse);
+                verify(zuulRunner, times(1)).init(
+                        Matchers.same(servletRequest),
+                        Matchers.isA(HttpServletResponseWrapper.class));
                 verify(zuulRunner, times(1)).preRoute();
                 verify(zuulRunner, times(1)).route();
                 verify(zuulRunner, times(1)).postRoute();

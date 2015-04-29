@@ -28,8 +28,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import com.netflix.servo.monitor.DynamicCounter;
@@ -329,10 +327,6 @@ public class FilterProcessor {
 
         @Test
         public void testRouteProcessHttpException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -353,10 +347,6 @@ public class FilterProcessor {
 
         @Test
         public void testRouteProcessException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -376,10 +366,6 @@ public class FilterProcessor {
 
         @Test
         public void testPreProcessException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -399,10 +385,6 @@ public class FilterProcessor {
 
         @Test
         public void testPreProcessHttpException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -424,10 +406,6 @@ public class FilterProcessor {
 
         @Test
         public void testPostProcessException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -447,10 +425,6 @@ public class FilterProcessor {
 
         @Test
         public void testPostProcessHttpException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
@@ -488,10 +462,6 @@ public class FilterProcessor {
 
         @Test
         public void testErrorHttpException() {
-            HttpServletRequest request = mock(HttpServletRequest.class);
-            HttpServletResponse response = mock(HttpServletResponse.class);
-            RequestContext.getCurrentContext().setRequest(request);
-            RequestContext.getCurrentContext().setResponse(response);
 
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);

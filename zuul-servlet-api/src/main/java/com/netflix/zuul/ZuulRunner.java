@@ -17,8 +17,6 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.http.HttpServletRequestWrapper;
-import com.netflix.zuul.http.HttpServletResponseWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,14 +51,6 @@ public class ZuulRunner {
     }
 
     /**
-     *
-     * @param bufferRequests - whether to wrap the ServletRequest in HttpServletRequestWrapper and buffer the body.
-     */
-    public ZuulRunner(boolean bufferRequests) {
-        this.bufferRequests = bufferRequests;
-    }
-
-    /**
      * sets HttpServlet request and HttpResponse
      *
      * @param servletRequest
@@ -69,13 +59,8 @@ public class ZuulRunner {
     public void init(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
 
         RequestContext ctx = RequestContext.getCurrentContext();
-        if (bufferRequests) {
-            ctx.setRequest(new HttpServletRequestWrapper(servletRequest));
-        } else {
-            ctx.setRequest(servletRequest);
-        }
-
-        ctx.setResponse(new HttpServletResponseWrapper(servletResponse));
+        ctx.setRequest(servletRequest);
+        ctx.setResponse(servletResponse);
     }
 
     /**
@@ -150,8 +135,8 @@ public class ZuulRunner {
 
                 runner.init(servletRequest, servletResponse);
                 verify(runner, times(1)).init(servletRequest, servletResponse);
-                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
-                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
+                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequest);
+                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponse);
 
                 runner.preRoute();
                 verify(processor, times(1)).preRoute();

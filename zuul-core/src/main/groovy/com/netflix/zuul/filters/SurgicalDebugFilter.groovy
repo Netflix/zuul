@@ -22,7 +22,6 @@ import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.util.HTTPRequestUtils
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -59,8 +58,8 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
 
         if (isFilterDisabled()) return false;
 
-
-        String isSurgicalFilterRequest = RequestContext.currentContext.getRequest().getHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
+        RequestContext ctx = RequestContext.currentContext
+        String isSurgicalFilterRequest = ctx.getZuulRequestHeaders().get(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
         if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
         return patternMatches();
     }
@@ -71,16 +70,22 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
         DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
         DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
+        RequestContext ctx = RequestContext.currentContext
+
         if (routeVip.get() != null || routeHost.get() != null) {
-            RequestContext.currentContext.routeHost = routeHost.get();
-            RequestContext.currentContext.routeVIP = routeVip.get();
-            RequestContext.currentContext.addZuulRequestHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
-            if (HTTPRequestUtils.getInstance().getQueryParams() == null) {
-                RequestContext.getCurrentContext().setRequestQueryParams(new HashMap<String, List<String>>());
+            ctx.routeHost = routeHost.get();
+            ctx.routeVIP = routeVip.get();
+            ctx.addZuulRequestHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
+
+            Map queryParams = ctx.getRequestQueryParams()
+            if (queryParams == null) {
+                queryParams = new HashMap()
+                ctx.setRequestQueryParams(queryParams)
             }
-            HTTPRequestUtils.getInstance().getQueryParams().put("debugRequest", ["true"])
-            RequestContext.currentContext.setDebugRequest(true)
-            RequestContext.getCurrentContext().zuulToZuul = true
+            queryParams.put("debugRequest", ["true"])
+
+            ctx.setDebugRequest(true)
+            ctx.zuulToZuul = true
 
         }
     }
