@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.context.SessionContext;
+
 /**
  * BAse interface for ZuulFilters
  *
@@ -31,10 +33,26 @@ public interface IZuulFilter {
     boolean shouldFilter();
 
     /**
-     * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+     * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
+     * important for a filter. filterOrders do not need to be sequential.
      *
-     * @return Some arbitrary artifact may be returned. Current implementation ignores it.
+     * @return the int order of a filter
      */
-    Object run();
+    int filterOrder();
+
+    /**
+     * to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
+     * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
+     * We also support a "static" type for static responses see  StaticResponseFilter.
+     * Any filterType made be created or added and run by calling FilterProcessor.runFilters(type)
+     *
+     * @return A String representing that type
+     */
+    String filterType();
+
+    /**
+     * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+     */
+    SessionContext apply(SessionContext ctx);
 
 }

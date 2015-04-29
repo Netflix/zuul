@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.FilterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,20 +27,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -214,7 +208,8 @@ public class FilterLoader {
             return false;
         }
 
-        public Object run() {
+        @Override
+        public SessionContext apply(SessionContext ctx) {
             return null;
         }
     }

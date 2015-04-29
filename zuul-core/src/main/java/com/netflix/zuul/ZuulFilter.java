@@ -17,6 +17,7 @@ package com.netflix.zuul;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.monitoring.Tracer;
 import com.netflix.zuul.monitoring.TracerFactory;
 import org.junit.Before;
@@ -54,33 +55,6 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
             DynamicPropertyFactory.getInstance().getBooleanProperty(disablePropertyName(), false);
 
     /**
-     * to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
-     * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
-     * We also support a "static" type for static responses see  StaticResponseFilter.
-     * Any filterType made be created or added and run by calling FilterProcessor.runFilters(type)
-     *
-     * @return A String representing that type
-     */
-    abstract public String filterType();
-
-    /**
-     * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
-     * important for a filter. filterOrders do not need to be sequential.
-     *
-     * @return the int order of a filter
-     */
-    abstract public int filterOrder();
-
-    /**
-     * By default ZuulFilters are static; they don't carry state. This may be overridden by overriding the isStaticFilter() property to false
-     *
-     * @return true by default
-     */
-    public boolean isStaticFilter() {
-        return true;
-    }
-
-    /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
      *
      * @return
@@ -103,13 +77,13 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      *
      * @return the return from ZuulFilterResult
      */
-    public ZuulFilterResult runFilter() {
+    public ZuulFilterResult runFilter(SessionContext ctx) {
         ZuulFilterResult zr = new ZuulFilterResult();
         if (!filterDisabled.get()) {
             if (shouldFilter()) {
                 Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
                 try {
-                    Object res = run();
+                    SessionContext res = apply(ctx);
                     zr = new ZuulFilterResult(res, ExecutionStatus.SUCCESS);
                 } catch (Throwable e) {
                     t.setName("ZUUL::" + this.getClass().getSimpleName() + " failed");
@@ -134,6 +108,8 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
         private ZuulFilter f1;
         @Mock
         private ZuulFilter f2;
+        @Mock
+        private SessionContext ctx;
 
         @Before
         public void before() {
@@ -175,7 +151,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
                     return false;
                 }
 
-                public Object run() {
+                public SessionContext apply(SessionContext ctx) {
                     return null;
                 }
             }
@@ -187,10 +163,10 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
             when(tf2.shouldFilter()).thenReturn(false);
 
             try {
-                tf1.runFilter();
-                tf2.runFilter();
-                verify(tf1, times(1)).run();
-                verify(tf2, times(0)).run();
+                tf1.runFilter(ctx);
+                tf2.runFilter(ctx);
+                verify(tf1, times(1)).apply(ctx);
+                verify(tf2, times(0)).apply(ctx);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }

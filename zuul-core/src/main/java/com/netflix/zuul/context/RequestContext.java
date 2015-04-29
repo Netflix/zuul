@@ -15,36 +15,20 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.io.InputStream;
-import java.io.NotSerializableException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.client.http.HttpResponse;
 import com.netflix.util.Pair;
 import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.util.DeepCopy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.NotSerializableException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The Request Context holds request, response,  state information and data for ZuulFilters to access and share.
@@ -64,17 +48,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     private static RequestContext testContext = null;
 
-    protected static final ThreadLocal<? extends RequestContext> threadLocal = new ThreadLocal<RequestContext>() {
-        @Override
-        protected RequestContext initialValue() {
-            try {
-                return contextClass.newInstance();
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
-        }
-    };
-
     private static final String EVENT_PROPS_KEY = "eventProperties";
 
 
@@ -82,35 +55,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         super();
     }
 
-    /**
-     * Override the default RequestContext
-     *
-     * @param clazz
-     */
-    public static void setContextClass(Class<? extends RequestContext> clazz) {
-        contextClass = clazz;
-    }
-
-    /**
-     * set an overriden "test" context
-     *
-     * @param context
-     */
-    public static void testSetCurrentContext(RequestContext context) {
-        testContext = context;
-    }
-
-    /**
-     * Get the current RequestContext
-     *
-     * @return the current RequestContext
-     */
-    public static RequestContext getCurrentContext() {
-        if (testContext != null) return testContext;
-
-        RequestContext context = threadLocal.get();
-        return context;
-    }
 
     /**
      * Convenience method to return a boolean value for a given key
@@ -572,16 +516,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     * unsets the threadLocal context. Done at the end of the request.
-     */
-    public void unset() {
-        if (getZuulResponse() != null) {
-            getZuulResponse().close(); //check this?
-        }
-        threadLocal.remove();
-    }
-
-    /**
      * Mkaes a copy of the RequestContext. This is used for debugging.
      *
      * @return
@@ -696,179 +630,6 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
 
     public Map<String, Object> getEventProperties() {
         return (Map<String, Object>) this.get(EVENT_PROPS_KEY);
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-        @Mock
-        HttpServletRequest request;
-
-        @Mock
-        HttpServletResponse response;
-
-        @Test
-        public void testGetContext() {
-            RequestContext context = RequestContext.getCurrentContext();
-            assertNotNull(context);
-        }
-
-        @Test
-        public void testSetContextVariable() {
-            RequestContext context = RequestContext.getCurrentContext();
-            assertNotNull(context);
-            context.set("test", "moo");
-            assertEquals(context.get("test"), "moo");
-        }
-
-        @Test
-        public void testSet() {
-            RequestContext context = RequestContext.getCurrentContext();
-            assertNotNull(context);
-            context.set("test");
-            assertEquals(context.get("test"), Boolean.TRUE);
-        }
-
-        @Test
-        public void testBoolean() {
-            RequestContext context = RequestContext.getCurrentContext();
-            assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
-            assertEquals(context.getBoolean("boolean_test", true), true);
-
-        }
-
-        @Test
-        public void testCopy() {
-            RequestContext context = RequestContext.getCurrentContext();
-
-            context.put("test", "test");
-            context.put("test1", "test1");
-            context.put("test2", "test2");
-
-            RequestContext copy = context.copy();
-
-            assertEquals(copy.get("test"), "test");
-            assertEquals(copy.get("test1"), "test1");
-            assertEquals(copy.get("test2"), "test2");
-//            assertFalse(copy.get("test").hashCode() == context.get("test").hashCode());
-
-
-        }
-
-
-        @Test
-        public void testResponseHeaders() {
-            RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader("header", "test");
-            Map headerMap = context.getZuulRequestHeaders();
-            assertNotNull(headerMap);
-            assertEquals(headerMap.get("header"), "test");
-        }
-
-
-        @Test
-        public void testAddZuulResponseHeaderIfNew()
-        {
-            RequestContext context = new RequestContext();
-            context.addZuulResponseHeader("name1", "oldvalue1");
-            context.addZuulResponseHeaderIfNew("name1", "newvalue1");
-            assertTrue(containsZuulResponseHeader(context, "name1", "oldvalue1"));
-            assertFalse(containsZuulResponseHeader(context, "name1", "newvalue1"));
-
-            context = new RequestContext();
-            context.addZuulResponseHeaderIfNew("name1", "newvalue1");
-            assertTrue(containsZuulResponseHeader(context, "name1", "newvalue1"));
-        }
-
-        @Test
-        public void testAddZuulResponseHeadersIfNew()
-        {
-            RequestContext context = new RequestContext();
-            context.addZuulResponseHeader("name1", "oldvalue1");
-
-            ArrayList<Pair<String, String>> newHeaders = new ArrayList<Pair<String, String>>();
-            newHeaders.add(new Pair("name1", "newvalue1"));
-            newHeaders.add(new Pair("name2", "newvalue2"));
-            context.addZuulResponseHeadersIfNew(newHeaders);
-
-            assertTrue(containsZuulResponseHeader(context, "name1", "oldvalue1"));
-            assertFalse(containsZuulResponseHeader(context, "name1", "newvalue1"));
-            assertTrue(containsZuulResponseHeader(context, "name2", "newvalue2"));
-        }
-
-        @Test
-        public void testHasZuulResponseHeader()
-        {
-            RequestContext context = new RequestContext();
-
-            context.addZuulResponseHeader("name1", "oldvalue1");
-            context.addZuulResponseHeader("name2", "oldvalue2");
-
-            assertTrue(context.hasZuulResponseHeader("name1"));
-            assertTrue(context.hasZuulResponseHeader("name2"));
-            assertFalse(context.hasZuulResponseHeader("name3"));
-            assertFalse(context.hasZuulResponseHeader(null));
-        }
-
-        private boolean containsZuulResponseHeader(RequestContext context, String name, String value)
-        {
-            for (Pair<String, String> header : context.getZuulResponseHeaders()) {
-                if (header.first().equals(name) && header.second().equals(value)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Test
-        public void testAccessors() {
-
-            RequestContext context = new RequestContext();
-            RequestContext.testSetCurrentContext(context);
-
-            context.setRequest(request);
-            context.setResponse(response);
-
-
-            Throwable th = new Throwable();
-            context.setThrowable(th);
-            assertEquals(context.getThrowable(), th);
-
-            assertEquals(context.debugRouting(), false);
-            context.setDebugRouting(true);
-            assertEquals(context.debugRouting(), true);
-
-            assertEquals(context.debugRequest(), false);
-            context.setDebugRequest(true);
-            assertEquals(context.debugRequest(), true);
-
-            context.setDebugRequest(false);
-            assertEquals(context.debugRequest(), false);
-
-            context.setDebugRouting(false);
-            assertEquals(context.debugRouting(), false);
-
-
-            try {
-                URL url = new URL("http://www.moldfarm.com");
-                context.setRouteHost(url);
-                assertEquals(context.getRouteHost(), url);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-
-            InputStream in = mock(InputStream.class);
-            context.setResponseDataStream(in);
-            assertEquals(context.getResponseDataStream(), in);
-
-            assertEquals(context.sendZuulResponse(), true);
-            context.setSendZuulResponse(false);
-            assertEquals(context.sendZuulResponse(), false);
-
-            context.setResponseStatusCode(100);
-            assertEquals(context.getResponseStatusCode(), 100);
-
-        }
-
     }
 
 }
