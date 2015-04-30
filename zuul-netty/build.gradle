@@ -1,0 +1,38 @@
+
+dependencies {
+
+    compile project(':zuul-core')
+
+    //karyonVer = "2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-core:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-governator:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-eureka:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-servo:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-archaius:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-admin-web:2.2.00-ALPHA7"
+
+
+    // TODO: direct deps on rxnetty should be removed when karyon is released with latest rxnetty
+    compile 'io.reactivex:rxnetty:0.4.6'
+    compile 'io.reactivex:rxnetty-servo:0.4.6'
+    compile 'io.reactivex:rxnetty-contexts:0.4.6'
+    compile 'io.reactivex:rxnetty-spectator:0.4.6'
+
+}
+
+javadoc {
+    options {
+        doclet = "org.benjchristensen.doclet.DocletExclude"
+        docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
+        stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
+        windowTitle = "Zuul Javadoc ${project.version}"
+    }
+}
+
+eclipse {
+    classpath {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+

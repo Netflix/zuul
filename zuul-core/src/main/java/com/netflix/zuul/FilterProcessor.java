@@ -84,9 +84,9 @@ public class FilterProcessor {
      *
      * @throws ZuulException
      */
-    public void postRoute(SessionContext ctx) throws ZuulException {
+    public SessionContext postRoute(SessionContext ctx) throws ZuulException {
         try {
-            runFilters(ctx, "post");
+            return runFilters(ctx, "post");
         } catch (Throwable e) {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
@@ -99,11 +99,12 @@ public class FilterProcessor {
     /**
      * runs all "error" filters. These are called only if an exception occurs. Exceptions from this are swallowed and logged so as not to bubble up.
      */
-    public void error(SessionContext ctx) {
+    public SessionContext error(SessionContext ctx) {
         try {
-            runFilters(ctx, "error");
+            return runFilters(ctx, "error");
         } catch (Throwable e) {
             logger.error(e.getMessage(), e);
+            return ctx;
         }
     }
 
@@ -112,9 +113,9 @@ public class FilterProcessor {
      *
      * @throws ZuulException if an exception occurs.
      */
-    public void route(SessionContext ctx) throws ZuulException {
+    public SessionContext route(SessionContext ctx) throws ZuulException {
         try {
-            runFilters(ctx, "route");
+            return runFilters(ctx, "route");
         } catch (Throwable e) {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
@@ -128,9 +129,9 @@ public class FilterProcessor {
      *
      * @throws ZuulException
      */
-    public void preRoute(SessionContext ctx) throws ZuulException {
+    public SessionContext preRoute(SessionContext ctx) throws ZuulException {
         try {
-            runFilters(ctx, "pre");
+            return runFilters(ctx, "pre");
         } catch (Throwable e) {
             if (e instanceof ZuulException) {
                 throw (ZuulException) e;
@@ -146,22 +147,20 @@ public class FilterProcessor {
      * @return
      * @throws Throwable throws up an arbitrary exception
      */
-    public Object runFilters(SessionContext ctx, String sType) throws Throwable {
+    public SessionContext runFilters(SessionContext ctx, String sType) throws Throwable {
         if (ctx.getAttributes().debugRouting()) {
             Debug.addRoutingDebug(ctx, "Invoking {" + sType + "} type filters");
         }
-        boolean bResult = false;
         List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType(sType);
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 ZuulFilter zuulFilter = list.get(i);
-                Object result = processZuulFilter(ctx, zuulFilter);
-                if (result != null && result instanceof Boolean) {
-                    bResult |= ((Boolean) result);
-                }
+
+                // Apply the filter, and replace SessionContext with the context returned by the Filter.
+                ctx = processZuulFilter(ctx, zuulFilter);
             }
         }
-        return bResult;
+        return ctx;
     }
 
     /**
@@ -171,10 +170,9 @@ public class FilterProcessor {
      * @return the return value for that filter
      * @throws ZuulException
      */
-    public Object processZuulFilter(SessionContext ctx, ZuulFilter filter) throws ZuulException {
+    public SessionContext processZuulFilter(SessionContext ctx, ZuulFilter filter) throws ZuulException {
 
         boolean bDebug = ctx.getAttributes().debugRouting();
-        final String metricPrefix = "zuul.filter-";
         long execTime = 0;
         String filterName = "";
         try {
@@ -182,7 +180,7 @@ public class FilterProcessor {
             filterName = filter.getClass().getSimpleName();
             
             SessionContext copy = null;
-            Object o = null;
+            SessionContext resultContext = null;
             Throwable t = null;
 
             if (bDebug) {
@@ -200,7 +198,7 @@ public class FilterProcessor {
                     ctx.getAttributes().addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
                     break;
                 case SUCCESS:
-                    o = result.getResult();
+                    resultContext = result.getResult();
                     ctx.getAttributes().addFilterExecutionSummary(filterName, ExecutionStatus.SUCCESS.name(), execTime);
                     if (bDebug) {
                         Debug.addRoutingDebug(ctx, "Filter {" + filterName + " TYPE:" + filter.filterType() + " ORDER:" + filter.filterOrder() + "} Execution time = " + execTime + "ms");
@@ -214,7 +212,7 @@ public class FilterProcessor {
             if (t != null) throw t;
 
             usageNotifier.notify(filter, s);
-            return o;
+            return resultContext;
 
         } catch (Throwable e) {
             if (bDebug) {

@@ -204,7 +204,8 @@ public class FilterLoader {
             return 0;
         }
 
-        public boolean shouldFilter() {
+        @Override
+        public boolean shouldFilter(SessionContext ctx) {
             return false;
         }
 

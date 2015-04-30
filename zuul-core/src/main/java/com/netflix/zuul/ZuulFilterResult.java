@@ -1,13 +1,15 @@
 package com.netflix.zuul;
 
 
+import com.netflix.zuul.context.SessionContext;
+
 public final class ZuulFilterResult {
         
-    private Object result;
+    private SessionContext result;
     private Throwable exception;
     private ExecutionStatus status;
     
-    public ZuulFilterResult(Object result, ExecutionStatus status) {
+    public ZuulFilterResult(SessionContext result, ExecutionStatus status) {
         this.result = result;
         this.status = status;
     }
@@ -23,13 +25,13 @@ public final class ZuulFilterResult {
     /**
      * @return the result
      */
-    public Object getResult() {
+    public SessionContext getResult() {
         return result;
     }
     /**
      * @param result the result to set
      */
-    public void setResult(Object result) {
+    public void setResult(SessionContext result) {
         this.result = result;
     }
 

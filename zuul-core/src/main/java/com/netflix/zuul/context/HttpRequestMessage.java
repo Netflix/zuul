@@ -17,19 +17,19 @@ import java.util.Set;
 public class HttpRequestMessage extends ZuulMessage
 {
     private String method;
-    private String uri;
+    private String path;
     private HttpQueryParams queryParams;
     private String clientIp;
     private String protocol;
 
-    public HttpRequestMessage(String method, String uri, HttpQueryParams queryParams, Headers headers, String clientIp, String protocol)
+    public HttpRequestMessage(String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String protocol)
     {
         super(headers);
 
         this.method = method;
-        // TODO - are queryparams getting appended twice onto uri because of this....
-        this.uri = uri;
-        this.queryParams = queryParams;
+        this.path = path;
+        // Don't allow this to be null.
+        this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
         this.protocol = protocol;
     }
@@ -41,11 +41,11 @@ public class HttpRequestMessage extends ZuulMessage
         this.method = method;
     }
 
-    public String getUri() {
-        return uri;
+    public String getPath() {
+        return path;
     }
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public HttpQueryParams getQueryParams() {
@@ -91,7 +91,7 @@ public class HttpRequestMessage extends ZuulMessage
         copy.setProtocol(this.getProtocol());
         copy.setClientIp(this.getClientIp());
         copy.setMethod(this.getMethod());
-        copy.setUri(this.getUri());
+        copy.setPath(this.getPath());
         copy.setBody(this.getBody());
         return copy;
     }

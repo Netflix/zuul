@@ -22,15 +22,12 @@ import com.netflix.client.http.HttpRequest
 import com.netflix.client.http.HttpResponse
 import com.netflix.hystrix.exception.HystrixRuntimeException
 import com.netflix.niws.client.http.RestClient
-import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
-import org.apache.http.Header
-import org.apache.http.message.BasicHeader
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -41,10 +38,6 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.servlet.ServletInputStream
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.ws.rs.core.MultivaluedMap
 import java.util.zip.GZIPInputStream
 
 import static HttpRequest.Verb
@@ -81,12 +74,12 @@ class ZuulNFRequest extends ZuulFilter {
         InputStream requestEntity = new ByteArrayInputStream(request.getBody())
         IClient restClient = ClientFactory.getNamedClient(attrs.getRouteVIP())
 
-        String uri = request.getUri()
+        String path = request.getPath()
 
         //remove double slashes
-        uri = uri.replace("//", "/")
+        path = path.replace("//", "/")
 
-        HttpResponse response = forward(restClient, verb, uri, request.getHeaders(), request.getQueryParams(), requestEntity)
+        HttpResponse response = forward(restClient, verb, path, request.getHeaders(), request.getQueryParams(), requestEntity)
         setResponse(context, response)
         return response
     }
@@ -105,7 +98,7 @@ class ZuulNFRequest extends ZuulFilter {
                 query += it.key + "=" + it.value + "&"
             }
 
-            Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getUri()}?${query} ${request.getProtocol()}")
+            Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
 
             if (request.getBody() != null) {
                 if (!Debug.debugRequestHeadersOnly()) {
@@ -117,11 +110,11 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
 
-    def HttpResponse forward(RestClient restClient, Verb verb, String uri, Headers headers, HttpQueryParams params, InputStream requestEntity) {
+    def HttpResponse forward(RestClient restClient, Verb verb, String path, Headers headers, HttpQueryParams params, InputStream requestEntity) {
 
 //        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
 
-        RibbonCommand command = new RibbonCommand(restClient, verb, uri, headers, params, requestEntity);
+        RibbonCommand command = new RibbonCommand(restClient, verb, path, headers, params, requestEntity);
         try {
             HttpResponse response = command.execute();
             return response

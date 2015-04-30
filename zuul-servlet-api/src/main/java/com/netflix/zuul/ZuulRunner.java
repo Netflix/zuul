@@ -45,7 +45,7 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void postRoute() throws ZuulException {
-        FilterProcessor.getInstance().postRoute(ctx);
+        this.ctx = FilterProcessor.getInstance().postRoute(ctx);
     }
 
     /**
@@ -54,7 +54,7 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void route() throws ZuulException {
-        FilterProcessor.getInstance().route(ctx);
+        this.ctx = FilterProcessor.getInstance().route(ctx);
     }
 
     /**
@@ -63,13 +63,13 @@ public class ZuulRunner {
      * @throws ZuulException
      */
     public void preRoute() throws ZuulException {
-        FilterProcessor.getInstance().preRoute(ctx);
+        this.ctx = FilterProcessor.getInstance().preRoute(ctx);
     }
 
     /**
      * executes "error" filterType  ZuulFilters
      */
     public void error() {
-        FilterProcessor.getInstance().error(ctx);
+        this.ctx = FilterProcessor.getInstance().error(ctx);
     }
 }

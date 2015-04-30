@@ -21,7 +21,9 @@ import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpQueryParams
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.SessionContext
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -50,7 +52,8 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
         return 99
     }
 
-    boolean shouldFilter() {
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
 
         DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
@@ -58,34 +61,32 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
 
         if (isFilterDisabled()) return false;
 
-        RequestContext ctx = RequestContext.currentContext
-        String isSurgicalFilterRequest = ctx.getZuulRequestHeaders().get(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
+        String isSurgicalFilterRequest = ctx.getRequest().getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
         if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
         return patternMatches();
     }
 
 
     @Override
-    Object run() {
+    SessionContext apply(SessionContext ctx)
+    {
         DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
         DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
-        RequestContext ctx = RequestContext.currentContext
+        HttpRequestMessage request = ctx.getRequest()
 
         if (routeVip.get() != null || routeHost.get() != null) {
-            ctx.routeHost = routeHost.get();
-            ctx.routeVIP = routeVip.get();
-            ctx.addZuulRequestHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
 
-            Map queryParams = ctx.getRequestQueryParams()
-            if (queryParams == null) {
-                queryParams = new HashMap()
-                ctx.setRequestQueryParams(queryParams)
-            }
-            queryParams.put("debugRequest", ["true"])
+            ctx.getAttributes().routeHost = routeHost.get();
+            ctx.getAttributes().routeVIP = routeVip.get();
 
-            ctx.setDebugRequest(true)
-            ctx.zuulToZuul = true
+            request.getHeaders().set(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true")
+
+            HttpQueryParams queryParams = request.getQueryParams()
+            queryParams.set("debugRequest", "true")
+
+            ctx.getAttributes().setDebugRequest(true)
+            ctx.getAttributes().zuulToZuul = true
 
         }
     }

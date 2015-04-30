@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.http;
+package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.ZuulRunner;
@@ -69,11 +69,6 @@ public class ZuulServlet extends HttpServlet {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
 
-            // Marks this request as having passed through the "Zuul engine", as opposed to servlets
-            // explicitly bound in web.xml, for which requests will not have the same data attached
-            RequestContext context = RequestContext.getCurrentContext();
-            context.setZuulEngineRan();
-
             try {
                 preRoute();
             } catch (ZuulException e) {
@@ -97,8 +92,6 @@ public class ZuulServlet extends HttpServlet {
 
         } catch (Throwable e) {
             error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" + e.getClass().getName()));
-        } finally {
-            RequestContext.getCurrentContext().unset();
         }
     }
 

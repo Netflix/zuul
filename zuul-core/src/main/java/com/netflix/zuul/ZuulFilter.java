@@ -77,10 +77,11 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      *
      * @return the return from ZuulFilterResult
      */
-    public ZuulFilterResult runFilter(SessionContext ctx) {
+    public ZuulFilterResult runFilter(SessionContext ctx)
+    {
         ZuulFilterResult zr = new ZuulFilterResult();
         if (!filterDisabled.get()) {
-            if (shouldFilter()) {
+            if (shouldFilter(ctx)) {
                 Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
                 try {
                     SessionContext res = apply(ctx);
@@ -147,10 +148,12 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
                     return 0;
                 }
 
-                public boolean shouldFilter() {
+                @Override
+                public boolean shouldFilter(SessionContext ctx) {
                     return false;
                 }
 
+                @Override
                 public SessionContext apply(SessionContext ctx) {
                     return null;
                 }
@@ -159,8 +162,8 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
             TestZuulFilter tf1 = spy(new TestZuulFilter());
             TestZuulFilter tf2 = spy(new TestZuulFilter());
 
-            when(tf1.shouldFilter()).thenReturn(true);
-            when(tf2.shouldFilter()).thenReturn(false);
+            when(tf1.shouldFilter(ctx)).thenReturn(true);
+            when(tf2.shouldFilter(ctx)).thenReturn(false);
 
             try {
                 tf1.runFilter(ctx);

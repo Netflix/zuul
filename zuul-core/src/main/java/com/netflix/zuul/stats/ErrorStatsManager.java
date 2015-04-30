@@ -15,8 +15,6 @@
  */
 package com.netflix.zuul.stats;
 
-import com.netflix.zuul.context.RequestContext;
-
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +63,6 @@ public class ErrorStatsManager {
      * @param cause
      */
     public void putStats(String route, String cause) {
-        if (route == null) route = RequestContext.getCurrentContext().getRequest().getRequestURI();
         if (route == null) route = "UNKNOWN_ROUTE";
         route = route.replace("/", "_");
         ConcurrentHashMap<String, ErrorStatsData> statsMap = routeMap.get(route);

@@ -10,7 +10,7 @@
 
     <servlet>
         <servlet-name>ZuulServlet</servlet-name>
-        <servlet-class>com.netflix.zuul.http.ZuulServlet</servlet-class>
+        <servlet-class>com.netflix.zuul.servlet.ZuulServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

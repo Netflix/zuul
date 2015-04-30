@@ -15,10 +15,11 @@
  */
 package com.netflix.zuul.filters
 
-import java.util.regex.Pattern
-
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
+
+import java.util.regex.Pattern
 
 /**
  * Abstract class to return content directly fron Zuul,
@@ -51,8 +52,9 @@ public abstract class StaticResponseFilter extends ZuulFilter {
         return 0
     }
 
-    boolean shouldFilter() {
-        String path = RequestContext.currentContext.getRequest().getRequestURI()
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
+        String path = ctx.request.path
         if (checkPath(path)) return true
         if (checkPath("/" + path)) return true
         return false
@@ -76,14 +78,15 @@ public abstract class StaticResponseFilter extends ZuulFilter {
     }
 
     @Override
-    Object run() {
-        RequestContext ctx = RequestContext.getCurrentContext();
+    SessionContext apply(SessionContext ctx)
+    {
+        HttpResponseMessage response = ctx.getResponse()
         // Set the default response code for static filters to be 200
-        ctx.setResponseStatusCode(200)
+        response.setStatus(200)
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
-        if (ctx.getResponseBody() == null) {
-            ctx.setResponseBody(responseBody())
-            ctx.sendZuulResponse = false;
+        if (response.getBody() == null) {
+            response.setBody(responseBody().getBytes("UTF-8"))
+            ctx.getAttributes().sendZuulResponse = false;
         }
     }
 

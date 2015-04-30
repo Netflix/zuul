@@ -30,7 +30,7 @@ public interface IZuulFilter {
      *
      * @return true if the run() method should be invoked. false will not invoke the run() method
      */
-    boolean shouldFilter();
+    boolean shouldFilter(SessionContext ctx);
 
     /**
      * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
