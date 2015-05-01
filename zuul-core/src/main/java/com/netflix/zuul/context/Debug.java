@@ -17,6 +17,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.util.HttpUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,6 +33,7 @@ import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
@@ -162,6 +164,11 @@ public class Debug {
     {
         @Mock
         private SessionContext ctx;
+
+        @Before
+        public void setup() {
+            when(ctx.getAttributes()).thenReturn(new Attributes());
+        }
 
         @Test
         public void testRequestDebug() {

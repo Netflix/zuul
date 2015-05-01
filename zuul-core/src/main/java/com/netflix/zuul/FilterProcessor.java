@@ -17,6 +17,8 @@ package com.netflix.zuul;
 
 import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.Debug;
+import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
@@ -248,18 +250,29 @@ public class FilterProcessor {
         ZuulFilter filter;
 
         @Mock
+        HttpRequestMessage request;
+
         SessionContext ctx;
+        HttpResponseMessage response;
 
         @Before
         public void before() {
             MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
+
+            response = new HttpResponseMessage(200);
+            ctx = new SessionContext(request, response);
+
+            when(filter.filterType()).thenReturn("pre");
         }
 
         @Test
         public void testProcessZuulFilter() {
             FilterProcessor processor = new FilterProcessor();
             processor = spy(processor);
+
+            when(filter.runFilter(ctx)).thenReturn(new ZuulFilterResult());
+
             try {
                 processor.processZuulFilter(ctx, filter);
                 verify(processor, times(1)).processZuulFilter(ctx, filter);
@@ -267,6 +280,7 @@ public class FilterProcessor {
 
             } catch (Throwable e) {
                 e.printStackTrace();
+                fail();
             }
         }
 
@@ -297,6 +311,7 @@ public class FilterProcessor {
                 verify(processor, times(1)).runFilters(ctx, "post");
             } catch (Throwable e) {
                 e.printStackTrace();
+                fail();
             }
         }
 
@@ -309,6 +324,7 @@ public class FilterProcessor {
                 verify(processor, times(1)).runFilters(ctx, "pre");
             } catch (Throwable e) {
                 e.printStackTrace();
+                fail();
             }
         }
 
@@ -321,6 +337,7 @@ public class FilterProcessor {
                 verify(processor, times(1)).runFilters(ctx, "route");
             } catch (Throwable e) {
                 e.printStackTrace();
+                fail();
             }
         }
 
@@ -338,7 +355,7 @@ public class FilterProcessor {
                 assertEquals(e.nStatusCode, 400);
             } catch (Throwable e) {
                 e.printStackTrace();
-                assertFalse(true);
+                fail();
 
             }
 

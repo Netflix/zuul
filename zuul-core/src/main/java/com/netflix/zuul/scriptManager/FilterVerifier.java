@@ -91,7 +91,7 @@ public class FilterVerifier {
     public static class UnitTest {
 
         String sGoodGroovyScriptFilter = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.RequestContext\n" +
+                "import com.netflix.zuul.context.SessionContext\n" +
                 "\n" +
                 "class filter extends ZuulFilter {\n" +
                 "\n" +
@@ -103,11 +103,11 @@ public class FilterVerifier {
                 "        return 1\n" +
                 "    }\n" +
                 "\n" +
-                "    boolean shouldFilter() {\n" +
+                "    boolean shouldFilter(SessionContext ctx) {\n" +
                 "        return true\n" +
                 "    }\n" +
                 "\n" +
-                "    Object run() {\n" +
+                "    SessionContext apply(SessionContext ctx) {\n" +
                 "        return null\n" +
                 "    }\n" +
                 "\n" +
@@ -115,7 +115,7 @@ public class FilterVerifier {
                 "}";
 
         String sNotZuulFilterGroovy = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.RequestContext\n" +
+                "import com.netflix.zuul.context.SessionContext\n" +
                 "\n" +
                 "class filter  {\n" +
                 "\n" +
@@ -127,11 +127,11 @@ public class FilterVerifier {
                 "        return 1\n" +
                 "    }\n" +
                 "\n" +
-                "    boolean shouldFilter() {\n" +
+                "    boolean shouldFilter(SessionContext ctx) {\n" +
                 "        return true\n" +
                 "    }\n" +
                 "\n" +
-                "    Object run() {\n" +
+                "    SessionContext apply(SessionContext ctx) {\n" +
                 "        return null\n" +
                 "    }\n" +
                 "\n" +
@@ -139,7 +139,7 @@ public class FilterVerifier {
                 "}";
 
         String sCompileFailCode = "import com.netflix.zuul.ZuulFilter\n" +
-                "import com.netflix.zuul.context.RequestContext\n" +
+                "import com.netflix.zuul.context.SessionContext\n" +
                 "\n" +
                 "cclass filter extends ZuulFilter {\n" +
                 "\n" +
@@ -153,11 +153,11 @@ public class FilterVerifier {
                 "        return 1\n" +
                 "    }\n" +
                 "\n" +
-                "    boolean shouldFilter() {\n" +
+                "    boolean shouldFilter(SessionContext ctx) {\n" +
                 "        return true\n" +
                 "    }\n" +
                 "\n" +
-                "    Object run() {\n" +
+                "    SessionContext apply(SessionContext ctx) {\n" +
                 "        return null\n" +
                 "    }\n" +
                 "\n" +
