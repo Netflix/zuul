@@ -21,6 +21,7 @@ import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
 import org.junit.Assert
 import org.junit.Before
@@ -63,7 +64,7 @@ class WeightedLoadBalancer extends ZuulFilter {
      * @return
      */
     @Override
-    boolean shouldFilter() {
+    boolean shouldFilter(SessionContext ctx) {
 
 
         if (AltPercent.get() == 0) return false
@@ -77,7 +78,7 @@ class WeightedLoadBalancer extends ZuulFilter {
     }
 
     @Override
-    Object run() {
+    SessionContext apply(SessionContext ctx) {
         if (AltVIP.get() != null) {
             RequestContext.currentContext.routeVIP = AltVIP.get()
             if (RequestContext.currentContext.routeVIP.startsWith(RibbonConfig.getApplicationName())) {

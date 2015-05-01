@@ -17,6 +17,7 @@ package filters.post
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.stats.StatsManager
 import org.junit.Assert
 import org.junit.Test
@@ -44,12 +45,12 @@ class Stats extends ZuulFilter {
     }
 
     @Override
-    boolean shouldFilter() {
+    boolean shouldFilter(SessionContext ctx) {
         return true
     }
 
     @Override
-    Object run() {
+    SessionContext apply(SessionContext ctx) {
         int status = RequestContext.getCurrentContext().getResponseStatusCode();
         StatsManager sm = StatsManager.manager
         sm.collectRequestStats(RequestContext.getCurrentContext().getRequest());

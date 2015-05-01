@@ -20,10 +20,17 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
+import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpQueryParams
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
-import com.netflix.zuul.util.HTTPRequestUtils
+import com.netflix.zuul.util.HttpUtils
+import org.apache.commons.io.IOUtils
 import org.apache.http.*
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
@@ -33,6 +40,7 @@ import org.apache.http.conn.ClientConnectionManager
 import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
+import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.entity.InputStreamEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
@@ -126,8 +134,9 @@ class ZuulHostRequest extends ZuulFilter {
         return 100
     }
 
-    boolean shouldFilter() {
-        return RequestContext.currentContext.getRouteHost() != null && RequestContext.currentContext.sendZuulResponse()
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
+        return ctx.getAttributes().getRouteHost() != null && ctx.getAttributes().sendZuulResponse()
     }
 
     private static final void loadClient() {
@@ -171,101 +180,105 @@ class ZuulHostRequest extends ZuulFilter {
         return httpclient
     }
 
-    Object run() {
-        HttpServletRequest request = RequestContext.currentContext.getRequest();
-        Header[] headers = buildZuulRequestHeaders(request)
-        String verb = getVerb(request);
-        InputStream requestEntity = getRequestBody(request)
+    @Override
+    SessionContext apply(SessionContext context)
+    {
+        HttpRequestMessage request = context.getRequest()
+
+        debug(context, request)
+
+        URL routeHost = context.getAttributes().getRouteHost()
+        String verb = getVerb(request.getMethod());
+        String path = request.getPath()
         HttpClient httpclient = CLIENT.get()
 
-        String uri = request.getRequestURI()
-        if (RequestContext.currentContext.requestURI != null) {
-            uri = RequestContext.currentContext.requestURI
-        }
-
         try {
-            HttpResponse response = forward(httpclient, verb, uri, request, headers, requestEntity)
-            setResponse(response)
-        } catch (Exception e) {
+            com.netflix.client.http.HttpResponse response = forward(httpclient, routeHost, verb, path,
+                    request.getHeaders(), request.getQueryParams(), request.getBody())
+
+            setResponse(context, response)
+        }
+        catch (Exception e) {
             throw e;
         }
         return null
     }
 
-    def fallback() {
-        final RequestContext ctx = RequestContext.getCurrentContext();
-
-        // disables overrides to ensure that same override logic is not applied and matched
-        // this would only be necessary if we were re-running the route filter, but I am leaving it here
-        ctx.setDisableOverrides(true);
-
-        // ideally I could re-run the route, but that is not working out for me
-        //        new Routing().run();
-
-        // for now I will hack this to default to the previously set VIP, with gzip
-        ctx.removeRouteHost();
-        ctx.setResponseGZipped(true)
-        GroovyProcessor.instance.runFilters("route")
-    }
-
-    def InputStream debug(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
+    void debug(SessionContext context, HttpRequestMessage request) {
 
         if (Debug.debugRequest()) {
 
-            Debug.addRequestDebug("ZUUL:: host=${RequestContext.currentContext.getRouteHost()}")
-
-            headers.each {
-                Debug.addRequestDebug("ZUUL::> ${it.name}  ${it.value}")
+            request.getHeaders().entries().each {
+                Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
             }
-            String query = request.queryString
-
-            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}?${query} HTTP/1.1")
-            if (requestEntity != null) {
-                requestEntity = debugRequestEntity(requestEntity)
+            String query = ""
+            request.getQueryParams().getEntries().each {
+                query += it.key + "=" + it.value + "&"
             }
 
+            Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
+
+            if (request.getBody() != null) {
+                if (!Debug.debugRequestHeadersOnly()) {
+                    String entity = new ByteArrayInputStream(request.getBody()).getText()
+                    Debug.addRequestDebug(context, "ZUUL:: > ${entity}")
+                }
+            }
         }
-        return requestEntity
     }
 
-    InputStream debugRequestEntity(InputStream inputStream) {
-        if (Debug.debugRequestHeadersOnly()) return inputStream
-        if (inputStream == null) return null
-        String entity = inputStream.getText()
-        Debug.addRequestDebug("ZUUL::> ${entity}")
-        return new ByteArrayInputStream(entity.bytes)
+    /*
+    def HttpResponse forward(RestClient restClient, Verb verb, String path, Headers headers, HttpQueryParams params, InputStream requestEntity) {
+
+//        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
+
+        RibbonCommand command = new RibbonCommand(restClient, verb, path, headers, params, requestEntity);
+        try {
+            HttpResponse response = command.execute();
+            return response
+        } catch (HystrixRuntimeException e) {
+            if (e?.fallbackException?.cause instanceof ClientException) {
+                ClientException ex = e.fallbackException.cause as ClientException
+                throw new ZuulException(ex, "Forwarding error", 500, ex.getErrorType().toString())
+            }
+            throw new ZuulException(e, "Forwarding error", 500, e.failureType.toString())
+        }
+
     }
+     */
 
-    def HttpResponse forward(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
+    def HttpResponse forward(HttpClient httpclient, URL routeHost, String verb, String path, Headers headers, HttpQueryParams params, byte[] requestBody) {
 
-        requestEntity = debug(httpclient, verb, uri, request, headers, requestEntity)
-
-        org.apache.http.HttpHost httpHost
-
-        httpHost = getHttpHost()
+        org.apache.http.HttpHost httpHost = getHttpHost(routeHost)
+        URI uri
+        if (params != null && params.getEntries().size() > 0) {
+            String queryString = params.getEntries().each{ URLEncoder.encode(it, "UTF-8") }.join("&")
+            uri = new URI(null, null, path, queryString, null)
+        } else {
+            uri = URI.create(path)
+        }
 
         org.apache.http.HttpRequest httpRequest;
 
         switch (verb) {
             case 'POST':
-                httpRequest = new HttpPost(uri + getQueryString())
-                InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
+                httpRequest = new HttpPost(uri)
+                ByteArrayEntity entity = new ByteArrayEntity(requestBody)
                 httpRequest.setEntity(entity)
                 break
             case 'PUT':
-                httpRequest = new HttpPut(uri + getQueryString())
-                InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
+                httpRequest = new HttpPut(uri)
+                ByteArrayEntity entity = new ByteArrayEntity(requestBody)
                 httpRequest.setEntity(entity)
                 break;
             default:
-                httpRequest = new BasicHttpRequest(verb, uri + getQueryString())
+                httpRequest = new BasicHttpRequest(verb, uri)
         }
 
         try {
             httpRequest.setHeaders(headers)
             HttpResponse zuulResponse = executeHttpRequest(httpclient, httpHost, httpRequest)
             return zuulResponse
-
 
         } finally {
             // When HttpClient instance is no longer needed,
@@ -281,75 +294,12 @@ class ZuulHostRequest extends ZuulFilter {
         command.execute();
     }
 
-    String getQueryString() {
-        HttpServletRequest request = RequestContext.currentContext.getRequest();
-        String query = request.getQueryString()
-        return (query != null) ? "?${query}" : "";
-    }
-
-    HttpHost getHttpHost() {
+    HttpHost getHttpHost(URL routeHost) {
         HttpHost httpHost
-        URL host = RequestContext.currentContext.getRouteHost()
 
-        httpHost = new HttpHost(host.getHost(), host.getPort(), host.getProtocol())
+        httpHost = new HttpHost(routeHost.getHost(), routeHost.getPort(), routeHost.getProtocol())
 
         return httpHost
-    }
-
-
-    def getRequestBody(HttpServletRequest request) {
-        Object requestEntity = null;
-        try {
-            requestEntity = RequestContext.currentContext.requestEntity
-            if (requestEntity == null) {
-                requestEntity = request.getInputStream();
-            }
-        } catch (IOException e) {
-            //no requestBody is ok.
-        }
-        return requestEntity
-    }
-
-    boolean isValidHeader(String name) {
-        if (name.toLowerCase().contains("content-length")) return false;
-        if (!RequestContext.currentContext.responseGZipped) {
-            if (name.toLowerCase().contains("accept-encoding")) return false;
-        }
-        return true;
-    }
-
-    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
-
-        def headers = new ArrayList()
-        Enumeration headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = (String) headerNames.nextElement();
-            String value = request.getHeader(name);
-            if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
-        }
-
-        Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
-
-        zuulRequestHeaders.keySet().each {
-            String name = it.toLowerCase()
-            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
-            if (h != null) {
-                headers.remove(h)
-            }
-            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
-        }
-
-        if (RequestContext.currentContext.responseGZipped) {
-            headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
-        }
-        return headers
-    }
-
-
-
-    String getVerb(HttpServletRequest request) {
-        String sMethod = request.getMethod();
-        return sMethod.toUpperCase();
     }
 
     String getVerb(String sMethod) {
@@ -363,58 +313,50 @@ class ZuulHostRequest extends ZuulFilter {
         return "GET"
     }
 
-    void setResponse(HttpResponse response) {
-        RequestContext context = RequestContext.getCurrentContext()
+    void setResponse(SessionContext context, HttpResponse proxyResp) {
 
-        RequestContext.currentContext.set("hostZuulResponse", response)
-        RequestContext.getCurrentContext().setResponseStatusCode(response.getStatusLine().statusCode)
-        RequestContext.getCurrentContext().responseDataStream = response?.entity?.content
+        HttpResponseMessage resp = context.getResponse()
 
-        boolean isOriginResponseGzipped = false
+        resp.setStatus(proxyResp.getStatusLine().getStatusCode());
 
-        for (Header h : response.getHeaders(CONTENT_ENCODING)) {
-            if (HTTPRequestUtils.getInstance().isGzipped(h.value)) {
-                isOriginResponseGzipped = true;
-                break;
-            }
-        }
-        context.setResponseGZipped(isOriginResponseGzipped);
-
-
-        if (Debug.debugRequest()) {
-            response.getAllHeaders()?.each { Header header ->
-                if (isValidHeader(header)) {
-                    RequestContext.getCurrentContext().addZuulResponseHeader(header.name, header.value);
-                    Debug.addRequestDebug("ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
-                }
-            }
-
-            if (context.responseDataStream) {
-                byte[] origBytes = context.getResponseDataStream().bytes
-                ByteArrayInputStream byteStream = new ByteArrayInputStream(origBytes)
-                InputStream inputStream = byteStream
-                if (RequestContext.currentContext.responseGZipped) {
-                    inputStream = new GZIPInputStream(byteStream);
-                }
-
-
-                context.setResponseDataStream(new ByteArrayInputStream(origBytes))
-            }
-
-        } else {
-            response.getAllHeaders()?.each { Header header ->
-                RequestContext ctx = RequestContext.getCurrentContext()
-                ctx.addOriginResponseHeader(header.name, header.value)
-
-                if (header.name.equalsIgnoreCase("content-length"))
-                    ctx.setOriginContentLength(header.value)
-
-                if (isValidHeader(header)) {
-                    ctx.addZuulResponseHeader(header.name, header.value);
-                }
+        // Collect the response headers.
+        proxyResp.getAllHeaders()?.each { Header header ->
+            if (isValidHeader(header)) {
+                resp.getHeaders().add(header.name, header.value)
+                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
             }
         }
 
+        // Body.
+        byte[] bodyBytes
+        if (proxyResp.getEntity()) {
+            // Read the request body inputstream into a byte array.
+            try {
+                bodyBytes = IOUtils.toByteArray(proxyResp.getEntity().getContent())
+                resp.setBody(bodyBytes)
+            }
+            catch (SocketTimeoutException e) {
+                // This can happen if the request body is smaller than the size specified in the
+                // Content-Length header, and using tomcat APR connector.
+                LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
+            }
+        }
+
+        // Debug
+        if (Debug.debugRequest(context)) {
+
+            proxyResp.getAllHeaders()?.each { Header header ->
+                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
+            }
+
+            if (bodyBytes) {
+                InputStream inStream = new ByteArrayInputStream(bodyBytes);
+                if (HttpUtils.isGzipped(resp.getHeaders()))
+                    inStream = new GZIPInputStream(inStream);
+                String responseEntity = inStream.getText()
+                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${responseEntity}")
+            }
+        }
     }
 
     boolean isValidHeader(Header header) {
@@ -436,62 +378,34 @@ class ZuulHostRequest extends ZuulFilter {
     public static class TestUnit {
 
         @Mock
-        HttpServletResponse response
+        com.netflix.client.http.HttpResponse proxyResp
+
         @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
 
-        @Test
-        public void testHeaderResponse() {
+        SessionContext ctx
+        HttpResponseMessage response
 
-            ZuulHostRequest request = new ZuulHostRequest()
-            Header header = new BasicHeader("test", "test")
-            Header header1 = new BasicHeader("content-length", "100")
-            Header header2 = new BasicHeader("content-encoding", "test")
-
-            Assert.assertTrue(request.isValidHeader(header))
-            Assert.assertFalse(request.isValidHeader(header1))
-            Assert.assertFalse(request.isValidHeader(header2))
-
-
-        }
-
-        @Test
-        public void testBuildZuulRequestHeaders() {
-
-            request = Mockito.mock(HttpServletRequest.class)
-            response = Mockito.mock(HttpServletResponse.class)
-            RequestContext.getCurrentContext().request = request
-            RequestContext.getCurrentContext().response = response
-            RequestContext.getCurrentContext().setResponseGZipped(true);
-            ZuulHostRequest request = new ZuulHostRequest()
-            request = Mockito.spy(request)
-
-
-            StringTokenizer st = new StringTokenizer("HEADER1,HEADER2", ",")
-
-            Mockito.when(this.request.getHeaderNames()).thenReturn(st)
-
-            Header[] headers = request.buildZuulRequestHeaders(getRequest())
-            Assert.assertTrue(headers.any {
-                return (it.name == "accept-encoding" &&
-                        it.value == "deflate, gzip")
-            })
-
+        @Before
+        public void setup()
+        {
+            response = new HttpResponseMessage(200)
+            ctx = new SessionContext(request, response)
         }
 
         @Test
         public void testSetResponse() {
-            request = Mockito.mock(HttpServletRequest.class)
-            response = Mockito.mock(HttpServletResponse.class)
-            Debug.setDebugRouting(false)
-            Debug.setDebugRequest(false)
-            RequestContext.getCurrentContext().request = request
-            RequestContext.getCurrentContext().response = response
-            ZuulHostRequest request = new ZuulHostRequest()
-            request = Mockito.spy(request)
+
+            Debug.setDebugRouting(ctx, false)
+            Debug.setDebugRequest(ctx, false)
+
+            ZuulHostRequest filter = new ZuulHostRequest()
+            filter = Mockito.spy(filter)
+
             Header[] headers = new Header[2]
             headers[0] = new BasicHeader("test", "test")
             headers[1] = new BasicHeader("content-length", "100")
+
 
 
             HttpResponse httpResponse = Mockito.mock(HttpResponse.class)
@@ -499,146 +413,44 @@ class ZuulHostRequest extends ZuulFilter {
             Mockito.when(httpResponse.getStatusLine()).thenReturn(status)
             Mockito.when(httpResponse.getStatusLine().statusCode).thenReturn(200)
             HttpEntity entity = Mockito.mock(HttpEntity.class)
-            InputStream inp = new ByteArrayInputStream("test".bytes)
+            byte[] body = "test".bytes
+            ByteArrayInputStream inp = new ByteArrayInputStream(body)
             Mockito.when(entity.content).thenReturn(inp)
             Mockito.when(httpResponse.entity).thenReturn(entity)
             Mockito.when(httpResponse.getAllHeaders()).thenReturn(headers)
-            request.setResponse(httpResponse)
+            filter.setResponse(ctx, httpResponse)
 
-            Assert.assertEquals(RequestContext.getCurrentContext().getResponseStatusCode(), 200)
-            Assert.assertEquals(RequestContext.getCurrentContext().responseDataStream, inp)
-            Assert.assertTrue(RequestContext.getCurrentContext().zuulResponseHeaders.contains(new Pair('test', "test")))
-//            assertNull(RequestContext.getCurrentContext().zuulResponseHeaders['content-length'])
-
+            Assert.assertEquals(response.getStatus(), 200)
+            Assert.assertEquals(response.getBody().length, body.length)
+            Assert.assertTrue(response.getHeaders().contains('test', "test"))
         }
 
         @Test
         public void testShouldFilter() {
-            RequestContext.currentContext.unset()
-            RequestContext.currentContext.setRouteHost(new URL("http://www.moldfarm.com"))
+            ctx.getAttributes().setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulHostRequest filter = new ZuulHostRequest()
-            Assert.assertTrue(filter.shouldFilter())
-        }
-
-        @Test
-        public void testGetRequestBody() {
-            this.request = Mockito.mock(HttpServletRequest.class)
-            ServletInputStream inn = Mockito.mock(ServletInputStream.class)
-            RequestContext.currentContext.request = this.request
-
-            ZuulHostRequest routeHostRequest = new ZuulHostRequest()
-
-            Mockito.when(request.getInputStream()).thenReturn(inn)
-
-            InputStream inp = routeHostRequest.getRequestBody(request)
-
-            Assert.assertEquals(inp, inn)
-
-            Mockito.when(request.getInputStream()).thenReturn(null)
-
-            inp = routeHostRequest.getRequestBody(request)
-            Assert.assertNull(inp)
-
-
-            Mockito.when(request.getInputStream()).thenReturn(inn)
-            ServletInputStream inn2 = Mockito.mock(ServletInputStream.class)
-            RequestContext.currentContext.requestEntity = inn2
-
-            inp = routeHostRequest.getRequestBody(request)
-            Assert.assertNotNull(inp)
-            Assert.assertEquals(inp, inn2)
-
-
-        }
-
-        @Test
-        public void testGetVerbRequest() {
-            this.request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = this.request
-
-            ZuulHostRequest routeHostRequest = new ZuulHostRequest()
-
-            Mockito.when(request.getMethod()).thenReturn("GET")
-            String verb = routeHostRequest.getVerb(this.request)
-            Assert.assertEquals(verb, 'GET')
-
-            Mockito.when(request.getMethod()).thenReturn("get")
-            verb = routeHostRequest.getVerb(this.request)
-            Assert.assertEquals(verb, 'GET')
-
-            Mockito.when(request.getMethod()).thenReturn("POST")
-            verb = routeHostRequest.getVerb(this.request)
-            Assert.assertEquals(verb, 'POST')
-
-            Mockito.when(request.getMethod()).thenReturn("PUT")
-            verb = routeHostRequest.getVerb(this.request)
-            Assert.assertEquals(verb, 'PUT')
-
-            Mockito.when(request.getMethod()).thenReturn("DELETE")
-            verb = routeHostRequest.getVerb(this.request)
-            Assert.assertEquals(verb, 'DELETE')
-
-        }
-
-
-        @Test
-        public void testGetVerb() {
-
-            ZuulHostRequest request = new ZuulHostRequest()
-            String verb = request.getVerb("get")
-            Assert.assertEquals('GET', verb)
-            verb = request.getVerb("Get")
-            Assert.assertEquals('GET', verb)
-
-            verb = request.getVerb("post")
-            Assert.assertEquals('POST', verb)
-            verb = request.getVerb("POST")
-            Assert.assertEquals('POST', verb)
-
-            verb = request.getVerb("PUT")
-            Assert.assertEquals('PUT', verb)
-            verb = request.getVerb("put")
-            Assert.assertEquals('PUT', verb)
-
-            verb = request.getVerb("OPTIONS")
-            Assert.assertEquals('OPTIONS', verb)
-            verb = request.getVerb("options")
-            Assert.assertEquals('OPTIONS', verb)
-
-            verb = request.getVerb("delete")
-            Assert.assertEquals('DELETE', verb)
-            verb = request.getVerb("Delete")
-            Assert.assertEquals('DELETE', verb)
-
-            verb = request.getVerb("head")
-            Assert.assertEquals('HEAD', verb)
-            verb = request.getVerb("HEAD")
-            Assert.assertEquals('HEAD', verb)
+            Assert.assertTrue(filter.shouldFilter(ctx))
         }
 
 
         @Test
         public void testGetHost() {
 
-            ZuulHostRequest request = new ZuulHostRequest()
+            ZuulHostRequest filter = new ZuulHostRequest()
 
             URL url = new URL("http://www.moldfarm.com")
-            RequestContext.currentContext.routeHost = url
-            HttpHost host = request.getHttpHost()
+            HttpHost host = filter.getHttpHost(url)
             Assert.assertNotNull(host)
             Assert.assertEquals(host.hostName, "www.moldfarm.com")
             Assert.assertEquals(host.port, -1)
             Assert.assertEquals(host.schemeName, "http")
 
             url = new URL("https://www.moldfarm.com:8000")
-            RequestContext.currentContext.routeHost = url
-            host = request.getHttpHost()
+            host = filter.getHttpHost(url)
             Assert.assertNotNull(host)
             Assert.assertEquals(host.hostName, "www.moldfarm.com")
             Assert.assertEquals(host.port, 8000)
             Assert.assertEquals(host.schemeName, "https")
-
-
         }
 
     }

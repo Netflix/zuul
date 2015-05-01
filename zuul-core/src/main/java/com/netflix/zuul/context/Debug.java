@@ -15,14 +15,20 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.util.HttpUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +40,7 @@ import static org.junit.Assert.assertTrue;
  * Time: 2:26 PM
  */
 public class Debug {
+    private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
         ctx.getAttributes().setDebugRequest(bDebug);
@@ -64,6 +71,23 @@ public class Debug {
     public static void addRoutingDebug(SessionContext ctx, String line) {
         List<String> rd = getRoutingDebug(ctx);
         rd.add(line);
+    }
+
+    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
+    {
+        try {
+            for (Map.Entry<String, String> header : message.getHeaders().entries()) {
+                Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
+            }
+
+            if (message.getBody() != null) {
+                String bodyStr = new String(message.getBody(), "UTF-8");
+                Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
+            }
+        }
+        catch (UnsupportedEncodingException e) {
+            LOG.warn("Error writing message to debug log.", e);
+        }
     }
 
     /**

@@ -17,6 +17,7 @@ package filters.pre
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
@@ -41,13 +42,14 @@ class ErrorResponse extends ZuulFilter {
         return 1
     }
 
-
-    boolean shouldFilter() {
-        return RequestContext.getCurrentContext().get("ErrorHandled") == null
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
+        return ctx.getAttributes().get("ErrorHandled") == null
     }
 
 
-    Object run() {
+    @Override
+    SessionContext apply(SessionContext ctx) {
 
         RequestContext context = RequestContext.currentContext
         Throwable ex = context.getThrowable()

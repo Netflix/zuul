@@ -24,6 +24,7 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -53,13 +54,15 @@ class sendResponse extends ZuulFilter {
         return 1000
     }
 
-    boolean shouldFilter() {
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
         return !RequestContext.currentContext.getZuulResponseHeaders().isEmpty() ||
                 RequestContext.currentContext.getResponseDataStream() != null ||
                 RequestContext.currentContext.responseBody != null
     }
 
-    Object run() {
+    @Override
+    SessionContext apply(SessionContext ctx) {
         addResponseHeaders()
         writeResponse()
     }

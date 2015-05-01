@@ -39,6 +39,10 @@ public class ZuulRunner {
         this.ctx = ctx;
     }
 
+    public SessionContext getContext() {
+        return ctx;
+    }
+
     /**
      * executes "post" filterType  ZuulFilters
      *

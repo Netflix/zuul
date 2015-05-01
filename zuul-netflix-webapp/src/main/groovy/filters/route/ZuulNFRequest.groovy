@@ -68,7 +68,7 @@ class ZuulNFRequest extends ZuulFilter {
         HttpRequestMessage request = context.getRequest()
         Attributes attrs = context.getAttributes()
 
-        debug(request)
+        debug(context, request)
 
         Verb verb = getVerb(request.getMethod())
         InputStream requestEntity = new ByteArrayInputStream(request.getBody())
@@ -90,11 +90,11 @@ class ZuulNFRequest extends ZuulFilter {
 
         if (Debug.debugRequest()) {
 
-            request.getHeaders().each {
+            request.getHeaders().entries().each {
                 Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
             }
             String query = ""
-            request.getQueryParams().each {
+            request.getQueryParams().getEntries().each {
                 query += it.key + "=" + it.value + "&"
             }
 
@@ -158,10 +158,12 @@ class ZuulNFRequest extends ZuulFilter {
         }
 
         // Body.
+        byte[] bodyBytes
         if (proxyResp.hasEntity()) {
             // Read the request body inputstream into a byte array.
             try {
-                resp.setBody(IOUtils.toByteArray(proxyResp.getInputStream()))
+                bodyBytes = IOUtils.toByteArray(proxyResp.getInputStream())
+                resp.setBody(bodyBytes)
             }
             catch (SocketTimeoutException e) {
                 // This can happen if the request body is smaller than the size specified in the
@@ -173,18 +175,14 @@ class ZuulNFRequest extends ZuulFilter {
         // DEBUG
         if (Debug.debugRequest()) {
             proxyResp.getHeaders().keySet().each { key ->
-                boolean isValidHeader = isValidHeader(key)
-
                 Collection<String> list = proxyResp.getHeaders().get(key)
                 list.each { header ->
-                    if (isValidHeader) {
-                        Debug.addRequestDebug(ctx, "ORIGIN_RESPONSE:: < ${key}  ${header}")
-                    }
+                    Debug.addRequestDebug(ctx, "ORIGIN_RESPONSE:: < ${key}  ${header}")
                 }
             }
 
-            if (resp.getBody()) {
-                InputStream inStream = new ByteArrayInputStream(resp.getBody());
+            if (bodyBytes) {
+                InputStream inStream = new ByteArrayInputStream(bodyBytes);
                 if (HttpUtils.isGzipped(resp.getHeaders()))
                     inStream = new GZIPInputStream(inStream);
                 String responseEntity = inStream.getText()

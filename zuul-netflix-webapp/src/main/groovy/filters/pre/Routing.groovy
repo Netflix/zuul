@@ -22,6 +22,7 @@ import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 
 /**
@@ -44,7 +45,8 @@ class Routing extends ZuulFilter {
         return "pre"
     }
 
-    boolean shouldFilter() {
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
         return true
     }
 
@@ -54,7 +56,8 @@ class Routing extends ZuulFilter {
         FilterProcessor.instance.runFilters("static")
     }
 
-    Object run() {
+    @Override
+    SessionContext apply(SessionContext ctx) {
 
         staticRouting() //runs the static Zuul
 

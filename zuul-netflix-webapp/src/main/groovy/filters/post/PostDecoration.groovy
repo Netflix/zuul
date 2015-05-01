@@ -18,6 +18,7 @@ package filters.post
 import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -38,12 +39,14 @@ class Postfilter extends ZuulFilter {
 
     }
 
-    boolean shouldFilter() {
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
         if (true.equals(RequestContext.getCurrentContext().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
         return true
     }
 
-    Object run() {
+    @Override
+    SessionContext apply(SessionContext ctx) {
         addStandardResponseHeaders(RequestContext.getCurrentContext().getRequest(), RequestContext.getCurrentContext().getResponse())
         return null;
     }

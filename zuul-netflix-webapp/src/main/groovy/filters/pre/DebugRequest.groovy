@@ -18,6 +18,7 @@ package filters.pre
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.SessionContext
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,13 +46,13 @@ class DebugRequest extends ZuulFilter {
     }
 
     @Override
-    boolean shouldFilter() {
+    boolean shouldFilter(SessionContext ctx) {
         return Debug.debugRequest()
 
     }
 
     @Override
-    Object run() {
+    SessionContext apply(SessionContext ctx) {
 
         HttpServletRequest req = RequestContext.currentContext.request as HttpServletRequest
 
@@ -67,7 +68,6 @@ class DebugRequest extends ZuulFilter {
 
         }
 
-        final RequestContext ctx = RequestContext.getCurrentContext()
         if (!ctx.isChunkedRequestBody()) {
             InputStream inp = ctx.request.getInputStream()
             String body = null
