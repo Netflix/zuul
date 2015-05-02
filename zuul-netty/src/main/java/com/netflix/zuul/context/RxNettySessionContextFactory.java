@@ -30,14 +30,18 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
 
+        // TODO - How to get uri scheme from netty request?
+        String scheme = "http";
+
         // Setup the req/resp message objects.
         HttpRequestMessage httpReqMsg = new HttpRequestMessage(
+                httpServerRequest.getHttpVersion().text(),
                 httpServerRequest.getHttpMethod().name().toLowerCase(),
                 httpServerRequest.getUri(),
                 copyQueryParams(httpServerRequest),
                 copyHeaders(httpServerRequest),
                 clientIp,
-                httpServerRequest.getHttpVersion().toString()
+                scheme
         );
         HttpResponseMessage httpRespMsg = new HttpResponseMessage(500);
 

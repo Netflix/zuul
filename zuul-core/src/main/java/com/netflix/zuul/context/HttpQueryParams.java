@@ -1,12 +1,16 @@
 package com.netflix.zuul.context;
 
 import com.google.common.collect.ArrayListMultimap;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.net.URLEncoder;
+import java.util.*;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * User: michaels
@@ -69,6 +73,11 @@ public class HttpQueryParams
         return null;
     }
 
+    public List<String> get(String name)
+    {
+        return delegate.get(name.toLowerCase());
+    }
+
     /**
      * Replace any/all entries with this key, with this single entry.
      *
@@ -86,8 +95,54 @@ public class HttpQueryParams
         delegate.put(name,  value);
     }
 
-    public Collection<Map.Entry<String, String>> getEntries()
+    public Collection<Map.Entry<String, String>> entries()
     {
         return delegate.entries();
+    }
+
+    public Set<String> keySet() {
+        return delegate.keySet();
+    }
+
+    public String toEncodedString()
+    {
+        StringBuilder sb = new StringBuilder();
+        try {
+            for (Map.Entry<String, String> entry : entries()) {
+                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                sb.append('=');
+                sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                sb.append('&');
+            }
+        } catch (UnsupportedEncodingException e) {
+            // Won't happen.
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class TestUnit
+    {
+        @Test
+        public void testMultiples()
+        {
+            HttpQueryParams qp = new HttpQueryParams();
+            qp.add("k1", "v1");
+            qp.add("k1", "v2");
+            qp.add("k2", "v3");
+
+            assertEquals("k1=v1&k1=v2&k2=v3&", qp.toEncodedString());
+        }
+
+        @Test
+        public void testToEncodedString()
+        {
+            HttpQueryParams qp = new HttpQueryParams();
+            qp.add("k 1", "v1&");
+            qp.add("k2%", "v2");
+
+            assertEquals("k+1=v1%26&k2%25=v2&", qp.toEncodedString());
+        }
     }
 }

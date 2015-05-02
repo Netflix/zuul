@@ -16,18 +16,14 @@
 package filters.pre
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 /**
  * @author Mikey Cohen
@@ -47,70 +43,69 @@ class DebugRequest extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        return Debug.debugRequest()
+        return Debug.debugRequest(ctx)
 
     }
 
     @Override
     SessionContext apply(SessionContext ctx) {
 
-        HttpServletRequest req = RequestContext.currentContext.request as HttpServletRequest
+        HttpRequestMessage req = ctx.getRequest()
 
-        Debug.addRequestDebug("REQUEST:: " + req.getScheme() + " " + req.getRemoteAddr() + ":" + req.getRemotePort())
+        Debug.addRequestDebug(ctx, "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
 
-        Debug.addRequestDebug("REQUEST:: > " + req.getMethod() + " " + req.getRequestURI() + " " + req.getProtocol())
+        Debug.addRequestDebug(ctx, "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
 
-        Iterator headerIt = req.getHeaderNames().iterator()
-        while (headerIt.hasNext()) {
-            String name = (String) headerIt.next()
-            String value = req.getHeader(name)
-            Debug.addRequestDebug("REQUEST:: > " + name + ":" + value)
-
+        for (Map.Entry header : req.getHeaders().entries()) {
+            Debug.addRequestDebug(ctx, "REQUEST:: > " + header.getKey() + ":" + header.getValue())
         }
 
-        if (!ctx.isChunkedRequestBody()) {
-            InputStream inp = ctx.request.getInputStream()
-            String body = null
-            if (inp != null) {
-                body = inp.getText()
-                Debug.addRequestDebug("REQUEST:: > " + body)
-
-            }
+        if (req.getBody()) {
+            String bodyStr = new String(req.getBody(), "UTF-8");
+            Debug.addRequestDebug(ctx, "REQUEST:: > " + bodyStr)
         }
-        return null;
+
+        return ctx;
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
         @Mock
-        HttpServletResponse response
+        HttpResponseMessage response
         @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
+
+        SessionContext context
+
+        @Before
+        public void setup() {
+            context = new SessionContext(request, response)
+
+        }
 
         @Test
         public void testDebug() {
 
             DebugRequest debugFilter = new DebugRequest()
 
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            Mockito.when(request.remoteAddr).thenReturn("1.1.1.1")
-            Mockito.when(request.scheme).thenReturn("scheme")
+            Mockito.when(request.getClientIp()).thenReturn("1.1.1.1")
             Mockito.when(request.method).thenReturn("method")
             Mockito.when(request.protocol).thenReturn("protocol")
-            Mockito.when(request.requestURI).thenReturn("uri")
-            Mockito.when(request.remotePort).thenReturn(10)
-            Mockito.when(request.inputStream).thenReturn(null)
-            Mockito.when(request.getHeader("Host")).thenReturn("moldfarm.com")
-            Mockito.when(request.getHeader("X-Forwarded-Proto")).thenReturn("https")
+            Mockito.when(request.getPathAndQuery()).thenReturn("uri")
 
-            debugFilter.run()
+            Headers headers = new Headers()
+            Mockito.when(request.getHeaders()).thenReturn(headers)
+            headers.add("Host", "moldfarm.com")
+            headers.add("X-Forwarded-Proto", "https")
 
-            ArrayList<String> debugList = Debug.requestDebug
+            debugFilter.apply(context)
 
-            Assert.assertTrue(debugList.contains("REQUEST:: scheme 1.1.1.1:10"))
+            ArrayList<String> debugList = Debug.getRequestDebug(context)
+
+            Assert.assertTrue(debugList.contains("REQUEST:: protocol 1.1.1.1"))
             Assert.assertTrue(debugList.contains("REQUEST:: > method uri protocol"))
+            Assert.assertTrue(debugList.contains("REQUEST:: > host:moldfarm.com"))
 
 
         }

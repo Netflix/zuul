@@ -17,6 +17,11 @@ idea {
     }
 }
 
+configurations {
+    all*.exclude group: 'asm', module: 'asm'
+    all*.exclude group: 'asm', module: 'asm-all'
+}
+
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'

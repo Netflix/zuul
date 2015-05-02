@@ -40,7 +40,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
      */
     abstract def uri()
 
-    abstract String responseBody()
+    abstract String responseBody(SessionContext ctx)
 
     @Override
     String filterType() {
@@ -54,7 +54,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        String path = ctx.request.path
+        String path = ctx.getRequest().getPath()
         if (checkPath(path)) return true
         if (checkPath("/" + path)) return true
         return false
@@ -85,8 +85,8 @@ public abstract class StaticResponseFilter extends ZuulFilter {
         response.setStatus(200)
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
         if (response.getBody() == null) {
-            response.setBody(responseBody().getBytes("UTF-8"))
-            ctx.getAttributes().sendZuulResponse = false;
+            response.setBody(responseBody(ctx).getBytes("UTF-8"))
+            ctx.getAttributes().setSendZuulResponse(false)
         }
     }
 

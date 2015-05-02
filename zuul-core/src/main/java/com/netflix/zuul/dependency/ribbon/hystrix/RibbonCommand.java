@@ -88,7 +88,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
             builder.header(entry.getKey(), entry.getValue());
         }
 
-        for (Map.Entry<String, String> entry : params.getEntries()) {
+        for (Map.Entry<String, String> entry : params.entries()) {
             builder.queryParams(entry.getKey(), entry.getValue());
         }
 

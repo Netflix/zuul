@@ -16,19 +16,19 @@
 package filters.pre
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpQueryParams
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 class ErrorResponse extends ZuulFilter {
 
@@ -49,46 +49,48 @@ class ErrorResponse extends ZuulFilter {
 
 
     @Override
-    SessionContext apply(SessionContext ctx) {
+    SessionContext apply(SessionContext context) {
 
-        RequestContext context = RequestContext.currentContext
-        Throwable ex = context.getThrowable()
+        HttpRequestMessage request = context.getRequest()
+        HttpResponseMessage response = context.getResponse()
+
+        Throwable ex = context.getAttributes().getThrowable()
         try {
             throw ex
         } catch (ZuulException e) {
             String cause = e.errorCause
             if (cause == null) cause = "UNKNOWN"
-            RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Zuul Error: " + cause)
+            response.getHeaders().add("X-Netflix-Error-Cause", "Zuul Error: " + cause)
             if (e.nStatusCode == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             } else {
-                ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_" + cause)
+                ErrorStatsManager.manager.putStats(context.getAttributes().route, "Zuul_Error_" + cause)
             }
 
-            if (overrideStatusCode) {
-                RequestContext.getCurrentContext().setResponseStatusCode(200);
+            if (getOverrideStatusCode(request)) {
+                response.setStatus(200);
 
 
             } else {
-                RequestContext.getCurrentContext().setResponseStatusCode(e.nStatusCode);
+                response.setStatus(e.nStatusCode);
             }
-            context.setSendZuulResponse(false)
-            context.setResponseBody("${getErrorMessage(e, e.nStatusCode)}")
+            context.getAttributes().setSendZuulResponse(false)
+            response.setBody("${getErrorMessage(context, e, e.nStatusCode)}".getBytes("UTF-8"))
 
         } catch (Throwable throwable) {
-            RequestContext.getCurrentContext().getResponse().addHeader("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
-            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_UNKNOWN_Cause")
+            response.getHeaders().add("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
+            ErrorStatsManager.manager.putStats(context.getAttributes().route, "Zuul_Error_UNKNOWN_Cause")
 
-            if (overrideStatusCode) {
-                RequestContext.getCurrentContext().setResponseStatusCode(200);
+            if (getOverrideStatusCode(request)) {
+                response.setStatus(200);
             } else {
-                RequestContext.getCurrentContext().setResponseStatusCode(500);
+                response.setStatus(500);
             }
-            context.setSendZuulResponse(false)
-            context.setResponseBody("${getErrorMessage(throwable, 500)}")
+            context.getAttributes().setSendZuulResponse(false)
+            response.setBody("${getErrorMessage(context, throwable, 500)}".getBytes("UTF-8"))
 
         } finally {
-            context.set("ErrorHandled") //ErrorResponse was handled
+            context.getAttributes().set("ErrorHandled") //ErrorResponse was handled
             return null;
         }
 
@@ -114,23 +116,28 @@ v=1 or unspecified:
 
      */
 
-    String getErrorMessage(Throwable ex, int status_code) {
-        String ver = version
-        String format = outputType
+    String getErrorMessage(SessionContext context, Throwable ex, int status_code) {
+
+        HttpRequestMessage request = context.getRequest()
+        HttpResponseMessage response = context.getResponse()
+
+        String ver = getVersion(request)
+        String format = getOutputType(request)
         switch (ver) {
             case '1':
             case '1.0':
                 switch (format) {
                     case 'json':
-                        RequestContext.getCurrentContext().getResponse().setContentType('application/json')
-                        String response = """{"status": {"message": "${ex.message}", "status_code": ${status_code}}}"""
+                        response.getHeaders().set("Content-Type", "application/json")
+                        String errorMessage = """{"status": {"message": "${ex.message}", "status_code": ${status_code}}}"""
+                        String callback = getCallback(request)
                         if (callback) {
-                            response = callback + "(" + response + ");"
+                            errorMessage = callback + "(" + errorMessage + ");"
                         }
-                        return response
+                        return errorMessage
                     case 'xml':
                     default:
-                        RequestContext.getCurrentContext().getResponse().setContentType('application/xml')
+                        response.getHeaders().set("Content-Type", "application/xml")
                         return """<status>
   <status_code>${status_code}</status_code>
   <message>${ex.message}</message>
@@ -142,15 +149,16 @@ v=1 or unspecified:
             default:
                 switch (format) {
                     case 'json':
-                        RequestContext.getCurrentContext().getResponse().setContentType('application/json')
-                        String response = """{"status": {"message": "${ex.message}"}}"""
+                        response.getHeaders().set("Content-Type", "application/json")
+                        String errorMessage = """{"status": {"message": "${ex.message}"}}"""
+                        String callback = getCallback(request)
                         if (callback) {
-                            response = callback + "(" + response + ");"
+                            errorMessage = callback + "(" + errorMessage + ");"
                         }
-                        return response
+                        return errorMessage
                     case 'xml':
                     default:
-                        RequestContext.getCurrentContext().getResponse().setContentType('application/xml')
+                        response.getHeaders().set("Content-Type", "application/xml")
                         return """<status>
 <message>${ex.message}</message>
 </status>"""
@@ -161,30 +169,31 @@ v=1 or unspecified:
 
     }
 
-    boolean getOverrideStatusCode() {
-        String override = RequestContext.currentContext.getRequest().getParameter("override_error_status")
+    boolean getOverrideStatusCode(HttpRequestMessage request) {
+        String override = request.getQueryParams().getFirst("override_error_status")
+        String callback = getCallback(request)
         if (callback != null) return true;
         if (override == null) return false
         return Boolean.valueOf(override)
 
     }
 
-    String getCallback() {
-        String callback = RequestContext.currentContext.getRequest().getParameter("callback")
+    String getCallback(HttpRequestMessage request) {
+        String callback = request.getQueryParams().getFirst("callback")
         if (callback == null) return null;
         return callback;
     }
 
-    String getOutputType() {
-        String output = RequestContext.currentContext.getRequest().getParameter("output")
+    String getOutputType(HttpRequestMessage request) {
+        String output = request.getQueryParams().getFirst("output")
         if (output == null) return "xml"
         return output;
     }
 
-    String getVersion() {
-        String version = RequestContext.currentContext.getRequest().getParameter("v")
+    String getVersion(HttpRequestMessage request) {
+        String version = request.getQueryParams().getFirst("v")
         if (version == null) return "1"
-        if (overrideStatusCode) return "1"
+        if (getOverrideStatusCode(request)) return "1"
         return version;
     }
 
@@ -192,156 +201,136 @@ v=1 or unspecified:
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
+        ErrorResponse filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Throwable th
+
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
+
+        HttpQueryParams queryParams
+
+        @Before
+        public void setup() {
+            filter = new ErrorResponse()
+            response = new HttpResponseMessage(99)
+            ctx = new SessionContext(request, response)
+            queryParams = new HttpQueryParams()
+            Mockito.when(request.getQueryParams()).thenReturn(queryParams)
+            th = new Exception("test")
+            ctx.getAttributes().throwable = th
+        }
 
         @Test
         public void testErrorXMLv10() {
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("v")).thenReturn("1.0")
-            Mockito.when(request.getParameter("override_error_status")).thenReturn("true")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<message>test</message>"))
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<status_code>500</status_code>"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 200)
+            queryParams.set("v", "1.0")
+            queryParams.set("override_error_status", "true")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.contains("<message>test</message>"))
+            Assert.assertTrue(body.contains("<status_code>500</status_code>"))
+            Assert.assertEquals(200, response.getStatus())
         }
 
         @Test
         public void testErrorXMLv10OverrideErrorStatus() {
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("v")).thenReturn("1.0")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<message>test</message>"))
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<status_code>500</status_code>"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 500)
+            queryParams.set("v", "1.0")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.contains("<message>test</message>"))
+            Assert.assertTrue(body.contains("<status_code>500</status_code>"))
+            Assert.assertTrue(response.getStatus() == 500)
         }
 
 
         @Test
         public void testErrorXML() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<message>test</message>"))
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<status_code>500</status_code>"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 500)
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.contains("<message>test</message>"))
+            Assert.assertTrue(body.contains("<status_code>500</status_code>"))
+            Assert.assertTrue(response.getStatus() == 500)
         }
 
         @Test
         public void testErrorXMLv20() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("v")).thenReturn("2.0")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<message>test</message>"))
-            Assert.assertTrue(!RequestContext.currentContext.getResponseBody().contains("<status_code>500</status_code>"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 500)
+            queryParams.set("v", "2.0")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.contains("<message>test</message>"))
+            Assert.assertFalse(body.contains("<status_code>500</status_code>"))
+            Assert.assertTrue(response.getStatus() == 500)
         }
 
         @Test
         public void testErrorJSON() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("output")).thenReturn("json")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
+            queryParams.set("output", "json")
 
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().equals("{\"status\": {\"message\": \"test\", \"status_code\": 500}}"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 500)
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.equals("{\"status\": {\"message\": \"test\", \"status_code\": 500}}"))
+            Assert.assertTrue(response.getStatus() == 500)
         }
 
         @Test
         public void testErrorJSONv20() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("output")).thenReturn("json")
-            Mockito.when(request.getParameter("v")).thenReturn("2.0")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().equals("{\"status\": {\"message\": \"test\"}}"))
-            Assert.assertTrue(RequestContext.getCurrentContext().responseStatusCode == 500)
+            queryParams.set("output", "json")
+            queryParams.set("v", "2.0")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertTrue(body.equals("{\"status\": {\"message\": \"test\"}}"))
+            Assert.assertTrue(response.getStatus() == 500)
         }
 
 
         @Test
         public void testErrorJSONv20Callback() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("output")).thenReturn("json")
-            Mockito.when(request.getParameter("v")).thenReturn("2.0")
-            Mockito.when(request.getParameter("callback")).thenReturn("moo")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            GroovyTestCase.assertEquals("moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});", RequestContext.currentContext.getResponseBody())
-            GroovyTestCase.assertEquals(200, RequestContext.getCurrentContext().responseStatusCode)
+            queryParams.set("output", "json")
+            queryParams.set("v", "2.0")
+            queryParams.set("callback", "moo")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertEquals(body, "moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});")
+            Assert.assertEquals(200, response.getStatus())
         }
 
         @Test
         public void testErrorJSONCallback() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("output")).thenReturn("json")
-            Mockito.when(request.getParameter("callback")).thenReturn("moo")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            GroovyTestCase.assertEquals("moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});", RequestContext.currentContext.getResponseBody())
-            GroovyTestCase.assertEquals(200, RequestContext.getCurrentContext().responseStatusCode)
+            queryParams.set("output", "json")
+            queryParams.set("callback", "moo")
+
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertEquals(body, "moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});")
+            Assert.assertEquals(200, response.getStatus())
         }
 
 
         @Test
         public void testErrorJSONv20OverrideErrorStatus() {
-            RequestContext.currentContext.unset();
-            ErrorResponse errorResponse = new ErrorResponse();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getParameter("output")).thenReturn("json")
-            Mockito.when(request.getParameter("v")).thenReturn("2.0")
-            Mockito.when(request.getParameter("override_error_status")).thenReturn("true")
-            Throwable th = new Exception("test")
-            RequestContext.currentContext.throwable = th;
-            errorResponse.run();
-            GroovyTestCase.assertEquals("{\"status\": {\"message\": \"test\", \"status_code\": 500}}", RequestContext.currentContext.getResponseBody())
-            GroovyTestCase.assertEquals(200, RequestContext.getCurrentContext().responseStatusCode)
+            queryParams.set("output", "json")
+            queryParams.set("v", "2.0")
+            queryParams.set("override_error_status", "true")
+            
+            filter.apply(ctx);
+
+            String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
+            Assert.assertEquals(body, "{\"status\": {\"message\": \"test\", \"status_code\": 500}}")
+            Assert.assertEquals(200, response.getStatus())
         }
 
 

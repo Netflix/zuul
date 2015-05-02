@@ -15,19 +15,17 @@
  */
 package filters.pre
 
-
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.StaticResponseFilter
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.filters.StaticResponseFilter
 
 /**
  * @author Mikey Cohen
@@ -47,38 +45,46 @@ class Healthcheck extends StaticResponseFilter {
     }
 
     @Override
-    String responseBody() {
-        RequestContext.getCurrentContext().getResponse().setContentType('application/xml')
+    String responseBody(SessionContext ctx) {
+        HttpResponseMessage response = ctx.getResponse()
+        response.headers.set('Content-Type', 'application/xml')
         return "<health>ok</health>"
     }
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
+    public static class TestUnit
+    {
+        Healthcheck filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Throwable th
 
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
+
+        @Before
+        public void setup() {
+            filter = new Healthcheck()
+            response = new HttpResponseMessage(99)
+            ctx = new SessionContext(request, response)
+        }
 
         @Test
         public void testHealthcheck() {
-            RequestContext.setContextClass(RequestContext.class);
-            Healthcheck hc = new Healthcheck();
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            HttpServletResponse response = Mockito.mock(HttpServletResponse.class)
-            RequestContext.currentContext.request = request
-            RequestContext.currentContext.response = response
-            Mockito.when(request.getRequestURI()).thenReturn("/healthcheck")
-            hc.run()
 
-            Assert.assertTrue(hc.shouldFilter())
+            Mockito.when(request.getPath()).thenReturn("/healthcheck")
 
-            Assert.assertTrue(RequestContext.currentContext.responseBody != null)
-            Assert.assertTrue(RequestContext.currentContext.getResponseBody().contains("<health>ok</health>"))
+            filter.apply(ctx)
 
-            Mockito.when(request.getRequestURI()).thenReturn("healthcheck")
-            Assert.assertTrue(hc.shouldFilter())
+            Assert.assertTrue(filter.shouldFilter(ctx))
+
+            Assert.assertTrue(response.getBody() != null)
+            String bodyStr = new String(response.getBody(), "UTF-8")
+            Assert.assertTrue(bodyStr.contains("<health>ok</health>"))
+
+            Mockito.when(request.getPath()).thenReturn("healthcheck")
+            Assert.assertTrue(filter.shouldFilter(ctx))
 
         }
 

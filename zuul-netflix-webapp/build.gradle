@@ -12,12 +12,17 @@ dependencies {
     compile 'com.netflix.karyon:karyon-admin-web:2.0.02'
     compile 'com.netflix.karyon:karyon-extensions:2.0.02'
     compile 'com.netflix.blitz4j:blitz4j:1.35'
-    compile 'com.sun.jersey:jersey-core:1.17.1'
-    compile 'com.sun.jersey:jersey-server:1.17.1'
-    compile 'com.sun.jersey:jersey-client:1.17.1'
-    compile 'com.sun.jersey:jersey-servlet:1.17.1'
+    compile 'com.sun.jersey:jersey-core:1.19'
+    compile 'com.sun.jersey:jersey-server:1.19'
+    compile 'com.sun.jersey:jersey-client:1.19'
+    compile 'com.sun.jersey:jersey-servlet:1.19'
 
-    compile "org.codehaus.groovy:groovy-all:2.2.2"
+    runtime 'org.ow2.asm:asm:5.0.3'
+    runtime 'org.ow2.asm:asm-all:5.0.3'
+    runtime 'org.apache.xbean:xbean-bundleutils:3.17'
+    runtime 'org.apache.xbean:xbean-finder:3.17'
+
+    compile "org.codehaus.groovy:groovy-all:2.3.6"
     providedCompile 'junit:junit-dep:4.10'
 }
 
@@ -50,4 +55,5 @@ jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
+    System.setProperty("archaius.deployment.stack", "local")
 }

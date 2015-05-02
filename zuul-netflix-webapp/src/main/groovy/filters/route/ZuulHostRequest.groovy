@@ -17,16 +17,13 @@ package filters.route
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
-import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.util.HttpUtils
@@ -41,7 +38,6 @@ import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
 import org.apache.http.entity.ByteArrayEntity
-import org.apache.http.entity.InputStreamEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
@@ -61,9 +57,6 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import javax.servlet.ServletInputStream
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
@@ -212,7 +205,7 @@ class ZuulHostRequest extends ZuulFilter {
                 Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
             }
             String query = ""
-            request.getQueryParams().getEntries().each {
+            request.getQueryParams().entries().each {
                 query += it.key + "=" + it.value + "&"
             }
 
@@ -251,8 +244,8 @@ class ZuulHostRequest extends ZuulFilter {
 
         org.apache.http.HttpHost httpHost = getHttpHost(routeHost)
         URI uri
-        if (params != null && params.getEntries().size() > 0) {
-            String queryString = params.getEntries().each{ URLEncoder.encode(it, "UTF-8") }.join("&")
+        if (params != null && params.entries().size() > 0) {
+            String queryString = params.entries().each{ URLEncoder.encode(it, "UTF-8") }.join("&")
             uri = new URI(null, null, path, queryString, null)
         } else {
             uri = URI.create(path)

@@ -6,6 +6,7 @@ import com.google.common.collect.ArrayListMultimap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Wraps a ListMultimap and ensures all keys are lower-case as http headers are
@@ -96,9 +97,13 @@ public class Headers implements Cloneable
         return delegate.entries();
     }
 
+    public Set<String> keySet() {
+        return delegate.keySet();
+    }
+
     public boolean contains(String name, String value)
     {
-        return delegate.containsEntry(name, value);
+        return delegate.containsEntry(name.toLowerCase(), value);
     }
 
     @Override

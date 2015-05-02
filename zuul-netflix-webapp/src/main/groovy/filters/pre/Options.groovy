@@ -15,18 +15,17 @@
  */
 package filters.pre
 
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.StaticResponseFilter
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.runners.MockitoJUnitRunner
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 import static org.junit.Assert.assertTrue
-import static org.mockito.Mockito.mock
 import static org.mockito.Mockito.when
 
 /**
@@ -37,8 +36,10 @@ import static org.mockito.Mockito.when
  */
 class Options extends StaticResponseFilter {
 
-    boolean shouldFilter() {
-        String method = RequestContext.currentContext.getRequest() getMethod();
+    @Override
+    boolean shouldFilter(SessionContext ctx) {
+        HttpRequestMessage request = ctx.getRequest()
+        String method = request.getMethod();
         if (method.equalsIgnoreCase("options")) return true;
     }
 
@@ -49,35 +50,41 @@ class Options extends StaticResponseFilter {
     }
 
     @Override
-    String responseBody() {
+    String responseBody(SessionContext ctx) {
         return "" // empty response
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
+        Options filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Throwable th
+
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
+
+        @Before
+        public void setup() {
+            filter = new Options()
+            response = new HttpResponseMessage(99)
+            ctx = new SessionContext(request, response)
+        }
 
         @Test
         public void testClientAccessPolicy() {
 
-            RequestContext.setContextClass(RequestContext.class);
-
-            Options options = new Options()
-
-            HttpServletRequest request = mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            when(request.getRequestURI()).thenReturn("/anything")
+            when(request.getPath()).thenReturn("/anything")
             when(request.getMethod()).thenReturn("OPTIONS")
-            options.run()
 
-            assertTrue(options.shouldFilter())
+            filter.apply(ctx)
 
-            assertTrue(RequestContext.currentContext.responseBody != null)
-            assertTrue(RequestContext.currentContext.getResponseBody().isEmpty())
+            assertTrue(filter.shouldFilter(ctx))
+
+            assertTrue(response.getBody() != null)
+            String bodyStr = new String(response.getBody(), "UTF-8")
+            assertTrue(bodyStr.isEmpty())
         }
 
     }

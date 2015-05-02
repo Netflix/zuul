@@ -15,9 +15,10 @@
  */
 package filters.post
 
-import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
@@ -27,9 +28,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
@@ -41,47 +39,44 @@ class Postfilter extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        if (true.equals(RequestContext.getCurrentContext().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
+        if (true.equals(ctx.getAttributes().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
         return true
     }
 
     @Override
     SessionContext apply(SessionContext ctx) {
-        addStandardResponseHeaders(RequestContext.getCurrentContext().getRequest(), RequestContext.getCurrentContext().getResponse())
-        return null;
+        addStandardResponseHeaders(ctx)
+        return ctx;
     }
 
 
-    void addStandardResponseHeaders(HttpServletRequest req, HttpServletResponse res) {
+    void addStandardResponseHeaders(SessionContext ctx) {
+
+        String originatingURL = getOriginatingURL(ctx.getRequest())
         println(originatingURL)
 
-        String origin = req.getHeader(ORIGIN)
-        RequestContext context = RequestContext.getCurrentContext()
-        List<Pair<String, String>> headers = context.getZuulResponseHeaders()
-        headers.add(new Pair(X_ZUUL, "zuul"))
-        headers.add(new Pair(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown"))
-        headers.add(new Pair(CONNECTION, KEEP_ALIVE))
-        headers.add(new Pair(X_ZUUL_FILTER_EXECUTION_STATUS, context.getFilterExecutionSummary().toString()))
-        headers.add(new Pair(X_ORIGINATING_URL, originatingURL))
+        HttpResponseMessage resp = ctx.getResponse()
 
-        if (context.get("ErrorHandled") == null && context.responseStatusCode >= 400) {
-            headers.add(new Pair(X_NETFLIX_ERROR_CAUSE, "Error from Origin"))
-            ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Error_from_Origin_Server")
+        Headers headers = resp.getHeaders()
+        headers.add(X_ZUUL, "zuul")
+        headers.add(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown")
+        headers.add(CONNECTION, KEEP_ALIVE)
+        headers.add(X_ZUUL_FILTER_EXECUTION_STATUS, ctx.getAttributes().getFilterExecutionSummary().toString())
+        headers.add(X_ORIGINATING_URL, originatingURL)
 
+        if (ctx.getAttributes().get("ErrorHandled") == null && resp.getStatus() >= 400) {
+            headers.add(X_NETFLIX_ERROR_CAUSE, "Error from Origin")
+            ErrorStatsManager.manager.putStats(ctx.getAttributes().route, "Error_from_Origin_Server")
         }
     }
 
-    String getOriginatingURL() {
-        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
-
-        String protocol = request.getHeader(X_FORWARDED_PROTO)
+    String getOriginatingURL(HttpRequestMessage request)
+    {
+        String protocol = request.getHeaders().getFirst(X_FORWARDED_PROTO)
         if (protocol == null) protocol = "http"
-        String host = request.getHeader(HOST)
-        String uri = request.getRequestURI();
+        String host = request.getHeaders().getFirst(HOST)
+        String uri = request.getPathAndQuery();
         def URL = "${protocol}://${host}${uri}"
-        if (request.getQueryString() != null) {
-            URL += "?${request.getQueryString()}"
-        }
         return URL
     }
 
@@ -98,41 +93,37 @@ class Postfilter extends ZuulFilter {
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
+        Postfilter filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Headers reqHeaders
+
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
 
         @Before
-        public void before() {
-            RequestContext.setContextClass(NFRequestContext.class);
+        public void setup() {
+            filter = Mockito.spy(new Postfilter())
+            response = new HttpResponseMessage(99)
+            ctx = new SessionContext(request, response)
+
+            reqHeaders = new Headers()
+            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
         }
 
         @Test
         public void testHeaderResponse() {
 
-            def f = new Postfilter();
-            f = Mockito.spy(f)
-            RequestContext.getCurrentContext().setRequest(request)
-            RequestContext.getCurrentContext().setResponse(response)
-            f.runFilter()
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("X-Zuul", "Zuul"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("X-Zuul-instance", System.getenv("EC2_INSTANCE_ID") ?: "unknown"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("Access-Control-Allow-Origin", "*"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("Access-Control-Allow-Credentials", "true"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept,X-Netflix.application.name,X-Netflix.application.version,X-Netflix.esn,X-Netflix.device.type,X-Netflix.certification.version,X-Netflix.request.uuid,X-Netflix.user.id,X-Netflix.oauth.consumer.key,X-Netflix.oauth.token"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("Access-Control-Allow-Methods", "GET, POST"))
-            RequestContext.getCurrentContext().zuulResponseHeaders.add(new Pair("Connection", "keep-alive"))
+            filter.apply(ctx)
 
+            Headers respHeaders = response.getHeaders()
 
-            Assert.assertTrue(RequestContext.getCurrentContext().getZuulResponseHeaders().contains(new Pair("X-Zuul", "Zuul")))
-            Assert.assertTrue(RequestContext.getCurrentContext().getZuulResponseHeaders().contains(new Pair("Access-Control-Allow-Origin", "*")))
-            Assert.assertTrue(RequestContext.getCurrentContext().getZuulResponseHeaders().contains(new Pair("Access-Control-Allow-Credentials", "true")))
-            Assert.assertTrue(RequestContext.getCurrentContext().getZuulResponseHeaders().contains(new Pair("Access-Control-Allow-Headers", "Authorization,Content-Type,Accept,X-Netflix.application.name,X-Netflix.application.version,X-Netflix.esn,X-Netflix.device.type,X-Netflix.certification.version,X-Netflix.request.uuid,X-Netflix.user.id,X-Netflix.oauth.consumer.key,X-Netflix.oauth.token")))
-            Assert.assertTrue(RequestContext.getCurrentContext().getZuulResponseHeaders().contains(new Pair("Access-Control-Allow-Methods", "GET, POST")))
+            Assert.assertTrue(respHeaders.contains("X-Zuul", "zuul"))
+            Assert.assertTrue(respHeaders.contains("X-Zuul-Instance", "unknown"))
+            Assert.assertTrue(respHeaders.contains("Connection", "keep-alive"))
 
-            Assert.assertTrue(f.filterType().equals("post"))
-            Assert.assertTrue(f.shouldFilter())
+            Assert.assertTrue(filter.filterType().equals("post"))
+            Assert.assertTrue(filter.shouldFilter(ctx))
         }
 
     }

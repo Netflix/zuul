@@ -16,21 +16,31 @@ import java.util.Set;
  */
 public class HttpRequestMessage extends ZuulMessage
 {
+    private String protocol;
     private String method;
     private String path;
     private HttpQueryParams queryParams;
     private String clientIp;
-    private String protocol;
+    private String scheme;
 
-    public HttpRequestMessage(String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String protocol)
+    public HttpRequestMessage(String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme)
     {
         super(headers);
 
+        this.protocol = protocol;
         this.method = method;
         this.path = path;
         // Don't allow this to be null.
         this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
+        this.scheme = scheme;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
 
@@ -52,6 +62,16 @@ public class HttpRequestMessage extends ZuulMessage
         return queryParams;
     }
 
+    public String getPathAndQuery()
+    {
+        if (queryParams != null && queryParams.entries().size() > 0) {
+            return getPath() + "?" + queryParams.toEncodedString();
+        }
+        else {
+            return getPath();
+        }
+    }
+
     public String getClientIp() {
         return clientIp;
     }
@@ -59,12 +79,11 @@ public class HttpRequestMessage extends ZuulMessage
         this.clientIp = clientIp;
     }
 
-    public String getProtocol() {
-        return protocol;
+    public String getScheme() {
+        return scheme;
     }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
+    public void setScheme(String scheme) {
+        this.scheme = scheme;
     }
 
     public Map<String, Set<Cookie>> parseCookies()
@@ -90,6 +109,7 @@ public class HttpRequestMessage extends ZuulMessage
         HttpRequestMessage copy = (HttpRequestMessage) super.clone();
         copy.setProtocol(this.getProtocol());
         copy.setClientIp(this.getClientIp());
+        copy.setScheme(this.getScheme());
         copy.setMethod(this.getMethod());
         copy.setPath(this.getPath());
         copy.setBody(this.getBody());

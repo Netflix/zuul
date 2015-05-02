@@ -59,7 +59,7 @@ class ZuulNFRequest extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        return RequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
+        return ctx.getAttributes().getRouteHost() == null && ctx.getAttributes().sendZuulResponse()
     }
 
     @Override
@@ -94,7 +94,7 @@ class ZuulNFRequest extends ZuulFilter {
                 Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
             }
             String query = ""
-            request.getQueryParams().getEntries().each {
+            request.getQueryParams().entries().each {
                 query += it.key + "=" + it.value + "&"
             }
 

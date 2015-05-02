@@ -16,18 +16,17 @@
 package filters.pre
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.exception.ZuulException
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
@@ -55,61 +54,62 @@ public class PreDecoration extends ZuulFilter {
 
     @Override
     SessionContext apply(SessionContext ctx) {
-        if (RequestContext.currentContext.getRequest().getParameter("url") != null) {
-            try {
-                RequestContext.getCurrentContext().routeHost = new URL(RequestContext.currentContext.getRequest().getParameter("url"))
-                RequestContext.currentContext.setResponseGZipped(true)
-            } catch (MalformedURLException e) {
-                throw new ZuulException(e, "Malformed URL", 400, "MALFORMED_URL")
-            }
-        }
-        setOriginRequestHeaders()
-        return null
+        setOriginRequestHeaders(ctx)
+        return ctx
     }
 
-    void setOriginRequestHeaders() {
-        RequestContext context = RequestContext.currentContext
-        context.addZuulRequestHeader("X-Netflix.request.toplevel.uuid", UUID.randomUUID().toString())
-        context.addZuulRequestHeader(X_FORWARDED_FOR, context.getRequest().remoteAddr)
-        context.addZuulRequestHeader(X_NETFLIX_CLIENT_HOST, context.getRequest().getHeader(HOST))
-        if (context.getRequest().getHeader(X_FORWARDED_PROTO) != null) {
-            context.addZuulRequestHeader(X_NETFLIX_CLIENT_PROTO, context.getRequest().getHeader(X_FORWARDED_PROTO))
+    void setOriginRequestHeaders(HttpRequestMessage request) {
+
+        request.getHeaders().set("X-Netflix.request.toplevel.uuid", UUID.randomUUID().toString())
+        request.getHeaders().set(X_FORWARDED_FOR, request.getClientIp())
+
+        String host = request.getHeaders().getFirst(HOST)
+        if (host) {
+            request.getHeaders().set(X_NETFLIX_CLIENT_HOST, host)
         }
 
-
+        String xfproto = request.getHeaders().getFirst(X_FORWARDED_PROTO)
+        if (xfproto != null) {
+            request.getHeaders().set(X_NETFLIX_CLIENT_PROTO, xfproto)
+        }
     }
 
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
+        PreDecoration filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Headers reqHeaders
+
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
 
+        @Before
+        public void setup() {
+            filter = new PreDecoration()
+            response = new HttpResponseMessage(99)
+            ctx = new SessionContext(request, response)
 
-
+            reqHeaders = new Headers()
+            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
+        }
 
 
         @Test
         public void testPreHeaders() {
 
-            PreDecoration ppd = new PreDecoration()
-            HttpServletRequest request = Mockito.mock(HttpServletRequest.class)
-            RequestContext.currentContext.request = request
-            Mockito.when(request.remoteAddr).thenReturn("1.1.1.1")
-            Mockito.when(request.getHeader("Host")).thenReturn("moldfarm.com")
-            Mockito.when(request.getHeader("X-Forwarded-Proto")).thenReturn("https")
+            Mockito.when(request.getClientIp()).thenReturn("1.1.1.1")
+            reqHeaders.set("Host", "moldfarm.com")
+            reqHeaders.set("X-Forwarded-Proto", "https")
 
-            ppd.setOriginRequestHeaders()
+            filter.setOriginRequestHeaders(request)
 
-            Map<String, String> headers = RequestContext.currentContext.zuulRequestHeaders
-            Assert.assertNotNull(headers["x-netflix.request.toplevel.uuid"])
-            Assert.assertNotNull(headers["x-forwarded-for"])
-            Assert.assertNotNull(headers["x-netflix.client-host"])
-            Assert.assertNotNull(headers["x-netflix.client-proto"])
-
+            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.request.toplevel.uuid"))
+            Assert.assertNotNull(reqHeaders.getFirst("x-forwarded-for"))
+            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-host"))
+            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-proto"))
         }
 
     }

@@ -21,7 +21,8 @@ import com.netflix.zuul.FilterProcessor
 import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.Attributes
+import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 
@@ -30,7 +31,8 @@ import com.netflix.zuul.exception.ZuulException
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends ZuulFilter {
+class Routing extends ZuulFilter
+{
     DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
     DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
 
@@ -51,38 +53,41 @@ class Routing extends ZuulFilter {
     }
 
 
-    Object staticRouting() {
-        FilterProcessor.instance.runFilters("healthcheck")
-        FilterProcessor.instance.runFilters("static")
+    SessionContext staticRouting(SessionContext ctx) {
+        ctx = FilterProcessor.instance.runFilters(ctx, "healthcheck")
+        ctx = FilterProcessor.instance.runFilters(ctx, "static")
+        return ctx
     }
 
     @Override
     SessionContext apply(SessionContext ctx) {
 
-        staticRouting() //runs the static Zuul
+        ctx = staticRouting() //runs the static Zuul
 
-        RequestContext.currentContext.routeVIP = defaultClient.get()
+        Attributes attrs = ctx.getAttributes()
+        HttpRequestMessage request = ctx.getRequest()
+
+        attrs.routeVIP = defaultClient.get()
         String host = defaultHost.get()
-        if (RequestContext.currentContext.routeVIP == null) RequestContext.currentContext.routeVIP = ZuulApplicationInfo.applicationName
+        if (attrs.routeVIP == null) attrs.routeVIP = ZuulApplicationInfo.applicationName
         if (host != null) {
             final URL targetUrl = new URL(host)
-            RequestContext.currentContext.setRouteHost(targetUrl);
-            RequestContext.currentContext.routeVIP = null
+            attrs.setRouteHost(targetUrl);
+            attrs.routeVIP = null
         }
 
-        if (host == null && RequestContext.currentContext.routeVIP == null) {
+        if (host == null && attrs.routeVIP == null) {
             throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
         }
 
-        String uri = RequestContext.currentContext.request.getRequestURI()
-        if (RequestContext.currentContext.requestURI != null) {
-            uri = RequestContext.currentContext.requestURI
-        }
+        String uri = request.getPath()
         if (uri == null) uri = "/"
         if (uri.startsWith("/")) {
             uri = uri - "/"
         }
 
-        RequestContext.currentContext.route = uri.substring(0, uri.indexOf("/") + 1)
+        attrs.route = uri.substring(0, uri.indexOf("/") + 1)
+
+        return ctx
     }
 }

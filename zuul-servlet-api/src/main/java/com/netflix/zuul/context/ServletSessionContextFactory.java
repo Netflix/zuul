@@ -37,7 +37,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         HttpQueryParams queryParams = HttpQueryParams.parse(servletRequest.getQueryString());
 
         // Build the request object.
-        HttpRequestMessage request = new HttpRequestMessage(servletRequest.getMethod(), servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(), servletRequest.getScheme());
+        HttpRequestMessage request = new HttpRequestMessage(servletRequest.getProtocol(), servletRequest.getMethod(), servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(), servletRequest.getScheme());
 
         // Buffer the request body into a byte array.
         request.setBody(bufferBody(servletRequest));

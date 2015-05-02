@@ -16,17 +16,18 @@
 package filters.post
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.stats.StatsManager
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 /**
  * @author Mikey Cohen
@@ -51,23 +52,26 @@ class Stats extends ZuulFilter {
 
     @Override
     SessionContext apply(SessionContext ctx) {
-        int status = RequestContext.getCurrentContext().getResponseStatusCode();
+        HttpRequestMessage request = ctx.getRequest()
+        HttpResponseMessage response = ctx.getResponse()
+
+        int status = response.getStatus()
         StatsManager sm = StatsManager.manager
-        sm.collectRequestStats(RequestContext.getCurrentContext().getRequest());
-        sm.collectRouteStats(RequestContext.getCurrentContext().route, status);
-        dumpRoutingDebug()
-        dumpRequestDebug()
+        sm.collectRequestStats(request);
+        sm.collectRouteStats(ctx.getAttributes().route, status);
+        dumpRoutingDebug(ctx)
+        dumpRequestDebug(ctx)
     }
 
-    public void dumpRequestDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
+    public void dumpRequestDebug(SessionContext ctx) {
+        List<String> rd = (List<String>) ctx.getAttributes().get("requestDebug");
         rd?.each {
             println("REQUEST_DEBUG::${it}");
         }
     }
 
-    public void dumpRoutingDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
+    public void dumpRoutingDebug(SessionContext ctx) {
+        List<String> rd = (List<String>) ctx.getAttributes().get("routingDebug");
         rd?.each {
             println("ZUUL_DEBUG::${it}");
         }
@@ -77,27 +81,35 @@ class Stats extends ZuulFilter {
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
+        Stats filter
+        SessionContext ctx
+        HttpResponseMessage response
+        Headers reqHeaders
+
         @Mock
-        HttpServletResponse response
-        @Mock
-        HttpServletRequest request
+        HttpRequestMessage request
+
+        @Before
+        public void setup() {
+            filter = new Stats()
+            response = new HttpResponseMessage(200)
+            ctx = new SessionContext(request, response)
+
+            reqHeaders = new Headers()
+            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
+        }
 
         @Test
         public void testHeaderResponse() {
 
-            def f = new Stats();
-            RequestContext.getCurrentContext().setRequest(request)
-            RequestContext.getCurrentContext().setResponse(response)
+            ctx.getAttributes().route = "testStats"
 
-            RequestContext.getCurrentContext().route = "testStats"
-            RequestContext.getCurrentContext().setResponseStatusCode(200);
-
-            f.runFilter()
+            filter.apply(ctx)
 
             Assert.assertTrue(StatsManager.manager.getRouteStatusCodeMonitor("testStats", 200) != null)
 
-            Assert.assertTrue(f.filterType().equals("post"))
-            Assert.assertTrue(f.shouldFilter())
+            Assert.assertTrue(filter.filterType().equals("post"))
+            Assert.assertTrue(filter.shouldFilter())
         }
 
     }

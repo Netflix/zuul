@@ -19,25 +19,23 @@ import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
-import com.netflix.util.Pair
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.stats.AmazonInfoHolder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import javax.servlet.http.HttpServletRequest
 
 /**
  * Collects request data to be sent to ESI, EventBus, Turbine and friends.
  *
  * @author mhawthorne
  */
-class RequestEventInfoCollectorFilter extends ZuulFilter {
-
-
+class RequestEventInfoCollectorFilter extends ZuulFilter
+{
     private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollectorFilter.class);
+    private static final String VALUE_SEPARATOR = ","
 
 
     @Override
@@ -70,61 +68,71 @@ class RequestEventInfoCollectorFilter extends ZuulFilter {
         }
     }
 
-    void captureRequestData(Map<String, Object> event, HttpServletRequest req) {
+    void captureRequestData(Map<String, Object> event, HttpRequestMessage req, HttpResponseMessage resp) {
 
         try {
             // basic request properties
-            event.put("path", req.getPathInfo());
-            event.put("host", req.getHeader("host"));
-            event.put("query", req.getQueryString());
+            event.put("path", req.getPath());
+            event.put("host", req.getHeaders().getFirst("host"));
+            event.put("query", req.getQueryParams().toEncodedString());
             event.put("method", req.getMethod());
             event.put("currentTime", System.currentTimeMillis());
+            event.put("status", resp.getStatus())
 
             // request headers
-            for (final Enumeration names = req.getHeaderNames(); names.hasMoreElements();) {
-                final String name = names.nextElement();
+            for (String name : req.getHeaders().keySet())
+            {
                 final StringBuilder valBuilder = new StringBuilder();
                 boolean firstValue = true;
-                for (final Enumeration vals = req.getHeaders(name); vals.hasMoreElements();) {
+                for (String value : req.getHeaders().get(name))
+                {
                     // only prepends separator for non-first header values
                     if (firstValue) firstValue = false;
                     else {
                         valBuilder.append(VALUE_SEPARATOR);
                     }
 
-                    valBuilder.append(vals.nextElement());
+                    valBuilder.append(value);
                 }
-
                 event.put("request.header." + name, valBuilder.toString());
             }
 
             // request params
-            final Map params = req.getParameterMap();
-            for (final Object key : params.keySet()) {
-                final String keyString = key.toString();
-                final Object val = params.get(key);
-                String valString;
-                if (val instanceof String[]) {
-                    final String[] valArray = (String[]) val;
-                    if (valArray.length == 1)
-                        valString = valArray[0];
-                    else
-                        valString = Arrays.asList((String[]) val).toString();
-                } else {
-                    valString = val.toString();
-                }
-                event.put("param." + key, valString);
+            for (String name : req.getQueryParams().keySet())
+            {
+                final StringBuilder valBuilder = new StringBuilder();
+                boolean firstValue = true;
+                for (String value : req.getQueryParams().get(name))
+                {
+                    // only prepends separator for non-first header values
+                    if (firstValue) firstValue = false;
+                    else {
+                        valBuilder.append(VALUE_SEPARATOR);
+                    }
 
-                // some special params get promoted to top-level fields
-                if (keyString.equals("esn")) {
-                    event.put("esn", valString);
+                    valBuilder.append(value);
                 }
+                event.put("param." + name, valBuilder.toString());
             }
 
             // response headers
-            NFRequestContext.getCurrentContext().getZuulResponseHeaders()?.each { Pair<String, String> it ->
-                event.put("response.header." + it.first().toLowerCase(), it.second())
+            for (String name : resp.getHeaders().keySet())
+            {
+                final StringBuilder valBuilder = new StringBuilder();
+                boolean firstValue = true;
+                for (String value : resp.getHeaders().get(name))
+                {
+                    // only prepends separator for non-first header values
+                    if (firstValue) firstValue = false;
+                    else {
+                        valBuilder.append(VALUE_SEPARATOR);
+                    }
+
+                    valBuilder.append(value);
+                }
+                event.put("response.header." + name, valBuilder.toString());
             }
+
         } finally {
 
         }

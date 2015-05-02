@@ -21,23 +21,6 @@ package com.netflix.zuul;
  * Time: 11:14 AM
  */
 
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_CUSTOM_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_POST_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_PRE_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_ROUTING_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_CLIENTLIST;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_RIBBON_NAMESPACE;
-
-import java.io.IOException;
-
-import javax.servlet.ServletContextEvent;
-
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
@@ -54,7 +37,6 @@ import com.netflix.config.DynamicStringProperty;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
-import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.dependency.cassandra.CassandraHelper;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.groovy.GroovyCompiler;
@@ -70,6 +52,14 @@ import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.ServletContextEvent;
+import java.io.IOException;
+
+import static com.netflix.zuul.constants.ZuulConstants.*;
 
 @Application
 public class StartServer extends GuiceServletContextListener {
@@ -78,10 +68,17 @@ public class StartServer extends GuiceServletContextListener {
     private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
     private final KaryonServer server;
 
-    public StartServer() {
-        System.setProperty(DynamicPropertyFactory.ENABLE_JMX, "true");
-        server = new KaryonServer();
-        server.initialize();
+    public StartServer()
+    {
+        try {
+            System.setProperty(DynamicPropertyFactory.ENABLE_JMX, "true");
+            server = new KaryonServer();
+            server.initialize();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error initialising StartServer.", e);
+        }
     }
 
     /**

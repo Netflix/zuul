@@ -18,7 +18,6 @@ package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.Attributes;
-import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.context.ServletSessionContextFactory;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
@@ -26,7 +25,6 @@ import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
