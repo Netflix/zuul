@@ -139,10 +139,10 @@ public class HttpQueryParams
         public void testToEncodedString()
         {
             HttpQueryParams qp = new HttpQueryParams();
-            qp.add("k 1", "v1&");
+            qp.add("k'1", "v1&");
             qp.add("k2%", "v2");
 
-            assertEquals("k+1=v1%26&k2%25=v2&", qp.toEncodedString());
+            assertEquals("k%271=v1%26&k2%25=v2&", qp.toEncodedString());
         }
     }
 }
