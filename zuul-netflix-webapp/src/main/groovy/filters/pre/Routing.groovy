@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.pre
+package pre
 
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
@@ -62,7 +62,7 @@ class Routing extends ZuulFilter
     @Override
     SessionContext apply(SessionContext ctx) {
 
-        ctx = staticRouting() //runs the static Zuul
+        ctx = staticRouting(ctx) //runs the static Zuul
 
         Attributes attrs = ctx.getAttributes()
         HttpRequestMessage request = ctx.getRequest()

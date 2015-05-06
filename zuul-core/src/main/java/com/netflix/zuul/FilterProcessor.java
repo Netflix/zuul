@@ -214,7 +214,9 @@ public class FilterProcessor {
             if (t != null) throw t;
 
             usageNotifier.notify(filter, s);
-            return resultContext;
+
+            // If no resultContext returned from filter, then return the original context.
+            return resultContext == null ? ctx : resultContext;
 
         } catch (Throwable e) {
             if (bDebug) {

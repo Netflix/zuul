@@ -88,6 +88,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
             response.setBody(responseBody(ctx).getBytes("UTF-8"))
             ctx.getAttributes().setSendZuulResponse(false)
         }
+        return ctx
     }
 
 }

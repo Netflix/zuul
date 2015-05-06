@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.pre
+package pre
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Headers
@@ -54,7 +54,7 @@ public class PreDecoration extends ZuulFilter {
 
     @Override
     SessionContext apply(SessionContext ctx) {
-        setOriginRequestHeaders(ctx)
+        setOriginRequestHeaders(ctx.getRequest())
         return ctx
     }
 

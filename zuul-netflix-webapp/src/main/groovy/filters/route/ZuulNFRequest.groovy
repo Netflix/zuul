@@ -13,12 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.route
+package route
 
 import com.netflix.client.ClientException
 import com.netflix.client.ClientFactory
 import com.netflix.client.IClient
-import com.netflix.client.http.HttpRequest
 import com.netflix.client.http.HttpResponse
 import com.netflix.hystrix.exception.HystrixRuntimeException
 import com.netflix.niws.client.http.RestClient
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory
 
 import java.util.zip.GZIPInputStream
 
-import static HttpRequest.Verb
+import static com.netflix.client.http.HttpRequest.Verb
 
 class ZuulNFRequest extends ZuulFilter {
 
@@ -79,16 +78,20 @@ class ZuulNFRequest extends ZuulFilter {
         //remove double slashes
         path = path.replace("//", "/")
 
+        // Proxy.
         HttpResponse response = forward(restClient, verb, path, request.getHeaders(), request.getQueryParams(), requestEntity)
+
+        // Parse the response into SessionContext.response.
         setResponse(context, response)
-        return response
+
+        return context
     }
 
 
 
     void debug(SessionContext context, HttpRequestMessage request) {
 
-        if (Debug.debugRequest()) {
+        if (Debug.debugRequest(context)) {
 
             request.getHeaders().entries().each {
                 Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
@@ -116,9 +119,10 @@ class ZuulNFRequest extends ZuulFilter {
 
         RibbonCommand command = new RibbonCommand(restClient, verb, path, headers, params, requestEntity);
         try {
-            HttpResponse response = command.execute();
+            HttpResponse response = command.execute()
             return response
-        } catch (HystrixRuntimeException e) {
+        }
+        catch (HystrixRuntimeException e) {
             if (e?.fallbackException?.cause instanceof ClientException) {
                 ClientException ex = e.fallbackException.cause as ClientException
                 throw new ZuulException(ex, "Forwarding error", 500, ex.getErrorType().toString())
@@ -173,7 +177,7 @@ class ZuulNFRequest extends ZuulFilter {
         }
 
         // DEBUG
-        if (Debug.debugRequest()) {
+        if (Debug.debugRequest(ctx)) {
             proxyResp.getHeaders().keySet().each { key ->
                 Collection<String> list = proxyResp.getHeaders().get(key)
                 list.each { header ->

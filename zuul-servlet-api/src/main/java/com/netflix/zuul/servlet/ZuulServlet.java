@@ -16,9 +16,7 @@
 package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.ZuulRunner;
-import com.netflix.zuul.context.Attributes;
-import com.netflix.zuul.context.ServletSessionContextFactory;
-import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
@@ -40,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 /**
@@ -55,6 +54,7 @@ public class ZuulServlet extends HttpServlet {
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
     private ServletSessionContextFactory contextFactory = new ServletSessionContextFactory();
+    private ServletResponseMessageWriter messageWriter = new ServletResponseMessageWriter();
 
 
     @Override
@@ -63,11 +63,11 @@ public class ZuulServlet extends HttpServlet {
     }
 
     @Override
-    public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws ServletException, IOException
+    public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException
     {
         ZuulRunner runner = null;
         try {
-            runner = init((HttpServletRequest) servletRequest);
+            runner = init(servletRequest);
 
             try {
                 runner.preRoute();
@@ -98,6 +98,16 @@ public class ZuulServlet extends HttpServlet {
                 throw new ServletException("Error initializing ZuulRunner for this request.", e);
             }
         }
+        finally {
+            // Write out the built response message to the HttpServletResponse.
+            try {
+                messageWriter.write(runner.getContext(), servletResponse);
+            }
+            catch (Exception e) {
+                LOG.error("Error writing response message!", e);
+                throw new ServletException("Error writing response message!", e);
+            }
+        }
     }
 
     ZuulRunner init(HttpServletRequest servletRequest)
@@ -113,6 +123,7 @@ public class ZuulServlet extends HttpServlet {
      * @param e
      */
     void error(ZuulRunner runner, ZuulException e) {
+        LOG.error("Filter threw exception!", e);
         runner.getContext().getAttributes().setThrowable(e);
         runner.error();
     }
@@ -136,15 +147,22 @@ public class ZuulServlet extends HttpServlet {
         @Mock
         SessionContext context;
 
+        @Mock
+        HttpRequestMessage request;
+
         Attributes attributes;
+        HttpResponseMessage response;
 
         ZuulServlet servlet;
+
 
 
         @Before
         public void before() throws Exception {
             MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
+
+            when(servletRequest.getMethod()).thenReturn("get");
 
             servlet = new ZuulServlet();
             servlet.contextFactory = contextFactory;
@@ -156,7 +174,10 @@ public class ZuulServlet extends HttpServlet {
             when(zuulRunner.getContext()).thenReturn(context);
 
             attributes = new Attributes();
+            response = new HttpResponseMessage(200);
             when(context.getAttributes()).thenReturn(attributes);
+            when(context.getRequest()).thenReturn(request);
+            when(context.getResponse()).thenReturn(response);
         }
 
         @Test
@@ -171,8 +192,59 @@ public class ZuulServlet extends HttpServlet {
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
             }
+        }
 
 
+        @Test
+        public void testRoutingException() {
+
+            try {
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulRunner).route();
+
+                servlet.service(servletRequest, servletResponse);
+                verify(zuulRunner, times(1)).route();
+                verify(servlet, times(1)).error(zuulRunner, e);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.toString());
+            }
+        }
+
+        @Test
+        public void testPreException() {
+
+            try {
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulRunner).preRoute();
+
+                servlet.service(servletRequest, servletResponse);
+                verify(zuulRunner, times(1)).preRoute();
+                verify(servlet, times(1)).error(zuulRunner, e);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.toString());
+            }
+        }
+
+
+        @Test
+        public void testPostException() {
+
+            try {
+                ZuulException e = new ZuulException("test", 510, "test");
+                doThrow(e).when(zuulRunner).postRoute();
+
+                servlet.service(servletRequest, servletResponse);
+                verify(zuulRunner, times(1)).postRoute();
+                verify(servlet, times(1)).error(zuulRunner, e);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                fail(e.toString());
+            }
         }
     }
 

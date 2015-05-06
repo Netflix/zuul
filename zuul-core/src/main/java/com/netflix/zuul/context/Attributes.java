@@ -27,6 +27,7 @@ public class Attributes extends HashMap<String, Object>
         super();
 
         put("executedFilters", new StringBuilder());
+        put(EVENT_PROPS_KEY, new HashMap<String, Object>());
     }
 
     /**

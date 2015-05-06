@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.post
+package post
 
 import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory
  *
  * @author mhawthorne
  */
-class RequestEventInfoCollectorFilter extends ZuulFilter
+class RequestEventInfoCollector extends ZuulFilter
 {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollectorFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollector.class);
     private static final String VALUE_SEPARATOR = ","
 
 
@@ -58,7 +58,7 @@ class RequestEventInfoCollectorFilter extends ZuulFilter
         final Map<String, Object> event = ctx.getAttributes().getEventProperties();
 
         try {
-            captureRequestData(event, ctx.request);
+            captureRequestData(event, ctx.request, ctx.response);
             captureInstanceData(event);
 
 

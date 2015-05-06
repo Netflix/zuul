@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.pre
+package pre
 
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -23,7 +23,7 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 
-class DebugFilter extends ZuulFilter {
+class Debug extends ZuulFilter {
 
     static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUG_REQUEST, false)
     static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_PARAMETER, "debugParameter")

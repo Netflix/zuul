@@ -2,6 +2,11 @@ apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'jetty'
 
+configurations {
+    all*.exclude group: 'asm', module: 'asm'
+    all*.exclude group: 'asm', module: 'asm-all'
+}
+
 dependencies {
 
     compile project(':zuul-core')

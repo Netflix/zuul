@@ -13,10 +13,14 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.pre
+package pre
 
 import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

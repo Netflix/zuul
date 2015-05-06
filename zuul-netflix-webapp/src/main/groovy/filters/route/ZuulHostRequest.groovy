@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.route
+package route
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -199,7 +199,7 @@ class ZuulHostRequest extends ZuulFilter {
 
     void debug(SessionContext context, HttpRequestMessage request) {
 
-        if (Debug.debugRequest()) {
+        if (Debug.debugRequest(context)) {
 
             request.getHeaders().entries().each {
                 Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")

@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.post
+package post
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Headers
@@ -31,9 +31,9 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
-class Postfilter extends ZuulFilter {
+class PostDecoration extends ZuulFilter {
 
-    Postfilter() {
+    PostDecoration() {
 
     }
 
@@ -93,7 +93,7 @@ class Postfilter extends ZuulFilter {
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit {
 
-        Postfilter filter
+        PostDecoration filter
         SessionContext ctx
         HttpResponseMessage response
         Headers reqHeaders
@@ -103,7 +103,7 @@ class Postfilter extends ZuulFilter {
 
         @Before
         public void setup() {
-            filter = Mockito.spy(new Postfilter())
+            filter = Mockito.spy(new PostDecoration())
             response = new HttpResponseMessage(99)
             ctx = new SessionContext(request, response)
 
