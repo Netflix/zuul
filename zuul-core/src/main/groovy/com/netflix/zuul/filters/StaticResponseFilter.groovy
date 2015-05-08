@@ -86,7 +86,7 @@ public abstract class StaticResponseFilter extends ZuulFilter {
         // first StaticResponseFilter instance to match wins, others do not set body and/or status
         if (response.getBody() == null) {
             response.setBody(responseBody(ctx).getBytes("UTF-8"))
-            ctx.getAttributes().setSendZuulResponse(false)
+            ctx.getAttributes().setShouldProxy(false)
         }
         return ctx
     }

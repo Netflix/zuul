@@ -44,12 +44,16 @@ class ErrorResponse extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        return ctx.getAttributes().get("ErrorHandled") == null
+        return ctx.getAttributes().shouldSendErrorResponse() && (ctx.getAttributes().get("ErrorHandled") == null)
     }
 
 
     @Override
-    SessionContext apply(SessionContext context) {
+    SessionContext apply(SessionContext context)
+    {
+        // REQUIRED - Mark that an error filter has handled this request.
+        context.getAttributes().set("ErrorHandled")
+        context.getAttributes().setShouldSendErrorResponse(false)
 
         HttpRequestMessage request = context.getRequest()
         HttpResponseMessage response = context.getResponse()
@@ -74,7 +78,7 @@ class ErrorResponse extends ZuulFilter {
             } else {
                 response.setStatus(e.nStatusCode);
             }
-            context.getAttributes().setSendZuulResponse(false)
+            context.getAttributes().setShouldProxy(false)
             response.setBody("${getErrorMessage(context, e, e.nStatusCode)}".getBytes("UTF-8"))
 
         } catch (Throwable throwable) {
@@ -86,14 +90,12 @@ class ErrorResponse extends ZuulFilter {
             } else {
                 response.setStatus(500);
             }
-            context.getAttributes().setSendZuulResponse(false)
+            context.getAttributes().setShouldProxy(false)
             response.setBody("${getErrorMessage(context, throwable, 500)}".getBytes("UTF-8"))
 
-        } finally {
-            context.getAttributes().set("ErrorHandled") //ErrorResponse was handled
-            return null;
         }
 
+        return context
     }
     /*
     JSON/ xml ErrorResponse responses

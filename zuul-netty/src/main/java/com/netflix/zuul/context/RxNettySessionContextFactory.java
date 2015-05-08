@@ -1,8 +1,15 @@
 package com.netflix.zuul.context;
 
 import com.google.inject.Inject;
+import com.netflix.zuul.rxnetty.RxNettyUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.subjects.PublishSubject;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
@@ -17,6 +24,8 @@ import java.util.Map;
  */
 public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest>
 {
+    private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
+
     private SessionContextDecorator decorator;
 
     @Inject
@@ -25,7 +34,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
     }
 
     @Override
-    public SessionContext create(HttpServerRequest httpServerRequest)
+    public Observable<SessionContext> create(HttpServerRequest httpServerRequest)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
@@ -54,7 +63,41 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
             ctx = decorator.decorate(ctx);
         }
 
-        return ctx;
+        // Buffer the request body, and wrap in an Observable.
+        return toObservable(ctx);
+    }
+
+    private Observable<SessionContext> toObservable(SessionContext ctx)
+    {
+        PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
+        //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+
+        // Subscribe to the response-content observable (retaining the ByteBufS first).
+        HttpServerRequest<ByteBuf> nettyServerRequest = (HttpServerRequest<ByteBuf>) ctx.getAttributes().get("_nettyHttpServerRequest");
+        nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
+
+        // Only apply the filters once the request body has been fully read and buffered.
+        Observable<SessionContext> chain = cachedContent
+                .reduce((bb1, bb2) -> {
+                    // Buffer the request body into a single virtual ByteBuf.
+                    // TODO - apply some max size to this.
+                    return Unpooled.wrappedBuffer(bb1, bb2);
+
+                })
+                .map(bodyBuffer -> {
+                    // Set the body on Request object.
+                    byte[] body = RxNettyUtils.byteBufToBytes(bodyBuffer);
+                    ctx.getRequest().setBody(body);
+
+                    // Release the ByteBufS
+                    if (bodyBuffer.refCnt() > 0) {
+                        if (LOG.isDebugEnabled()) LOG.debug("Releasing the server-request ByteBuf.");
+                        bodyBuffer.release();
+                    }
+                    return ctx;
+                });
+
+        return chain;
     }
 
     private Headers copyHeaders(HttpServerRequest httpServerRequest)

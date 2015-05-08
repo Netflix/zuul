@@ -6,9 +6,13 @@ package com.netflix.zuul.context;
  * Time: 6:45 PM
  */
 
+import com.netflix.client.http.HttpRequest;
+import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.stats.Timing;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +28,7 @@ public class SessionContext implements Cloneable
     private final ZuulMessage responseMessage;
     private final Attributes attributes;
     private final HashMap<String, Object> helpers = new HashMap<String, Object>();
+    private final List<FilterError> filterErrors = new ArrayList<>();
 
     public SessionContext(ZuulMessage requestMessage, ZuulMessage responseMessage)
     {
@@ -43,8 +48,16 @@ public class SessionContext implements Cloneable
         return requestMessage;
     }
 
+    public HttpRequestMessage getHttpRequest() {
+        return (HttpRequestMessage) getRequest();
+    }
+
     public ZuulMessage getResponse() {
         return responseMessage;
+    }
+
+    public HttpResponseMessage getHttpResponse() {
+        return (HttpResponseMessage) getResponse();
     }
 
     public Map getHelpers() {
@@ -55,6 +68,9 @@ public class SessionContext implements Cloneable
         return attributes;
     }
 
+    public List<FilterError> getFilterErrors() {
+        return filterErrors;
+    }
 
     /**
      * Makes a copy of the RequestContext. This is used for debugging.
@@ -69,10 +85,30 @@ public class SessionContext implements Cloneable
         Attributes attributes = this.getAttributes().copy();
         SessionContext copy = new SessionContext(request, response, attributes);
 
+        copy.getFilterErrors().clear();
+        copy.getFilterErrors().addAll(getFilterErrors());
+
         // Don't copy the Helper objects.
 
         return copy;
     }
+
+    /**
+     * Generates a String containing useful info about this request for use in log statements.
+     * Assumes is HTTP.
+     *
+     * @return
+     */
+    public String getRequestInfoForLogging()
+    {
+        StringBuilder sb = new StringBuilder()
+                .append("url=").append(getHttpRequest().getPathAndQuery())
+                .append(",host=").append(String.valueOf(getHttpRequest().getHeaders().getFirst("Host")))
+                .append(",proxy-status=").append(getHttpResponse().getStatus())
+                ;
+        return sb.toString();
+    }
+
 
     /** Timers - TODO: remove the dedicated methods for these? */
 

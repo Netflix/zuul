@@ -1,0 +1,27 @@
+apply plugin: 'groovy'
+
+dependencies {
+
+    compile project(':zuul-core')
+    compile project(':zuul-netty')
+
+    compile "org.codehaus.groovy:groovy-all:2.3.6"
+    compile 'junit:junit-dep:4.10'
+}
+
+javadoc {
+    options {
+        doclet = "org.benjchristensen.doclet.DocletExclude"
+        docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
+        stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
+        windowTitle = "Zuul Javadoc ${project.version}"
+    }
+}
+
+eclipse {
+    classpath {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+

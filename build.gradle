@@ -13,14 +13,15 @@ ext.githubProjectName = rootProject.name
 
 idea {
     project {
-        languageLevel = '1.7'
+        languageLevel = '1.8'
     }
 }
 
-configurations {
-    all*.exclude group: 'asm', module: 'asm'
-    all*.exclude group: 'asm', module: 'asm-all'
+configurations.all {
+    exclude group: 'asm', module: 'asm'
+    exclude group: 'asm', module: 'asm-all'
 }
+
 
 subprojects {
     apply plugin: 'nebula.netflixoss'

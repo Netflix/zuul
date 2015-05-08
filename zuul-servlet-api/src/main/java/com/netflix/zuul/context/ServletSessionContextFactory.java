@@ -3,6 +3,7 @@ package com.netflix.zuul.context;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
 
     @Override
-    public SessionContext create(HttpServletRequest servletRequest)
+    public Observable<SessionContext> create(HttpServletRequest servletRequest)
     {
         // Parse the headers.
         Headers reqHeaders = new Headers();
@@ -45,7 +46,11 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         // Create an empty response object.
         HttpResponseMessage response = new HttpResponseMessage(200);
 
-        return new SessionContext(request, response);
+        // Create the context.
+        SessionContext ctx = new SessionContext(request, response);
+
+        // Wrap in an Observable.
+        return Observable.just(ctx);
     }
 
     private byte[] bufferBody(HttpServletRequest servletRequest)

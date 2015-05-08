@@ -26,6 +26,7 @@ import com.netflix.zuul.monitoring.CounterFactory;
 public class ZuulException extends Exception {
     public int nStatusCode;
     public String errorCause;
+    private boolean shouldLogAsError = true;
 
     /**
      * Source Throwable, message, status code and info about the cause
@@ -73,4 +74,11 @@ public class ZuulException extends Exception {
         CounterFactory.instance().increment(name);
     }
 
+    public void dontLogAsError() {
+        shouldLogAsError = false;
+    }
+
+    public boolean shouldLogAsError() {
+        return shouldLogAsError;
+    }
 }

@@ -20,6 +20,13 @@ dependencies {
     compile 'com.netflix.ribbon:ribbon-httpclient:2.0.0'
     compile 'com.netflix.turbine:turbine-core:[0.4,)'
 
+    // TEMP - ensure using same version as zuul-netty.
+    compile 'io.netty:netty-common:4.0.27.Final'
+    compile 'io.netty:netty-codec:4.0.27.Final'
+    compile 'io.netty:netty-transport:4.0.27.Final'
+    compile 'io.netty:netty-buffer:4.0.27.Final'
+    compile 'io.netty:netty-transport-native-epoll:4.0.27.Final'
+
     compile 'org.powermock:powermock-api-mockito:1.5.4'
     compile 'junit:junit-dep:4.10'
 }

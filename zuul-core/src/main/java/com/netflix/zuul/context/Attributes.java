@@ -218,21 +218,29 @@ public class Attributes extends HashMap<String, Object>
 
 
     /**
-     * If this value if true then the response should be sent to the client.
+     * If this value is true then the request should be proxied after all
+     * pre filters have been applied.
      *
      * @return
      */
-    public boolean sendZuulResponse() {
-        return getBoolean("sendZuulResponse", true);
+    public boolean shouldProxy() {
+        return getBoolean("shouldProxy", true);
     }
 
     /**
-     * sets the sendZuulResponse boolean
+     * sets the shouldProxy boolean
      *
      * @param bSend
      */
-    public void setSendZuulResponse(boolean bSend) {
-        set("sendZuulResponse", Boolean.valueOf(bSend));
+    public void setShouldProxy(boolean bSend) {
+        set("shouldProxy", Boolean.valueOf(bSend));
+    }
+
+    public boolean shouldSendErrorResponse() {
+        return getBoolean("shouldSendErrorResponse", false);
+    }
+    public void setShouldSendErrorResponse(boolean should) {
+        set("shouldSendErrorResponse", Boolean.valueOf(should));
     }
 
 

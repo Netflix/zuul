@@ -58,7 +58,9 @@ class ZuulNFRequest extends ZuulFilter {
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        return ctx.getAttributes().getRouteHost() == null && ctx.getAttributes().sendZuulResponse()
+        return (ctx.getAttributes().getRouteHost() == null
+                && ! ctx.getAttributes().shouldSendErrorResponse()
+                && ctx.getAttributes().shouldProxy())
     }
 
     @Override

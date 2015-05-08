@@ -18,8 +18,6 @@ package com.netflix.zuul;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.monitoring.Tracer;
-import com.netflix.zuul.monitoring.TracerFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -49,10 +47,17 @@ import static org.mockito.Mockito.*;
  *         Date: 10/26/11
  *         Time: 4:29 PM
  */
-public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> {
+public abstract class ZuulFilter implements IZuulFilter
+{
 
     private final DynamicBooleanProperty filterDisabled =
             DynamicPropertyFactory.getInstance().getBooleanProperty(disablePropertyName(), false);
+
+    @Override
+    public String filterName() {
+        return this.getClass().getSimpleName();
+    }
+
 
     /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
@@ -68,40 +73,9 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      *
      * @return
      */
-    public boolean isFilterDisabled() {
+    @Override
+    public boolean isDisabled() {
         return filterDisabled.get();
-    }
-
-    /**
-     * runFilter checks !isFilterDisabled() and shouldFilter(). The run() method is invoked if both are true.
-     *
-     * @return the return from ZuulFilterResult
-     */
-    public ZuulFilterResult runFilter(SessionContext ctx)
-    {
-        ZuulFilterResult zr = new ZuulFilterResult();
-        if (!filterDisabled.get()) {
-            if (shouldFilter(ctx)) {
-                Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
-                try {
-                    SessionContext res = apply(ctx);
-                    zr = new ZuulFilterResult(res, ExecutionStatus.SUCCESS);
-                } catch (Throwable e) {
-                    t.setName("ZUUL::" + this.getClass().getSimpleName() + " failed");
-                    zr = new ZuulFilterResult(ExecutionStatus.FAILED);
-                    zr.setException(e);
-                } finally {
-                    t.stopAndLog();
-                }
-            } else {
-                zr = new ZuulFilterResult(ExecutionStatus.SKIPPED);
-            }
-        }
-        return zr;
-    }
-
-    public int compareTo(ZuulFilter filter) {
-        return this.filterOrder() - filter.filterOrder();
     }
 
     public static class TestUnit {
@@ -117,22 +91,6 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
             MockitoAnnotations.initMocks(this);
         }
 
-        @Test
-        public void testSort() {
-
-            when(f1.filterOrder()).thenReturn(1);
-            when(f2.filterOrder()).thenReturn(10);
-            when(f1.compareTo(any(ZuulFilter.class))).thenCallRealMethod();
-            when(f2.compareTo(any(ZuulFilter.class))).thenCallRealMethod();
-
-            ArrayList<ZuulFilter> list = new ArrayList<ZuulFilter>();
-            list.add(f2);
-            list.add(f1);
-
-            Collections.sort(list);
-
-            assertSame(f1, list.get(0));
-        }
 
         @Test
         public void testShouldFilter() {
@@ -164,16 +122,6 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
 
             when(tf1.shouldFilter(ctx)).thenReturn(true);
             when(tf2.shouldFilter(ctx)).thenReturn(false);
-
-            try {
-                tf1.runFilter(ctx);
-                tf2.runFilter(ctx);
-                verify(tf1, times(1)).apply(ctx);
-                verify(tf2, times(0)).apply(ctx);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-
         }
 
     }

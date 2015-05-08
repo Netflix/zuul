@@ -9,5 +9,5 @@ package com.netflix.zuul;
  * Time: 9:55 PM
  */
 public interface FilterUsageNotifier {
-    public void notify(ZuulFilter filter, ExecutionStatus status);
+    public void notify(IZuulFilter filter, ExecutionStatus status);
 }

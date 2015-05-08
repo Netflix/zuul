@@ -16,6 +16,7 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ShouldFilter;
 
 /**
  * BAse interface for ZuulFilters
@@ -24,13 +25,18 @@ import com.netflix.zuul.context.SessionContext;
  *         Date: 10/27/11
  *         Time: 3:03 PM
  */
-public interface IZuulFilter {
+public interface IZuulFilter extends ShouldFilter
+{
     /**
      * a "true" return from this method means that the run() method should be invoked
      *
      * @return true if the run() method should be invoked. false will not invoke the run() method
      */
     boolean shouldFilter(SessionContext ctx);
+
+    public boolean isDisabled();
+
+    public String filterName();
 
     /**
      * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
@@ -54,5 +60,4 @@ public interface IZuulFilter {
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
      */
     SessionContext apply(SessionContext ctx);
-
 }
