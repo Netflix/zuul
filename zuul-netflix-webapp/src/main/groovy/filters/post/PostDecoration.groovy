@@ -53,7 +53,6 @@ class PostDecoration extends ZuulFilter {
     void addStandardResponseHeaders(SessionContext ctx) {
 
         String originatingURL = getOriginatingURL(ctx.getRequest())
-        println(originatingURL)
 
         HttpResponseMessage resp = ctx.getResponse()
 

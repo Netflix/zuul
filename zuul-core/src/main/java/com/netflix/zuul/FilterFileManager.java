@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.groovy.GroovyFileFilter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +25,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -44,54 +49,38 @@ import static org.mockito.Mockito.*;
  *         Date: 12/7/11
  *         Time: 12:09 PM
  */
+@Singleton
 public class FilterFileManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterFileManager.class);
 
-    String[] aDirectories;
-    int pollingIntervalSeconds;
     Thread poller;
     boolean bRunning = true;
 
-    static FilenameFilter FILENAME_FILTER;
+    @Inject
+    private FilterFileManagerConfig config;
 
-    static FilterFileManager INSTANCE;
-
-    private FilterFileManager() {
-    }
-
-    public static void setFilenameFilter(FilenameFilter filter) {
-        FILENAME_FILTER = filter;
-    }
+    @Inject
+    private FilterLoader filterLoader;
 
     /**
      * Initialized the GroovyFileManager.
      *
-     * @param pollingIntervalSeconds the polling interval in Seconds
-     * @param directories            Any number of paths to directories to be polled may be specified
-     * @throws IOException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
+     * @throws Exception
      */
-    public static void init(int pollingIntervalSeconds, String... directories) throws Exception, IllegalAccessException, InstantiationException {
-        if (INSTANCE == null) INSTANCE = new FilterFileManager();
-
-        INSTANCE.aDirectories = directories;
-        INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
-        INSTANCE.manageFiles();
-        INSTANCE.startPoller();
-
-    }
-
-    public static FilterFileManager getInstance() {
-        return INSTANCE;
+    @PostConstruct
+    public void init() throws Exception
+    {
+        manageFiles();
+        startPoller();
     }
 
     /**
      * Shuts down the poller
      */
-    public static void shutdown() {
-        INSTANCE.stopPoller();
+    @PreDestroy
+    public void shutdown() {
+        stopPoller();
     }
 
 
@@ -104,10 +93,11 @@ public class FilterFileManager {
             public void run() {
                 while (bRunning) {
                     try {
-                        sleep(pollingIntervalSeconds * 1000);
+                        sleep(config.getPollingIntervalSeconds() * 1000);
                         manageFiles();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    }
+                    catch (Exception e) {
+                        LOG.error("Error checking and/or loading filter files from Poller thread.", e);
                     }
                 }
             }
@@ -144,10 +134,10 @@ public class FilterFileManager {
      */
     List<File> getFiles() {
         List<File> list = new ArrayList<File>();
-        for (String sDirectory : aDirectories) {
+        for (String sDirectory : config.getLocations()) {
             if (sDirectory != null) {
                 File directory = getDirectory(sDirectory);
-                File[] aFiles = directory.listFiles(FILENAME_FILTER);
+                File[] aFiles = directory.listFiles(config.getFilenameFilter());
                 if (aFiles != null) {
                     list.addAll(Arrays.asList(aFiles));
                 }
@@ -164,16 +154,43 @@ public class FilterFileManager {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    void processGroovyFiles(List<File> aFiles) throws Exception, InstantiationException, IllegalAccessException {
+    void processGroovyFiles(List<File> aFiles) throws Exception {
 
         for (File file : aFiles) {
-            FilterLoader.getInstance().putFilter(file);
+            filterLoader.putFilter(file);
         }
     }
 
-    void manageFiles() throws Exception, IllegalAccessException, InstantiationException {
+    void manageFiles() throws Exception {
         List<File> aFiles = getFiles();
         processGroovyFiles(aFiles);
+    }
+
+    public static class FilterFileManagerConfig
+    {
+        private String[] locations;
+        private int pollingIntervalSeconds;
+        private FilenameFilter filenameFilter;
+
+        public FilterFileManagerConfig(String[] locations, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
+            this.locations = locations;
+            this.pollingIntervalSeconds = pollingIntervalSeconds;
+            this.filenameFilter = filenameFilter;
+        }
+
+        public FilterFileManagerConfig(String[] locations, int pollingIntervalSeconds) {
+            this(locations, pollingIntervalSeconds, new GroovyFileFilter());
+        }
+
+        public String[] getLocations() {
+            return locations;
+        }
+        public int getPollingIntervalSeconds() {
+            return pollingIntervalSeconds;
+        }
+        public FilenameFilter getFilenameFilter() {
+            return filenameFilter;
+        }
     }
 
 
@@ -194,13 +211,16 @@ public class FilterFileManager {
 
 
         @Test
-        public void testFileManagerInit() throws Exception, InstantiationException, IllegalAccessException {
+        public void testFileManagerInit() throws Exception
+        {
+            FilterFileManagerConfig config = new FilterFileManagerConfig(new String[]{"test", "test1"}, 1);
             FilterFileManager manager = new FilterFileManager();
+            manager.config = config;
 
             manager = spy(manager);
-            manager.INSTANCE = manager;
-            doNothing().when(manager.INSTANCE).manageFiles();
-            manager.init(1, "test", "test1");
+            doNothing().when(manager).manageFiles();
+
+            manager.init();
             verify(manager, atLeast(1)).manageFiles();
             verify(manager, times(1)).startPoller();
             assertNotNull(manager.poller);

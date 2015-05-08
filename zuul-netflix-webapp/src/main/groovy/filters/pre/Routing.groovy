@@ -17,7 +17,6 @@ package pre
 
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
-import com.netflix.zuul.FilterProcessor
 import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
@@ -52,17 +51,8 @@ class Routing extends ZuulFilter
         return true
     }
 
-
-    SessionContext staticRouting(SessionContext ctx) {
-        ctx = FilterProcessor.instance.runFilters(ctx, "healthcheck")
-        ctx = FilterProcessor.instance.runFilters(ctx, "static")
-        return ctx
-    }
-
     @Override
     SessionContext apply(SessionContext ctx) {
-
-        ctx = staticRouting(ctx) //runs the static Zuul
 
         Attributes attrs = ctx.getAttributes()
         HttpRequestMessage request = ctx.getRequest()

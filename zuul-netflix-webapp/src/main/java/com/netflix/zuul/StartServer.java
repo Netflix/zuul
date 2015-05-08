@@ -39,8 +39,6 @@ import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.dependency.cassandra.CassandraHelper;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
-import com.netflix.zuul.groovy.GroovyCompiler;
-import com.netflix.zuul.groovy.GroovyFileFilter;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.zuul.plugins.Counter;
@@ -52,7 +50,6 @@ import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +105,6 @@ public class StartServer extends GuiceServletContextListener {
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         try {
             server.close();
-            FilterFileManager.shutdown();
         } catch (IOException e) {
             LOG.error("Error while stopping karyon.", e);
             throw Throwables.propagate(e);
@@ -122,9 +118,11 @@ public class StartServer extends GuiceServletContextListener {
 
     protected void initialize() throws Exception {
 
+        CounterFactory.initialize(new Counter());
+        TracerFactory.initialize(new Tracer());
+
         AmazonInfoHolder.getInfo();
         initPlugins();
-        initZuul();
         initCassandra();
         initNIWS();
 
@@ -171,29 +169,6 @@ public class StartServer extends GuiceServletContextListener {
             DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
             ClientFactory.registerClientFromProperties(client, clientConfig);
         }
-    }
-
-    void initZuul() throws Exception, IllegalAccessException, InstantiationException {
-
-        CounterFactory.initialize(new Counter());
-        TracerFactory.initialize(new Tracer());
-
-        LOG.info("Starting Groovy Filter file manager");
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-
-        final String preFiltersPath = config.getString(ZUUL_FILTER_PRE_PATH);
-        final String postFiltersPath = config.getString(ZUUL_FILTER_POST_PATH);
-        final String routingFiltersPath = config.getString(ZUUL_FILTER_ROUTING_PATH);
-        final String customPath = config.getString(ZUUL_FILTER_CUSTOM_PATH);
-
-        FilterLoader.getInstance().setCompiler(new GroovyCompiler());
-        FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-        if (customPath == null) {
-            FilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath);
-        } else {
-            FilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath, customPath);
-        }
-        LOG.info("Groovy Filter file manager started");
     }
 
     void initCassandra() throws Exception {

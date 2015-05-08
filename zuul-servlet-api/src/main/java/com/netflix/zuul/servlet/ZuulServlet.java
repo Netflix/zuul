@@ -16,6 +16,7 @@
 package com.netflix.zuul.servlet;
 
 import com.google.inject.Inject;
+import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.inject.Singleton;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -50,6 +52,7 @@ import static org.mockito.Mockito.*;
  *         Date: 12/23/11
  *         Time: 10:44 AM
  */
+@Singleton
 public class ZuulServlet extends HttpServlet {
     
     private static final long serialVersionUID = -3374242278843351501L;
@@ -57,6 +60,9 @@ public class ZuulServlet extends HttpServlet {
 
     @Inject
     private FilterProcessor processor;
+
+    @Inject
+    private FilterFileManager filterManager;
 
     private ServletSessionContextFactory contextFactory = new ServletSessionContextFactory();
     private ServletResponseMessageWriter responseWriter = new ServletResponseMessageWriter();

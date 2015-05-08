@@ -3,24 +3,17 @@ package com.netflix.zuul.filters;
 
 import com.netflix.zuul.IZuulFilter;
 
+import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mhawthorne
  */
-public class FilterRegistry {
-
-    private static final FilterRegistry INSTANCE = new FilterRegistry();
-
-    public static final FilterRegistry instance() {
-        return INSTANCE;
-    }
-
+@Singleton
+public class FilterRegistry
+{
     private final ConcurrentHashMap<String, IZuulFilter> filters = new ConcurrentHashMap<String, IZuulFilter>();
-
-    private FilterRegistry() {
-    }
 
     public IZuulFilter remove(String key) {
         return this.filters.remove(key);
@@ -41,5 +34,4 @@ public class FilterRegistry {
     public Collection<IZuulFilter> getAllFilters() {
         return this.filters.values();
     }
-
 }

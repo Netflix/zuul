@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
 
@@ -50,6 +51,10 @@ import static org.mockito.Mockito.*;
 public class FilterProcessor {
 
     protected static final Logger LOG = LoggerFactory.getLogger(FilterProcessor.class);
+
+
+    @Inject
+    private FilterLoader filterLoader;
 
     private FilterUsageNotifier usageNotifier;
 
@@ -95,7 +100,7 @@ public class FilterProcessor {
 
     protected Observable<SessionContext> applyFilterPhase(Observable<SessionContext> chain, String filterType, ShouldFilter additionalShouldFilter)
     {
-        List<IZuulFilter> filters = FilterLoader.getInstance().getFiltersByType(filterType);
+        List<IZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (IZuulFilter filter: filters) {
             chain = processFilterAsObservable(chain, filter, additionalShouldFilter).single();
         }

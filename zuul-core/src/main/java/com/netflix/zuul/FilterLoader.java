@@ -17,6 +17,7 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.FilterRegistry;
+import com.netflix.zuul.groovy.GroovyCompiler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -24,6 +25,7 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -43,9 +45,9 @@ import static org.mockito.Mockito.*;
  *         Date: 11/3/11
  *         Time: 1:59 PM
  */
-public class FilterLoader {
-    final static FilterLoader INSTANCE = new FilterLoader();
-
+@Singleton
+public class FilterLoader
+{
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
     private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
@@ -53,9 +55,9 @@ public class FilterLoader {
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, List<IZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<IZuulFilter>>();
 
-    private FilterRegistry filterRegistry = FilterRegistry.instance();
+    private FilterRegistry filterRegistry = new FilterRegistry();
 
-    static DynamicCodeCompiler COMPILER;
+    private DynamicCodeCompiler compiler = new GroovyCompiler();
     
     static FilterFactory FILTER_FACTORY = new DefaultFilterFactory();
 
@@ -65,7 +67,7 @@ public class FilterLoader {
      * @param compiler
      */
     public void setCompiler(DynamicCodeCompiler compiler) {
-        COMPILER = compiler;
+        this.compiler = compiler;
     }
 
     // overidden by tests
@@ -81,13 +83,7 @@ public class FilterLoader {
     public void setFilterFactory(FilterFactory factory) {
         FILTER_FACTORY = factory;
     }
-    
-    /**
-     * @return Singleton FilterLoader
-     */
-    public static FilterLoader getInstance() {
-        return INSTANCE;
-    }
+
 
     /**
      * Given source and name will compile and store the filter if it detects that the filter code has changed or
@@ -110,7 +106,7 @@ public class FilterLoader {
         }
         IZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
-            Class clazz = COMPILER.compile(sCode, sName);
+            Class clazz = compiler.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = FILTER_FACTORY.newInstance(clazz);
             }
@@ -145,7 +141,7 @@ public class FilterLoader {
         }
         IZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
-            Class clazz = COMPILER.compile(file);
+            Class clazz = compiler.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
                 List<IZuulFilter> list = hashFiltersByType.get(filter.filterType());

@@ -4,14 +4,6 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
-    <servlet>
-        <servlet-name>ZuulServlet</servlet-name>
-        <servlet-class>com.netflix.zuul.servlet.ZuulServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ZuulServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
 
     <filter>
         <filter-name>guiceFilter</filter-name>
@@ -26,23 +18,5 @@
     <listener>
         <listener-class>com.netflix.zuul.StartServer</listener-class>
     </listener>
-
-    <servlet>
-        <servlet-name>scriptManager</servlet-name>
-        <servlet-class>com.netflix.zuul.scriptManager.FilterScriptManagerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>scriptManager</servlet-name>
-        <url-pattern>/admin/scriptmanager</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>filterLoader</servlet-name>
-        <jsp-file>/admin/filterLoader.jsp</jsp-file>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>filterLoader</servlet-name>
-        <url-pattern>/admin/filterLoader.jsp</url-pattern>
-    </servlet-mapping>
 
 </web-app>
