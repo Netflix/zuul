@@ -15,12 +15,12 @@
  */
 package post
 
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.junit.Before
@@ -38,7 +38,7 @@ import java.util.zip.GZIPOutputStream
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
 
-class GZipResponseFilter extends ZuulFilter
+class GZipResponseFilter extends BaseSyncFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(GZipResponseFilter.class);
 

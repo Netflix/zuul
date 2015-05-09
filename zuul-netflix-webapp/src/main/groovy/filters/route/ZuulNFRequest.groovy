@@ -21,10 +21,10 @@ import com.netflix.client.IClient
 import com.netflix.client.http.HttpResponse
 import com.netflix.hystrix.exception.HystrixRuntimeException
 import com.netflix.niws.client.http.RestClient
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.junit.Assert
@@ -41,7 +41,7 @@ import java.util.zip.GZIPInputStream
 
 import static com.netflix.client.http.HttpRequest.Verb
 
-class ZuulNFRequest extends ZuulFilter {
+class ZuulNFRequest extends BaseSyncFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZuulNFRequest.class);
 

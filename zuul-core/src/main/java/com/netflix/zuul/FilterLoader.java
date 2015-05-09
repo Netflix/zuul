@@ -16,7 +16,10 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.BaseFilter;
+import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +56,7 @@ public class FilterLoader
     private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
     private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
-    private final ConcurrentHashMap<String, List<IZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<IZuulFilter>>();
+    private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
 
     private FilterRegistry filterRegistry = new FilterRegistry();
 
@@ -95,7 +98,7 @@ public class FilterLoader
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public IZuulFilter getFilter(String sCode, String sName) throws Exception {
+    public ZuulFilter getFilter(String sCode, String sName) throws Exception {
 
         if (filterCheck.get(sName) == null) {
             filterCheck.putIfAbsent(sName, sName);
@@ -104,7 +107,7 @@ public class FilterLoader
                 filterRegistry.remove(sName);
             }
         }
-        IZuulFilter filter = filterRegistry.get(sName);
+        ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
             Class clazz = compiler.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
@@ -139,12 +142,12 @@ public class FilterLoader
             LOG.debug("reloading filter " + sName);
             filterRegistry.remove(sName);
         }
-        IZuulFilter filter = filterRegistry.get(sName);
+        ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
             Class clazz = compiler.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
-                List<IZuulFilter> list = hashFiltersByType.get(filter.filterType());
+                filter = (BaseFilter) FILTER_FACTORY.newInstance(clazz);
+                List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
                 }
@@ -163,25 +166,25 @@ public class FilterLoader
      * @param filterType
      * @return a List<ZuulFilter>
      */
-    public List<IZuulFilter> getFiltersByType(String filterType) {
+    public List<ZuulFilter> getFiltersByType(String filterType) {
 
-        List<IZuulFilter> list = hashFiltersByType.get(filterType);
+        List<ZuulFilter> list = hashFiltersByType.get(filterType);
         if (list != null) return list;
 
-        list = new ArrayList<IZuulFilter>();
+        list = new ArrayList<ZuulFilter>();
 
-        Collection<IZuulFilter> filters = filterRegistry.getAllFilters();
-        for (Iterator<IZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
-            IZuulFilter filter = iterator.next();
+        Collection<ZuulFilter> filters = filterRegistry.getAllFilters();
+        for (Iterator<ZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
+            ZuulFilter filter = iterator.next();
             if (filter.filterType().equals(filterType)) {
                 list.add(filter);
             }
         }
 
         // Sort by filterOrder.
-        Collections.sort(list, new Comparator<IZuulFilter>() {
+        Collections.sort(list, new Comparator<ZuulFilter>() {
             @Override
-            public int compare(IZuulFilter o1, IZuulFilter o2) {
+            public int compare(ZuulFilter o1, ZuulFilter o2) {
                 return o1.filterOrder() - o2.filterOrder();
             }
         });
@@ -191,7 +194,7 @@ public class FilterLoader
     }
 
 
-    public static class TestZuulFilter extends ZuulFilter {
+    public static class TestZuulFilter extends BaseSyncFilter {
 
         public TestZuulFilter() {
             super();
@@ -247,7 +250,7 @@ public class FilterLoader
         public void testGetFilterFromFile() throws Exception {
             doReturn(TestZuulFilter.class).when(compiler).compile(file);
             assertTrue(loader.putFilter(file));
-            verify(registry).put(any(String.class), any(ZuulFilter.class));
+            verify(registry).put(any(String.class), any(BaseFilter.class));
         }
 
         @Test
@@ -255,16 +258,16 @@ public class FilterLoader
             doReturn(TestZuulFilter.class).when(compiler).compile(file);
             assertTrue(loader.putFilter(file));
 
-            verify(registry).put(any(String.class), any(IZuulFilter.class));
+            verify(registry).put(any(String.class), any(ZuulFilter.class));
 
-            final List<IZuulFilter> filters = new ArrayList<IZuulFilter>();
+            final List<ZuulFilter> filters = new ArrayList<ZuulFilter>();
             filters.add(filter);
             when(registry.getAllFilters()).thenReturn(filters);
 
-            List<IZuulFilter > list = loader.getFiltersByType("test");
+            List<ZuulFilter> list = loader.getFiltersByType("test");
             assertTrue(list != null);
             assertTrue(list.size() == 1);
-            IZuulFilter filter = list.get(0);
+            ZuulFilter filter = list.get(0);
             assertTrue(filter != null);
             assertTrue(filter.filterType().equals("test"));
         }
@@ -274,7 +277,7 @@ public class FilterLoader
         public void testGetFilterFromString() throws Exception {
             String string = "";
             doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
-            IZuulFilter filter = loader.getFilter(string, string);
+            ZuulFilter filter = loader.getFilter(string, string);
 
             assertNotNull(filter);
             assertTrue(filter.getClass() == TestZuulFilter.class);

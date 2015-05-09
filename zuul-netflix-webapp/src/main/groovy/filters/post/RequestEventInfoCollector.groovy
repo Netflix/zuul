@@ -19,10 +19,10 @@ import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.stats.AmazonInfoHolder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory
  *
  * @author mhawthorne
  */
-class RequestEventInfoCollector extends ZuulFilter
+class RequestEventInfoCollector extends BaseSyncFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollector.class);
     private static final String VALUE_SEPARATOR = ","

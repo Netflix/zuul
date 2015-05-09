@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul.filters
 
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 
@@ -32,7 +31,7 @@ import java.util.regex.Pattern
  * Date: 2/2/12
  * Time: 1:34 PM
  */
-public abstract class StaticResponseFilter extends ZuulFilter {
+public abstract class StaticResponseFilter extends BaseSyncFilter {
 
     /**
      * Define a URI eg /static/content/path or List of URIs for this filter to return a static response.

@@ -1,8 +1,6 @@
 package com.netflix.zuul.filters;
 
 
-import com.netflix.zuul.IZuulFilter;
-
 import javax.inject.Singleton;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,17 +11,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Singleton
 public class FilterRegistry
 {
-    private final ConcurrentHashMap<String, IZuulFilter> filters = new ConcurrentHashMap<String, IZuulFilter>();
+    private final ConcurrentHashMap<String, ZuulFilter> filters = new ConcurrentHashMap<String, ZuulFilter>();
 
-    public IZuulFilter remove(String key) {
+    public ZuulFilter remove(String key) {
         return this.filters.remove(key);
     }
 
-    public IZuulFilter get(String key) {
+    public ZuulFilter get(String key) {
         return this.filters.get(key);
     }
 
-    public void put(String key, IZuulFilter filter) {
+    public void put(String key, ZuulFilter filter) {
         this.filters.putIfAbsent(key, filter);
     }
 
@@ -31,7 +29,7 @@ public class FilterRegistry
         return this.filters.size();
     }
 
-    public Collection<IZuulFilter> getAllFilters() {
+    public Collection<ZuulFilter> getAllFilters() {
         return this.filters.values();
     }
 }

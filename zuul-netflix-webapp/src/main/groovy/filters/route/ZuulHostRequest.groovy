@@ -17,15 +17,10 @@ package route
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpQueryParams
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.*
@@ -60,7 +55,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
-class ZuulHostRequest extends ZuulFilter {
+class ZuulHostRequest extends BaseSyncFilter {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 

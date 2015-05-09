@@ -18,19 +18,19 @@ package pre
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulApplicationInfo
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.filters.BaseSyncFilter
 
 /**
  * @author Mikey Cohen
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends ZuulFilter
+class Routing extends BaseSyncFilter
 {
     DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
     DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);

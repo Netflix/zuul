@@ -1,5 +1,7 @@
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.BaseFilter;
+
 /**
  * Default factory for creating instances of ZuulFilter. 
  */
@@ -13,8 +15,8 @@ public class DefaultFilterFactory implements FilterFactory {
      * @return A new instance of ZuulFilter
      */
     @Override
-    public ZuulFilter newInstance(Class clazz) throws InstantiationException, IllegalAccessException {
-        return (ZuulFilter) clazz.newInstance();
+    public BaseFilter newInstance(Class clazz) throws InstantiationException, IllegalAccessException {
+        return (BaseFilter) clazz.newInstance();
     }
 
 }

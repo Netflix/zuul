@@ -15,12 +15,12 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.DynamicStringProperty;
 import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.filters.AsyncFilter;
-import com.netflix.zuul.filters.FilterError;
-import com.netflix.zuul.filters.ShouldFilter;
+import com.netflix.zuul.filters.*;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +52,8 @@ public class FilterProcessor {
 
     protected static final Logger LOG = LoggerFactory.getLogger(FilterProcessor.class);
 
+    protected static final DynamicStringProperty DEFAULT_FILTER_SYNC_TYPE = DynamicPropertyFactory.getInstance()
+            .getStringProperty("zuul.filters.synctype.default", "sync");
 
     @Inject
     private FilterLoader filterLoader;
@@ -100,21 +102,37 @@ public class FilterProcessor {
 
     protected Observable<SessionContext> applyFilterPhase(Observable<SessionContext> chain, String filterType, ShouldFilter additionalShouldFilter)
     {
-        List<IZuulFilter> filters = filterLoader.getFiltersByType(filterType);
-        for (IZuulFilter filter: filters) {
+        List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
+        for (ZuulFilter filter: filters) {
             chain = processFilterAsObservable(chain, filter, additionalShouldFilter).single();
         }
         return chain;
     }
 
-    public Observable<SessionContext> processFilterAsObservable(Observable<SessionContext> input, IZuulFilter filter, ShouldFilter additionalShouldFilter)
+    public Observable<SessionContext> processFilterAsObservable(Observable<SessionContext> input, ZuulFilter filter, ShouldFilter additionalShouldFilter)
     {
-        if (filter instanceof AsyncFilter) {
+        // If this filter can be used Async OR Sync, then choose based on the configured default.
+        // This default will likely be Sync for Servlet-based servers, and Async for netty-based.
+        if (filter instanceof AsyncFilter && filter instanceof SyncFilter) {
+            return processFilterWithSyncType(input, filter, additionalShouldFilter, DEFAULT_FILTER_SYNC_TYPE.get());
+        }
+        else if (filter instanceof AsyncFilter) {
+            return processFilterWithSyncType(input, filter, additionalShouldFilter, "async");
+        }
+        else {
+            return processFilterWithSyncType(input, filter, additionalShouldFilter, "sync");
+        }
+    }
+
+    protected Observable<SessionContext> processFilterWithSyncType(Observable<SessionContext> input, ZuulFilter filter, ShouldFilter additionalShouldFilter, String syncType)
+    {
+        if ("async".equals(syncType)) {
             AsyncFilter asyncFilter = (AsyncFilter) filter;
             return input.flatMap(ctx -> processAsyncFilter(ctx, asyncFilter, additionalShouldFilter) );
         }
         else {
-            return input.map(ctx -> processFilter(ctx, filter, additionalShouldFilter));
+            SyncFilter syncFilter = (SyncFilter) filter;
+            return input.map(ctx -> processFilter(ctx, syncFilter, additionalShouldFilter));
         }
     }
 
@@ -176,7 +194,7 @@ public class FilterProcessor {
      * @param filter IZuulFilter
      * @return the return value for that filter
      */
-    public SessionContext processFilter(SessionContext ctx, IZuulFilter filter, ShouldFilter additionalShouldFilter)
+    public SessionContext processFilter(SessionContext ctx, SyncFilter filter, ShouldFilter additionalShouldFilter)
     {
         FilterExecInfo info = new FilterExecInfo();
         info.bDebug = ctx.getAttributes().debugRouting();
@@ -228,7 +246,7 @@ public class FilterProcessor {
         return ctx;
     }
 
-    protected void recordFilterCompletion(SessionContext ctx, IZuulFilter filter, FilterExecInfo info)
+    protected void recordFilterCompletion(SessionContext ctx, ZuulFilter filter, FilterExecInfo info)
     {
         // Record the execution summary in context.
         switch (info.status) {
@@ -251,7 +269,7 @@ public class FilterProcessor {
         usageNotifier.notify(filter, info.status);
     }
 
-    protected void recordFilterError(IZuulFilter filter, SessionContext ctx, Throwable e)
+    protected void recordFilterError(ZuulFilter filter, SessionContext ctx, Throwable e)
     {
         // Add a log statement for this exception.
         String msg = "Filter Exception: request-info=" + ctx.getRequestInfoForLogging() + ", msg=" + String.valueOf(e.getMessage());
@@ -277,7 +295,7 @@ public class FilterProcessor {
         private static final String METRIC_PREFIX = "zuul.filter-";
 
         @Override
-        public void notify(IZuulFilter filter, ExecutionStatus status) {
+        public void notify(ZuulFilter filter, ExecutionStatus status) {
             DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType());
         }
     }
@@ -316,7 +334,7 @@ public class FilterProcessor {
     public static class UnitTest {
 
         @Mock
-        ZuulFilter filter;
+        BaseSyncFilter filter;
 
         @Mock
         ShouldFilter additionalShouldFilter;

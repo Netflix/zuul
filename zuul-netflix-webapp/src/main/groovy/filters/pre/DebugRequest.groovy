@@ -15,12 +15,8 @@
  */
 package pre
 
-import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
+import com.netflix.zuul.filters.BaseSyncFilter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -34,7 +30,7 @@ import org.mockito.runners.MockitoJUnitRunner
  * Date: 3/12/12
  * Time: 1:51 PM
  */
-class DebugRequest extends ZuulFilter {
+class DebugRequest extends BaseSyncFilter {
     @Override
     String filterType() {
         return 'pre'

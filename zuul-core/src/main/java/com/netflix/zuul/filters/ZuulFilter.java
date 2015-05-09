@@ -13,10 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filters;
 
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.filters.ShouldFilter;
 
 /**
  * BAse interface for ZuulFilters
@@ -25,7 +24,7 @@ import com.netflix.zuul.filters.ShouldFilter;
  *         Date: 10/27/11
  *         Time: 3:03 PM
  */
-public interface IZuulFilter extends ShouldFilter
+public interface ZuulFilter extends ShouldFilter
 {
     /**
      * a "true" return from this method means that the run() method should be invoked
@@ -55,9 +54,4 @@ public interface IZuulFilter extends ShouldFilter
      * @return A String representing that type
      */
     String filterType();
-
-    /**
-     * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
-     */
-    SessionContext apply(SessionContext ctx);
 }

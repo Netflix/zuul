@@ -15,11 +15,11 @@
  */
 package post
 
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -31,7 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
-class PostDecoration extends ZuulFilter {
+class PostDecoration extends BaseSyncFilter {
 
     PostDecoration() {
 

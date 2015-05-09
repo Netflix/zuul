@@ -5,15 +5,12 @@ import com.google.inject.Singleton;
 import com.netflix.servo.monitor.DynamicTimer;
 import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.context.SessionContextFactory;
-import com.netflix.zuul.rxnetty.HealthCheckRequestHandler;
-import com.netflix.zuul.stats.Timing;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import io.reactivex.netty.protocol.http.server.RequestHandler;
@@ -22,8 +19,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An implementation of {@link RequestHandler} for zuul.
@@ -35,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZuulRequestHandler.class);
-    private static final Logger HTTP_DEBUG_LOGGER = LoggerFactory.getLogger("HTTP_DEBUG");
 
     @Inject
     private FilterProcessor filterProcessor;
@@ -51,85 +45,42 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 
 
     @Override
-    public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response) {
+    public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response)
+    {
+        // Convert the incoming request into a SessionContext.
+        Observable<SessionContext> chain = stateFactory.create(request);
 
-        final long startTime = System.nanoTime();
+        // Start timing the request.
+        chain.doOnNext(ctx -> {
+            ctx.getRequestTiming().start();
+        });
 
-        /**
-         * Convert the RxNetty {@link HttpServerRequest} into a Zuul domain object - a {@link IngressRequest}
-         * this is synchronous
-         */
-        final Observable<SessionContext> chain = stateFactory.create(request);
-
-        final Timing timing = context.getRequestTiming();
-        timing.start();
-
-        // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
-        // Handle healthcheck requests.
+        // Choose if this is a Healtcheck request, or a normal request, and build the chain accordingly.
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
-
-            Observable<Void> o = healthCheckHandler.handle(request, response)
-//                    .doOnCompleted(() -> {
-//                        LOG.debug("Calling response.close()");
-//                        response.close();
-//                        LOG.debug("Called response.close()");
-//                    })
-                    .finallyDo(() -> {
-
-                                timing.end();
-                                long durationNs = System.nanoTime() - startTime;
-
-                                // Ensure some response info is correct in RequestContext for logging/metrics purposes.
-                                HttpResponseMessage zuulResp = (HttpResponseMessage) context.getResponse();
-                                zuulResp.setStatus(response.getStatus().code());
-
-                                if (requestCompleteHandler != null)
-                                    requestCompleteHandler.handle(context, durationNs, 0);
-                            }
-                    );
-
-            return o;
+            // Handle healthcheck requests.
+            // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
+            chain = chain.map(ctx -> healthCheckHandler.handle(ctx) );
+        }
+        else {
+            /**
+             * Delegate all of the filter application logic to {@link FilterProcessor}.
+             * This work is some combination of synchronous and asynchronous.
+             */
+            chain = filterProcessor.applyAllFilters(chain);
         }
 
-        if (HTTP_DEBUG_LOGGER.isDebugEnabled()) {
-            for (String headerName: request.getHeaders().names()) {
-                HTTP_DEBUG_LOGGER.info("Incoming HTTP Header : " + headerName + " -> " + request.getHeaders().get(headerName));
-            }
-        }
+        chain.doOnNext(ctx -> {
+            // DEBUG
+            LOG.info("Status=" + ctx.getHttpResponse().getStatus());
+        });
 
-        // We increment this as we write bytes to the response.
-        final AtomicInteger bytesWritten = new AtomicInteger(0);
+        chain.single()
+                // After the request is handled, write out the response.
+                .doOnNext(ctx -> stateFactory.write(ctx, response))
 
-        /**
-         * Delegate all of the filter application logic to {@link FilterProcessor}.
-         * This work is some combination of synchronous and asynchronous.
-         */
-        return filterProcessor.applyAllFilters(chain)
-                .single()
-                .doOnNext(respCtx -> {
+                // Record the execution time reported by Origin.
+                .doOnNext(ctx -> recordReportedOriginDuration(ctx))
 
-                    HttpResponseMessage zuulResp = (HttpResponseMessage) respCtx.getResponse();
-
-                    // Set the response status code.
-                    response.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
-
-                    // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
-                    for (Map.Entry<String, String> entry : zuulResp.getHeaders().entries()) {
-                        response.getHeaders().add(entry.getKey(), entry.getValue());
-                    }
-
-                    // Record the execution time reported by Origin.
-                    recordReportedOriginDuration(respCtx);
-
-                    if (zuulResp.getBody() != null) {
-                        // Record size of response body written.
-                        bytesWritten.addAndGet(zuulResp.getBody().length);
-
-                        // Write response body bytes.
-                        response.write(Unpooled.wrappedBuffer(zuulResp.getBody()));
-                    }
-
-                })
                         //for each piece of content, write it out to the {@link HttpServerResponse}
 //                .map(byteBuf -> {
 //                    byteBuf.retain();
@@ -138,35 +89,34 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 //                    response.write(byteBuf);
 //                    return null;
 //                })
-                        // TODO - why is this needed/wanted?
+
+
+                        // After complete, update metrics and access log.
+                .map(ctx -> {
+                    // End the timing.
+                    ctx.getRequestTiming().end();
+
+                    // Publish request timings.
+                    publishTimings(ctx);
+
+                    // Ensure some response info is correct in RequestContext for logging/metrics purposes.
+                    HttpResponseMessage zuulResp = ctx.getHttpResponse();
+                    zuulResp.setStatus(response.getStatus().code());
+
+                    try {
+                        if (requestCompleteHandler != null)
+                            requestCompleteHandler.handle(ctx);
+                    } catch (Exception e) {
+                        LOG.error("Error in RequestCompleteHandler.", e);
+                    }
+                    return ctx;
+                });
+
+        // Convert to an Observable<Void>.
+        return chain
+                // TODO - why is this needed/wanted?
                 .ignoreElements()
-                .cast(Void.class)
-                .finallyDo(
-                        () -> {
-                            long durationNs = System.nanoTime() - startTime;
-                            int responseBodySize = bytesWritten.get();
-                            timing.end();
-
-                            // TODO - this is relying on the all the filters having returned the a ref to the
-                            // original RequestContext rather than a copy of. Not good. Need to find another
-                            // way to do this.
-
-                            // Publish request timings.
-                            publishTimings(context);
-
-                            // Ensure some response info is correct in RequestContext for logging/metrics purposes.
-                            HttpResponseMessage zuulResp = (HttpResponseMessage) context.getResponse();
-                            zuulResp.setStatus(response.getStatus().code());
-
-                            try {
-                                if (requestCompleteHandler != null)
-                                    requestCompleteHandler.handle(context, durationNs, responseBodySize);
-                            }
-                            catch (Exception e) {
-                                LOG.error("Error in RequestCompleteHandler.", e);
-                            }
-                        }
-                );
+                .cast(Void.class);
     }
 
     protected void publishTimings(SessionContext context)

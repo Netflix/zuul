@@ -19,7 +19,6 @@ import com.google.inject.Inject;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.context.*;
-import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import javax.inject.Singleton;
-import javax.servlet.FilterChain;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -42,7 +40,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 /**
@@ -65,7 +62,6 @@ public class ZuulServlet extends HttpServlet {
     private FilterFileManager filterManager;
 
     private ServletSessionContextFactory contextFactory = new ServletSessionContextFactory();
-    private ServletResponseMessageWriter responseWriter = new ServletResponseMessageWriter();
 
 
     @Override
@@ -88,7 +84,7 @@ public class ZuulServlet extends HttpServlet {
 
             // Write out the built response message to the HttpServletResponse.
             try {
-                responseWriter.write(ctx, servletResponse);
+                contextFactory.write(ctx, servletResponse);
             }
             catch (Exception e) {
                 LOG.error("Error writing response message!", e);

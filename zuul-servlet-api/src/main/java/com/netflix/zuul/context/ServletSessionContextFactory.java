@@ -5,17 +5,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * User: michaels@netflix.com
  * Date: 4/29/15
  * Time: 11:25 AM
  */
-public class ServletSessionContextFactory implements SessionContextFactory<HttpServletRequest>
+public class ServletSessionContextFactory implements SessionContextFactory<HttpServletRequest, HttpServletResponse>
 {
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
 
@@ -70,4 +73,32 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         return body;
     }
 
+    @Override
+    public void write(SessionContext ctx, HttpServletResponse servletResponse)
+    {
+        HttpResponseMessage responseMessage = (HttpResponseMessage) ctx.getResponse();
+        if (responseMessage == null) {
+            throw new RuntimeException("Null HttpResponseMessage when attempting to write to ServletResponse!");
+        }
+
+        // Status.
+        servletResponse.setStatus(responseMessage.getStatus());
+
+        // Headers.
+        for (Map.Entry<String, String> header : responseMessage.getHeaders().entries()) {
+            servletResponse.setHeader(header.getKey(), header.getValue());
+        }
+
+        // Body.
+        if (responseMessage.getBody() != null) {
+            try {
+                ServletOutputStream output = servletResponse.getOutputStream();
+                IOUtils.write(responseMessage.getBody(), output);
+                output.flush();
+            }
+            catch (IOException e) {
+                throw new RuntimeException("Error writing response body to outputstream!", e);
+            }
+        }
+    }
 }

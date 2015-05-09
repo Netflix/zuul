@@ -5,6 +5,14 @@ dependencies {
     compile project(':zuul-core')
     compile project(':zuul-netty')
 
+    //karyonVer = "2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-core:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-governator:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-eureka:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-servo:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-archaius:2.2.00-ALPHA7"
+    compile "com.netflix.karyon2:karyon-admin-web:2.2.00-ALPHA7"
+
     compile "org.codehaus.groovy:groovy-all:2.3.6"
     compile 'junit:junit-dep:4.10'
 }

@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul;
+package com.netflix.zuul.filters;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
@@ -22,9 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.*;
@@ -47,7 +44,7 @@ import static org.mockito.Mockito.*;
  *         Date: 10/26/11
  *         Time: 4:29 PM
  */
-public abstract class ZuulFilter implements IZuulFilter
+public abstract class BaseFilter implements ZuulFilter
 {
 
     private final DynamicBooleanProperty filterDisabled =
@@ -80,9 +77,9 @@ public abstract class ZuulFilter implements IZuulFilter
 
     public static class TestUnit {
         @Mock
-        private ZuulFilter f1;
+        private BaseFilter f1;
         @Mock
-        private ZuulFilter f2;
+        private BaseFilter f2;
         @Mock
         private SessionContext ctx;
 
@@ -94,7 +91,7 @@ public abstract class ZuulFilter implements IZuulFilter
 
         @Test
         public void testShouldFilter() {
-            class TestZuulFilter extends ZuulFilter {
+            class TestZuulFilter extends BaseSyncFilter {
 
                 @Override
                 public String filterType() {

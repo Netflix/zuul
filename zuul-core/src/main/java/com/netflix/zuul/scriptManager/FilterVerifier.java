@@ -16,7 +16,7 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.ZuulApplicationInfo;
-import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.filters.BaseFilter;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.junit.Before;
@@ -56,7 +56,7 @@ public class FilterVerifier {
         Class groovyClass = compileGroovy(sFilterCode);
         Object instance = instanciateClass(groovyClass);
         checkZuulFilterInstance(instance);
-        ZuulFilter filter = (ZuulFilter) instance;
+        BaseFilter filter = (BaseFilter) instance;
 
 
         String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
@@ -69,7 +69,7 @@ public class FilterVerifier {
     }
 
     void checkZuulFilterInstance(Object zuulFilter) throws InstantiationException {
-        if (!(zuulFilter instanceof ZuulFilter)) {
+        if (!(zuulFilter instanceof BaseFilter)) {
             throw new InstantiationException("Code is not a ZuulFilter Class ");
         }
     }

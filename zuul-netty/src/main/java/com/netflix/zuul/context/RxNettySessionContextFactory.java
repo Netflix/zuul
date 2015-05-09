@@ -5,7 +5,9 @@ import com.netflix.zuul.rxnetty.RxNettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
+import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -22,7 +24,7 @@ import java.util.Map;
  * Date: 2/25/15
  * Time: 4:03 PM
  */
-public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest>
+public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest, HttpServerResponse>
 {
     private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
 
@@ -65,6 +67,25 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
 
         // Buffer the request body, and wrap in an Observable.
         return toObservable(ctx);
+    }
+
+    @Override
+    public void write(SessionContext ctx, HttpServerResponse nativeResponse)
+    {
+        HttpResponseMessage zuulResp = ctx.getHttpResponse();
+
+        // Set the response status code.
+        nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
+
+        // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
+        for (Map.Entry<String, String> entry : zuulResp.getHeaders().entries()) {
+            nativeResponse.getHeaders().add(entry.getKey(), entry.getValue());
+        }
+
+        // Write response body bytes.
+        if (zuulResp.getBody() != null) {
+            nativeResponse.write(Unpooled.wrappedBuffer(zuulResp.getBody()));
+        }
     }
 
     private Observable<SessionContext> toObservable(SessionContext ctx)

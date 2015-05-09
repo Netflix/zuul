@@ -17,8 +17,8 @@ package com.netflix.zuul.context;
 
 import rx.Observable;
 
-public interface SessionContextFactory<T> {
-
+public interface SessionContextFactory<T, V>
+{
     public Observable<SessionContext> create(T nativeRequest);
-    
+    public void write(SessionContext ctx, V nativeResponse);
 }

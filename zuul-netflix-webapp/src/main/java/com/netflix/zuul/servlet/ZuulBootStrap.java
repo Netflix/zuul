@@ -1,11 +1,9 @@
 package com.netflix.zuul.servlet;
 
-import com.netflix.config.ConfigurationManager;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
 import com.netflix.karyon.server.ServerBootstrap;
-import com.netflix.zuul.FilterFileManager;
+import com.netflix.zuul.init.ZuulFiltersModule;
 import com.sun.jersey.guice.JerseyServletModule;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,28 +26,7 @@ public class ZuulBootstrap extends ServerBootstrap
             {
                 serve("/*").with(ZuulServlet.class);
                 bind(ZuulServlet.class).asEagerSingleton();
-
-                initZuulFilters();
             }
-
-            protected void initZuulFilters()
-            {
-                LOG.info("Starting Groovy Filter file manager");
-
-                // Get filter directories.
-                final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-                String[] filterLocations = config.getString("zuul.filters.locations", "pre,post,route").split(",");
-                LOG.info("Using filter locations: ");
-                for (String location : filterLocations) {
-                    LOG.info("  " + location);
-                }
-
-                // Init the FilterStore.
-                FilterFileManager.FilterFileManagerConfig filterConfig = new FilterFileManager.FilterFileManagerConfig(filterLocations, 5);
-                bind(FilterFileManager.FilterFileManagerConfig.class).toInstance(filterConfig);
-
-                LOG.info("Groovy Filter file manager started");
-            }
-        });
+        }, new ZuulFiltersModule());
     }
 }

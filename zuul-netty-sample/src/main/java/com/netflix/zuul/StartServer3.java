@@ -3,6 +3,7 @@ package com.netflix.zuul;
 
 import com.google.inject.*;
 import com.google.inject.spi.Message;
+import com.google.inject.util.Providers;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.ConfigurationManager;
@@ -14,10 +15,13 @@ import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.lifecycle.LifecycleManager;
 import com.netflix.zuul.context.RxNettySessionContextFactory;
+import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
-import com.netflix.zuul.groovy.GroovyCompiler;
-import com.netflix.zuul.groovy.GroovyFileFilter;
+import com.netflix.zuul.init.ZuulFiltersModule;
+import com.netflix.zuul.rxnetty.BasicRequestCompleteHandler;
 import com.netflix.zuul.rxnetty.HealthCheckRequestHandler;
+import com.netflix.zuul.rxnetty.ZuulRequestHandler;
+import com.netflix.zuul.stats.RequestMetricsPublisher;
 import io.netty.handler.logging.LogLevel;
 import io.reactivex.netty.contexts.RxContexts;
 import io.reactivex.netty.metrics.MetricEventsListenerFactory;
@@ -34,11 +38,8 @@ import netflix.karyon.health.HealthCheckHandler;
 import netflix.karyon.health.HealthCheckInvocationStrategy;
 import netflix.karyon.health.SyncHealthCheckInvocationStrategy;
 import netflix.karyon.servo.KaryonServoModule;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.netflix.zuul.constants.ZuulConstants.*;
 
 /**
  * User: Mike Smith
@@ -88,7 +89,7 @@ public class StartServer3
         try {
             ConfigurationManager.loadCascadedPropertiesFromResources(deploymentContext.getApplicationId());
         } catch (Exception e) {
-            log.error(String.format("Failed to load properties for application id: %s and environment: %s.", infoStr), e);
+            log.error(String.format("Failed to load properties file: %s.", infoStr), e);
             throw new RuntimeException(e);
         }
 
@@ -107,7 +108,6 @@ public class StartServer3
                     msg.getCause().printStackTrace();
                 }
             }
-            e.printStackTrace();
             System.exit(-1);
         } catch (Exception e) {
             System.err.println("Error while starting StartServer. msg=" + e.getMessage());
@@ -138,24 +138,12 @@ public class StartServer3
         @Override
         protected void configure()
         {
-            // Bootstrap from system properties.
-            String[] filterLocations = System.getProperty("zuul.filters.locations", "filters").split(",");
-
-            System.out.println("Using filter locations: ");
-            for (String location : filterLocations) {
-                System.out.println("  " + location);
-            }
-
             bind(ApplicationInfoManager.class).asEagerSingleton();
 
             // Karyon deps.
             bind(MetricEventsListenerFactory.class).to(SpectatorEventsListenerFactory.class);
             bind(HealthCheckInvocationStrategy.class).to(SyncHealthCheckInvocationStrategy.class);
             bind(HealthCheckHandler.class).to(AlwaysHealthyHealthCheck.class);
-
-            // Init the FilterStore.
-            configureFilters();
-
 
             // Configure the factory that will create and initialise each requests' SessionContext.
             bind(SessionContextFactory.class).to(RxNettySessionContextFactory.class);
@@ -168,28 +156,15 @@ public class StartServer3
             }).asEagerSingleton();
 
 
-            // Healthchecks.
+
             bind(HealthCheckRequestHandler.class).asEagerSingleton();
+            bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class);
+            bind(SessionContextDecorator.class).toProvider(Providers.of(null));
+            bind(RequestMetricsPublisher.class).toProvider(Providers.of(null));
+
 
             // Specify to use Zuul's RequestHandler.
-            bind(RequestHandler.class).to(com.netflix.zuul.ZuulRequestHandler.class);
-        }
-
-        private void configureFilters()
-        {
-            final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-            final String preFiltersPath = config.getString(ZUUL_FILTER_PRE_PATH);
-            final String postFiltersPath = config.getString(ZUUL_FILTER_POST_PATH);
-            final String routingFiltersPath = config.getString(ZUUL_FILTER_ROUTING_PATH);
-
-            FilterLoader.getInstance().setCompiler(new GroovyCompiler());
-            FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            try {
-                FilterFileManager.init(5, preFiltersPath, postFiltersPath, routingFiltersPath);
-            }
-            catch (Exception e) {
-                throw new RuntimeException("Error initializing filter manager.", e);
-            }
+            bind(RequestHandler.class).to(ZuulRequestHandler.class);
         }
     }
 
@@ -201,7 +176,8 @@ public class StartServer3
             binder.include(ShutdownModule.class,
                     KaryonServoModule.class,
                     KaryonEurekaModule.class,
-                    ZuulModule.class);
+                    ZuulModule.class,
+                    ZuulFiltersModule.class);
         }
     }
 

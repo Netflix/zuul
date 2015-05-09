@@ -18,7 +18,6 @@ package com.netflix.zuul.filters
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.HttpQueryParams
@@ -32,7 +31,7 @@ import com.netflix.zuul.context.SessionContext
  * Date: 6/27/12
  * Time: 12:54 PM
  */
-public abstract class SurgicalDebugFilter extends ZuulFilter {
+public abstract class SurgicalDebugFilter extends BaseSyncFilter {
 
     /**
      * Returning true by the pattern or logic implemented in this method will route the request to the specified origin
@@ -59,7 +58,7 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
 
         if (debugFilterShutoff.get()) return false;
 
-        if (isFilterDisabled()) return false;
+        if (isDisabled()) return false;
 
         String isSurgicalFilterRequest = ctx.getRequest().getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
         if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied

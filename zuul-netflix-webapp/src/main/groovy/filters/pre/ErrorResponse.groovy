@@ -15,12 +15,12 @@
  */
 package pre
 
-import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -30,7 +30,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-class ErrorResponse extends ZuulFilter {
+class ErrorResponse extends BaseSyncFilter {
 
     @Override
     String filterType() {
