@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.servo.monitor.DynamicTimer;
 import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.HttpResponseMessage;
@@ -43,6 +44,10 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
     @Inject @Nullable
     private RequestCompleteHandler requestCompleteHandler;
 
+    /** Ensure that this is initialized. */
+    @Inject
+    private FilterFileManager filterManager;
+
 
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response)
@@ -51,7 +56,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         Observable<SessionContext> chain = stateFactory.create(request);
 
         // Start timing the request.
-        chain.doOnNext(ctx -> {
+        chain = chain.doOnNext(ctx -> {
             ctx.getRequestTiming().start();
         });
 
@@ -69,54 +74,38 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
             chain = filterProcessor.applyAllFilters(chain);
         }
 
-        chain.doOnNext(ctx -> {
-            // DEBUG
-            LOG.info("Status=" + ctx.getHttpResponse().getStatus());
+        // After the request is handled, write out the response.
+        chain = chain.doOnNext(ctx -> stateFactory.write(ctx, response));
+
+        // Record the execution time reported by Origin.
+        chain = chain.doOnNext(ctx -> recordReportedOriginDuration(ctx));
+
+        // After complete, update metrics and access log.
+        chain = chain.map(ctx -> {
+            // End the timing.
+            ctx.getRequestTiming().end();
+
+            // Publish request timings.
+            publishTimings(ctx);
+
+            // Ensure some response info is correct in SessionContext for logging/metrics purposes.
+            HttpResponseMessage zuulResp = ctx.getHttpResponse();
+            zuulResp.setStatus(response.getStatus().code());
+
+            // Notify requestComplete listener if configured.
+            try {
+                if (requestCompleteHandler != null)
+                    requestCompleteHandler.handle(ctx);
+            } catch (Exception e) {
+                LOG.error("Error in RequestCompleteHandler.", e);
+            }
+            return ctx;
         });
-
-        chain.single()
-                // After the request is handled, write out the response.
-                .doOnNext(ctx -> stateFactory.write(ctx, response))
-
-                // Record the execution time reported by Origin.
-                .doOnNext(ctx -> recordReportedOriginDuration(ctx))
-
-                        //for each piece of content, write it out to the {@link HttpServerResponse}
-//                .map(byteBuf -> {
-//                    byteBuf.retain();
-//                    // Record size of response body written.
-//                    bytesWritten.addAndGet(byteBuf.maxCapacity());
-//                    response.write(byteBuf);
-//                    return null;
-//                })
-
-
-                        // After complete, update metrics and access log.
-                .map(ctx -> {
-                    // End the timing.
-                    ctx.getRequestTiming().end();
-
-                    // Publish request timings.
-                    publishTimings(ctx);
-
-                    // Ensure some response info is correct in RequestContext for logging/metrics purposes.
-                    HttpResponseMessage zuulResp = ctx.getHttpResponse();
-                    zuulResp.setStatus(response.getStatus().code());
-
-                    try {
-                        if (requestCompleteHandler != null)
-                            requestCompleteHandler.handle(ctx);
-                    } catch (Exception e) {
-                        LOG.error("Error in RequestCompleteHandler.", e);
-                    }
-                    return ctx;
-                });
 
         // Convert to an Observable<Void>.
         return chain
-                // TODO - why is this needed/wanted?
-                .ignoreElements()
-                .cast(Void.class);
+            .ignoreElements()
+            .cast(Void.class);
     }
 
     protected void publishTimings(SessionContext context)

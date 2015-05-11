@@ -6,6 +6,9 @@ import com.google.inject.spi.Message;
 import com.google.inject.util.Providers;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.client.ClientException;
+import com.netflix.client.ClientFactory;
+import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DeploymentContext;
 import com.netflix.config.DynamicPropertyFactory;
@@ -14,14 +17,23 @@ import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.lifecycle.LifecycleManager;
+import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.RxNettySessionContextFactory;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
+import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.init.ZuulFiltersModule;
+import com.netflix.zuul.monitoring.CounterFactory;
+import com.netflix.zuul.monitoring.TracerFactory;
+import com.netflix.zuul.plugins.Counter;
+import com.netflix.zuul.plugins.MetricPoller;
+import com.netflix.zuul.plugins.ServoMonitor;
+import com.netflix.zuul.plugins.Tracer;
 import com.netflix.zuul.rxnetty.BasicRequestCompleteHandler;
 import com.netflix.zuul.rxnetty.HealthCheckRequestHandler;
 import com.netflix.zuul.rxnetty.ZuulRequestHandler;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
+import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import io.netty.handler.logging.LogLevel;
 import io.reactivex.netty.contexts.RxContexts;
 import io.reactivex.netty.metrics.MetricEventsListenerFactory;
@@ -40,6 +52,10 @@ import netflix.karyon.health.SyncHealthCheckInvocationStrategy;
 import netflix.karyon.servo.KaryonServoModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_CLIENTLIST;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_RIBBON_NAMESPACE;
 
 /**
  * User: Mike Smith
@@ -68,6 +84,9 @@ public class StartServer3
                 Karyon.toBootstrapModule(KaryonWebAdminModule.class)
         );
 
+        initPlugins();
+        initNIWS();
+
         RxNettyServerBackedServer server = injector.getInstance(RxNettyServerBackedServer.class);
         server.init(port, requestThreadCount);
         server.startAndWaitTillShutdown();
@@ -93,6 +112,42 @@ public class StartServer3
             throw new RuntimeException(e);
         }
 
+    }
+
+
+    private void initPlugins()
+    {
+        MonitorRegistry.getInstance().setPublisher(new ServoMonitor());
+        MetricPoller.startPoller();
+        TracerFactory.initialize(new Tracer());
+        CounterFactory.initialize(new Counter());
+        final ThreadCpuStats stats = ThreadCpuStats.getInstance();
+        stats.start();
+    }
+
+    /** TEMP - change to rxnetty client init. */
+    private void initNIWS() throws ClientException
+    {
+        String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
+
+        if (stack != null && !stack.trim().isEmpty() && RibbonConfig.isAutodetectingBackendVips()) {
+            RibbonConfig.setupDefaultRibbonConfig();
+            ZuulApplicationInfo.setApplicationName(RibbonConfig.getApplicationName());
+        } else {
+            DynamicStringProperty DEFAULT_CLIENT = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_DEFAULTCLIENT, null);
+            if (DEFAULT_CLIENT.get() != null) {
+                ZuulApplicationInfo.setApplicationName(DEFAULT_CLIENT.get());
+            } else {
+                ZuulApplicationInfo.setApplicationName(stack);
+            }
+        }
+        String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_CLIENTLIST, "").get();
+        String[] aClientList = clientPropertyList.split("\\|");
+        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon").get();
+        for (String client : aClientList) {
+            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
+            ClientFactory.registerClientFromProperties(client, clientConfig);
+        }
     }
 
     public static void main(String[] args)

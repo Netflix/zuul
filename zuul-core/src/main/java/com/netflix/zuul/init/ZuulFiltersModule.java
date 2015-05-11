@@ -22,7 +22,11 @@ public class ZuulFiltersModule extends AbstractModule
 
         // Get filter directories.
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-        String[] filterLocations = config.getString("zuul.filters.locations", "pre,post,route").split(",");
+        String[] filterLocations = config.getStringArray("zuul.filters.locations");
+        if (filterLocations == null || filterLocations.length == 0) {
+            // Default to these locations.
+            filterLocations = "pre,post,route".split(",");
+        }
         LOG.info("Using filter locations: ");
         for (String location : filterLocations) {
             LOG.info("  " + location);
