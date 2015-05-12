@@ -19,6 +19,7 @@ import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.lifecycle.LifecycleManager;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.context.RxNettySessionContextFactory;
+import com.netflix.zuul.context.SampleSessionContextDecorator;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
@@ -233,6 +234,9 @@ public class StartServer3
                     KaryonEurekaModule.class,
                     ZuulModule.class,
                     ZuulFiltersModule.class);
+
+            binder.bind(SessionContextDecorator.class).to(SampleSessionContextDecorator.class);
+
         }
     }
 
