@@ -169,16 +169,16 @@ public class FilterProcessor {
 
         // Handle errors from the filter. Don't break out of the filter chain - instead just record info about the error
         // in context, and continue.
-        resultObs.onErrorReturn((e) -> {
+        resultObs = resultObs.onErrorReturn((e) -> {
             recordFilterError(filter, ctx, e);
             return ctx;
         });
 
         // If no resultContext returned from filter, then use the original context.
-        resultObs.map(ctx2 -> ctx2 == null ? ctx : ctx2);
+        resultObs = resultObs.map(ctx2 -> ctx2 == null ? ctx : ctx2);
 
         // Record info when filter processing completes.
-        resultObs.doOnCompleted(() -> {
+        resultObs = resultObs.doOnCompleted(() -> {
             info.execTime = System.currentTimeMillis() - ltime;
             recordFilterCompletion(ctx, filter, info);
         });

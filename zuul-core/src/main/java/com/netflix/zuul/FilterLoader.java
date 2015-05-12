@@ -146,7 +146,7 @@ public class FilterLoader
         if (filter == null) {
             Class clazz = compiler.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (BaseFilter) FILTER_FACTORY.newInstance(clazz);
+                filter = FILTER_FACTORY.newInstance(clazz);
                 List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list

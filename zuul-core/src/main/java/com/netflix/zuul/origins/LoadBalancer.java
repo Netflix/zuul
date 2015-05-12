@@ -1,7 +1,5 @@
 package com.netflix.zuul.origins;
 
-import io.reactivex.netty.client.RxClient;
-
 /**
  * User: michaels
  * Date: 2/24/15
@@ -10,5 +8,5 @@ import io.reactivex.netty.client.RxClient;
 public interface LoadBalancer
 {
     public void init();
-    public RxClient.ServerInfo getNextServer();
+    public ServerInfo getNextServer();
 }

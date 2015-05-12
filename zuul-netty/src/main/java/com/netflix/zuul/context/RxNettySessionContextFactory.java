@@ -1,6 +1,8 @@
 package com.netflix.zuul.context;
 
 import com.google.inject.Inject;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.rxnetty.RxNettyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -27,6 +29,9 @@ import java.util.Map;
 public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest, HttpServerResponse>
 {
     private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
+
+    private static final DynamicIntProperty MAX_REQ_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            "zuul.request.body.max.size", 25 * 1000 * 1024);
 
     private SessionContextDecorator decorator;
 
@@ -84,7 +89,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
 
         // Write response body bytes.
         if (zuulResp.getBody() != null) {
-            nativeResponse.write(Unpooled.wrappedBuffer(zuulResp.getBody()));
+            nativeResponse.writeBytesAndFlush(zuulResp.getBody());
         }
     }
 
@@ -97,11 +102,17 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         HttpServerRequest<ByteBuf> nettyServerRequest = (HttpServerRequest<ByteBuf>) ctx.getAttributes().get("_nettyHttpServerRequest");
         nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
 
+        final int maxReqBodySize = MAX_REQ_BODY_SIZE_PROP.get();
+
         // Only apply the filters once the request body has been fully read and buffered.
         Observable<SessionContext> chain = cachedContent
                 .reduce((bb1, bb2) -> {
+                    // TODO - this no longer appears to ever be called. Assume always receiving just a single ByteBuf?
                     // Buffer the request body into a single virtual ByteBuf.
-                    // TODO - apply some max size to this.
+                    // and apply some max size to this.
+                    if (bb1.readableBytes() > maxReqBodySize) {
+                        throw new RuntimeException("Max request body size exceeded! MAX_REQ_BODY_SIZE=" + maxReqBodySize);
+                    }
                     return Unpooled.wrappedBuffer(bb1, bb2);
 
                 })

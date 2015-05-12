@@ -161,9 +161,17 @@ public class FilterFileManager {
         }
     }
 
-    void manageFiles() throws Exception {
-        List<File> aFiles = getFiles();
-        processGroovyFiles(aFiles);
+    void manageFiles()
+    {
+        try {
+            List<File> aFiles = getFiles();
+            processGroovyFiles(aFiles);
+        }
+        catch (Exception e) {
+            String msg = "Error updating groovy filters from disk!";
+            LOG.error(msg, e);
+            throw new RuntimeException(msg, e);
+        }
     }
 
     public static class FilterFileManagerConfig

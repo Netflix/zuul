@@ -15,14 +15,9 @@
  */
 package filters.pre
 
-import com.netflix.config.DynamicPropertyFactory
-import com.netflix.config.DynamicStringProperty
-import com.netflix.zuul.ZuulApplicationInfo
-import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseSyncFilter
 
 /**
@@ -32,10 +27,6 @@ import com.netflix.zuul.filters.BaseSyncFilter
  */
 class Routing extends BaseSyncFilter
 {
-    DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
-    DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
-
-
     @Override
     int filterOrder() {
         return 1
@@ -57,26 +48,18 @@ class Routing extends BaseSyncFilter
         Attributes attrs = ctx.getAttributes()
         HttpRequestMessage request = ctx.getRequest()
 
-        attrs.routeVIP = defaultClient.get()
-        String host = defaultHost.get()
-        if (attrs.routeVIP == null) attrs.routeVIP = ZuulApplicationInfo.applicationName
-        if (host != null) {
-            final URL targetUrl = new URL(host)
-            attrs.setRouteHost(targetUrl);
-            attrs.routeVIP = null
+        // Choose vip to proxy to.
+        if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
+            attrs.setRouteVIP("yahoo")
         }
-
-        if (host == null && attrs.routeVIP == null) {
-            throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
+        else if (request.getPath() == "/blah") {
+            // TEST - make use the static filters.
+            attrs.setRouteVIP(null)
+            attrs.set("static_endpoint", "example")
         }
-
-        String uri = request.getPath()
-        if (uri == null) uri = "/"
-        if (uri.startsWith("/")) {
-            uri = uri - "/"
+        else {
+            attrs.setRouteVIP("netflix")
         }
-
-        attrs.route = uri.substring(0, uri.indexOf("/") + 1)
 
         return ctx
     }

@@ -50,9 +50,7 @@ class ZuulNFRequest extends BaseFilter implements AsyncFilter
 
     @Override
     boolean shouldFilter(SessionContext ctx) {
-        return (ctx.getAttributes().getRouteHost() == null
-                && ! ctx.getAttributes().shouldSendErrorResponse()
-                && ctx.getAttributes().shouldProxy())
+        return ctx.getAttributes().getRouteVIP()
     }
 
     @Override
@@ -68,7 +66,7 @@ class ZuulNFRequest extends BaseFilter implements AsyncFilter
         RxNettyOriginManager originManager = context.getHelpers().get("origin_manager")
         RxNettyOrigin origin = originManager.getOrigin(name)
         if (origin == null) {
-            throw new ZuulException("No Origin registered for name=${name}!", 500)
+            throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
         }
 
         // Add execution of the request to the Observable chain, and return.

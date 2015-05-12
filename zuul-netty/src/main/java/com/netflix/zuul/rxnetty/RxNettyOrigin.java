@@ -6,6 +6,7 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.origins.LoadBalancer;
 import com.netflix.zuul.origins.Origin;
+import com.netflix.zuul.origins.ServerInfo;
 import com.netflix.zuul.stats.Timing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -74,7 +75,7 @@ public class RxNettyOrigin implements Origin {
     // TODO - generalise this and pull up into the interface?
     public Observable<SessionContext> request(SessionContext ctx)
     {
-        RxClient.ServerInfo serverInfo = getLoadBalancer().getNextServer();
+        ServerInfo serverInfo = getLoadBalancer().getNextServer();
 
         final AtomicBoolean isSuccess = new AtomicBoolean(true);
         final Timing timing = ctx.getRequestProxyTiming();
@@ -86,8 +87,11 @@ public class RxNettyOrigin implements Origin {
 
         HttpClientRequest<ByteBuf> clientRequest = RxNettyUtils.createHttpClientRequest(ctx);
 
+        // Convert to rxnetty ServerInfo impl.
+        RxClient.ServerInfo rxNettyServerInfo = new RxClient.ServerInfo(serverInfo.getHost(), serverInfo.getPort());
+
         // Construct.
-        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(serverInfo, clientRequest);
+        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest);
 
         return RxNettyUtils.bufferHttpClientResponse(respObs, ctx)
                 .doOnError(t -> {
