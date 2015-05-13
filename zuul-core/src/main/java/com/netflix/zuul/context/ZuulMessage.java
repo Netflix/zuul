@@ -7,7 +7,7 @@ package com.netflix.zuul.context;
  */
 public class ZuulMessage implements Cloneable
 {
-    private final Headers headers;
+    private Headers headers;
     private byte[] body = null;
 
     public ZuulMessage() {
@@ -15,7 +15,7 @@ public class ZuulMessage implements Cloneable
     }
 
     public ZuulMessage(Headers headers) {
-        this.headers = headers;
+        this.headers = headers != null ? headers : new Headers();
     }
 
     public Headers getHeaders() {
@@ -35,10 +35,13 @@ public class ZuulMessage implements Cloneable
     @Override
     public Object clone()
     {
-        Headers headersCopy = (Headers) headers.clone();
-        ZuulMessage copy = new ZuulMessage(headersCopy);
-        copy.setBody(getBody());
-
-        return copy;
+        try {
+            ZuulMessage copy = (ZuulMessage) super.clone();
+            copy.headers = (Headers) this.headers.clone();
+            return copy;
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Should not happen.", e);
+        }
     }
 }

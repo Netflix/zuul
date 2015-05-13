@@ -2,6 +2,8 @@ package com.netflix.zuul.rxnetty;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.origins.LoadBalancer;
@@ -72,28 +74,29 @@ public class RxNettyOrigin implements Origin {
         return loadBalancer;
     }
 
-    // TODO - generalise this and pull up into the interface?
+    @Override
     public Observable<SessionContext> request(SessionContext ctx)
     {
-        ServerInfo serverInfo = getLoadBalancer().getNextServer();
-
         final AtomicBoolean isSuccess = new AtomicBoolean(true);
-        final Timing timing = ctx.getRequestProxyTiming();
 
-        // TODO - Ideally want to move this into a "onStart" handler... but how?
+        final Timing timing = ctx.getRequestProxyTiming();
         timing.start();
         if (stats != null)
             stats.started();
 
-        HttpClientRequest<ByteBuf> clientRequest = RxNettyUtils.createHttpClientRequest(ctx);
-
-        // Convert to rxnetty ServerInfo impl.
-        RxClient.ServerInfo rxNettyServerInfo = new RxClient.ServerInfo(serverInfo.getHost(), serverInfo.getPort());
-
-        // Construct.
-        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest);
-
-        return RxNettyUtils.bufferHttpClientResponse(respObs, ctx)
+        return request(ctx.getHttpRequest())
+                .doOnNext(originResp -> {
+                    // Store the status from origin (in case it's later overwritten).
+                    ctx.getAttributes().put("origin_http_status", Integer.toString(originResp.getStatus()));
+                })
+                .map(originResp -> {
+                    // Copy the response from Origin onto the SessionContext.
+                    HttpResponseMessage zuulResp = ctx.getHttpResponse();
+                    zuulResp.setStatus(originResp.getStatus());
+                    zuulResp.getHeaders().putAll(originResp.getHeaders());
+                    zuulResp.setBody(originResp.getBody());
+                    return ctx;
+                })
                 .doOnError(t -> {
                             isSuccess.set(false);
 
@@ -105,12 +108,28 @@ public class RxNettyOrigin implements Origin {
                             ctx.getAttributes().put("error", t);
 
                             LOG.error("Error making http request.", t);
-                    }
-            ).finallyDo(() -> {
-                timing.end();
-                if (stats != null)
-                    stats.completed(isSuccess.get(), timing.getDuration());
-            });
+                        }
+                ).finallyDo(() -> {
+                    timing.end();
+                    if (stats != null)
+                        stats.completed(isSuccess.get(), timing.getDuration());
+                });
+    }
+
+    @Override
+    public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
+    {
+        ServerInfo serverInfo = getLoadBalancer().getNextServer();
+
+        HttpClientRequest<ByteBuf> clientRequest = RxNettyUtils.createHttpClientRequest(requestMsg);
+
+        // Convert to rxnetty ServerInfo impl.
+        RxClient.ServerInfo rxNettyServerInfo = new RxClient.ServerInfo(serverInfo.getHost(), serverInfo.getPort());
+
+        // Construct.
+        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest);
+
+        return RxNettyUtils.bufferHttpClientResponse(respObs);
     }
 
     private CompositeHttpClient<ByteBuf, ByteBuf> createCompositeHttpClient()

@@ -19,6 +19,8 @@ import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Mikey Cohen
@@ -27,9 +29,11 @@ import com.netflix.zuul.filters.BaseSyncFilter
  */
 class Routing extends BaseSyncFilter
 {
+    protected static final Logger LOG = LoggerFactory.getLogger(Routing.class);
+
     @Override
     int filterOrder() {
-        return 1
+        return 10
     }
 
     @Override

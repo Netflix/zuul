@@ -40,10 +40,11 @@ public class RxNettyUtils
         }
     }
 
-    public static void clientResponseToZuulResponse(HttpClientResponse<ByteBuf> resp, SessionContext ctx)
+    public static HttpResponseMessage clientResponseToZuulResponse(HttpClientResponse<ByteBuf> resp)
     {
+        HttpResponseMessage zuulResp = new HttpResponseMessage(500);
+
         // Copy the response headers and info into the RequestContext for use by post filters.
-        HttpResponseMessage zuulResp = (HttpResponseMessage) ctx.getResponse();
         if (resp.getStatus() != null) {
             zuulResp.setStatus(resp.getStatus().code());
         }
@@ -52,30 +53,29 @@ public class RxNettyUtils
             zuulRespHeaders.add(entry.getKey(), entry.getValue());
         }
 
-        ctx.getAttributes().put("origin_http_status", Integer.toString(resp.getStatus().code()));
+        return zuulResp;
     }
 
-    public static HttpClientRequest<ByteBuf> createHttpClientRequest(SessionContext ctx)
+    public static HttpClientRequest<ByteBuf> createHttpClientRequest(HttpRequestMessage zuulReq)
     {
-        HttpRequestMessage zuulReq = (HttpRequestMessage) ctx.getRequest();
-
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(HttpMethod.valueOf(zuulReq.getMethod()), zuulReq.getPathAndQuery());
 
         for (Map.Entry<String, String> entry : zuulReq.getHeaders().entries()) {
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
 
-        clientReq = clientReq.withContent(zuulReq.getBody());
+        if (zuulReq.getBody() != null) {
+            clientReq = clientReq.withContent(zuulReq.getBody());
+        }
 
         return clientReq;
     }
 
-    public static Observable<SessionContext> bufferHttpClientResponse(
-            Observable<HttpClientResponse<ByteBuf>> clientResp, SessionContext ctx)
+    public static Observable<HttpResponseMessage> bufferHttpClientResponse(Observable<HttpClientResponse<ByteBuf>> clientResp)
     {
         return clientResp.flatMap(resp -> {
 
-            RxNettyUtils.clientResponseToZuulResponse(resp, ctx);
+            HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(resp);
 
             PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
             //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
@@ -96,8 +96,8 @@ public class RxNettyUtils
                     }).map(bb -> {
                         // Set the body on Response object.
                         byte[] body = RxNettyUtils.byteBufToBytes(bb);
-                        ctx.getResponse().setBody(body);
-                        return ctx;
+                        zuulResp.setBody(body);
+                        return zuulResp;
                     });
         });
     }

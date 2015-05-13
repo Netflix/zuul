@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * Date: 3/15/15
  * Time: 5:22 PM
  */
-public class StartServer3
+public class NettySampleStartServer
 {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final static String DEFAULT_APP_NAME = "zuul";
@@ -125,7 +125,7 @@ public class StartServer3
     public static void main(String[] args)
     {
         try {
-            new StartServer3().init();
+            new NettySampleStartServer().init();
         }
         catch (CreationException e) {
             System.err.println("Injection error while starting StartServer. Messages follow:");

@@ -17,7 +17,7 @@ import static junit.framework.Assert.assertEquals;
  * Date: 2/24/15
  * Time: 10:58 AM
  */
-public class HttpQueryParams
+public class HttpQueryParams implements Cloneable
 {
     private ArrayListMultimap<String, String> delegate = ArrayListMultimap.create();
 
@@ -119,6 +119,14 @@ public class HttpQueryParams
             e.printStackTrace();
         }
         return sb.toString();
+    }
+
+    @Override
+    protected Object clone()
+    {
+        HttpQueryParams copy = new HttpQueryParams();
+        copy.delegate.putAll(this.delegate);
+        return copy;
     }
 
     @RunWith(MockitoJUnitRunner.class)

@@ -138,7 +138,7 @@ public class FilterProcessor {
 
     public Observable<SessionContext> processAsyncFilter(SessionContext ctx, AsyncFilter filter, ShouldFilter additionalShouldFilter)
     {
-        FilterExecInfo info = new FilterExecInfo();
+        final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = ctx.getAttributes().debugRouting();
 
         if (info.bDebug) {
@@ -149,27 +149,32 @@ public class FilterProcessor {
         // Apply this filter.
         Observable<SessionContext> resultObs;
         long ltime = System.currentTimeMillis();
-        if (filter.isDisabled()) {
-            resultObs = Observable.just(ctx);
-            info.status = ExecutionStatus.DISABLED;
-        }
-        else {
-            // Only apply the filter if both the shouldFilter() method AND any additional
-            // ShouldFilter impl pass.
-            if (filter.shouldFilter(ctx)
-                    && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(ctx))) {
-                resultObs = filter.applyAsync(ctx);
-                info.status = ExecutionStatus.SUCCESS;
-            }
-            else {
+        try {
+            if (filter.isDisabled()) {
                 resultObs = Observable.just(ctx);
-                info.status = ExecutionStatus.SKIPPED;
+                info.status = ExecutionStatus.DISABLED;
+            } else {
+                // Only apply the filter if both the shouldFilter() method AND any additional
+                // ShouldFilter impl pass.
+                if (filter.shouldFilter(ctx)
+                        && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(ctx))) {
+                    resultObs = filter.applyAsync(ctx);
+                } else {
+                    resultObs = Observable.just(ctx);
+                    info.status = ExecutionStatus.SKIPPED;
+                }
             }
+        }
+        catch (Exception e) {
+            resultObs = Observable.just(ctx);
+            info.status = ExecutionStatus.FAILED;
+            recordFilterError(filter, ctx, e);
         }
 
         // Handle errors from the filter. Don't break out of the filter chain - instead just record info about the error
         // in context, and continue.
         resultObs = resultObs.onErrorReturn((e) -> {
+            info.status = ExecutionStatus.FAILED;
             recordFilterError(filter, ctx, e);
             return ctx;
         });
@@ -179,6 +184,9 @@ public class FilterProcessor {
 
         // Record info when filter processing completes.
         resultObs = resultObs.doOnCompleted(() -> {
+            if (info.status == null) {
+                info.status = ExecutionStatus.SUCCESS;
+            }
             info.execTime = System.currentTimeMillis() - ltime;
             recordFilterCompletion(ctx, filter, info);
         });

@@ -106,13 +106,6 @@ public class HttpRequestMessage extends ZuulMessage
     @Override
     public Object clone()
     {
-        HttpRequestMessage copy = (HttpRequestMessage) super.clone();
-        copy.setProtocol(this.getProtocol());
-        copy.setClientIp(this.getClientIp());
-        copy.setScheme(this.getScheme());
-        copy.setMethod(this.getMethod());
-        copy.setPath(this.getPath());
-        copy.setBody(this.getBody());
-        return copy;
+        return super.clone();
     }
 }

@@ -24,8 +24,6 @@ public class HttpResponseMessage extends ZuulMessage
     @Override
     public Object clone()
     {
-        HttpResponseMessage copy = (HttpResponseMessage) super.clone();
-        copy.setStatus(this.getStatus());
-        return copy;
+        return super.clone();
     }
 }

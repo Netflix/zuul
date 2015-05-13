@@ -87,6 +87,11 @@ public class Headers implements Cloneable
         delegate.put(name.toLowerCase(),  value);
     }
 
+    public void putAll(Headers headers)
+    {
+        delegate.putAll(headers.delegate);
+    }
+
     public void remove(String name)
     {
         delegate.removeAll(name.toLowerCase());
@@ -109,6 +114,8 @@ public class Headers implements Cloneable
     @Override
     protected Object clone()
     {
-        return new Headers(ArrayListMultimap.create(this.delegate));
+        Headers copy = new Headers();
+        copy.delegate.putAll(this.delegate);
+        return copy;
     }
 }
