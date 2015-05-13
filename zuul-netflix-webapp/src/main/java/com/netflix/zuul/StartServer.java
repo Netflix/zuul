@@ -27,13 +27,8 @@ import com.google.inject.servlet.GuiceServletContextListener;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.astyanax.Keyspace;
-import com.netflix.client.ClientException;
-import com.netflix.client.ClientFactory;
-import com.netflix.client.config.DefaultClientConfigImpl;
-import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.config.DynamicStringProperty;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
@@ -56,7 +51,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.ServletContextEvent;
 import java.io.IOException;
 
-import static com.netflix.zuul.constants.ZuulConstants.*;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
 
 @Application
 public class StartServer extends GuiceServletContextListener {
@@ -124,7 +119,8 @@ public class StartServer extends GuiceServletContextListener {
         AmazonInfoHolder.getInfo();
         initPlugins();
         initCassandra();
-        initNIWS();
+        RibbonConfig.setupAppInfo();
+        //initNIWS();
 
         ApplicationInfoManager.getInstance().setInstanceStatus(InstanceInfo.InstanceStatus.UP);
     }
@@ -148,28 +144,28 @@ public class StartServer extends GuiceServletContextListener {
         stats.start();
     }
 
-    private void initNIWS() throws ClientException {
-        String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
-
-        if (stack != null && !stack.trim().isEmpty() && RibbonConfig.isAutodetectingBackendVips()) {
-            RibbonConfig.setupDefaultRibbonConfig();
-            ZuulApplicationInfo.setApplicationName(RibbonConfig.getApplicationName());
-        } else {
-            DynamicStringProperty DEFAULT_CLIENT = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_DEFAULTCLIENT, null);
-            if (DEFAULT_CLIENT.get() != null) {
-                ZuulApplicationInfo.setApplicationName(DEFAULT_CLIENT.get());
-            } else {
-                ZuulApplicationInfo.setApplicationName(stack);
-            }
-        }
-        String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_CLIENTLIST, "").get();
-        String[] aClientList = clientPropertyList.split("\\|");
-        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon").get();
-        for (String client : aClientList) {
-            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
-            ClientFactory.registerClientFromProperties(client, clientConfig);
-        }
-    }
+//    private void initNIWS() throws ClientException {
+//        String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
+//
+//        if (stack != null && !stack.trim().isEmpty() && RibbonConfig.isAutodetectingBackendVips()) {
+//            RibbonConfig.setupDefaultRibbonConfig();
+//            ZuulApplicationInfo.setApplicationName(RibbonConfig.getApplicationName());
+//        } else {
+//            DynamicStringProperty DEFAULT_CLIENT = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_DEFAULTCLIENT, null);
+//            if (DEFAULT_CLIENT.get() != null) {
+//                ZuulApplicationInfo.setApplicationName(DEFAULT_CLIENT.get());
+//            } else {
+//                ZuulApplicationInfo.setApplicationName(stack);
+//            }
+//        }
+//        String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_CLIENTLIST, "").get();
+//        String[] aClientList = clientPropertyList.split("\\|");
+//        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon").get();
+//        for (String client : aClientList) {
+//            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
+//            ClientFactory.registerClientFromProperties(client, clientConfig);
+//        }
+//    }
 
     void initCassandra() throws Exception {
         if (cassandraEnabled.get()) {
