@@ -61,7 +61,8 @@ public class ZuulServlet extends HttpServlet {
     @Inject
     private FilterFileManager filterManager;
 
-    private ServletSessionContextFactory contextFactory = new ServletSessionContextFactory();
+    @javax.inject.Inject
+    private ServletSessionContextFactory contextFactory;
 
 
     @Override

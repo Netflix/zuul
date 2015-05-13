@@ -30,10 +30,8 @@ import com.netflix.astyanax.Keyspace;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.karyon.server.KaryonServer;
-import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.dependency.cassandra.CassandraHelper;
-import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.zuul.plugins.Counter;
@@ -53,7 +51,6 @@ import java.io.IOException;
 
 import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
 
-@Application
 public class StartServer extends GuiceServletContextListener {
 
     private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_CASSANDRA_ENABLED, true);

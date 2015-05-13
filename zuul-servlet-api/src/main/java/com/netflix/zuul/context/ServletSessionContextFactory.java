@@ -1,10 +1,12 @@
 package com.netflix.zuul.context;
 
+import com.google.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +23,12 @@ import java.util.Map;
 public class ServletSessionContextFactory implements SessionContextFactory<HttpServletRequest, HttpServletResponse>
 {
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
+    private SessionContextDecorator decorator;
+
+    @Inject
+    public ServletSessionContextFactory(@Nullable SessionContextDecorator decorator) {
+        this.decorator = decorator;
+    }
 
     @Override
     public Observable<SessionContext> create(HttpServletRequest servletRequest)
@@ -51,6 +59,11 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 
         // Create the context.
         SessionContext ctx = new SessionContext(request, response);
+
+        // Optionally decorate it.
+        if (decorator != null) {
+            ctx = decorator.decorate(ctx);
+        }
 
         // Wrap in an Observable.
         return Observable.just(ctx);

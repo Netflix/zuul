@@ -6,8 +6,8 @@ import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.AsyncFilter
 import com.netflix.zuul.filters.BaseFilter
-import com.netflix.zuul.rxnetty.RxNettyOrigin
-import com.netflix.zuul.rxnetty.RxNettyOriginManager
+import com.netflix.zuul.origins.Origin
+import com.netflix.zuul.origins.OriginManager
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
@@ -30,11 +30,11 @@ class ExampleIOPreFilter extends BaseFilter implements AsyncFilter
     Observable<SessionContext> applyAsync(SessionContext context)
     {
         // Get the origin to send request to.
-        RxNettyOriginManager originManager = context.getHelpers().get("origin_manager")
+        OriginManager originManager = context.getHelpers().get("origin_manager")
         String name = "netflix"
-        RxNettyOrigin origin = originManager.getOrigin("netflix")
+        Origin origin = originManager.getOrigin(name)
         if (origin == null) {
-            throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
+            throw new ZuulException("No Origin registered for name=${name}!")
         }
 
         // Make the request.
