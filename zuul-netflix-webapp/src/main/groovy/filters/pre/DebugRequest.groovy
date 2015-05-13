@@ -15,7 +15,11 @@
  */
 package pre
 
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
 import org.junit.Assert
 import org.junit.Before

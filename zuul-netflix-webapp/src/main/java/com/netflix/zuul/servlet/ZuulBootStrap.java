@@ -27,6 +27,6 @@ public class ZuulBootstrap extends ServerBootstrap
                 serve("/*").with(ZuulServlet.class);
                 bind(ZuulServlet.class).asEagerSingleton();
             }
-        }, new ZuulFiltersModule());
+        }, new ZuulOriginsModule(), new ZuulFiltersModule());
     }
 }

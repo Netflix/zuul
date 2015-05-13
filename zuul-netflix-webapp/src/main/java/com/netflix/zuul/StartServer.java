@@ -119,8 +119,6 @@ public class StartServer extends GuiceServletContextListener {
         AmazonInfoHolder.getInfo();
         initPlugins();
         initCassandra();
-        RibbonConfig.setupAppInfo();
-        //initNIWS();
 
         ApplicationInfoManager.getInstance().setInstanceStatus(InstanceInfo.InstanceStatus.UP);
     }
@@ -143,29 +141,6 @@ public class StartServer extends GuiceServletContextListener {
         final ThreadCpuStats stats = ThreadCpuStats.getInstance();
         stats.start();
     }
-
-//    private void initNIWS() throws ClientException {
-//        String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
-//
-//        if (stack != null && !stack.trim().isEmpty() && RibbonConfig.isAutodetectingBackendVips()) {
-//            RibbonConfig.setupDefaultRibbonConfig();
-//            ZuulApplicationInfo.setApplicationName(RibbonConfig.getApplicationName());
-//        } else {
-//            DynamicStringProperty DEFAULT_CLIENT = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_DEFAULTCLIENT, null);
-//            if (DEFAULT_CLIENT.get() != null) {
-//                ZuulApplicationInfo.setApplicationName(DEFAULT_CLIENT.get());
-//            } else {
-//                ZuulApplicationInfo.setApplicationName(stack);
-//            }
-//        }
-//        String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_CLIENTLIST, "").get();
-//        String[] aClientList = clientPropertyList.split("\\|");
-//        String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon").get();
-//        for (String client : aClientList) {
-//            DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
-//            ClientFactory.registerClientFromProperties(client, clientConfig);
-//        }
-//    }
 
     void initCassandra() throws Exception {
         if (cassandraEnabled.get()) {

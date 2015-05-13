@@ -33,6 +33,8 @@ public class RibbonOriginManager implements OriginManager
     public void initialize()
     {
         try {
+            RibbonConfig.setupAppInfo();
+
             String stack = ConfigurationManager.getDeploymentContext().getDeploymentStack();
 
             // Setup the default origin.
