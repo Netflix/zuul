@@ -164,40 +164,44 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 LOG.error("Error checking if request body gzipped!", e);
             }
 
-            String enc = req.getCharacterEncoding();
+            final boolean isPost = req.getMethod().equals("POST");
+            final boolean isFormBody = req.getContentType().contains("application/x-www-form-urlencoded");
 
-            if (enc == null)
-                enc = "UTF-8";
-            String s = new String(contentData, enc), name, value;
-            StringTokenizer st = new StringTokenizer(s, "&");
-            int i;
+            // only does magic body param parsing for POST form bodies
+            if (isPost && isFormBody) {
+                String enc = req.getCharacterEncoding();
 
-            boolean decode = req.getContentType() != null && req.getContentType().equalsIgnoreCase("application/x-www-form-urlencoded");
-            while (st.hasMoreTokens()) {
-                s = st.nextToken();
-                i = s.indexOf("=");
-                if (i > 0 && s.length() > i + 1) {
-                    name = s.substring(0, i);
-                    value = s.substring(i + 1);
-                    if (decode) {
-                        try {
-                            name = URLDecoder.decode(name, "UTF-8");
-                        } catch (Exception e) {
+                if (enc == null) enc = "UTF-8";
+                String s = new String(contentData, enc), name, value;
+                StringTokenizer st = new StringTokenizer(s, "&");
+                int i;
+
+                boolean decode = req.getContentType() != null;
+                while (st.hasMoreTokens()) {
+                    s = st.nextToken();
+                    i = s.indexOf("=");
+                    if (i > 0 && s.length() > i + 1) {
+                        name = s.substring(0, i);
+                        value = s.substring(i + 1);
+                        if (decode) {
+                            try {
+                                name = URLDecoder.decode(name, "UTF-8");
+                            } catch (Exception e) {
+                            }
+                            try {
+                                value = URLDecoder.decode(value, "UTF-8");
+                            } catch (Exception e) {
+                            }
                         }
-                        try {
-                            value = URLDecoder.decode(value, "UTF-8");
-                        } catch (Exception e) {
+                        list = mapA.get(name);
+                        if (list == null) {
+                            list = new LinkedList<String>();
+                            mapA.put(name, list);
                         }
+                        list.add(value);
                     }
-                    list = mapA.get(name);
-                    if (list == null) {
-                        list = new LinkedList<String>();
-                        mapA.put(name, list);
-                    }
-                    list.add(value);
                 }
             }
-
         }
 
         HashMap<String, String[]> map = new HashMap<String, String[]>(mapA.size() * 2);
@@ -697,11 +701,53 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             MockitoAnnotations.initMocks(this);
 
             RequestContext.getCurrentContext().setRequest(request);
+
+            method("GET");
+            contentType("zuul/test-content-type");
         }
 
         private void body(byte[] body) throws IOException {
             when(request.getInputStream()).thenReturn(new ServletInputStreamWrapper(body));
             when(request.getContentLength()).thenReturn(body.length);
+        }
+
+        private void method(String s) {
+            when(request.getMethod()).thenReturn(s);
+        }
+
+        private void contentType(String s) {
+            when(request.getContentType()).thenReturn(s);
+        }
+
+        private static String readZipInputStream(InputStream input) throws IOException {
+
+            byte[] uploadedBytes = getBytesFromInputStream(input);
+            input.close();
+
+            /* try to read it as a zip file */
+            String uploadFileTxt = null;
+            ZipInputStream zInput = new ZipInputStream(new ByteArrayInputStream(uploadedBytes));
+            ZipEntry zipEntry = zInput.getNextEntry();
+            if (zipEntry != null) {
+                // we have a ZipEntry, so this is a zip file
+                while (zipEntry != null) {
+                    byte[] fileBytes = getBytesFromInputStream(zInput);
+                    uploadFileTxt = new String(fileBytes);
+
+                    zipEntry = zInput.getNextEntry();
+                }
+            }
+            return uploadFileTxt;
+        }
+
+        private static byte[] getBytesFromInputStream(InputStream input) throws IOException {
+            int v = 0;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            while ((v = input.read()) != -1) {
+                bos.write(v);
+            }
+            bos.close();
+            return bos.toByteArray();
         }
 
         @Test
@@ -767,41 +813,41 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
 
             assertEquals(body, readZipInputStream(wrapper.getInputStream()));
-
-
         }
 
-        public String readZipInputStream(InputStream input) throws IOException {
+        @Test
+        public void parsesParamsFromFormBody() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType("application/x-www-form-urlencoded");
 
-            byte[] uploadedBytes = getBytesFromInputStream(input);
-            input.close();
-
-            /* try to read it as a zip file */
-            String uploadFileTxt = null;
-            ZipInputStream zInput = new ZipInputStream(new ByteArrayInputStream(uploadedBytes));
-            ZipEntry zipEntry = zInput.getNextEntry();
-            if (zipEntry != null) {
-                // we have a ZipEntry, so this is a zip file
-                while (zipEntry != null) {
-                    byte[] fileBytes = getBytesFromInputStream(zInput);
-                    uploadFileTxt = new String(fileBytes);
-
-                    zipEntry = zInput.getNextEntry();
-                }
-            }
-            return uploadFileTxt;
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertTrue(params.containsKey("one"));
+            assertTrue(params.containsKey("two"));
         }
 
-        private byte[] getBytesFromInputStream(InputStream input) throws IOException {
-            int v = 0;
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            while ((v = input.read()) != -1) {
-                bos.write(v);
-            }
-            bos.close();
-            return bos.toByteArray();
+        @Test
+        public void ignoresParamsInBodyForNonPosts() throws Exception {
+            method("PUT");
+            body("one=1&two=2".getBytes());
+            contentType("application/x-www-form-urlencoded");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
         }
 
+        @Test
+        public void ignoresParamsInBodyForNonForms() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType("application/json");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
+        }
 
     }
 
