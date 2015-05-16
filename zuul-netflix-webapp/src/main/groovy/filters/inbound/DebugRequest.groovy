@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.inbound
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.BaseSyncFilter
@@ -43,24 +43,24 @@ class DebugRequest extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage
 
     @Override
     boolean shouldFilter(HttpRequestMessage msg) {
-        return Debug.debugRequest(msg.getContext())
+        return com.netflix.zuul.context.Debug.debugRequest(msg.getContext())
 
     }
 
     @Override
     HttpRequestMessage apply(HttpRequestMessage req) {
 
-        Debug.addRequestDebug(req.getContext(), "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
+        com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
 
-        Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
+        com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
 
         for (Map.Entry header : req.getHeaders().entries()) {
-            Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + header.getKey() + ":" + header.getValue())
+            com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + header.getKey() + ":" + header.getValue())
         }
 
         if (req.getBody()) {
             String bodyStr = new String(req.getBody(), "UTF-8");
-            Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + bodyStr)
+            com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + bodyStr)
         }
 
         return req;
@@ -78,8 +78,8 @@ class DebugRequest extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage
 
         @Before
         public void setup() {
-            context = new SessionContext(request, response)
-
+            context = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(context)
         }
 
         @Test
@@ -99,7 +99,7 @@ class DebugRequest extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage
 
             debugFilter.apply(request)
 
-            ArrayList<String> debugList = Debug.getRequestDebug(context)
+            ArrayList<String> debugList = com.netflix.zuul.context.Debug.getRequestDebug(context)
 
             Assert.assertTrue(debugList.contains("REQUEST:: protocol 1.1.1.1"))
             Assert.assertTrue(debugList.contains("REQUEST:: > method uri protocol"))

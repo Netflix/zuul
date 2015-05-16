@@ -1,4 +1,4 @@
-package post
+package filters.outbound
 
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -22,14 +22,14 @@ import static junit.framework.Assert.assertEquals
  * Date: 5/1/15
  * Time: 5:35 PM
  */
-class DebugResponse extends BaseSyncFilter
+class DebugResponse extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
 {
     static DynamicBooleanProperty INCLUDE_DEBUG_HEADER =
             DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_INCLUDE_DEBUG_HEADER, false);
 
     @Override
     String filterType() {
-        return 'post'
+        return 'out'
     }
 
     @Override
@@ -38,32 +38,30 @@ class DebugResponse extends BaseSyncFilter
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return Debug.debugRequest(ctx)
+    boolean shouldFilter(HttpResponseMessage response) {
+        return Debug.debugRequest(response.getContext())
 
     }
 
     @Override
-    SessionContext apply(SessionContext ctx)
+    HttpResponseMessage apply(HttpResponseMessage response)
     {
-        HttpResponseMessage response = ctx.getResponse()
-
         if (INCLUDE_DEBUG_HEADER.get()) {
             String debugHeader = ""
-            List<String> rd = (List<String>) ctx.getAttributes().get("routingDebug");
+            List<String> rd = (List<String>) response.getContext().getAttributes().get("routingDebug");
             rd?.each {
                 debugHeader += "[[[${it}]]]";
             }
             response.getHeaders().set("X-Zuul-Debug-Header", debugHeader)
         }
 
-        if (Debug.debugRequest(ctx)) {
+        if (Debug.debugRequest(response.getContext())) {
             response.getHeaders().entries()?.each { Map.Entry<String, String> it ->
-                Debug.addRequestDebug("OUTBOUND: <  " + it.key + ":" + it.value)
+                Debug.addRequestDebug(response.getContext(), "OUTBOUND: <  " + it.key + ":" + it.value)
             }
         }
 
-        return ctx
+        return response
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -76,8 +74,9 @@ class DebugResponse extends BaseSyncFilter
 
         @Before
         public void setup() {
-            response = new HttpResponseMessage(200)
-            context = new SessionContext(request, response)
+            context = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(context)
+            response = new HttpResponseMessage(context, request, 99)
         }
 
         @Test
@@ -87,7 +86,7 @@ class DebugResponse extends BaseSyncFilter
             filter.INCLUDE_DEBUG_HEADER = Mockito.mock(DynamicBooleanProperty.class)
             Mockito.when(filter.INCLUDE_DEBUG_HEADER.get()).thenReturn(true)
 
-            filter.apply(context)
+            filter.apply(response)
 
             assertEquals("", response.getHeaders().getFirst("X-Zuul-Debug-Header"))
         }

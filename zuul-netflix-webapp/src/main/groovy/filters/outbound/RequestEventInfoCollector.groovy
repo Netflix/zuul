@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package post
+package filters.outbound
 
 import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
@@ -21,7 +21,6 @@ import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.stats.AmazonInfoHolder
 import org.slf4j.Logger
@@ -32,11 +31,10 @@ import org.slf4j.LoggerFactory
  *
  * @author mhawthorne
  */
-class RequestEventInfoCollector extends BaseSyncFilter
+class RequestEventInfoCollector extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
 {
     private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollector.class);
     private static final String VALUE_SEPARATOR = ","
-
 
     @Override
     int filterOrder() {
@@ -45,27 +43,27 @@ class RequestEventInfoCollector extends BaseSyncFilter
 
     @Override
     String filterType() {
-        return "post"
+        return "out"
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpResponseMessage response) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
-        final Map<String, Object> event = ctx.getAttributes().getEventProperties();
-
+    HttpResponseMessage apply(HttpResponseMessage response)
+    {
+        final Map<String, Object> event = response.getContext().getAttributes().getEventProperties();
         try {
-            captureRequestData(event, ctx.request, ctx.response);
+            captureRequestData(event, response.getHttpRequest(), response);
             captureInstanceData(event);
-
-
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             event.put("exception", e.toString());
             LOG.error(e.getMessage(), e);
         }
+        return response
     }
 
     void captureRequestData(Map<String, Object> event, HttpRequestMessage req, HttpResponseMessage resp) {
@@ -164,6 +162,4 @@ class RequestEventInfoCollector extends BaseSyncFilter
 
         }
     }
-
-
 }

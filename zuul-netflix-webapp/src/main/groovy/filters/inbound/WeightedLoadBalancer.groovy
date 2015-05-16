@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.inbound
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -39,7 +39,7 @@ import org.mockito.runners.MockitoJUnitRunner
  * Time: 1:19 PM
  */
 
-class WeightedLoadBalancer extends BaseSyncFilter
+class WeightedLoadBalancer extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
 {
     DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_VIP, null)
     DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_HOST, null)
@@ -62,11 +62,11 @@ class WeightedLoadBalancer extends BaseSyncFilter
      * @return
      */
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpRequestMessage request) {
 
         if (AltPercent.get() == 0) return false
-        if (ctx.getAttributes().getRouteHost() != null) return false //host calls are not going to be loaltPad calculated here.
-        if (ctx.getAttributes().sendZuulResponse == false) return false;
+        if (request.getContext().getAttributes().getRouteHost() != null) return false //host calls are not going to be loaltPad calculated here.
+        if (request.getContext().getAttributes().sendZuulResponse == false) return false;
         if (AltPercent.get() > AltPercentMaxLimit.get()) return false
 
         int randomValue = rand.nextInt(10000)
@@ -74,9 +74,9 @@ class WeightedLoadBalancer extends BaseSyncFilter
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
+    HttpRequestMessage apply(HttpRequestMessage request) {
 
-        Attributes attrs = ctx.getAttributes()
+        Attributes attrs = request.getContext().getAttributes()
 
         if (AltVIP.get() != null) {
             attrs.routeVIP = AltVIP.get()
@@ -94,7 +94,7 @@ class WeightedLoadBalancer extends BaseSyncFilter
             }
         }
 
-        return ctx
+        return request
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -103,7 +103,6 @@ class WeightedLoadBalancer extends BaseSyncFilter
         WeightedLoadBalancer filter
         SessionContext ctx
         HttpResponseMessage response
-        Throwable th
 
         @Mock
         HttpRequestMessage request
@@ -111,8 +110,9 @@ class WeightedLoadBalancer extends BaseSyncFilter
         @Before
         public void setup() {
             filter = Mockito.spy(new WeightedLoadBalancer())
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
             RibbonConfig.setApplicationName("zuul")
         }
 
@@ -120,7 +120,7 @@ class WeightedLoadBalancer extends BaseSyncFilter
         public void testFalseRouting() {
             filter.AltPercent = Mockito.mock(DynamicIntProperty.class)
             Mockito.when(filter.AltPercent.get()).thenReturn(new Integer(0))
-            Assert.assertFalse(filter.shouldFilter(ctx))
+            Assert.assertFalse(filter.shouldFilter(request))
         }
 
         @Test
@@ -129,7 +129,7 @@ class WeightedLoadBalancer extends BaseSyncFilter
 
             filter.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(filter.AltVIP.get()).thenReturn("test")
-            Assert.assertFalse(filter.shouldFilter(ctx))
+            Assert.assertFalse(filter.shouldFilter(request))
         }
 
         @Test
@@ -139,8 +139,8 @@ class WeightedLoadBalancer extends BaseSyncFilter
             filter.AltVIP = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(filter.AltVIP.get()).thenReturn("test")
             filter.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
-            Assert.assertTrue(filter.shouldFilter(ctx))
-            filter.apply(ctx)
+            Assert.assertTrue(filter.shouldFilter(request))
+            filter.apply(request)
             Assert.assertTrue(ctx.getAttributes().routeVIP == "test")
             Assert.assertTrue(ctx.getAttributes().routeHost == null)
         }
@@ -153,8 +153,8 @@ class WeightedLoadBalancer extends BaseSyncFilter
 
             filter.AltHost = Mockito.mock(DynamicStringProperty.class)
             Mockito.when(filter.AltHost.get()).thenReturn("http://www.moldfarm.com")
-            Assert.assertTrue(filter.shouldFilter(ctx))
-            filter.apply(ctx)
+            Assert.assertTrue(filter.shouldFilter(request))
+            filter.apply(request)
             Assert.assertTrue(ctx.getAttributes().routeVIP == null)
             Assert.assertTrue(ctx.getAttributes().routeHost != null)
         }

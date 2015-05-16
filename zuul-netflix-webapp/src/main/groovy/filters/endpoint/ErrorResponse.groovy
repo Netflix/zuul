@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.route
+package filters.endpoint
 
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
@@ -21,6 +21,7 @@ import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -30,23 +31,8 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-class ErrorResponse extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
-
-    @Override
-    String filterType() {
-        return 'end'
-    }
-
-    @Override
-    int filterOrder() {
-        return 1
-    }
-
-    @Override
-    boolean shouldFilter(HttpRequestMessage req) {
-        return true
-    }
-
+class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+{
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)
     {
@@ -74,7 +60,6 @@ class ErrorResponse extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessa
             } else {
                 response.setStatus(e.nStatusCode);
             }
-            context.getAttributes().setShouldProxy(false)
             response.setBody("${getErrorMessage(request, response, e, e.nStatusCode)}".getBytes("UTF-8"))
 
         } catch (Throwable throwable) {
@@ -86,7 +71,6 @@ class ErrorResponse extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessa
             } else {
                 response.setStatus(500);
             }
-            context.getAttributes().setShouldProxy(false)
             response.setBody("${getErrorMessage(request, response, throwable, 500)}".getBytes("UTF-8"))
 
         }

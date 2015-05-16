@@ -13,12 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package route
+package filters.endpoint
 
 import com.netflix.client.http.HttpResponse
 import com.netflix.zuul.context.*
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
 import org.junit.Assert
@@ -31,28 +31,9 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class ZuulNFRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
-
+class ZuulNFRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+{
     private static final Logger LOG = LoggerFactory.getLogger(ZuulNFRequest.class);
-
-
-    @Override
-    String filterType() {
-        return 'end'
-    }
-
-    @Override
-    int filterOrder() {
-        return 10
-    }
-
-    @Override
-    boolean shouldFilter(HttpRequestMessage request) {
-        Attributes attrs = request.getContext().getAttributes()
-        return (attrs.getRouteHost() == null
-                && ! attrs.shouldSendErrorResponse()
-                && attrs.shouldProxy())
-    }
 
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)
@@ -74,8 +55,6 @@ class ZuulNFRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessa
 
         return response
     }
-
-
 
     void debug(SessionContext context, HttpRequestMessage request) {
 

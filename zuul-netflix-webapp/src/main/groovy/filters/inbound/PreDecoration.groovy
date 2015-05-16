@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.inbound
 
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
@@ -35,11 +35,11 @@ import static com.netflix.zuul.constants.ZuulHeaders.*
  * Date: 1/5/12
  * Time: 1:03 PM
  */
-public class PreDecoration extends BaseSyncFilter {
+public class PreDecoration extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
 
     @Override
     String filterType() {
-        return "pre"
+        return "in"
     }
 
     @Override
@@ -48,14 +48,14 @@ public class PreDecoration extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpRequestMessage req) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
-        setOriginRequestHeaders(ctx.getRequest())
-        return ctx
+    HttpRequestMessage apply(HttpRequestMessage request) {
+        setOriginRequestHeaders(request)
+        return request
     }
 
     void setOriginRequestHeaders(HttpRequestMessage request) {
@@ -89,13 +89,13 @@ public class PreDecoration extends BaseSyncFilter {
         @Before
         public void setup() {
             filter = new PreDecoration()
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
 
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
         }
-
 
         @Test
         public void testPreHeaders() {
@@ -111,7 +111,5 @@ public class PreDecoration extends BaseSyncFilter {
             Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-host"))
             Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-proto"))
         }
-
     }
-
 }

@@ -13,12 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package post
+package filters.outbound
 
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
@@ -31,41 +28,40 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
-class PostDecoration extends BaseSyncFilter {
-
+class PostDecoration extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+{
     PostDecoration() {
 
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        if (true.equals(ctx.getAttributes().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
+    boolean shouldFilter(HttpResponseMessage response) {
+        if (true.equals(response.getContext().getAttributes().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
-        addStandardResponseHeaders(ctx)
-        return ctx;
+    HttpResponseMessage apply(HttpResponseMessage response) {
+        addStandardResponseHeaders(response)
+        return response;
     }
 
 
-    void addStandardResponseHeaders(SessionContext ctx) {
+    void addStandardResponseHeaders(HttpResponseMessage response) {
 
-        String originatingURL = getOriginatingURL(ctx.getRequest())
+        String originatingURL = getOriginatingURL(response.getHttpRequest())
+        Attributes attrs = response.getContext().getAttributes()
 
-        HttpResponseMessage resp = ctx.getResponse()
-
-        Headers headers = resp.getHeaders()
+        Headers headers = response.getHeaders()
         headers.add(X_ZUUL, "zuul")
         headers.add(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown")
         headers.add(CONNECTION, KEEP_ALIVE)
-        headers.add(X_ZUUL_FILTER_EXECUTION_STATUS, ctx.getAttributes().getFilterExecutionSummary().toString())
+        headers.add(X_ZUUL_FILTER_EXECUTION_STATUS, attrs.getFilterExecutionSummary().toString())
         headers.add(X_ORIGINATING_URL, originatingURL)
 
-        if (ctx.getAttributes().get("ErrorHandled") == null && resp.getStatus() >= 400) {
+        if (attrs.get("ErrorHandled") == null && response.getStatus() >= 400) {
             headers.add(X_NETFLIX_ERROR_CAUSE, "Error from Origin")
-            ErrorStatsManager.manager.putStats(ctx.getAttributes().route, "Error_from_Origin_Server")
+            ErrorStatsManager.manager.putStats(attrs.route, "Error_from_Origin_Server")
         }
     }
 
@@ -103,8 +99,9 @@ class PostDecoration extends BaseSyncFilter {
         @Before
         public void setup() {
             filter = Mockito.spy(new PostDecoration())
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
@@ -113,7 +110,7 @@ class PostDecoration extends BaseSyncFilter {
         @Test
         public void testHeaderResponse() {
 
-            filter.apply(ctx)
+            filter.apply(response)
 
             Headers respHeaders = response.getHeaders()
 
@@ -122,7 +119,7 @@ class PostDecoration extends BaseSyncFilter {
             Assert.assertTrue(respHeaders.contains("Connection", "keep-alive"))
 
             Assert.assertTrue(filter.filterType().equals("post"))
-            Assert.assertTrue(filter.shouldFilter(ctx))
+            Assert.assertTrue(filter.shouldFilter(response))
         }
 
     }

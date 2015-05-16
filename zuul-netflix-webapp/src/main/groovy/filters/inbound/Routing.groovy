@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.inbound
 
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
@@ -21,7 +21,6 @@ import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.ZuulMessage
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseSyncFilter
 
@@ -30,7 +29,7 @@ import com.netflix.zuul.filters.BaseSyncFilter
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends BaseSyncFilter
+class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
 {
     DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
     DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
@@ -43,29 +42,50 @@ class Routing extends BaseSyncFilter
 
     @Override
     String filterType() {
-        return "pre"
+        return "in"
     }
 
     @Override
-    boolean shouldFilter(ZuulMessage msg) {
+    boolean shouldFilter(HttpRequestMessage msg) {
         return true
     }
 
     @Override
-    ZuulMessage apply(ZuulMessage msg) {
+    HttpRequestMessage apply(HttpRequestMessage request) {
 
-        HttpRequestMessage request = msg
         Attributes attrs = request.getContext().getAttributes()
 
-        attrs.routeVIP = defaultClient.get()
-        String host = defaultHost.get()
-        if (attrs.routeVIP != null) {
-            attrs.set("endpoint", "ZuulNFRequest")
-        } else {
-            attrs.routeVIP = ZuulApplicationInfo.applicationName
+        // Normalise the uri.
+        String uri = request.getPath()
+        if (uri == null) uri = "/"
+        if (uri.startsWith("/")) {
+            uri = uri - "/"
+        }
+        attrs.route = uri.substring(0, uri.indexOf("/") + 1)
+
+
+        // Handle OPTIONS requests specially.
+        if (request.getMethod().equalsIgnoreCase("options")) {
+            attrs.set("endpoint", "Options")
+            return request
         }
 
-        if (host != null) {
+        // Route healthchecks to the healthcheck endpoint.
+        if ("/healthcheck" == request.getPath()) {
+            attrs.set("endpoint", "Healthcheck")
+            return request
+        }
+
+        // Choose VIP or Host, and the endpoint to use for proxying.
+        attrs.routeVIP = defaultClient.get()
+        String host = defaultHost.get()
+        if (host == null) {
+            attrs.set("endpoint", "ZuulNFRequest")
+            if (attrs.routeVIP == null) {
+                attrs.routeVIP = ZuulApplicationInfo.applicationName
+            }
+        }
+        else {
             final URL targetUrl = new URL(host)
             attrs.setRouteHost(targetUrl);
             attrs.routeVIP = null
@@ -75,14 +95,6 @@ class Routing extends BaseSyncFilter
         if (host == null && attrs.routeVIP == null) {
             throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
         }
-
-        String uri = request.getPath()
-        if (uri == null) uri = "/"
-        if (uri.startsWith("/")) {
-            uri = uri - "/"
-        }
-
-        attrs.route = uri.substring(0, uri.indexOf("/") + 1)
 
         return request
     }

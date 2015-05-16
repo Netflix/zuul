@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package post
+package filters.outbound
 
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Headers
@@ -38,13 +38,13 @@ import java.util.zip.GZIPOutputStream
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
 
-class GZipResponseFilter extends BaseSyncFilter
+class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
 {
     private static final Logger LOG = LoggerFactory.getLogger(GZipResponseFilter.class);
 
     @Override
     String filterType() {
-        return 'post'
+        return 'out'
     }
 
     @Override
@@ -53,20 +53,19 @@ class GZipResponseFilter extends BaseSyncFilter
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpResponseMessage response) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx)
+    HttpResponseMessage apply(HttpResponseMessage response)
     {
-        HttpRequestMessage request = ctx.getRequest()
-        HttpResponseMessage response = ctx.getResponse()
+        HttpRequestMessage request = response.getHttpRequest()
 
         byte[] body = response.getBody()
 
         // there is no body to send
-        if (body == null) return ctx;
+        if (body == null) return response;
 
         boolean isGzipRequested = false
         final String requestEncoding = request.getHeaders().getFirst(ZuulHeaders.ACCEPT_ENCODING)
@@ -99,7 +98,7 @@ class GZipResponseFilter extends BaseSyncFilter
             }
         }
 
-        return ctx
+        return response
     }
 
     private byte[] gzip(byte[] data)
@@ -119,7 +118,6 @@ class GZipResponseFilter extends BaseSyncFilter
         SessionContext ctx
         HttpResponseMessage response
         Headers reqHeaders
-        Headers respHeaders
 
         @Mock
         HttpRequestMessage request
@@ -127,8 +125,9 @@ class GZipResponseFilter extends BaseSyncFilter
         @Before
         public void setup() {
             filter = new GZipResponseFilter()
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
@@ -142,7 +141,7 @@ class GZipResponseFilter extends BaseSyncFilter
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
 
-            filter.apply(ctx)
+            filter.apply(response)
 
             // Check body is a gzipped version of the origin body.
             byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(response.getBody())).bytes
@@ -159,7 +158,7 @@ class GZipResponseFilter extends BaseSyncFilter
             byte[] originBody = gzip("blah")
             response.setBody(originBody)
 
-            filter.apply(ctx)
+            filter.apply(response)
 
             // Check returned body is same as origin body.
             String bodyStr = new String(response.getBody(), "UTF-8")

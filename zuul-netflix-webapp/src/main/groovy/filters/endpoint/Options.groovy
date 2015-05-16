@@ -13,13 +13,13 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.route
+package filters.endpoint
 
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
-import org.junit.Assert
+import com.netflix.zuul.filters.SyncEndpoint
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,45 +27,29 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
+import static org.junit.Assert.assertTrue
+import static org.mockito.Mockito.when
+
 /**
- * @author Mikey Cohen
+ * Created by IntelliJ IDEA.
+ * User: mcohen
  * Date: 2/1/12
  * Time: 7:56 AM
  */
-class Healthcheck extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage>
+class Options extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
 {
-    @Override
-    String filterType() {
-        return "end"
-    }
-
-    @Override
-    int filterOrder() {
-        return 0
-    }
-
-    @Override
-    boolean shouldFilter(HttpRequestMessage request) {
-        return "/healthcheck" == request.getPath()
-    }
-
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)
     {
         HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200)
-        response.headers.set('Content-Type', 'application/xml')
-
-        String bodyStr = "<health>ok</health>"
-        response.setBody(bodyStr.getBytes("UTF-8"))
-
+        // Empty response body.
         return response
     }
 
-
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit
-    {
-        Healthcheck filter
+    public static class TestUnit {
+
+        Options filter
         SessionContext ctx
 
         @Mock
@@ -73,22 +57,21 @@ class Healthcheck extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage
 
         @Before
         public void setup() {
-            filter = new Healthcheck()
+            filter = new Options()
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
         }
 
         @Test
-        public void testHealthcheck() {
+        public void testClientAccessPolicy() {
 
-            Mockito.when(request.getPath()).thenReturn("/healthcheck")
-            Assert.assertTrue(filter.shouldFilter(request))
+            when(request.getPath()).thenReturn("/anything")
+            when(request.getMethod()).thenReturn("OPTIONS")
+            assertTrue(filter.shouldFilter(request))
 
             HttpResponseMessage response = filter.apply(request)
 
-            Assert.assertTrue(response.getBody() != null)
-            String bodyStr = new String(response.getBody(), "UTF-8")
-            Assert.assertTrue(bodyStr.contains("<health>ok</health>"))
+            assertTrue(response.getBody() == null)
         }
 
     }

@@ -1,11 +1,10 @@
-package filters.pre
+package filters.inbound
 
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseFilter
-import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.AsyncFilter
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
 import org.slf4j.Logger
@@ -17,13 +16,15 @@ import rx.Observable
  * Date: 5/8/15
  * Time: 2:44 PM
  */
-class SampleIOPreFilter extends BaseFilter implements AsyncFilter
+class SampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessage>
 {
     protected static final Logger LOG = LoggerFactory.getLogger(SampleIOPreFilter.class);
 
     @Override
-    Observable<SessionContext> applyAsync(SessionContext context)
+    Observable<HttpRequestMessage> applyAsync(HttpRequestMessage request)
     {
+        SessionContext context = request.getContext()
+
         // Get the origin to send request to.
         OriginManager originManager = context.getHelpers().get("origin_manager")
         String name = "origin"
@@ -33,27 +34,27 @@ class SampleIOPreFilter extends BaseFilter implements AsyncFilter
         }
 
         // Make the request.
-        HttpRequestMessage request = new HttpRequestMessage("HTTP/1.1", "get", "/account/geo", null, null,
-                context.getHttpRequest().getClientIp(), "http")
-        Observable<HttpResponseMessage> resultObs = origin.request(request)
+        HttpRequestMessage testRequest = new HttpRequestMessage("HTTP/1.1", "get", "/account/geo", null, null,
+                request.getClientIp(), "http")
+        Observable<HttpResponseMessage> resultObs = origin.request(testRequest)
 
         resultObs = resultObs.map({ resp ->
 
             // Get the result of the call.
             int status = resp.getStatus()
-            context.getAttributes().set("ExampleIOPreFilter_status", status)
-            LOG.info("Received response for ExampleIOPreFilter http call. status=${status}")
+            context.getAttributes().set("SampleIOPreFilter_status", status)
+            LOG.info("Received response for SampleIOPreFilter http call. status=${status}")
 
-            // Swap the original context back into the Observable returned.
-            return context
+            // Swap the original request back into the Observable returned.
+            return request
         })
 
         return resultObs
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return ctx.getHttpRequest().getPath().startsWith("/account/")
+    boolean shouldFilter(HttpRequestMessage request) {
+        return request.getPath().startsWith("/account/")
     }
 
     @Override
@@ -63,6 +64,6 @@ class SampleIOPreFilter extends BaseFilter implements AsyncFilter
 
     @Override
     String filterType() {
-        return "pre"
+        return "in"
     }
 }

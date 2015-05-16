@@ -1,18 +1,21 @@
 /*
- * Copyright 2013 Netflix, Inc.
  *
- *      Licensed under the Apache License, Version 2.0 (the "License");
- *      you may not use this file except in compliance with the License.
- *      You may obtain a copy of the License at
+ *  Copyright 2013-2015 Netflix, Inc.
  *
- *          http://www.apache.org/licenses/LICENSE-2.0
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      Unless required by applicable law or agreed to in writing, software
- *      distributed under the License is distributed on an "AS IS" BASIS,
- *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *      See the License for the specific language governing permissions and
- *      limitations under the License.
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
+
 package com.netflix.zuul;
 
 import com.netflix.config.DynamicPropertyFactory;
@@ -47,16 +50,16 @@ import static org.mockito.Mockito.*;
  * This the the core class to execute filters.
  *
  * @author Mikey Cohen
- *         Date: 10/24/11
- *         Time: 12:47 PM
+ * @author Mike Smith
  */
 @Singleton
 public class FilterProcessor {
 
     protected static final Logger LOG = LoggerFactory.getLogger(FilterProcessor.class);
 
-    protected static final DynamicStringProperty DEFAULT_FILTER_SYNC_TYPE = DynamicPropertyFactory.getInstance()
-            .getStringProperty("zuul.filters.synctype.default", "sync");
+    /** The name of the error filter to use if none specified in the context. */
+    protected static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = DynamicPropertyFactory.getInstance()
+            .getStringProperty("zuul.filters.error.default", "ErrorResponse");
 
     @Inject
     private FilterLoader filterLoader;
@@ -80,12 +83,41 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        chain = applyFilterPhase(chain, "in", null);
+        chain = applyFilterPhase(chain, "in");
 
-        // Apply the error filters. They will only pass shouldFilter() if the context's errorFlag has been set.
-        chain = applyFilterPhase(chain, "error", ErrorShouldFilter.INSTANCE);
+        chain = applyErrorFilterIfNeeded(chain);
 
         return chain;
+    }
+
+    public Observable<ZuulMessage> applyErrorFilterIfNeeded(Observable<ZuulMessage> chain)
+    {
+        return chain.flatMap(msg -> {
+
+            // If flagged to, then apply the error endpoint filter.
+            if (msg.getAttributes().shouldSendErrorResponse()) {
+
+                // Get the error endpoint filter to use.
+                String endpointName = (String) msg.getAttributes().get("error-endpoint");
+                if (endpointName == null) {
+                    endpointName = DEFAULT_ERROR_ENDPOINT.get();
+                }
+                ZuulFilter endpointFilter = filterLoader.getFilterByName(endpointName);
+                if (endpointFilter == null) {
+                    throw new ZuulException("No endpoint filter found of chosen name! name=" + endpointName);
+                }
+
+                // Un-flag this as needing the error filter.
+                msg.getAttributes().setShouldSendErrorResponse(false);
+
+                // Apply this endpoint.
+                return processAsyncFilter(msg, endpointFilter);
+            }
+            else {
+                // Do nothing.
+                return chain;
+            }
+        });
     }
 
     public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
@@ -103,33 +135,36 @@ public class FilterProcessor {
             }
 
             // Apply this endpoint.
-            return processAsyncFilter(msg, endpointFilter, null);
+            return processAsyncFilter(msg, endpointFilter);
         });
     }
 
     public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
     {
         // Apply the error filters AGAIN. This is for if there was an error during the route/proxy phase.
-        chain = applyFilterPhase(chain, "error", ErrorShouldFilter.INSTANCE);
+        chain = applyErrorFilterIfNeeded(chain);
 
         // Apply POST filters.
-        chain = applyFilterPhase(chain, "out", null);
+        chain = applyFilterPhase(chain, "out");
+
+        // And apply one last time to catch any errors from outbound filters.
+        chain = applyErrorFilterIfNeeded(chain);
 
         return chain;
     }
 
-    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType, ShouldFilter additionalShouldFilter)
+    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType)
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
-            chain = processFilterAsObservable(chain, filter, additionalShouldFilter).single();
+            chain = processFilterAsObservable(chain, filter).single();
         }
         return chain;
     }
 
-    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, ShouldFilter additionalShouldFilter)
+    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter)
     {
-        return input.flatMap(msg -> processAsyncFilter(msg, filter, additionalShouldFilter) );
+        return input.flatMap(msg -> processAsyncFilter(msg, filter) );
     }
 
     /**
@@ -140,7 +175,7 @@ public class FilterProcessor {
      * @param filter IZuulFilter
      * @return the return value for that filter
      */
-    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter, ShouldFilter additionalShouldFilter)
+    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().getAttributes().debugRouting();
@@ -160,8 +195,7 @@ public class FilterProcessor {
             } else {
                 // Only apply the filter if both the shouldFilter() method AND any additional
                 // ShouldFilter impl pass.
-                if (filter.shouldFilter(msg)
-                        && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(msg))) {
+                if (filter.shouldFilter(msg)) {
                     resultObs = filter.applyAsync(msg);
                 } else {
                     resultObs = Observable.just(msg);
@@ -262,27 +296,6 @@ public class FilterProcessor {
         ZuulMessage debugCopy = null;
     }
 
-    public static class RouteShouldFilter implements ShouldFilter
-    {
-        public static final RouteShouldFilter INSTANCE = new RouteShouldFilter();
-
-        @Override
-        public boolean shouldFilter(ZuulMessage msg) {
-            return msg.getAttributes().shouldProxy()
-                    && ! msg.getAttributes().shouldSendErrorResponse();
-        }
-    }
-
-
-    public static class ErrorShouldFilter implements ShouldFilter
-    {
-        public static final ErrorShouldFilter INSTANCE = new ErrorShouldFilter();
-
-        @Override
-        public boolean shouldFilter(ZuulMessage msg) {
-            return msg.getAttributes().shouldSendErrorResponse();
-        }
-    }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {
@@ -319,7 +332,7 @@ public class FilterProcessor {
         public void testProcessFilter() throws Exception
         {
             when(filter.apply(request)).thenReturn(request);
-            processor.processAsyncFilter(request, filter, null).toBlocking().first();
+            processor.processAsyncFilter(request, filter).toBlocking().first();
             verify(filter, times(1)).applyAsync(request);
         }
 
@@ -327,36 +340,16 @@ public class FilterProcessor {
         public void testProcessFilter_ShouldFilterFalse() throws Exception
         {
             when(filter.shouldFilter(request)).thenReturn(false);
-            processor.processAsyncFilter(request, filter, null).toBlocking().first();
+            processor.processAsyncFilter(request, filter).toBlocking().first();
             verify(filter, times(0)).applyAsync(request);
         }
-
-        @Test
-        public void testProcessFilter_AdditionalShouldFilterFalse() throws Exception
-        {
-            when(filter.shouldFilter(request)).thenReturn(true);
-            when(additionalShouldFilter.shouldFilter(request)).thenReturn(false);
-            processor.processAsyncFilter(request, filter, additionalShouldFilter).toBlocking().first();
-            verify(filter, times(0)).applyAsync(request);
-        }
-
-        @Test
-        public void testProcessFilter_BothShouldFilterTrue() throws Exception
-        {
-            when(filter.shouldFilter(request)).thenReturn(true);
-            when(additionalShouldFilter.shouldFilter(request)).thenReturn(true);
-            processor.processAsyncFilter(request, filter, additionalShouldFilter).toBlocking().first();
-            verify(filter, times(1)).applyAsync(request);
-        }
-
-
 
         @Test
         public void testProcessFilterException()
         {
             Exception e = new RuntimeException("Blah");
             when(filter.apply(request)).thenThrow(e);
-            processor.processAsyncFilter(request, filter, null).toBlocking().first();
+            processor.processAsyncFilter(request, filter).toBlocking().first();
 
             verify(processor).recordFilterError(filter, request, e);
 

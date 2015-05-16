@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package route
+package filters.endpoint
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -21,7 +21,7 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.*
@@ -56,10 +56,8 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
-class ZuulHostRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
-
-    public static final String CONTENT_ENCODING = "Content-Encoding";
-
+class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+{
     private static final Logger LOG = LoggerFactory.getLogger(ZuulHostRequest.class);
     private static final Runnable CLIENTLOADER = new Runnable() {
         @Override
@@ -111,22 +109,6 @@ class ZuulHostRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMes
         cm.setMaxTotal(Integer.parseInt(System.getProperty("zuul.max.host.connections", "200")));
         cm.setDefaultMaxPerRoute(Integer.parseInt(System.getProperty("zuul.max.host.connections", "20")));
         return cm;
-    }
-
-    @Override
-    String filterType() {
-        return 'end'
-    }
-
-    @Override
-    int filterOrder() {
-        return 100
-    }
-
-    @Override
-    boolean shouldFilter(HttpRequestMessage request) {
-        Attributes attrs = request.getContext().getAttributes()
-        return attrs.getRouteHost() != null && attrs.shouldProxy()
     }
 
     private static final void loadClient() {

@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package post
+package filters.outbound
 
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
@@ -34,10 +34,11 @@ import org.mockito.runners.MockitoJUnitRunner
  * Date: 2/3/12
  * Time: 2:48 PM
  */
-class Stats extends BaseSyncFilter {
+class Stats extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+{
     @Override
     String filterType() {
-        return "post"
+        return "out"
     }
 
     @Override
@@ -46,18 +47,17 @@ class Stats extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpResponseMessage response) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
-        HttpRequestMessage request = ctx.getRequest()
-        HttpResponseMessage response = ctx.getResponse()
-
+    HttpResponseMessage apply(HttpResponseMessage response)
+    {
+        SessionContext ctx = response.getContext()
         int status = response.getStatus()
         StatsManager sm = StatsManager.manager
-        sm.collectRequestStats(request);
+        sm.collectRequestStats(response.getHttpRequest());
         sm.collectRouteStats(ctx.getAttributes().route, status);
         dumpRoutingDebug(ctx)
         dumpRequestDebug(ctx)
@@ -92,8 +92,9 @@ class Stats extends BaseSyncFilter {
         @Before
         public void setup() {
             filter = new Stats()
-            response = new HttpResponseMessage(200)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)

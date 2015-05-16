@@ -217,28 +217,17 @@ public class Attributes extends HashMap<String, Object>
     }
 
 
-    /**
-     * If this value is true then the request should be proxied after all
-     * pre filters have been applied.
-     *
-     * @return
-     */
-    public boolean shouldProxy() {
-        return getBoolean("shouldProxy", true);
-    }
-
-    /**
-     * sets the shouldProxy boolean
-     *
-     * @param bSend
-     */
-    public void setShouldProxy(boolean bSend) {
-        set("shouldProxy", Boolean.valueOf(bSend));
-    }
 
     public boolean shouldSendErrorResponse() {
         return getBoolean("shouldSendErrorResponse", false);
     }
+
+    /**
+     * Set this to true to indicate that the Error filter should be applied after
+     * the end of the current filter processing phase.
+     *
+     * @param should
+     */
     public void setShouldSendErrorResponse(boolean should) {
         set("shouldSendErrorResponse", Boolean.valueOf(should));
     }
@@ -263,16 +252,6 @@ public class Attributes extends HashMap<String, Object>
         set("routeVIP", sVip);
     }
 
-
-    /**
-     * returns the "route". This is a Zuul defined bucket for collecting request metrics. By default the route is the
-     * first segment of the uri  eg /get/my/stuff : route is "get"
-     *
-     * @return
-     */
-    public String getRoute() {
-        return (String) get("route");
-    }
 
     public void setEventProperty(String key, Object value) {
         getEventProperties().put(key, value);
