@@ -15,11 +15,7 @@
  */
 package pre
 
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.BaseSyncFilter
 import org.junit.Assert
 import org.junit.Before
@@ -34,10 +30,10 @@ import org.mockito.runners.MockitoJUnitRunner
  * Date: 3/12/12
  * Time: 1:51 PM
  */
-class DebugRequest extends BaseSyncFilter {
+class DebugRequest extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
     @Override
     String filterType() {
-        return 'pre'
+        return 'in'
     }
 
     @Override
@@ -46,30 +42,28 @@ class DebugRequest extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return Debug.debugRequest(ctx)
+    boolean shouldFilter(HttpRequestMessage msg) {
+        return Debug.debugRequest(msg.getContext())
 
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
+    HttpRequestMessage apply(HttpRequestMessage req) {
 
-        HttpRequestMessage req = ctx.getRequest()
+        Debug.addRequestDebug(req.getContext(), "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
 
-        Debug.addRequestDebug(ctx, "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
-
-        Debug.addRequestDebug(ctx, "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
+        Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
 
         for (Map.Entry header : req.getHeaders().entries()) {
-            Debug.addRequestDebug(ctx, "REQUEST:: > " + header.getKey() + ":" + header.getValue())
+            Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + header.getKey() + ":" + header.getValue())
         }
 
         if (req.getBody()) {
             String bodyStr = new String(req.getBody(), "UTF-8");
-            Debug.addRequestDebug(ctx, "REQUEST:: > " + bodyStr)
+            Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + bodyStr)
         }
 
-        return ctx;
+        return req;
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -103,7 +97,7 @@ class DebugRequest extends BaseSyncFilter {
             headers.add("Host", "moldfarm.com")
             headers.add("X-Forwarded-Proto", "https")
 
-            debugFilter.apply(context)
+            debugFilter.apply(request)
 
             ArrayList<String> debugList = Debug.getRequestDebug(context)
 

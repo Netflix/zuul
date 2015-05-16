@@ -6,7 +6,6 @@ package com.netflix.zuul.context;
  * Time: 6:45 PM
  */
 
-import com.netflix.client.http.HttpRequest;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.stats.Timing;
 
@@ -24,40 +23,18 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class SessionContext implements Cloneable
 {
-    private final ZuulMessage requestMessage;
-    private final ZuulMessage responseMessage;
     private final Attributes attributes;
     private final HashMap<String, Object> helpers = new HashMap<String, Object>();
     private final List<FilterError> filterErrors = new ArrayList<>();
 
-    public SessionContext(ZuulMessage requestMessage, ZuulMessage responseMessage)
+    public SessionContext()
     {
-        this.requestMessage = requestMessage;
-        this.responseMessage = responseMessage;
         this.attributes = new Attributes();
     }
 
-    private SessionContext(ZuulMessage requestMessage, ZuulMessage responseMessage, Attributes attributes)
+    private SessionContext(Attributes attributes)
     {
-        this.requestMessage = requestMessage;
-        this.responseMessage = responseMessage;
         this.attributes = attributes;
-    }
-
-    public ZuulMessage getRequest() {
-        return requestMessage;
-    }
-
-    public HttpRequestMessage getHttpRequest() {
-        return (HttpRequestMessage) getRequest();
-    }
-
-    public ZuulMessage getResponse() {
-        return responseMessage;
-    }
-
-    public HttpResponseMessage getHttpResponse() {
-        return (HttpResponseMessage) getResponse();
     }
 
     public Map getHelpers() {
@@ -78,12 +55,10 @@ public class SessionContext implements Cloneable
      * @return
      */
     @Override
-    public Object clone()
+    public SessionContext clone()
     {
-        HttpRequestMessage request = (HttpRequestMessage) this.requestMessage.clone();
-        HttpResponseMessage response = (HttpResponseMessage) this.responseMessage.clone();
         Attributes attributes = this.getAttributes().copy();
-        SessionContext copy = new SessionContext(request, response, attributes);
+        SessionContext copy = new SessionContext(attributes);
 
         copy.getFilterErrors().clear();
         copy.getFilterErrors().addAll(getFilterErrors());
@@ -91,22 +66,6 @@ public class SessionContext implements Cloneable
         // Don't copy the Helper objects.
 
         return copy;
-    }
-
-    /**
-     * Generates a String containing useful info about this request for use in log statements.
-     * Assumes is HTTP.
-     *
-     * @return
-     */
-    public String getRequestInfoForLogging()
-    {
-        StringBuilder sb = new StringBuilder()
-                .append("url=").append(getHttpRequest().getPathAndQuery())
-                .append(",host=").append(String.valueOf(getHttpRequest().getHeaders().getFirst("Host")))
-                .append(",proxy-status=").append(getHttpResponse().getStatus())
-                ;
-        return sb.toString();
     }
 
 

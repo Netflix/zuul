@@ -12,6 +12,5 @@ import rx.Observable;
  */
 public interface Origin {
     String getName();
-    Observable<SessionContext> request(SessionContext ctx);
     Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg);
 }

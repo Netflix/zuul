@@ -1,6 +1,5 @@
 package com.netflix.zuul.context;
 
-import com.google.inject.Inject;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.rxnetty.RxNettyUtils;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.subjects.PublishSubject;
 
-import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -33,24 +31,18 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
     private static final DynamicIntProperty MAX_REQ_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.request.body.max.size", 25 * 1000 * 1024);
 
-    private SessionContextDecorator decorator;
-
-    @Inject
-    public RxNettySessionContextFactory(@Nullable SessionContextDecorator decorator) {
-        this.decorator = decorator;
-    }
-
     @Override
-    public Observable<SessionContext> create(HttpServerRequest httpServerRequest)
+    public Observable<ZuulMessage> create(SessionContext context, HttpServerRequest httpServerRequest)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
 
-        // TODO - How to get uri scheme from netty request?
+        // TODO - How to get uri scheme from the netty request?
         String scheme = "http";
 
         // Setup the req/resp message objects.
-        HttpRequestMessage httpReqMsg = new HttpRequestMessage(
+        HttpRequestMessage request = new HttpRequestMessage(
+                context,
                 httpServerRequest.getHttpVersion().text(),
                 httpServerRequest.getHttpMethod().name().toLowerCase(),
                 httpServerRequest.getUri(),
@@ -59,25 +51,15 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 clientIp,
                 scheme
         );
-        HttpResponseMessage httpRespMsg = new HttpResponseMessage(500);
-
-        // Create the new context object.
-        SessionContext ctx = new SessionContext(httpReqMsg, httpRespMsg);
-        ctx.getAttributes().set("_nettyHttpServerRequest", httpServerRequest);
-
-        // Optionally decorate it.
-        if (decorator != null) {
-            ctx = decorator.decorate(ctx);
-        }
 
         // Buffer the request body, and wrap in an Observable.
-        return toObservable(ctx);
+        return toObservable(request, httpServerRequest);
     }
 
     @Override
-    public void write(SessionContext ctx, HttpServerResponse nativeResponse)
+    public void write(ZuulMessage msg, HttpServerResponse nativeResponse)
     {
-        HttpResponseMessage zuulResp = ctx.getHttpResponse();
+        HttpResponseMessage zuulResp = (HttpResponseMessage) msg;
 
         // Set the response status code.
         nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
@@ -93,19 +75,18 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         }
     }
 
-    private Observable<SessionContext> toObservable(SessionContext ctx)
+    private Observable<ZuulMessage> toObservable(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
     {
         PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
         //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
 
         // Subscribe to the response-content observable (retaining the ByteBufS first).
-        HttpServerRequest<ByteBuf> nettyServerRequest = (HttpServerRequest<ByteBuf>) ctx.getAttributes().get("_nettyHttpServerRequest");
         nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
 
         final int maxReqBodySize = MAX_REQ_BODY_SIZE_PROP.get();
 
         // Only apply the filters once the request body has been fully read and buffered.
-        Observable<SessionContext> chain = cachedContent
+        Observable<ZuulMessage> chain = cachedContent
                 .reduce((bb1, bb2) -> {
                     // TODO - this no longer appears to ever be called. Assume always receiving just a single ByteBuf?
                     // Buffer the request body into a single virtual ByteBuf.
@@ -119,14 +100,14 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 .map(bodyBuffer -> {
                     // Set the body on Request object.
                     byte[] body = RxNettyUtils.byteBufToBytes(bodyBuffer);
-                    ctx.getRequest().setBody(body);
+                    request.setBody(body);
 
                     // Release the ByteBufS
                     if (bodyBuffer.refCnt() > 0) {
                         if (LOG.isDebugEnabled()) LOG.debug("Releasing the server-request ByteBuf.");
                         bodyBuffer.release();
                     }
-                    return ctx;
+                    return request;
                 });
 
         return chain;

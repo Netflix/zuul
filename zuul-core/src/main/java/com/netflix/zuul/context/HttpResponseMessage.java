@@ -7,11 +7,24 @@ package com.netflix.zuul.context;
  */
 public class HttpResponseMessage extends ZuulMessage
 {
+    private HttpRequestMessage request;
     private int status;
 
-    public HttpResponseMessage(int defaultStatus)
+    public HttpResponseMessage(SessionContext context, HttpRequestMessage request, int defaultStatus)
     {
+        super(context);
+        this.request = request;
         this.status = defaultStatus;
+    }
+
+    public HttpResponseMessage(SessionContext context, Headers headers, HttpRequestMessage request, int status) {
+        super(context, headers);
+        this.request = request;
+        this.status = status;
+    }
+
+    public HttpRequestMessage getHttpRequest() {
+        return request;
     }
 
     public int getStatus() {
@@ -22,8 +35,18 @@ public class HttpResponseMessage extends ZuulMessage
     }
 
     @Override
-    public Object clone()
+    public ZuulMessage clone()
     {
         return super.clone();
+    }
+
+    @Override
+    public String getInfoForLogging()
+    {
+        StringBuilder sb = new StringBuilder()
+                .append(getHttpRequest().getInfoForLogging())
+                .append(",proxy-status=").append(getStatus())
+                ;
+        return sb.toString();
     }
 }

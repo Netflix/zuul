@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul.servlet;
 
-import com.google.inject.Inject;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.context.*;
@@ -23,6 +22,7 @@ import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -64,6 +66,9 @@ public class ZuulServlet extends HttpServlet {
     @javax.inject.Inject
     private ServletSessionContextFactory contextFactory;
 
+    @Inject @Nullable
+    private SessionContextDecorator decorator;
+
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -74,18 +79,27 @@ public class ZuulServlet extends HttpServlet {
     public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException
     {
         try {
-            // Build a SessionContext from the servlet request.
-            Observable<SessionContext> chain = contextFactory.create(servletRequest);
+            // Setup the context for this request.
+            SessionContext context = new SessionContext();
+            // Optionally decorate the context.
+            if (decorator != null) {
+                context = decorator.decorate(context);
+            }
+
+            // Build a ZuulMessage from the servlet request.
+            Observable<ZuulMessage> chain = contextFactory.create(context, servletRequest);
 
             // Apply the filters to the chain.
-            chain = processor.applyAllFilters(chain);
+            chain = processor.applyInboundFilters(chain);
+            chain = processor.applyEndpointFilter(chain);
+            chain = processor.applyOutboundFilters(chain);
 
             // Execute and convert to blocking to get the resulting SessionContext.
-            SessionContext ctx = chain.single().toBlocking().first();
+            HttpResponseMessage response = (HttpResponseMessage) chain.single().toBlocking().first();
 
             // Write out the built response message to the HttpServletResponse.
             try {
-                contextFactory.write(ctx, servletResponse);
+                contextFactory.write(response, servletResponse);
             }
             catch (Exception e) {
                 LOG.error("Error writing response message!", e);
@@ -123,7 +137,6 @@ public class ZuulServlet extends HttpServlet {
         ZuulServlet servlet;
 
 
-
         @Before
         public void before() throws Exception {
             MonitoringHelper.initMocks();
@@ -136,13 +149,13 @@ public class ZuulServlet extends HttpServlet {
             servlet = spy(servlet);
             when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
 
-            when(contextFactory.create(servletRequest)).thenReturn(Observable.just(context));
+            when(contextFactory.create(context, servletRequest)).thenReturn(Observable.just(request));
 
             attributes = new Attributes();
-            response = new HttpResponseMessage(299);
+            response = new HttpResponseMessage(context, request, 299);
             when(context.getAttributes()).thenReturn(attributes);
-            when(context.getRequest()).thenReturn(request);
-            when(context.getResponse()).thenReturn(response);
+
+            when(processor.applyOutboundFilters(Matchers.any())).thenReturn(Observable.just(response));
         }
 
         @Test

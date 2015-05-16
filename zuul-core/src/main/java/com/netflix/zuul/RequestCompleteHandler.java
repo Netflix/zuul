@@ -1,6 +1,6 @@
 package com.netflix.zuul;
 
-import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.HttpResponseMessage;
 
 /**
  * User: michaels@netflix.com
@@ -11,8 +11,8 @@ public interface RequestCompleteHandler
 {
     /**
      *
-     * @param context RequestContext
+     * @param response HttpResponseMessage
      */
-    public void handle(SessionContext context);
+    public void handle(HttpResponseMessage response);
 }
 

@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.ZuulMessage;
 import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
@@ -193,6 +193,11 @@ public class FilterLoader
         return list;
     }
 
+    public ZuulFilter getFilterByName(String name)
+    {
+        return filterRegistry.get(name);
+    }
+
 
     public static class TestZuulFilter extends BaseSyncFilter {
 
@@ -211,12 +216,12 @@ public class FilterLoader
         }
 
         @Override
-        public boolean shouldFilter(SessionContext ctx) {
+        public boolean shouldFilter(ZuulMessage msg) {
             return false;
         }
 
         @Override
-        public SessionContext apply(SessionContext ctx) {
+        public ZuulMessage apply(ZuulMessage msg) {
             return null;
         }
     }

@@ -15,7 +15,8 @@
  */
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.ZuulMessage;
+import rx.Observable;
 
 /**
  * BAse interface for ZuulFilters
@@ -24,15 +25,8 @@ import com.netflix.zuul.context.SessionContext;
  *         Date: 10/27/11
  *         Time: 3:03 PM
  */
-public interface ZuulFilter extends ShouldFilter
+public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extends ShouldFilter<I>
 {
-    /**
-     * a "true" return from this method means that the run() method should be invoked
-     *
-     * @return true if the run() method should be invoked. false will not invoke the run() method
-     */
-    boolean shouldFilter(SessionContext ctx);
-
     public boolean isDisabled();
 
     public String filterName();
@@ -54,4 +48,9 @@ public interface ZuulFilter extends ShouldFilter
      * @return A String representing that type
      */
     String filterType();
+
+    /**
+     * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+     */
+    Observable<O> applyAsync(I input);
 }

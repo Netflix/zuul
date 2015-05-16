@@ -20,6 +20,7 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
+import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
@@ -55,7 +56,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
-class ZuulHostRequest extends BaseSyncFilter {
+class ZuulHostRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
 
     public static final String CONTENT_ENCODING = "Content-Encoding";
 
@@ -114,7 +115,7 @@ class ZuulHostRequest extends BaseSyncFilter {
 
     @Override
     String filterType() {
-        return 'route'
+        return 'end'
     }
 
     @Override
@@ -123,8 +124,9 @@ class ZuulHostRequest extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return ctx.getAttributes().getRouteHost() != null && ctx.getAttributes().shouldProxy()
+    boolean shouldFilter(HttpRequestMessage request) {
+        Attributes attrs = request.getContext().getAttributes()
+        return attrs.getRouteHost() != null && attrs.shouldProxy()
     }
 
     private static final void loadClient() {
@@ -169,27 +171,22 @@ class ZuulHostRequest extends BaseSyncFilter {
     }
 
     @Override
-    SessionContext apply(SessionContext context)
+    HttpResponseMessage apply(HttpRequestMessage request)
     {
-        HttpRequestMessage request = context.getRequest()
+        debug(request.getContext(), request)
 
-        debug(context, request)
-
-        URL routeHost = context.getAttributes().getRouteHost()
+        URL routeHost = request.getContext().getAttributes().getRouteHost()
         String verb = getVerb(request.getMethod());
         String path = request.getPath()
         HttpClient httpclient = CLIENT.get()
 
-        try {
-            com.netflix.client.http.HttpResponse response = forward(httpclient, routeHost, verb, path,
-                    request.getHeaders(), request.getQueryParams(), request.getBody())
+        com.netflix.client.http.HttpResponse ribbonResponse = forward(httpclient, routeHost, verb, path,
+                request.getHeaders(), request.getQueryParams(), request.getBody())
 
-            setResponse(context, response)
-        }
-        catch (Exception e) {
-            throw e;
-        }
-        return null
+        HttpResponseMessage response = createHttpResponseMessage(ribbonResponse, request)
+        debugResponse(response)
+
+        return response
     }
 
     void debug(SessionContext context, HttpRequestMessage request) {
@@ -214,26 +211,6 @@ class ZuulHostRequest extends BaseSyncFilter {
             }
         }
     }
-
-    /*
-    def HttpResponse forward(RestClient restClient, Verb verb, String path, Headers headers, HttpQueryParams params, InputStream requestEntity) {
-
-//        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
-
-        RibbonCommand command = new RibbonCommand(restClient, verb, path, headers, params, requestEntity);
-        try {
-            HttpResponse response = command.execute();
-            return response
-        } catch (HystrixRuntimeException e) {
-            if (e?.fallbackException?.cause instanceof ClientException) {
-                ClientException ex = e.fallbackException.cause as ClientException
-                throw new ZuulException(ex, "Forwarding error", 500, ex.getErrorType().toString())
-            }
-            throw new ZuulException(e, "Forwarding error", 500, e.failureType.toString())
-        }
-
-    }
-     */
 
     def HttpResponse forward(HttpClient httpclient, URL routeHost, String verb, String path, Headers headers, HttpQueryParams params, byte[] requestBody) {
 
@@ -301,50 +278,46 @@ class ZuulHostRequest extends BaseSyncFilter {
         return "GET"
     }
 
-    void setResponse(SessionContext context, HttpResponse proxyResp) {
+    void debugResponse(HttpResponseMessage resp) {
 
-        HttpResponseMessage resp = context.getResponse()
-
-        resp.setStatus(proxyResp.getStatusLine().getStatusCode());
-
-        // Collect the response headers.
-        proxyResp.getAllHeaders()?.each { Header header ->
-            if (isValidHeader(header)) {
-                resp.getHeaders().add(header.name, header.value)
-                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
-            }
-        }
-
-        // Body.
-        byte[] bodyBytes
-        if (proxyResp.getEntity()) {
-            // Read the request body inputstream into a byte array.
-            try {
-                bodyBytes = IOUtils.toByteArray(proxyResp.getEntity().getContent())
-                resp.setBody(bodyBytes)
-            }
-            catch (SocketTimeoutException e) {
-                // This can happen if the request body is smaller than the size specified in the
-                // Content-Length header, and using tomcat APR connector.
-                LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
-            }
-        }
+        SessionContext context = resp.getContext()
 
         // Debug
         if (Debug.debugRequest(context)) {
 
-            proxyResp.getAllHeaders()?.each { Header header ->
-                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.name}, ${header.value}")
+            resp.getHeaders().entries().each { header ->
+                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.getKey()}, ${header.getValue()}")
             }
 
-            if (bodyBytes) {
-                InputStream inStream = new ByteArrayInputStream(bodyBytes);
+            if (resp.getBody()) {
+                InputStream inStream = new ByteArrayInputStream(resp.getBody());
                 if (HttpUtils.isGzipped(resp.getHeaders()))
                     inStream = new GZIPInputStream(inStream);
                 String responseEntity = inStream.getText()
                 Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${responseEntity}")
             }
         }
+    }
+
+    protected HttpResponseMessage createHttpResponseMessage(com.netflix.client.http.HttpResponse ribbonResp, HttpRequestMessage request)
+    {
+        // Convert to a zuul response object.
+        HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
+        respMsg.setStatus(ribbonResp.getStatus());
+        for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
+            if (isValidHeader(header.getKey())) {
+                respMsg.getHeaders().add(header.getKey(), header.getValue());
+            }
+        }
+        byte[] body;
+        try {
+            body = IOUtils.toByteArray(ribbonResp.getInputStream());
+        }
+        catch (IOException e) {
+            throw new ZuulException(e, "Error reading response body.");
+        }
+        respMsg.setBody(body);
+        return respMsg;
     }
 
     boolean isValidHeader(Header header) {
@@ -377,8 +350,9 @@ class ZuulHostRequest extends BaseSyncFilter {
         @Before
         public void setup()
         {
-            response = new HttpResponseMessage(200)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 200)
         }
 
         @Test
@@ -395,7 +369,6 @@ class ZuulHostRequest extends BaseSyncFilter {
             headers[1] = new BasicHeader("content-length", "100")
 
 
-
             HttpResponse httpResponse = Mockito.mock(HttpResponse.class)
             BasicStatusLine status = Mockito.mock(BasicStatusLine.class)
             Mockito.when(httpResponse.getStatusLine()).thenReturn(status)
@@ -406,7 +379,7 @@ class ZuulHostRequest extends BaseSyncFilter {
             Mockito.when(entity.content).thenReturn(inp)
             Mockito.when(httpResponse.entity).thenReturn(entity)
             Mockito.when(httpResponse.getAllHeaders()).thenReturn(headers)
-            filter.setResponse(ctx, httpResponse)
+            response = filter.createHttpResponseMessage(proxyResp, request)
 
             Assert.assertEquals(response.getStatus(), 200)
             Assert.assertEquals(response.getBody().length, body.length)
@@ -417,9 +390,8 @@ class ZuulHostRequest extends BaseSyncFilter {
         public void testShouldFilter() {
             ctx.getAttributes().setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulHostRequest filter = new ZuulHostRequest()
-            Assert.assertTrue(filter.shouldFilter(ctx))
+            Assert.assertTrue(filter.shouldFilter(request))
         }
-
 
         @Test
         public void testGetHost() {

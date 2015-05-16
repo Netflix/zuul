@@ -1,5 +1,6 @@
 package com.netflix.zuul.rxnetty;
 
+import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 
@@ -14,14 +15,12 @@ public class HealthCheckRequestHandler
 {
     private static final Charset CS_UTF8 = Charset.forName("UTF-8");
 
-    public SessionContext handle(SessionContext ctx)
+    public HttpResponseMessage handle(HttpRequestMessage request)
     {
-        HttpResponseMessage response = ctx.getHttpResponse();
-
+        HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200);
         response.getHeaders().set("Content-Type", "text/plain");
-        response.setStatus(200);
         response.setBody("OK".getBytes(CS_UTF8));
 
-        return ctx;
+        return response;
     }
 }

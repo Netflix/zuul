@@ -31,14 +31,14 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class ZuulNFRequest extends BaseSyncFilter {
+class ZuulNFRequest extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ZuulNFRequest.class);
 
 
     @Override
     String filterType() {
-        return 'route'
+        return 'end'
     }
 
     @Override
@@ -47,32 +47,32 @@ class ZuulNFRequest extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return (ctx.getAttributes().getRouteHost() == null
-                && ! ctx.getAttributes().shouldSendErrorResponse()
-                && ctx.getAttributes().shouldProxy())
+    boolean shouldFilter(HttpRequestMessage request) {
+        Attributes attrs = request.getContext().getAttributes()
+        return (attrs.getRouteHost() == null
+                && ! attrs.shouldSendErrorResponse()
+                && attrs.shouldProxy())
     }
 
     @Override
-    SessionContext apply(SessionContext context)
+    HttpResponseMessage apply(HttpRequestMessage request)
     {
-        HttpRequestMessage request = context.getRequest()
-        Attributes attrs = context.getAttributes()
+        Attributes attrs = request.getContext().getAttributes()
 
-        debug(context, request)
+        debug(request.getContext(), request)
 
         // Get the Origin.
         String name = attrs.getRouteVIP()
-        OriginManager originManager = context.getHelpers().get("origin_manager")
+        OriginManager originManager = request.getContext().getHelpers().get("origin_manager")
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
             throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
         }
 
         // Add execution of the request to the Observable chain, and block waiting for it to finish.
-        context = origin.request(context).toBlocking().first()
+        HttpResponseMessage response = origin.request(request).toBlocking().first()
 
-        return context
+        return response
     }
 
 

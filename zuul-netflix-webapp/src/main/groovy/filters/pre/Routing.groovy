@@ -21,7 +21,7 @@ import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.ZuulMessage
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseSyncFilter
 
@@ -47,23 +47,29 @@ class Routing extends BaseSyncFilter
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(ZuulMessage msg) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
+    ZuulMessage apply(ZuulMessage msg) {
 
-        Attributes attrs = ctx.getAttributes()
-        HttpRequestMessage request = ctx.getRequest()
+        HttpRequestMessage request = msg
+        Attributes attrs = request.getContext().getAttributes()
 
         attrs.routeVIP = defaultClient.get()
         String host = defaultHost.get()
-        if (attrs.routeVIP == null) attrs.routeVIP = ZuulApplicationInfo.applicationName
+        if (attrs.routeVIP != null) {
+            attrs.set("endpoint", "ZuulNFRequest")
+        } else {
+            attrs.routeVIP = ZuulApplicationInfo.applicationName
+        }
+
         if (host != null) {
             final URL targetUrl = new URL(host)
             attrs.setRouteHost(targetUrl);
             attrs.routeVIP = null
+            attrs.set("endpoint", "ZuulHostRequest")
         }
 
         if (host == null && attrs.routeVIP == null) {
@@ -78,6 +84,6 @@ class Routing extends BaseSyncFilter
 
         attrs.route = uri.substring(0, uri.indexOf("/") + 1)
 
-        return ctx
+        return request
     }
 }

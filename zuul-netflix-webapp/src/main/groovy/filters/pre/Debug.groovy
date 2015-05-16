@@ -20,17 +20,16 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
 
-class Debug extends BaseSyncFilter {
-
+class Debug extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
+{
     static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUG_REQUEST, false)
     static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_PARAMETER, "debugParameter")
 
     @Override
     String filterType() {
-        return 'pre'
+        return 'in'
     }
 
     @Override
@@ -39,18 +38,19 @@ class Debug extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        HttpRequestMessage request = ctx.getRequest()
+    boolean shouldFilter(HttpRequestMessage request)
+    {
         if ("true".equals(request.getQueryParams().getFirst(debugParameter.get()))) return true;
         return routingDebug.get();
 
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
-        ctx.getAttributes().setDebugRequest(true)
-        ctx.getAttributes().setDebugRouting(true)
-        return null;
+    HttpRequestMessage apply(HttpRequestMessage request)
+    {
+        request.getContext().getAttributes().setDebugRequest(true)
+        request.getContext().getAttributes().setDebugRouting(true)
+        return request;
     }
 
 }

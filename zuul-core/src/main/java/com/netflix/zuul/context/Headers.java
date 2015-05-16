@@ -112,7 +112,7 @@ public class Headers implements Cloneable
     }
 
     @Override
-    protected Object clone()
+    public Headers clone()
     {
         Headers copy = new Headers();
         copy.delegate.putAll(this.delegate);

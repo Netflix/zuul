@@ -20,7 +20,10 @@ import com.netflix.config.DynamicStringProperty;
 import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.filters.*;
+import com.netflix.zuul.filters.BaseSyncFilter;
+import com.netflix.zuul.filters.FilterError;
+import com.netflix.zuul.filters.ShouldFilter;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,33 +77,48 @@ public class FilterProcessor {
         this.usageNotifier = notifier;
     }
 
-    /**
-     * Apply all the phases of configured filters to this context.
-     *
-     * @param chain
-     * @return
-     */
-    public Observable<SessionContext> applyAllFilters(Observable<SessionContext> chain) {
 
-        // Apply PRE filters.
-        chain = applyFilterPhase(chain, "pre", null);
+    public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
+    {
+        chain = applyFilterPhase(chain, "in", null);
 
         // Apply the error filters. They will only pass shouldFilter() if the context's errorFlag has been set.
         chain = applyFilterPhase(chain, "error", ErrorShouldFilter.INSTANCE);
 
-        // Route/Proxy.
-        chain = applyFilterPhase(chain, "route", RouteShouldFilter.INSTANCE);
+        return chain;
+    }
 
+    public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
+    {
+        return chain.flatMap(msg -> {
+
+            // Get the previously chosen endpoint filter to use.
+            String endpointName = (String) msg.getAttributes().get("endpoint");
+            if (endpointName == null) {
+                throw new ZuulException("No endpoint filter chosen!");
+            }
+            ZuulFilter endpointFilter = filterLoader.getFilterByName(endpointName);
+            if (endpointFilter == null) {
+                throw new ZuulException("No endpoint filter found of chosen name! name=" + endpointName);
+            }
+
+            // Apply this endpoint.
+            return processAsyncFilter(msg, endpointFilter, null);
+        });
+    }
+
+    public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
+    {
         // Apply the error filters AGAIN. This is for if there was an error during the route/proxy phase.
         chain = applyFilterPhase(chain, "error", ErrorShouldFilter.INSTANCE);
 
         // Apply POST filters.
-        chain = applyFilterPhase(chain, "post", null);
+        chain = applyFilterPhase(chain, "out", null);
 
         return chain;
     }
 
-    protected Observable<SessionContext> applyFilterPhase(Observable<SessionContext> chain, String filterType, ShouldFilter additionalShouldFilter)
+    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType, ShouldFilter additionalShouldFilter)
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
@@ -109,78 +127,64 @@ public class FilterProcessor {
         return chain;
     }
 
-    public Observable<SessionContext> processFilterAsObservable(Observable<SessionContext> input, ZuulFilter filter, ShouldFilter additionalShouldFilter)
+    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, ShouldFilter additionalShouldFilter)
     {
-        // If this filter can be used Async OR Sync, then choose based on the configured default.
-        // This default will likely be Sync for Servlet-based servers, and Async for netty-based.
-        if (filter instanceof AsyncFilter && filter instanceof SyncFilter) {
-            return processFilterWithSyncType(input, filter, additionalShouldFilter, DEFAULT_FILTER_SYNC_TYPE.get());
-        }
-        else if (filter instanceof AsyncFilter) {
-            return processFilterWithSyncType(input, filter, additionalShouldFilter, "async");
-        }
-        else {
-            return processFilterWithSyncType(input, filter, additionalShouldFilter, "sync");
-        }
+        return input.flatMap(msg -> processAsyncFilter(msg, filter, additionalShouldFilter) );
     }
 
-    protected Observable<SessionContext> processFilterWithSyncType(Observable<SessionContext> input, ZuulFilter filter, ShouldFilter additionalShouldFilter, String syncType)
-    {
-        if ("async".equals(syncType)) {
-            AsyncFilter asyncFilter = (AsyncFilter) filter;
-            return input.flatMap(ctx -> processAsyncFilter(ctx, asyncFilter, additionalShouldFilter) );
-        }
-        else {
-            SyncFilter syncFilter = (SyncFilter) filter;
-            return input.map(ctx -> processFilter(ctx, syncFilter, additionalShouldFilter));
-        }
-    }
-
-    public Observable<SessionContext> processAsyncFilter(SessionContext ctx, AsyncFilter filter, ShouldFilter additionalShouldFilter)
+    /**
+     * Processes an individual ZuulFilter. This method adds Debug information. Any uncaught Throwables from filters
+     * are caught by this method and stored for future insight on the SessionContext.getFilterErrors().
+     *
+     * @param msg ZuulMessage
+     * @param filter IZuulFilter
+     * @return the return value for that filter
+     */
+    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter, ShouldFilter additionalShouldFilter)
     {
         final FilterExecInfo info = new FilterExecInfo();
-        info.bDebug = ctx.getAttributes().debugRouting();
+        info.bDebug = msg.getContext().getAttributes().debugRouting();
 
         if (info.bDebug) {
-            Debug.addRoutingDebug(ctx, "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
-            info.debugCopy = (SessionContext) ctx.clone();
+            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
+            info.debugCopy = msg.clone();
         }
 
         // Apply this filter.
-        Observable<SessionContext> resultObs;
+        Observable<ZuulMessage> resultObs;
         long ltime = System.currentTimeMillis();
         try {
             if (filter.isDisabled()) {
-                resultObs = Observable.just(ctx);
+                resultObs = Observable.just(msg);
                 info.status = ExecutionStatus.DISABLED;
             } else {
                 // Only apply the filter if both the shouldFilter() method AND any additional
                 // ShouldFilter impl pass.
-                if (filter.shouldFilter(ctx)
-                        && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(ctx))) {
-                    resultObs = filter.applyAsync(ctx);
+                if (filter.shouldFilter(msg)
+                        && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(msg))) {
+                    resultObs = filter.applyAsync(msg);
                 } else {
-                    resultObs = Observable.just(ctx);
+                    resultObs = Observable.just(msg);
                     info.status = ExecutionStatus.SKIPPED;
                 }
             }
         }
         catch (Exception e) {
-            resultObs = Observable.just(ctx);
+            resultObs = Observable.just(msg);
             info.status = ExecutionStatus.FAILED;
-            recordFilterError(filter, ctx, e);
+            recordFilterError(filter, msg, e);
         }
 
         // Handle errors from the filter. Don't break out of the filter chain - instead just record info about the error
         // in context, and continue.
         resultObs = resultObs.onErrorReturn((e) -> {
             info.status = ExecutionStatus.FAILED;
-            recordFilterError(filter, ctx, e);
-            return ctx;
+            recordFilterError(filter, msg, e);
+            return msg;
         });
 
         // If no resultContext returned from filter, then use the original context.
-        resultObs = resultObs.map(ctx2 -> ctx2 == null ? ctx : ctx2);
+        resultObs = resultObs.map(msg2 -> msg2 == null ? msg : msg2);
 
         // Record info when filter processing completes.
         resultObs = resultObs.doOnCompleted(() -> {
@@ -188,85 +192,27 @@ public class FilterProcessor {
                 info.status = ExecutionStatus.SUCCESS;
             }
             info.execTime = System.currentTimeMillis() - ltime;
-            recordFilterCompletion(ctx, filter, info);
+            recordFilterCompletion(msg, filter, info);
         });
 
         return resultObs;
     }
 
-    /**
-     * Processes an individual ZuulFilter. This method adds Debug information. Any uncaught Throwables from filters
-     * are caught by this method and stored for future insight on the SessionContext.getFilterErrors().
-     *
-     * @param ctx SessionContext
-     * @param filter IZuulFilter
-     * @return the return value for that filter
-     */
-    public SessionContext processFilter(SessionContext ctx, SyncFilter filter, ShouldFilter additionalShouldFilter)
-    {
-        FilterExecInfo info = new FilterExecInfo();
-        info.bDebug = ctx.getAttributes().debugRouting();
 
-        if (info.bDebug) {
-            Debug.addRoutingDebug(ctx, "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
-            info.debugCopy = (SessionContext) ctx.clone();
-        }
 
-        // Execute the filter.
-        SessionContext resultContext = null;
-        long ltime = System.currentTimeMillis();
-        try {
-            if (filter.isDisabled()) {
-                resultContext = ctx;
-                info.status = ExecutionStatus.DISABLED;
-            }
-            else {
-                // Only apply the filter if both the shouldFilter() method AND any additional
-                // ShouldFilter impl pass.
-                if (filter.shouldFilter(ctx)
-                        && (additionalShouldFilter == null || additionalShouldFilter.shouldFilter(ctx)))
-                {
-                    resultContext = filter.apply(ctx);
-                    info.status = ExecutionStatus.SUCCESS;
-                }
-                else {
-                    resultContext = ctx;
-                    info.status = ExecutionStatus.SKIPPED;
-                }
-            }
-        }
-        catch (Exception e) {
-            resultContext = ctx;
-            info.status = ExecutionStatus.FAILED;
-            recordFilterError(filter, ctx, e);
-        }
-        finally {
-            info.execTime = System.currentTimeMillis() - ltime;
-        }
-
-        // If no resultContext returned from filter, then use the original context.
-        if (resultContext != null) {
-            ctx = resultContext;
-        }
-
-        recordFilterCompletion(ctx, filter, info);
-
-        return ctx;
-    }
-
-    protected void recordFilterCompletion(SessionContext ctx, ZuulFilter filter, FilterExecInfo info)
+    protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info)
     {
         // Record the execution summary in context.
         switch (info.status) {
             case FAILED:
-                ctx.getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.FAILED.name(), info.execTime);
+                msg.getContext().getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.FAILED.name(), info.execTime);
                 break;
             case SUCCESS:
-                ctx.getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
+                msg.getContext().getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
                 if (info.bDebug) {
-                    Debug.addRoutingDebug(ctx, "Filter {" + filter.filterName() + " TYPE:" + filter.filterType()
+                    Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType()
                             + " ORDER:" + filter.filterOrder() + "} Execution time = " + info.execTime + "ms");
-                    Debug.compareContextState(filter.filterName(), ctx, info.debugCopy);
+                    Debug.compareContextState(filter.filterName(), msg.getContext(), info.debugCopy.getContext());
                 }
                 break;
             default:
@@ -277,22 +223,22 @@ public class FilterProcessor {
         usageNotifier.notify(filter, info.status);
     }
 
-    protected void recordFilterError(ZuulFilter filter, SessionContext ctx, Throwable e)
+    protected void recordFilterError(ZuulFilter filter, ZuulMessage msg, Throwable e)
     {
         // Add a log statement for this exception.
-        String msg = "Filter Exception: request-info=" + ctx.getRequestInfoForLogging() + ", msg=" + String.valueOf(e.getMessage());
+        String errorMsg = "Filter Exception: request-info=" + msg.getInfoForLogging() + ", msg=" + String.valueOf(e.getMessage());
         if (e instanceof ZuulException && ! ((ZuulException)e).shouldLogAsError()) {
-            LOG.warn(msg);
+            LOG.warn(errorMsg);
         } else {
-            LOG.error(msg, e);
+            LOG.error(errorMsg, e);
         }
 
         // Store this filter error for possible future use. But we still continue with next filter in the chain.
-        ctx.getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType(), e));
+        msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType(), e));
 
-        boolean bDebug = ctx.getAttributes().debugRouting();
+        boolean bDebug = msg.getContext().getAttributes().debugRouting();
         if (bDebug) {
-            Debug.addRoutingDebug(ctx, "Running Filter failed " + filter.filterName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
+            Debug.addRoutingDebug(msg.getContext(), "Running Filter failed " + filter.filterName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
         }
     }
 
@@ -313,7 +259,7 @@ public class FilterProcessor {
         ExecutionStatus status;
         boolean bDebug = false;
         long execTime;
-        SessionContext debugCopy = null;
+        ZuulMessage debugCopy = null;
     }
 
     public static class RouteShouldFilter implements ShouldFilter
@@ -321,9 +267,9 @@ public class FilterProcessor {
         public static final RouteShouldFilter INSTANCE = new RouteShouldFilter();
 
         @Override
-        public boolean shouldFilter(SessionContext ctx) {
-            return ctx.getAttributes().shouldProxy()
-                    && ! ctx.getAttributes().shouldSendErrorResponse();
+        public boolean shouldFilter(ZuulMessage msg) {
+            return msg.getAttributes().shouldProxy()
+                    && ! msg.getAttributes().shouldSendErrorResponse();
         }
     }
 
@@ -333,8 +279,8 @@ public class FilterProcessor {
         public static final ErrorShouldFilter INSTANCE = new ErrorShouldFilter();
 
         @Override
-        public boolean shouldFilter(SessionContext ctx) {
-            return ctx.getAttributes().shouldSendErrorResponse();
+        public boolean shouldFilter(ZuulMessage msg) {
+            return msg.getAttributes().shouldSendErrorResponse();
         }
     }
 
@@ -358,49 +304,49 @@ public class FilterProcessor {
             MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
 
-            request = new HttpRequestMessage("HTTP/1.1", "GET", "/somepath", new HttpQueryParams(), new Headers(), "127.0.0.1", "https");
-            response = new HttpResponseMessage(200);
-            ctx = new SessionContext(request, response);
+            ctx = new SessionContext();
+            request = new HttpRequestMessage(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(), new Headers(), "127.0.0.1", "https");
+            response = new HttpResponseMessage(ctx, request, 200);
 
             processor = new FilterProcessor();
             processor = spy(processor);
 
             when(filter.filterType()).thenReturn("pre");
-            when(filter.shouldFilter(ctx)).thenReturn(true);
+            when(filter.shouldFilter(request)).thenReturn(true);
         }
 
         @Test
         public void testProcessFilter() throws Exception
         {
-            when(filter.apply(ctx)).thenReturn(ctx);
-            processor.processFilter(ctx, filter, null);
-            verify(filter, times(1)).apply(ctx);
+            when(filter.apply(request)).thenReturn(request);
+            processor.processAsyncFilter(request, filter, null).toBlocking().first();
+            verify(filter, times(1)).applyAsync(request);
         }
 
         @Test
         public void testProcessFilter_ShouldFilterFalse() throws Exception
         {
-            when(filter.shouldFilter(ctx)).thenReturn(false);
-            processor.processFilter(ctx, filter, null);
-            verify(filter, times(0)).apply(ctx);
+            when(filter.shouldFilter(request)).thenReturn(false);
+            processor.processAsyncFilter(request, filter, null).toBlocking().first();
+            verify(filter, times(0)).applyAsync(request);
         }
 
         @Test
         public void testProcessFilter_AdditionalShouldFilterFalse() throws Exception
         {
-            when(filter.shouldFilter(ctx)).thenReturn(true);
-            when(additionalShouldFilter.shouldFilter(ctx)).thenReturn(false);
-            processor.processFilter(ctx, filter, additionalShouldFilter);
-            verify(filter, times(0)).apply(ctx);
+            when(filter.shouldFilter(request)).thenReturn(true);
+            when(additionalShouldFilter.shouldFilter(request)).thenReturn(false);
+            processor.processAsyncFilter(request, filter, additionalShouldFilter).toBlocking().first();
+            verify(filter, times(0)).applyAsync(request);
         }
 
         @Test
         public void testProcessFilter_BothShouldFilterTrue() throws Exception
         {
-            when(filter.shouldFilter(ctx)).thenReturn(true);
-            when(additionalShouldFilter.shouldFilter(ctx)).thenReturn(true);
-            processor.processFilter(ctx, filter, additionalShouldFilter);
-            verify(filter, times(1)).apply(ctx);
+            when(filter.shouldFilter(request)).thenReturn(true);
+            when(additionalShouldFilter.shouldFilter(request)).thenReturn(true);
+            processor.processAsyncFilter(request, filter, additionalShouldFilter).toBlocking().first();
+            verify(filter, times(1)).applyAsync(request);
         }
 
 
@@ -409,33 +355,14 @@ public class FilterProcessor {
         public void testProcessFilterException()
         {
             Exception e = new RuntimeException("Blah");
-            when(filter.apply(ctx)).thenThrow(e);
-            processor.processFilter(ctx, filter, null);
+            when(filter.apply(request)).thenThrow(e);
+            processor.processAsyncFilter(request, filter, null).toBlocking().first();
 
-            verify(processor).recordFilterError(filter, ctx, e);
+            verify(processor).recordFilterError(filter, request, e);
 
             ArgumentCaptor<FilterExecInfo> info = ArgumentCaptor.forClass(FilterExecInfo.class);
-            verify(processor).recordFilterCompletion(same(ctx), same(filter), info.capture());
+            verify(processor).recordFilterCompletion(same(request), same(filter), info.capture());
             assertEquals(ExecutionStatus.FAILED, info.getValue().status);
-        }
-
-        @Test
-        public void testApplyAllFilters() throws Exception
-        {
-            Observable<SessionContext> chain = Observable.just(ctx);
-            processor.applyAllFilters(chain);
-            verify(processor, times(1)).applyFilterPhase(same(chain), eq("pre"), isNull(ShouldFilter.class));
-            verify(processor, times(2)).applyFilterPhase(same(chain), eq("error"), isA(ErrorShouldFilter.class));
-            verify(processor, times(1)).applyFilterPhase(same(chain), eq("route"), isA(RouteShouldFilter.class));
-            verify(processor, times(2)).applyFilterPhase(same(chain), eq("error"), isA(ErrorShouldFilter.class));
-            verify(processor, times(1)).applyFilterPhase(same(chain), eq("post"), isNull(ShouldFilter.class));
-        }
-
-        @Test
-        public void testPostProcess()
-        {
-            Observable<SessionContext> chain = Observable.just(ctx);
-            processor.applyFilterPhase(chain, "post", null);
         }
 //
 //        @Test

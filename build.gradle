@@ -34,6 +34,8 @@ subprojects {
 
     group = "com.netflix.${githubProjectName}"
 
+    sourceCompatibility = '1.8'
+
     sourceSets.test.java.srcDir 'src/main/java'
 
     tasks.withType(Javadoc).each {

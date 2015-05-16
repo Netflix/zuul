@@ -23,6 +23,7 @@ import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.ZuulMessage
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -52,7 +53,7 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(ZuulMessage msg) {
 
         DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
@@ -60,19 +61,23 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter {
 
         if (isDisabled()) return false;
 
-        String isSurgicalFilterRequest = ctx.getRequest().getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
-        if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
+        if (msg instanceof HttpRequestMessage) {
+            String isSurgicalFilterRequest = ((HttpRequestMessage) msg).getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
+            if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
+        }
+
         return patternMatches();
     }
 
 
     @Override
-    SessionContext apply(SessionContext ctx)
+    ZuulMessage apply(ZuulMessage msg)
     {
         DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
         DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
-        HttpRequestMessage request = ctx.getRequest()
+        HttpRequestMessage request = msg
+        SessionContext ctx = msg.getContext()
 
         if (routeVip.get() != null || routeHost.get() != null) {
 

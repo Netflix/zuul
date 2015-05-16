@@ -23,9 +23,9 @@ public class HttpRequestMessage extends ZuulMessage
     private String clientIp;
     private String scheme;
 
-    public HttpRequestMessage(String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme)
+    public HttpRequestMessage(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme)
     {
-        super(headers);
+        super(context, headers);
 
         this.protocol = protocol;
         this.method = method;
@@ -104,8 +104,18 @@ public class HttpRequestMessage extends ZuulMessage
     }
 
     @Override
-    public Object clone()
+    public ZuulMessage clone()
     {
         return super.clone();
+    }
+
+    @Override
+    public String getInfoForLogging()
+    {
+        StringBuilder sb = new StringBuilder()
+                .append("url=").append(getPathAndQuery())
+                .append(",host=").append(String.valueOf(getHeaders().getFirst("Host")))
+                ;
+        return sb.toString();
     }
 }

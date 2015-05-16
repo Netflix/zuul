@@ -7,15 +7,31 @@ package com.netflix.zuul.context;
  */
 public class ZuulMessage implements Cloneable
 {
-    private Headers headers;
+    private final SessionContext context;
+    private final Attributes attributes;
+    private final Headers headers;
     private byte[] body = null;
 
-    public ZuulMessage() {
-        this.headers = new Headers();
+    public ZuulMessage(SessionContext context) {
+        this(context, new Attributes(), new Headers());
     }
 
-    public ZuulMessage(Headers headers) {
-        this.headers = headers != null ? headers : new Headers();
+    public ZuulMessage(SessionContext context, Headers headers) {
+        this(context, new Attributes(), headers != null ? headers : new Headers());
+    }
+
+    public ZuulMessage(SessionContext context, Attributes attributes, Headers headers) {
+        this.context = context;
+        this.attributes = attributes;
+        this.headers = headers;
+    }
+
+    public SessionContext getContext() {
+        return context;
+    }
+
+    public Attributes getAttributes() {
+        return attributes;
     }
 
     public Headers getHeaders() {
@@ -33,15 +49,20 @@ public class ZuulMessage implements Cloneable
     }
 
     @Override
-    public Object clone()
+    public ZuulMessage clone()
     {
-        try {
-            ZuulMessage copy = (ZuulMessage) super.clone();
-            copy.headers = (Headers) this.headers.clone();
-            return copy;
-        }
-        catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Should not happen.", e);
-        }
+        ZuulMessage copy = new ZuulMessage(context.clone(), (Attributes) attributes.clone(), headers.clone());
+        copy.setBody(body.clone());
+        return copy;
+    }
+
+    /**
+     * Override this in more specific subclasses to add request/response info for logging purposes.
+     *
+     * @return
+     */
+    public String getInfoForLogging()
+    {
+        return "ZuulMessage";
     }
 }

@@ -2,18 +2,19 @@ package com.netflix.zuul.ribbon;
 
 import com.netflix.client.ClientException;
 import com.netflix.client.ClientFactory;
-import com.netflix.client.IClient;
 import com.netflix.client.http.CaseInsensitiveMultiMap;
 import com.netflix.client.http.HttpRequest;
 import com.netflix.client.http.HttpResponse;
 import com.netflix.niws.client.http.RestClient;
-import com.netflix.zuul.context.*;
+import com.netflix.zuul.context.Headers;
+import com.netflix.zuul.context.HttpQueryParams;
+import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.stats.Timing;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -46,25 +46,6 @@ public class RibbonOrigin implements Origin
     public String getName()
     {
         return name;
-    }
-
-    @Override
-    public Observable<SessionContext> request(SessionContext ctx)
-    {
-        final Timing timing = ctx.getRequestProxyTiming();
-        timing.start();
-        return request(ctx.getHttpRequest())
-                .map(originResp -> {
-                    // Copy the response from Origin onto the SessionContext.
-                    HttpResponseMessage zuulResp = ctx.getHttpResponse();
-                    zuulResp.setStatus(originResp.getStatus());
-                    zuulResp.getHeaders().putAll(originResp.getHeaders());
-                    zuulResp.setBody(originResp.getBody());
-                    return ctx;
-                })
-                .finallyDo(() -> {
-                    timing.end();
-                });
     }
 
     @Override
@@ -100,6 +81,9 @@ public class RibbonOrigin implements Origin
 
         HttpRequest httpClientRequest = builder.build();
 
+        final Timing timing = requestMsg.getContext().getRequestProxyTiming();
+        timing.start();
+
         // Execute the request.
         HttpResponse ribbonResp;
         try {
@@ -108,16 +92,19 @@ public class RibbonOrigin implements Origin
         catch (ClientException e) {
             throw new ZuulException(e, "Forwarding error", 500, e.getErrorType().toString());
         }
-        HttpResponseMessage respMsg = createHttpResponseMessage(ribbonResp);
+        finally {
+            timing.end();
+        }
+        HttpResponseMessage respMsg = createHttpResponseMessage(ribbonResp, requestMsg);
 
         // Return response wrapped in an Observable.
         return Observable.just(respMsg);
     }
 
-    protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp)
+    protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)
     {
         // Convert to a zuul response object.
-        HttpResponseMessage respMsg = new HttpResponseMessage(500);
+        HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatus());
         for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
             if (isValidHeader(header.getKey())) {
@@ -157,6 +144,9 @@ public class RibbonOrigin implements Origin
         @Mock
         HttpResponse proxyResp;
 
+        @Mock
+        HttpRequestMessage request;
+
         @Test
         public void testHeaderResponse()
         {
@@ -184,7 +174,7 @@ public class RibbonOrigin implements Origin
             Mockito.when(proxyResp.hasEntity()).thenReturn(true);
             Mockito.when(proxyResp.getHttpHeaders()).thenReturn(headers);
 
-            HttpResponseMessage response = origin.createHttpResponseMessage(proxyResp);
+            HttpResponseMessage response = origin.createHttpResponseMessage(proxyResp, request);
 
             Assert.assertEquals(200, response.getStatus());
             Assert.assertNotNull(response.getBody());

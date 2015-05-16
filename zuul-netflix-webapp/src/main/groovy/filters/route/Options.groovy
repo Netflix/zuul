@@ -13,13 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.route
 
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.StaticResponseFilter
-import org.junit.Assert
+import com.netflix.zuul.filters.BaseSyncFilter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,65 +26,67 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
+import static org.junit.Assert.assertTrue
+import static org.mockito.Mockito.when
+
 /**
- * @author Mikey Cohen
+ * Created by IntelliJ IDEA.
+ * User: mcohen
  * Date: 2/1/12
  * Time: 7:56 AM
  */
-class Healthcheck extends StaticResponseFilter {
-
+class Options extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage>
+{
     @Override
     String filterType() {
-        return "healthcheck"
+        return "end"
     }
 
     @Override
-    String uri() {
-        return "/healthcheck"
+    int filterOrder() {
+        return 0
     }
 
     @Override
-    String responseBody(SessionContext ctx) {
-        HttpResponseMessage response = ctx.getResponse()
-        response.headers.set('Content-Type', 'application/xml')
-        return "<health>ok</health>"
+    boolean shouldFilter(HttpRequestMessage request) {
+        String method = request.getMethod();
+        if (method.equalsIgnoreCase("options")) return true;
     }
 
+    @Override
+    HttpResponseMessage apply(HttpRequestMessage request)
+    {
+        HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200)
+        // Empty response body.
+        return response
+    }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit
-    {
-        Healthcheck filter
+    public static class TestUnit {
+
+        Options filter
         SessionContext ctx
-        HttpResponseMessage response
-        Throwable th
 
         @Mock
         HttpRequestMessage request
 
         @Before
         public void setup() {
-            filter = new Healthcheck()
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
+            filter = new Options()
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
         }
 
         @Test
-        public void testHealthcheck() {
+        public void testClientAccessPolicy() {
 
-            Mockito.when(request.getPath()).thenReturn("/healthcheck")
+            when(request.getPath()).thenReturn("/anything")
+            when(request.getMethod()).thenReturn("OPTIONS")
+            assertTrue(filter.shouldFilter(request))
 
-            filter.apply(ctx)
+            HttpResponseMessage response = filter.apply(request)
 
-            Assert.assertTrue(filter.shouldFilter(ctx))
-
-            Assert.assertTrue(response.getBody() != null)
-            String bodyStr = new String(response.getBody(), "UTF-8")
-            Assert.assertTrue(bodyStr.contains("<health>ok</health>"))
-
-            Mockito.when(request.getPath()).thenReturn("healthcheck")
-            Assert.assertTrue(filter.shouldFilter(ctx))
-
+            assertTrue(response.getBody() == null)
         }
 
     }

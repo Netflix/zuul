@@ -7,6 +7,7 @@ import com.netflix.zuul.accesslog.SimpleAccessRecord;
 import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.ZuulMessage;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +31,10 @@ public class BasicRequestCompleteHandler implements RequestCompleteHandler
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
-    public void handle(SessionContext context)
+    public void handle(HttpResponseMessage response)
     {
-        HttpRequestMessage request = context.getHttpRequest();
-        HttpResponseMessage response = context.getHttpResponse();
+        HttpRequestMessage request = response.getHttpRequest();
+        SessionContext context = response.getContext();
 
         long duration = context.getRequestTiming().getDuration();
         int responseBodySize = response.getBody() == null ? 0 : response.getBody().length;

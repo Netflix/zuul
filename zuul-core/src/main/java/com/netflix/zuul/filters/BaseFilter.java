@@ -17,14 +17,15 @@ package com.netflix.zuul.filters;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.ZuulMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import rx.Observable;
 
-import static org.junit.Assert.assertSame;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Base abstract class for ZuulFilters. The base class defines abstract methods to define:
@@ -44,9 +45,8 @@ import static org.mockito.Mockito.*;
  *         Date: 10/26/11
  *         Time: 4:29 PM
  */
-public abstract class BaseFilter implements ZuulFilter
+public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
-
     private final DynamicBooleanProperty filterDisabled =
             DynamicPropertyFactory.getInstance().getBooleanProperty(disablePropertyName(), false);
 
@@ -54,7 +54,6 @@ public abstract class BaseFilter implements ZuulFilter
     public String filterName() {
         return this.getClass().getSimpleName();
     }
-
 
     /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
@@ -75,13 +74,14 @@ public abstract class BaseFilter implements ZuulFilter
         return filterDisabled.get();
     }
 
+
     public static class TestUnit {
         @Mock
         private BaseFilter f1;
         @Mock
         private BaseFilter f2;
         @Mock
-        private SessionContext ctx;
+        private ZuulMessage req;
 
         @Before
         public void before() {
@@ -91,25 +91,25 @@ public abstract class BaseFilter implements ZuulFilter
 
         @Test
         public void testShouldFilter() {
-            class TestZuulFilter extends BaseSyncFilter {
-
-                @Override
-                public String filterType() {
-                    return null;
-                }
-
+            class TestZuulFilter extends BaseSyncFilter
+            {
                 @Override
                 public int filterOrder() {
                     return 0;
                 }
 
                 @Override
-                public boolean shouldFilter(SessionContext ctx) {
+                public String filterType() {
+                    return "pre";
+                }
+
+                @Override
+                public boolean shouldFilter(ZuulMessage req) {
                     return false;
                 }
 
                 @Override
-                public SessionContext apply(SessionContext ctx) {
+                public ZuulMessage apply(ZuulMessage req) {
                     return null;
                 }
             }
@@ -117,9 +117,8 @@ public abstract class BaseFilter implements ZuulFilter
             TestZuulFilter tf1 = spy(new TestZuulFilter());
             TestZuulFilter tf2 = spy(new TestZuulFilter());
 
-            when(tf1.shouldFilter(ctx)).thenReturn(true);
-            when(tf2.shouldFilter(ctx)).thenReturn(false);
+            when(tf1.shouldFilter(req)).thenReturn(true);
+            when(tf2.shouldFilter(req)).thenReturn(false);
         }
-
     }
 }

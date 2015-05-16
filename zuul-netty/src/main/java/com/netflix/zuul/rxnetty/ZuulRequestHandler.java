@@ -7,9 +7,7 @@ import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.RequestCompleteHandler;
-import com.netflix.zuul.context.HttpResponseMessage;
-import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.context.SessionContextFactory;
+import com.netflix.zuul.context.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
@@ -36,7 +34,11 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
     private FilterProcessor filterProcessor;
 
     @Inject
-    private SessionContextFactory stateFactory;
+    private SessionContextFactory contextFactory;
+
+    @javax.inject.Inject
+    @Nullable
+    private SessionContextDecorator decorator;
 
     @Inject
     private HealthCheckRequestHandler healthCheckHandler;
@@ -52,54 +54,60 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response)
     {
-        // Convert the incoming request into a SessionContext.
-        Observable<SessionContext> chain = stateFactory.create(request);
+        // Setup the context for this request.
+        SessionContext context = new SessionContext();
+        // Optionally decorate the context.
+        if (decorator != null) {
+            context = decorator.decorate(context);
+        }
+
+        // Build a ZuulMessage from the netty request.
+        Observable<ZuulMessage> chain = contextFactory.create(context, request);
 
         // Start timing the request.
-        chain = chain.doOnNext(ctx -> {
-            ctx.getRequestTiming().start();
+        chain = chain.doOnNext(msg -> {
+            msg.getContext().getRequestTiming().start();
         });
 
         // Choose if this is a Healtcheck request, or a normal request, and build the chain accordingly.
         if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
             // Handle healthcheck requests.
             // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
-            chain = chain.map(ctx -> healthCheckHandler.handle(ctx) );
+            chain = chain.map(msg -> healthCheckHandler.handle((HttpRequestMessage) msg) );
         }
         else {
             /**
              * Delegate all of the filter application logic to {@link FilterProcessor}.
              * This work is some combination of synchronous and asynchronous.
              */
-            chain = filterProcessor.applyAllFilters(chain);
+            chain = filterProcessor.applyInboundFilters(chain);
+            chain = filterProcessor.applyEndpointFilter(chain);
+            chain = filterProcessor.applyOutboundFilters(chain);
         }
 
         // After the request is handled, write out the response.
-        chain = chain.doOnNext(ctx -> stateFactory.write(ctx, response));
+        chain = chain.doOnNext(ctx -> contextFactory.write(ctx, response));
 
         // Record the execution time reported by Origin.
-        chain = chain.doOnNext(ctx -> recordReportedOriginDuration(ctx));
+        chain = chain.doOnNext(msg -> recordReportedOriginDuration((HttpResponseMessage) msg));
 
         // After complete, update metrics and access log.
-        chain = chain.map(ctx -> {
+        chain = chain.map(msg -> {
             // End the timing.
-            ctx.getRequestTiming().end();
+            msg.getContext().getRequestTiming().end();
 
             // Publish request timings.
-            publishTimings(ctx);
-
-            // Ensure some response info is correct in SessionContext for logging/metrics purposes.
-            HttpResponseMessage zuulResp = ctx.getHttpResponse();
-            zuulResp.setStatus(response.getStatus().code());
+            publishTimings(msg.getContext());
 
             // Notify requestComplete listener if configured.
             try {
                 if (requestCompleteHandler != null)
-                    requestCompleteHandler.handle(ctx);
-            } catch (Exception e) {
+                    requestCompleteHandler.handle((HttpResponseMessage) msg);
+            }
+            catch (Exception e) {
                 LOG.error("Error in RequestCompleteHandler.", e);
             }
-            return ctx;
+            return msg;
         });
 
         // Convert to an Observable<Void>.
@@ -143,17 +151,17 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
     /**
      * Record the duration that origin reports (if available).
      *
-     * @param context
+     * @param resp
      */
-    private void recordReportedOriginDuration(SessionContext context)
+    private void recordReportedOriginDuration(HttpResponseMessage resp)
     {
-        HttpResponseMessage resp = (HttpResponseMessage) context.getResponse();
         String reportedExecTimeStr = resp.getHeaders().getFirst("X-Netflix.execution-time");
         if (reportedExecTimeStr != null) {
             try {
                 int reportedExecTime = Integer.parseInt(reportedExecTimeStr);
-                context.setOriginReportedDuration(reportedExecTime);
-            } catch (Exception e) {
+                resp.getContext().setOriginReportedDuration(reportedExecTime);
+            }
+            catch (Exception e) {
                 LOG.error("Error parsing the X-Netflix.execution-time response header. value={}", reportedExecTimeStr);
             }
         }

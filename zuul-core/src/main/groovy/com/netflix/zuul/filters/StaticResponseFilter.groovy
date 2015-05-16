@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.filters
 
+import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
 
 import java.util.regex.Pattern
 
@@ -31,7 +31,7 @@ import java.util.regex.Pattern
  * Date: 2/2/12
  * Time: 1:34 PM
  */
-public abstract class StaticResponseFilter extends BaseSyncFilter {
+public abstract class StaticResponseFilter extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
 
     /**
      * Define a URI eg /static/content/path or List of URIs for this filter to return a static response.
@@ -39,11 +39,11 @@ public abstract class StaticResponseFilter extends BaseSyncFilter {
      */
     abstract def uri()
 
-    abstract String responseBody(SessionContext ctx)
+    abstract String responseBody(HttpRequestMessage request)
 
     @Override
     String filterType() {
-        return "static"
+        return "end"
     }
 
     @Override
@@ -52,8 +52,8 @@ public abstract class StaticResponseFilter extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        String path = ctx.getRequest().getPath()
+    boolean shouldFilter(HttpRequestMessage request) {
+        String path = request.getPath()
         if (checkPath(path)) return true
         if (checkPath("/" + path)) return true
         return false
@@ -77,17 +77,13 @@ public abstract class StaticResponseFilter extends BaseSyncFilter {
     }
 
     @Override
-    SessionContext apply(SessionContext ctx)
+    HttpResponseMessage apply(HttpRequestMessage request)
     {
-        HttpResponseMessage response = ctx.getResponse()
-        // Set the default response code for static filters to be 200
-        response.setStatus(200)
-        // first StaticResponseFilter instance to match wins, others do not set body and/or status
-        if (response.getBody() == null) {
-            response.setBody(responseBody(ctx).getBytes("UTF-8"))
-            ctx.getAttributes().setShouldProxy(false)
-        }
-        return ctx
+        HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200)
+        response.setBody(responseBody(request).getBytes("UTF-8"))
+        request.getContext().getAttributes().setShouldProxy(false)
+
+        return response
     }
 
 }

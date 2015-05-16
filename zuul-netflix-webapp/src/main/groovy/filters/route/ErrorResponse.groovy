@@ -13,7 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package pre
+package filters.route
 
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
@@ -30,11 +30,11 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-class ErrorResponse extends BaseSyncFilter {
+class ErrorResponse extends BaseSyncFilter<HttpRequestMessage, HttpResponseMessage> {
 
     @Override
     String filterType() {
-        return 'error'
+        return 'end'
     }
 
     @Override
@@ -43,20 +43,16 @@ class ErrorResponse extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return ctx.getAttributes().shouldSendErrorResponse() && (ctx.getAttributes().get("ErrorHandled") == null)
+    boolean shouldFilter(HttpRequestMessage req) {
+        return true
     }
 
-
     @Override
-    SessionContext apply(SessionContext context)
+    HttpResponseMessage apply(HttpRequestMessage request)
     {
-        // REQUIRED - Mark that an error filter has handled this request.
-        context.getAttributes().set("ErrorHandled")
-        context.getAttributes().setShouldSendErrorResponse(false)
+        SessionContext context = request.getContext()
 
-        HttpRequestMessage request = context.getRequest()
-        HttpResponseMessage response = context.getResponse()
+        HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
 
         Throwable ex = context.getAttributes().getThrowable()
         try {
@@ -79,7 +75,7 @@ class ErrorResponse extends BaseSyncFilter {
                 response.setStatus(e.nStatusCode);
             }
             context.getAttributes().setShouldProxy(false)
-            response.setBody("${getErrorMessage(context, e, e.nStatusCode)}".getBytes("UTF-8"))
+            response.setBody("${getErrorMessage(request, response, e, e.nStatusCode)}".getBytes("UTF-8"))
 
         } catch (Throwable throwable) {
             response.getHeaders().add("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
@@ -91,11 +87,11 @@ class ErrorResponse extends BaseSyncFilter {
                 response.setStatus(500);
             }
             context.getAttributes().setShouldProxy(false)
-            response.setBody("${getErrorMessage(context, throwable, 500)}".getBytes("UTF-8"))
+            response.setBody("${getErrorMessage(request, response, throwable, 500)}".getBytes("UTF-8"))
 
         }
 
-        return context
+        return response
     }
     /*
     JSON/ xml ErrorResponse responses
@@ -118,10 +114,7 @@ v=1 or unspecified:
 
      */
 
-    String getErrorMessage(SessionContext context, Throwable ex, int status_code) {
-
-        HttpRequestMessage request = context.getRequest()
-        HttpResponseMessage response = context.getResponse()
+    String getErrorMessage(HttpRequestMessage request, HttpResponseMessage response, Throwable ex, int status_code) {
 
         String ver = getVersion(request)
         String format = getOutputType(request)
@@ -205,7 +198,6 @@ v=1 or unspecified:
 
         ErrorResponse filter
         SessionContext ctx
-        HttpResponseMessage response
         Throwable th
 
         @Mock
@@ -216,8 +208,7 @@ v=1 or unspecified:
         @Before
         public void setup() {
             filter = new ErrorResponse()
-            response = new HttpResponseMessage(99)
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
             queryParams = new HttpQueryParams()
             Mockito.when(request.getQueryParams()).thenReturn(queryParams)
             th = new Exception("test")
@@ -229,7 +220,7 @@ v=1 or unspecified:
             queryParams.set("v", "1.0")
             queryParams.set("override_error_status", "true")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.contains("<message>test</message>"))
@@ -241,7 +232,7 @@ v=1 or unspecified:
         public void testErrorXMLv10OverrideErrorStatus() {
             queryParams.set("v", "1.0")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.contains("<message>test</message>"))
@@ -252,7 +243,7 @@ v=1 or unspecified:
 
         @Test
         public void testErrorXML() {
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.contains("<message>test</message>"))
@@ -264,7 +255,7 @@ v=1 or unspecified:
         public void testErrorXMLv20() {
             queryParams.set("v", "2.0")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.contains("<message>test</message>"))
@@ -276,7 +267,7 @@ v=1 or unspecified:
         public void testErrorJSON() {
             queryParams.set("output", "json")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.equals("{\"status\": {\"message\": \"test\", \"status_code\": 500}}"))
@@ -288,7 +279,7 @@ v=1 or unspecified:
             queryParams.set("output", "json")
             queryParams.set("v", "2.0")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertTrue(body.equals("{\"status\": {\"message\": \"test\"}}"))
@@ -302,7 +293,7 @@ v=1 or unspecified:
             queryParams.set("v", "2.0")
             queryParams.set("callback", "moo")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertEquals(body, "moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});")
@@ -314,7 +305,7 @@ v=1 or unspecified:
             queryParams.set("output", "json")
             queryParams.set("callback", "moo")
 
-            filter.apply(ctx);
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertEquals(body, "moo({\"status\": {\"message\": \"test\", \"status_code\": 500}});")
@@ -327,8 +318,8 @@ v=1 or unspecified:
             queryParams.set("output", "json")
             queryParams.set("v", "2.0")
             queryParams.set("override_error_status", "true")
-            
-            filter.apply(ctx);
+
+            HttpResponseMessage response = filter.apply(request);
 
             String body = response.getBody() ? new String(response.getBody(), "UTF-8") : ""
             Assert.assertEquals(body, "{\"status\": {\"message\": \"test\", \"status_code\": 500}}")
