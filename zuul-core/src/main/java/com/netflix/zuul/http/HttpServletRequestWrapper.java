@@ -165,7 +165,9 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
 
             final boolean isPost = req.getMethod().equals("POST");
-            final boolean isFormBody = req.getContentType().contains("application/x-www-form-urlencoded");
+
+            String contentType = req.getContentType();
+            final boolean isFormBody = contentType != null && contentType.contains("application/x-www-form-urlencoded");
 
             // only does magic body param parsing for POST form bodies
             if (isPost && isFormBody) {
@@ -843,6 +845,17 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             method("POST");
             body("one=1&two=2".getBytes());
             contentType("application/json");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
+        }
+
+        @Test
+        public void handlesPostsWithNoContentTypeHeader() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType(null);
 
             final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
             final Map params = wrapper.getParameterMap();
