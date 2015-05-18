@@ -13,13 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.route
+package filters.endpoint
 
 import com.netflix.client.http.HttpResponse
 import com.netflix.zuul.context.*
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.AsyncFilter
-import com.netflix.zuul.filters.BaseFilter
+import com.netflix.zuul.filters.Endpoint
 import com.netflix.zuul.rxnetty.RxNettyOrigin
 import com.netflix.zuul.rxnetty.RxNettyOriginManager
 import org.junit.Assert
@@ -33,30 +32,14 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
 
-class ZuulNFRequest extends BaseFilter implements AsyncFilter
+class ZuulNFRequest extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulNFRequest.class);
 
-
     @Override
-    String filterType() {
-        return 'route'
-    }
-
-    @Override
-    int filterOrder() {
-        return 10
-    }
-
-    @Override
-    boolean shouldFilter(SessionContext ctx) {
-        return ctx.getAttributes().getRouteVIP()
-    }
-
-    @Override
-    Observable<SessionContext> applyAsync(SessionContext context)
+    Observable<HttpResponseMessage> applyAsync(HttpRequestMessage request)
     {
-        HttpRequestMessage request = context.getRequest()
+        SessionContext context = request.getContext()
         Attributes attrs = context.getAttributes()
 
         debug(context, request)
@@ -113,7 +96,9 @@ class ZuulNFRequest extends BaseFilter implements AsyncFilter
         @Before
         public void setup()
         {
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 99)
         }
 
 
@@ -125,7 +110,7 @@ class ZuulNFRequest extends BaseFilter implements AsyncFilter
             Mockito.when(ctx.getAttributes()).thenReturn(attrs)
 
             ZuulNFRequest filter = new ZuulNFRequest()
-            Assert.assertFalse(filter.shouldFilter())
+            Assert.assertFalse(filter.shouldFilter(request))
         }
     }
 

@@ -13,11 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.pre
+package filters.inbound
 
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,7 +26,7 @@ import org.slf4j.LoggerFactory
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends BaseSyncFilter
+class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
 {
     protected static final Logger LOG = LoggerFactory.getLogger(Routing.class);
 
@@ -38,19 +37,18 @@ class Routing extends BaseSyncFilter
 
     @Override
     String filterType() {
-        return "pre"
+        return "in"
     }
 
     @Override
-    boolean shouldFilter(SessionContext ctx) {
+    boolean shouldFilter(HttpRequestMessage request) {
         return true
     }
 
     @Override
-    SessionContext apply(SessionContext ctx) {
+    HttpRequestMessage apply(HttpRequestMessage request) {
 
-        Attributes attrs = ctx.getAttributes()
-        HttpRequestMessage request = ctx.getRequest()
+        Attributes attrs = request.getContext().getAttributes()
 
         // Choose vip to proxy to.
         if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
@@ -65,6 +63,6 @@ class Routing extends BaseSyncFilter
             attrs.setRouteVIP("netflix")
         }
 
-        return ctx
+        return request
     }
 }

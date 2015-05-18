@@ -23,7 +23,7 @@ public class HttpResponseMessage extends ZuulMessage
         this.status = status;
     }
 
-    public HttpRequestMessage getHttpRequest() {
+    public HttpRequestMessage getRequest() {
         return request;
     }
 
@@ -44,7 +44,7 @@ public class HttpResponseMessage extends ZuulMessage
     public String getInfoForLogging()
     {
         StringBuilder sb = new StringBuilder()
-                .append(getHttpRequest().getInfoForLogging())
+                .append(getRequest().getInfoForLogging())
                 .append(",proxy-status=").append(getStatus())
                 ;
         return sb.toString();

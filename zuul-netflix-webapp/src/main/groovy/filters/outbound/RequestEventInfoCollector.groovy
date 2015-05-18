@@ -56,7 +56,7 @@ class RequestEventInfoCollector extends BaseSyncFilter<HttpResponseMessage, Http
     {
         final Map<String, Object> event = response.getContext().getAttributes().getEventProperties();
         try {
-            captureRequestData(event, response.getHttpRequest(), response);
+            captureRequestData(event, response.getRequest(), response);
             captureInstanceData(event);
         }
         catch (Exception e) {

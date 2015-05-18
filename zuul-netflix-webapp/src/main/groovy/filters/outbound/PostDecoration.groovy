@@ -49,7 +49,7 @@ class PostDecoration extends BaseSyncFilter<HttpResponseMessage, HttpResponseMes
 
     void addStandardResponseHeaders(HttpResponseMessage response) {
 
-        String originatingURL = getOriginatingURL(response.getHttpRequest())
+        String originatingURL = getOriginatingURL(response.getRequest())
         Attributes attrs = response.getContext().getAttributes()
 
         Headers headers = response.getHeaders()

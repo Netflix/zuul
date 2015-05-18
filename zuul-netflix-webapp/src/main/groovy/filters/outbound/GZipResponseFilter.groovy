@@ -60,7 +60,7 @@ class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpRespons
     @Override
     HttpResponseMessage apply(HttpResponseMessage response)
     {
-        HttpRequestMessage request = response.getHttpRequest()
+        HttpRequestMessage request = response.getRequest()
 
         byte[] body = response.getBody()
 

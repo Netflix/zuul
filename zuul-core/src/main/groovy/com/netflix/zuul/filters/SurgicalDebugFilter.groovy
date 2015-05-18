@@ -23,7 +23,6 @@ import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.context.ZuulMessage
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -32,7 +31,7 @@ import com.netflix.zuul.context.ZuulMessage
  * Date: 6/27/12
  * Time: 12:54 PM
  */
-public abstract class SurgicalDebugFilter extends BaseSyncFilter {
+public abstract class SurgicalDebugFilter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
 
     /**
      * Returning true by the pattern or logic implemented in this method will route the request to the specified origin
@@ -53,7 +52,7 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter {
     }
 
     @Override
-    boolean shouldFilter(ZuulMessage msg) {
+    boolean shouldFilter(HttpRequestMessage request) {
 
         DynamicBooleanProperty debugFilterShutoff = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
@@ -61,23 +60,20 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter {
 
         if (isDisabled()) return false;
 
-        if (msg instanceof HttpRequestMessage) {
-            String isSurgicalFilterRequest = ((HttpRequestMessage) msg).getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
-            if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
-        }
+        String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER)
+        if ("true".equals(isSurgicalFilterRequest)) return false; // dont' apply filter if it was already applied
 
         return patternMatches();
     }
 
 
     @Override
-    ZuulMessage apply(ZuulMessage msg)
+    HttpRequestMessage apply(HttpRequestMessage request)
     {
         DynamicStringProperty routeVip = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
         DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
-        HttpRequestMessage request = msg
-        SessionContext ctx = msg.getContext()
+        SessionContext ctx = request.getContext()
 
         if (routeVip.get() != null || routeHost.get() != null) {
 
@@ -93,5 +89,6 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter {
             ctx.getAttributes().zuulToZuul = true
 
         }
+        return request
     }
 }

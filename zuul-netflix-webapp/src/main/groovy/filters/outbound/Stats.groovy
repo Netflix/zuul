@@ -57,7 +57,7 @@ class Stats extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
         SessionContext ctx = response.getContext()
         int status = response.getStatus()
         StatsManager sm = StatsManager.manager
-        sm.collectRequestStats(response.getHttpRequest());
+        sm.collectRequestStats(response.getRequest());
         sm.collectRouteStats(ctx.getAttributes().route, status);
         dumpRoutingDebug(ctx)
         dumpRequestDebug(ctx)
