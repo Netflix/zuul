@@ -95,20 +95,23 @@ public class FilterProcessor {
         return chain.flatMap(msg -> {
 
             // If flagged to, then apply the error endpoint filter.
-            if (msg.getAttributes().shouldSendErrorResponse()) {
+            Attributes attributes = msg.getContext().getAttributes();
+            if (attributes.shouldSendErrorResponse()) {
 
                 // Get the error endpoint filter to use.
-                String endpointName = (String) msg.getAttributes().get("error-endpoint");
+                String endpointName = (String) attributes.get("error-endpoint");
                 if (endpointName == null) {
                     endpointName = DEFAULT_ERROR_ENDPOINT.get();
                 }
-                ZuulFilter endpointFilter = filterLoader.getFilterByName(endpointName);
+                ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
                 if (endpointFilter == null) {
-                    throw new ZuulException("No endpoint filter found of chosen name! name=" + endpointName);
+                    attributes.setShouldSendErrorResponse(true);
+                    attributes.setThrowable(new ZuulException("No error filter found of chosen name! name=" + endpointName));
+                    return Observable.just(msg);
                 }
 
                 // Un-flag this as needing the error filter.
-                msg.getAttributes().setShouldSendErrorResponse(false);
+                attributes.setShouldSendErrorResponse(false);
 
                 // Apply this endpoint.
                 return processAsyncFilter(msg, endpointFilter);
@@ -122,28 +125,35 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
     {
-        return chain.flatMap(msg -> {
+        chain = chain.flatMap(msg -> {
 
             // Get the previously chosen endpoint filter to use.
+            Attributes attributes = msg.getContext().getAttributes();
             String endpointName = (String) msg.getAttributes().get("endpoint");
             if (endpointName == null) {
-                throw new ZuulException("No endpoint filter chosen!");
+                attributes.setShouldSendErrorResponse(true);
+                attributes.setThrowable(new ZuulException("No endpoint filter chosen!"));
+                return Observable.just(msg);
             }
-            ZuulFilter endpointFilter = filterLoader.getFilterByName(endpointName);
+            ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
-                throw new ZuulException("No endpoint filter found of chosen name! name=" + endpointName);
+                attributes.setShouldSendErrorResponse(true);
+                attributes.setThrowable(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
+                return Observable.just(msg);
             }
 
             // Apply this endpoint.
             return processAsyncFilter(msg, endpointFilter);
         });
+
+        // Apply the error filters AGAIN. This is for if there was an error during the endpoint phase.
+        chain = applyErrorFilterIfNeeded(chain);
+
+        return chain;
     }
 
     public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
     {
-        // Apply the error filters AGAIN. This is for if there was an error during the route/proxy phase.
-        chain = applyErrorFilterIfNeeded(chain);
-
         // Apply POST filters.
         chain = applyFilterPhase(chain, "out");
 
@@ -196,7 +206,7 @@ public class FilterProcessor {
                 // Only apply the filter if both the shouldFilter() method AND any additional
                 // ShouldFilter impl pass.
                 if (filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg);
+                    resultObs = filter.applyAsync(msg).single();
                 } else {
                     resultObs = Observable.just(msg);
                     info.status = ExecutionStatus.SKIPPED;

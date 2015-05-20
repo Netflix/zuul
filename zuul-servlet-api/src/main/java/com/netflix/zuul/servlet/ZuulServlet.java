@@ -40,10 +40,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
+import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 
@@ -66,7 +64,7 @@ public class ZuulServlet extends HttpServlet {
     @Inject
     private FilterFileManager filterManager;
 
-    @javax.inject.Inject
+    @Inject
     private ServletSessionContextFactory contextFactory;
 
     @Inject @Nullable

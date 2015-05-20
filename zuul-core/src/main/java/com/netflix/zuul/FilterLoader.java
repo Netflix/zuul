@@ -57,6 +57,7 @@ public class FilterLoader
     private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
+    private final ConcurrentHashMap<String, ZuulFilter> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private FilterRegistry filterRegistry = new FilterRegistry();
 
@@ -151,6 +152,10 @@ public class FilterLoader
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
                 }
+
+                String nameAndType = filter.filterType() + ":" + filter.filterName();
+                filtersByNameAndType.put(nameAndType, filter);
+
                 filterRegistry.put(file.getAbsolutePath() + file.getName(), filter);
                 filterClassLastModified.put(sName, file.lastModified());
                 return true;
@@ -193,9 +198,13 @@ public class FilterLoader
         return list;
     }
 
-    public ZuulFilter getFilterByName(String name)
+    public ZuulFilter getFilterByNameAndType(String name, String type)
     {
-        return filterRegistry.get(name);
+        if (name == null || type == null)
+            return null;
+
+        String nameAndType = type + ":" + name;
+        return filtersByNameAndType.get(nameAndType);
     }
 
 

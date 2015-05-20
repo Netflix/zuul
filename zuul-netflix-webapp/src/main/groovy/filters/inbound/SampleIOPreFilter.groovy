@@ -1,7 +1,10 @@
 package filters.inbound
 
+import com.netflix.client.ClientFactory
+import com.netflix.client.http.HttpRequest
+import com.netflix.client.http.HttpResponse
+import com.netflix.niws.client.http.RestClient
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.BaseFilter
@@ -34,22 +37,36 @@ class SampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessag
         }
 
         // Make the request.
-        HttpRequestMessage testRequest = new HttpRequestMessage("HTTP/1.1", "get", "/account/geo", null, null,
-                request.getClientIp(), "http")
-        Observable<HttpResponseMessage> resultObs = origin.request(testRequest)
+        int sampleStatus = makeSampleRemoteRequest("origin")
 
-        resultObs = resultObs.map({ resp ->
+        // Get the result of the call.
+        context.getAttributes().set("SampleIOPreFilter_status", sampleStatus)
+        LOG.info("Received response for SampleIOPreFilter http call. status=${sampleStatus}")
 
-            // Get the result of the call.
-            int status = resp.getStatus()
-            context.getAttributes().set("SampleIOPreFilter_status", status)
-            LOG.info("Received response for SampleIOPreFilter http call. status=${status}")
+        return Observable.just(request)
+    }
 
-            // Swap the original request back into the Observable returned.
-            return request
-        })
+    int makeSampleRemoteRequest(String restClientName)
+    {
+        RestClient client = (RestClient) ClientFactory.getNamedClient(restClientName);
 
-        return resultObs
+        URI uri = URI.create("/account/geo");
+        HttpRequest.Verb verb = HttpRequest.Verb.GET
+        HttpRequest.Builder builder = HttpRequest.newBuilder().
+                verb(verb).
+                uri(uri);
+        HttpRequest httpClientRequest = builder.build();
+
+        // Execute the request.
+        HttpResponse ribbonResp;
+        try {
+            ribbonResp = client.executeWithLoadBalancer(httpClientRequest);
+        }
+        catch (Exception e) {
+            throw new ZuulException(e);
+        }
+
+        return ribbonResp.getStatus()
     }
 
     @Override

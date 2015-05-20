@@ -74,4 +74,21 @@ jettyRun.contextPath = '/'
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
     System.setProperty("archaius.deployment.stack", "local")
+    System.setProperty("archaius.deployment.region", "us-east-1")
+    System.setProperty("archaius.deployment.environment", "test")
+    System.setProperty("zuul.filters.root", "/Users/michaels/Projects/oss-zuul-1/zuul-netflix-webapp/src/main/groovy/filters")
+}
+
+task integrationTest(type: Test) {
+    include '**/*IntegrationTest*'
+    doFirst {
+        jettyRun.httpPort = 8080    // Port for test
+        jettyRun.daemon = true
+        jettyRun.execute()
+    }
+    doLast {
+        jettyStop.stopPort = 8091   // Port for stop signal
+        jettyStop.stopKey = 'stopKey'
+        jettyStop.execute()
+    }
 }

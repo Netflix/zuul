@@ -53,7 +53,7 @@ import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
 
 public class StartServer extends GuiceServletContextListener {
 
-    private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_CASSANDRA_ENABLED, true);
+    private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_CASSANDRA_ENABLED, false);
     private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
     private final KaryonServer server;
 
