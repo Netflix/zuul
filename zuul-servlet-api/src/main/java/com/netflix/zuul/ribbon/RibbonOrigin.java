@@ -6,10 +6,7 @@ import com.netflix.client.http.CaseInsensitiveMultiMap;
 import com.netflix.client.http.HttpRequest;
 import com.netflix.client.http.HttpResponse;
 import com.netflix.niws.client.http.RestClient;
-import com.netflix.zuul.context.Headers;
-import com.netflix.zuul.context.HttpQueryParams;
-import com.netflix.zuul.context.HttpRequestMessage;
-import com.netflix.zuul.context.HttpResponseMessage;
+import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.stats.Timing;
@@ -20,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.io.ByteArrayInputStream;
@@ -35,6 +34,8 @@ import java.util.Map;
  */
 public class RibbonOrigin implements Origin
 {
+    private static final Logger LOG = LoggerFactory.getLogger(RibbonOrigin.class);
+
     private final String name;
 
     public RibbonOrigin(String name)
@@ -51,9 +52,10 @@ public class RibbonOrigin implements Origin
     @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
     {
+        SessionContext context = requestMsg.getContext();
         RestClient client = (RestClient) ClientFactory.getNamedClient(name);
         if (client == null) {
-            throw new ZuulException("No RestClient found for name! name=" + String.valueOf(name));
+            throw proxyError(requestMsg, new IllegalArgumentException("No RestClient found for name! name=" + String.valueOf(name)), null);
         }
 
         // Convert to a ribbon request.
@@ -81,7 +83,7 @@ public class RibbonOrigin implements Origin
 
         HttpRequest httpClientRequest = builder.build();
 
-        final Timing timing = requestMsg.getContext().getRequestProxyTiming();
+        final Timing timing = context.getRequestProxyTiming();
         timing.start();
 
         // Execute the request.
@@ -90,7 +92,10 @@ public class RibbonOrigin implements Origin
             ribbonResp = client.executeWithLoadBalancer(httpClientRequest);
         }
         catch (ClientException e) {
-            throw new ZuulException(e, "Forwarding error", 500, e.getErrorType().toString());
+            throw proxyError(requestMsg, e, e.getErrorType().toString());
+        }
+        catch(Exception e) {
+            throw proxyError(requestMsg, e, null);
         }
         finally {
             timing.end();
@@ -99,6 +104,25 @@ public class RibbonOrigin implements Origin
 
         // Return response wrapped in an Observable.
         return Observable.just(respMsg);
+    }
+
+    protected ZuulException proxyError(HttpRequestMessage zuulReq, Throwable t, String errorCauseMsg)
+    {
+        // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
+        zuulReq.getContext().getAttributes().setShouldSendErrorResponse(true);
+
+        LOG.error(String.format("Error making http request to Origin. restClientName=%s, url=%s",
+                this.name, zuulReq.getPathAndQuery()), t);
+
+        if (errorCauseMsg == null) {
+            if (t.getCause() != null) {
+                errorCauseMsg = t.getCause().getMessage();
+            }
+        }
+        if (errorCauseMsg == null)
+            errorCauseMsg = "unknown";
+
+        return new ZuulException(t, "Proxying error", 500, errorCauseMsg);
     }
 
     protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)

@@ -74,47 +74,6 @@ public class RxNettyOrigin implements Origin {
         return loadBalancer;
     }
 
-    @Override
-    public Observable<SessionContext> request(SessionContext ctx)
-    {
-        final AtomicBoolean isSuccess = new AtomicBoolean(true);
-
-        final Timing timing = ctx.getRequestProxyTiming();
-        timing.start();
-        if (stats != null)
-            stats.started();
-
-        return request(ctx.getHttpRequest())
-                .doOnNext(originResp -> {
-                    // Store the status from origin (in case it's later overwritten).
-                    ctx.getAttributes().put("origin_http_status", Integer.toString(originResp.getStatus()));
-                })
-                .map(originResp -> {
-                    // Copy the response from Origin onto the SessionContext.
-                    HttpResponseMessage zuulResp = ctx.getHttpResponse();
-                    zuulResp.setStatus(originResp.getStatus());
-                    zuulResp.getHeaders().putAll(originResp.getHeaders());
-                    zuulResp.setBody(originResp.getBody());
-                    return ctx;
-                })
-                .doOnError(t -> {
-                            isSuccess.set(false);
-
-                            // TODO - Integrate ocelli for retry logic here.
-
-                            // TODO - Add NIWS Attempts data to context.
-
-                            // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
-                            ctx.getAttributes().put("error", t);
-
-                            LOG.error("Error making http request.", t);
-                        }
-                ).finallyDo(() -> {
-                    timing.end();
-                    if (stats != null)
-                        stats.completed(isSuccess.get(), timing.getDuration());
-                });
-    }
 
     @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
@@ -126,10 +85,34 @@ public class RxNettyOrigin implements Origin {
         // Convert to rxnetty ServerInfo impl.
         RxClient.ServerInfo rxNettyServerInfo = new RxClient.ServerInfo(serverInfo.getHost(), serverInfo.getPort());
 
-        // Construct.
-        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest);
+        // Start timing.
+        SessionContext ctx = requestMsg.getContext();
+        final Timing timing = ctx.getRequestProxyTiming();
+        timing.start();
+        if (stats != null)
+            stats.started();
 
-        return RxNettyUtils.bufferHttpClientResponse(respObs);
+        final AtomicBoolean isSuccess = new AtomicBoolean(true);
+
+        // Construct.
+        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest)
+        .doOnError(t -> {
+                isSuccess.set(false);
+
+                // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
+                ctx.getAttributes().setShouldSendErrorResponse(true);
+
+                LOG.error(String.format("Error making http request to Origin. vip=%s, url=%s, target-host=%s",
+                        this.vip, requestMsg.getPathAndQuery(), serverInfo.getHost()), t);
+            }
+        )
+        .finallyDo(() -> {
+            timing.end();
+            if (stats != null)
+                stats.completed(isSuccess.get(), timing.getDuration());
+        });
+
+        return RxNettyUtils.bufferHttpClientResponse(requestMsg, respObs);
     }
 
     private CompositeHttpClient<ByteBuf, ByteBuf> createCompositeHttpClient()

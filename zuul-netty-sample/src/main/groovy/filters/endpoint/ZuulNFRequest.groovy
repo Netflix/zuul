@@ -19,6 +19,7 @@ import com.netflix.client.http.HttpResponse
 import com.netflix.zuul.context.*
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.Endpoint
+import com.netflix.zuul.monitoring.MonitoringHelper
 import com.netflix.zuul.rxnetty.RxNettyOrigin
 import com.netflix.zuul.rxnetty.RxNettyOriginManager
 import org.junit.Assert
@@ -31,6 +32,12 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
+
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
+import static org.mockito.Mockito.mock
+import static org.mockito.Mockito.when
 
 class ZuulNFRequest extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 {
@@ -49,11 +56,19 @@ class ZuulNFRequest extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         RxNettyOriginManager originManager = context.getHelpers().get("origin_manager")
         RxNettyOrigin origin = originManager.getOrigin(name)
         if (origin == null) {
+            attrs.setShouldSendErrorResponse(true)
             throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
         }
 
         // Add execution of the request to the Observable chain, and return.
-        return origin.request(context)
+        Observable<HttpResponseMessage> respObs = origin.request(request)
+
+        // Store the status from origin (in case it's later overwritten).
+        respObs = respObs.doOnNext({ originResp ->
+            context.getAttributes().put("origin_http_status", Integer.toString(originResp.getStatus()));
+        })
+
+        return respObs
     }
 
 
@@ -82,35 +97,58 @@ class ZuulNFRequest extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
+    public static class TestUnit
+    {
+        @Mock
+        RxNettyOriginManager originManager
+        @Mock
+        RxNettyOrigin origin
 
-        @Mock
-        HttpResponse proxyResp
-        @Mock
-        HttpResponseMessage response
         @Mock
         HttpRequestMessage request
 
+        ZuulNFRequest filter
         SessionContext ctx
+        HttpResponseMessage response
 
         @Before
         public void setup()
         {
+            MonitoringHelper.initMocks();
+            filter = new ZuulNFRequest()
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 99)
+            response = new HttpResponseMessage(ctx, request, 202)
+
+            when(originManager.getOrigin("an-origin")).thenReturn(origin)
+            ctx.getHelpers().put("origin_manager", originManager)
         }
 
+        @Test
+        public void testApply()
+        {
+            ctx.getAttributes().setRouteVIP("an-origin")
+            when(origin.request(request)).thenReturn(Observable.just(response))
+
+            Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
+            respObs.toBlocking().single()
+
+            assertEquals("202", ctx.getAttributes().get("origin_http_status"))
+        }
 
         @Test
-        public void testShouldFilter() {
-
-            Attributes attrs = new Attributes()
-            attrs.setRouteHost(new URL("http://www.moldfarm.com"))
-            Mockito.when(ctx.getAttributes()).thenReturn(attrs)
-
-            ZuulNFRequest filter = new ZuulNFRequest()
-            Assert.assertFalse(filter.shouldFilter(request))
+        public void testApply_NoOrigin()
+        {
+            ctx.getAttributes().setRouteVIP("a-different-origin")
+            try {
+                Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
+                respObs.toBlocking().single()
+                fail()
+            }
+            catch(ZuulException) {
+                //
+            }
+            assertTrue(ctx.getAttributes().shouldSendErrorResponse())
         }
     }
 

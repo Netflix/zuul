@@ -15,13 +15,11 @@
  */
 package filters.endpoint
 
-import com.netflix.client.http.HttpResponse
 import com.netflix.zuul.context.*
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,6 +28,8 @@ import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import static org.junit.Assert.assertEquals
 
 class ZuulNFRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
 {
@@ -81,10 +81,8 @@ class ZuulNFRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        @Mock
-        HttpResponse proxyResp
+    public static class TestUnit
+    {
         @Mock
         HttpResponseMessage response
         @Mock
@@ -95,18 +93,31 @@ class ZuulNFRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
         @Before
         public void setup()
         {
-            ctx = new SessionContext(request, response)
+            ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+            response = new HttpResponseMessage(ctx, request, 200)
         }
 
         @Test
-        public void testShouldFilter() {
-
-            Attributes attrs = new Attributes()
-            attrs.setRouteHost(new URL("http://www.moldfarm.com"))
-            Mockito.when(ctx.getAttributes()).thenReturn(attrs)
-
+        public void testDebug()
+        {
             ZuulNFRequest filter = new ZuulNFRequest()
-            Assert.assertFalse(filter.shouldFilter())
+            ctx.getAttributes().setDebugRequest(true)
+
+            Headers headers = new Headers()
+            headers.add("lah", "deda")
+
+            HttpQueryParams params = new HttpQueryParams()
+            params.add("k1", "v1")
+
+            HttpRequestMessage request = new HttpRequestMessage(ctx, "HTTP/1.1", "POST", "/some/where", params, headers, "9.9.9.9", "https")
+
+            filter.debug(ctx, request)
+
+            List<String> debugLines = Debug.getRequestDebug(ctx)
+            assertEquals(2, debugLines.size())
+            assertEquals("ZUUL:: > lah  deda", debugLines.get(0))
+            assertEquals("ZUUL:: > POST  /some/where?k1=v1& HTTP/1.1", debugLines.get(1))
         }
     }
 

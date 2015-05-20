@@ -103,14 +103,12 @@ class Stats extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
         @Test
         public void testHeaderResponse() {
 
+            Assert.assertTrue(filter.filterType().equals("out"))
+
             ctx.getAttributes().route = "testStats"
+            filter.apply(response)
 
-            filter.apply(ctx)
-
-            Assert.assertTrue(StatsManager.manager.getRouteStatusCodeMonitor("testStats", 200) != null)
-
-            Assert.assertTrue(filter.filterType().equals("post"))
-            Assert.assertTrue(filter.shouldFilter())
+            Assert.assertTrue(StatsManager.manager.getRouteStatusCodeMonitor("testStats", 99) != null)
         }
 
     }

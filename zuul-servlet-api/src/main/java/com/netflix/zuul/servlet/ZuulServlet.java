@@ -35,12 +35,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -113,21 +116,18 @@ public class ZuulServlet extends HttpServlet {
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
+    public static class UnitTest
+    {
         @Mock
         HttpServletRequest servletRequest;
-
         @Mock
         HttpServletResponse servletResponse;
-
+        @Mock
+        ServletOutputStream servletOutputStream;
         @Mock
         FilterProcessor processor;
         @Mock
-        ServletSessionContextFactory contextFactory;
-        @Mock
         SessionContext context;
-
         @Mock
         HttpRequestMessage request;
 
@@ -135,6 +135,8 @@ public class ZuulServlet extends HttpServlet {
         HttpResponseMessage response;
 
         ZuulServlet servlet;
+        ServletInputStreamWrapper servletInputStream;
+        ServletSessionContextFactory contextFactory;
 
 
         @Before
@@ -142,29 +144,61 @@ public class ZuulServlet extends HttpServlet {
             MonitoringHelper.initMocks();
             MockitoAnnotations.initMocks(this);
 
-            when(servletRequest.getMethod()).thenReturn("get");
-
+            contextFactory = new ServletSessionContextFactory();
             servlet = new ZuulServlet();
             servlet.contextFactory = contextFactory;
             servlet = spy(servlet);
-            when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
+            servlet.processor = processor;
 
-            when(contextFactory.create(context, servletRequest)).thenReturn(Observable.just(request));
+            when(servletRequest.getHeaderNames()).thenReturn(Collections.<String>emptyEnumeration());
+            servletInputStream = new ServletInputStreamWrapper("{}".getBytes());
+            when(servletRequest.getInputStream()).thenReturn(servletInputStream);
+            when(servletResponse.getOutputStream()).thenReturn(servletOutputStream);
+
+            //when(contextFactory.create(context, servletRequest)).thenReturn(Observable.just(request));
 
             attributes = new Attributes();
             response = new HttpResponseMessage(context, request, 299);
             when(context.getAttributes()).thenReturn(attributes);
 
+            when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));
+            when(processor.applyEndpointFilter(Matchers.any())).thenReturn(Observable.just(response));
             when(processor.applyOutboundFilters(Matchers.any())).thenReturn(Observable.just(response));
         }
 
         @Test
         public void testService() throws Exception
         {
+            when(servletRequest.getMethod()).thenReturn("get");
+            when(servletRequest.getRequestURI()).thenReturn("/some/where?k1=v1");
+            response.getHeaders().set("new", "value");
+
             servlet.service(servletRequest, servletResponse);
 
             verify(servletResponse).setStatus(299);
+            verify(servletResponse).setHeader("new", "value");
         }
     }
 
+
+    /**
+     * Only for unit-testing purposes.
+     */
+    static class ServletInputStreamWrapper extends ServletInputStream
+    {
+        private byte[] data;
+        private int idx = 0;
+
+        public ServletInputStreamWrapper(byte[] data) {
+            if(data == null) {
+                data = new byte[0];
+            }
+
+            this.data = data;
+        }
+
+        public int read() throws IOException {
+            return this.idx == this.data.length?-1:this.data[this.idx++] & 255;
+        }
+    }
 }

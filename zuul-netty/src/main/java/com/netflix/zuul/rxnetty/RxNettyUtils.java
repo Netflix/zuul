@@ -3,7 +3,6 @@ package com.netflix.zuul.rxnetty;
 import com.netflix.zuul.context.Headers;
 import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
-import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpMethod;
@@ -40,9 +39,9 @@ public class RxNettyUtils
         }
     }
 
-    public static HttpResponseMessage clientResponseToZuulResponse(HttpClientResponse<ByteBuf> resp)
+    public static HttpResponseMessage clientResponseToZuulResponse(HttpRequestMessage zuulRequest, HttpClientResponse<ByteBuf> resp)
     {
-        HttpResponseMessage zuulResp = new HttpResponseMessage(500);
+        HttpResponseMessage zuulResp = new HttpResponseMessage(zuulRequest.getContext(), zuulRequest, 500);
 
         // Copy the response headers and info into the RequestContext for use by post filters.
         if (resp.getStatus() != null) {
@@ -71,11 +70,12 @@ public class RxNettyUtils
         return clientReq;
     }
 
-    public static Observable<HttpResponseMessage> bufferHttpClientResponse(Observable<HttpClientResponse<ByteBuf>> clientResp)
+    public static Observable<HttpResponseMessage> bufferHttpClientResponse(HttpRequestMessage zuulReq,
+                                                                           Observable<HttpClientResponse<ByteBuf>> clientResp)
     {
         return clientResp.flatMap(resp -> {
 
-            HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(resp);
+            HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(zuulReq, resp);
 
             PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
             //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();

@@ -17,6 +17,19 @@ dependencies {
     compile 'junit:junit-dep:4.10'
 }
 
+sourceSets {
+    test {
+        java {
+            srcDirs  = ['src/main/java']
+            include '**/*.java'
+        }
+        groovy {
+            srcDirs  = ['src/main/groovy']
+            include '**/*.groovy'
+        }
+    }
+}
+
 javadoc {
     options {
         doclet = "org.benjchristensen.doclet.DocletExclude"

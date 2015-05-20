@@ -331,7 +331,7 @@ public class FilterProcessor {
         @Test
         public void testProcessFilter() throws Exception
         {
-            when(filter.apply(request)).thenReturn(request);
+            when(filter.applyAsync(request)).thenReturn(Observable.just(request));
             processor.processAsyncFilter(request, filter).toBlocking().first();
             verify(filter, times(1)).applyAsync(request);
         }
@@ -348,7 +348,7 @@ public class FilterProcessor {
         public void testProcessFilterException()
         {
             Exception e = new RuntimeException("Blah");
-            when(filter.apply(request)).thenThrow(e);
+            when(filter.applyAsync(request)).thenThrow(e);
             processor.processAsyncFilter(request, filter).toBlocking().first();
 
             verify(processor).recordFilterError(filter, request, e);

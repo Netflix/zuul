@@ -15,6 +15,7 @@
  */
 package filters.endpoint
 
+import com.netflix.client.http.CaseInsensitiveMultiMap
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.constants.ZuulConstants
@@ -24,7 +25,12 @@ import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
-import org.apache.http.*
+import org.apache.http.Header
+import org.apache.http.HttpEntity
+import org.apache.http.HttpHeaders
+import org.apache.http.HttpHost
+import org.apache.http.HttpRequest
+import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -302,8 +308,8 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         return respMsg;
     }
 
-    boolean isValidHeader(Header header) {
-        switch (header.name.toLowerCase()) {
+    boolean isValidHeader(String name) {
+        switch (name.toLowerCase()) {
             case "connection":
             case "content-length":
             case "content-encoding":
@@ -318,11 +324,8 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        @Mock
-        com.netflix.client.http.HttpResponse proxyResp
-
+    public static class TestUnit
+    {
         @Mock
         HttpRequestMessage request
 
@@ -346,22 +349,18 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
             ZuulHostRequest filter = new ZuulHostRequest()
             filter = Mockito.spy(filter)
 
-            Header[] headers = new Header[2]
-            headers[0] = new BasicHeader("test", "test")
-            headers[1] = new BasicHeader("content-length", "100")
+            CaseInsensitiveMultiMap headers = new CaseInsensitiveMultiMap()
+            headers.addHeader("test", "test")
+            headers.addHeader("content-length", "100")
 
+            com.netflix.client.http.HttpResponse httpResponse = Mockito.mock(com.netflix.client.http.HttpResponse.class)
+            Mockito.when(httpResponse.getStatus()).thenReturn(200)
 
-            HttpResponse httpResponse = Mockito.mock(HttpResponse.class)
-            BasicStatusLine status = Mockito.mock(BasicStatusLine.class)
-            Mockito.when(httpResponse.getStatusLine()).thenReturn(status)
-            Mockito.when(httpResponse.getStatusLine().statusCode).thenReturn(200)
-            HttpEntity entity = Mockito.mock(HttpEntity.class)
             byte[] body = "test".bytes
             ByteArrayInputStream inp = new ByteArrayInputStream(body)
-            Mockito.when(entity.content).thenReturn(inp)
-            Mockito.when(httpResponse.entity).thenReturn(entity)
-            Mockito.when(httpResponse.getAllHeaders()).thenReturn(headers)
-            response = filter.createHttpResponseMessage(proxyResp, request)
+            Mockito.when(httpResponse.getInputStream()).thenReturn(inp)
+            Mockito.when(httpResponse.getHttpHeaders()).thenReturn(headers)
+            response = filter.createHttpResponseMessage(httpResponse, request)
 
             Assert.assertEquals(response.getStatus(), 200)
             Assert.assertEquals(response.getBody().length, body.length)

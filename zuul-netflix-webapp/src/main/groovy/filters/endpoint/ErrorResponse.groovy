@@ -193,6 +193,8 @@ v=1 or unspecified:
         public void setup() {
             filter = new ErrorResponse()
             ctx = new SessionContext()
+            Mockito.when(request.getContext()).thenReturn(ctx)
+
             queryParams = new HttpQueryParams()
             Mockito.when(request.getQueryParams()).thenReturn(queryParams)
             th = new Exception("test")
