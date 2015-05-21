@@ -39,7 +39,7 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
         }
 
         // Make the request.
-        HttpRequestMessage ioRequest = new HttpRequestMessage("HTTP/1.1", "get", "/account/geo", null, null,
+        HttpRequestMessage ioRequest = new HttpRequestMessage(context, "HTTP/1.1", "get", "/account/geo", null, null,
                 request.getClientIp(), "http")
         Observable<HttpResponseMessage> resultObs = origin.request(ioRequest)
 

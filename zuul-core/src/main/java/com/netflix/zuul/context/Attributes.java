@@ -233,6 +233,14 @@ public class Attributes extends HashMap<String, Object>
     }
 
 
+    public boolean errorResponseSent() {
+        return getBoolean("errorResponseSent", false);
+    }
+    public void setErrorResponseSent(boolean should) {
+        set("errorResponseSent", Boolean.valueOf(should));
+    }
+
+
     /**
      * returns the routeVIP; that is the Eureka "vip" of registered instances
      *

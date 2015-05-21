@@ -73,6 +73,8 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         if (zuulResp.getBody() != null) {
             nativeResponse.writeBytesAndFlush(zuulResp.getBody());
         }
+
+        nativeResponse.close();
     }
 
     private Observable<ZuulMessage> toObservable(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)

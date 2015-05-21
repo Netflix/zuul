@@ -8,30 +8,20 @@ package com.netflix.zuul.context;
 public class ZuulMessage implements Cloneable
 {
     private final SessionContext context;
-    private final Attributes attributes;
     private final Headers headers;
     private byte[] body = null;
 
     public ZuulMessage(SessionContext context) {
-        this(context, new Attributes(), new Headers());
+        this(context, new Headers());
     }
 
     public ZuulMessage(SessionContext context, Headers headers) {
-        this(context, new Attributes(), headers != null ? headers : new Headers());
-    }
-
-    public ZuulMessage(SessionContext context, Attributes attributes, Headers headers) {
         this.context = context;
-        this.attributes = attributes;
-        this.headers = headers;
+        this.headers = headers == null ? new Headers() : headers;
     }
 
     public SessionContext getContext() {
         return context;
-    }
-
-    public Attributes getAttributes() {
-        return attributes;
     }
 
     public Headers getHeaders() {
@@ -51,7 +41,7 @@ public class ZuulMessage implements Cloneable
     @Override
     public ZuulMessage clone()
     {
-        ZuulMessage copy = new ZuulMessage(context.clone(), (Attributes) attributes.clone(), headers.clone());
+        ZuulMessage copy = new ZuulMessage(context.clone(), headers.clone());
         copy.setBody(body.clone());
         return copy;
     }

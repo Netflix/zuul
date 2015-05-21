@@ -83,11 +83,7 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        chain = applyFilterPhase(chain, "in");
-
-        chain = applyErrorFilterIfNeeded(chain);
-
-        return chain;
+        return applyFilterPhase(chain, "in");
     }
 
     public Observable<ZuulMessage> applyErrorFilterIfNeeded(Observable<ZuulMessage> chain)
@@ -98,6 +94,10 @@ public class FilterProcessor {
             Attributes attributes = msg.getContext().getAttributes();
             if (attributes.shouldSendErrorResponse()) {
 
+                // Un-flag this as needing the error filter.
+                attributes.setShouldSendErrorResponse(false);
+                attributes.setErrorResponseSent(true);
+
                 // Get the error endpoint filter to use.
                 String endpointName = (String) attributes.get("error-endpoint");
                 if (endpointName == null) {
@@ -105,41 +105,68 @@ public class FilterProcessor {
                 }
                 ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
                 if (endpointFilter == null) {
-                    attributes.setShouldSendErrorResponse(true);
-                    attributes.setThrowable(new ZuulException("No error filter found of chosen name! name=" + endpointName));
-                    return Observable.just(msg);
+                    // No error filter to use, so send a basic default response.
+                    String errorStr = "No error filter found of chosen name! name=" + endpointName;
+                    LOG.error("Errored but no error filter found, so sent default error response. " + errorStr, attributes.getThrowable());
+
+                    HttpResponseMessage response = new HttpResponseMessage(msg.getContext(), (HttpRequestMessage) msg, 500);
+                    response.getHeaders().set("X-Zuul-Error-Cause", errorStr);
+
+                    return Observable.just(response);
                 }
 
-                // Un-flag this as needing the error filter.
-                attributes.setShouldSendErrorResponse(false);
-
                 // Apply this endpoint.
-                return processAsyncFilter(msg, endpointFilter);
+                if (msg.getClass().isAssignableFrom(HttpResponseMessage.class)) {
+                    // if msg is a response, then we need to get it's request to pass to the error filter.
+                    HttpResponseMessage response = (HttpResponseMessage) msg;
+                    return processAsyncFilter(response.getRequest(), endpointFilter);
+                }
+                else {
+                    return processAsyncFilter(msg, endpointFilter);
+                }
             }
             else {
                 // Do nothing.
-                return chain;
+                return Observable.just(msg);
             }
         });
     }
 
+    /**
+     * Applies the selected Endpoint filter.
+     *
+     * If the input message is a request, then the returned message should be a response.
+     *
+     * @param chain
+     * @return
+     */
     public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
     {
+        // Apply the error filters. This is for if there was an error during the inbound phase.
+        chain = applyErrorFilterIfNeeded(chain);
+
         chain = chain.flatMap(msg -> {
 
-            // Get the previously chosen endpoint filter to use.
             Attributes attributes = msg.getContext().getAttributes();
-            String endpointName = (String) msg.getAttributes().get("endpoint");
+
+            // If an error filter has already generated a response, then don't run the endpoint.
+            if (attributes.errorResponseSent()) {
+                // Therefore this msg is already a response, so just return that.
+                return Observable.just(msg);
+            }
+
+            // Get the previously chosen endpoint filter to use.
+            String endpointName = (String) attributes.get("endpoint");
             if (endpointName == null) {
                 attributes.setShouldSendErrorResponse(true);
                 attributes.setThrowable(new ZuulException("No endpoint filter chosen!"));
-                return Observable.just(msg);
+                return applyErrorFilterIfNeeded(Observable.just(msg));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
                 attributes.setShouldSendErrorResponse(true);
                 attributes.setThrowable(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
-                return Observable.just(msg);
+                return applyErrorFilterIfNeeded(Observable.just(msg));
             }
 
             // Apply this endpoint.
@@ -157,8 +184,11 @@ public class FilterProcessor {
         // Apply POST filters.
         chain = applyFilterPhase(chain, "out");
 
+        // TODO - can't apply error filters here because the input to the filter is now a response object, but endpoint/error filters
+        // need a request object.
+
         // And apply one last time to catch any errors from outbound filters.
-        chain = applyErrorFilterIfNeeded(chain);
+        //chain = applyErrorFilterIfNeeded(chain);
 
         return chain;
     }
@@ -339,8 +369,7 @@ public class FilterProcessor {
         }
 
         @Test
-        public void testProcessFilter() throws Exception
-        {
+        public void testProcessFilter() throws Exception {
             when(filter.applyAsync(request)).thenReturn(Observable.just(request));
             processor.processAsyncFilter(request, filter).toBlocking().first();
             verify(filter, times(1)).applyAsync(request);
