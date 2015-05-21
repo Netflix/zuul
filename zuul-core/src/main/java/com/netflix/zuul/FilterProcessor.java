@@ -38,6 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.functions.Func1;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -83,7 +84,7 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        return applyFilterPhase(chain, "in");
+        return applyFilterPhase(chain, "in", (request) -> request);
     }
 
     public Observable<ZuulMessage> applyErrorFilterIfNeeded(Observable<ZuulMessage> chain)
@@ -119,10 +120,10 @@ public class FilterProcessor {
                 if (msg.getClass().isAssignableFrom(HttpResponseMessage.class)) {
                     // if msg is a response, then we need to get it's request to pass to the error filter.
                     HttpResponseMessage response = (HttpResponseMessage) msg;
-                    return processAsyncFilter(response.getRequest(), endpointFilter);
+                    return processAsyncFilter(response.getRequest(), endpointFilter, (m2) -> m2);
                 }
                 else {
-                    return processAsyncFilter(msg, endpointFilter);
+                    return processAsyncFilter(msg, endpointFilter, (m2) -> m2);
                 }
             }
             else {
@@ -169,8 +170,13 @@ public class FilterProcessor {
                 return applyErrorFilterIfNeeded(Observable.just(msg));
             }
 
-            // Apply this endpoint.
-            return processAsyncFilter(msg, endpointFilter);
+            // Apply this endpoint. Make the default filter result be a HttpResponseMessage so that if this filter apply fails, the next filter still gets
+            // expected input.
+            return processAsyncFilter(msg, endpointFilter, (request) -> {
+                // If the Endpoint filter does not run, or throws an exception, then this should always require an error response to be sent.
+                request.getContext().getAttributes().setShouldSendErrorResponse(true);
+                return new HttpResponseMessage(request.getContext(), (HttpRequestMessage) request, 500);
+            });
         });
 
         // Apply the error filters AGAIN. This is for if there was an error during the endpoint phase.
@@ -182,7 +188,8 @@ public class FilterProcessor {
     public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
     {
         // Apply POST filters.
-        chain = applyFilterPhase(chain, "out");
+        chain = applyFilterPhase(chain, "out", (response) -> response );
+
 
         // TODO - can't apply error filters here because the input to the filter is now a response object, but endpoint/error filters
         // need a request object.
@@ -193,18 +200,18 @@ public class FilterProcessor {
         return chain;
     }
 
-    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType)
+    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
-            chain = processFilterAsObservable(chain, filter).single();
+            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser).single();
         }
         return chain;
     }
 
-    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter)
+    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
-        return input.flatMap(msg -> processAsyncFilter(msg, filter) );
+        return input.flatMap(msg -> processAsyncFilter(msg, filter, defaultFilterResultChooser) );
     }
 
     /**
@@ -215,7 +222,7 @@ public class FilterProcessor {
      * @param filter IZuulFilter
      * @return the return value for that filter
      */
-    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter)
+    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().getAttributes().debugRouting();
@@ -230,7 +237,7 @@ public class FilterProcessor {
         long ltime = System.currentTimeMillis();
         try {
             if (filter.isDisabled()) {
-                resultObs = Observable.just(msg);
+                resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                 info.status = ExecutionStatus.DISABLED;
             } else {
                 // Only apply the filter if both the shouldFilter() method AND any additional
@@ -238,13 +245,14 @@ public class FilterProcessor {
                 if (filter.shouldFilter(msg)) {
                     resultObs = filter.applyAsync(msg).single();
                 } else {
-                    resultObs = Observable.just(msg);
+                    resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                     info.status = ExecutionStatus.SKIPPED;
                 }
             }
         }
         catch (Exception e) {
-            resultObs = Observable.just(msg);
+            msg.getContext().getAttributes().setThrowable(e);
+            resultObs = Observable.just(defaultFilterResultChooser.call(msg));
             info.status = ExecutionStatus.FAILED;
             recordFilterError(filter, msg, e);
         }
@@ -252,13 +260,14 @@ public class FilterProcessor {
         // Handle errors from the filter. Don't break out of the filter chain - instead just record info about the error
         // in context, and continue.
         resultObs = resultObs.onErrorReturn((e) -> {
+            msg.getContext().getAttributes().setThrowable(e);
             info.status = ExecutionStatus.FAILED;
             recordFilterError(filter, msg, e);
-            return msg;
+            return defaultFilterResultChooser.call(msg);
         });
 
         // If no resultContext returned from filter, then use the original context.
-        resultObs = resultObs.map(msg2 -> msg2 == null ? msg : msg2);
+        resultObs = resultObs.map(msg2 -> msg2 == null ? defaultFilterResultChooser.call(msg) : msg2);
 
         // Record info when filter processing completes.
         resultObs = resultObs.doOnCompleted(() -> {
@@ -371,7 +380,7 @@ public class FilterProcessor {
         @Test
         public void testProcessFilter() throws Exception {
             when(filter.applyAsync(request)).thenReturn(Observable.just(request));
-            processor.processAsyncFilter(request, filter).toBlocking().first();
+            processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
             verify(filter, times(1)).applyAsync(request);
         }
 
@@ -379,7 +388,7 @@ public class FilterProcessor {
         public void testProcessFilter_ShouldFilterFalse() throws Exception
         {
             when(filter.shouldFilter(request)).thenReturn(false);
-            processor.processAsyncFilter(request, filter).toBlocking().first();
+            processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
             verify(filter, times(0)).applyAsync(request);
         }
 
@@ -388,7 +397,7 @@ public class FilterProcessor {
         {
             Exception e = new RuntimeException("Blah");
             when(filter.applyAsync(request)).thenThrow(e);
-            processor.processAsyncFilter(request, filter).toBlocking().first();
+            processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
 
             verify(processor).recordFilterError(filter, request, e);
 
