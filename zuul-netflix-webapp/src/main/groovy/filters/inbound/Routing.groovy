@@ -58,11 +58,6 @@ class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
         // Normalise the uri.
         String uri = request.getPath()
         if (uri == null) uri = "/"
-        if (uri.startsWith("/")) {
-            uri = uri - "/"
-        }
-        attrs.route = uri.substring(0, uri.indexOf("/") + 1)
-
 
         // Handle OPTIONS requests specially.
         if (request.getMethod().equalsIgnoreCase("options")) {
@@ -77,12 +72,13 @@ class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
         }
 
         // Choose VIP or Host, and the endpoint to use for proxying.
-        attrs.routeVIP = defaultClient.get()
         String host = defaultHost.get()
         if (host == null) {
             attrs.set("endpoint", "ZuulNFRequest")
-            if (attrs.routeVIP == null) {
-                attrs.routeVIP = ZuulApplicationInfo.applicationName
+            if (uri.startsWith("/simulator/")) {
+                attrs.routeVIP = "simulator"
+            } else {
+                attrs.routeVIP = defaultClient.get()
             }
         }
         else {

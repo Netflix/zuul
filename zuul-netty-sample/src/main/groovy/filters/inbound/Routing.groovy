@@ -53,14 +53,20 @@ class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
         // Choose vip to proxy to.
         if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
             attrs.setRouteVIP("yahoo")
+            attrs.set("endpoint", "ZuulNFRequest")
         }
         else if (request.getPath() == "/blah") {
             // TEST - make use the static filters.
             attrs.setRouteVIP(null)
-            attrs.set("static_endpoint", "example")
+            attrs.set("endpoint", "ExampleStaticFilter")
+        }
+        else if (request.getPath() == "/simulator/") {
+            attrs.setRouteVIP("simulator")
+            attrs.set("endpoint", "ZuulNFRequest")
         }
         else {
             attrs.setRouteVIP("netflix")
+            attrs.set("endpoint", "ZuulNFRequest")
         }
 
         return request

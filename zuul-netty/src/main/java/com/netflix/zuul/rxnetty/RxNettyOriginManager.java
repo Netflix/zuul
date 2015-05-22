@@ -87,6 +87,10 @@ public class RxNettyOriginManager implements OriginManager
     @Override
     public Origin getOrigin(String name)
     {
-        return origins.get(name);
+        if (name == null) {
+            return null;
+        } else {
+            return origins.get(name);
+        }
     }
 }
