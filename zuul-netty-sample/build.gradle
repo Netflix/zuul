@@ -1,4 +1,10 @@
+apply plugin: 'application'
 apply plugin: 'groovy'
+
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
 
 dependencies {
 
@@ -15,6 +21,9 @@ dependencies {
 
     compile "org.codehaus.groovy:groovy-all:2.3.6"
     compile 'junit:junit-dep:4.10'
+
+    integrationTestCompile("org.spockframework:spock-core:1.0-groovy-2.3")
+    integrationTestCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
 }
 
 sourceSets {
@@ -27,6 +36,15 @@ sourceSets {
             srcDirs  = ['src/main/groovy']
             include '**/*.groovy'
         }
+    }
+
+    integrationTest {
+        groovy {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/groovy')
+        }
+        resources.srcDir file('src/integration-test/resources')
     }
 }
 
@@ -46,3 +64,33 @@ eclipse {
     }
 }
 
+
+mainClassName = 'com.netflix.zuul.NettySampleStartServer'
+run {
+    // TODO - need to make our netty app run as daemon, so that then the integration tests can run after it's started up.
+    systemProperty "archaius.deployment.applicationId", "zuul"
+    systemProperty "archaius.deployment.stack", "local"
+    systemProperty "archaius.deployment.region", "us-east-1"
+    systemProperty "archaius.deployment.environment", "test"
+    systemProperty "eureka.environment", "test"
+    systemProperty "eureka.region", "us-east-1"
+    systemProperty "eureka.stack", "local"
+    //systemProperty "zuul.filters.root", "/Users/michaels/Projects/oss-zuul-1/zuul-netty-sample/src/main/groovy/filters"
+}
+
+task integrationTest(type: Test) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    //If you want to ensure that integration tests are run every time when you invoke
+    //this task, uncomment the following line.
+    outputs.upToDateWhen { false }
+}
+//integrationTest.finalizedBy 'jettyStop'
+
+check.dependsOn integrationTest
+
+//Ensure that the HTML reports of unit and integration tests are written to different directories.
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}

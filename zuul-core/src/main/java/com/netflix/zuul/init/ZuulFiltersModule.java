@@ -25,7 +25,7 @@ public class ZuulFiltersModule extends AbstractModule
         String[] filterLocations = config.getStringArray("zuul.filters.locations");
         if (filterLocations == null || filterLocations.length == 0) {
             // Default to these locations.
-            filterLocations = "pre,post,route".split(",");
+            filterLocations = "inbound,outbound,endpoint".split(",");
         }
         LOG.info("Using filter locations: ");
         for (String location : filterLocations) {

@@ -5,7 +5,11 @@ apply plugin: 'jetty'
 configurations {
     all*.exclude group: 'asm', module: 'asm'
     all*.exclude group: 'asm', module: 'asm-all'
+
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
+
 
 dependencies {
 
@@ -29,6 +33,10 @@ dependencies {
 
     compile "org.codehaus.groovy:groovy-all:2.3.6"
     providedCompile 'junit:junit-dep:4.10'
+
+    integrationTestCompile("org.spockframework:spock-core:1.0-groovy-2.3")
+    integrationTestCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
+    //integrationTestCompile("net.sf.json-lib:json-lib:2.4")
 }
 
 sourceSets {
@@ -41,6 +49,15 @@ sourceSets {
             srcDirs  = ['src/main/groovy']
             include '**/*.groovy'
         }
+    }
+
+    integrationTest {
+        groovy {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/groovy')
+        }
+        resources.srcDir file('src/integration-test/resources')
     }
 }
 
@@ -70,6 +87,10 @@ war {
 }
 
 jettyRun.contextPath = '/'
+jettyRun. httpPort = 8099
+jettyRun.daemon = true
+jettyStop.stopPort = 8091
+jettyStop.stopKey = 'stopKey'
 
 jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
@@ -79,16 +100,19 @@ jettyRun.doFirst {
     System.setProperty("zuul.filters.root", "/Users/michaels/Projects/oss-zuul-1/zuul-netflix-webapp/src/main/groovy/filters")
 }
 
-task integrationTest(type: Test) {
-    include '**/*IntegrationTest*'
-    doFirst {
-        jettyRun.httpPort = 8080    // Port for test
-        jettyRun.daemon = true
-        jettyRun.execute()
-    }
-    doLast {
-        jettyStop.stopPort = 8091   // Port for stop signal
-        jettyStop.stopKey = 'stopKey'
-        jettyStop.execute()
-    }
+task integrationTest(type: Test, dependsOn: 'jettyRun') {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    //If you want to ensure that integration tests are run every time when you invoke
+    //this task, uncomment the following line.
+    outputs.upToDateWhen { false }
+}
+integrationTest.finalizedBy 'jettyStop'
+
+check.dependsOn integrationTest
+
+//Ensure that the HTML reports of unit and integration tests are written to different directories.
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
 }

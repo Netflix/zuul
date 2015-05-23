@@ -34,7 +34,8 @@ dependencies {
     compile 'io.netty:netty-transport-native-epoll:4.0.27.Final'
 
     // To ensure that zuul-netty gets this correct later version.
-    compile "com.netflix.governator:governator:1.3.3"
+    compile "com.netflix.governator:governator:1.6.+"
+    compile "com.netflix.governator:governator-archaius:1.6.+"
 
     compile 'org.powermock:powermock-api-mockito:1.5.4'
     compile 'junit:junit-dep:4.10'
