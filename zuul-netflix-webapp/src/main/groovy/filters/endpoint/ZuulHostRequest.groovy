@@ -26,9 +26,12 @@ import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.Header
+import org.apache.http.HttpEntity
 import org.apache.http.HttpHost
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
+import org.apache.http.HttpStatus
+import org.apache.http.StatusLine
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -41,6 +44,7 @@ import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
+import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicHttpRequest
 import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
@@ -357,17 +361,20 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
             ZuulHostRequest filter = new ZuulHostRequest()
             filter = Mockito.spy(filter)
 
-            CaseInsensitiveMultiMap headers = new CaseInsensitiveMultiMap()
-            headers.addHeader("test", "test")
-            headers.addHeader("content-length", "100")
+            Header[] headers = [
+                new BasicHeader("test", "test"),
+                new BasicHeader("content-length", "100")
+            ]
 
-            com.netflix.client.http.HttpResponse httpResponse = Mockito.mock(com.netflix.client.http.HttpResponse.class)
-            Mockito.when(httpResponse.getStatus()).thenReturn(200)
+            HttpResponse httpResponse = Mockito.mock(HttpResponse.class)
+            StatusLine status = Mockito.mock(StatusLine.class)
+            Mockito.when(status.getStatusCode()).thenReturn(200)
+            Mockito.when(httpResponse.getStatusLine()).thenReturn(status)
 
             byte[] body = "test".bytes
-            ByteArrayInputStream inp = new ByteArrayInputStream(body)
-            Mockito.when(httpResponse.getInputStream()).thenReturn(inp)
-            Mockito.when(httpResponse.getHttpHeaders()).thenReturn(headers)
+            HttpEntity entity = new ByteArrayEntity(body)
+            Mockito.when(httpResponse.getEntity()).thenReturn(entity)
+            Mockito.when(httpResponse.getAllHeaders()).thenReturn(headers)
             response = filter.createHttpResponseMessage(httpResponse, request)
 
             Assert.assertEquals(response.getStatus(), 200)

@@ -1,4 +1,3 @@
-
 import groovyx.net.http.RESTClient
 import spock.lang.Specification
 
@@ -9,7 +8,8 @@ import spock.lang.Specification
  */
 class SmokeTestSpec extends Specification
 {
-    static int port = Integer.parseInt(System.getProperty("integrationtest.port", "8080"))
+    static int port = Integer.parseInt(System.getProperty("integrationtest.port", "8099"))
+
     def client
 
     def setup() {

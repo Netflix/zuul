@@ -11,14 +11,6 @@ dependencies {
     compile project(':zuul-core')
     compile project(':zuul-netty')
 
-    //karyonVer = "2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-core:2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-governator:2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-eureka:2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-servo:2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-archaius:2.2.00-ALPHA7"
-    compile "com.netflix.karyon2:karyon-admin-web:2.2.00-ALPHA7"
-
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     compile 'junit:junit-dep:4.10'
 
@@ -89,6 +81,8 @@ run {
     systemProperty "eureka.environment", "test"
     systemProperty "eureka.region", "us-east-1"
     systemProperty "eureka.stack", "local"
-    //systemProperty "zuul.filters.root", "/Users/michaels/Projects/oss-zuul-1/zuul-netty-sample/src/main/groovy/filters"
+
+//    String filtersRoot = new File(projectDir, "src/main/groovy/filters").getAbsolutePath()
+//    System.setProperty("zuul.filters.root", filtersRoot)
 }
 

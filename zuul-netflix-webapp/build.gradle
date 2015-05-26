@@ -35,6 +35,8 @@ dependencies {
 
     testCompile("org.spockframework:spock-core:1.0-groovy-2.3")
     testCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
+    //testCompile("org.eclipse.jetty.aggregate:jetty-all:9.3.+")
+    //testCompile("org.eclipse.jetty.aggregate:jetty-all-server:7.+")
 }
 
 sourceSets {
@@ -94,8 +96,19 @@ jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
     System.setProperty("archaius.deployment.stack", "local")
 
-    String filtersRoot = new File("src/main/groovy/filters").getAbsolutePath()
+    String filtersRoot = new File(projectDir, "src/main/groovy/filters").getAbsolutePath()
     System.setProperty("zuul.filters.root", filtersRoot)
+
+
+    // HACK ALERT: Must not have our own groovy
+    // on the classpath since it's already loaded by gradle
+    // and if it isn't exactly the same version, then we get
+    // "GroovyRuntimeException: Conflicting module versions"
+    final FileCollection currentClasspath = classpath
+    final FileCollection classpathWithoutGroovy = currentClasspath.filter {
+        File f -> !f.name.contains('groovy-all')
+    }
+    classpath = classpathWithoutGroovy
 }
 
 task integrationTest(type: Test, dependsOn: 'jettyRun') {
@@ -110,7 +123,6 @@ task integrationTest(type: Test, dependsOn: 'jettyRun') {
 }
 integrationTest.finalizedBy 'jettyStop'
 
-check.dependsOn integrationTest
 
 //Ensure that the HTML reports of unit and integration tests are written to different directories.
 tasks.withType(Test) {

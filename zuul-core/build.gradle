@@ -1,11 +1,5 @@
 apply plugin: 'groovy'
 
-//configurations.all {
-//    resolutionStrategy {
-//        force "com.netflix.governator:governator:1.3.3"
-//    }
-//}
-
 dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'commons-fileupload:commons-fileupload:1.3'
