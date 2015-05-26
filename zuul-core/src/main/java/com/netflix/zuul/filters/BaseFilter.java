@@ -74,6 +74,11 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
         return filterDisabled.get();
     }
 
+    @Override
+    public String toString()
+    {
+        return String.valueOf(filterType()) + ":" + String.valueOf(filterName());
+    }
 
     public static class TestUnit {
         @Mock

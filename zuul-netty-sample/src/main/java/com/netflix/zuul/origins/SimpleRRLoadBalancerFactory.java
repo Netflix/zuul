@@ -4,6 +4,8 @@ import com.netflix.config.DynamicStringMapProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.*;
@@ -25,6 +27,8 @@ import static org.junit.Assert.assertNull;
 @Singleton
 public class SimpleRRLoadBalancerFactory implements LoadBalancerFactory
 {
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleRRLoadBalancerFactory.class);
+
     private ServerRegistry registry;
 
     public SimpleRRLoadBalancerFactory()
@@ -69,6 +73,9 @@ public class SimpleRRLoadBalancerFactory implements LoadBalancerFactory
                 List<ServerInfo> servers = new ArrayList<>();
                 for (String hostAndPort : hostAndPorts) {
                     String[] split = hostAndPort.split(":");
+                    if (split.length != 2) {
+                        LOG.error("Each service should be in format <host>:<port>! hostAndPort=" + hostAndPort);
+                    }
                     servers.add(new ServerInfo(split[0], Integer.parseInt(split[1])));
                 }
                 newRegistry.put(name, servers);

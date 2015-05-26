@@ -11,6 +11,7 @@ plugins {
 
 ext.githubProjectName = rootProject.name
 
+
 idea {
     project {
         languageLevel = '1.8'
@@ -40,5 +41,17 @@ subprojects {
 
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
+    }
+
+    dependencies {
+        ext.versions_guice = "4.0"
+
+        // Use guice-4 while debugging a startup error that is hidden by guice-3's lack of java8 lambda support.
+        compile(group: 'com.google.inject', name: 'guice', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-multibindings', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-grapher', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-assistedinject', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-servlet', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-throwingproviders', version: "${versions_guice}")
     }
 }

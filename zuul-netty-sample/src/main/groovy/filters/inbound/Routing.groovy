@@ -65,7 +65,7 @@ class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
             attrs.set("endpoint", "ZuulNFRequest")
         }
         else {
-            attrs.setRouteVIP("netflix")
+            attrs.setRouteVIP("api_netflix")
             attrs.set("endpoint", "ZuulNFRequest")
         }
 

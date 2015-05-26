@@ -309,7 +309,7 @@ public class FilterProcessor {
     protected void recordFilterError(ZuulFilter filter, ZuulMessage msg, Throwable e)
     {
         // Add a log statement for this exception.
-        String errorMsg = "Filter Exception: request-info=" + msg.getInfoForLogging() + ", msg=" + String.valueOf(e.getMessage());
+        String errorMsg = "Filter Exception: filter=" + String.valueOf(filter) + ", request-info=" + msg.getInfoForLogging() + ", msg=" + String.valueOf(e.getMessage());
         if (e instanceof ZuulException && ! ((ZuulException)e).shouldLogAsError()) {
             LOG.warn(errorMsg);
         } else {

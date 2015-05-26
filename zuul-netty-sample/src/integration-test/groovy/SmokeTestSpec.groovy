@@ -9,27 +9,18 @@ import spock.lang.Specification
  */
 class SmokeTestSpec extends Specification
 {
-    NettySampleStartServer server
-    int port = 9019
+    static NettySampleStartServer server
+    static int port = 9019
 
-    def setup()
+    def setupSpec()
     {
-        String env = "test"
-        String region = "us-east-1"
-        String stack = "local"
-        System.setProperty("archaius.deployment.environment", env)
-        System.setProperty("archaius.deployment.region", region)
-        System.setProperty("archaius.deployment.stack", stack)
-        System.setProperty("eureka.environment", env)
-        System.setProperty("eureka.region", region)
-        System.setProperty("eureka.stack", stack)
-
         // Startup the rxnetty server.
+        System.setProperty("archaius.deployment.stack", "integrationtest")
         server = new NettySampleStartServer()
         server.init(port, false)
     }
 
-    def cleanup()
+    def cleanupSpec()
     {
         // Shutdown rxnetty server.
         server.shutdown()
@@ -48,6 +39,20 @@ class SmokeTestSpec extends Specification
         }
         with(resp.data) {
             str == "OK"
+        }
+    }
+
+    def "Proxy to API service"()
+    {
+        setup:
+        def client = new RESTClient( 'http://localhost:' + port )
+        when:
+        def resp = client.get([ path: '/account/geo' ])
+        then:
+        with(resp) {
+            status == 200
+            contentType == "text/plain"
+            headers.server && headers.server.contains("api ")
         }
     }
 }

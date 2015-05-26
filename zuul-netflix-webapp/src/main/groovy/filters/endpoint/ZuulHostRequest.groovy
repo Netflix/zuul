@@ -26,8 +26,6 @@ import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.Header
-import org.apache.http.HttpEntity
-import org.apache.http.HttpHeaders
 import org.apache.http.HttpHost
 import org.apache.http.HttpRequest
 import org.apache.http.HttpResponse
@@ -43,9 +41,7 @@ import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
-import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicHttpRequest
-import org.apache.http.message.BasicStatusLine
 import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
@@ -168,7 +164,7 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         String path = request.getPath()
         HttpClient httpclient = CLIENT.get()
 
-        com.netflix.client.http.HttpResponse ribbonResponse = forward(httpclient, routeHost, verb, path,
+        HttpResponse ribbonResponse = forward(httpclient, routeHost, verb, path,
                 request.getHeaders(), request.getQueryParams(), request.getBody())
 
         HttpResponseMessage response = createHttpResponseMessage(ribbonResponse, request)
@@ -225,11 +221,16 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
                 httpRequest.setEntity(entity)
                 break;
             default:
-                httpRequest = new BasicHttpRequest(verb, uri)
+                httpRequest = new BasicHttpRequest(verb, uri.toASCIIString())
         }
 
         try {
-            httpRequest.setHeaders(headers)
+            // Copy the request headers.
+            headers.entries().each {
+                httpRequest.addHeader(it.getKey(), it.getValue())
+            }
+
+            // Make the request.
             HttpResponse zuulResponse = executeHttpRequest(httpclient, httpHost, httpRequest)
             return zuulResponse
 
@@ -287,24 +288,31 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         }
     }
 
-    protected HttpResponseMessage createHttpResponseMessage(com.netflix.client.http.HttpResponse ribbonResp, HttpRequestMessage request)
+    protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)
     {
         // Convert to a zuul response object.
         HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
-        respMsg.setStatus(ribbonResp.getStatus());
-        for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
-            if (isValidHeader(header.getKey())) {
-                respMsg.getHeaders().add(header.getKey(), header.getValue());
+        respMsg.setStatus(ribbonResp.getStatusLine().getStatusCode());
+
+        // Headers.
+        for (Header header : ribbonResp.getAllHeaders()) {
+            if (isValidHeader(header.getName())) {
+                respMsg.getHeaders().add(header.getName(), header.getValue());
             }
         }
-        byte[] body;
-        try {
-            body = IOUtils.toByteArray(ribbonResp.getInputStream());
+
+        // Body.
+        if (ribbonResp.getEntity()) {
+            byte[] body;
+            try {
+                body = IOUtils.toByteArray(ribbonResp.getEntity().getContent());
+            }
+            catch (IOException e) {
+                throw new ZuulException(e, "Error reading response body.");
+            }
+            respMsg.setBody(body);
         }
-        catch (IOException e) {
-            throw new ZuulException(e, "Error reading response body.");
-        }
-        respMsg.setBody(body);
+
         return respMsg;
     }
 

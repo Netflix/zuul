@@ -19,7 +19,7 @@ dependencies {
     compile "com.netflix.karyon2:karyon-archaius:2.2.00-ALPHA7"
     compile "com.netflix.karyon2:karyon-admin-web:2.2.00-ALPHA7"
 
-    compile "org.codehaus.groovy:groovy-all:2.3.10"
+    compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     compile 'junit:junit-dep:4.10'
 
     testCompile("org.spockframework:spock-core:1.0-groovy-2.3")

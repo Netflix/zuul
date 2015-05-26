@@ -71,7 +71,7 @@ class SampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessag
 
     @Override
     boolean shouldFilter(HttpRequestMessage request) {
-        return request.getPath().startsWith("/account/")
+        return request.getQueryParams().get("check")
     }
 
     @Override
