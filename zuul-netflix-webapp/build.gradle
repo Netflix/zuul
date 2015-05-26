@@ -31,11 +31,11 @@ dependencies {
     runtime 'org.apache.xbean:xbean-bundleutils:3.17'
     runtime 'org.apache.xbean:xbean-finder:3.17'
 
-    compile "org.codehaus.groovy:groovy-all:2.3.6"
+    compile "org.codehaus.groovy:groovy-all:2.3.10"
     providedCompile 'junit:junit-dep:4.10'
 
-    integrationTestCompile("org.spockframework:spock-core:1.0-groovy-2.3")
-    integrationTestCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
+    testCompile("org.spockframework:spock-core:1.0-groovy-2.3")
+    testCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
     //integrationTestCompile("net.sf.json-lib:json-lib:2.4")
 }
 

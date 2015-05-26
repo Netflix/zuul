@@ -67,12 +67,22 @@ public class NettySampleStartServer
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final static String DEFAULT_APP_NAME = "zuul";
 
+    private RxNettyServerBackedServer server;
+
+    public NettySampleStartServer() {
+        log.debug("NettySampleStartServer()");
+    }
 
     public void init() throws Exception
     {
+        int port = Integer.parseInt(System.getProperty("zuul.port.http", "7001"));
+        init(port, true);
+    }
+
+    public void init(int port, boolean waitTilShutdown) throws Exception
+    {
         System.out.println("Starting up Zuul...");
 
-        int port = Integer.parseInt(System.getProperty("zuul.port.http", "7001"));
         int coreCount = Runtime.getRuntime().availableProcessors();
         int requestThreadCount = coreCount;
         System.out.printf("Using server port=%s, request-threads=%s\n", port, requestThreadCount);
@@ -86,9 +96,19 @@ public class NettySampleStartServer
 
         initPlugins();
 
-        RxNettyServerBackedServer server = injector.getInstance(RxNettyServerBackedServer.class);
+        server = injector.getInstance(RxNettyServerBackedServer.class);
         server.init(port, requestThreadCount);
-        server.startAndWaitTillShutdown();
+        if (waitTilShutdown) {
+            server.startAndWaitTillShutdown();
+        } else {
+            server.start();
+        }
+
+    }
+
+    public void shutdown()
+    {
+        server.shutdown();
     }
 
     public void loadProperties()
