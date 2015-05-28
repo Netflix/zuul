@@ -57,7 +57,7 @@ public class RxNettyUtils
 
     public static HttpClientRequest<ByteBuf> createHttpClientRequest(HttpRequestMessage zuulReq)
     {
-        HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(HttpMethod.valueOf(zuulReq.getMethod()), zuulReq.getPathAndQuery());
+        HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(HttpMethod.valueOf(zuulReq.getMethod().toUpperCase()), zuulReq.getPathAndQuery());
 
         for (Map.Entry<String, String> entry : zuulReq.getHeaders().entries()) {
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());

@@ -32,7 +32,7 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
 
         // Get the origin to send request to.
         OriginManager originManager = context.getHelpers().get("origin_manager")
-        String name = "netflix"
+        String name = "api_netflix"
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
             throw new ZuulException("No Origin registered for name=${name}!")
@@ -59,7 +59,7 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
 
     @Override
     boolean shouldFilter(HttpRequestMessage request) {
-        return request.getPath().startsWith("/account/")
+        return request.getQueryParams().get("check")
     }
 
     @Override
