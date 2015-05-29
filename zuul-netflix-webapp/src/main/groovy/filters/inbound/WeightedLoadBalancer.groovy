@@ -25,6 +25,7 @@ import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
 import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -39,7 +40,7 @@ import org.mockito.runners.MockitoJUnitRunner
  * Time: 1:19 PM
  */
 
-class WeightedLoadBalancer extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
+class WeightedLoadBalancer extends HttpInboundSyncFilter
 {
     DynamicStringProperty AltVIP = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_VIP, null)
     DynamicStringProperty AltHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_HOST, null)
@@ -47,10 +48,6 @@ class WeightedLoadBalancer extends BaseSyncFilter<HttpRequestMessage, HttpReques
     DynamicIntProperty AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_ROUTER_ALT_ROUTE_MAXLIMIT, 500)
 
     Random rand = new Random()
-
-    String filterType() {
-        return "pre"
-    }
 
     @Override
     int filterOrder() {

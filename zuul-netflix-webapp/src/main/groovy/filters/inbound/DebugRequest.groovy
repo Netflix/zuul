@@ -17,6 +17,7 @@ package filters.inbound
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -30,12 +31,8 @@ import org.mockito.runners.MockitoJUnitRunner
  * Date: 3/12/12
  * Time: 1:51 PM
  */
-class DebugRequest extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
-    @Override
-    String filterType() {
-        return 'in'
-    }
-
+class DebugRequest extends HttpInboundSyncFilter
+{
     @Override
     int filterOrder() {
         return 10000

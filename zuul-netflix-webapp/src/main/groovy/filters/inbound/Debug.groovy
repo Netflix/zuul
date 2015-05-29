@@ -20,17 +20,12 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 
-class Debug extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
+class Debug extends HttpInboundSyncFilter
 {
     static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUG_REQUEST, false)
     static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_PARAMETER, "debugParameter")
-
-    @Override
-    String filterType() {
-        return 'in'
-    }
 
     @Override
     int filterOrder() {

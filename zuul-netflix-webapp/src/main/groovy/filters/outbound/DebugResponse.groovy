@@ -7,7 +7,7 @@ import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,15 +22,10 @@ import static junit.framework.Assert.assertEquals
  * Date: 5/1/15
  * Time: 5:35 PM
  */
-class DebugResponse extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+class DebugResponse extends HttpOutboundSyncFilter
 {
     static DynamicBooleanProperty INCLUDE_DEBUG_HEADER =
             DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_INCLUDE_DEBUG_HEADER, false);
-
-    @Override
-    String filterType() {
-        return 'out'
-    }
 
     @Override
     int filterOrder() {

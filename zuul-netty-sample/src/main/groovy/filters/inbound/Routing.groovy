@@ -17,7 +17,7 @@ package filters.inbound
 
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -26,18 +26,13 @@ import org.slf4j.LoggerFactory
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
+class Routing extends HttpInboundSyncFilter
 {
     protected static final Logger LOG = LoggerFactory.getLogger(Routing.class);
 
     @Override
     int filterOrder() {
         return 10
-    }
-
-    @Override
-    String filterType() {
-        return "in"
     }
 
     @Override

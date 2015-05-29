@@ -2,7 +2,7 @@ package filters.outbound
 
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.filters.BaseFilter
+import com.netflix.zuul.filters.http.HttpOutboundFilter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
@@ -12,7 +12,7 @@ import rx.Observable
  * Date: 5/28/15
  * Time: 9:22 AM
  */
-class ExampleBodyParsingFilter extends BaseFilter<HttpResponseMessage, HttpResponseMessage>
+class ExampleBodyParsingFilter extends HttpOutboundFilter
 {
     protected static final Logger LOG = LoggerFactory.getLogger(ExampleBodyParsingFilter.class);
 
@@ -49,10 +49,5 @@ class ExampleBodyParsingFilter extends BaseFilter<HttpResponseMessage, HttpRespo
     @Override
     int filterOrder() {
         return 10
-    }
-
-    @Override
-    String filterType() {
-        return "out"
     }
 }

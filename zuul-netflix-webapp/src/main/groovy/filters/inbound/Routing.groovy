@@ -22,27 +22,21 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 
 /**
  * @author Mikey Cohen
  * Date: 1/23/13
  * Time: 2:03 PM
  */
-class Routing extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
+class Routing extends HttpInboundSyncFilter
 {
     DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
     DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
 
-
     @Override
     int filterOrder() {
         return 1
-    }
-
-    @Override
-    String filterType() {
-        return "in"
     }
 
     @Override

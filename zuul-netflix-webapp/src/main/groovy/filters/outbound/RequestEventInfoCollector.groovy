@@ -21,7 +21,7 @@ import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.stats.AmazonInfoHolder
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory
  *
  * @author mhawthorne
  */
-class RequestEventInfoCollector extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+class RequestEventInfoCollector extends HttpOutboundSyncFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollector.class);
     private static final String VALUE_SEPARATOR = ","
@@ -39,11 +39,6 @@ class RequestEventInfoCollector extends BaseSyncFilter<HttpResponseMessage, Http
     @Override
     int filterOrder() {
         return 99
-    }
-
-    @Override
-    String filterType() {
-        return "out"
     }
 
     @Override

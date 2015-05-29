@@ -16,7 +16,7 @@
 package filters.outbound
 
 import com.netflix.zuul.context.*
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -28,12 +28,8 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
-class PostDecoration extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+class PostDecoration extends HttpOutboundSyncFilter
 {
-    PostDecoration() {
-
-    }
-
     @Override
     boolean shouldFilter(HttpResponseMessage response) {
         if (true.equals(response.getContext().getAttributes().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
@@ -76,11 +72,6 @@ class PostDecoration extends BaseSyncFilter<HttpResponseMessage, HttpResponseMes
     }
 
     @Override
-    String filterType() {
-        return 'post'
-    }
-
-    @Override
     int filterOrder() {
         return 10
     }
@@ -118,7 +109,7 @@ class PostDecoration extends BaseSyncFilter<HttpResponseMessage, HttpResponseMes
             Assert.assertTrue(respHeaders.contains("X-Zuul-Instance", "unknown"))
             Assert.assertTrue(respHeaders.contains("Connection", "keep-alive"))
 
-            Assert.assertTrue(filter.filterType().equals("post"))
+            Assert.assertEquals("out", filter.filterType())
             Assert.assertTrue(filter.shouldFilter(response))
         }
 

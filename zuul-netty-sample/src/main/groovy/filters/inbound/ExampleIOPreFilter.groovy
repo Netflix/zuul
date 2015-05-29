@@ -4,7 +4,7 @@ import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.BaseFilter
+import com.netflix.zuul.filters.http.HttpInboundFilter
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
 import org.slf4j.Logger
@@ -21,7 +21,7 @@ import rx.Observable
  * Date: 5/12/15
  * Time: 3:51 PM
  */
-class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessage>
+class ExampleIOPreFilter extends HttpInboundFilter
 {
     protected static final Logger LOG = LoggerFactory.getLogger(ExampleIOPreFilter.class);
 
@@ -65,10 +65,5 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
     @Override
     int filterOrder() {
         return 5
-    }
-
-    @Override
-    String filterType() {
-        return "in"
     }
 }

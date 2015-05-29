@@ -19,7 +19,7 @@ import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.stats.StatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -34,13 +34,8 @@ import org.mockito.runners.MockitoJUnitRunner
  * Date: 2/3/12
  * Time: 2:48 PM
  */
-class Stats extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+class Stats extends HttpOutboundSyncFilter
 {
-    @Override
-    String filterType() {
-        return "out"
-    }
-
     @Override
     int filterOrder() {
         return 2000

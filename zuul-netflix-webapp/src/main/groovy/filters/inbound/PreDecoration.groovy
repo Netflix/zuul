@@ -20,6 +20,7 @@ import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -35,13 +36,8 @@ import static com.netflix.zuul.constants.ZuulHeaders.*
  * Date: 1/5/12
  * Time: 1:03 PM
  */
-public class PreDecoration extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
-
-    @Override
-    String filterType() {
-        return "in"
-    }
-
+public class PreDecoration extends HttpInboundSyncFilter
+{
     @Override
     int filterOrder() {
         return 20
