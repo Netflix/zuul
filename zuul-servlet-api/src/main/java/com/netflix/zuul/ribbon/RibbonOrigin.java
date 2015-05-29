@@ -75,46 +75,57 @@ public class RibbonOrigin implements Origin
                 verb(verb).
                 uri(uri);
 
-        // Request body.
-        if (requestMsg.getBodyStream() != null) {
-            InputStream requestEntity = ByteBufUtils.aggregate(requestMsg.getBodyStream(), MAX_BODY_SIZE_PROP.get())
-                    .map(bb -> new ByteBufInputStream(bb))
-                    .toBlocking().last();
-            builder.entity(requestEntity);
-        }
-
-
+        // Request headers.
         for (Map.Entry<String, String> entry : headers.entries()) {
-            builder.header(entry.getKey(), entry.getValue());
+            if (isValidRequestHeader(entry.getKey())) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
         }
 
+        // Request query params.
         for (Map.Entry<String, String> entry : params.entries()) {
             builder.queryParams(entry.getKey(), entry.getValue());
         }
 
-        HttpRequest httpClientRequest = builder.build();
-
-        final Timing timing = context.getRequestProxyTiming();
-        timing.start();
+        // Request body.
+        Observable<HttpRequest> requestBuiltObs;
+        if (requestMsg.getBodyStream() != null) {
+            // TODO - find a way to avoid having to buffer the whole request body here. Need a way to convert Observable<ByteBuf> into a single
+            // InputStream without first reading each of the ByteBufs (equivalent to what we do in the opposite direction using StringObservable.from().
+            requestBuiltObs = ByteBufUtils.aggregate(requestMsg.getBodyStream(), MAX_BODY_SIZE_PROP.get())
+                    .map(bb -> new ByteBufInputStream(bb))
+                    .single()
+                    .map(input -> {
+                        builder.entity(input);
+                        return builder.build();
+                    });
+        }
+        else {
+            requestBuiltObs = Observable.just(builder.build());
+        }
 
         // Execute the request.
-        HttpResponse ribbonResp;
-        try {
-            ribbonResp = client.executeWithLoadBalancer(httpClientRequest);
-        }
-        catch (ClientException e) {
-            throw proxyError(requestMsg, e, e.getErrorType().toString());
-        }
-        catch(Exception e) {
-            throw proxyError(requestMsg, e, null);
-        }
-        finally {
-            timing.end();
-        }
-        HttpResponseMessage respMsg = createHttpResponseMessage(ribbonResp, requestMsg);
+        final Timing timing = context.getRequestProxyTiming();
+        timing.start();
+        Observable<HttpResponseMessage> responseObs = requestBuiltObs.map(httpClientRequest -> {
+            HttpResponse ribbonResp;
+            try {
+                ribbonResp = client.executeWithLoadBalancer(httpClientRequest);
+            }
+            catch (ClientException e) {
+                throw proxyError(requestMsg, e, e.getErrorType().toString());
+            }
+            catch(Exception e) {
+                throw proxyError(requestMsg, e, null);
+            }
+            finally {
+                timing.end();
+            }
+            HttpResponseMessage respMsg = createHttpResponseMessage(ribbonResp, requestMsg);
+            return respMsg;
+        });
 
-        // Return response wrapped in an Observable.
-        return Observable.just(respMsg);
+        return responseObs;
     }
 
     protected ZuulException proxyError(HttpRequestMessage zuulReq, Throwable t, String errorCauseMsg)
@@ -142,7 +153,7 @@ public class RibbonOrigin implements Origin
         HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatus());
         for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
-            if (isValidHeader(header.getKey())) {
+            if (isValidResponseHeader(header.getKey())) {
                 respMsg.getHeaders().add(header.getKey(), header.getValue());
             }
         }
@@ -154,7 +165,19 @@ public class RibbonOrigin implements Origin
         return respMsg;
     }
 
-    protected boolean isValidHeader(String headerName)
+    protected boolean isValidRequestHeader(String headerName)
+    {
+        switch (headerName.toLowerCase()) {
+            case "connection":
+            case "content-length":
+            case "transfer-encoding":
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    protected boolean isValidResponseHeader(String headerName)
     {
         switch (headerName.toLowerCase()) {
             case "connection":
@@ -183,9 +206,9 @@ public class RibbonOrigin implements Origin
         public void testHeaderResponse()
         {
             RibbonOrigin origin = new RibbonOrigin("blah");
-            Assert.assertTrue(origin.isValidHeader("test"));
-            Assert.assertFalse(origin.isValidHeader("content-length"));
-            Assert.assertFalse(origin.isValidHeader("content-encoding"));
+            Assert.assertTrue(origin.isValidResponseHeader("test"));
+            Assert.assertFalse(origin.isValidResponseHeader("content-length"));
+            Assert.assertFalse(origin.isValidResponseHeader("content-encoding"));
         }
 
         @Test

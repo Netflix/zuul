@@ -27,6 +27,7 @@ public class RxNettyUtils
         }
         Headers zuulRespHeaders = zuulResp.getHeaders();
         for (Map.Entry<String, String> entry : resp.getHeaders().entries()) {
+            // TODO - should we be filtering headers here like we do when using Ribbon?
             zuulRespHeaders.add(entry.getKey(), entry.getValue());
         }
 
@@ -38,6 +39,7 @@ public class RxNettyUtils
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(HttpMethod.valueOf(zuulReq.getMethod().toUpperCase()), zuulReq.getPathAndQuery());
 
         for (Map.Entry<String, String> entry : zuulReq.getHeaders().entries()) {
+            // TODO - should we be filtering headers here like we do when using Ribbon?
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }
 
