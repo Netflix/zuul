@@ -1,6 +1,8 @@
 package com.netflix.zuul.context;
 
 
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 
@@ -16,6 +18,9 @@ import java.util.Set;
  */
 public class HttpRequestMessage extends ZuulMessage
 {
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024);
+
     private String protocol;
     private String method;
     private String path;
@@ -101,6 +106,11 @@ public class HttpRequestMessage extends ZuulMessage
             }
         }
         return cookies;
+    }
+
+    @Override
+    public int getMaxBodySize() {
+        return MAX_BODY_SIZE_PROP.get();
     }
 
     @Override

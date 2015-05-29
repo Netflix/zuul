@@ -1,5 +1,8 @@
 package com.netflix.zuul.context;
 
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.bytebuf.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import rx.Observable;
@@ -11,6 +14,9 @@ import rx.Observable;
  */
 public class ZuulMessage implements Cloneable
 {
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            "zuul.message.body.max.size", 25 * 1000 * 1024);
+
     private final SessionContext context;
     private final Headers headers;
     private Observable<ByteBuf> bodyStream = null;
@@ -47,6 +53,27 @@ public class ZuulMessage implements Cloneable
         this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
 
         this.bodyBuffered = true;
+    }
+
+    public Observable<byte[]> bufferBody()
+    {
+        if (isBodyBuffered()) {
+            return Observable.just(getBody());
+        }
+        else {
+            return ByteBufUtils
+                    .aggregate(getBodyStream(), getMaxBodySize())
+                    .map(bb -> {
+                        // Set the body on Response object.
+                        byte[] body = ByteBufUtils.toBytes(bb);
+                        setBody(body);
+                        return body;
+                    });
+        }
+    }
+
+    public int getMaxBodySize() {
+        return MAX_BODY_SIZE_PROP.get();
     }
 
     public boolean isBodyBuffered() {

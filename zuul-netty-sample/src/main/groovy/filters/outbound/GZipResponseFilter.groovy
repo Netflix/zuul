@@ -20,7 +20,8 @@ import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.BaseSyncFilter
+import com.netflix.zuul.filters.http.HttpOutboundFilter
+import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.junit.Before
@@ -31,6 +32,7 @@ import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import rx.Observable
 
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
@@ -38,14 +40,12 @@ import java.util.zip.GZIPOutputStream
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
 
-class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
+/**
+ * TODO - move this into zuul-core?
+ */
+class GZipResponseFilter extends HttpOutboundFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(GZipResponseFilter.class);
-
-    @Override
-    String filterType() {
-        return 'out'
-    }
 
     @Override
     int filterOrder() {
@@ -58,47 +58,49 @@ class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpRespons
     }
 
     @Override
-    HttpResponseMessage apply(HttpResponseMessage response)
+    Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response)
     {
         HttpRequestMessage request = response.getRequest()
 
-        byte[] body = response.getBody()
+        // Buffer the body ByteBufs into a single byte array, then potentially gzip or ungzip it,
+        // and then set that as the new body on the HttpResponseMessage (which will in turn flag this
+        // body as buffered from now on in the filter chain).
+        return response.bufferBody()
+                .map({bodyBytes ->
 
-        // there is no body to send
-        if (body == null) return response;
+                    boolean isGzipRequested = false
+                    final String requestEncoding = request.getHeaders().getFirst(ZuulHeaders.ACCEPT_ENCODING)
+                    if (requestEncoding != null && requestEncoding.equals("gzip"))
+                        isGzipRequested = true;
 
-        boolean isGzipRequested = false
-        final String requestEncoding = request.getHeaders().getFirst(ZuulHeaders.ACCEPT_ENCODING)
-        if (requestEncoding != null && requestEncoding.equals("gzip"))
-            isGzipRequested = true;
+                    boolean isResponseGzipped = HttpUtils.isGzipped(response.getHeaders())
 
-        boolean isResponseGzipped = HttpUtils.isGzipped(response.getHeaders())
+                    // If origin response is gzipped, and client has not requested gzip, decompress stream
+                    // before sending to client.
+                    if (isResponseGzipped && !isGzipRequested) {
+                        try {
+                            byte[] unGzippedBody = IOUtils.toByteArray(new GZIPInputStream(new ByteArrayInputStream(bodyBytes)))
+                            response.setBody(unGzippedBody)
+                            response.getHeaders().remove("Content-Encoding")
 
-        // If origin response is gzipped, and client has not requested gzip, decompress stream
-        // before sending to client.
-        if (isResponseGzipped && !isGzipRequested) {
-            try {
-                byte[] unGzippedBody = IOUtils.toByteArray(new GZIPInputStream(new ByteArrayInputStream(body)))
-                response.setBody(unGzippedBody)
-                response.getHeaders().remove("Content-Encoding")
+                        } catch (java.util.zip.ZipException e) {
+                            LOG.error("Gzip expected but not received assuming unencoded response. So sending body as-is.")
+                        }
+                    }
+                    // If origin response is not gzipped, but client accepts gzip, then compress the body.
+                    else if (isGzipRequested && !isResponseGzipped) {
+                        try {
+                            byte[] gzippedBody = gzip(bodyBytes)
+                            response.setBody(gzippedBody)
+                            response.getHeaders().set("Content-Encoding", "gzip")
 
-            } catch (java.util.zip.ZipException e) {
-                LOG.error("Gzip expected but not received assuming unencoded response. So sending body as-is.")
-            }
-        }
-        // If origin response is not gzipped, but client accepts gzip, then compress the body.
-        else if (isGzipRequested && !isResponseGzipped) {
-            try {
-                byte[] gzippedBody = gzip(body)
-                response.setBody(gzippedBody)
-                response.getHeaders().set("Content-Encoding", "gzip")
+                        } catch (java.util.zip.ZipException e) {
+                            LOG.error("Error gzipping response body. So just sending as-is.")
+                        }
+                    }
 
-            } catch (java.util.zip.ZipException e) {
-                LOG.error("Error gzipping response body. So just sending as-is.")
-            }
-        }
-
-        return response
+                    return response
+                })
     }
 
     private byte[] gzip(byte[] data)
@@ -141,7 +143,7 @@ class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpRespons
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
 
-            filter.apply(response)
+            filter.applyAsync(response).toBlocking()
 
             // Check body is a gzipped version of the origin body.
             byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(response.getBody())).bytes
@@ -158,7 +160,7 @@ class GZipResponseFilter extends BaseSyncFilter<HttpResponseMessage, HttpRespons
             byte[] originBody = gzip("blah")
             response.setBody(originBody)
 
-            filter.apply(response)
+            filter.applyAsync(response).toBlocking()
 
             // Check returned body is same as origin body.
             String bodyStr = new String(response.getBody(), "UTF-8")

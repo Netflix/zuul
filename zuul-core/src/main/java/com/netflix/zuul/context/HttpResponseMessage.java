@@ -1,5 +1,8 @@
 package com.netflix.zuul.context;
 
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicPropertyFactory;
+
 /**
  * User: michaels
  * Date: 2/24/15
@@ -7,6 +10,9 @@ package com.netflix.zuul.context;
  */
 public class HttpResponseMessage extends ZuulMessage
 {
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
+
     private HttpRequestMessage request;
     private int status;
 
@@ -32,6 +38,11 @@ public class HttpResponseMessage extends ZuulMessage
     }
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    @Override
+    public int getMaxBodySize() {
+        return MAX_BODY_SIZE_PROP.get();
     }
 
     @Override

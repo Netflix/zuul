@@ -15,6 +15,7 @@
  */
 package filters.outbound
 
+import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
@@ -57,7 +58,9 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
     {
         HttpRequestMessage request = response.getRequest()
 
-        byte[] body = response.getBody()
+        byte[] body = ByteBufUtils.aggregate(response.getBodyStream())
+            .map({bb -> ByteBufUtils.toBytes(bb)})
+            .toBlocking()
 
         // there is no body to send
         if (body == null) return response;

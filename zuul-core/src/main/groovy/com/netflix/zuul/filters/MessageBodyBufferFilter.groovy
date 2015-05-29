@@ -1,8 +1,5 @@
 package com.netflix.zuul.filters
 
-import com.netflix.config.DynamicIntProperty
-import com.netflix.config.DynamicPropertyFactory
-import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.context.ZuulMessage
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,21 +14,11 @@ public abstract class MessageBodyBufferFilter extends BaseFilter<ZuulMessage, Zu
 {
     private static final Logger LOG = LoggerFactory.getLogger(MessageBodyBufferFilter.class);
 
-    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.MessageBodyBufferFilter.max.size", 25 * 1000 * 1024);
-
     @Override
     Observable<ZuulMessage> applyAsync(ZuulMessage msg)
     {
-        final int maxBodySize = MAX_BODY_SIZE_PROP.get();
-
-        return ByteBufUtils.aggregate(msg.getBodyStream(), maxBodySize)
-                .map({bb ->
-                    // Set the body on Response object.
-                    byte[] body = ByteBufUtils.toBytes(bb);
-                    msg.setBody(body);
-                    return msg;
-                });
+        return msg.bufferBody()
+                    .map({bytes -> msg})
     }
 
     @Override
