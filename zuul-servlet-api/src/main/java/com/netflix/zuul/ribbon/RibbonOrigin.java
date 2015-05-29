@@ -232,8 +232,11 @@ public class RibbonOrigin implements Origin
             HttpResponseMessage response = origin.createHttpResponseMessage(proxyResp, request);
 
             Assert.assertEquals(200, response.getStatus());
-            Assert.assertNotNull(response.getBody());
-            Assert.assertEquals(body.length, response.getBody().length);
+
+            byte[] respBodyBytes = ByteBufUtils.toBytes(response.getBodyStream().toBlocking().single());
+            Assert.assertNotNull(respBodyBytes);
+            Assert.assertEquals(body.length, respBodyBytes.length);
+
             Assert.assertTrue(response.getHeaders().contains("test", "test"));
         }
     }

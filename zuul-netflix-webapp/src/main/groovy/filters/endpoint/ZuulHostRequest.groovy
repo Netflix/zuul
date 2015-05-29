@@ -384,7 +384,8 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
             response = filter.createHttpResponseMessage(httpResponse, request)
 
             Assert.assertEquals(response.getStatus(), 200)
-            Assert.assertEquals(response.getBody().length, body.length)
+            byte[] respBodyBytes = ByteBufUtils.toBytes(response.getBodyStream().toBlocking().single())
+            Assert.assertEquals(body.length, respBodyBytes.length)
             Assert.assertTrue(response.getHeaders().contains('test', "test"))
         }
 
