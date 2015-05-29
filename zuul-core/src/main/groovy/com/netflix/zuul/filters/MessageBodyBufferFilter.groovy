@@ -4,7 +4,6 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.context.ZuulMessage
-import io.netty.buffer.Unpooled
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
@@ -26,17 +25,8 @@ public abstract class MessageBodyBufferFilter extends BaseFilter<ZuulMessage, Zu
     {
         final int maxBodySize = MAX_BODY_SIZE_PROP.get();
 
-        // use reduce() to create a virtual ByteBuf to buffer all of the message body before continuing.
-        return msg.getBodyStream()
-                .reduce({bb1, bb2 ->
-                    // Buffer the body into a single virtual ByteBuf.
-                    // and apply some max size to this.
-                    if (bb1.readableBytes() > maxBodySize) {
-                        throw new RuntimeException("Max message body size exceeded! maxBodySize=" + maxBodySize);
-                    }
-                    return Unpooled.wrappedBuffer(bb1, bb2);
-
-                }).map({bb ->
+        return ByteBufUtils.aggregate(msg.getBodyStream(), maxBodySize)
+                .map({bb ->
                     // Set the body on Response object.
                     byte[] body = ByteBufUtils.toBytes(bb);
                     msg.setBody(body);

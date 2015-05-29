@@ -2,7 +2,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.rxnetty.UnicastDisposableCachingSubject;
+import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpResponseStatus;

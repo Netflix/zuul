@@ -15,23 +15,17 @@
  */
 package filters.endpoint
 
-import com.netflix.client.http.CaseInsensitiveMultiMap
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
+import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
-import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.util.HttpUtils
-import org.apache.commons.io.IOUtils
-import org.apache.http.Header
-import org.apache.http.HttpEntity
-import org.apache.http.HttpHost
-import org.apache.http.HttpRequest
-import org.apache.http.HttpResponse
-import org.apache.http.HttpStatus
-import org.apache.http.StatusLine
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufInputStream
+import org.apache.http.*
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -41,6 +35,7 @@ import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
 import org.apache.http.entity.ByteArrayEntity
+import org.apache.http.entity.InputStreamEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
@@ -58,6 +53,7 @@ import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import rx.Observable
 
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
@@ -77,6 +73,9 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
 
     private static final DynamicIntProperty CONNECTION_TIMEOUT =
         DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_CONNECT_TIMEOUT_MILLIS, 2000)
+
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            ZuulConstants.ZUUL_REQUEST_BODY_MAX_SIZE, 25 * 1000 * 1024);
 
 
 
@@ -168,8 +167,17 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         String path = request.getPath()
         HttpClient httpclient = CLIENT.get()
 
+        InputStream requestBodyInput = null;
+        if (request.getBodyStream() != null) {
+            requestBodyInput = ByteBufUtils.aggregate(request.getBodyStream(), MAX_BODY_SIZE_PROP.get())
+                    .map({ bb ->
+                        return new ByteBufInputStream(bb)
+                    })
+                    .toBlocking().last()
+        }
+
         HttpResponse ribbonResponse = forward(httpclient, routeHost, verb, path,
-                request.getHeaders(), request.getQueryParams(), request.getBody())
+                request.getHeaders(), request.getQueryParams(), requestBodyInput)
 
         HttpResponseMessage response = createHttpResponseMessage(ribbonResponse, request)
         debugResponse(response)
@@ -200,7 +208,7 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         }
     }
 
-    def HttpResponse forward(HttpClient httpclient, URL routeHost, String verb, String path, Headers headers, HttpQueryParams params, byte[] requestBody) {
+    def HttpResponse forward(HttpClient httpclient, URL routeHost, String verb, String path, Headers headers, HttpQueryParams params, InputStream requestBodyInput) {
 
         org.apache.http.HttpHost httpHost = getHttpHost(routeHost)
         URI uri
@@ -216,13 +224,17 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         switch (verb) {
             case 'POST':
                 httpRequest = new HttpPost(uri)
-                ByteArrayEntity entity = new ByteArrayEntity(requestBody)
-                httpRequest.setEntity(entity)
+                if (requestBodyInput != null) {
+                    InputStreamEntity entity = new InputStreamEntity(requestBodyInput)
+                    httpRequest.setEntity(entity)
+                }
                 break
             case 'PUT':
                 httpRequest = new HttpPut(uri)
-                ByteArrayEntity entity = new ByteArrayEntity(requestBody)
-                httpRequest.setEntity(entity)
+                if (requestBodyInput != null) {
+                    InputStreamEntity entity = new InputStreamEntity(requestBodyInput)
+                    httpRequest.setEntity(entity)
+                }
                 break;
             default:
                 httpRequest = new BasicHttpRequest(verb, uri.toASCIIString())
@@ -307,17 +319,11 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
 
         // Body.
         if (ribbonResp.getEntity()) {
-            byte[] body;
-            try {
-                body = IOUtils.toByteArray(ribbonResp.getEntity().getContent());
-            }
-            catch (IOException e) {
-                throw new ZuulException(e, "Error reading response body.");
-            }
-            respMsg.setBody(body);
+            Observable<ByteBuf> respBodyObs = ByteBufUtils.fromInputStream(ribbonResp.getEntity().getContent())
+            respMsg.setBodyStream(respBodyObs)
         }
 
-        return respMsg;
+        return respMsg
     }
 
     boolean isValidHeader(String name) {

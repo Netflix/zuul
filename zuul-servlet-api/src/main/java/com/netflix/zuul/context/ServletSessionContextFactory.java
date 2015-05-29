@@ -2,11 +2,9 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.observables.StringObservable;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +64,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 
         // Wrap the ServletInputStream(body) in an Observable.
         if (bodyInput != null) {
-            Observable<ByteBuf> bodyObs = StringObservable.from(bodyInput).map(bytes -> Unpooled.wrappedBuffer(bytes));
+            Observable<ByteBuf> bodyObs = ByteBufUtils.fromInputStream(bodyInput);
             request.setBodyStream(bodyObs);
         }
 
@@ -99,7 +97,8 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             return Observable.just(msg);
         }
         else {
-            return msg.getBodyStream()
+            // Write out the response body stream of ByteBufS.
+            Observable<ZuulMessage> writeBody = msg.getBodyStream()
                     .doOnNext((bb) -> {
                         try {
                             output.write(ByteBufUtils.toBytes(bb));
@@ -114,8 +113,14 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                             LOG.error("Error flushing response to ServletOutputStream.", e);
                         }
                     })
-                    .map(bb -> msg)
-                    .ignoreElements();
+                    .doOnError(t -> {
+                        LOG.error("Error writing repsonse to ServletOutputStream.", t);
+                    })
+                    .map(bb ->  msg);
+
+            writeBody.subscribe();
+            return writeBody;
+
         }
     }
 }

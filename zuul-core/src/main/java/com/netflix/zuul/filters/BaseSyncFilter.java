@@ -11,7 +11,7 @@ import rx.Observable;
 public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessage> extends BaseFilter<I,O>
 {
     /**
-     * A wrapper implementation of applyAsync() that is intended just to wrap a non-blocking apply() method
+     * A wrapper implementation of applyAsync() that is intended just to aggregate a non-blocking apply() method
      * in an Observable.
      *
      * A subclass filter should override this method if doing any IO.

@@ -5,12 +5,17 @@ import com.netflix.client.ClientFactory;
 import com.netflix.client.http.CaseInsensitiveMultiMap;
 import com.netflix.client.http.HttpRequest;
 import com.netflix.client.http.HttpResponse;
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.niws.client.http.RestClient;
+import com.netflix.zuul.bytebuf.ByteBufUtils;
+import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.stats.Timing;
-import org.apache.commons.io.IOUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
@@ -35,6 +39,9 @@ import java.util.Map;
 public class RibbonOrigin implements Origin
 {
     private static final Logger LOG = LoggerFactory.getLogger(RibbonOrigin.class);
+
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+            ZuulConstants.ZUUL_REQUEST_BODY_MAX_SIZE, 25 * 1000 * 1024);
 
     private final String name;
 
@@ -68,10 +75,14 @@ public class RibbonOrigin implements Origin
                 verb(verb).
                 uri(uri);
 
-        if (requestMsg.getBody() != null) {
-            InputStream requestEntity = new ByteArrayInputStream(requestMsg.getBody());
+        // Request body.
+        if (requestMsg.getBodyStream() != null) {
+            InputStream requestEntity = ByteBufUtils.aggregate(requestMsg.getBodyStream(), MAX_BODY_SIZE_PROP.get())
+                    .map(bb -> new ByteBufInputStream(bb))
+                    .toBlocking().last();
             builder.entity(requestEntity);
         }
+
 
         for (Map.Entry<String, String> entry : headers.entries()) {
             builder.header(entry.getKey(), entry.getValue());
@@ -135,14 +146,11 @@ public class RibbonOrigin implements Origin
                 respMsg.getHeaders().add(header.getKey(), header.getValue());
             }
         }
-        byte[] body;
-        try {
-            body = IOUtils.toByteArray(ribbonResp.getInputStream());
-        }
-        catch (IOException e) {
-            throw new ZuulException(e, "Error reading response body.");
-        }
-        respMsg.setBody(body);
+
+        // Body.
+        Observable<ByteBuf> responseBodyObs = ByteBufUtils.fromInputStream(ribbonResp.getInputStream());
+        respMsg.setBodyStream(responseBodyObs);
+
         return respMsg;
     }
 

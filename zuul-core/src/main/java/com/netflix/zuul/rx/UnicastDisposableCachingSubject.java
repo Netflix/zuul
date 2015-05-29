@@ -1,4 +1,4 @@
-package com.netflix.zuul.rxnetty;
+package com.netflix.zuul.rx;
 
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
