@@ -43,7 +43,7 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
                 request.getClientIp(), "http")
         Observable<HttpResponseMessage> resultObs = origin.request(ioRequest)
 
-        resultObs = resultObs.map({ resp ->
+        resultObs = resultObs.flatMap({ resp ->
 
             // Get the result of the call.
             int status = resp.getStatus()
@@ -51,7 +51,7 @@ class ExampleIOPreFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessa
             LOG.info("Received response for ExampleIOPreFilter http call. status=${status}")
 
             // Swap the original context back into the Observable returned.
-            return request
+            return request.getBodyStream().map(request);
         })
 
         return resultObs

@@ -1,14 +1,18 @@
 package com.netflix.zuul.context;
 
-import org.apache.commons.io.IOUtils;
+import com.netflix.zuul.bytebuf.ByteBufUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.observables.StringObservable;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketTimeoutException;
 import java.util.Enumeration;
 import java.util.Map;
@@ -44,18 +48,10 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         HttpRequestMessage request = new HttpRequestMessage(context, servletRequest.getProtocol(), servletRequest.getMethod(),
                 servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(), servletRequest.getScheme());
 
-        // Buffer the request body into a byte array.
-        request.setBody(bufferBody(servletRequest));
-
-        // Wrap in an Observable.
-        return Observable.just(request);
-    }
-
-    private byte[] bufferBody(HttpServletRequest servletRequest)
-    {
-        byte[] body = null;
+        // Get the inputstream of body.
+        InputStream bodyInput = null;
         try {
-            body = IOUtils.toByteArray(servletRequest.getInputStream());
+            bodyInput = servletRequest.getInputStream();
         }
         catch (SocketTimeoutException e) {
             // This can happen if the request body is smaller than the size specified in the
@@ -63,13 +59,23 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
         }
         catch (IOException e) {
-            LOG.error("Exception reading request body from inputstream.", e);
+            String errorMsg = "Error reading ServletInputStream.";
+            LOG.error(errorMsg, e);
+            throw new RuntimeException(errorMsg, e);
         }
-        return body;
+
+        // Wrap the ServletInputStream(body) in an Observable.
+        if (bodyInput != null) {
+            Observable<ByteBuf> bodyObs = StringObservable.from(bodyInput).map(bytes -> Unpooled.wrappedBuffer(bytes));
+            request.setBodyStream(bodyObs);
+        }
+
+        // Wrap in an Observable.
+        return Observable.just(request);
     }
 
     @Override
-    public void write(ZuulMessage msg, HttpServletResponse servletResponse)
+    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServletResponse servletResponse)
     {
         HttpResponseMessage response = (HttpResponseMessage) msg;
 
@@ -82,15 +88,34 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         }
 
         // Body.
-        if (response.getBody() != null) {
-            try {
-                ServletOutputStream output = servletResponse.getOutputStream();
-                IOUtils.write(response.getBody(), output);
-                output.flush();
-            }
-            catch (IOException e) {
-                throw new RuntimeException("Error writing response body to outputstream!", e);
-            }
+        ServletOutputStream output;
+        try {
+            output = servletResponse.getOutputStream();
+        } catch (IOException e) {
+            throw new RuntimeException("Error getting ServletOutputStream", e);
+        }
+
+        if (msg.getBodyStream() == null) {
+            return Observable.just(msg);
+        }
+        else {
+            return msg.getBodyStream()
+                    .doOnNext((bb) -> {
+                        try {
+                            output.write(ByteBufUtils.toBytes(bb));
+                        } catch (IOException e) {
+                            LOG.error("Error writing response to ServletOutputStream.", e);
+                        }
+                    })
+                    .doOnCompleted(() -> {
+                        try {
+                            output.flush();
+                        } catch (IOException e) {
+                            LOG.error("Error flushing response to ServletOutputStream.", e);
+                        }
+                    })
+                    .map(bb -> msg)
+                    .ignoreElements();
         }
     }
 }

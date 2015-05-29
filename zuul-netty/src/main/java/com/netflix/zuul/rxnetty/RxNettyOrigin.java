@@ -97,14 +97,14 @@ public class RxNettyOrigin implements Origin {
         // Construct.
         Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest)
         .doOnError(t -> {
-                isSuccess.set(false);
+                    isSuccess.set(false);
 
-                // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
-                ctx.getAttributes().setShouldSendErrorResponse(true);
+                    // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
+                    ctx.getAttributes().setShouldSendErrorResponse(true);
 
-                LOG.error(String.format("Error making http request to Origin. vip=%s, url=%s, target-host=%s",
-                        this.vip, requestMsg.getPathAndQuery(), serverInfo.getHost()), t);
-            }
+                    LOG.error(String.format("Error making http request to Origin. vip=%s, url=%s, target-host=%s",
+                            this.vip, requestMsg.getPathAndQuery(), serverInfo.getHost()), t);
+                }
         )
         .finallyDo(() -> {
             timing.end();
@@ -112,7 +112,7 @@ public class RxNettyOrigin implements Origin {
                 stats.completed(isSuccess.get(), timing.getDuration());
         });
 
-        return RxNettyUtils.bufferHttpClientResponse(requestMsg, respObs);
+        return bufferHttpClientResponse(requestMsg, respObs);
     }
 
     private CompositeHttpClient<ByteBuf, ByteBuf> createCompositeHttpClient()
@@ -137,5 +137,28 @@ public class RxNettyOrigin implements Origin {
                 .build();
 
         return client;
+    }
+
+    protected Observable<HttpResponseMessage> bufferHttpClientResponse(HttpRequestMessage zuulReq,
+                                                                           Observable<HttpClientResponse<ByteBuf>> clientResp)
+    {
+        return clientResp.map(resp -> {
+
+            HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(zuulReq, resp);
+
+            //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
+            UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+
+            // Only apply the filters once the request body has been fully read and buffered.
+            Observable<ByteBuf> content = resp.getContent();
+
+            // Subscribe to the response-content observable (retaining the ByteBufS first).
+            content.map(ByteBuf::retain).subscribe(cachedContent);
+
+            // Store this content ref on the zuul response object.
+            zuulResp.setBodyStream(cachedContent);
+
+            return zuulResp;
+        });
     }
 }

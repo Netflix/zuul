@@ -2,9 +2,8 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.rxnetty.RxNettyUtils;
+import com.netflix.zuul.rxnetty.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
@@ -12,7 +11,6 @@ import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
-import rx.subjects.PublishSubject;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -52,12 +50,11 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 scheme
         );
 
-        // Buffer the request body, and wrap in an Observable.
-        return toObservable(request, httpServerRequest);
+        return wrapBody(request, httpServerRequest);
     }
 
     @Override
-    public void write(ZuulMessage msg, HttpServerResponse nativeResponse)
+    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse nativeResponse)
     {
         HttpResponseMessage zuulResp = (HttpResponseMessage) msg;
 
@@ -69,50 +66,33 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
             nativeResponse.getHeaders().add(entry.getKey(), entry.getValue());
         }
 
-        // Write response body bytes.
-        if (zuulResp.getBody() != null) {
-            nativeResponse.writeBytesAndFlush(zuulResp.getBody());
+        // Write response body stream as received.
+        Observable<ZuulMessage> chain;
+        Observable<ByteBuf> bodyStream = zuulResp.getBodyStream();
+        if (bodyStream != null) {
+            chain = bodyStream
+                    .doOnNext(bb -> nativeResponse.writeBytesAndFlush(bb))
+                    .ignoreElements()
+                    .doOnCompleted(() -> nativeResponse.close())
+                    .map(bb -> msg);
         }
-
-        nativeResponse.close();
+        else {
+            chain = Observable.just(msg);
+        }
+        return chain;
     }
 
-    private Observable<ZuulMessage> toObservable(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
+
+    private Observable<ZuulMessage> wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
     {
-        PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
-        //UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
+        //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
+        UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
 
         // Subscribe to the response-content observable (retaining the ByteBufS first).
         nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
 
-        final int maxReqBodySize = MAX_REQ_BODY_SIZE_PROP.get();
-
-        // Only apply the filters once the request body has been fully read and buffered.
-        Observable<ZuulMessage> chain = cachedContent
-                .reduce((bb1, bb2) -> {
-                    // TODO - this no longer appears to ever be called. Assume always receiving just a single ByteBuf?
-                    // Buffer the request body into a single virtual ByteBuf.
-                    // and apply some max size to this.
-                    if (bb1.readableBytes() > maxReqBodySize) {
-                        throw new RuntimeException("Max request body size exceeded! MAX_REQ_BODY_SIZE=" + maxReqBodySize);
-                    }
-                    return Unpooled.wrappedBuffer(bb1, bb2);
-
-                })
-                .map(bodyBuffer -> {
-                    // Set the body on Request object.
-                    byte[] body = RxNettyUtils.byteBufToBytes(bodyBuffer);
-                    request.setBody(body);
-
-                    // Release the ByteBufS
-                    if (bodyBuffer.refCnt() > 0) {
-                        if (LOG.isDebugEnabled()) LOG.debug("Releasing the server-request ByteBuf.");
-                        bodyBuffer.release();
-                    }
-                    return request;
-                });
-
-        return chain;
+        request.setBodyStream(cachedContent);
+        return Observable.just(request);
     }
 
     private Headers copyHeaders(HttpServerRequest httpServerRequest)

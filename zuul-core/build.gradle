@@ -19,6 +19,8 @@ dependencies {
     compile 'com.netflix.ribbon:ribbon-eureka:2.0.0'
     compile 'com.netflix.ribbon:ribbon-httpclient:2.0.0'
     compile 'com.netflix.turbine:turbine-core:[0.4,)'
+    compile(group: 'io.reactivex', name: 'rxjava-string', version: '1.0.+')
+
 
     // TEMP - ensure using same version as zuul-netty.
     compile "io.netty:netty-common:${versions_netty}"

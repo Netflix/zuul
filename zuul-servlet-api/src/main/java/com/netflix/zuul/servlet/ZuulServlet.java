@@ -157,6 +157,7 @@ public class ZuulServlet extends HttpServlet {
 
             attributes = new Attributes();
             response = new HttpResponseMessage(context, request, 299);
+            response.setBody("blah".getBytes());
             when(context.getAttributes()).thenReturn(attributes);
 
             when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));

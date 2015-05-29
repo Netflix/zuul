@@ -86,7 +86,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         }
 
         // After the request is handled, write out the response.
-        chain = chain.doOnNext(ctx -> contextFactory.write(ctx, response));
+        chain = chain.flatMap(msg -> contextFactory.write(msg, response));
 
         // Record the execution time reported by Origin.
         chain = chain.doOnNext(msg -> recordReportedOriginDuration((HttpResponseMessage) msg));
@@ -115,6 +115,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
             .ignoreElements()
             .cast(Void.class);
     }
+
 
     protected void publishTimings(SessionContext context)
     {

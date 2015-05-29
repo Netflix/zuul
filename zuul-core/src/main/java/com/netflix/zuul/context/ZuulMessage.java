@@ -1,5 +1,9 @@
 package com.netflix.zuul.context;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import rx.Observable;
+
 /**
  * User: michaels@netflix.com
  * Date: 2/20/15
@@ -9,6 +13,8 @@ public class ZuulMessage implements Cloneable
 {
     private final SessionContext context;
     private final Headers headers;
+    private Observable<ByteBuf> bodyStream = null;
+    private boolean bodyBuffered = false;
     private byte[] body = null;
 
     public ZuulMessage(SessionContext context) {
@@ -36,6 +42,23 @@ public class ZuulMessage implements Cloneable
     public void setBody(byte[] body)
     {
         this.body = body;
+
+        // Now that body is buffered, if anyone asks for the stream, then give them this wrapper.
+        this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
+
+        this.bodyBuffered = true;
+    }
+
+    public boolean isBodyBuffered() {
+        return bodyBuffered;
+    }
+
+    public Observable<ByteBuf> getBodyStream() {
+        return bodyStream;
+    }
+
+    public void setBodyStream(Observable<ByteBuf> bodyStream) {
+        this.bodyStream = bodyStream;
     }
 
     @Override
