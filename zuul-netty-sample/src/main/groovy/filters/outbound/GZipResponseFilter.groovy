@@ -137,13 +137,13 @@ class GZipResponseFilter extends HttpOutboundFilter
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
 
-            filter.applyAsync(response).toBlocking()
+            HttpResponseMessage result = filter.applyAsync(response).toBlocking().first()
 
             // Check body is a gzipped version of the origin body.
-            byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(response.getBody())).bytes
+            byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(result.getBody())).bytes
             String bodyStr = new String(unzippedBytes, "UTF-8")
             assertEquals("blah", bodyStr)
-            assertEquals("gzip", response.getHeaders().getFirst("Content-Encoding"))
+            assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"))
         }
 
         @Test
@@ -154,12 +154,12 @@ class GZipResponseFilter extends HttpOutboundFilter
             byte[] originBody = gzip("blah")
             response.setBody(originBody)
 
-            filter.applyAsync(response).toBlocking()
+            HttpResponseMessage result = filter.applyAsync(response).toBlocking().first()
 
             // Check returned body is same as origin body.
-            String bodyStr = new String(response.getBody(), "UTF-8")
+            String bodyStr = new String(result.getBody(), "UTF-8")
             assertEquals("blah", bodyStr)
-            assertNull(response.getHeaders().getFirst("Content-Encoding"))
+            assertNull(result.getHeaders().getFirst("Content-Encoding"))
         }
 
         private byte[] gzip(String data)
