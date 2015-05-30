@@ -1,0 +1,7 @@
+
+dependencies {
+    compile(group: 'org.eclipse.jetty.aggregate', name: 'jetty-all', version: "${versions_jetty9}")
+//    compile(group: 'org.eclipse.jetty', name: 'jetty-alpn-server', version: "${versions_jetty9}")
+//    compile(group: 'org.eclipse.jetty.http2', name: 'http2-parent', version: "${versions_jetty9}")
+}
+
