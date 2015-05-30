@@ -1,5 +1,6 @@
 package com.netflix.zuul.util;
 
+import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.context.Headers;
 import com.netflix.zuul.context.HttpRequestMessage;
 import org.junit.Test;
@@ -68,10 +69,14 @@ public class HttpUtils
     }
 
     public static boolean isGzipped(Headers headers) {
-        String ce = headers.getFirst("Content-Encoding");
+        String ce = headers.getFirst(ZuulHeaders.CONTENT_ENCODING);
         return ce != null && isGzipped(ce);
     }
 
+    public static boolean acceptsGzip(Headers headers) {
+        String ae = headers.getFirst(ZuulHeaders.ACCEPT_ENCODING);
+        return ae != null && isGzipped(ae);
+    }
 
     public static class UnitTest {
 

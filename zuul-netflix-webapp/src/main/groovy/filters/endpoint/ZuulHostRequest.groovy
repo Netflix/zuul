@@ -243,7 +243,9 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         try {
             // Copy the request headers.
             headers.entries().each {
-                httpRequest.addHeader(it.getKey(), it.getValue())
+                if (isValidRequestHeader(it.getKey())) {
+                    httpRequest.addHeader(it.getKey(), it.getValue())
+                }
             }
 
             // Make the request.
@@ -312,7 +314,7 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
 
         // Headers.
         for (Header header : ribbonResp.getAllHeaders()) {
-            if (isValidHeader(header.getName())) {
+            if (isValidResponseHeader(header.getName())) {
                 respMsg.getHeaders().add(header.getName(), header.getValue());
             }
         }
@@ -326,16 +328,28 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
         return respMsg
     }
 
-    boolean isValidHeader(String name) {
-        switch (name.toLowerCase()) {
+    boolean isValidRequestHeader(String headerName)
+    {
+        switch (headerName.toLowerCase()) {
             case "connection":
             case "content-length":
-            case "content-encoding":
+            case "transfer-encoding":
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    boolean isValidResponseHeader(String headerName)
+    {
+        switch (headerName.toLowerCase()) {
+            case "connection":
+            case "content-length":
             case "server":
             case "transfer-encoding":
-                return false
+                return false;
             default:
-                return true
+                return true;
         }
     }
 

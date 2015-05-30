@@ -182,7 +182,6 @@ public class RibbonOrigin implements Origin
         switch (headerName.toLowerCase()) {
             case "connection":
             case "content-length":
-            case "content-encoding":
             case "server":
             case "transfer-encoding":
                 return false;

@@ -15,13 +15,11 @@
  */
 package filters.outbound
 
-import com.netflix.zuul.constants.ZuulHeaders
 import com.netflix.zuul.context.Headers
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpOutboundFilter
-import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.junit.Before
@@ -68,11 +66,7 @@ class GZipResponseFilter extends HttpOutboundFilter
         return response.bufferBody()
                 .map({bodyBytes ->
 
-                    boolean isGzipRequested = false
-                    final String requestEncoding = request.getHeaders().getFirst(ZuulHeaders.ACCEPT_ENCODING)
-                    if (requestEncoding != null && requestEncoding.equals("gzip"))
-                        isGzipRequested = true;
-
+                    boolean isGzipRequested = HttpUtils.acceptsGzip(request.getHeaders())
                     boolean isResponseGzipped = HttpUtils.isGzipped(response.getHeaders())
 
                     // If origin response is gzipped, and client has not requested gzip, decompress stream
