@@ -100,8 +100,8 @@ jettyRun.doFirst {
     System.setProperty("zuul.filters.root", filtersRoot)
 
 
-    // HACK ALERT: Must not have our own groovy
-    // on the classpath since it's already loaded by gradle
+    // NOTE: Must not have our own groovy
+    // on the class path since it's already loaded by gradle
     // and if it isn't exactly the same version, then we get
     // "GroovyRuntimeException: Conflicting module versions"
     final FileCollection currentClasspath = classpath
@@ -117,12 +117,16 @@ task integrationTest(type: Test, dependsOn: 'jettyRun') {
 
     System.setProperty("integrationtest.port", "8099")
 
+    testLogging.showStandardStreams = true
+
     //If you want to ensure that integration tests are run every time when you invoke
     //this task, uncomment the following line.
     outputs.upToDateWhen { false }
 }
 integrationTest.finalizedBy 'jettyStop'
 
+// Don't normally run integrationTest task.
+check.dependsOn -= integrationTest
 
 //Ensure that the HTML reports of unit and integration tests are written to different directories.
 tasks.withType(Test) {

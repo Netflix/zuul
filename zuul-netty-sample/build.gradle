@@ -60,11 +60,15 @@ task integrationTest(type: Test) {
     testClassesDir = sourceSets.integrationTest.output.classesDir
     classpath = sourceSets.integrationTest.runtimeClasspath
 
+    testLogging.showStandardStreams = true
+
     //If you want to ensure that integration tests are run every time when you invoke
     //this task, uncomment the following line.
     outputs.upToDateWhen { false }
 }
-//check.dependsOn integrationTest
+
+// Don't normally run integrationTest task.
+check.dependsOn -= integrationTest
 
 //Ensure that the HTML reports of unit and integration tests are written to different directories.
 tasks.withType(Test) {
