@@ -1,5 +1,7 @@
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.ZuulFilter;
+
 /**
  * Interface to implement for registering a callback for each time a filter
  * is used.

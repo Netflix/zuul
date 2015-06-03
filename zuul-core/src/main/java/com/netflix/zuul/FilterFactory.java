@@ -1,5 +1,7 @@
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.BaseFilter;
+
 /**
  * Interface to provide instances of ZuulFilter from a given class.
  */
@@ -12,5 +14,5 @@ public interface FilterFactory {
      * @return an instance of ZuulFilter
      * @throws Exception if an error occurs
      */
-    public ZuulFilter newInstance(Class clazz) throws Exception;
+    public BaseFilter newInstance(Class clazz) throws Exception;
 }
