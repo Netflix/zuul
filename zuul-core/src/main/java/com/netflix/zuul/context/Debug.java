@@ -15,16 +15,25 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.util.HttpUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
@@ -33,47 +42,65 @@ import static org.junit.Assert.assertTrue;
  * Time: 2:26 PM
  */
 public class Debug {
+    private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
-    public static void setDebugRequest(boolean bDebug) {
-        RequestContext.getCurrentContext().setDebugRequest(bDebug);
+    public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
+        ctx.getAttributes().setDebugRequest(bDebug);
     }
 
-    public static void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
-        RequestContext.getCurrentContext().setDebugRequestHeadersOnly(bHeadersOnly);
+    public static void setDebugRequestHeadersOnly(SessionContext ctx, boolean bHeadersOnly) {
+        ctx.getAttributes().setDebugRequestHeadersOnly(bHeadersOnly);
     }
 
-    public static boolean debugRequestHeadersOnly() {
-        return RequestContext.getCurrentContext().debugRequestHeadersOnly();
-    }
-
-
-    public static void setDebugRouting(boolean bDebug) {
-        RequestContext.getCurrentContext().setDebugRouting(bDebug);
+    public static boolean debugRequestHeadersOnly(SessionContext ctx) {
+        return ctx.getAttributes().debugRequestHeadersOnly();
     }
 
 
-    public static boolean debugRequest() {
-        return RequestContext.getCurrentContext().debugRequest();
+    public static void setDebugRouting(SessionContext ctx, boolean bDebug) {
+        ctx.getAttributes().setDebugRouting(bDebug);
     }
 
-    public static boolean debugRouting() {
-        return RequestContext.getCurrentContext().debugRouting();
+
+    public static boolean debugRequest(SessionContext ctx) {
+        return ctx.getAttributes().debugRequest();
     }
 
-    public static void addRoutingDebug(String line) {
-        List<String> rd = getRoutingDebug();
+    public static boolean debugRouting(SessionContext ctx) {
+        return ctx.getAttributes().debugRouting();
+    }
+
+    public static void addRoutingDebug(SessionContext ctx, String line) {
+        List<String> rd = getRoutingDebug(ctx);
         rd.add(line);
+    }
+
+    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
+    {
+        try {
+            for (Map.Entry<String, String> header : message.getHeaders().entries()) {
+                Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
+            }
+
+            if (message.getBody() != null) {
+                String bodyStr = new String(message.getBody(), "UTF-8");
+                Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
+            }
+        }
+        catch (UnsupportedEncodingException e) {
+            LOG.warn("Error writing message to debug log.", e);
+        }
     }
 
     /**
      *
      * @return Returns the list of routiong debug messages
      */
-    public static List<String> getRoutingDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
+    public static List<String> getRoutingDebug(SessionContext ctx) {
+        List<String> rd = (List<String>) ctx.getAttributes().get("routingDebug");
         if (rd == null) {
             rd = new ArrayList<String>();
-            RequestContext.getCurrentContext().set("routingDebug", rd);
+            ctx.getAttributes().set("routingDebug", rd);
         }
         return rd;
     }
@@ -82,8 +109,8 @@ public class Debug {
      * Adds a line to the  Request debug messages
      * @param line
      */
-    public static void addRequestDebug(String line) {
-        List<String> rd = getRequestDebug();
+    public static void addRequestDebug(SessionContext ctx, String line) {
+        List<String> rd = getRequestDebug(ctx);
         rd.add(line);
     }
 
@@ -91,11 +118,11 @@ public class Debug {
      *
      * @return returns the list of request debug messages
      */
-    public static List<String> getRequestDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
+    public static List<String> getRequestDebug(SessionContext ctx) {
+        List<String> rd = (List<String>) ctx.getAttributes().get("requestDebug");
         if (rd == null) {
             rd = new ArrayList<String>();
-            RequestContext.getCurrentContext().set("requestDebug", rd);
+            ctx.getAttributes().set("requestDebug", rd);
         }
         return rd;
     }
@@ -106,19 +133,19 @@ public class Debug {
      * @param filterName
      * @param copy
      */
-    public static void compareContextState(String filterName, RequestContext copy) {
-        RequestContext context = RequestContext.getCurrentContext();
-        Iterator<String> it = context.keySet().iterator();
+    public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
+        // TODO - only comparing Attributes. Need to compare the messages too.
+        Iterator<String> it = context.getAttributes().keySet().iterator();
         String key = it.next();
         while (key != null) {
             if ((!key.equals("routingDebug") && !key.equals("requestDebug"))) {
-                Object newValue = context.get(key);
-                Object oldValue = copy.get(key);
+                Object newValue = context.getAttributes().get(key);
+                Object oldValue = copy.getAttributes().get(key);
                 if (oldValue == null && newValue != null) {
-                    addRoutingDebug("{" + filterName + "} added " + key + "=" + newValue.toString());
+                    addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                 } else if (oldValue != null && newValue != null) {
                     if (!(oldValue.equals(newValue))) {
-                        addRoutingDebug("{" +filterName + "} changed " + key + "=" + newValue.toString());
+                        addRoutingDebug(context, "{" +filterName + "} changed " + key + "=" + newValue.toString());
                     }
                 }
             }
@@ -133,24 +160,30 @@ public class Debug {
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
+    public static class UnitTest
+    {
+        @Mock
+        private SessionContext ctx;
+
+        @Before
+        public void setup() {
+            when(ctx.getAttributes()).thenReturn(new Attributes());
+        }
 
         @Test
         public void testRequestDebug() {
-            assertFalse(debugRouting());
-            assertFalse(debugRequest());
-            setDebugRouting(true);
-            setDebugRequest(true);
-            assertTrue(debugRouting());
-            assertTrue(debugRequest());
+            assertFalse(debugRouting(ctx));
+            assertFalse(debugRequest(ctx));
+            setDebugRouting(ctx, true);
+            setDebugRequest(ctx, true);
+            assertTrue(debugRouting(ctx));
+            assertTrue(debugRequest(ctx));
 
-            addRoutingDebug("test1");
-            assertTrue(getRoutingDebug().contains("test1"));
+            addRoutingDebug(ctx, "test1");
+            assertTrue(getRoutingDebug(ctx).contains("test1"));
 
-            addRequestDebug("test2");
-            assertTrue(getRequestDebug().contains("test2"));
-
-
+            addRequestDebug(ctx, "test2");
+            assertTrue(getRequestDebug(ctx).contains("test2"));
         }
     }
 

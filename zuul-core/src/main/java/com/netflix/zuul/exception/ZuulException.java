@@ -23,9 +23,10 @@ import com.netflix.zuul.monitoring.CounterFactory;
  * Date: 10/20/11
  * Time: 4:33 PM
  */
-public class ZuulException extends Exception {
+public class ZuulException extends RuntimeException {
     public int nStatusCode;
     public String errorCause;
+    private boolean shouldLogAsError = true;
 
     /**
      * Source Throwable, message, status code and info about the cause
@@ -52,7 +53,27 @@ public class ZuulException extends Exception {
         this.nStatusCode = nStatusCode;
         this.errorCause = errorCause;
         incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
+    }
 
+    public ZuulException(Throwable throwable, String sMessage) {
+        super(sMessage, throwable);
+        this.nStatusCode = 500;
+        this.errorCause = "GENERAL";
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
+    }
+
+    public ZuulException(Throwable throwable) {
+        super(throwable);
+        this.nStatusCode = 500;
+        this.errorCause = "GENERAL";
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
+    }
+
+    public ZuulException(String sMessage) {
+        super(sMessage);
+        this.nStatusCode = 500;
+        this.errorCause = "GENERAL";
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
     }
 
     /**
@@ -66,11 +87,17 @@ public class ZuulException extends Exception {
         this.nStatusCode = nStatusCode;
         this.errorCause = errorCause;
         incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
-
     }
 
     private static final void incrementCounter(String name) {
         CounterFactory.instance().increment(name);
     }
 
+    public void dontLogAsError() {
+        shouldLogAsError = false;
+    }
+
+    public boolean shouldLogAsError() {
+        return shouldLogAsError;
+    }
 }

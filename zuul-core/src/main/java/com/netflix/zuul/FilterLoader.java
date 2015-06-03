@@ -15,7 +15,12 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.context.ZuulMessage;
+import com.netflix.zuul.filters.BaseFilter;
+import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
+import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.groovy.GroovyCompiler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -23,23 +28,17 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -49,19 +48,20 @@ import static org.mockito.Mockito.when;
  *         Date: 11/3/11
  *         Time: 1:59 PM
  */
-public class FilterLoader {
-    final static FilterLoader INSTANCE = new FilterLoader();
-
+@Singleton
+public class FilterLoader
+{
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
     private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
     private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
+    private final ConcurrentHashMap<String, ZuulFilter> filtersByNameAndType = new ConcurrentHashMap<>();
 
-    private FilterRegistry filterRegistry = FilterRegistry.instance();
+    private FilterRegistry filterRegistry = new FilterRegistry();
 
-    static DynamicCodeCompiler COMPILER;
+    private DynamicCodeCompiler compiler = new GroovyCompiler();
     
     static FilterFactory FILTER_FACTORY = new DefaultFilterFactory();
 
@@ -71,7 +71,7 @@ public class FilterLoader {
      * @param compiler
      */
     public void setCompiler(DynamicCodeCompiler compiler) {
-        COMPILER = compiler;
+        this.compiler = compiler;
     }
 
     // overidden by tests
@@ -87,13 +87,7 @@ public class FilterLoader {
     public void setFilterFactory(FilterFactory factory) {
         FILTER_FACTORY = factory;
     }
-    
-    /**
-     * @return Singleton FilterLoader
-     */
-    public static FilterLoader getInstance() {
-        return INSTANCE;
-    }
+
 
     /**
      * Given source and name will compile and store the filter if it detects that the filter code has changed or
@@ -101,7 +95,7 @@ public class FilterLoader {
      *
      * @param sCode source code
      * @param sName name of the filter
-     * @return the ZuulFilter
+     * @return the IZuulFilter
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
@@ -116,9 +110,9 @@ public class FilterLoader {
         }
         ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
-            Class clazz = COMPILER.compile(sCode, sName);
+            Class clazz = compiler.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
+                filter = FILTER_FACTORY.newInstance(clazz);
             }
         }
         return filter;
@@ -151,13 +145,17 @@ public class FilterLoader {
         }
         ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
-            Class clazz = COMPILER.compile(file);
+            Class clazz = compiler.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
+                filter = FILTER_FACTORY.newInstance(clazz);
                 List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
                     hashFiltersByType.remove(filter.filterType()); //rebuild this list
                 }
+
+                String nameAndType = filter.filterType() + ":" + filter.filterName();
+                filtersByNameAndType.put(nameAndType, filter);
+
                 filterRegistry.put(file.getAbsolutePath() + file.getName(), filter);
                 filterClassLastModified.put(sName, file.lastModified());
                 return true;
@@ -187,14 +185,30 @@ public class FilterLoader {
                 list.add(filter);
             }
         }
-        Collections.sort(list); // sort by priority
+
+        // Sort by filterOrder.
+        Collections.sort(list, new Comparator<ZuulFilter>() {
+            @Override
+            public int compare(ZuulFilter o1, ZuulFilter o2) {
+                return o1.filterOrder() - o2.filterOrder();
+            }
+        });
 
         hashFiltersByType.putIfAbsent(filterType, list);
         return list;
     }
 
+    public ZuulFilter getFilterByNameAndType(String name, String type)
+    {
+        if (name == null || type == null)
+            return null;
 
-    public static class TestZuulFilter extends ZuulFilter {
+        String nameAndType = type + ":" + name;
+        return filtersByNameAndType.get(nameAndType);
+    }
+
+
+    public static class TestZuulFilter extends BaseSyncFilter {
 
         public TestZuulFilter() {
             super();
@@ -210,11 +224,13 @@ public class FilterLoader {
             return 0;
         }
 
-        public boolean shouldFilter() {
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
             return false;
         }
 
-        public Object run() {
+        @Override
+        public ZuulMessage apply(ZuulMessage msg) {
             return null;
         }
     }
@@ -248,7 +264,7 @@ public class FilterLoader {
         public void testGetFilterFromFile() throws Exception {
             doReturn(TestZuulFilter.class).when(compiler).compile(file);
             assertTrue(loader.putFilter(file));
-            verify(registry).put(any(String.class), any(ZuulFilter.class));
+            verify(registry).put(any(String.class), any(BaseFilter.class));
         }
 
         @Test
@@ -262,7 +278,7 @@ public class FilterLoader {
             filters.add(filter);
             when(registry.getAllFilters()).thenReturn(filters);
 
-            List< ZuulFilter > list = loader.getFiltersByType("test");
+            List<ZuulFilter> list = loader.getFiltersByType("test");
             assertTrue(list != null);
             assertTrue(list.size() == 1);
             ZuulFilter filter = list.get(0);

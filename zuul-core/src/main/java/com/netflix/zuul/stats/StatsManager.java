@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul.stats;
 
+import com.netflix.zuul.context.Headers;
+import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +25,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -134,12 +135,12 @@ public class StatsManager {
      *
      * @param req
      */
-    public void collectRequestStats(HttpServletRequest req) {
+    public void collectRequestStats(HttpRequestMessage req) {
         // ipv4/ipv6 tracking
         String clientIp;
-        final String xForwardedFor = req.getHeader(X_FORWARDED_FOR_HEADER);
+        final String xForwardedFor = req.getHeaders().getFirst(X_FORWARDED_FOR_HEADER);
         if (xForwardedFor == null) {
-            clientIp = req.getRemoteAddr();
+            clientIp = req.getClientIp();
         } else {
             clientIp = extractClientIpFromXForwardedFor(xForwardedFor);
         }
@@ -150,7 +151,7 @@ public class StatsManager {
         incrementNamedCountingMonitor(ipVersionKey, ipVersionCounterMap);
 
         // host header
-        String host = req.getHeader(HOST_HEADER);
+        String host = req.getHeaders().getFirst(HOST_HEADER);
         if (host != null) {
             int colonIdx;
             if (isIPv6) {
@@ -165,7 +166,7 @@ public class StatsManager {
         }
 
         // http vs. https
-        String protocol = req.getHeader(X_FORWARDED_PROTO_HEADER);
+        String protocol = req.getHeaders().getFirst(X_FORWARDED_PROTO_HEADER);
         if (protocol == null) protocol = req.getScheme();
         incrementNamedCountingMonitor(protocolKey(protocol), this.protocolCounterMap);
 
@@ -292,10 +293,12 @@ public class StatsManager {
             final String host = "api.netflix.com";
             final String proto = "https";
 
-            final HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
-            when(req.getHeader(HOST_HEADER)).thenReturn(host);
-            when(req.getHeader(X_FORWARDED_PROTO_HEADER)).thenReturn(proto);
-            when(req.getRemoteAddr()).thenReturn("127.0.0.1");
+            final HttpRequestMessage req = Mockito.mock(HttpRequestMessage.class);
+            Headers headers = new Headers();
+            when(req.getHeaders()).thenReturn(headers);
+            headers.set(HOST_HEADER, host);
+            headers.set(X_FORWARDED_PROTO_HEADER, proto);
+            when(req.getClientIp()).thenReturn("127.0.0.1");
 
             final StatsManager sm = StatsManager.getManager();
             sm.collectRequestStats(req);

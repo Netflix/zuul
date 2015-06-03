@@ -134,7 +134,7 @@ public class JsonUtility {
             json.append("\"").append(key).append("\"");
             json.append(":");
             if (value.trim().startsWith("{") || value.trim().startsWith("[")) {
-                // the value is either JSON or an array, so we won't wrap with quotes
+                // the value is either JSON or an array, so we won't aggregate with quotes
                 json.append(value);
             } else {
                 json.append("\"").append(value).append("\"");

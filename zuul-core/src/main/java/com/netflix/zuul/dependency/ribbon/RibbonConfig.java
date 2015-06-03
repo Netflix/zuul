@@ -47,15 +47,11 @@ public class RibbonConfig {
             DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, null);
 
     /**
-     * This method attempts to set up the default Ribbon origin VIP from properties and environment.
-     * One method is through autoscale name convention. The Autoscaling group name can be set up as follow : zuul-origin_stack.
-     * Zuul will derive the origin VIP  as origin-stack.{zuul.ribbon.vipAddress.template}
-     * <p/>
-     * the client may also be specified by the property ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT
-     *
-     * @throws ClientException
+     * This method attempts to set up the zuul application name and stack from properties and environment.
+     * These are needed for some of the other methods in this class.
      */
-    public static void setupDefaultRibbonConfig() throws ClientException {
+    public static void setupAppInfo()
+    {
         final DeploymentContext config = ConfigurationManager.getDeploymentContext();
 
         String stack = config.getDeploymentStack();
@@ -74,22 +70,39 @@ public class RibbonConfig {
 
             setApplicationStack(env);
         }
+    }
+
+    /**
+     * This method attempts to set up the default Ribbon origin VIP from properties and environment.
+     * One method is through autoscale name convention. The Autoscaling group name can be set up as follow : zuul-origin_stack.
+     * Zuul will derive the origin VIP  as origin-stack.{zuul.ribbon.vipAddress.template}
+     * <p/>
+     * the client may also be specified by the property ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT
+     *
+     * @return name of the RestClient registered.
+     * @throws ClientException
+     */
+    public static String setupDefaultRibbonConfig() throws ClientException
+    {
+        String name = getApplicationName();
         String vip = RibbonConfig.getDefaultVipName();
         String vipAddr = RibbonConfig.getDefaultVipAddress(getApplicationStack());
         String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_RIBBON_NAMESPACE, "ribbon").get();
 
         setIfNotDefined(vip, vipAddr);
         setIfNotDefined(getApplicationName() + "." + namespace + ".Port", "7001");
-        setIfNotDefined(getApplicationName() + "." + namespace + ".AppName", getApplicationName());
+        setIfNotDefined(getApplicationName() + "." + namespace + ".AppName", name);
         setIfNotDefined(getApplicationName() + "." + namespace + ".ReadTimeout", "2000");
         setIfNotDefined(getApplicationName() + "." + namespace + ".ConnectTimeout", "2000");
         setIfNotDefined(getApplicationName() + "." + namespace + ".MaxAutoRetriesNextServer", "1");
         setIfNotDefined(getApplicationName() + "." + namespace + ".FollowRedirects", "false");
         setIfNotDefined(getApplicationName() + "." + namespace + ".ConnIdleEvictTimeMilliSeconds", "3600000");
         setIfNotDefined(getApplicationName() + "." + namespace + ".EnableZoneAffinity", "true");
-        DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(getApplicationName(),
+        DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(name,
                 namespace);
-        ClientFactory.registerClientFromProperties(getApplicationName(), clientConfig);
+        ClientFactory.registerClientFromProperties(name, clientConfig);
+
+        return name;
     }
 
     private static void setIfNotDefined(String key, String value) {

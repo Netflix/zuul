@@ -1,0 +1,5 @@
+
+dependencies {
+    compile project(':zuul-core')
+    provided 'javax.servlet:servlet-api:2.5'
+}
