@@ -11,6 +11,8 @@ dependencies {
     compile project(':zuul-core')
     compile project(':zuul-netty')
 
+    compile "io.reactivex:rxnetty-spectator:${versions_rxnetty}"
+
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     compile 'junit:junit-dep:4.10'
 

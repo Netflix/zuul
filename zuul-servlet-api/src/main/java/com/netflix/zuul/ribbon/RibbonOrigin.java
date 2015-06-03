@@ -207,7 +207,7 @@ public class RibbonOrigin implements Origin
             RibbonOrigin origin = new RibbonOrigin("blah");
             Assert.assertTrue(origin.isValidResponseHeader("test"));
             Assert.assertFalse(origin.isValidResponseHeader("content-length"));
-            Assert.assertFalse(origin.isValidResponseHeader("content-encoding"));
+            Assert.assertFalse(origin.isValidResponseHeader("connection"));
         }
 
         @Test

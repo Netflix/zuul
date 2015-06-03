@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
  * Date: 5/8/15
  * Time: 11:55 AM
  */
-public class ZuulBootstrap extends ServerBootstrap
+public class ZuulBootStrap extends ServerBootstrap
 {
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulBootstrap.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ZuulBootStrap.class);
 
     @Override
     protected void beforeInjectorCreation(LifecycleInjectorBuilder builder)
