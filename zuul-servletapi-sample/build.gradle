@@ -13,7 +13,7 @@ configurations {
 dependencies {
 
     compile project(':zuul-core')
-    compile project(':zuul-servlet-api')
+    compile project(':zuul-servletapi')
 
     compile "com.netflix.karyon:karyon-core:${versions_karyon}"
     compile "com.netflix.karyon:karyon-admin:${versions_karyon}"
