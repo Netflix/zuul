@@ -13,6 +13,12 @@ dependencies {
 
     compile "io.reactivex:rxnetty-spectator:${versions_rxnetty}"
 
+    // Hack to stop asm exceptions at runtime.
+    runtime 'org.ow2.asm:asm:5.0.3'
+    runtime 'org.ow2.asm:asm-all:5.0.3'
+    runtime 'org.apache.xbean:xbean-bundleutils:3.17'
+    runtime 'org.apache.xbean:xbean-finder:3.17'
+
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     compile 'junit:junit-dep:4.10'
 
