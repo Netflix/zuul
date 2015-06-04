@@ -47,10 +47,11 @@ import com.netflix.zuul.plugins.Counter;
 import com.netflix.zuul.plugins.MetricPoller;
 import com.netflix.zuul.plugins.ServoMonitor;
 import com.netflix.zuul.plugins.Tracer;
-import com.netflix.zuul.rxnetty.BasicRequestCompleteHandler;
+import com.netflix.zuul.rxnetty.RxNettyRequestCompleteHandler;
 import com.netflix.zuul.rxnetty.HealthCheckRequestHandler;
 import com.netflix.zuul.rxnetty.RxNettyOriginManager;
 import com.netflix.zuul.rxnetty.ZuulRequestHandler;
+import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import io.netty.handler.logging.LogLevel;
@@ -220,8 +221,8 @@ public class NettySampleStartServer
 
 
             bind(HealthCheckRequestHandler.class).asEagerSingleton();
-            bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class);
-            bind(RequestMetricsPublisher.class).toProvider(Providers.of(null));
+            bind(RequestCompleteHandler.class).to(RxNettyRequestCompleteHandler.class);
+            bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class);
 
 
             // Specify to use Zuul's RequestHandler.

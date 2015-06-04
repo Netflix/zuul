@@ -16,6 +16,8 @@
 package com.netflix.zuul.rxnetty;
 
 import com.google.inject.Inject;
+import com.netflix.servo.monitor.DynamicTimer;
+import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
@@ -34,7 +36,7 @@ import java.time.LocalDateTime;
  * Date: 5/8/15
  * Time: 4:44 PM
  */
-public class BasicRequestCompleteHandler implements RequestCompleteHandler
+public class RxNettyRequestCompleteHandler implements RequestCompleteHandler
 {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

@@ -18,6 +18,8 @@ package com.netflix.zuul.servlet;
 import com.google.inject.AbstractModule;
 import com.netflix.governator.guice.LifecycleInjectorBuilder;
 import com.netflix.karyon.server.ServerBootstrap;
+import com.netflix.zuul.BasicRequestCompleteHandler;
+import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SampleSessionContextDecorator;
 import com.netflix.zuul.context.ServletSessionContextFactory;
 import com.netflix.zuul.context.SessionContextDecorator;
@@ -25,6 +27,8 @@ import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.init.ZuulFiltersModule;
 import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.ribbon.RibbonOriginManager;
+import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
+import com.netflix.zuul.stats.RequestMetricsPublisher;
 import com.sun.jersey.guice.JerseyServletModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,8 @@ public class ZuulBootStrap extends ServerBootstrap
                         bind(OriginManager.class).to(RibbonOriginManager.class);
                         bind(SessionContextFactory.class).to(ServletSessionContextFactory.class);
                         bind(SessionContextDecorator.class).to(SampleSessionContextDecorator.class);
+                        bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class);
+                        bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class);
                     }
                 },
 

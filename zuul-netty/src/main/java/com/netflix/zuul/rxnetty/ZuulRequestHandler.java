@@ -17,8 +17,6 @@ package com.netflix.zuul.rxnetty;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.netflix.servo.monitor.DynamicTimer;
-import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -103,16 +101,10 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         // After the request is handled, write out the response.
         chain = chain.flatMap(msg -> contextFactory.write(msg, response));
 
-        // Record the execution time reported by Origin.
-        chain = chain.doOnNext(msg -> recordReportedOriginDuration((HttpResponseMessage) msg));
-
         // After complete, update metrics and access log.
         chain = chain.map(msg -> {
             // End the timing.
             msg.getContext().getRequestTiming().end();
-
-            // Publish request timings.
-            publishTimings(msg.getContext());
 
             // Notify requestComplete listener if configured.
             try {
@@ -129,57 +121,5 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         return chain
             .ignoreElements()
             .cast(Void.class);
-    }
-
-
-    protected void publishTimings(SessionContext context)
-    {
-        // Request timings.
-        long totalRequestTime = context.getRequestTiming().getDuration();
-        long requestProxyTime = context.getRequestProxyTiming().getDuration();
-        int originReportedDuration = context.getOriginReportedDuration();
-
-        // Approximation of time spent just within Zuul's own processing of the request.
-        long totalInternalTime = totalRequestTime - requestProxyTime;
-
-        // Approximation of time added to request by addition of Zuul+NIWS
-        // (ie. the time added compared to if ELB sent request direct to Origin).
-        // if -1, means we don't have that metric.
-        long totalTimeAddedToOrigin = -1;
-        if (originReportedDuration > -1) {
-            totalTimeAddedToOrigin = totalRequestTime - originReportedDuration;
-        }
-
-        // Publish
-        final String METRIC_TIMINGS_REQ_PREFIX = "zuul.timings.request.";
-        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "total", totalRequestTime);
-        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "proxy", requestProxyTime);
-        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "internal", totalInternalTime);
-        recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "added", totalTimeAddedToOrigin);
-    }
-
-    private void recordRequestTiming(String name, long time) {
-        if(time > -1) {
-            DynamicTimer.record(MonitorConfig.builder(name).build(), time);
-        }
-    }
-
-    /**
-     * Record the duration that origin reports (if available).
-     *
-     * @param resp
-     */
-    private void recordReportedOriginDuration(HttpResponseMessage resp)
-    {
-        String reportedExecTimeStr = resp.getHeaders().getFirst("X-Netflix.execution-time");
-        if (reportedExecTimeStr != null) {
-            try {
-                int reportedExecTime = Integer.parseInt(reportedExecTimeStr);
-                resp.getContext().setOriginReportedDuration(reportedExecTime);
-            }
-            catch (Exception e) {
-                LOG.error("Error parsing the X-Netflix.execution-time response header. value={}", reportedExecTimeStr);
-            }
-        }
     }
 }

@@ -17,6 +17,7 @@ package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
@@ -70,6 +71,9 @@ public class ZuulServlet extends HttpServlet {
     @Inject @Nullable
     private SessionContextDecorator decorator;
 
+    @com.google.inject.Inject
+    @Nullable
+    private RequestCompleteHandler requestCompleteHandler;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -105,6 +109,15 @@ public class ZuulServlet extends HttpServlet {
             catch (Exception e) {
                 LOG.error("Error writing response message!", e);
                 throw new ServletException("Error writing response message!", e);
+            }
+
+            // Notify requestComplete listener if configured.
+            try {
+                if (requestCompleteHandler != null)
+                    requestCompleteHandler.handle(response);
+            }
+            catch (Exception e) {
+                LOG.error("Error in RequestCompleteHandler.", e);
             }
         }
         catch (Throwable e) {

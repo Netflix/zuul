@@ -107,8 +107,8 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 
             Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
 
-            if (request.getBody() != null) {
-                if (!Debug.debugRequestHeadersOnly()) {
+            if (request.isBodyBuffered()) {
+                if (! Debug.debugRequestHeadersOnly()) {
                     String entity = new ByteArrayInputStream(request.getBody()).getText()
                     Debug.addRequestDebug(context, "ZUUL:: > ${entity}")
                 }
