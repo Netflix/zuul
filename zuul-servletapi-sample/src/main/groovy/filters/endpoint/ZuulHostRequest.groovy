@@ -162,7 +162,7 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
     {
         debug(request.getContext(), request)
 
-        URL routeHost = request.getContext().getAttributes().getRouteHost()
+        URL routeHost = request.getContext().getRouteHost()
         String verb = getVerb(request.getMethod());
         String path = request.getPath()
         HttpClient httpclient = CLIENT.get()
@@ -405,7 +405,7 @@ class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessa
 
         @Test
         public void testShouldFilter() {
-            ctx.getAttributes().setRouteHost(new URL("http://www.moldfarm.com"))
+            ctx.setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulHostRequest filter = new ZuulHostRequest()
             Assert.assertTrue(filter.shouldFilter(request))
         }

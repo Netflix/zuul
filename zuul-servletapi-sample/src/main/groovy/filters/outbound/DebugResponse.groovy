@@ -58,7 +58,7 @@ class DebugResponse extends HttpOutboundSyncFilter
     {
         if (INCLUDE_DEBUG_HEADER.get()) {
             String debugHeader = ""
-            List<String> rd = (List<String>) response.getContext().getAttributes().get("routingDebug");
+            List<String> rd = (List<String>) response.getContext().get("routingDebug");
             rd?.each {
                 debugHeader += "[[[${it}]]]";
             }

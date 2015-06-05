@@ -116,7 +116,7 @@ public class RxNettyOrigin implements Origin {
                     isSuccess.set(false);
 
                     // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
-                    ctx.getAttributes().setShouldSendErrorResponse(true);
+                    ctx.setShouldSendErrorResponse(true);
 
                     LOG.error(String.format("Error making http request to Origin. vip=%s, url=%s, target-host=%s",
                             this.vip, requestMsg.getPathAndQuery(), serverInfo.getHost()), t);

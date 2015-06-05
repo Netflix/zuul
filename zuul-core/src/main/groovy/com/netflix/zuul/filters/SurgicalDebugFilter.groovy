@@ -77,16 +77,16 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter<HttpRequestMess
 
         if (routeVip.get() != null || routeHost.get() != null) {
 
-            ctx.getAttributes().routeHost = routeHost.get();
-            ctx.getAttributes().routeVIP = routeVip.get();
+            ctx.routeHost = routeHost.get();
+            ctx.routeVIP = routeVip.get();
 
             request.getHeaders().set(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true")
 
             HttpQueryParams queryParams = request.getQueryParams()
             queryParams.set("debugRequest", "true")
 
-            ctx.getAttributes().setDebugRequest(true)
-            ctx.getAttributes().zuulToZuul = true
+            ctx.setDebugRequest(true)
+            ctx.zuulToZuul = true
 
         }
         return request

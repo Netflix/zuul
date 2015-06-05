@@ -37,7 +37,7 @@ public class SampleSessionContextDecorator implements SessionContextDecorator
     public SessionContext decorate(SessionContext ctx)
     {
         // Add the configured OriginManager to context for use in route filter.
-        ctx.getHelpers().put("origin_manager", originManager);
+        ctx.put("origin_manager", originManager);
 
         return ctx;
     }

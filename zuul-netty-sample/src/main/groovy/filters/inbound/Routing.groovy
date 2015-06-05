@@ -15,8 +15,8 @@
  */
 package filters.inbound
 
-import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -43,25 +43,25 @@ class Routing extends HttpInboundSyncFilter
     @Override
     HttpRequestMessage apply(HttpRequestMessage request) {
 
-        Attributes attrs = request.getContext().getAttributes()
+        SessionContext context = request.getContext()
 
         // Choose vip to proxy to.
         if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
-            attrs.setRouteVIP("yahoo")
-            attrs.set("endpoint", "ZuulNFRequest")
+            context.setRouteVIP("yahoo")
+            context.set("endpoint", "ZuulNFRequest")
         }
         else if (request.getPath() == "/blah") {
             // TEST - make use the static filters.
-            attrs.setRouteVIP(null)
-            attrs.set("endpoint", "ExampleStaticFilter")
+            context.setRouteVIP(null)
+            context.set("endpoint", "ExampleStaticFilter")
         }
         else if (request.getPath() == "/simulator/") {
-            attrs.setRouteVIP("simulator")
-            attrs.set("endpoint", "ZuulNFRequest")
+            context.setRouteVIP("simulator")
+            context.set("endpoint", "ZuulNFRequest")
         }
         else {
-            attrs.setRouteVIP("api_netflix")
-            attrs.set("endpoint", "ZuulNFRequest")
+            context.setRouteVIP("api_netflix")
+            context.set("endpoint", "ZuulNFRequest")
         }
 
         return request

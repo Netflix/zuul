@@ -146,7 +146,7 @@ public class RibbonOrigin implements Origin
     protected ZuulException proxyError(HttpRequestMessage zuulReq, Throwable t, String errorCauseMsg)
     {
         // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
-        zuulReq.getContext().getAttributes().setShouldSendErrorResponse(true);
+        zuulReq.getContext().setShouldSendErrorResponse(true);
 
         LOG.error(String.format("Error making http request to Origin. restClientName=%s, url=%s",
                 this.name, zuulReq.getPathAndQuery()), t);

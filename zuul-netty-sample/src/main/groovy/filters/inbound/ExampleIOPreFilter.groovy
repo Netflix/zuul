@@ -46,7 +46,7 @@ class ExampleIOPreFilter extends HttpInboundFilter
         SessionContext context = request.getContext()
 
         // Get the origin to send request to.
-        OriginManager originManager = context.getHelpers().get("origin_manager")
+        OriginManager originManager = context.get("origin_manager")
         String name = "api_netflix"
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
@@ -62,7 +62,7 @@ class ExampleIOPreFilter extends HttpInboundFilter
 
             // Get the result of the call.
             int status = resp.getStatus()
-            context.getAttributes().set("ExampleIOPreFilter_status", status)
+            context.set("ExampleIOPreFilter_status", status)
             LOG.info("Received response for ExampleIOPreFilter http call. status=${status}")
 
             // Swap the original context back into the Observable returned.

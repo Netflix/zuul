@@ -19,12 +19,10 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
-import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
@@ -62,8 +60,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
     boolean shouldFilter(HttpRequestMessage request) {
 
         if (AltPercent.get() == 0) return false
-        if (request.getContext().getAttributes().getRouteHost() != null) return false //host calls are not going to be loaltPad calculated here.
-        if (request.getContext().getAttributes().sendZuulResponse == false) return false;
+        if (request.getContext().getRouteHost() != null) return false //host calls are not going to be loaltPad calculated here.
+        if (request.getContext().sendZuulResponse == false) return false;
         if (AltPercent.get() > AltPercentMaxLimit.get()) return false
 
         int randomValue = rand.nextInt(10000)
@@ -73,18 +71,18 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
     @Override
     HttpRequestMessage apply(HttpRequestMessage request) {
 
-        Attributes attrs = request.getContext().getAttributes()
+        SessionContext context = request.getContext()
 
         if (AltVIP.get() != null) {
-            attrs.routeVIP = AltVIP.get()
-            if (attrs.getRouteVIP().startsWith(RibbonConfig.getApplicationName())) {
-                attrs.zuulToZuul = true // for zuulToZuul load testing
+            context.routeVIP = AltVIP.get()
+            if (context.getRouteVIP().startsWith(RibbonConfig.getApplicationName())) {
+                context.zuulToZuul = true // for zuulToZuul load testing
             }
         }
         if (AltHost.get() != null) {
             try {
-                attrs.routeHost = new URL(AltHost.get())
-                attrs.routeVIP = null
+                context.routeHost = new URL(AltHost.get())
+                context.routeVIP = null
 
             } catch (Exception e) {
                 e.printStackTrace()
@@ -138,8 +136,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
             filter.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
             Assert.assertTrue(filter.shouldFilter(request))
             filter.apply(request)
-            Assert.assertTrue(ctx.getAttributes().routeVIP == "test")
-            Assert.assertTrue(ctx.getAttributes().routeHost == null)
+            Assert.assertTrue(ctx.routeVIP == "test")
+            Assert.assertTrue(ctx.routeHost == null)
         }
 
         @Test
@@ -152,8 +150,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
             Mockito.when(filter.AltHost.get()).thenReturn("http://www.moldfarm.com")
             Assert.assertTrue(filter.shouldFilter(request))
             filter.apply(request)
-            Assert.assertTrue(ctx.getAttributes().routeVIP == null)
-            Assert.assertTrue(ctx.getAttributes().routeHost != null)
+            Assert.assertTrue(ctx.routeVIP == null)
+            Assert.assertTrue(ctx.routeHost != null)
         }
 
     }

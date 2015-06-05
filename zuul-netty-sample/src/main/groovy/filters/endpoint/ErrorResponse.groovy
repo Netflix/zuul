@@ -40,7 +40,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
 
-        Throwable ex = context.getAttributes().getThrowable()
+        Throwable ex = context.getThrowable()
         try {
             throw ex
         }
@@ -93,7 +93,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
         public void testApply()
         {
             th = new ZuulException("test", 502, "a-cause")
-            ctx.getAttributes().throwable = th
+            ctx.throwable = th
 
             HttpResponseMessage response = filter.apply(request)
             assertEquals(502, response.getStatus())

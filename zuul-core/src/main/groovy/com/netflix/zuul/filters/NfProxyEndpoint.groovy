@@ -60,7 +60,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 
         // Store the status from origin (in case it's later overwritten).
         respObs = respObs.doOnNext({ originResp ->
-            request.getContext().getAttributes().put("origin_http_status", Integer.toString(originResp.getStatus()));
+            request.getContext().put("origin_http_status", Integer.toString(originResp.getStatus()));
         })
 
         return respObs
@@ -77,15 +77,15 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         HttpResponseMessage response = origin.request(request).toBlocking().first()
 
         // Store the status from origin (in case it's later overwritten).
-        request.getContext().getAttributes().put("origin_http_status", Integer.toString(response.getStatus()));
+        request.getContext().put("origin_http_status", Integer.toString(response.getStatus()));
 
         return response
     }
 
     protected Origin getOrigin(HttpRequestMessage request)
     {
-        String name = request.getContext().getAttributes().getRouteVIP()
-        OriginManager originManager = request.getContext().getHelpers().get("origin_manager")
+        String name = request.getContext().getRouteVIP()
+        OriginManager originManager = request.getContext().get("origin_manager")
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
             throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
@@ -142,13 +142,13 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             response = new HttpResponseMessage(ctx, request, 202)
 
             when(originManager.getOrigin("an-origin")).thenReturn(origin)
-            ctx.getHelpers().put("origin_manager", originManager)
+            ctx.put("origin_manager", originManager)
         }
 
         @Test
         public void testDebug()
         {
-            ctx.getAttributes().setDebugRequest(true)
+            ctx.setDebugRequest(true)
 
             Headers headers = new Headers()
             headers.add("lah", "deda")
@@ -169,31 +169,31 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         @Test
         public void testApplyAsync()
         {
-            ctx.getAttributes().setRouteVIP("an-origin")
+            ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
             Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
             respObs.toBlocking().single()
 
-            assertEquals("202", ctx.getAttributes().get("origin_http_status"))
+            assertEquals("202", ctx.get("origin_http_status"))
         }
 
 
         @Test
         public void testApply()
         {
-            ctx.getAttributes().setRouteVIP("an-origin")
+            ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
             HttpResponseMessage response = filter.apply(request)
 
-            assertEquals("202", ctx.getAttributes().get("origin_http_status"))
+            assertEquals("202", ctx.get("origin_http_status"))
         }
 
         @Test
         public void testApply_NoOrigin()
         {
-            ctx.getAttributes().setRouteVIP("a-different-origin")
+            ctx.setRouteVIP("a-different-origin")
             try {
                 Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
                 respObs.toBlocking().single()

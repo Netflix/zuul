@@ -49,7 +49,7 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
     @Override
     HttpResponseMessage apply(HttpResponseMessage response)
     {
-        final Map<String, Object> event = response.getContext().getAttributes().getEventProperties();
+        final Map<String, Object> event = response.getContext().getEventProperties();
         try {
             captureRequestData(event, response.getRequest(), response);
             captureInstanceData(event);

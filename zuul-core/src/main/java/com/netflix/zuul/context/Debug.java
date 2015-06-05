@@ -15,8 +15,6 @@
  */
 package com.netflix.zuul.context;
 
-import com.netflix.zuul.util.HttpUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,11 +23,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -45,29 +43,29 @@ public class Debug {
     private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
-        ctx.getAttributes().setDebugRequest(bDebug);
+        ctx.setDebugRequest(bDebug);
     }
 
     public static void setDebugRequestHeadersOnly(SessionContext ctx, boolean bHeadersOnly) {
-        ctx.getAttributes().setDebugRequestHeadersOnly(bHeadersOnly);
+        ctx.setDebugRequestHeadersOnly(bHeadersOnly);
     }
 
     public static boolean debugRequestHeadersOnly(SessionContext ctx) {
-        return ctx.getAttributes().debugRequestHeadersOnly();
+        return ctx.debugRequestHeadersOnly();
     }
 
 
     public static void setDebugRouting(SessionContext ctx, boolean bDebug) {
-        ctx.getAttributes().setDebugRouting(bDebug);
+        ctx.setDebugRouting(bDebug);
     }
 
 
     public static boolean debugRequest(SessionContext ctx) {
-        return ctx.getAttributes().debugRequest();
+        return ctx.debugRequest();
     }
 
     public static boolean debugRouting(SessionContext ctx) {
-        return ctx.getAttributes().debugRouting();
+        return ctx.debugRouting();
     }
 
     public static void addRoutingDebug(SessionContext ctx, String line) {
@@ -97,10 +95,10 @@ public class Debug {
      * @return Returns the list of routiong debug messages
      */
     public static List<String> getRoutingDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.getAttributes().get("routingDebug");
+        List<String> rd = (List<String>) ctx.get("routingDebug");
         if (rd == null) {
             rd = new ArrayList<String>();
-            ctx.getAttributes().set("routingDebug", rd);
+            ctx.set("routingDebug", rd);
         }
         return rd;
     }
@@ -119,10 +117,10 @@ public class Debug {
      * @return returns the list of request debug messages
      */
     public static List<String> getRequestDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.getAttributes().get("requestDebug");
+        List<String> rd = (List<String>) ctx.get("requestDebug");
         if (rd == null) {
             rd = new ArrayList<String>();
-            ctx.getAttributes().set("requestDebug", rd);
+            ctx.set("requestDebug", rd);
         }
         return rd;
     }
@@ -135,12 +133,12 @@ public class Debug {
      */
     public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
         // TODO - only comparing Attributes. Need to compare the messages too.
-        Iterator<String> it = context.getAttributes().keySet().iterator();
+        Iterator<String> it = context.keySet().iterator();
         String key = it.next();
         while (key != null) {
             if ((!key.equals("routingDebug") && !key.equals("requestDebug"))) {
-                Object newValue = context.getAttributes().get(key);
-                Object oldValue = copy.getAttributes().get(key);
+                Object newValue = context.get(key);
+                Object oldValue = copy.get(key);
                 if (oldValue == null && newValue != null) {
                     addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                 } else if (oldValue != null && newValue != null) {
@@ -162,12 +160,11 @@ public class Debug {
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest
     {
-        @Mock
         private SessionContext ctx;
 
         @Before
         public void setup() {
-            when(ctx.getAttributes()).thenReturn(new Attributes());
+            ctx = new SessionContext();
         }
 
         @Test

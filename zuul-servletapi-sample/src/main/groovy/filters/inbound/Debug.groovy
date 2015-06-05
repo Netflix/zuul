@@ -43,8 +43,8 @@ class Debug extends HttpInboundSyncFilter
     @Override
     HttpRequestMessage apply(HttpRequestMessage request)
     {
-        request.getContext().getAttributes().setDebugRequest(true)
-        request.getContext().getAttributes().setDebugRouting(true)
+        request.getContext().setDebugRequest(true)
+        request.getContext().setDebugRouting(true)
         return request;
     }
 

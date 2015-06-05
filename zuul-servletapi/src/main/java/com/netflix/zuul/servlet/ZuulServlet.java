@@ -142,7 +142,6 @@ public class ZuulServlet extends HttpServlet {
         @Mock
         HttpRequestMessage request;
 
-        Attributes attributes;
         HttpResponseMessage response;
 
         ZuulServlet servlet;
@@ -168,10 +167,8 @@ public class ZuulServlet extends HttpServlet {
 
             //when(contextFactory.create(context, servletRequest)).thenReturn(Observable.just(request));
 
-            attributes = new Attributes();
             response = new HttpResponseMessage(context, request, 299);
             response.setBody("blah".getBytes());
-            when(context.getAttributes()).thenReturn(attributes);
 
             when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));
             when(processor.applyEndpointFilter(Matchers.any())).thenReturn(Observable.just(response));

@@ -32,7 +32,7 @@ class PostDecoration extends HttpOutboundSyncFilter
 {
     @Override
     boolean shouldFilter(HttpResponseMessage response) {
-        if (true.equals(response.getContext().getAttributes().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
+        if (true.equals(response.getContext().zuulToZuul)) return false; //request was routed to a zuul server, so don't send response headers
         return true
     }
 
@@ -46,18 +46,18 @@ class PostDecoration extends HttpOutboundSyncFilter
     void addStandardResponseHeaders(HttpResponseMessage response) {
 
         String originatingURL = getOriginatingURL(response.getRequest())
-        Attributes attrs = response.getContext().getAttributes()
+        SessionContext context = response.getContext()
 
         Headers headers = response.getHeaders()
         headers.add(X_ZUUL, "zuul")
         headers.add(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown")
         headers.add(CONNECTION, KEEP_ALIVE)
-        headers.add(X_ZUUL_FILTER_EXECUTION_STATUS, attrs.getFilterExecutionSummary().toString())
+        headers.add(X_ZUUL_FILTER_EXECUTION_STATUS, context.getFilterExecutionSummary().toString())
         headers.add(X_ORIGINATING_URL, originatingURL)
 
-        if (attrs.get("ErrorHandled") == null && response.getStatus() >= 400) {
+        if (context.get("ErrorHandled") == null && response.getStatus() >= 400) {
             headers.add(X_NETFLIX_ERROR_CAUSE, "Error from Origin")
-            ErrorStatsManager.manager.putStats(attrs.route, "Error_from_Origin_Server")
+            ErrorStatsManager.manager.putStats(context.route, "Error_from_Origin_Server")
         }
     }
 

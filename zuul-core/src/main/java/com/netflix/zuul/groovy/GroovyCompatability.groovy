@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.groovy
 
-import com.netflix.zuul.context.Attributes
+import com.netflix.zuul.context.SessionContext
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.runners.MockitoJUnitRunner
@@ -39,19 +39,19 @@ class GroovyCompatability {
 
         @Test
         public void testRequestContext() {
-            Attributes attrs = new Attributes()
+            SessionContext context = new SessionContext()
 
-            attrs.test = "moo"
-            assertNotNull(attrs.test)
-            assertEquals(attrs.test, "moo")
-            assertNotNull(attrs.get("test"))
-            assertEquals(attrs.get("test"), "moo")
+            context.test = "moo"
+            assertNotNull(context.test)
+            assertEquals(context.test, "moo")
+            assertNotNull(context.get("test"))
+            assertEquals(context.get("test"), "moo")
 
-            attrs.set("test", "ik")
-            assertEquals(attrs.get("test"), "ik")
-            assertEquals(attrs.test, "ik")
-            assertNotNull(attrs)
-            assertEquals(attrs.test, "ik")
+            context.set("test", "ik")
+            assertEquals(context.get("test"), "ik")
+            assertEquals(context.test, "ik")
+            assertNotNull(context)
+            assertEquals(context.test, "ik")
 
         }
 

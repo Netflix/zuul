@@ -44,7 +44,7 @@ class SampleIOPreFilter extends HttpInboundFilter
         SessionContext context = request.getContext()
 
         // Get the origin to send request to.
-        OriginManager originManager = context.getHelpers().get("origin_manager")
+        OriginManager originManager = context.get("origin_manager")
         String name = "origin"
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
@@ -55,7 +55,7 @@ class SampleIOPreFilter extends HttpInboundFilter
         int sampleStatus = makeSampleRemoteRequest("origin")
 
         // Get the result of the call.
-        context.getAttributes().set("SampleIOPreFilter_status", sampleStatus)
+        context.set("SampleIOPreFilter_status", sampleStatus)
         LOG.info("Received response for SampleIOPreFilter http call. status=${sampleStatus}")
 
         return Observable.just(request)

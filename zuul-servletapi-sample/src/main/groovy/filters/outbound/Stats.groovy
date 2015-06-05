@@ -53,20 +53,20 @@ class Stats extends HttpOutboundSyncFilter
         int status = response.getStatus()
         StatsManager sm = StatsManager.manager
         sm.collectRequestStats(response.getRequest());
-        sm.collectRouteStats(ctx.getAttributes().route, status);
+        sm.collectRouteStats(ctx.route, status);
         dumpRoutingDebug(ctx)
         dumpRequestDebug(ctx)
     }
 
     public void dumpRequestDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.getAttributes().get("requestDebug");
+        List<String> rd = (List<String>) ctx.get("requestDebug");
         rd?.each {
             println("REQUEST_DEBUG::${it}");
         }
     }
 
     public void dumpRoutingDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.getAttributes().get("routingDebug");
+        List<String> rd = (List<String>) ctx.get("routingDebug");
         rd?.each {
             println("ZUUL_DEBUG::${it}");
         }
@@ -100,7 +100,7 @@ class Stats extends HttpOutboundSyncFilter
 
             Assert.assertTrue(filter.filterType().equals("out"))
 
-            ctx.getAttributes().route = "testStats"
+            ctx.route = "testStats"
             filter.apply(response)
 
             Assert.assertTrue(StatsManager.manager.getRouteStatusCodeMonitor("testStats", 99) != null)

@@ -40,7 +40,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
 
-        Throwable ex = context.getAttributes().getThrowable()
+        Throwable ex = context.getThrowable()
         try {
             throw ex
         } catch (ZuulException e) {
@@ -50,7 +50,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
             if (e.nStatusCode == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             } else {
-                ErrorStatsManager.manager.putStats(context.getAttributes().route, "Zuul_Error_" + cause)
+                ErrorStatsManager.manager.putStats(context.route, "Zuul_Error_" + cause)
             }
 
             if (getOverrideStatusCode(request)) {
@@ -64,7 +64,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
         } catch (Throwable throwable) {
             response.getHeaders().add("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
-            ErrorStatsManager.manager.putStats(context.getAttributes().route, "Zuul_Error_UNKNOWN_Cause")
+            ErrorStatsManager.manager.putStats(context.route, "Zuul_Error_UNKNOWN_Cause")
 
             if (getOverrideStatusCode(request)) {
                 response.setStatus(200);
@@ -198,7 +198,7 @@ v=1 or unspecified:
             queryParams = new HttpQueryParams()
             Mockito.when(request.getQueryParams()).thenReturn(queryParams)
             th = new Exception("test")
-            ctx.getAttributes().throwable = th
+            ctx.throwable = th
         }
 
         @Test

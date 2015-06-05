@@ -92,15 +92,15 @@ public class FilterProcessor {
         return chain.flatMap(msg -> {
 
             // If flagged to, then apply the error endpoint filter.
-            Attributes attributes = msg.getContext().getAttributes();
-            if (attributes.shouldSendErrorResponse()) {
+            SessionContext context = msg.getContext();
+            if (context.shouldSendErrorResponse()) {
 
                 // Un-flag this as needing the error filter.
-                attributes.setShouldSendErrorResponse(false);
-                attributes.setErrorResponseSent(true);
+                context.setShouldSendErrorResponse(false);
+                context.setErrorResponseSent(true);
 
                 // Get the error endpoint filter to use.
-                String endpointName = (String) attributes.get("error-endpoint");
+                String endpointName = (String) context.get("error-endpoint");
                 if (endpointName == null) {
                     endpointName = DEFAULT_ERROR_ENDPOINT.get();
                 }
@@ -108,7 +108,7 @@ public class FilterProcessor {
                 if (endpointFilter == null) {
                     // No error filter to use, so send a basic default response.
                     String errorStr = "No error filter found of chosen name! name=" + endpointName;
-                    LOG.error("Errored but no error filter found, so sent default error response. " + errorStr, attributes.getThrowable());
+                    LOG.error("Errored but no error filter found, so sent default error response. " + errorStr, context.getThrowable());
 
                     HttpResponseMessage response = new HttpResponseMessage(msg.getContext(), (HttpRequestMessage) msg, 500);
                     response.getHeaders().set("X-Zuul-Error-Cause", errorStr);
@@ -148,25 +148,25 @@ public class FilterProcessor {
 
         chain = chain.flatMap(msg -> {
 
-            Attributes attributes = msg.getContext().getAttributes();
+            SessionContext context = msg.getContext();
 
             // If an error filter has already generated a response, then don't run the endpoint.
-            if (attributes.errorResponseSent()) {
+            if (context.errorResponseSent()) {
                 // Therefore this msg is already a response, so just return that.
                 return Observable.just(msg);
             }
 
             // Get the previously chosen endpoint filter to use.
-            String endpointName = (String) attributes.get("endpoint");
+            String endpointName = (String) context.get("endpoint");
             if (endpointName == null) {
-                attributes.setShouldSendErrorResponse(true);
-                attributes.setThrowable(new ZuulException("No endpoint filter chosen!"));
+                context.setShouldSendErrorResponse(true);
+                context.setThrowable(new ZuulException("No endpoint filter chosen!"));
                 return applyErrorFilterIfNeeded(Observable.just(msg));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
-                attributes.setShouldSendErrorResponse(true);
-                attributes.setThrowable(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
+                context.setShouldSendErrorResponse(true);
+                context.setThrowable(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
                 return applyErrorFilterIfNeeded(Observable.just(msg));
             }
 
@@ -174,8 +174,8 @@ public class FilterProcessor {
             // expected input.
             return processAsyncFilter(msg, endpointFilter, (request) -> {
                 // If the Endpoint filter does not run, or throws an exception, then this should always require an error response to be sent.
-                request.getContext().getAttributes().setShouldSendErrorResponse(true);
-                return new HttpResponseMessage(request.getContext(), (HttpRequestMessage) request, 500);
+                context.setShouldSendErrorResponse(true);
+                return new HttpResponseMessage(context, (HttpRequestMessage) request, 500);
             });
         });
 
@@ -225,7 +225,7 @@ public class FilterProcessor {
     public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         final FilterExecInfo info = new FilterExecInfo();
-        info.bDebug = msg.getContext().getAttributes().debugRouting();
+        info.bDebug = msg.getContext().debugRouting();
 
         if (info.bDebug) {
             Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
@@ -251,7 +251,7 @@ public class FilterProcessor {
             }
         }
         catch (Exception e) {
-            msg.getContext().getAttributes().setThrowable(e);
+            msg.getContext().setThrowable(e);
             resultObs = Observable.just(defaultFilterResultChooser.call(msg));
             info.status = ExecutionStatus.FAILED;
             recordFilterError(filter, msg, e);
@@ -260,7 +260,7 @@ public class FilterProcessor {
         // Handle errors from the filter. Don't break out of the filter chain - instead just record info about the error
         // in context, and continue.
         resultObs = resultObs.onErrorReturn((e) -> {
-            msg.getContext().getAttributes().setThrowable(e);
+            msg.getContext().setThrowable(e);
             info.status = ExecutionStatus.FAILED;
             recordFilterError(filter, msg, e);
             return defaultFilterResultChooser.call(msg);
@@ -288,10 +288,10 @@ public class FilterProcessor {
         // Record the execution summary in context.
         switch (info.status) {
             case FAILED:
-                msg.getContext().getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.FAILED.name(), info.execTime);
+                msg.getContext().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.FAILED.name(), info.execTime);
                 break;
             case SUCCESS:
-                msg.getContext().getAttributes().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
+                msg.getContext().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
                 if (info.bDebug) {
                     Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType()
                             + " ORDER:" + filter.filterOrder() + "} Execution time = " + info.execTime + "ms");
@@ -319,7 +319,7 @@ public class FilterProcessor {
         // Store this filter error for possible future use. But we still continue with next filter in the chain.
         msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType(), e));
 
-        boolean bDebug = msg.getContext().getAttributes().debugRouting();
+        boolean bDebug = msg.getContext().debugRouting();
         if (bDebug) {
             Debug.addRoutingDebug(msg.getContext(), "Running Filter failed " + filter.filterName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
         }

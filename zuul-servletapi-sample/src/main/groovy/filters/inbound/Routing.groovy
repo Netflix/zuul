@@ -19,8 +19,8 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.Attributes
 import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 
@@ -47,7 +47,7 @@ class Routing extends HttpInboundSyncFilter
     @Override
     HttpRequestMessage apply(HttpRequestMessage request) {
 
-        Attributes attrs = request.getContext().getAttributes()
+        SessionContext context = request.getContext()
 
         // Normalise the uri.
         String uri = request.getPath()
@@ -55,34 +55,34 @@ class Routing extends HttpInboundSyncFilter
 
         // Handle OPTIONS requests specially.
         if (request.getMethod().equalsIgnoreCase("options")) {
-            attrs.set("endpoint", "Options")
+            context.set("endpoint", "Options")
             return request
         }
 
         // Route healthchecks to the healthcheck endpoint.
         if ("/healthcheck" == request.getPath()) {
-            attrs.set("endpoint", "Healthcheck")
+            context.set("endpoint", "Healthcheck")
             return request
         }
 
         // Choose VIP or Host, and the endpoint to use for proxying.
         String host = defaultHost.get()
         if (host == null) {
-            attrs.set("endpoint", "ZuulNFRequest")
+            context.set("endpoint", "ZuulNFRequest")
             if (uri.startsWith("/simulator/")) {
-                attrs.routeVIP = "simulator"
+                context.routeVIP = "simulator"
             } else {
-                attrs.routeVIP = defaultClient.get()
+                context.routeVIP = defaultClient.get()
             }
         }
         else {
             final URL targetUrl = new URL(host)
-            attrs.setRouteHost(targetUrl);
-            attrs.routeVIP = null
-            attrs.set("endpoint", "ZuulHostRequest")
+            context.setRouteHost(targetUrl);
+            context.routeVIP = null
+            context.set("endpoint", "ZuulHostRequest")
         }
 
-        if (host == null && attrs.routeVIP == null) {
+        if (host == null && context.routeVIP == null) {
             throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
         }
 
