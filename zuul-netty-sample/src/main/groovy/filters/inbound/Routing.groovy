@@ -48,20 +48,20 @@ class Routing extends HttpInboundSyncFilter
         // Choose vip to proxy to.
         if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
             context.setRouteVIP("yahoo")
-            context.set("endpoint", "ZuulNFRequest")
+            context.setEndpoint("ZuulNFRequest")
         }
         else if (request.getPath() == "/blah") {
             // TEST - make use the static filters.
             context.setRouteVIP(null)
-            context.set("endpoint", "ExampleStaticFilter")
+            context.setEndpoint("ExampleStaticFilter")
         }
         else if (request.getPath() == "/simulator/") {
             context.setRouteVIP("simulator")
-            context.set("endpoint", "ZuulNFRequest")
+            context.setEndpoint("ZuulNFRequest")
         }
         else {
             context.setRouteVIP("api_netflix")
-            context.set("endpoint", "ZuulNFRequest")
+            context.setEndpoint("ZuulNFRequest")
         }
 
         return request

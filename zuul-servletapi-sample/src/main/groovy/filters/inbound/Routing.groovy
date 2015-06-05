@@ -55,20 +55,20 @@ class Routing extends HttpInboundSyncFilter
 
         // Handle OPTIONS requests specially.
         if (request.getMethod().equalsIgnoreCase("options")) {
-            context.set("endpoint", "Options")
+            context.setEndpoint("Options")
             return request
         }
 
         // Route healthchecks to the healthcheck endpoint.
         if ("/healthcheck" == request.getPath()) {
-            context.set("endpoint", "Healthcheck")
+            context.setEndpoint("Healthcheck")
             return request
         }
 
         // Choose VIP or Host, and the endpoint to use for proxying.
         String host = defaultHost.get()
         if (host == null) {
-            context.set("endpoint", "ZuulNFRequest")
+            context.setEndpoint("ZuulNFRequest")
             if (uri.startsWith("/simulator/")) {
                 context.routeVIP = "simulator"
             } else {
@@ -79,7 +79,7 @@ class Routing extends HttpInboundSyncFilter
             final URL targetUrl = new URL(host)
             context.setRouteHost(targetUrl);
             context.routeVIP = null
-            context.set("endpoint", "ZuulHostRequest")
+            context.setEndpoint("ZuulHostRequest")
         }
 
         if (host == null && context.routeVIP == null) {

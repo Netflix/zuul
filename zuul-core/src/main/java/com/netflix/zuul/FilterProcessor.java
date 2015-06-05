@@ -157,7 +157,7 @@ public class FilterProcessor {
             }
 
             // Get the previously chosen endpoint filter to use.
-            String endpointName = (String) context.get("endpoint");
+            String endpointName = context.getEndpoint();
             if (endpointName == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setThrowable(new ZuulException("No endpoint filter chosen!"));
