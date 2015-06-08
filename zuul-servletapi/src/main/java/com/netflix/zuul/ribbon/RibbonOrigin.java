@@ -29,6 +29,7 @@ import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.stats.Timing;
+import com.netflix.zuul.util.ProxyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import org.junit.Assert;
@@ -71,6 +72,7 @@ public class RibbonOrigin implements Origin
         return name;
     }
 
+
     @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
     {
@@ -92,7 +94,7 @@ public class RibbonOrigin implements Origin
 
         // Request headers.
         for (Map.Entry<String, String> entry : headers.entries()) {
-            if (isValidRequestHeader(entry.getKey())) {
+            if (ProxyUtils.isValidRequestHeader(entry.getKey())) {
                 builder.header(entry.getKey(), entry.getValue());
             }
         }
@@ -168,7 +170,7 @@ public class RibbonOrigin implements Origin
         HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatus());
         for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
-            if (isValidResponseHeader(header.getKey())) {
+            if (ProxyUtils.isValidResponseHeader(header.getKey())) {
                 respMsg.getHeaders().add(header.getKey(), header.getValue());
             }
         }
@@ -180,32 +182,6 @@ public class RibbonOrigin implements Origin
         return respMsg;
     }
 
-    protected boolean isValidRequestHeader(String headerName)
-    {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "content-length":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
-    }
-
-    protected boolean isValidResponseHeader(String headerName)
-    {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "content-length":
-            case "server":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
-    }
-
-
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
@@ -215,15 +191,6 @@ public class RibbonOrigin implements Origin
 
         @Mock
         HttpRequestMessage request;
-
-        @Test
-        public void testHeaderResponse()
-        {
-            RibbonOrigin origin = new RibbonOrigin("blah");
-            Assert.assertTrue(origin.isValidResponseHeader("test"));
-            Assert.assertFalse(origin.isValidResponseHeader("content-length"));
-            Assert.assertFalse(origin.isValidResponseHeader("connection"));
-        }
 
         @Test
         public void testSetResponse() throws Exception
