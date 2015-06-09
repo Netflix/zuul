@@ -42,8 +42,9 @@ public class HttpRequestMessage extends ZuulMessage
     private HttpQueryParams queryParams;
     private String clientIp;
     private String scheme;
+    private int port;
 
-    public HttpRequestMessage(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme)
+    public HttpRequestMessage(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port)
     {
         super(context, headers);
 
@@ -54,6 +55,7 @@ public class HttpRequestMessage extends ZuulMessage
         this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
         this.scheme = scheme;
+        //this.port =
     }
 
     public String getProtocol() {
@@ -104,6 +106,15 @@ public class HttpRequestMessage extends ZuulMessage
     }
     public void setScheme(String scheme) {
         this.scheme = scheme;
+    }
+
+    public int getPort()
+    {
+        return port;
+    }
+    public void setPort(int port)
+    {
+        this.port = port;
     }
 
     public Map<String, Set<Cookie>> parseCookies()

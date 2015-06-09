@@ -15,8 +15,6 @@
  */
 package com.netflix.zuul.context;
 
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -41,9 +39,6 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
 {
     private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
 
-    private static final DynamicIntProperty MAX_REQ_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.request.body.max.size", 25 * 1000 * 1024);
-
     @Override
     public Observable<ZuulMessage> create(SessionContext context, HttpServerRequest httpServerRequest)
     {
@@ -52,6 +47,9 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
 
         // TODO - How to get uri scheme from the netty request?
         String scheme = "http";
+
+        // This is the only way I found to get the port of the request with netty...
+        int port = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getPort();
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessage(
@@ -62,7 +60,8 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 copyQueryParams(httpServerRequest),
                 copyHeaders(httpServerRequest),
                 clientIp,
-                scheme
+                scheme,
+                port
         );
 
         return wrapBody(request, httpServerRequest);

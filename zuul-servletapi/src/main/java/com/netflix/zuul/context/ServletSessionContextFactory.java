@@ -59,7 +59,8 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 
         // Build the request object.
         HttpRequestMessage request = new HttpRequestMessage(context, servletRequest.getProtocol(), servletRequest.getMethod(),
-                servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(), servletRequest.getScheme());
+                servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(),
+                servletRequest.getScheme(), servletRequest.getServerPort());
 
         // Get the inputstream of body.
         InputStream bodyInput = null;

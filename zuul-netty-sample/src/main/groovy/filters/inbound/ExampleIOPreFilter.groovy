@@ -55,7 +55,7 @@ class ExampleIOPreFilter extends HttpInboundFilter
 
         // Make the request.
         HttpRequestMessage ioRequest = new HttpRequestMessage(context, "HTTP/1.1", "get", "/account/geo", null, null,
-                request.getClientIp(), "http")
+                request.getClientIp(), "http", 80)
         Observable<HttpResponseMessage> resultObs = origin.request(ioRequest)
 
         resultObs = resultObs.flatMap({ resp ->

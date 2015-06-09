@@ -367,7 +367,7 @@ public class FilterProcessor {
             MockitoAnnotations.initMocks(this);
 
             ctx = new SessionContext();
-            request = new HttpRequestMessage(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(), new Headers(), "127.0.0.1", "https");
+            request = new HttpRequestMessage(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(), new Headers(), "127.0.0.1", "https", 80);
             response = new HttpResponseMessage(ctx, request, 200);
 
             processor = new FilterProcessor();
