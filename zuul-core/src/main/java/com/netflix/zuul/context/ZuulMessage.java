@@ -29,14 +29,14 @@ import rx.Observable;
  */
 public class ZuulMessage implements Cloneable
 {
-    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+    protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.message.body.max.size", 25 * 1000 * 1024);
 
-    private final SessionContext context;
-    private final Headers headers;
-    private Observable<ByteBuf> bodyStream = null;
-    private boolean bodyBuffered = false;
-    private byte[] body = null;
+    protected final SessionContext context;
+    protected final Headers headers;
+    protected Observable<ByteBuf> bodyStream = null;
+    protected boolean bodyBuffered = false;
+    protected byte[] body = null;
 
     public ZuulMessage(SessionContext context) {
         this(context, new Headers());

@@ -62,6 +62,9 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                 servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(),
                 servletRequest.getScheme(), servletRequest.getServerPort());
 
+        // Store this original request info for future reference (ie. for metrics and access logging purposes).
+        request.storeOriginalRequestInfo();
+
         // Get the inputstream of body.
         InputStream bodyInput = null;
         try {

@@ -137,7 +137,7 @@ public class HttpQueryParams implements Cloneable
     }
 
     @Override
-    protected Object clone()
+    protected HttpQueryParams clone()
     {
         HttpQueryParams copy = new HttpQueryParams();
         copy.delegate.putAll(this.delegate);

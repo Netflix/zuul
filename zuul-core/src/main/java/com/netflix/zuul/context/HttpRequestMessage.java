@@ -20,6 +20,10 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +48,9 @@ public class HttpRequestMessage extends ZuulMessage
     private String scheme;
     private int port;
 
+    private HttpRequestInfo originalRequestInfo = null;
+
+
     public HttpRequestMessage(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port)
     {
         super(context, headers);
@@ -55,7 +62,7 @@ public class HttpRequestMessage extends ZuulMessage
         this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
         this.scheme = scheme;
-        //this.port =
+        this.port = port;
     }
 
     public String getProtocol() {
@@ -153,5 +160,55 @@ public class HttpRequestMessage extends ZuulMessage
                 .append(",host=").append(String.valueOf(getHeaders().getFirst("Host")))
                 ;
         return sb.toString();
+    }
+
+    public HttpRequestInfo copyRequestInfo()
+    {
+        return new HttpRequestInfo(protocol, method, path, queryParams.clone(), headers.clone(), clientIp, scheme, port);
+    }
+
+    public void storeOriginalRequestInfo()
+    {
+        originalRequestInfo = copyRequestInfo();
+    }
+
+    public HttpRequestInfo getOriginalRequestInfo()
+    {
+        return originalRequestInfo;
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class TestUnit
+    {
+        HttpRequestMessage request;
+
+        @Test
+        public void testOriginalRequestInfo()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            Headers headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002);
+
+            request.storeOriginalRequestInfo();
+            HttpRequestInfo originalRequest = request.getOriginalRequestInfo();
+
+            Assert.assertEquals(request.getPort(), originalRequest.getPort());
+            Assert.assertEquals(request.getPath(), originalRequest.getPath());
+            Assert.assertEquals(request.getQueryParams().getFirst("flag"), originalRequest.getQueryParams().getFirst("flag"));
+            Assert.assertEquals(request.getHeaders().getFirst("Host"), originalRequest.getHeaders().getFirst("Host"));
+
+            request.setPort(8080);
+            request.setPath("/another/place");
+            request.getQueryParams().set("flag", "20");
+            request.getHeaders().set("Host", "wah.netflix.com");
+
+            Assert.assertEquals(7002, originalRequest.getPort());
+            Assert.assertEquals("/some/where", originalRequest.getPath());
+            Assert.assertEquals("5", originalRequest.getQueryParams().getFirst("flag"));
+            Assert.assertEquals("blah.netflix.com", originalRequest.getHeaders().getFirst("Host"));
+        }
     }
 }

@@ -102,6 +102,9 @@ public class ZuulServlet extends HttpServlet {
             // Execute and convert to blocking to get the resulting SessionContext.
             HttpResponseMessage response = (HttpResponseMessage) chain.single().toBlocking().first();
 
+            // Store this response as an attribute for any later ServletFilters that may want access to info in it.
+            servletRequest.setAttribute("_zuul_response", response);
+
             // Write out the built response message to the HttpServletResponse.
             try {
                 contextFactory.write(response, servletResponse);

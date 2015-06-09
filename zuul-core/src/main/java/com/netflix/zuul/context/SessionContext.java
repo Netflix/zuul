@@ -42,8 +42,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
-    private final HashMap<String, Object> helpers = new HashMap<String, Object>();
-
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
 

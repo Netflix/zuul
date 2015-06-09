@@ -64,6 +64,9 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 port
         );
 
+        // Store this original request info for future reference (ie. for metrics and access logging purposes).
+        request.storeOriginalRequestInfo();
+
         return wrapBody(request, httpServerRequest);
     }
 
