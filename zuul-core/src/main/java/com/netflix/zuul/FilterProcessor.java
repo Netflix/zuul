@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
@@ -65,22 +66,17 @@ public class FilterProcessor {
     @Inject
     private FilterLoader filterLoader;
 
+    @Inject
+    @Nullable
     private FilterUsageNotifier usageNotifier;
 
 
-    public FilterProcessor() {
-        usageNotifier = new BasicFilterUsageNotifier();
+    public FilterProcessor()
+    {
+        if (usageNotifier != null) {
+            usageNotifier = new BasicFilterUsageNotifier();
+        }
     }
-
-    /**
-     * Override the default filter usage notification impl.
-     *
-     * @param notifier
-     */
-    public void setFilterUsageNotifier(FilterUsageNotifier notifier) {
-        this.usageNotifier = notifier;
-    }
-
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
