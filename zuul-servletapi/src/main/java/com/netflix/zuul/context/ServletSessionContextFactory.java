@@ -57,6 +57,9 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         // Parse the url query parameters.
         HttpQueryParams queryParams = HttpQueryParams.parse(servletRequest.getQueryString());
 
+        // Copy any applicable attributes from the ServletRequest.
+        copyServletRequestAttributes(context, servletRequest);
+
         // Build the request object.
         HttpRequestMessage request = new HttpRequestMessage(context, servletRequest.getProtocol(), servletRequest.getMethod(),
                 servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(),
@@ -89,6 +92,18 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 
         // Wrap in an Observable.
         return Observable.just(request);
+    }
+
+    private void copyServletRequestAttributes(SessionContext context, HttpServletRequest servletRequest)
+    {
+        Enumeration attrNames = servletRequest.getAttributeNames();
+        String zuulAttrPrefix = "_zuul:";
+        while (attrNames.hasMoreElements()) {
+            String attrName = (String) attrNames.nextElement();
+            if (attrName.startsWith(zuulAttrPrefix)) {
+                context.put(attrName.substring(zuulAttrPrefix.length()), servletRequest.getAttribute(attrName));
+            }
+        }
     }
 
     @Override
