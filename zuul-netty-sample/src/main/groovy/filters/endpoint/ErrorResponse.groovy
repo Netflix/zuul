@@ -40,35 +40,27 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
 
-        Throwable ex = context.getThrowable()
-        try {
-            throw ex
-        }
-        catch (ZuulException e) {
-            response.setStatus(e.nStatusCode);
+        Throwable e = context.getThrowable()
 
-            String cause = e.errorCause
+        if (Class.isAssignableFrom(ZuulException.class)) {
+            String cause = ((ZuulException) e).errorCause
             if (cause == null) cause = "UNKNOWN"
             response.getHeaders().add("X-Netflix-Error-Cause", "Zuul Error: " + cause)
-
-            String errorMessage = e.getMessage() == null ? "Unknown Error" : e.getMessage()
-            response.setBody(errorMessage.getBytes("UTF-8"))
         }
-        catch (Throwable e) {
-            response.setStatus(500);
+        else {
             response.getHeaders().add("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
-
-            String errorMessage = e.getMessage() == null ? "Unknown Error" : e.getMessage()
-            response.setBody(errorMessage.getBytes("UTF-8"))
         }
+
+        String errorMessage = e.getMessage() == null ? "Unknown Error" : e.getMessage()
+        response.setBody(errorMessage.getBytes("UTF-8"))
 
         return response
     }
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
+    public static class TestUnit
+    {
         ErrorResponse filter
         SessionContext ctx
         Throwable th
@@ -92,11 +84,11 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
         @Test
         public void testApply()
         {
-            th = new ZuulException("test", 502, "a-cause")
+            th = new ZuulException("test", "a-cause")
             ctx.throwable = th
 
             HttpResponseMessage response = filter.apply(request)
-            assertEquals(502, response.getStatus())
+            assertEquals(500, response.getStatus())
             assertEquals("test", new String(response.getBody(), "UTF-8"))
         }
     }

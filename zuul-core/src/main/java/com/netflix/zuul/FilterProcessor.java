@@ -80,10 +80,14 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        return applyFilterPhase(chain, "in", (request) -> request);
+        chain = applyFilterPhase(chain, "in", (request) -> request);
+
+        chain = applyErrorEndpointIfNeeded(chain);
+
+        return chain;
     }
 
-    public Observable<ZuulMessage> applyErrorFilterIfNeeded(Observable<ZuulMessage> chain)
+    public Observable<ZuulMessage> applyErrorEndpointIfNeeded(Observable<ZuulMessage> chain)
     {
         return chain.flatMap(msg -> {
 
@@ -139,12 +143,10 @@ public class FilterProcessor {
      */
     public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
     {
-        // Apply the error filters. This is for if there was an error during the inbound phase.
-        chain = applyErrorFilterIfNeeded(chain);
-
         chain = chain.flatMap(msg -> {
 
             SessionContext context = msg.getContext();
+            HttpRequestMessage request = (HttpRequestMessage) msg;
 
             // If an error filter has already generated a response, then don't run the endpoint.
             if (context.errorResponseSent()) {
@@ -157,26 +159,27 @@ public class FilterProcessor {
             if (endpointName == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setThrowable(new ZuulException("No endpoint filter chosen!"));
-                return applyErrorFilterIfNeeded(Observable.just(msg));
+                return Observable.just(new HttpResponseMessage(context, request, 500));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setThrowable(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
-                return applyErrorFilterIfNeeded(Observable.just(msg));
+                return Observable.just(new HttpResponseMessage(context, request, 500));
             }
 
             // Apply this endpoint. Make the default filter result be a HttpResponseMessage so that if this filter apply fails, the next filter still gets
             // expected input.
-            return processAsyncFilter(msg, endpointFilter, (request) -> {
-                // If the Endpoint filter does not run, or throws an exception, then this should always require an error response to be sent.
+            return processAsyncFilter(msg, endpointFilter, (input) -> {
+                // If the Endpoint filter does not run, or throws an exception, then
+                // this should always require an error response to be sent.
                 context.setShouldSendErrorResponse(true);
-                return new HttpResponseMessage(context, (HttpRequestMessage) request, 500);
+                return input;
             });
         });
 
         // Apply the error filters AGAIN. This is for if there was an error during the endpoint phase.
-        chain = applyErrorFilterIfNeeded(chain);
+        chain = applyErrorEndpointIfNeeded(chain);
 
         return chain;
     }
@@ -186,12 +189,8 @@ public class FilterProcessor {
         // Apply POST filters.
         chain = applyFilterPhase(chain, "out", (response) -> response );
 
-
-        // TODO - can't apply error filters here because the input to the filter is now a response object, but endpoint/error filters
-        // need a request object.
-
         // And apply one last time to catch any errors from outbound filters.
-        //chain = applyErrorFilterIfNeeded(chain);
+        chain = applyErrorEndpointIfNeeded(chain);
 
         return chain;
     }
@@ -302,6 +301,13 @@ public class FilterProcessor {
         usageNotifier.notify(filter, info.status);
     }
 
+    /**
+     * Log the throwable, and also store info about it in the SessionContext for future reference.
+     *
+     * @param filter
+     * @param msg
+     * @param e
+     */
     protected void recordFilterError(ZuulFilter filter, ZuulMessage msg, Throwable e)
     {
         // Add a log statement for this exception.

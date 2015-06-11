@@ -265,7 +265,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * Set this to true to indicate that the Error filter should be applied after
+     * Set this to true to indicate that the Error endpoint should be applied after
      * the end of the current filter processing phase.
      *
      * @param should

@@ -88,7 +88,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         OriginManager originManager = request.getContext().get("origin_manager")
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
-            throw new ZuulException("No Origin registered for name=${name}!", 500, "UNKNOWN_VIP")
+            throw new ZuulException("No Origin registered for name=${name}!", "UNKNOWN_VIP")
         }
         return origin
     }

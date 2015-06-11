@@ -83,7 +83,7 @@ class Routing extends HttpInboundSyncFilter
         }
 
         if (host == null && context.routeVIP == null) {
-            throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", 501, "zuul.niws.defaultClient or zuul.default.host not defined")
+            throw new ZuulException("default VIP or host not defined. Define: zuul.niws.defaultClient or zuul.default.host", "zuul.niws.defaultClient or zuul.default.host not defined")
         }
 
         return request

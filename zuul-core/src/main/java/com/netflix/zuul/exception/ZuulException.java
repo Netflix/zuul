@@ -15,82 +15,51 @@
  */
 package com.netflix.zuul.exception;
 
-import com.netflix.zuul.monitoring.CounterFactory;
-
 /**
  * All handled exceptions in Zuul are ZuulExceptions
  * @author Mikey Cohen
  * Date: 10/20/11
  * Time: 4:33 PM
  */
-public class ZuulException extends RuntimeException {
-    public int nStatusCode;
+public class ZuulException extends RuntimeException
+{
     public String errorCause;
     private boolean shouldLogAsError = true;
 
     /**
      * Source Throwable, message, status code and info about the cause
-     * @param throwable
      * @param sMessage
-     * @param nStatusCode
+     * @param throwable
      * @param errorCause
      */
-    public ZuulException(Throwable throwable, String sMessage, int nStatusCode, String errorCause) {
+    public ZuulException(String sMessage, Throwable throwable, String errorCause) {
         super(sMessage, throwable);
-        this.nStatusCode = nStatusCode;
         this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
     }
 
     /**
      * error message, status code and info about the cause
      * @param sMessage
-     * @param nStatusCode
      * @param errorCause
      */
-    public ZuulException(String sMessage, int nStatusCode, String errorCause) {
+    public ZuulException(String sMessage, String errorCause) {
         super(sMessage);
-        this.nStatusCode = nStatusCode;
         this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
     }
 
     public ZuulException(Throwable throwable, String sMessage) {
         super(sMessage, throwable);
-        this.nStatusCode = 500;
         this.errorCause = "GENERAL";
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
     }
 
     public ZuulException(Throwable throwable) {
         super(throwable);
-        this.nStatusCode = 500;
         this.errorCause = "GENERAL";
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
     }
 
     public ZuulException(String sMessage) {
         super(sMessage);
-        this.nStatusCode = 500;
         this.errorCause = "GENERAL";
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
-    }
-
-    /**
-     * Source Throwable,  status code and info about the cause
-     * @param throwable
-     * @param nStatusCode
-     * @param errorCause
-     */
-    public ZuulException(Throwable throwable, int nStatusCode, String errorCause) {
-        super(throwable.getMessage(), throwable);
-        this.nStatusCode = nStatusCode;
-        this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
-    }
-
-    private static final void incrementCounter(String name) {
-        CounterFactory.instance().increment(name);
     }
 
     public void dontLogAsError() {
@@ -99,5 +68,9 @@ public class ZuulException extends RuntimeException {
 
     public boolean shouldLogAsError() {
         return shouldLogAsError;
+    }
+
+    public String getErrorCause() {
+        return errorCause;
     }
 }

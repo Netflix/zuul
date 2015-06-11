@@ -161,7 +161,7 @@ public class RibbonOrigin implements Origin
         if (errorCauseMsg == null)
             errorCauseMsg = "unknown";
 
-        return new ZuulException(t, "Proxying error", 500, errorCauseMsg);
+        return new ZuulException("Proxying error", t, errorCauseMsg);
     }
 
     protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)

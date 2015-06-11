@@ -20,7 +20,6 @@ import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.BaseSyncFilter
 import com.netflix.zuul.filters.SyncEndpoint
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
@@ -39,15 +38,14 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
         SessionContext context = request.getContext()
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
+        Throwable e = context.getThrowable()
 
-        Throwable ex = context.getThrowable()
-        try {
-            throw ex
-        } catch (ZuulException e) {
-            String cause = e.errorCause
+        if (Class.isAssignableFrom(ZuulException.class)) {
+            ZuulException ze = e
+            String cause = ze.errorCause
             if (cause == null) cause = "UNKNOWN"
             response.getHeaders().add("X-Netflix-Error-Cause", "Zuul Error: " + cause)
-            if (e.nStatusCode == 404) {
+            if (context.error_status_code == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             } else {
                 ErrorStatsManager.manager.putStats(context.route, "Zuul_Error_" + cause)
@@ -55,14 +53,15 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
 
             if (getOverrideStatusCode(request)) {
                 response.setStatus(200);
-
-
             } else {
-                response.setStatus(e.nStatusCode);
+                if (context.error_status_code) {
+                    response.setStatus(context.error_status_code)
+                }
             }
-            response.setBody("${getErrorMessage(request, response, e, e.nStatusCode)}".getBytes("UTF-8"))
+            response.setBody("${getErrorMessage(request, response, e, response.getStatus())}".getBytes("UTF-8"))
 
-        } catch (Throwable throwable) {
+        }
+        else {
             response.getHeaders().add("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")
             ErrorStatsManager.manager.putStats(context.route, "Zuul_Error_UNKNOWN_Cause")
 
@@ -71,7 +70,7 @@ class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage
             } else {
                 response.setStatus(500);
             }
-            response.setBody("${getErrorMessage(request, response, throwable, 500)}".getBytes("UTF-8"))
+            response.setBody("${getErrorMessage(request, response, e, 500)}".getBytes("UTF-8"))
 
         }
 

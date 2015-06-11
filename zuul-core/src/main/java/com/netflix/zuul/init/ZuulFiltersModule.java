@@ -18,6 +18,8 @@ package com.netflix.zuul.init;
 import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.FilterFileManager;
+import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.FilterUsageNotifier;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,7 @@ public class ZuulFiltersModule extends AbstractModule
         // Init the FilterStore.
         FilterFileManager.FilterFileManagerConfig filterConfig = new FilterFileManager.FilterFileManagerConfig(filterLocations, 5);
         bind(FilterFileManager.FilterFileManagerConfig.class).toInstance(filterConfig);
+        bind(FilterUsageNotifier.class).to(FilterProcessor.BasicFilterUsageNotifier.class);
 
         LOG.info("Groovy Filter file manager started");
     }
