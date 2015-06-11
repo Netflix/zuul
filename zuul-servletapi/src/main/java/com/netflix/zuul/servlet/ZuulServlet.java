@@ -164,6 +164,7 @@ public class ZuulServlet extends HttpServlet {
             servlet.processor = processor;
 
             when(servletRequest.getHeaderNames()).thenReturn(Collections.<String>emptyEnumeration());
+            when(servletRequest.getAttributeNames()).thenReturn(Collections.<String>emptyEnumeration());
             servletInputStream = new ServletInputStreamWrapper("{}".getBytes());
             when(servletRequest.getInputStream()).thenReturn(servletInputStream);
             when(servletResponse.getOutputStream()).thenReturn(servletOutputStream);
