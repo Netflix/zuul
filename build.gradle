@@ -1,19 +1,19 @@
 buildscript {
-    repositories { jcenter() }
+    repositories { jcenter{url "http://jcenter.bintray.com/"} }
     dependencies {
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0'
     }
 }
 
 plugins {
-    id 'nebula.netflixoss' version '3.1.2'
+    id 'nebula.netflixoss' version '3.2.3'
 }
 
 ext.githubProjectName = rootProject.name
 
 idea {
     project {
-        languageLevel = '1.7'
+        languageLevel = '1.8'
     }
 }
 
@@ -23,21 +23,33 @@ subprojects {
     apply plugin: 'nebula.provided-base'
 
     repositories {
-        jcenter()
+        repositories { jcenter{url "http://jcenter.bintray.com/"} }
+    }
+
+    configurations {
+        all*.exclude group: 'asm', module: 'asm'
+        all*.exclude group: 'asm', module: 'asm-all'
+        all*.exclude group: 'com.netflix.rxjava', module: 'rxjava-core'
     }
 
     group = "com.netflix.${githubProjectName}"
     
-    sourceCompatibility = '1.7'
-    targetCompatibility = '1.7'
-
-    sourceSets.test.java.srcDir 'src/main/java'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
     }
 
     test {
+        afterTest { desc, result ->
+            println "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+        testLogging {
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+            exceptionFormat = 'full'
+        }
+        maxHeapSize = '512m'
         forkEvery = 1
         maxParallelForks = 1
     }

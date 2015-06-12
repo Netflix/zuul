@@ -2,16 +2,17 @@ apply plugin: 'groovy'
 
 dependencies {
     compile 'commons-io:commons-io:2.4'
-    compile 'org.codehaus.groovy:groovy-all:2.3.10'
-    compile 'org.mockito:mockito-all:1.9.5'
-    compile 'org.slf4j:slf4j-api:1.7.6'
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    compile 'org.slf4j:slf4j-api:1.7.21'
     
-    provided 'junit:junit-dep:4.10'
+    provided 'junit:junit-dep:4.11'
     provided 'javax.servlet:servlet-api:2.5'
 
-    compile 'com.netflix.archaius:archaius-core:0.6.0'
-    compile 'com.netflix.servo:servo-core:0.7.2'
+    compile "com.netflix.archaius:archaius-core:$archaiusVersion"
+    compile "com.netflix.servo:servo-core:$servoVersion"
     compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
+
+    testCompile "org.mockito:mockito-all:$mockitoVersion"
 }
 
 

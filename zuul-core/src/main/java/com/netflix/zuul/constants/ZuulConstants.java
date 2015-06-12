@@ -22,6 +22,7 @@ package com.netflix.zuul.constants;
  * Time: 2:22 PM
  */
 public class ZuulConstants {
+    public static final String ZUUL_ARCHAIUS_DYNAMODB_ENABLED = "zuul.archaius.dynamodb.enabled";
     public static final String ZUUL_CASSANDRA_ENABLED = "zuul.cassandra.enabled";
     public static final String ZUUL_NIWS_CLIENTLIST = "zuul.niws.clientlist";
     public static final String DEFAULT_NFASTYANAX_READCONSISTENCY = "default.nfastyanax.readConsistency";
@@ -35,6 +36,9 @@ public class ZuulConstants {
     public static final String ZUUL_CASSANDRA_MAXCONNECTIONSPERHOST = "zuul.cassandra.maxConnectionsPerHost";
     public static final String ZUUL_CASSANDRA_HOST = "zuul.cassandra.host";
     public static final String ZUUL_CASSANDRA_PORT = "zuul.cassandra.port";
+    public static final String ZUUL_CASSANDRA_CSQL_VERSION = "zuul.cassandra.csqlVersion";
+    public static final String ZUUL_CASSANDRA_TARGET_VERSION = "zuul.cassandra.targetVersion";
+
     public static final String ZUUL_EUREKA = "zuul.eureka.";
     public static final String ZUUL_AUTODETECT_BACKEND_VIPS = "zuul.autodetect-backend-vips";
     public static final String ZUUL_RIBBON_NAMESPACE = "zuul.ribbon.namespace";

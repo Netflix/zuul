@@ -24,6 +24,8 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.NFRequestContext
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.exception.ZuulException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Mikey Cohen
@@ -33,7 +35,7 @@ import com.netflix.zuul.exception.ZuulException
 class Routing extends ZuulFilter {
     DynamicStringProperty defaultClient = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT, ZuulApplicationInfo.applicationName);
     DynamicStringProperty defaultHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEFAULT_HOST, null);
-
+    private static final Logger LOG = LoggerFactory.getLogger(Routing.class);
 
     @Override
     int filterOrder() {
@@ -56,10 +58,9 @@ class Routing extends ZuulFilter {
     }
 
     Object run() {
-
         staticRouting() //runs the static Zuul
-
-        ((NFRequestContext) RequestContext.currentContext).routeVIP = defaultClient.get()
+	
+	((NFRequestContext) RequestContext.currentContext).routeVIP = defaultClient.get()
         String host = defaultHost.get()
         if (((NFRequestContext) RequestContext.currentContext).routeVIP == null) ((NFRequestContext) RequestContext.currentContext).routeVIP = ZuulApplicationInfo.applicationName
         if (host != null) {
@@ -84,3 +85,4 @@ class Routing extends ZuulFilter {
         ((NFRequestContext) RequestContext.currentContext).route = uri.substring(0, uri.indexOf("/") + 1)
     }
 }
+

@@ -53,5 +53,12 @@
         <servlet-name>filterLoader</servlet-name>
         <url-pattern>/admin/filterLoader.jsp</url-pattern>
     </servlet-mapping>
-
+    <servlet>
+        <servlet-name>HystrixMetricsStreamServlet</servlet-name>
+        <servlet-class>com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HystrixMetricsStreamServlet</servlet-name>
+       <url-pattern>/hystrix.stream</url-pattern>
+    </servlet-mapping>
 </web-app>

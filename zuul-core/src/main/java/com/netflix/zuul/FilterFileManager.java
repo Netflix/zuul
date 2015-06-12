@@ -15,12 +15,6 @@
  */
 package com.netflix.zuul;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +25,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
 
 /**
  * This class manages the directory polling for changes and new Groovy filters.
@@ -55,9 +46,10 @@ public class FilterFileManager {
 
     static FilenameFilter FILENAME_FILTER;
 
-    static FilterFileManager INSTANCE;
+    static FilterFileManager INSTANCE = new FilterFileManager();
 
     private FilterFileManager() {
+
     }
 
     public static void setFilenameFilter(FilenameFilter filter) {
@@ -74,13 +66,11 @@ public class FilterFileManager {
      * @throws InstantiationException
      */
     public static void init(int pollingIntervalSeconds, String... directories) throws Exception, IllegalAccessException, InstantiationException {
-        if (INSTANCE == null) INSTANCE = new FilterFileManager();
 
         INSTANCE.aDirectories = directories;
         INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
         INSTANCE.manageFiles();
         INSTANCE.startPoller();
-
     }
 
     public static FilterFileManager getInstance() {
@@ -175,38 +165,4 @@ public class FilterFileManager {
         List<File> aFiles = getFiles();
         processGroovyFiles(aFiles);
     }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-        @Mock
-        private File nonGroovyFile;
-        @Mock
-        private File groovyFile;
-
-        @Mock
-        private File directory;
-
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-
-        @Test
-        public void testFileManagerInit() throws Exception, InstantiationException, IllegalAccessException {
-            FilterFileManager manager = new FilterFileManager();
-
-            manager = spy(manager);
-            manager.INSTANCE = manager;
-            doNothing().when(manager.INSTANCE).manageFiles();
-            manager.init(1, "test", "test1");
-            verify(manager, atLeast(1)).manageFiles();
-            verify(manager, times(1)).startPoller();
-            assertNotNull(manager.poller);
-
-        }
-
-    }
-
 }

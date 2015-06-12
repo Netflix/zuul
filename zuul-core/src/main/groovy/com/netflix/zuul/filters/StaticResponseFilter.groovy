@@ -15,12 +15,11 @@
  */
 package com.netflix.zuul.filters
 
-import java.util.regex.Pattern
-
-import javax.servlet.http.HttpServletResponse
-
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+
+import javax.servlet.http.HttpServletResponse
+import java.util.regex.Pattern
 
 /**
  * Abstract class to return content directly fron Zuul,

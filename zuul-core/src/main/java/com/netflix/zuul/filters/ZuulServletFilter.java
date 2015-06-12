@@ -19,23 +19,16 @@ package com.netflix.zuul.filters;
 import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 
 /**
  * Zuul Servlet filter to run Zuul within a Servlet Filter. The filter invokes pre-routing filters first,
@@ -115,136 +108,11 @@ public class ZuulServletFilter implements Filter {
 
     }
 
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Mock
-        HttpServletRequest servletRequest;
-
-        @Mock
-        HttpServletResponse servletResponse;
-
-        @Mock
-        FilterChain filterChain;
-        @Mock
-        ZuulRunner zuulRunner;
-
-
-        @Before
-        public void before() {
-            MonitoringHelper.initMocks();
-            MockitoAnnotations.initMocks(this);
-        }
-
-        @Test
-        public void testRoutingException() {
-
-            RequestContext.getCurrentContext().setRequest(servletRequest);
-            RequestContext.getCurrentContext().setResponse(servletResponse);
-
-            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
-            zuulServletFilter = spy(zuulServletFilter);
-
-            try {
-                zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
-                ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulServletFilter).routing();
-
-                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulServletFilter, times(1)).routing();
-                verify(zuulServletFilter, times(1)).error(e);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.toString());
-            }
-
-
-        }
-
-        @Test
-        public void testPreException() {
-
-            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
-            zuulServletFilter = spy(zuulServletFilter);
-            RequestContext.getCurrentContext().setRequest(servletRequest);
-            RequestContext.getCurrentContext().setResponse(servletResponse);
-
-
-            try {
-                zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
-                ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulServletFilter).preRouting();
-
-                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulServletFilter, times(1)).preRouting();
-                verify(zuulServletFilter, times(1)).error(e);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.toString());
-
-            }
-
-
-        }
-
-
-        @Test
-        public void testPostException() {
-            RequestContext.getCurrentContext().setRequest(servletRequest);
-            RequestContext.getCurrentContext().setResponse(servletResponse);
-
-            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
-            zuulServletFilter = spy(zuulServletFilter);
-
-            try {
-                zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
-                ZuulException e = new ZuulException("test", 510, "test");
-                doThrow(e).when(zuulServletFilter).postRouting();
-
-                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
-                verify(zuulServletFilter, times(1)).postRouting();
-                verify(zuulServletFilter, times(1)).error(e);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.toString());
-            }
-
-
-        }
-
-
-        @Test
-        public void testProcessZuulFilter() {
-
-            ZuulServletFilter zuulServletFilter = new ZuulServletFilter();
-            zuulServletFilter = spy(zuulServletFilter);
-
-            try {
-
-                zuulServletFilter.zuulRunner = zuulRunner;
-                when(servletResponse.getWriter()).thenReturn(new PrintWriter(new ByteArrayOutputStream()));
-                zuulServletFilter.doFilter(servletRequest, servletResponse, filterChain);
-
-                verify(zuulRunner, times(1)).init(servletRequest, servletResponse);
-                verify(zuulRunner, times(1)).preRoute();
-                verify(zuulRunner, times(1)).route();
-                verify(zuulRunner, times(1)).postRoute();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail(e.toString());
-            }
-
-
-        }
+    public ZuulRunner getZuulRunner() {
+        return zuulRunner;
     }
 
+    public void setZuulRunner(ZuulRunner zuulRunner) {
+        this.zuulRunner = zuulRunner;
+    }
 }

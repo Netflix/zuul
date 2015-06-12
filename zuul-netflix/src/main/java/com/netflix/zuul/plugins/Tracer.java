@@ -43,7 +43,6 @@ public class Tracer extends TracerFactory {
     }
 
     @Override
-
     public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
         return new ServoTracer(name);
     }

@@ -31,6 +31,7 @@ import com.netflix.zuul.dependency.ribbon.hystrix.RibbonCommand
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.util.HTTPRequestUtils
 import com.sun.jersey.core.util.MultivaluedMapImpl
+import org.apache.commons.lang.StringEscapeUtils
 import org.apache.http.Header
 import org.apache.http.message.BasicHeader
 import org.junit.Assert
@@ -68,7 +69,7 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return NFRequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
+    	return NFRequestContext.currentContext.getRouteHost() == null && RequestContext.currentContext.sendZuulResponse()
     }
 
     Object run() {
@@ -79,6 +80,8 @@ class ZuulNFRequest extends ZuulFilter {
         MultivaluedMap<String, String> params = buildZuulRequestQueryParams(request)
         Verb verb = getVerb(request);
         Object requestEntity = getRequestBody(request)
+
+
         IClient restClient = ClientFactory.getNamedClient(context.getRouteVIP());
 
         String uri = request.getRequestURI()
@@ -87,7 +90,9 @@ class ZuulNFRequest extends ZuulFilter {
         }
         //remove double slashes
         uri = uri.replace("//", "/")
+        uri = StringEscapeUtils.escapeHtml(uri)
 
+        LOG.debug("NFRequest routeVIP: {} uri:{}", context.getRouteVIP(), uri);
         HttpResponse response = forward(restClient, verb, uri, headers, params, requestEntity)
         setResponse(response)
         return response
@@ -131,20 +136,14 @@ class ZuulNFRequest extends ZuulFilter {
     def HttpResponse forward(RestClient restClient, Verb verb, uri, MultivaluedMap<String, String> headers, MultivaluedMap<String, String> params, InputStream requestEntity) {
         debug(restClient, verb, uri, headers, params, requestEntity)
 
-//        restClient.apacheHttpClient.params.setVirtualHost(headers.getFirst("host"))
+        String commandKey = NFRequestContext.getCurrentContext().get("CommandKey")
 
-        String route = NFRequestContext.getCurrentContext().route
-        if (route == null) {
-            String path = RequestContext.currentContext.requestURI
-            if (path == null) {
-                path = RequestContext.currentContext.getRequest() getRequestURI()
-            }
-            route = "route" //todo get better name
+        if(commandKey == null){
+            commandKey = "RibbonCommand"
         }
-        route = route.replace("/", "_")
 
+        RibbonCommand command = new RibbonCommand("default", commandKey, restClient, verb, uri, headers, params, requestEntity);
 
-        RibbonCommand command = new RibbonCommand(restClient, verb, uri, headers, params, requestEntity);
         try {
             HttpResponse response = command.execute();
             return response
@@ -160,6 +159,7 @@ class ZuulNFRequest extends ZuulFilter {
 
 
     def getRequestBody(HttpServletRequest request) {
+        Verb verb = getVerb(request);
         Object requestEntity = null;
         try {
             requestEntity = NFRequestContext.currentContext.requestEntity
@@ -167,7 +167,7 @@ class ZuulNFRequest extends ZuulFilter {
                 requestEntity = request.getInputStream();
             }
         } catch (IOException e) {
-            LOG.error(e);
+            LOG.error(e)
         }
 
         return requestEntity
@@ -490,6 +490,3 @@ class ZuulNFRequest extends ZuulFilter {
     }
 
 }
-
-
-

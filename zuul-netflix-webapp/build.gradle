@@ -1,24 +1,39 @@
 apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'jetty'
+apply plugin: 'java' //so that there are some configurations
+
+configurations.all {
+    resolutionStrategy {
+        force 'asm:asm-all:3.3.1', 'com.netflix.governator:governator:1.3.3', 'com.google.inject:guice:3.0'
+    }
+}
 
 dependencies {
 
     compile project(':zuul-core')
     compile project(':zuul-netflix')
 
-    compile 'com.netflix.karyon:karyon-core:2.0.02'
-    compile 'com.netflix.karyon:karyon-admin:2.0.02'
-    compile 'com.netflix.karyon:karyon-admin-web:2.0.02'
-    compile 'com.netflix.karyon:karyon-extensions:2.0.02'
-    compile 'com.netflix.blitz4j:blitz4j:1.35'
-    compile 'com.sun.jersey:jersey-core:1.17.1'
-    compile 'com.sun.jersey:jersey-server:1.17.1'
-    compile 'com.sun.jersey:jersey-client:1.17.1'
-    compile 'com.sun.jersey:jersey-servlet:1.17.1'
+    compile "com.netflix.karyon:karyon-core:$karyonVersion"
+    compile "com.netflix.karyon:karyon-admin:$karyonVersion"
+    compile "com.netflix.karyon:karyon-admin-web:$karyonVersion"
+    compile "com.netflix.karyon:karyon-extensions:$karyonVersion"
+    compile 'com.netflix.blitz4j:blitz4j:1.36.1'
+    compile "com.sun.jersey:jersey-core:$jerseyVersion"
+    compile "com.sun.jersey:jersey-server:$jerseyVersion"
+    compile "com.sun.jersey:jersey-client:$jerseyVersion"
+    compile "com.sun.jersey:jersey-servlet:$jerseyVersion"
+    compile "com.netflix.hystrix:hystrix-metrics-event-stream:$hystrixVersion"
+    compile "com.amazonaws:aws-java-sdk-dynamodb:$amazonSdk"
+    compile "com.netflix.archaius:archaius-aws:$archaiusVersion"
 
-    compile "org.codehaus.groovy:groovy-all:2.2.2"
-    providedCompile 'junit:junit-dep:4.10'
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    testCompile 'junit:junit-dep:4.11'
+
+    runtime 'org.ow2.asm:asm:5.0.3'
+    runtime 'org.ow2.asm:asm-all:5.0.3'
+    runtime 'org.apache.xbean:xbean-bundleutils:3.17'
+    runtime 'org.apache.xbean:xbean-finder:3.17'
 }
 
 javadoc {

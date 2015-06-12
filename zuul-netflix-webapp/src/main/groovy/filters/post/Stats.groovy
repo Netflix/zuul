@@ -23,6 +23,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.runners.MockitoJUnitRunner
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -33,6 +35,8 @@ import javax.servlet.http.HttpServletResponse
  * Time: 2:48 PM
  */
 class Stats extends ZuulFilter {
+    private static final Logger LOG = LoggerFactory.getLogger(Stats.class);
+
     @Override
     String filterType() {
         return "post"
@@ -61,14 +65,14 @@ class Stats extends ZuulFilter {
     public void dumpRequestDebug() {
         List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
         rd?.each {
-            println("REQUEST_DEBUG::${it}");
+            LOG.info("REQUEST_DEBUG::${it}");
         }
     }
 
     public void dumpRoutingDebug() {
         List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
         rd?.each {
-            println("ZUUL_DEBUG::${it}");
+            LOG.info("ZUUL_DEBUG::${it}");
         }
     }
 

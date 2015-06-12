@@ -15,8 +15,8 @@
  */
 package filters.pre
 
-
 import com.netflix.zuul.context.RequestContext
+import com.netflix.zuul.filters.StaticResponseFilter
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,8 +26,6 @@ import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import com.netflix.zuul.context.RequestContext
-import com.netflix.zuul.filters.StaticResponseFilter
 
 /**
  * @author Mikey Cohen

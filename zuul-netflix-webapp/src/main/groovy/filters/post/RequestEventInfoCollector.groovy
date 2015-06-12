@@ -37,6 +37,7 @@ class RequestEventInfoCollectorFilter extends ZuulFilter {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestEventInfoCollectorFilter.class);
+    private static final String VALUE_SEPARATOR = ",";
 
 
     @Override

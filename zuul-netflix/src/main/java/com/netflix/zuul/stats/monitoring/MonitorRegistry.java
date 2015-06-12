@@ -15,8 +15,6 @@
  */
 package com.netflix.zuul.stats.monitoring;
 
-import com.netflix.zuul.stats.ErrorStatsData;
-
 /**
  * Registry to register a Counter. a Monitor publisher should  be set to get counter information.
  * If it isn't set, registration will be ignored.

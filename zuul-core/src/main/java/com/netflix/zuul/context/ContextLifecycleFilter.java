@@ -42,5 +42,4 @@ public class ContextLifecycleFilter implements Filter {
             RequestContext.getCurrentContext().unset();
         }
     }
-
 }
