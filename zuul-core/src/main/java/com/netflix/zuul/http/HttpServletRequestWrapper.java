@@ -64,6 +64,8 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     private byte[] contentData = null;
     private HashMap<String, String[]> parameters = null;
 
+    private long bodyBufferingTimeNs = 0;
+
     public HttpServletRequestWrapper() {
         //a trick for Groovy
         throw new IllegalArgumentException("Please use HttpServletRequestWrapper(HttpServletRequest request) constructor!");
@@ -144,7 +146,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             // Read the request body inputstream into a byte array.
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
+                // Copy all bytes from inputstream to byte array, and record time taken.
+                long bufferStartTime = System.nanoTime();
                 IOUtils.copy(req.getInputStream(), baos);
+                bodyBufferingTimeNs = System.nanoTime() - bufferStartTime;
+
                 contentData = baos.toByteArray();
             } catch (SocketTimeoutException e) {
                 // This can happen if the request body is smaller than the size specified in the
@@ -238,6 +244,15 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
         }
 
         return should;
+    }
+
+    /**
+     * Time taken to buffer the request body in nanoseconds.
+     * @return
+     */
+    public long getBodyBufferingTimeNs()
+    {
+        return bodyBufferingTimeNs;
     }
 
     /**
