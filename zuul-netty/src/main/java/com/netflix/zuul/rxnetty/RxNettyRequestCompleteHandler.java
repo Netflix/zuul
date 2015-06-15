@@ -16,8 +16,6 @@
 package com.netflix.zuul.rxnetty;
 
 import com.google.inject.Inject;
-import com.netflix.servo.monitor.DynamicTimer;
-import com.netflix.servo.monitor.MonitorConfig;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
@@ -52,7 +50,7 @@ public class RxNettyRequestCompleteHandler implements RequestCompleteHandler
         HttpRequestMessage request = response.getRequest();
         SessionContext context = response.getContext();
 
-        long duration = context.getRequestTiming().getDuration();
+        long duration = context.getTimings().getRequest().getDuration();
         int responseBodySize = response.getBody() == null ? 0 : response.getBody().length;
 
         // Write to access log.

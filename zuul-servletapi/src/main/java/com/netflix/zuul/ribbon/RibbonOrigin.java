@@ -122,7 +122,7 @@ public class RibbonOrigin implements Origin
         }
 
         // Execute the request.
-        final Timing timing = context.getRequestProxyTiming();
+        final Timing timing = context.getTimings().getRequestProxy();
         timing.start();
         Observable<HttpResponseMessage> responseObs = requestBuiltObs.map(httpClientRequest -> {
             HttpResponse ribbonResp;

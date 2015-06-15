@@ -79,7 +79,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 
         // Start timing the request.
         chain = chain.doOnNext(msg -> {
-            msg.getContext().getRequestTiming().start();
+            msg.getContext().getTimings().getRequest().start();
         });
 
         // Choose if this is a Healtcheck request, or a normal request, and build the chain accordingly.
@@ -104,7 +104,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         // After complete, update metrics and access log.
         chain = chain.map(msg -> {
             // End the timing.
-            msg.getContext().getRequestTiming().end();
+            msg.getContext().getTimings().getRequest().end();
 
             // Notify requestComplete listener if configured.
             try {

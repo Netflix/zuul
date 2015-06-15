@@ -103,7 +103,7 @@ public class RxNettyOrigin implements Origin {
 
         // Start timing.
         SessionContext ctx = requestMsg.getContext();
-        final Timing timing = ctx.getRequestProxyTiming();
+        final Timing timing = ctx.getTimings().getRequestProxy();
         timing.start();
         if (stats != null)
             stats.started();

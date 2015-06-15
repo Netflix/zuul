@@ -15,8 +15,8 @@ public class BasicRequestMetricsPublisher implements RequestMetricsPublisher
     public void collectAndPublish(SessionContext context)
     {
         // Request timings.
-        long totalRequestTime = context.getRequestTiming().getDuration();
-        long requestProxyTime = context.getRequestProxyTiming().getDuration();
+        long totalRequestTime = context.getTimings().getRequest().getDuration();
+        long requestProxyTime = context.getTimings().getRequestProxy().getDuration();
         int originReportedDuration = context.getOriginReportedDuration();
 
         // Approximation of time spent just within Zuul's own processing of the request.

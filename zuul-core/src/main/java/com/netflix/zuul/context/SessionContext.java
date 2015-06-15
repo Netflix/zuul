@@ -23,6 +23,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.stats.Timing;
+import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
 
+    private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "_event_properties";
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
@@ -53,6 +55,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         super();
 
+        put(KEY_TIMINGS, new Timings());
         put(KEY_FILTER_EXECS, new StringBuilder());
         put(KEY_EVENT_PROPS, new HashMap<String, Object>());
         put(KEY_FILTER_ERRORS, new ArrayList<FilterError>());
@@ -324,23 +327,9 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         return (List<FilterError>) get(KEY_FILTER_ERRORS);
     }
 
-
-    protected Timing getTiming(String name)
+    public Timings getTimings()
     {
-        Timing t = (Timing)get(name);
-        if (t == null) {
-            t = new Timing(name);
-            put(name, t);
-        }
-        return t;
-    }
-    public Timing getRequestTiming()
-    {
-        return getTiming("_requestTiming");
-    }
-    public Timing getRequestProxyTiming()
-    {
-        return getTiming("_requestProxyTiming");
+        return (Timings) get(KEY_TIMINGS);
     }
 
     public void setOriginReportedDuration(int duration)
