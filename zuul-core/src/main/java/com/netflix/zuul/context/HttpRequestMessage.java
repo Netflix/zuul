@@ -49,11 +49,14 @@ public class HttpRequestMessage extends ZuulMessage
     private String clientIp;
     private String scheme;
     private int port;
+    private String serverName;
 
     private HttpRequestInfo originalRequestInfo = null;
 
 
-    public HttpRequestMessage(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port)
+    public HttpRequestMessage(SessionContext context, String protocol, String method, String path,
+                              HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
+                              int port, String serverName)
     {
         super(context, headers);
 
@@ -65,6 +68,7 @@ public class HttpRequestMessage extends ZuulMessage
         this.clientIp = clientIp;
         this.scheme = scheme;
         this.port = port;
+        this.serverName = serverName;
     }
 
     public String getProtocol() {
@@ -124,6 +128,15 @@ public class HttpRequestMessage extends ZuulMessage
     public void setPort(int port)
     {
         this.port = port;
+    }
+
+    public String getServerName()
+    {
+        return serverName;
+    }
+    public void setServerName(String serverName)
+    {
+        this.serverName = serverName;
     }
 
     public Map<String, Set<Cookie>> parseCookies()
@@ -204,7 +217,7 @@ public class HttpRequestMessage extends ZuulMessage
             Headers headers = new Headers();
             headers.add("Host", "blah.netflix.com");
             request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
-                    "192.168.0.2", "https", 7002);
+                    "192.168.0.2", "https", 7002, "localhost");
 
             request.storeOriginalRequestInfo();
             HttpRequestInfo originalRequest = request.getOriginalRequestInfo();

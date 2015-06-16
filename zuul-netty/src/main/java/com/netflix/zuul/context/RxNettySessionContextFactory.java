@@ -50,6 +50,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
 
         // This is the only way I found to get the port of the request with netty...
         int port = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getPort();
+        String serverName = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getHostString();
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessage(
@@ -61,7 +62,8 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
                 copyHeaders(httpServerRequest),
                 clientIp,
                 scheme,
-                port
+                port,
+                serverName
         );
 
         // Store this original request info for future reference (ie. for metrics and access logging purposes).

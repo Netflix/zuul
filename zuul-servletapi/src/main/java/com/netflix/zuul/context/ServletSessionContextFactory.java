@@ -63,7 +63,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         // Build the request object.
         HttpRequestMessage request = new HttpRequestMessage(context, servletRequest.getProtocol(), servletRequest.getMethod(),
                 servletRequest.getRequestURI(), queryParams, reqHeaders, servletRequest.getRemoteAddr(),
-                servletRequest.getScheme(), servletRequest.getServerPort());
+                servletRequest.getScheme(), servletRequest.getServerPort(), servletRequest.getServerName());
 
         // Store this original request info for future reference (ie. for metrics and access logging purposes).
         request.storeOriginalRequestInfo();
