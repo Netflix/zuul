@@ -18,12 +18,14 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.stats.Timing;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import rx.Observable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -144,6 +146,18 @@ public class HttpRequestMessage extends ZuulMessage
     @Override
     public int getMaxBodySize() {
         return MAX_BODY_SIZE_PROP.get();
+    }
+
+    @Override
+    public Observable<byte[]> bufferBody()
+    {
+        // Wrap the buffering of request body in a timer.
+        Timing timing = getContext().getTimings().getRequestBodyRead();
+        timing.start();
+        return super.bufferBody()
+                .finallyDo(() -> {
+                    timing.end();
+                });
     }
 
     @Override

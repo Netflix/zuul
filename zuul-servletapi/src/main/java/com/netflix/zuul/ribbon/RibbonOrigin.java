@@ -121,6 +121,14 @@ public class RibbonOrigin implements Origin
             requestBuiltObs = Observable.just(builder.build());
         }
 
+        // Wrap the buffering of request body in a timer.
+        // NOTE - this is also done in HttpRequestMessage.bufferBody() if that is called.
+        // TODO - how to start the timer as a callback on the Observable, instead of here?
+        Timing readTiming = context.getTimings().getRequestBodyRead();
+        readTiming.start();
+        requestBuiltObs.finallyDo(() -> readTiming.end() );
+
+
         // Execute the request.
         final Timing timing = context.getTimings().getRequestProxy();
         timing.start();

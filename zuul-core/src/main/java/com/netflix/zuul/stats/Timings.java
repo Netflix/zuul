@@ -26,4 +26,20 @@ public class Timings
     {
         return get("_requestProxyTiming");
     }
+    public Timing getRequestBodyRead()
+    {
+        return get("_requestBodyReadTiming");
+    }
+    public Timing getResponseBodyRead()
+    {
+        return get("_responseBodyReadTiming");
+    }
+    public Timing getRequestBodyWrite()
+    {
+        return get("_requestBodyWriteTiming");
+    }
+    public Timing getResponseBodyWrite()
+    {
+        return get("_responseBodyWriteTiming");
+    }
 }

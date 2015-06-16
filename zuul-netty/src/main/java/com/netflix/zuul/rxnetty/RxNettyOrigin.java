@@ -165,10 +165,8 @@ public class RxNettyOrigin implements Origin {
             //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
             UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
 
-            // Only apply the filters once the request body has been fully read and buffered.
-            Observable<ByteBuf> content = resp.getContent();
-
             // Subscribe to the response-content observable (retaining the ByteBufS first).
+            Observable<ByteBuf> content = resp.getContent();
             content.map(ByteBuf::retain).subscribe(cachedContent);
 
             // Store this content ref on the zuul response object.

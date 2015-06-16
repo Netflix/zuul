@@ -17,6 +17,8 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.stats.Timing;
+import rx.Observable;
 
 /**
  * User: michaels
@@ -58,6 +60,18 @@ public class HttpResponseMessage extends ZuulMessage
     @Override
     public int getMaxBodySize() {
         return MAX_BODY_SIZE_PROP.get();
+    }
+
+    @Override
+    public Observable<byte[]> bufferBody()
+    {
+        // Wrap the buffering of response body in a timer.
+        Timing timing = getContext().getTimings().getResponseBodyRead();
+        timing.start();
+        return super.bufferBody()
+                .finallyDo(() -> {
+                    timing.end();
+                });
     }
 
     @Override
