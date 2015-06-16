@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Generic timing helper, in nanoseconds.
+ *
  * User: michaels@netflix.com
  * Date: 12/13/13
  * Time: 5:05 PM
@@ -37,7 +39,7 @@ public class Timing
     }
 
     public void start() {
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
     }
 
     public void end() {
