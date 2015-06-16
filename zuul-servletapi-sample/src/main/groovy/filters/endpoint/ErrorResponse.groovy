@@ -20,7 +20,7 @@ import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.filters.SyncEndpoint
+import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.stats.ErrorStatsManager
 import org.junit.Assert
 import org.junit.Before
@@ -30,7 +30,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-class ErrorResponse extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+class ErrorResponse extends HttpSyncEndpoint
 {
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)

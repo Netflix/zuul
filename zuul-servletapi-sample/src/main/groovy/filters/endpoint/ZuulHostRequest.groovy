@@ -21,7 +21,7 @@ import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
-import com.netflix.zuul.filters.SyncEndpoint
+import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.util.HttpUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
@@ -58,7 +58,7 @@ import rx.Observable
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
 
-class ZuulHostRequest extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+class ZuulHostRequest extends HttpSyncEndpoint
 {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulHostRequest.class);
     private static final Runnable CLIENTLOADER = new Runnable() {

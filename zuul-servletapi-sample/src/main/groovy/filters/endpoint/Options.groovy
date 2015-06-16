@@ -18,8 +18,7 @@ package filters.endpoint
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.BaseSyncFilter
-import com.netflix.zuul.filters.SyncEndpoint
+import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +35,7 @@ import static org.mockito.Mockito.when
  * Date: 2/1/12
  * Time: 7:56 AM
  */
-class Options extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
+class Options extends HttpSyncEndpoint
 {
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)
