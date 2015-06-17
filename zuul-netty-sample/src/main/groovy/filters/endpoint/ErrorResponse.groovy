@@ -40,10 +40,12 @@ class ErrorResponse extends HttpSyncEndpoint
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
 
-        Throwable e = context.getThrowable()
+        Throwable e = context.getError()
 
-        if (Class.isAssignableFrom(ZuulException.class)) {
-            String cause = ((ZuulException) e).errorCause
+        if (ZuulException.class.isAssignableFrom(e.getClass())) {
+            ZuulException ze = e
+            response.setStatus(ze.getStatusCode())
+            String cause = ze.getErrorCause()
             if (cause == null) cause = "UNKNOWN"
             response.getHeaders().add("X-Netflix-Error-Cause", "Zuul Error: " + cause)
         }
@@ -85,7 +87,7 @@ class ErrorResponse extends HttpSyncEndpoint
         public void testApply()
         {
             th = new ZuulException("test", "a-cause")
-            ctx.throwable = th
+            ctx.setError(th)
 
             HttpResponseMessage response = filter.apply(request)
             assertEquals(500, response.getStatus())

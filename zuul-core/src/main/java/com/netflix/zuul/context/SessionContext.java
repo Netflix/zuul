@@ -155,8 +155,8 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      *
      * @return a set throwable
      */
-    public Throwable getThrowable() {
-        return (Throwable) get("throwable");
+    public Throwable getError() {
+        return (Throwable) get("_error");
 
     }
 
@@ -165,8 +165,8 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      *
      * @param th
      */
-    public void setThrowable(Throwable th) {
-        put("throwable", th);
+    public void setError(Throwable th) {
+        put("_error", th);
 
     }
 

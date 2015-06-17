@@ -23,7 +23,8 @@ package com.netflix.zuul.exception;
  */
 public class ZuulException extends RuntimeException
 {
-    public String errorCause;
+    private String errorCause;
+    private int statusCode = 500;
     private boolean shouldLogAsError = true;
 
     /**
@@ -60,6 +61,15 @@ public class ZuulException extends RuntimeException
     public ZuulException(String sMessage) {
         super(sMessage);
         this.errorCause = "GENERAL";
+    }
+
+    public int getStatusCode()
+    {
+        return statusCode;
+    }
+    public void setStatusCode(int statusCode)
+    {
+        this.statusCode = statusCode;
     }
 
     public void dontLogAsError() {

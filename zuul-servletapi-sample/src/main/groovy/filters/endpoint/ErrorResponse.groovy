@@ -38,14 +38,14 @@ class ErrorResponse extends HttpSyncEndpoint
         SessionContext context = request.getContext()
 
         HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
-        Throwable e = context.getThrowable()
+        Throwable e = context.getError()
 
-        if (Class.isAssignableFrom(ZuulException.class)) {
+        if (ZuulException.class.isAssignableFrom(e.getClass())) {
             ZuulException ze = e
             String cause = ze.errorCause
             if (cause == null) cause = "UNKNOWN"
             response.getHeaders().add("X-Netflix-Error-Cause", "Zuul Error: " + cause)
-            if (context.error_status_code == 404) {
+            if (ze.getStatusCode() == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             } else {
                 ErrorStatsManager.manager.putStats(context.route, "Zuul_Error_" + cause)
@@ -54,9 +54,7 @@ class ErrorResponse extends HttpSyncEndpoint
             if (getOverrideStatusCode(request)) {
                 response.setStatus(200);
             } else {
-                if (context.error_status_code) {
-                    response.setStatus(context.error_status_code)
-                }
+                response.setStatus(ze.getStatusCode())
             }
             response.setBody("${getErrorMessage(request, response, e, response.getStatus())}".getBytes("UTF-8"))
 
@@ -197,7 +195,7 @@ v=1 or unspecified:
             queryParams = new HttpQueryParams()
             Mockito.when(request.getQueryParams()).thenReturn(queryParams)
             th = new Exception("test")
-            ctx.throwable = th
+            ctx.setError(th)
         }
 
         @Test
