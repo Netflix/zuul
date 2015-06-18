@@ -61,7 +61,7 @@ public class FilterProcessor {
 
     /** The name of the error filter to use if none specified in the context. */
     protected static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = DynamicPropertyFactory.getInstance()
-            .getStringProperty("zuul.filters.error.default", "ErrorResponse");
+            .getStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
 
     @Inject
     private FilterLoader filterLoader;
@@ -100,7 +100,7 @@ public class FilterProcessor {
                 context.setErrorResponseSent(true);
 
                 // Get the error endpoint filter to use.
-                String endpointName = (String) context.get("error-endpoint");
+                String endpointName = context.getErrorEndpoint();
                 if (endpointName == null) {
                     endpointName = DEFAULT_ERROR_ENDPOINT.get();
                 }

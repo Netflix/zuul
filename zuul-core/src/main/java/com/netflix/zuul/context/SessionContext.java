@@ -151,7 +151,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * returns a set throwable
+     * Gets the throwable that will be use in the Error endpoint.
      *
      * @return a set throwable
      */
@@ -161,13 +161,20 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * sets a throwable
+     * Sets throwable to use for generating a response in the Error endpoint.
      *
      * @param th
      */
     public void setError(Throwable th) {
         put("_error", th);
 
+    }
+
+    public String getErrorEndpoint() {
+        return (String) get("_error-endpoint");
+    }
+    public void setErrorEndpoint(String name) {
+        put("_error-endpoint", name);
     }
 
     /**

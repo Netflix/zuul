@@ -22,7 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import rx.Observable;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -52,7 +51,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     @Override
     public String filterName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     /**
