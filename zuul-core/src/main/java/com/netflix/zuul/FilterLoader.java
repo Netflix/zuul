@@ -252,24 +252,26 @@ public class FilterLoader
         TestZuulFilter filter = new TestZuulFilter();
 
         @Before
-        public void before() {
+        public void before() throws Exception
+        {
             MockitoAnnotations.initMocks(this);
 
             loader = spy(new FilterLoader());
             loader.setCompiler(compiler);
             loader.setFilterRegistry(registry);
+
+            doReturn(TestZuulFilter.class).when(compiler).compile(file);
+            when(file.getAbsolutePath()).thenReturn("/filters/in/SomeFilter.groovy");
         }
 
         @Test
         public void testGetFilterFromFile() throws Exception {
-            doReturn(TestZuulFilter.class).when(compiler).compile(file);
             assertTrue(loader.putFilter(file));
             verify(registry).put(any(String.class), any(BaseFilter.class));
         }
 
         @Test
         public void testGetFiltersByType() throws Exception {
-            doReturn(TestZuulFilter.class).when(compiler).compile(file);
             assertTrue(loader.putFilter(file));
 
             verify(registry).put(any(String.class), any(ZuulFilter.class));

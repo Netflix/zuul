@@ -156,7 +156,8 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             HttpQueryParams params = new HttpQueryParams()
             params.add("k1", "v1")
 
-            HttpRequestMessage request = new HttpRequestMessage(ctx, "HTTP/1.1", "POST", "/some/where", params, headers, "9.9.9.9", "https",)
+            HttpRequestMessage request = new HttpRequestMessage(ctx, "HTTP/1.1", "POST", "/some/where",
+                    params, headers, "9.9.9.9", "https", 80, "localhost")
 
             filter.debug(ctx, request)
 
