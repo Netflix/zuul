@@ -27,9 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import rx.Observable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -139,18 +136,13 @@ public class HttpRequestMessage extends ZuulMessage
         this.serverName = serverName;
     }
 
-    public Map<String, Set<Cookie>> parseCookies()
+    public Cookies parseCookies()
     {
-        Map<String, Set<Cookie>> cookies = new HashMap<String, Set<Cookie>>();
+        Cookies cookies = new Cookies();
         for (String aCookieHeader : getHeaders().get("cookie")) {
             Set<Cookie> decode = CookieDecoder.decode(aCookieHeader);
             for (Cookie cookie : decode) {
-                Set<Cookie> existingCookiesOfName = cookies.get(cookie.getName());
-                if (null == existingCookiesOfName) {
-                    existingCookiesOfName = new HashSet<Cookie>();
-                    cookies.put(cookie.getName(), existingCookiesOfName);
-                }
-                existingCookiesOfName.add(cookie);
+                cookies.add(cookie);
             }
         }
         return cookies;
