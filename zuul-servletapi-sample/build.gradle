@@ -46,7 +46,7 @@ sourceSets {
             include '**/*.java'
         }
         groovy {
-            srcDirs  = ['src/main/groovy']
+            srcDirs  = ['src/main/filters', 'src/main/groovy']
             include '**/*.groovy'
         }
     }
@@ -80,7 +80,7 @@ jettyRun.doFirst {
     System.setProperty("archaius.deployment.applicationId", "zuul")
     System.setProperty("archaius.deployment.stack", "local")
 
-    String filtersRoot = new File(projectDir, "src/main/groovy/filters").getAbsolutePath()
+    String filtersRoot = new File(projectDir, "src/main/filters").getAbsolutePath()
     System.setProperty("zuul.filters.root", filtersRoot)
 
 

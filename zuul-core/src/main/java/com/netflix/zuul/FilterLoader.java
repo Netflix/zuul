@@ -138,7 +138,7 @@ public class FilterLoader
      * @throws IOException
      */
     public boolean putFilter(File file) throws Exception {
-        String sName = file.getAbsolutePath() + file.getName();
+        String sName = file.getAbsolutePath();
         if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
             LOG.debug("reloading filter " + sName);
             filterRegistry.remove(sName);

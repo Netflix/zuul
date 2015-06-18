@@ -33,7 +33,7 @@ sourceSets {
             include '**/*.java'
         }
         groovy {
-            srcDirs  = ['src/main/groovy', 'src/test/groovy']
+            srcDirs  = ['src/main/filters', 'src/main/groovy', 'src/test/groovy']
             include '**/*.groovy'
         }
     }
