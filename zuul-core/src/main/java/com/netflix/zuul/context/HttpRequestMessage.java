@@ -27,6 +27,8 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import rx.Observable;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 /**
@@ -196,6 +198,74 @@ public class HttpRequestMessage extends ZuulMessage
         return originalRequestInfo;
     }
 
+
+    public String getOriginalHost()
+    {
+        String host = headers.getFirst("X-Forwarded-Host");
+        if (host == null) {
+            host = headers.getFirst("Host");
+            if (host == null) {
+                host = getServerName();
+            }
+        }
+        return host;
+    }
+
+    public String getOriginalScheme()
+    {
+        String scheme = headers.getFirst("X-Forwarded-Proto");
+        if (scheme == null) {
+            scheme = getScheme();
+        }
+        return scheme;
+    }
+
+    public int getOriginalPort()
+    {
+        int port;
+        String portStr = headers.getFirst("X-Forwarded-Port");
+        if (portStr == null) {
+            port = getPort();
+        }
+        else {
+            port = Integer.parseInt(portStr);
+        }
+        return port;
+    }
+
+    /**
+     * Attempt to reconstruct the full URI that the client used.
+     *
+     * @return
+     */
+    public URI reconstructURI()
+    {
+        String scheme = getOriginalScheme();
+        String host = getOriginalHost();
+
+        int port = getOriginalPort();
+        if (("http".equalsIgnoreCase(scheme) && 80 == port)
+                || ("https".equalsIgnoreCase(scheme) && 443 == port)) {
+            // Don't need to include port.
+            port = -1;
+        }
+
+        String queryStr = null;
+        if (queryParams != null && queryParams.entries().size() > 0) {
+            queryStr = queryParams.toEncodedString();
+        }
+
+        URI uri;
+        try {
+            uri = new URI(scheme, null, host, port, path, queryStr, null);
+        }
+        catch (URISyntaxException e) {
+            throw new RuntimeException("Error reconstructing request URI!", e);
+        }
+
+        return uri;
+    }
+
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
     {
@@ -228,6 +298,49 @@ public class HttpRequestMessage extends ZuulMessage
             Assert.assertEquals("/some/where", originalRequest.getPath());
             Assert.assertEquals("5", originalRequest.getQueryParams().getFirst("flag"));
             Assert.assertEquals("blah.netflix.com", originalRequest.getHeaders().getFirst("Host"));
+        }
+
+        @Test
+        public void testReconstructURI()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            Headers headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI().toString());
+
+            queryParams = new HttpQueryParams();
+            headers = new Headers();
+            headers.add("X-Forwarded-Host", "place.netflix.com");
+            headers.add("X-Forwarded-Port", "80");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "http", 7002, "localhost");
+            Assert.assertEquals("http://place.netflix.com/some/where", request.reconstructURI().toString());
+
+            queryParams = new HttpQueryParams();
+            headers = new Headers();
+            headers.add("X-Forwarded-Host", "place.netflix.com");
+            headers.add("X-Forwarded-Proto", "https");
+            headers.add("X-Forwarded-Port", "443");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "http", 7002, "localhost");
+            Assert.assertEquals("https://place.netflix.com/some/where", request.reconstructURI().toString());
+
+            queryParams = new HttpQueryParams();
+            headers = new Headers();
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "http", 7002, "localhost");
+            Assert.assertEquals("http://localhost:7002/some/where", request.reconstructURI().toString());
+
+            queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            queryParams.add("flag B", "9");
+            headers = new Headers();
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI().toString());
         }
     }
 }

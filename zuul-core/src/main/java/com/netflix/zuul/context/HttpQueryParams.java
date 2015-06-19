@@ -129,7 +129,13 @@ public class HttpQueryParams implements Cloneable
                 sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 sb.append('&');
             }
-        } catch (UnsupportedEncodingException e) {
+
+            // Remove trailing '&'.
+            if (sb.length() > 0 && '&' == sb.charAt(sb.length() - 1)) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+        }
+        catch (UnsupportedEncodingException e) {
             // Won't happen.
             e.printStackTrace();
         }
