@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import rx.Observable;
 
+import java.nio.charset.Charset;
+
 /**
  * User: michaels@netflix.com
  * Date: 2/20/15
@@ -31,6 +33,7 @@ public class ZuulMessage implements Cloneable
 {
     protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.message.body.max.size", 25 * 1000 * 1024);
+    private static final Charset CS_UTF8 = Charset.forName("UTF-8");
 
     protected final SessionContext context;
     protected final Headers headers;
@@ -68,6 +71,16 @@ public class ZuulMessage implements Cloneable
         this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
 
         this.bodyBuffered = true;
+    }
+
+    public void setBodyAsText(String bodyText, Charset cs)
+    {
+        setBody(bodyText.getBytes(cs));
+    }
+
+    public void setBodyAsText(String bodyText)
+    {
+        setBodyAsText(bodyText, CS_UTF8);
     }
 
     public Observable<byte[]> bufferBody()
