@@ -107,9 +107,9 @@ public class Headers implements Cloneable
         delegate.putAll(headers.delegate);
     }
 
-    public void remove(String name)
+    public List<String> remove(String name)
     {
-        delegate.removeAll(name.toLowerCase());
+        return delegate.removeAll(name.toLowerCase());
     }
 
     public Collection<Map.Entry<String, String>> entries()

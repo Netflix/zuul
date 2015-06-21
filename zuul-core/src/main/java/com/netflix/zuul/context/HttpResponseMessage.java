@@ -18,6 +18,9 @@ package com.netflix.zuul.context;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.stats.Timing;
+import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.ServerCookieEncoder;
 import rx.Observable;
 
 /**
@@ -72,6 +75,34 @@ public class HttpResponseMessage extends ZuulMessage
                 .finallyDo(() -> {
                     timing.end();
                 });
+    }
+
+    public Cookies parseSetCookieHeader(String setCookieValue)
+    {
+        Cookies cookies = new Cookies();
+        for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
+            cookies.add(cookie);
+        }
+        return cookies;
+    }
+
+    public boolean hasSetCookieWithName(String cookieName)
+    {
+        boolean has = false;
+        for (String setCookieValue : getHeaders().get("Set-Cookie")) {
+            for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
+                if (cookie.getName().equalsIgnoreCase(cookieName)) {
+                    has = true;
+                    break;
+                }
+            }
+        }
+        return has;
+    }
+
+    public void addSetCookie(Cookie cookie)
+    {
+        getHeaders().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
     }
 
     @Override

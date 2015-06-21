@@ -161,7 +161,7 @@ public class HttpQueryParams implements Cloneable
             qp.add("k1", "v2");
             qp.add("k2", "v3");
 
-            assertEquals("k1=v1&k1=v2&k2=v3&", qp.toEncodedString());
+            assertEquals("k1=v1&k1=v2&k2=v3", qp.toEncodedString());
         }
 
         @Test
@@ -169,11 +169,11 @@ public class HttpQueryParams implements Cloneable
         {
             HttpQueryParams qp = new HttpQueryParams();
             qp.add("k'1", "v1&");
-            assertEquals("k%271=v1%26&", qp.toEncodedString());
+            assertEquals("k%271=v1%26", qp.toEncodedString());
 
             qp = new HttpQueryParams();
             qp.add("k+", "\n");
-            assertEquals("k%2B=%0A&", qp.toEncodedString());
+            assertEquals("k%2B=%0A", qp.toEncodedString());
         }
     }
 }
