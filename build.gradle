@@ -27,6 +27,9 @@ subprojects {
     }
 
     group = "com.netflix.${githubProjectName}"
+    
+    sourceCompatibility = '1.7'
+    targetCompatibility = '1.7'
 
     sourceSets.test.java.srcDir 'src/main/java'
 
