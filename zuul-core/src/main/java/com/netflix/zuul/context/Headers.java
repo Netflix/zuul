@@ -97,6 +97,17 @@ public class Headers implements Cloneable
         delegate.put(lc_name,  value);
     }
 
+    public boolean setIfAbsent(String name, String value)
+    {
+        boolean did = false;
+        String lc_name = name.toLowerCase();
+        if (! delegate.containsKey(lc_name)) {
+            set(lc_name, value);
+            did = true;
+        }
+        return did;
+    }
+
     public void add(String name, String value)
     {
         delegate.put(name.toLowerCase(),  value);
