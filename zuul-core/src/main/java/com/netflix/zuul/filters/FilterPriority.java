@@ -7,7 +7,7 @@ package com.netflix.zuul.filters;
  */
 public enum FilterPriority
 {
-    LOW(10), NORMAL(20), HIGH(30);
+    LOW(0), NORMAL(10), HIGH(20);
 
     private final int code;
 

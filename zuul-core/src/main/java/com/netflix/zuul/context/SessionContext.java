@@ -22,7 +22,7 @@ package com.netflix.zuul.context;
  */
 
 import com.netflix.zuul.filters.FilterError;
-import com.netflix.zuul.stats.Timing;
+import com.netflix.zuul.filters.FilterPriority;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
@@ -45,6 +45,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
+    private static final String KEY_APPLY_FILTERS_PRIORITY = "_filter_priority";
 
     private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "_event_properties";
@@ -54,6 +55,9 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public SessionContext()
     {
         super();
+
+        // Default to apply filters of any priority level.
+        put(KEY_APPLY_FILTERS_PRIORITY, FilterPriority.LOW);
 
         put(KEY_TIMINGS, new Timings());
         put(KEY_FILTER_EXECS, new StringBuilder());
@@ -321,6 +325,25 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         return (String) get(KEY_ENDPOINT);
     }
 
+    /**
+     * The level of priority to use for applying filters. Only filters of specified priority
+     * and above will be applied.
+     *
+     * ie. if HIGH, then only filters of priority HIGH and above will be applied.
+     *     if LOW, then all filters will be applied.
+     *
+     * @return
+     */
+    public FilterPriority getFilterPriorityToApply() {
+        return (FilterPriority) get(KEY_APPLY_FILTERS_PRIORITY);
+    }
+    public void setFilterPriorityToApply(FilterPriority priority)
+    {
+        if (priority == null) {
+            throw new NullPointerException("Passed FilterPriority is null!");
+        }
+        set(KEY_APPLY_FILTERS_PRIORITY, priority);
+    }
 
     public void setEventProperty(String key, Object value) {
         getEventProperties().put(key, value);
