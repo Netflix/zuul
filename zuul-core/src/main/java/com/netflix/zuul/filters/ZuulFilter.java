@@ -50,6 +50,15 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     String filterType();
 
     /**
+     * The priority level for this filter.
+     *
+     * In certain circumstances, lower priority filters may not be applied.
+     *
+     * @return
+     */
+    FilterPriority getPriority();
+
+    /**
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
      */
     Observable<O> applyAsync(I input);

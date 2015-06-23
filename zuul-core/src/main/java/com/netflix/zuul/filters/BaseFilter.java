@@ -54,6 +54,18 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
         return this.getClass().getName();
     }
 
+
+    /**
+     * Default to NORMAL priority.
+     *
+     * @return
+     */
+    @Override
+    public FilterPriority getPriority()
+    {
+        return FilterPriority.NORMAL;
+    }
+
     /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
      *
