@@ -77,6 +77,10 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
 
+    public String getString(String key)
+    {
+        return (String) get(key);
+    }
 
     /**
      * Convenience method to return a boolean value for a given key
@@ -104,7 +108,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * sets a key value to Boolen.TRUE
+     * sets a key value to Boolean.TRUE
      *
      * @param key
      */
@@ -124,7 +128,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * Mkaes a copy of the RequestContext. This is used for debugging.
+     * Makes a copy of the RequestContext. This is used for debugging.
      *
      * @return
      */
