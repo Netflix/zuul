@@ -243,7 +243,7 @@ public class FilterProcessor {
             } else {
                 // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
                 // equal or above the requested.
-                FilterPriority requiredPriority = overrideFilterPriority == null ? overrideFilterPriority : msg.getContext().getFilterPriorityToApply();
+                FilterPriority requiredPriority = overrideFilterPriority == null ? msg.getContext().getFilterPriorityToApply() : overrideFilterPriority;
                 if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
                     resultObs = filter.applyAsync(msg).single();
                 } else {
@@ -388,6 +388,7 @@ public class FilterProcessor {
 
             when(filter.filterType()).thenReturn("pre");
             when(filter.shouldFilter(request)).thenReturn(true);
+            when(filter.getPriority()).thenReturn(FilterPriority.NORMAL);
         }
 
         @Test
