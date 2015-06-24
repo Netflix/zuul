@@ -71,6 +71,7 @@ public class FilterFileManager {
     @PostConstruct
     public void init() throws Exception
     {
+        filterLoader.putFiltersForClasses(config.getClassNames());
         manageFiles();
         startPoller();
     }
@@ -134,7 +135,7 @@ public class FilterFileManager {
      */
     List<File> getFiles() {
         List<File> list = new ArrayList<File>();
-        for (String sDirectory : config.getLocations()) {
+        for (String sDirectory : config.getDirectories()) {
             if (sDirectory != null) {
                 File directory = getDirectory(sDirectory);
                 File[] aFiles = directory.listFiles(config.getFilenameFilter());
@@ -174,24 +175,31 @@ public class FilterFileManager {
         }
     }
 
+
     public static class FilterFileManagerConfig
     {
-        private String[] locations;
+        private String[] directories;
+        private String[] classNames;
         private int pollingIntervalSeconds;
         private FilenameFilter filenameFilter;
 
-        public FilterFileManagerConfig(String[] locations, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
-            this.locations = locations;
+        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
+            this.directories = directories;
+            this.classNames = classNames;
             this.pollingIntervalSeconds = pollingIntervalSeconds;
             this.filenameFilter = filenameFilter;
         }
 
-        public FilterFileManagerConfig(String[] locations, int pollingIntervalSeconds) {
-            this(locations, pollingIntervalSeconds, new GroovyFileFilter());
+        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds) {
+            this(directories, classNames, pollingIntervalSeconds, new GroovyFileFilter());
         }
 
-        public String[] getLocations() {
-            return locations;
+        public String[] getDirectories() {
+            return directories;
+        }
+        public String[] getClassNames()
+        {
+            return classNames;
         }
         public int getPollingIntervalSeconds() {
             return pollingIntervalSeconds;
@@ -203,27 +211,29 @@ public class FilterFileManager {
 
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
+    public static class UnitTest
+    {
         @Mock
         private File nonGroovyFile;
         @Mock
         private File groovyFile;
-
         @Mock
         private File directory;
+        @Mock
+        private FilterLoader filterLoader;
 
         @Before
         public void before() {
             MockitoAnnotations.initMocks(this);
         }
 
-
         @Test
         public void testFileManagerInit() throws Exception
         {
-            FilterFileManagerConfig config = new FilterFileManagerConfig(new String[]{"test", "test1"}, 1);
+            FilterFileManagerConfig config = new FilterFileManagerConfig(new String[]{"test", "test1"}, new String[]{"com.netflix.blah.SomeFilter"}, 1);
             FilterFileManager manager = new FilterFileManager();
             manager.config = config;
+            manager.filterLoader = filterLoader;
 
             manager = spy(manager);
             doNothing().when(manager).manageFiles();
@@ -232,9 +242,6 @@ public class FilterFileManager {
             verify(manager, atLeast(1)).manageFiles();
             verify(manager, times(1)).startPoller();
             assertNotNull(manager.poller);
-
         }
-
     }
-
 }

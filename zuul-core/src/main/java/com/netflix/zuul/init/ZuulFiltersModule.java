@@ -49,8 +49,19 @@ public class ZuulFiltersModule extends AbstractModule
             LOG.info("  " + location);
         }
 
+        // Get compiled filter classes to be found on classpath.
+        String[] filterClassNames = config.getStringArray("zuul.filters.classes");
+        if (filterClassNames == null) {
+            filterClassNames = new String[0];
+        }
+        LOG.info("Using filter classnames: ");
+        for (String className : filterClassNames) {
+            LOG.info("  " + className);
+        }
+
         // Init the FilterStore.
-        FilterFileManager.FilterFileManagerConfig filterConfig = new FilterFileManager.FilterFileManagerConfig(filterLocations, 5);
+        FilterFileManager.FilterFileManagerConfig filterConfig =
+                new FilterFileManager.FilterFileManagerConfig(filterLocations, filterClassNames, 5);
         bind(FilterFileManager.FilterFileManagerConfig.class).toInstance(filterConfig);
         bind(FilterUsageNotifier.class).to(FilterProcessor.BasicFilterUsageNotifier.class);
 

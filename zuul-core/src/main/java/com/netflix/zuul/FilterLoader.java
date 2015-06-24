@@ -148,21 +148,54 @@ public class FilterLoader
             Class clazz = compiler.compile(file);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = FILTER_FACTORY.newInstance(clazz);
-                List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
-                if (list != null) {
-                    hashFiltersByType.remove(filter.filterType()); //rebuild this list
-                }
-
-                String nameAndType = filter.filterType() + ":" + filter.filterName();
-                filtersByNameAndType.put(nameAndType, filter);
-
-                filterRegistry.put(file.getAbsolutePath() + file.getName(), filter);
-                filterClassLastModified.put(sName, file.lastModified());
+                putFilter(sName, filter, file.lastModified());
                 return true;
             }
         }
 
         return false;
+    }
+
+    private void putFilter(String sName, ZuulFilter filter, long lastModified)
+    {
+        List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
+        if (list != null) {
+            hashFiltersByType.remove(filter.filterType()); //rebuild this list
+        }
+
+        String nameAndType = filter.filterType() + ":" + filter.filterName();
+        filtersByNameAndType.put(nameAndType, filter);
+
+        filterRegistry.put(sName, filter);
+        filterClassLastModified.put(sName, lastModified);
+    }
+
+    public List<ZuulFilter> putFiltersForClasses(String[] classNames)
+    {
+        ArrayList<ZuulFilter> newFilters = new ArrayList<>();
+        for (String className : classNames)
+        {
+            try {
+                newFilters.add(putFilterForClassName(className));
+            }
+            catch (Exception e) {
+                LOG.error("Error putting filter for className=" + className, e);
+            }
+        }
+        return newFilters;
+    }
+
+    public ZuulFilter putFilterForClassName(String className) throws ClassNotFoundException, Exception
+    {
+        Class clazz = Class.forName(className);
+        if (! ZuulFilter.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("Specified filter class does not implement ZuulFilter interface!");
+        }
+        else {
+            ZuulFilter filter = FILTER_FACTORY.newInstance(clazz);
+            putFilter(className, filter, System.currentTimeMillis());
+            return filter;
+        }
     }
 
     /**
