@@ -19,6 +19,6 @@ import rx.Observable;
 
 public interface SessionContextFactory<T, V>
 {
-    public Observable<ZuulMessage> create(SessionContext context, T nativeRequest);
+    public ZuulMessage create(SessionContext context, T nativeRequest);
     public Observable<ZuulMessage> write(ZuulMessage msg, V nativeResponse);
 }

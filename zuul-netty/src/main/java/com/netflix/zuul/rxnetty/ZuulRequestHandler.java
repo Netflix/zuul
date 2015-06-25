@@ -65,7 +65,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
 
 
     @Override
-    public Observable<Void> handle(HttpServerRequest<ByteBuf> request, HttpServerResponse<ByteBuf> response)
+    public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse)
     {
         // Setup the context for this request.
         SessionContext context = new SessionContext();
@@ -75,15 +75,16 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         }
 
         // Build a ZuulMessage from the netty request.
-        Observable<ZuulMessage> chain = contextFactory.create(context, request);
+        ZuulMessage request = contextFactory.create(context, nettyRequest);
 
         // Start timing the request.
-        chain = chain.doOnNext(msg -> {
-            msg.getContext().getTimings().getRequest().start();
-        });
+        request.getContext().getTimings().getRequest().start();
+
+        // Create initial chain.
+        Observable<ZuulMessage> chain = Observable.just(request);
 
         // Choose if this is a Healtcheck request, or a normal request, and build the chain accordingly.
-        if (request.getHttpMethod().equals(HttpMethod.GET) && request.getUri().startsWith("/healthcheck")) {
+        if (nettyRequest.getHttpMethod().equals(HttpMethod.GET) && nettyRequest.getUri().startsWith("/healthcheck")) {
             // Handle healthcheck requests.
             // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
             chain = chain.map(msg -> healthCheckHandler.handle((HttpRequestMessage) msg) );
@@ -99,7 +100,7 @@ public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
         }
 
         // After the request is handled, write out the response.
-        chain = chain.flatMap(msg -> contextFactory.write(msg, response));
+        chain = chain.flatMap(msg -> contextFactory.write(msg, nettyResponse));
 
         // After complete, update metrics and access log.
         chain = chain.map(msg -> {

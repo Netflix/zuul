@@ -40,7 +40,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
     private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
 
     @Override
-    public Observable<ZuulMessage> create(SessionContext context, HttpServerRequest httpServerRequest)
+    public ZuulMessage create(SessionContext context, HttpServerRequest httpServerRequest)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
@@ -102,7 +102,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
     }
 
 
-    private Observable<ZuulMessage> wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
+    private ZuulMessage wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
     {
         //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
         UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
@@ -111,7 +111,8 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
 
         request.setBodyStream(cachedContent);
-        return Observable.just(request);
+
+        return request;
     }
 
     private Headers copyHeaders(HttpServerRequest httpServerRequest)

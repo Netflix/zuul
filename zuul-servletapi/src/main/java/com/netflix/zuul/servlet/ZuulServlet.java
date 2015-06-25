@@ -92,35 +92,56 @@ public class ZuulServlet extends HttpServlet {
             }
 
             // Build a ZuulMessage from the servlet request.
-            Observable<ZuulMessage> chain = contextFactory.create(context, servletRequest);
+            ZuulMessage request = contextFactory.create(context, servletRequest);
+
+            // Start timing the request.
+            request.getContext().getTimings().getRequest().start();
+
+            // Create initial chain.
+            Observable<ZuulMessage> chain = Observable.just(request);
 
             // Apply the filters to the chain.
             chain = processor.applyInboundFilters(chain);
             chain = processor.applyEndpointFilter(chain);
             chain = processor.applyOutboundFilters(chain);
 
-            // Execute and convert to blocking to get the resulting SessionContext.
-            HttpResponseMessage response = (HttpResponseMessage) chain.single().toBlocking().first();
-
-            // Store this response as an attribute for any later ServletFilters that may want access to info in it.
-            servletRequest.setAttribute("_zuul_response", response);
-
-            // Write out the built response message to the HttpServletResponse.
+            HttpResponseMessage response = null;
             try {
-                contextFactory.write(response, servletResponse);
-            }
-            catch (Exception e) {
-                LOG.error("Error writing response message!", e);
-                throw new ServletException("Error writing response message!", e);
-            }
+                // Execute and convert to blocking to get the resulting SessionContext.
+                try {
+                    response = (HttpResponseMessage) chain.single().toBlocking().first();
+                }
+                catch (Exception e) {
+                    LOG.error("Unexpected error in processing the zuul filter chain!", e);
 
-            // Notify requestComplete listener if configured.
-            try {
-                if (requestCompleteHandler != null)
-                    requestCompleteHandler.handle(response);
+                    // Generate a default error response to be sent to client.
+                    response = new HttpResponseMessage(context, (HttpRequestMessage) request, 500);
+                }
+
+                // Store this response as an attribute for any later ServletFilters that may want access to info in it.
+                servletRequest.setAttribute("_zuul_response", response);
+
+                // Write out the built response message to the HttpServletResponse.
+                try {
+                    contextFactory.write(response, servletResponse);
+                }
+                catch (Exception e) {
+                    LOG.error("Error writing response message!", e);
+                    throw new ServletException("Error writing response message!", e);
+                }
             }
-            catch (Exception e) {
-                LOG.error("Error in RequestCompleteHandler.", e);
+            finally {
+                // Stop the request timer.
+                context.getTimings().getRequest().end();
+
+                // Notify requestComplete listener if configured.
+                try {
+                    if (requestCompleteHandler != null && response != null)
+                        requestCompleteHandler.handle(response);
+                }
+                catch (Exception e) {
+                    LOG.error("Error in RequestCompleteHandler.", e);
+                }
             }
         }
         catch (Throwable e) {

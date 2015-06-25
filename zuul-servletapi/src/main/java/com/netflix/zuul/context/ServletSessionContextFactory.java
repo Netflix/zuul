@@ -40,7 +40,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
 
     @Override
-    public Observable<ZuulMessage> create(SessionContext context, HttpServletRequest servletRequest)
+    public ZuulMessage create(SessionContext context, HttpServletRequest servletRequest)
     {
         // Parse the headers.
         Headers reqHeaders = new Headers();
@@ -90,8 +90,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             request.setBodyStream(bodyObs);
         }
 
-        // Wrap in an Observable.
-        return Observable.just(request);
+        return request;
     }
 
     private void copyServletRequestAttributes(SessionContext context, HttpServletRequest servletRequest)
