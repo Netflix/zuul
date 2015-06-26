@@ -177,8 +177,8 @@ public class HttpRequestMessage extends ZuulMessage
     public String getInfoForLogging()
     {
         StringBuilder sb = new StringBuilder()
-                .append("url=").append(getPathAndQuery())
-                .append(",host=").append(String.valueOf(getHeaders().getFirst("Host")))
+                .append("uri=").append(reconstructURI().toString())
+                .append(", method=").append(getMethod())
                 ;
         return sb.toString();
     }
