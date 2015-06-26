@@ -27,6 +27,8 @@ import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.origins.OriginManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.Map;
@@ -42,6 +44,10 @@ import static com.netflix.zuul.constants.ZuulConstants.*;
 @Singleton
 public class RibbonOriginManager implements OriginManager
 {
+    private static final Logger LOG = LoggerFactory.getLogger(RibbonOriginManager.class);
+
+    private static DynamicStringProperty RIBBON_NAMESPACE = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon");
+
     private final Map<String, Origin> origins = new ConcurrentHashMap<>();
 
     @WarmUp
@@ -70,11 +76,8 @@ public class RibbonOriginManager implements OriginManager
             // Setup the other configured origins.
             String clientPropertyList = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_NIWS_CLIENTLIST, "").get();
             String[] aClientList = clientPropertyList.split("\\|");
-            String namespace = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon").get();
             for (String client : aClientList) {
-                DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(client, namespace);
-                ClientFactory.registerClientFromProperties(client, clientConfig);
-                origins.put(client, new RibbonOrigin(client));
+                initOrigin(RIBBON_NAMESPACE.get(), client);
             }
         }
         catch (ClientException e) {
@@ -82,9 +85,28 @@ public class RibbonOriginManager implements OriginManager
         }
     }
 
+    private void initOrigin(String namespace, String name) throws ClientException
+    {
+        DefaultClientConfigImpl clientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(name, namespace);
+        ClientFactory.registerClientFromProperties(name, clientConfig);
+        origins.put(name, new RibbonOrigin(name));
+    }
+
     @Override
     public Origin getOrigin(String name)
     {
         return origins.get(name);
+    }
+
+    @Override
+    public Origin createOrigin(String name, String vip)
+    {
+        try {
+            initOrigin(RIBBON_NAMESPACE.get(), name);
+        }
+        catch (ClientException e) {
+            LOG.error("Error initializing Ribbon client! name={}", name, e);
+        }
+        return getOrigin(name);
     }
 }

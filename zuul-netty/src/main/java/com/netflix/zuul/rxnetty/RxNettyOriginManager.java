@@ -75,14 +75,7 @@ public class RxNettyOriginManager implements OriginManager
                     if (vip.length() > 0) {
                         LOG.info("Registering Origin for vip=" + vip);
                         try {
-                            LoadBalancer lb = loadBalancerFactory.create(vip);
-
-                            OriginStats originStats = null;
-                            if (originStatsFactory != null) {
-                                originStats = originStatsFactory.create(originName);
-                            }
-
-                            this.origins.put(originName, new RxNettyOrigin(originName, vip, lb, originStats, metricEventsListenerFactory));
+                            initOrigin(originName, vip);
                         }
                         catch (Exception e) {
                             // TODO - resolve why this is failing on first attempts at startup.
@@ -99,6 +92,18 @@ public class RxNettyOriginManager implements OriginManager
         }
     }
 
+    private void initOrigin(String originName, String vip)
+    {
+        LoadBalancer lb = loadBalancerFactory.create(vip);
+
+        OriginStats originStats = null;
+        if (originStatsFactory != null) {
+            originStats = originStatsFactory.create(originName);
+        }
+
+        this.origins.put(originName, new RxNettyOrigin(originName, vip, lb, originStats, metricEventsListenerFactory));
+    }
+
     @Override
     public Origin getOrigin(String name)
     {
@@ -107,5 +112,12 @@ public class RxNettyOriginManager implements OriginManager
         } else {
             return origins.get(name);
         }
+    }
+
+    @Override
+    public Origin createOrigin(String name, String vip)
+    {
+        initOrigin(name, vip);
+        return getOrigin(name);
     }
 }
