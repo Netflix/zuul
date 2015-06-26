@@ -137,6 +137,11 @@ public class Headers implements Cloneable
         return delegate.containsEntry(name.toLowerCase(), value);
     }
 
+    public int size()
+    {
+        return delegate.size();
+    }
+
     @Override
     public Headers clone()
     {
