@@ -36,7 +36,7 @@ public class ZuulMessage implements Cloneable
     private static final Charset CS_UTF8 = Charset.forName("UTF-8");
 
     protected final SessionContext context;
-    protected final Headers headers;
+    protected Headers headers;
     protected Observable<ByteBuf> bodyStream = null;
     protected boolean bodyBuffered = false;
     protected byte[] body = null;
@@ -56,6 +56,10 @@ public class ZuulMessage implements Cloneable
 
     public Headers getHeaders() {
         return headers;
+    }
+
+    public void setHeaders(Headers newHeaders) {
+        this.headers = newHeaders;
     }
 
     public byte[] getBody()
