@@ -59,6 +59,5 @@
   "org.mortbay.jetty.alpn:alpn-boot": { "locked": "8.1.3.v20150130", "firstLevelTransitive": [ "com.netflix.zuul:zuul-jetty-sample" ] },
   "org.ow2.asm:asm": { "locked": "5.0.3", "firstLevelTransitive": [ "com.netflix.zuul:zuul-netflix-webapp" ] },
   "org.ow2.asm:asm-all": { "locked": "5.0.3", "firstLevelTransitive": [ "com.netflix.zuul:zuul-netflix-webapp" ] },
-  "org.powermock:powermock-api-mockito": { "locked": "1.5.4", "firstLevelTransitive": [ "com.netflix.zuul:zuul-core" ] },
   "org.slf4j:slf4j-api": { "locked": "1.7.7", "firstLevelTransitive": [ "com.netflix.zuul:zuul-core" ] }
 }

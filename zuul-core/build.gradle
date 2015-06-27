@@ -33,7 +33,6 @@ dependencies {
     compile "com.netflix.governator:governator:1.6.+"
     compile "com.netflix.governator:governator-archaius:1.6.+"
 
-    compile 'org.powermock:powermock-api-mockito:1.5.4'
     compile 'junit:junit-dep:4.10'
 }
 
