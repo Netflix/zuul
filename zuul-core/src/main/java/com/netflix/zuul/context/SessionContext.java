@@ -48,7 +48,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final String KEY_APPLY_FILTERS_PRIORITY = "_filter_priority";
 
     private static final String KEY_TIMINGS = "_timings";
-    private static final String KEY_EVENT_PROPS = "_event_properties";
+    private static final String KEY_EVENT_PROPS = "eventProperties";
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
