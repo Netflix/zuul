@@ -66,4 +66,16 @@ public class Cookies
         }
         return found.get(0);
     }
+
+    public String getFirstValue(String name)
+    {
+        Cookie c = getFirst(name);
+        String value;
+        if (c != null) {
+            value = c.getValue();
+        } else {
+            value = null;
+        }
+        return value;
+    }
 }
