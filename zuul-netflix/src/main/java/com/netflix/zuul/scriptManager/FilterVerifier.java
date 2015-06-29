@@ -47,12 +47,12 @@ public class FilterVerifier {
      *
      * @param sFilterCode
      * @return a FilterInfo object representing that code
-     * @throws org.codehaus.groovy.control.CompilationFailedException
+     * @throws CompilationFailedException
      *
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public FilterInfo verifyFilter(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException, IllegalAccessException, InstantiationException {
+    public FilterInfo verifyFilter(String sFilterCode) throws CompilationFailedException, IllegalAccessException, InstantiationException {
         Class groovyClass = compileGroovy(sFilterCode);
         Object instance = instanciateClass(groovyClass);
         checkZuulFilterInstance(instance);
@@ -79,10 +79,10 @@ public class FilterVerifier {
      *
      * @param sFilterCode
      * @return
-     * @throws org.codehaus.groovy.control.CompilationFailedException
+     * @throws CompilationFailedException
      *
      */
-    public Class compileGroovy(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException {
+    public Class compileGroovy(String sFilterCode) throws CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);
     }
@@ -277,5 +277,3 @@ public class FilterVerifier {
     }
 
 }
-
-
