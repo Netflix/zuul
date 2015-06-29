@@ -2,7 +2,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile 'commons-io:commons-io:2.4'
-    compile 'org.codehaus.groovy:groovy-all:2.3.1'
+    compile 'org.codehaus.groovy:groovy-all:2.3.6'
     compile 'org.mockito:mockito-all:1.9.5'
     compile 'org.slf4j:slf4j-api:1.7.6'
     
