@@ -58,10 +58,7 @@ public class FilterVerifier {
         checkZuulFilterInstance(instance);
         ZuulFilter filter = (ZuulFilter) instance;
 
-
-        String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
-
-        return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" + filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
+        return new FilterInfo(sFilterCode, groovyClass.getSimpleName(), filter);
     }
 
     Object instanciateClass(Class groovyClass) throws InstantiationException, IllegalAccessException {
