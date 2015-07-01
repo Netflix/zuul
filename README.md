@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/charleswhchan/zuul.svg?branch=1.x)](https://travis-ci.org/charleswhchan/zuul)
+
 zuul
 ====
 
