@@ -132,6 +132,11 @@ public class Headers implements Cloneable
         return delegate.keySet();
     }
 
+    public boolean contains(String name)
+    {
+        return delegate.containsKey(name.toLowerCase());
+    }
+
     public boolean contains(String name, String value)
     {
         return delegate.containsEntry(name.toLowerCase(), value);
