@@ -1,4 +1,11 @@
 
+
+configurations.all {
+    // Excluding the servlet 3.+ module as the module naming changed with it, so we were getting both servlet-api 3.+ AND 2.5
+    // included in classpath due to transitive deps.
+    exclude group: 'javax.servlet', module: 'javax.servlet-api'
+}
+
 dependencies {
     compile project(':zuul-core')
     provided 'javax.servlet:servlet-api:2.5'
