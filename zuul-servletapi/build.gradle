@@ -8,5 +8,13 @@ configurations.all {
 
 dependencies {
     compile project(':zuul-core')
-    provided 'javax.servlet:servlet-api:2.5'
+    provided ('javax.servlet:servlet-api:2.5') {
+        // HACK to get around some weirdness where some javax.servlet:3.0.1 dependency is shown with mayny transitive dependencies which -
+        // due to how provided works - excluded some dependencies that we do actually need....
+        transitive = false
+    }
+
+    provided "junit:junit:latest.release"
+    provided 'junit:junit-dep:latest.release'
+    provided 'org.mockito:mockito-all:1.9.+'
 }

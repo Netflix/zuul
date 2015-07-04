@@ -31,7 +31,10 @@ dependencies {
     runtime 'org.apache.xbean:xbean-finder:3.17'
 
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
-    providedCompile 'junit:junit-dep:4.10'
+
+    provided "junit:junit:latest.release"
+    provided 'junit:junit-dep:latest.release'
+    provided 'org.mockito:mockito-all:1.9.+'
 
     testCompile("org.spockframework:spock-core:1.0-groovy-2.3")
     testCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")

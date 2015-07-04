@@ -4,36 +4,33 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'commons-fileupload:commons-fileupload:1.3'
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
-    compile 'org.mockito:mockito-all:1.9.5'
     compile 'org.slf4j:slf4j-api:1.7.6'
     compile 'org.json:json:20090211'
 
     compile 'com.netflix.archaius:archaius-core:0.6.0'
     compile 'com.netflix.servo:servo-core:0.7.2'
-    compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
 
     compile 'com.netflix.astyanax:astyanax-cassandra:1.56.48'
     compile 'com.netflix.astyanax:astyanax-thrift:1.56.48'
-    compile 'com.netflix.hystrix:hystrix-core:1.4.7'
+    compile 'com.netflix.hystrix:hystrix-core:1.4.+'
     compile 'com.netflix.ribbon:ribbon-core:2.0.0'
     compile 'com.netflix.ribbon:ribbon-eureka:2.0.0'
     compile 'com.netflix.ribbon:ribbon-httpclient:2.0.0'
     compile 'com.netflix.turbine:turbine-core:[0.4,)'
-    compile(group: 'io.reactivex', name: 'rxjava-string', version: '1.0.+')
+    compile "io.reactivex:rxjava-string:1.0.+"
 
 
     // TEMP - ensure using same version as zuul-netty.
-    compile "io.netty:netty-common:${versions_netty}"
-    compile "io.netty:netty-codec:${versions_netty}"
-    compile "io.netty:netty-transport:${versions_netty}"
+    //compile "io.netty:netty-common:${versions_netty}"
     compile "io.netty:netty-buffer:${versions_netty}"
-    compile "io.netty:netty-transport-native-epoll:${versions_netty}"
 
     // To ensure that zuul-netty gets this correct later version.
     compile "com.netflix.governator:governator:1.6.+"
     compile "com.netflix.governator:governator-archaius:1.6.+"
 
-    compile 'junit:junit-dep:4.10'
+    provided "junit:junit:latest.release"
+    provided 'junit:junit-dep:latest.release'
+    provided 'org.mockito:mockito-all:1.9.+'
 }
 
 jar {
