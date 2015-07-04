@@ -1,18 +1,6 @@
 
-
-configurations.all {
-    // Excluding the servlet 3.+ module as the module naming changed with it, so we were getting both servlet-api 3.+ AND 2.5
-    // included in classpath due to transitive deps.
-    exclude group: 'javax.servlet', module: 'javax.servlet-api'
-}
-
 dependencies {
     compile project(':zuul-core')
-    provided ('javax.servlet:servlet-api:2.5') {
-        // HACK to get around some weirdness where some javax.servlet:3.0.1 dependency is shown with mayny transitive dependencies which -
-        // due to how provided works - excluded some dependencies that we do actually need....
-        transitive = false
-    }
 
     compile "junit:junit:latest.release"
     compile 'org.mockito:mockito-all:1.9.+'
