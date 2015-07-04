@@ -14,7 +14,6 @@ dependencies {
         transitive = false
     }
 
-    provided "junit:junit:latest.release"
-    provided 'junit:junit-dep:latest.release'
-    provided 'org.mockito:mockito-all:1.9.+'
+    compile "junit:junit:latest.release"
+    compile 'org.mockito:mockito-all:1.9.+'
 }

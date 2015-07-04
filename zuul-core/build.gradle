@@ -28,9 +28,8 @@ dependencies {
     compile "com.netflix.governator:governator:1.6.+"
     compile "com.netflix.governator:governator-archaius:1.6.+"
 
-    provided "junit:junit:latest.release"
-    provided 'junit:junit-dep:latest.release'
-    provided 'org.mockito:mockito-all:1.9.+'
+    compile "junit:junit:latest.release"
+    compile 'org.mockito:mockito-all:1.9.+'
 }
 
 jar {
