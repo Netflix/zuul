@@ -198,12 +198,24 @@ public class HttpRequestMessage extends ZuulMessage
         return originalRequestInfo;
     }
 
-
+    /**
+     * The originally request host. This will NOT include port.
+     *
+     * The Host header may contain port, but in this method we strip it out for consistency - use the
+     * getOriginalPort method for that.
+     *
+     * @return
+     */
     public String getOriginalHost()
     {
         String host = headers.getFirst("X-Forwarded-Host");
         if (host == null) {
             host = headers.getFirst("Host");
+            if (host != null) {
+                // Host header may have a trailing port. Strip that out if it does.
+                host = host.split(":")[0];
+            }
+
             if (host == null) {
                 host = getServerName();
             }
@@ -225,7 +237,20 @@ public class HttpRequestMessage extends ZuulMessage
         int port;
         String portStr = headers.getFirst("X-Forwarded-Port");
         if (portStr == null) {
-            port = getPort();
+            // Check if port was specified on a Host header.
+            String hostHeader = headers.getFirst("Host");
+            if (hostHeader != null) {
+                String[] hostParts = hostHeader.split(":");
+                if (hostParts.length == 2) {
+                    port = Integer.parseInt(hostParts[1]);
+                }
+                else {
+                    port = getPort();
+                }
+            }
+            else {
+                port = getPort();
+            }
         }
         else {
             port = Integer.parseInt(portStr);
@@ -341,6 +366,66 @@ public class HttpRequestMessage extends ZuulMessage
             request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
             Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI().toString());
+        }
+
+        @Test
+        public void testGetOriginalHost()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            Headers headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("blah.netflix.com", request.getOriginalHost());
+
+            headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            headers.add("X-Forwarded-Host", "foo.netflix.com");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("foo.netflix.com", request.getOriginalHost());
+
+            headers = new Headers();
+            headers.add("X-Forwarded-Host", "foo.netflix.com");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("foo.netflix.com", request.getOriginalHost());
+
+            headers = new Headers();
+            headers.add("Host", "blah.netflix.com:8080");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals("blah.netflix.com", request.getOriginalHost());
+        }
+
+        @Test
+        public void testGetOriginalPort()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            Headers headers = new Headers();
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals(7002, request.getOriginalPort());
+
+            headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            headers.add("X-Forwarded-Port", "443");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals(443, request.getOriginalPort());
+
+            headers = new Headers();
+            headers.add("Host", "blah.netflix.com:443");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals(443, request.getOriginalPort());
+
+            headers = new Headers();
+            headers.add("Host", "blah.netflix.com:443");
+            headers.add("X-Forwarded-Port", "7005");
+            request = new HttpRequestMessage(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost");
+            Assert.assertEquals(7005, request.getOriginalPort());
         }
     }
 }
