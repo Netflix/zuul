@@ -107,7 +107,16 @@ public class FilterProcessor {
                     String errorStr = "No error filter found of chosen name! name=" + endpointName;
                     LOG.error("Errored but no error filter found, so sent default error response. " + errorStr, context.getError());
 
-                    HttpResponseMessage response = new HttpResponseMessage(msg.getContext(), (HttpRequestMessage) msg, 500);
+                    // Pull out the request object to use for building a new response.
+                    HttpRequestMessage request;
+                    if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
+                        request = ((HttpResponseMessage) msg).getRequest();
+                    } else {
+                        request = (HttpRequestMessage) msg;
+                    }
+
+                    // Build the error response.
+                    HttpResponseMessage response = new HttpResponseMessage(msg.getContext(), request, 500);
                     response.getHeaders().set("X-Zuul-Error-Cause", errorStr);
 
                     return Observable.just(response);
