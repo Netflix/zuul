@@ -137,20 +137,27 @@ public class FilterLoader
      * @throws InstantiationException
      * @throws IOException
      */
-    public boolean putFilter(File file) throws Exception {
-        String sName = file.getAbsolutePath();
-        if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
-            LOG.debug("reloading filter " + sName);
-            filterRegistry.remove(sName);
-        }
-        ZuulFilter filter = filterRegistry.get(sName);
-        if (filter == null) {
-            Class clazz = compiler.compile(file);
-            if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = FILTER_FACTORY.newInstance(clazz);
-                putFilter(sName, filter, file.lastModified());
-                return true;
+    public boolean putFilter(File file) throws Exception
+    {
+        try {
+            String sName = file.getAbsolutePath();
+            if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
+                LOG.debug("reloading filter " + sName);
+                filterRegistry.remove(sName);
             }
+            ZuulFilter filter = filterRegistry.get(sName);
+            if (filter == null) {
+                Class clazz = compiler.compile(file);
+                if (!Modifier.isAbstract(clazz.getModifiers())) {
+                    filter = FILTER_FACTORY.newInstance(clazz);
+                    putFilter(sName, filter, file.lastModified());
+                    return true;
+                }
+            }
+        }
+        catch (Exception e) {
+            LOG.error("Error loading filter! Continuing. file=" + String.valueOf(file), e);
+            return false;
         }
 
         return false;
