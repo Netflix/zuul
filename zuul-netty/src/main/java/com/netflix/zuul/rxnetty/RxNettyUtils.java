@@ -46,6 +46,9 @@ public class RxNettyUtils
             zuulRespHeaders.add(entry.getKey(), entry.getValue());
         }
 
+        // Store this original response info for future reference (ie. for metrics and access logging purposes).
+        zuulResp.storeOriginalResponseInfo();
+
         return zuulResp;
     }
 

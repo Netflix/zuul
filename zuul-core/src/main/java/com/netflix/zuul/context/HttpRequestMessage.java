@@ -183,7 +183,7 @@ public class HttpRequestMessage extends ZuulMessage
         return sb.toString();
     }
 
-    public HttpRequestInfo copyRequestInfo()
+    protected HttpRequestInfo copyRequestInfo()
     {
         return new HttpRequestInfo(protocol, method, path, queryParams.clone(), headers.clone(), clientIp, scheme, port);
     }

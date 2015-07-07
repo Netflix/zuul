@@ -35,6 +35,7 @@ public class HttpResponseMessage extends ZuulMessage
 
     private HttpRequestMessage request;
     private int status;
+    private HttpResponseInfo originalResponse = null;
 
     public HttpResponseMessage(SessionContext context, HttpRequestMessage request, int defaultStatus)
     {
@@ -119,5 +120,20 @@ public class HttpResponseMessage extends ZuulMessage
                 .append(",proxy-status=").append(getStatus())
                 ;
         return sb.toString();
+    }
+
+    protected HttpResponseInfo copyResponseInfo()
+    {
+        return new HttpResponseInfo(status, headers.clone());
+    }
+
+    public void storeOriginalResponseInfo()
+    {
+        originalResponse = copyResponseInfo();
+    }
+
+    public HttpResponseInfo getOriginalResponseInfo()
+    {
+        return originalResponse;
     }
 }
