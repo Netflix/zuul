@@ -16,6 +16,7 @@
 package com.netflix.zuul.context;
 
 import com.netflix.zuul.bytebuf.ByteBufUtils;
+import com.netflix.zuul.exception.ZuulException;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,16 +84,23 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         if (bodyInput != null) {
             Observable<ByteBuf> bodyObs = ByteBufUtils.fromInputStream(bodyInput);
             bodyObs = bodyObs.doOnError((e) -> {
-                    if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {
-                        // This can happen if the request body is smaller than the size specified in the
-                        // Content-Length header, and using tomcat APR connector.
-                        LOG.error("SocketTimeoutException reading request body from inputstream. error="
-                                + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
-                    }
-                    else {
-                        LOG.error("Error reading request body from inputstream. error="
-                                + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
-                    }
+                if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {
+                    // This can happen if the request body is smaller than the size specified in the
+                    // Content-Length header, and using tomcat APR connector.
+                    LOG.error("SocketTimeoutException reading request body from inputstream. error="
+                            + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
+                }
+                else {
+                    LOG.error("Error reading request body from inputstream. error="
+                            + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
+                }
+
+                // Store the exception, and flag to respond to client with an error. As we don't want
+                // to attempt proxying if we failed to read the body.
+                ZuulException ze = new ZuulException(e.getMessage(), e, "TIMEOUT_READING_REQ_BODY");
+                ze.setStatusCode(400);
+                request.getContext().setError(ze);
+                request.getContext().setShouldSendErrorResponse(true);
             });
             request.setBodyStream(bodyObs);
         }
