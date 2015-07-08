@@ -69,14 +69,9 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         request.storeOriginalRequestInfo();
 
         // Get the inputstream of body.
-        InputStream bodyInput = null;
+        InputStream bodyInput;
         try {
             bodyInput = servletRequest.getInputStream();
-        }
-        catch (SocketTimeoutException e) {
-            // This can happen if the request body is smaller than the size specified in the
-            // Content-Length header, and using tomcat APR connector.
-            LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
         }
         catch (IOException e) {
             String errorMsg = "Error reading ServletInputStream.";
@@ -87,6 +82,18 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         // Wrap the ServletInputStream(body) in an Observable.
         if (bodyInput != null) {
             Observable<ByteBuf> bodyObs = ByteBufUtils.fromInputStream(bodyInput);
+            bodyObs = bodyObs.doOnError((e) -> {
+                    if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {
+                        // This can happen if the request body is smaller than the size specified in the
+                        // Content-Length header, and using tomcat APR connector.
+                        LOG.error("SocketTimeoutException reading request body from inputstream. error="
+                                + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
+                    }
+                    else {
+                        LOG.error("Error reading request body from inputstream. error="
+                                + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
+                    }
+            });
             request.setBodyStream(bodyObs);
         }
 
