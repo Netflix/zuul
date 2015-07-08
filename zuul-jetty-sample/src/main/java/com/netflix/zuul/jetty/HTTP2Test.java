@@ -65,7 +65,7 @@ public class HTTP2Test extends AbstractTest
 //        }
 //    }
 
-    @Test
+    //@Test
     public void testRequestNoContentResponseContent() throws Exception
     {
         final byte[] content = "Hello World!".getBytes(StandardCharsets.UTF_8);
@@ -114,7 +114,7 @@ public class HTTP2Test extends AbstractTest
         Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
     }
 
-    @Test
+    //@Test
     public void testMultipleRequests() throws Exception
     {
         final String downloadBytes = "X-Download";
@@ -158,7 +158,7 @@ public class HTTP2Test extends AbstractTest
     }
 
 
-    @Test
+    //@Test
     public void testPush() throws Exception
     {
         final byte[] content = "Hello World!".getBytes(StandardCharsets.UTF_8);
