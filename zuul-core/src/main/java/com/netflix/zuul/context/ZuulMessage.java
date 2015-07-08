@@ -77,6 +77,11 @@ public class ZuulMessage implements Cloneable
         this.bodyBuffered = true;
     }
 
+    public boolean hasBody()
+    {
+        return bodyStream != null;
+    }
+
     public void setBodyAsText(String bodyText, Charset cs)
     {
         setBody(bodyText.getBytes(cs));
