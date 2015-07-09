@@ -154,4 +154,19 @@ public class Headers implements Cloneable
         copy.delegate.putAll(this.delegate);
         return copy;
     }
+
+    @Override
+    public int hashCode()
+    {
+        return delegate.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj != null && obj instanceof Headers) {
+            return delegate.equals(((Headers) obj).delegate);
+        }
+        return false;
+    }
 }

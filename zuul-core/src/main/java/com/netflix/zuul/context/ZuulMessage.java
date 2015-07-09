@@ -20,9 +20,14 @@ import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 import rx.Observable;
 
 import java.nio.charset.Charset;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: michaels@netflix.com
@@ -129,7 +134,10 @@ public class ZuulMessage implements Cloneable
     public ZuulMessage clone()
     {
         ZuulMessage copy = new ZuulMessage(context.clone(), headers.clone());
-        copy.setBody(body.clone());
+        // Clone body bytes if available, but don't try to clone the bodyStream.
+        if (body != null) {
+            copy.setBody(body.clone());
+        }
         return copy;
     }
 
@@ -141,5 +149,32 @@ public class ZuulMessage implements Cloneable
     public String getInfoForLogging()
     {
         return "ZuulMessage";
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class UnitTest
+    {
+        @Test
+        public void testClone()
+        {
+            SessionContext ctx1 = new SessionContext();
+            ctx1.set("k1", "v1");
+            Headers headers1 = new Headers();
+            headers1.set("k1", "v1");
+
+            ZuulMessage msg1 = new ZuulMessage(ctx1, headers1);
+            ZuulMessage msg2 = msg1.clone();
+
+            assertEquals(msg1.body, msg2.body);
+            assertEquals(msg1.headers, msg2.headers);
+            assertEquals(msg1.context, msg2.context);
+
+            // Verify that values of the 2 messages are decoupled.
+            msg1.getHeaders().set("k1", "v_new");
+            msg1.getContext().set("k1", "v_new");
+
+            assertEquals("v1", msg2.getHeaders().getFirst("k1"));
+            assertEquals("v1", msg2.getContext().get("k1"));
+        }
     }
 }
