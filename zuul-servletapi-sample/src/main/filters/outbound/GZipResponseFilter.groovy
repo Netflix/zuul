@@ -71,6 +71,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
                 byte[] unGzippedBody = IOUtils.toByteArray(new GZIPInputStream(new ByteArrayInputStream(body)))
                 response.setBody(unGzippedBody)
                 response.getHeaders().remove("Content-Encoding")
+                response.getHeaders().set("Content-Length", Integer.toString(unGzippedBody.length))
 
             } catch (java.util.zip.ZipException e) {
                 LOG.error("Gzip expected but not received assuming unencoded response. So sending body as-is.")
@@ -82,6 +83,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
                 byte[] gzippedBody = gzip(body)
                 response.setBody(gzippedBody)
                 response.getHeaders().set("Content-Encoding", "gzip")
+                response.getHeaders().set("Content-Length", Integer.toString(gzippedBody.length))
 
             } catch (java.util.zip.ZipException e) {
                 LOG.error("Error gzipping response body. So just sending as-is.")
