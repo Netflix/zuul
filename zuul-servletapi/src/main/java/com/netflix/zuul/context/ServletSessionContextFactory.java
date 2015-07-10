@@ -18,6 +18,7 @@ package com.netflix.zuul.context;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -83,14 +84,13 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         // Wrap the ServletInputStream(body) in an Observable.
         if (bodyInput != null) {
             Observable<ByteBuf> bodyObs = ByteBufUtils.fromInputStream(bodyInput);
-            bodyObs = bodyObs.doOnError((e) -> {
+            bodyObs = bodyObs.onErrorReturn((e) -> {
                 if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {
                     // This can happen if the request body is smaller than the size specified in the
                     // Content-Length header, and using tomcat APR connector.
                     LOG.error("SocketTimeoutException reading request body from inputstream. error="
                             + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
-                }
-                else {
+                } else {
                     LOG.error("Error reading request body from inputstream. error="
                             + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
                 }
@@ -101,6 +101,9 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                 ze.setStatusCode(400);
                 request.getContext().setError(ze);
                 request.getContext().setShouldSendErrorResponse(true);
+
+                // Return an empty bytebuf.
+                return Unpooled.EMPTY_BUFFER;
             });
             request.setBodyStream(bodyObs);
         }
