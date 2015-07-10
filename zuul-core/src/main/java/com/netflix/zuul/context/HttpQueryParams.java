@@ -143,6 +143,24 @@ public class HttpQueryParams implements Cloneable
     }
 
     @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : entries()) {
+            sb.append(entry.getKey());
+            sb.append('=');
+            sb.append(entry.getValue());
+            sb.append('&');
+        }
+
+        // Remove trailing '&'.
+        if (sb.length() > 0 && '&' == sb.charAt(sb.length() - 1)) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+    @Override
     protected HttpQueryParams clone()
     {
         HttpQueryParams copy = new HttpQueryParams();
@@ -174,6 +192,18 @@ public class HttpQueryParams implements Cloneable
             qp = new HttpQueryParams();
             qp.add("k+", "\n");
             assertEquals("k%2B=%0A", qp.toEncodedString());
+        }
+
+        @Test
+        public void testToString()
+        {
+            HttpQueryParams qp = new HttpQueryParams();
+            qp.add("k'1", "v1&");
+            assertEquals("k'1=v1&", qp.toString());
+
+            qp = new HttpQueryParams();
+            qp.add("k+", "\n");
+            assertEquals("k+=\n", qp.toString());
         }
     }
 }
