@@ -110,6 +110,11 @@ public class HttpQueryParams implements Cloneable
         delegate.put(name,  value);
     }
 
+    public void clear()
+    {
+        delegate.clear();
+    }
+
     public Collection<Map.Entry<String, String>> entries()
     {
         return delegate.entries();
