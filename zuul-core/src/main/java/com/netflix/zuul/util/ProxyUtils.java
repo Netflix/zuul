@@ -31,6 +31,7 @@ public class ProxyUtils
     {
         switch (headerName.toLowerCase()) {
             case "connection":
+            case "keep-alive":
             case "content-length":
             case "server":
             case "transfer-encoding":
