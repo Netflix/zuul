@@ -1,180 +1,64 @@
-/**
- * Copyright 2015 Netflix, Inc.
+/*
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Copyright 2013-2015 Netflix, Inc.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ * /
  */
+
 package com.netflix.zuul.context;
 
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.bytebuf.ByteBufUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import rx.Observable;
 
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.assertEquals;
-
 /**
- * User: michaels@netflix.com
- * Date: 2/20/15
- * Time: 3:10 PM
+ * User: Mike Smith
+ * Date: 7/16/15
+ * Time: 12:22 AM
  */
-public class ZuulMessage implements Cloneable
+public interface ZuulMessage extends Cloneable
 {
-    protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.message.body.max.size", 25 * 1000 * 1024);
-    private static final Charset CS_UTF8 = Charset.forName("UTF-8");
+    SessionContext getContext();
 
-    protected final SessionContext context;
-    protected Headers headers;
-    protected Observable<ByteBuf> bodyStream = null;
-    protected boolean bodyBuffered = false;
-    protected byte[] body = null;
+    Headers getHeaders();
 
-    public ZuulMessage(SessionContext context) {
-        this(context, new Headers());
-    }
+    void setHeaders(Headers newHeaders);
 
-    public ZuulMessage(SessionContext context, Headers headers) {
-        this.context = context;
-        this.headers = headers == null ? new Headers() : headers;
-    }
+    byte[] getBody();
 
-    public SessionContext getContext() {
-        return context;
-    }
+    void setBody(byte[] body);
 
-    public Headers getHeaders() {
-        return headers;
-    }
+    boolean hasBody();
 
-    public void setHeaders(Headers newHeaders) {
-        this.headers = newHeaders;
-    }
+    void setBodyAsText(String bodyText, Charset cs);
 
-    public byte[] getBody()
-    {
-        return this.body;
-    }
+    void setBodyAsText(String bodyText);
 
-    public void setBody(byte[] body)
-    {
-        this.body = body;
+    Observable<byte[]> bufferBody();
 
-        // Now that body is buffered, if anyone asks for the stream, then give them this wrapper.
-        this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
+    int getMaxBodySize();
 
-        this.bodyBuffered = true;
-    }
+    boolean isBodyBuffered();
 
-    public boolean hasBody()
-    {
-        return bodyStream != null;
-    }
+    Observable<ByteBuf> getBodyStream();
 
-    public void setBodyAsText(String bodyText, Charset cs)
-    {
-        setBody(bodyText.getBytes(cs));
-    }
+    void setBodyStream(Observable<ByteBuf> bodyStream);
 
-    public void setBodyAsText(String bodyText)
-    {
-        setBodyAsText(bodyText, CS_UTF8);
-    }
+    ZuulMessage clone();
 
-    public Observable<byte[]> bufferBody()
-    {
-        if (isBodyBuffered()) {
-            return Observable.just(getBody());
-        }
-        else {
-            return ByteBufUtils
-                    .aggregate(getBodyStream(), getMaxBodySize())
-                    .map(bb -> {
-                        // Set the body on Response object.
-                        byte[] body = ByteBufUtils.toBytes(bb);
-                        setBody(body);
-                        return body;
-                    });
-        }
-    }
-
-    public int getMaxBodySize() {
-        return MAX_BODY_SIZE_PROP.get();
-    }
-
-    public boolean isBodyBuffered() {
-        return bodyBuffered;
-    }
-
-    public Observable<ByteBuf> getBodyStream() {
-        return bodyStream;
-    }
-
-    public void setBodyStream(Observable<ByteBuf> bodyStream) {
-        this.bodyStream = bodyStream;
-    }
-
-    @Override
-    public ZuulMessage clone()
-    {
-        ZuulMessage copy = new ZuulMessage(context.clone(), headers.clone());
-        // Clone body bytes if available, but don't try to clone the bodyStream.
-        if (body != null) {
-            copy.setBody(body.clone());
-        }
-        return copy;
-    }
-
-    /**
-     * Override this in more specific subclasses to add request/response info for logging purposes.
-     *
-     * @return
-     */
-    public String getInfoForLogging()
-    {
-        return "ZuulMessage";
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Test
-        public void testClone()
-        {
-            SessionContext ctx1 = new SessionContext();
-            ctx1.set("k1", "v1");
-            Headers headers1 = new Headers();
-            headers1.set("k1", "v1");
-
-            ZuulMessage msg1 = new ZuulMessage(ctx1, headers1);
-            ZuulMessage msg2 = msg1.clone();
-
-            assertEquals(msg1.body, msg2.body);
-            assertEquals(msg1.headers, msg2.headers);
-            assertEquals(msg1.context, msg2.context);
-
-            // Verify that values of the 2 messages are decoupled.
-            msg1.getHeaders().set("k1", "v_new");
-            msg1.getContext().set("k1", "v_new");
-
-            assertEquals("v1", msg2.getHeaders().getFirst("k1"));
-            assertEquals("v1", msg2.getContext().get("k1"));
-        }
-    }
+    String getInfoForLogging();
 }

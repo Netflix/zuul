@@ -31,7 +31,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
 
-import static org.junit.Assert.*
+import static org.junit.Assert.assertEquals
+import static org.junit.Assert.fail
 import static org.mockito.Mockito.when
 
 /**
@@ -43,12 +44,12 @@ import static org.mockito.Mockito.when
  * Date: 5/22/15
  * Time: 1:42 PM
  */
-class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
+class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageImpl>
 {
     private static final Logger LOG = LoggerFactory.getLogger(NfProxyEndpoint.class);
 
     @Override
-    Observable<HttpResponseMessage> applyAsync(HttpRequestMessage request)
+    Observable<HttpResponseMessageImpl> applyAsync(HttpRequestMessage request)
     {
         debug(request.getContext(), request)
 
@@ -56,7 +57,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         Origin origin = getOrigin(request)
 
         // Add execution of the request to the Observable chain, and return.
-        Observable<HttpResponseMessage> respObs = origin.request(request)
+        Observable<HttpResponseMessageImpl> respObs = origin.request(request)
 
         // Store the status from origin (in case it's later overwritten).
         respObs = respObs.doOnNext({ originResp ->
@@ -66,7 +67,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         return respObs
     }
 
-    HttpResponseMessage apply(HttpRequestMessage request)
+    HttpResponseMessageImpl apply(HttpRequestMessage request)
     {
         debug(request.getContext(), request)
 
@@ -74,7 +75,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         Origin origin = getOrigin(request)
 
         // Add execution of the request to the Observable chain, and block waiting for it to finish.
-        HttpResponseMessage response = origin.request(request).toBlocking().first()
+        HttpResponseMessageImpl response = origin.request(request).toBlocking().first()
 
         // Store the status from origin (in case it's later overwritten).
         request.getContext().put("origin_http_status", Integer.toString(response.getStatus()));
@@ -130,7 +131,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 
         NfProxyEndpoint filter
         SessionContext ctx
-        HttpResponseMessage response
+        HttpResponseMessageImpl response
 
         @Before
         public void setup()
@@ -139,7 +140,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             filter = new NfProxyEndpoint()
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 202)
+            response = new HttpResponseMessageImpl(ctx, request, 202)
 
             when(originManager.getOrigin("an-origin")).thenReturn(origin)
             ctx.put("origin_manager", originManager)
@@ -156,7 +157,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             HttpQueryParams params = new HttpQueryParams()
             params.add("k1", "v1")
 
-            HttpRequestMessage request = new HttpRequestMessage(ctx, "HTTP/1.1", "POST", "/some/where",
+            HttpRequestMessage request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "POST", "/some/where",
                     params, headers, "9.9.9.9", "https", 80, "localhost")
 
             filter.debug(ctx, request)
@@ -173,7 +174,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
-            Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
+            Observable<HttpRequestMessage> respObs = filter.applyAsync(request)
             respObs.toBlocking().single()
 
             assertEquals("202", ctx.get("origin_http_status"))
@@ -186,7 +187,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
             ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
-            HttpResponseMessage response = filter.apply(request)
+            HttpResponseMessageImpl response = filter.apply(request)
 
             assertEquals("202", ctx.get("origin_http_status"))
         }
@@ -196,7 +197,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
         {
             ctx.setRouteVIP("a-different-origin")
             try {
-                Observable<HttpResponseMessage> respObs = filter.applyAsync(request)
+                Observable<HttpResponseMessageImpl> respObs = filter.applyAsync(request)
                 respObs.toBlocking().single()
                 fail()
             }

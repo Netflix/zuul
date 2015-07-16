@@ -15,10 +15,7 @@
  */
 package outbound
 
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
@@ -125,7 +122,7 @@ class GZipResponseFilter extends HttpOutboundFilter
             filter = new GZipResponseFilter()
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 99)
+            response = new HttpResponseMessageImpl(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
@@ -139,7 +136,7 @@ class GZipResponseFilter extends HttpOutboundFilter
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
 
-            HttpResponseMessage result = filter.applyAsync(response).toBlocking().first()
+            HttpResponseMessageImpl result = filter.applyAsync(response).toBlocking().first()
 
             // Check body is a gzipped version of the origin body.
             byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(result.getBody())).bytes
@@ -156,7 +153,7 @@ class GZipResponseFilter extends HttpOutboundFilter
             byte[] originBody = gzip("blah")
             response.setBody(originBody)
 
-            HttpResponseMessage result = filter.applyAsync(response).toBlocking().first()
+            HttpResponseMessageImpl result = filter.applyAsync(response).toBlocking().first()
 
             // Check returned body is same as origin body.
             String bodyStr = new String(result.getBody(), "UTF-8")

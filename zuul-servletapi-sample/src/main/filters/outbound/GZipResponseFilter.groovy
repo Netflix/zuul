@@ -15,10 +15,7 @@
  */
 package outbound
 
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
@@ -119,7 +116,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
             filter = new GZipResponseFilter()
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 99)
+            response = new HttpResponseMessageImpl(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)

@@ -53,7 +53,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         String serverName = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getHostString();
 
         // Setup the req/resp message objects.
-        HttpRequestMessage request = new HttpRequestMessage(
+        HttpRequestMessage request = new HttpRequestMessageImpl(
                 context,
                 httpServerRequest.getHttpVersion().text(),
                 httpServerRequest.getHttpMethod().name().toLowerCase(),

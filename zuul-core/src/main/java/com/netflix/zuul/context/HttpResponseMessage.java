@@ -1,139 +1,60 @@
-/**
- * Copyright 2015 Netflix, Inc.
+/*
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  Copyright 2013-2015 Netflix, Inc.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ * /
  */
+
 package com.netflix.zuul.context;
 
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.stats.Timing;
 import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
-import io.netty.handler.codec.http.ServerCookieEncoder;
 import rx.Observable;
 
 /**
- * User: michaels
- * Date: 2/24/15
- * Time: 10:54 AM
+ * User: Mike Smith
+ * Date: 7/16/15
+ * Time: 12:45 AM
  */
-public class HttpResponseMessage extends ZuulMessage
+public interface HttpResponseMessage extends ZuulMessage
 {
-    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
+    HttpRequestMessage getRequest();
 
-    private HttpRequestMessage request;
-    private int status;
-    private HttpResponseInfo originalResponse = null;
+    int getStatus();
 
-    public HttpResponseMessage(SessionContext context, HttpRequestMessage request, int defaultStatus)
-    {
-        super(context);
-        this.request = request;
-        this.status = defaultStatus;
-    }
-
-    public HttpResponseMessage(SessionContext context, Headers headers, HttpRequestMessage request, int status) {
-        super(context, headers);
-        this.request = request;
-        this.status = status;
-    }
-
-    public HttpRequestMessage getRequest() {
-        return request;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-    public void setStatus(int status) {
-        this.status = status;
-    }
+    void setStatus(int status);
 
     @Override
-    public int getMaxBodySize() {
-        return MAX_BODY_SIZE_PROP.get();
-    }
+    int getMaxBodySize();
 
     @Override
-    public Observable<byte[]> bufferBody()
-    {
-        // Wrap the buffering of response body in a timer.
-        Timing timing = getContext().getTimings().getResponseBodyRead();
-        timing.start();
-        return super.bufferBody()
-                .finallyDo(() -> {
-                    timing.end();
-                });
-    }
+    Observable<byte[]> bufferBody();
 
-    public Cookies parseSetCookieHeader(String setCookieValue)
-    {
-        Cookies cookies = new Cookies();
-        for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
-            cookies.add(cookie);
-        }
-        return cookies;
-    }
+    Cookies parseSetCookieHeader(String setCookieValue);
 
-    public boolean hasSetCookieWithName(String cookieName)
-    {
-        boolean has = false;
-        for (String setCookieValue : getHeaders().get("Set-Cookie")) {
-            for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
-                if (cookie.getName().equalsIgnoreCase(cookieName)) {
-                    has = true;
-                    break;
-                }
-            }
-        }
-        return has;
-    }
+    boolean hasSetCookieWithName(String cookieName);
 
-    public void addSetCookie(Cookie cookie)
-    {
-        getHeaders().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
-    }
+    void addSetCookie(Cookie cookie);
 
     @Override
-    public ZuulMessage clone()
-    {
-        return super.clone();
-    }
+    ZuulMessage clone();
 
     @Override
-    public String getInfoForLogging()
-    {
-        StringBuilder sb = new StringBuilder()
-                .append(getRequest().getInfoForLogging())
-                .append(",proxy-status=").append(getStatus())
-                ;
-        return sb.toString();
-    }
+    String getInfoForLogging();
 
-    protected HttpResponseInfo copyResponseInfo()
-    {
-        return new HttpResponseInfo(status, headers.clone());
-    }
+    void storeOriginalResponseInfo();
 
-    public void storeOriginalResponseInfo()
-    {
-        originalResponse = copyResponseInfo();
-    }
-
-    public HttpResponseInfo getOriginalResponseInfo()
-    {
-        return originalResponse;
-    }
+    HttpResponseInfo getOriginalResponseInfo();
 }

@@ -17,7 +17,7 @@ package endpoint
 
 import com.netflix.zuul.context.HttpQueryParams
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
@@ -34,11 +34,11 @@ import static org.junit.Assert.assertEquals
 class ErrorResponse extends HttpSyncEndpoint
 {
     @Override
-    HttpResponseMessage apply(HttpRequestMessage request)
+    HttpResponseMessageImpl apply(HttpRequestMessage request)
     {
         SessionContext context = request.getContext()
 
-        HttpResponseMessage response = new HttpResponseMessage(context, request, 500)
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(context, request, 500)
 
         Throwable e = context.getError()
 
@@ -89,7 +89,7 @@ class ErrorResponse extends HttpSyncEndpoint
             th = new ZuulException("test", "a-cause")
             ctx.setError(th)
 
-            HttpResponseMessage response = filter.apply(request)
+            HttpResponseMessageImpl response = filter.apply(request)
             assertEquals(500, response.getStatus())
             assertEquals("test", new String(response.getBody(), "UTF-8"))
         }

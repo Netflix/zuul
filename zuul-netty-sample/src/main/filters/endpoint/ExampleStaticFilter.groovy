@@ -16,7 +16,7 @@
 package endpoint
 
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.HttpResponseMessageImpl
 import com.netflix.zuul.filters.Endpoint
 import rx.Observable
 
@@ -25,12 +25,12 @@ import rx.Observable
  * Date: 5/12/15
  * Time: 1:53 PM
  */
-class ExampleStaticFilter extends Endpoint<HttpRequestMessage, HttpResponseMessage>
+class ExampleStaticFilter extends Endpoint<HttpRequestMessage, HttpResponseMessageImpl>
 {
     @Override
-    Observable<HttpResponseMessage> applyAsync(HttpRequestMessage request)
+    Observable<HttpResponseMessageImpl> applyAsync(HttpRequestMessage request)
     {
-        HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200)
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(request.getContext(), request, 200)
 
         response.setStatus(200)
         response.getHeaders().set("Content-Type", "text/plain")

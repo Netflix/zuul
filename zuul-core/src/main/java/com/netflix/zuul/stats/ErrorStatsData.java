@@ -20,20 +20,15 @@ import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.annotations.MonitorTags;
 import com.netflix.servo.tag.BasicTag;
 import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.Tag;
 import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.stats.monitoring.NamedCount;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Implementation of a Named counter to monitor and count error causes by route. Route is a defined zuul concept to

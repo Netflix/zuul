@@ -18,6 +18,7 @@ package com.netflix.zuul.rxnetty;
 import com.netflix.zuul.context.Headers;
 import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
+import com.netflix.zuul.context.HttpResponseMessageImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
@@ -34,7 +35,7 @@ public class RxNettyUtils
 {
     public static HttpResponseMessage clientResponseToZuulResponse(HttpRequestMessage zuulRequest, HttpClientResponse<ByteBuf> resp)
     {
-        HttpResponseMessage zuulResp = new HttpResponseMessage(zuulRequest.getContext(), zuulRequest, 500);
+        HttpResponseMessage zuulResp = new HttpResponseMessageImpl(zuulRequest.getContext(), zuulRequest, 500);
 
         // Copy the response headers and info into the RequestContext for use by post filters.
         if (resp.getStatus() != null) {

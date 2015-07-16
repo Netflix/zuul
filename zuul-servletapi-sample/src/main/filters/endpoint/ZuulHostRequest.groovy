@@ -309,7 +309,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
     protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)
     {
         // Convert to a zuul response object.
-        HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
+        HttpResponseMessage respMsg = new HttpResponseMessageImpl(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatusLine().getStatusCode());
 
         // Headers.
@@ -369,7 +369,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
         {
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 200)
+            response = new HttpResponseMessageImpl(ctx, request, 200)
         }
 
         @Test

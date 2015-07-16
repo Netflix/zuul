@@ -15,13 +15,7 @@
  */
 package com.netflix.zuul.plugins;
 
-import com.netflix.servo.publish.BasicMetricFilter;
-import com.netflix.servo.publish.CounterToRateMetricTransform;
-import com.netflix.servo.publish.FileMetricObserver;
-import com.netflix.servo.publish.MetricObserver;
-import com.netflix.servo.publish.MonitorRegistryMetricPoller;
-import com.netflix.servo.publish.PollRunnable;
-import com.netflix.servo.publish.PollScheduler;
+import com.netflix.servo.publish.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

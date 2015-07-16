@@ -109,21 +109,21 @@ public class FilterProcessor {
 
                     // Pull out the request object to use for building a new response.
                     HttpRequestMessage request;
-                    if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
+                    if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
                         request = ((HttpResponseMessage) msg).getRequest();
                     } else {
                         request = (HttpRequestMessage) msg;
                     }
 
                     // Build the error response.
-                    HttpResponseMessage response = new HttpResponseMessage(msg.getContext(), request, 500);
+                    HttpResponseMessage response = new HttpResponseMessageImpl(msg.getContext(), request, 500);
                     response.getHeaders().set("X-Zuul-Error-Cause", errorStr);
 
                     return Observable.just(response);
                 }
 
                 // Apply this endpoint.
-                if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
+                if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
                     // if msg is a response, then we need to get it's request to pass to the error filter.
                     HttpResponseMessage response = (HttpResponseMessage) msg;
                     return processAsyncFilter(response.getRequest(), endpointFilter, (m2) -> m2, FilterPriority.LOW);
@@ -165,13 +165,13 @@ public class FilterProcessor {
             if (endpointName == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter chosen!"));
-                return Observable.just(new HttpResponseMessage(context, request, 500));
+                return Observable.just(new HttpResponseMessageImpl(context, request, 500));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
-                return Observable.just(new HttpResponseMessage(context, request, 500));
+                return Observable.just(new HttpResponseMessageImpl(context, request, 500));
             }
 
             // Apply this endpoint. Make the default filter result be a HttpResponseMessage so that if this filter apply fails, the next filter still gets
@@ -388,9 +388,9 @@ public class FilterProcessor {
             MockitoAnnotations.initMocks(this);
 
             ctx = new SessionContext();
-            request = new HttpRequestMessage(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(),
+            request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(),
                     new Headers(), "127.0.0.1", "https", 80, "localhost");
-            response = new HttpResponseMessage(ctx, request, 200);
+            response = new HttpResponseMessageImpl(ctx, request, 200);
 
             processor = new FilterProcessor();
             processor = spy(processor);

@@ -29,5 +29,5 @@ public interface ShouldFilter<T extends ZuulMessage>
      *
      * @return true if the apply() method should be invoked. false will not invoke the apply() method
      */
-    public boolean shouldFilter(T msg);
+    boolean shouldFilter(T msg);
 }

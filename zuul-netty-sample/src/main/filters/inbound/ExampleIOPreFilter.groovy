@@ -16,7 +16,8 @@
 package inbound
 
 import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.HttpRequestMessageImpl
+import com.netflix.zuul.context.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpInboundFilter
@@ -54,9 +55,9 @@ class ExampleIOPreFilter extends HttpInboundFilter
         }
 
         // Make the request.
-        HttpRequestMessage ioRequest = new HttpRequestMessage(context, "HTTP/1.1", "get", "/account/geo", null, null,
+        HttpRequestMessage ioRequest = new HttpRequestMessageImpl(context, "HTTP/1.1", "get", "/account/geo", null, null,
                 request.getClientIp(), "http", 80)
-        Observable<HttpResponseMessage> resultObs = origin.request(ioRequest)
+        Observable<HttpResponseMessageImpl> resultObs = origin.request(ioRequest)
 
         resultObs = resultObs.flatMap({ resp ->
 

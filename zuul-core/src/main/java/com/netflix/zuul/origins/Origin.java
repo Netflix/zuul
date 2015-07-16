@@ -17,7 +17,6 @@ package com.netflix.zuul.origins;
 
 import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
-import com.netflix.zuul.context.SessionContext;
 import rx.Observable;
 
 /**

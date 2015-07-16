@@ -18,15 +18,11 @@ package com.netflix.zuul.stats;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.annotations.MonitorTags;
-import com.netflix.servo.tag.BasicTag;
 import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.Tag;
 import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import com.netflix.zuul.stats.monitoring.NamedCount;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**

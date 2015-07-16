@@ -115,7 +115,7 @@ public class ZuulServlet extends HttpServlet {
                     LOG.error("Unexpected error in processing the zuul filter chain!", e);
 
                     // Generate a default error response to be sent to client.
-                    response = new HttpResponseMessage(context, (HttpRequestMessage) request, 500);
+                    response = new HttpResponseMessageImpl(context, (HttpRequestMessage) request, 500);
                 }
 
                 // Store this response as an attribute for any later ServletFilters that may want access to info in it.
@@ -192,7 +192,7 @@ public class ZuulServlet extends HttpServlet {
 
             //when(contextFactory.create(context, servletRequest)).thenReturn(Observable.just(request));
 
-            response = new HttpResponseMessage(context, request, 299);
+            response = new HttpResponseMessageImpl(context, request, 299);
             response.setBody("blah".getBytes());
 
             when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));

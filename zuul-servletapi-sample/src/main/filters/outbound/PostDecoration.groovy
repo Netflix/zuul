@@ -92,7 +92,7 @@ class PostDecoration extends HttpOutboundSyncFilter
             filter = Mockito.spy(new PostDecoration())
             ctx = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessage(ctx, request, 99)
+            response = new HttpResponseMessageImpl(ctx, request, 99)
 
             reqHeaders = new Headers()
             Mockito.when(request.getHeaders()).thenReturn(reqHeaders)

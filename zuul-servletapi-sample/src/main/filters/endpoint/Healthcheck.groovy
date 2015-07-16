@@ -17,6 +17,7 @@ package endpoint
 
 import com.netflix.zuul.context.HttpRequestMessage
 import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.context.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import org.junit.Assert
@@ -37,7 +38,7 @@ class Healthcheck extends HttpSyncEndpoint
     @Override
     HttpResponseMessage apply(HttpRequestMessage request)
     {
-        HttpResponseMessage response = new HttpResponseMessage(request.getContext(), request, 200)
+        HttpResponseMessage response = new HttpResponseMessageImpl(request.getContext(), request, 200)
         response.headers.set('Content-Type', 'application/xml')
 
         String bodyStr = "<health>ok</health>"

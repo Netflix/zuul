@@ -27,9 +27,9 @@ import rx.Observable;
  */
 public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extends ShouldFilter<I>
 {
-    public boolean isDisabled();
+    boolean isDisabled();
 
-    public String filterName();
+    String filterName();
 
     /**
      * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not

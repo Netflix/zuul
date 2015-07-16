@@ -175,7 +175,7 @@ public class RibbonOrigin implements Origin
     protected HttpResponseMessage createHttpResponseMessage(HttpResponse ribbonResp, HttpRequestMessage request)
     {
         // Convert to a zuul response object.
-        HttpResponseMessage respMsg = new HttpResponseMessage(request.getContext(), request, 500);
+        HttpResponseMessage respMsg = new HttpResponseMessageImpl(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatus());
         for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
             if (ProxyUtils.isValidResponseHeader(header.getKey())) {

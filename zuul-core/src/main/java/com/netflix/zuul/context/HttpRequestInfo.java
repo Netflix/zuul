@@ -1,75 +1,63 @@
+/*
+ *
+ *
+ *  Copyright 2013-2015 Netflix, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ * /
+ */
+
 package com.netflix.zuul.context;
 
+import java.net.URI;
+
 /**
- * User: michaels@netflix.com
- * Date: 6/9/15
- * Time: 11:11 AM
+ * User: Mike Smith
+ * Date: 7/15/15
+ * Time: 1:18 PM
  */
-public class HttpRequestInfo
+public interface HttpRequestInfo extends ZuulMessage
 {
-    private final String protocol;
-    private final String method;
-    private final String path;
-    private final HttpQueryParams queryParams;
-    private final String clientIp;
-    private final String scheme;
-    private final int port;
-    private final Headers headers;
+    String getProtocol();
 
-    public HttpRequestInfo(String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port)
-    {
-        this.protocol = protocol;
-        this.method = method;
-        this.path = path;
-        // Don't allow this to be null.
-        this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
-        this.headers = headers == null ? new Headers() : headers;
-        this.clientIp = clientIp;
-        this.scheme = scheme;
-        this.port = port;
-    }
+    String getMethod();
 
-    public String getProtocol() {
-        return protocol;
-    }
+    String getPath();
 
-    public String getMethod() {
-        return method;
-    }
+    HttpQueryParams getQueryParams();
 
-    public String getPath() {
-        return path;
-    }
+    String getPathAndQuery();
 
-    public HttpQueryParams getQueryParams() {
-        return queryParams;
-    }
+    Headers getHeaders();
 
-    public String getPathAndQuery()
-    {
-        if (queryParams != null && queryParams.entries().size() > 0) {
-            return getPath() + "?" + queryParams.toEncodedString();
-        }
-        else {
-            return getPath();
-        }
-    }
+    String getClientIp();
 
-    public Headers getHeaders()
-    {
-        return headers;
-    }
+    String getScheme();
 
-    public String getClientIp() {
-        return clientIp;
-    }
+    int getPort();
 
-    public String getScheme() {
-        return scheme;
-    }
+    String getServerName();
 
-    public int getPort()
-    {
-        return port;
-    }
+    int getMaxBodySize();
+
+    String getInfoForLogging();
+
+    String getOriginalHost();
+
+    String getOriginalScheme();
+
+    int getOriginalPort();
+
+    URI reconstructURI();
 }

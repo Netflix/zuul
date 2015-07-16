@@ -15,7 +15,9 @@
  */
 package inbound
 
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Headers
+import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
@@ -66,7 +68,7 @@ class DebugRequest extends HttpInboundSyncFilter
     public static class TestUnit {
 
         @Mock
-        HttpResponseMessage response
+        HttpRequestMessage response
         @Mock
         HttpRequestMessage request
 

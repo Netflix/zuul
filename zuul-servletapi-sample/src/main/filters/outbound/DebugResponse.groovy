@@ -18,10 +18,7 @@ package outbound
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessage
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import org.junit.Before
 import org.junit.Test
@@ -86,7 +83,7 @@ class DebugResponse extends HttpOutboundSyncFilter
         public void setup() {
             context = new SessionContext()
             Mockito.when(request.getContext()).thenReturn(context)
-            response = new HttpResponseMessage(context, request, 99)
+            response = new HttpResponseMessageImpl(context, request, 99)
         }
 
         @Test

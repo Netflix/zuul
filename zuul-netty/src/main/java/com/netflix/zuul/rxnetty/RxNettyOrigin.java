@@ -17,7 +17,6 @@ package com.netflix.zuul.rxnetty;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import com.netflix.zuul.context.HttpRequestMessage;
 import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
@@ -25,6 +24,7 @@ import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.origins.LoadBalancer;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.origins.ServerInfo;
+import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import com.netflix.zuul.stats.Timing;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
