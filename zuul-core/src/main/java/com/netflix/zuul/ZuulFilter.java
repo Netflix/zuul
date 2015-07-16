@@ -105,7 +105,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      */
     public ZuulFilterResult runFilter() {
         ZuulFilterResult zr = new ZuulFilterResult();
-        if (!filterDisabled.get()) {
+        if (!isFilterDisabled()) {
             if (shouldFilter()) {
                 Tracer t = TracerFactory.instance().startMicroTracer("ZUUL::" + this.getClass().getSimpleName());
                 try {
@@ -185,6 +185,50 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
 
             when(tf1.shouldFilter()).thenReturn(true);
             when(tf2.shouldFilter()).thenReturn(false);
+
+            try {
+                tf1.runFilter();
+                tf2.runFilter();
+                verify(tf1, times(1)).run();
+                verify(tf2, times(0)).run();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+        }
+
+        @Test
+        public void testIsFilterDisabled() {
+            class TestZuulFilter extends ZuulFilter {
+
+                @Override
+                public String filterType() {
+                    return null;
+                }
+
+                @Override
+                public int filterOrder() {
+                    return 0;
+                }
+
+                public boolean isFilterDisabled() {
+                    return false;
+                }
+
+                public boolean shouldFilter() {
+                    return true;
+                }
+
+                public Object run() {
+                    return null;
+                }
+            }
+
+            TestZuulFilter tf1 = spy(new TestZuulFilter());
+            TestZuulFilter tf2 = spy(new TestZuulFilter());
+
+            when(tf1.isFilterDisabled()).thenReturn(false);
+            when(tf2.isFilterDisabled()).thenReturn(true);
 
             try {
                 tf1.runFilter();
