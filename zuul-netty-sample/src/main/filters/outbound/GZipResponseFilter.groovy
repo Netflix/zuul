@@ -34,6 +34,9 @@ import java.util.zip.GZIPOutputStream
 
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
+import static org.mockito.Mockito.when
+import static org.mockito.Mockito.when
+import static org.mockito.Mockito.when
 
 /**
  * TODO - move this into zuul-core?
@@ -55,7 +58,7 @@ class GZipResponseFilter extends HttpOutboundFilter
     @Override
     Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response)
     {
-        HttpRequestMessage request = response.getRequest()
+        HttpRequestInfo request = response.getInboundRequest()
 
         // Buffer the body ByteBufs into a single byte array, then potentially gzip or ungzip it,
         // and then set that as the new body on the HttpResponseMessage (which will in turn flag this
@@ -121,11 +124,13 @@ class GZipResponseFilter extends HttpOutboundFilter
         public void setup() {
             filter = new GZipResponseFilter()
             ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 99)
 
+            when(request.getContext()).thenReturn(ctx)
+            when(request.getInboundRequest()).thenReturn(request)
             reqHeaders = new Headers()
-            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
+            when(request.getHeaders()).thenReturn(reqHeaders)
+
+            response = new HttpResponseMessageImpl(ctx, request, 99)
         }
 
         @Test

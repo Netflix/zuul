@@ -29,7 +29,7 @@ class BufferingOutbound extends MessageBodyBufferFilter
     @Override
     boolean shouldFilter(ZuulMessage msg) {
         HttpResponseMessage response = msg
-        return response.getRequest().getQueryParams().getFirst("buffer")
+        return response.getInboundRequest().getQueryParams().getFirst("buffer")
     }
 
     @Override

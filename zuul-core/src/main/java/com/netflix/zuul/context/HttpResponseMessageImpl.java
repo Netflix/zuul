@@ -122,13 +122,13 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public HttpRequestMessage getRequest() {
-        return outboundRequest;
+    public HttpRequestInfo getInboundRequest() {
+        return outboundRequest.getInboundRequest();
     }
 
     @Override
-    public HttpRequestInfo getInboundRequest() {
-        return outboundRequest.getInboundRequest();
+    public HttpRequestMessage getOutboundRequest() {
+        return outboundRequest;
     }
 
     @Override
@@ -191,16 +191,21 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     @Override
     public ZuulMessage clone()
     {
-        // TODO - not sure if should be cloning the request object here or not....
-        return new HttpResponseMessageImpl(getContext().clone(), getHeaders().clone(),
-                (HttpRequestMessage) getRequest().clone(), getStatus());
+        // TODO - not sure if should be cloning the outbound request object here or not....
+        HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
+                getHeaders().clone(),
+                (HttpRequestMessage) getOutboundRequest().clone(), getStatus());
+        if (getInboundResponse() != null) {
+            clone.inboundResponse = (HttpResponseInfo) getInboundResponse().clone();
+        }
+        return clone;
     }
 
     @Override
     public String getInfoForLogging()
     {
         StringBuilder sb = new StringBuilder()
-                .append(getRequest().getInfoForLogging())
+                .append(getInboundRequest().getInfoForLogging())
                 .append(",proxy-status=").append(getStatus())
                 ;
         return sb.toString();

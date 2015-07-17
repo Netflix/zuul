@@ -19,7 +19,8 @@ import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
-import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.context.HttpRequestInfo
+import com.netflix.zuul.context.HttpResponseInfo
 import com.netflix.zuul.context.HttpResponseMessage
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.stats.AmazonInfoHolder
@@ -51,7 +52,7 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
     {
         final Map<String, Object> event = response.getContext().getEventProperties();
         try {
-            captureRequestData(event, response.getRequest(), response);
+            captureRequestData(event, response.getInboundRequest(), response);
             captureInstanceData(event);
         }
         catch (Exception e) {
@@ -61,7 +62,7 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
         return response
     }
 
-    void captureRequestData(Map<String, Object> event, HttpRequestMessage req, HttpResponseMessage resp) {
+    void captureRequestData(Map<String, Object> event, HttpRequestInfo req, HttpResponseInfo resp) {
 
         try {
             // basic request properties

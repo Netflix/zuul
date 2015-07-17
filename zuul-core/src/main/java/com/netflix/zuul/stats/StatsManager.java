@@ -16,7 +16,7 @@
 package com.netflix.zuul.stats;
 
 import com.netflix.zuul.context.Headers;
-import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.context.HttpRequestInfo;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -135,7 +135,7 @@ public class StatsManager {
      *
      * @param req
      */
-    public void collectRequestStats(HttpRequestMessage req) {
+    public void collectRequestStats(HttpRequestInfo req) {
         // ipv4/ipv6 tracking
         String clientIp;
         final String xForwardedFor = req.getHeaders().getFirst(X_FORWARDED_FOR_HEADER);
@@ -293,7 +293,7 @@ public class StatsManager {
             final String host = "api.netflix.com";
             final String proto = "https";
 
-            final HttpRequestMessage req = Mockito.mock(HttpRequestMessage.class);
+            final HttpRequestInfo req = Mockito.mock(HttpRequestInfo.class);
             Headers headers = new Headers();
             when(req.getHeaders()).thenReturn(headers);
             headers.set(HOST_HEADER, host);

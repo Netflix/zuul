@@ -255,8 +255,14 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public ZuulMessage clone()
     {
-        return new HttpRequestMessageImpl(message.getContext().clone(), protocol, method, path,
-                        queryParams.clone(), message.getHeaders().clone(), clientIp, scheme, port, serverName);
+        HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
+                protocol, method, path,
+                queryParams.clone(), message.getHeaders().clone(), clientIp, scheme,
+                port, serverName);
+        if (getInboundRequest() != null) {
+            clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
+        }
+        return clone;
     }
 
 

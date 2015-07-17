@@ -10,13 +10,8 @@ public interface HttpResponseInfo extends ZuulMessage
     int getStatus();
     Headers getHeaders();
 
-    /** The mutable request that will be sent to Origin. */
-    HttpRequestMessage getRequest();
-
     /** The immutable request that was originally received from client. */
     HttpRequestInfo getInboundRequest();
-
-    HttpResponseInfo getInboundResponse();
 
     @Override
     ZuulMessage clone();

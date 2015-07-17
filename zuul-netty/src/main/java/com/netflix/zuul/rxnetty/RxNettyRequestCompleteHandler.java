@@ -19,7 +19,7 @@ import com.google.inject.Inject;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.accesslog.AccessLogPublisher;
 import com.netflix.zuul.accesslog.SimpleAccessRecord;
-import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.context.HttpRequestInfo;
 import com.netflix.zuul.context.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
@@ -47,7 +47,7 @@ public class RxNettyRequestCompleteHandler implements RequestCompleteHandler
     @Override
     public void handle(HttpResponseMessage response)
     {
-        HttpRequestMessage request = response.getRequest();
+        HttpRequestInfo request = response.getInboundRequest();
         SessionContext context = response.getContext();
 
         long duration = context.getTimings().getRequest().getDuration();

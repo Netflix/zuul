@@ -26,6 +26,10 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
+import static org.mockito.Mockito.when
+import static org.mockito.Mockito.when
+import static org.mockito.Mockito.when
+
 /**
  * @author Mikey Cohen
  * Date: 2/3/12
@@ -49,7 +53,7 @@ class Stats extends HttpOutboundSyncFilter
         SessionContext ctx = response.getContext()
         int status = response.getStatus()
         StatsManager sm = StatsManager.manager
-        sm.collectRequestStats(response.getRequest());
+        sm.collectRequestStats(response.getInboundRequest());
         sm.collectRouteStats(ctx.route, status);
         dumpRoutingDebug(ctx)
         dumpRequestDebug(ctx)
@@ -85,11 +89,14 @@ class Stats extends HttpOutboundSyncFilter
         public void setup() {
             filter = new Stats()
             ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 99)
+            
+            when(request.getContext()).thenReturn(ctx)
+            when(request.getInboundRequest()).thenReturn(request)
 
             reqHeaders = new Headers()
-            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
+            when(request.getHeaders()).thenReturn(reqHeaders)
+
+            response = new HttpResponseMessageImpl(ctx, request, 99)
         }
 
         @Test

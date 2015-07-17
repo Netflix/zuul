@@ -110,7 +110,7 @@ public class FilterProcessor {
                     // Pull out the request object to use for building a new response.
                     HttpRequestMessage request;
                     if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
-                        request = ((HttpResponseMessage) msg).getRequest();
+                        request = ((HttpResponseMessage) msg).getOutboundRequest();
                     } else {
                         request = (HttpRequestMessage) msg;
                     }
@@ -126,7 +126,7 @@ public class FilterProcessor {
                 if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
                     // if msg is a response, then we need to get it's request to pass to the error filter.
                     HttpResponseMessage response = (HttpResponseMessage) msg;
-                    return processAsyncFilter(response.getRequest(), endpointFilter, (m2) -> m2, FilterPriority.LOW);
+                    return processAsyncFilter(response.getOutboundRequest(), endpointFilter, (m2) -> m2, FilterPriority.LOW);
                 }
                 else {
                     return processAsyncFilter(msg, endpointFilter, (m2) -> m2, FilterPriority.LOW);

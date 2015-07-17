@@ -33,6 +33,7 @@ import java.util.zip.GZIPOutputStream
 
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
+import static org.mockito.Mockito.when
 
 class GZipResponseFilter extends HttpOutboundSyncFilter
 {
@@ -51,7 +52,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
     @Override
     HttpResponseMessage apply(HttpResponseMessage response)
     {
-        HttpRequestMessage request = response.getRequest()
+        HttpRequestInfo request = response.getInboundRequest()
 
         byte[] body = response.bufferBody().toBlocking().first()
 
@@ -115,11 +116,13 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         public void setup() {
             filter = new GZipResponseFilter()
             ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 99)
 
+            when(request.getContext()).thenReturn(ctx)
+            when(request.getInboundRequest()).thenReturn(request)
             reqHeaders = new Headers()
-            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
+            when(request.getHeaders()).thenReturn(reqHeaders)
+
+            response = new HttpResponseMessageImpl(ctx, request, 99)
         }
 
         @Test

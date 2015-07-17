@@ -58,7 +58,7 @@ class ExampleBodyParsingFilter extends HttpOutboundFilter
 
     @Override
     boolean shouldFilter(HttpResponseMessage response) {
-        return response.getRequest().getQueryParams().get("parse")
+        return response.getInboundRequest().getQueryParams().get("parse")
     }
 
     @Override
