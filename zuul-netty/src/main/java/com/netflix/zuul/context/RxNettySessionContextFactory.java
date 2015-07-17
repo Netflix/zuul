@@ -15,6 +15,9 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.*;
 import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;

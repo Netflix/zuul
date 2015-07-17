@@ -15,10 +15,10 @@
  */
 package com.netflix.zuul.rxnetty;
 
-import com.netflix.zuul.context.Headers;
-import com.netflix.zuul.context.HttpRequestMessage;
-import com.netflix.zuul.context.HttpResponseMessage;
-import com.netflix.zuul.context.HttpResponseMessageImpl;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;

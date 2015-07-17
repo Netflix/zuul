@@ -19,7 +19,7 @@ import com.netflix.client.ClientFactory
 import com.netflix.client.http.HttpRequest
 import com.netflix.client.http.HttpResponse
 import com.netflix.niws.client.http.RestClient
-import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpInboundFilter

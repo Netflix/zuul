@@ -1,7 +1,7 @@
 package com.netflix.zuul;
 
 import com.google.inject.Inject;
-import com.netflix.zuul.context.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
 

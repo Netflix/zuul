@@ -17,13 +17,17 @@ package outbound
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundFilter
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpRequestInfo
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -34,8 +38,6 @@ import java.util.zip.GZIPOutputStream
 
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNull
-import static org.mockito.Mockito.when
-import static org.mockito.Mockito.when
 import static org.mockito.Mockito.when
 
 /**

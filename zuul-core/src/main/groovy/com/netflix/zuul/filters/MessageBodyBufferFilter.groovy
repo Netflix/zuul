@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.filters
 
-import com.netflix.zuul.context.ZuulMessage
+import com.netflix.zuul.message.ZuulMessage
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable

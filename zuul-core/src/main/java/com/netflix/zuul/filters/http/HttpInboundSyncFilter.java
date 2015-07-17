@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.filters.http;
 
-import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.filters.BaseSyncFilter;
 
 /**

@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.context.ZuulMessage;
+import com.netflix.zuul.message.ZuulMessage;
 
 /**
  * User: michaels@netflix.com

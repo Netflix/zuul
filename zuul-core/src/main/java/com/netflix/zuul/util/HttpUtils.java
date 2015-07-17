@@ -16,8 +16,8 @@
 package com.netflix.zuul.util;
 
 import com.netflix.zuul.constants.ZuulHeaders;
-import com.netflix.zuul.context.Headers;
-import com.netflix.zuul.context.HttpRequestMessage;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

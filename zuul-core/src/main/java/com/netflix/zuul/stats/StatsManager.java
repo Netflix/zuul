@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.stats;
 
-import com.netflix.zuul.context.Headers;
-import com.netflix.zuul.context.HttpRequestInfo;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;

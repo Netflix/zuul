@@ -1,4 +1,6 @@
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
+
+import com.netflix.zuul.message.ZuulMessage;
 
 /**
  * User: michaels@netflix.com

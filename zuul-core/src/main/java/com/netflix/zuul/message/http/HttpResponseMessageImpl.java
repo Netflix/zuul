@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.stats.Timing;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.Cookie;

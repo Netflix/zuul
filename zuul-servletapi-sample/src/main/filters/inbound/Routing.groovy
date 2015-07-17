@@ -19,7 +19,7 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulApplicationInfo
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter

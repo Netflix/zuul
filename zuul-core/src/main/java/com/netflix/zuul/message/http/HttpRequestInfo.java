@@ -18,34 +18,49 @@
  * /
  */
 
-package com.netflix.zuul.filters;
+package com.netflix.zuul.message.http;
 
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
+
+import java.net.URI;
 
 /**
  * User: Mike Smith
- * Date: 5/16/15
- * Time: 1:57 PM
+ * Date: 7/15/15
+ * Time: 1:18 PM
  */
-public abstract class Endpoint<I extends ZuulMessage, O extends ZuulMessage> extends BaseFilter<I, O>
+public interface HttpRequestInfo extends ZuulMessage
 {
-    @Override
-    public int filterOrder()
-    {
-        // Set all Endpoint filters to order of 0, because they are not processed sequentially like other filter types.
-        return 0;
-    }
+    String getProtocol();
 
-    @Override
-    public String filterType()
-    {
-        return "end";
-    }
+    String getMethod();
 
-    @Override
-    public boolean shouldFilter(I msg)
-    {
-        // Always true, because Endpoint filters are chosen by name instead.
-        return true;
-    }
+    String getPath();
+
+    HttpQueryParams getQueryParams();
+
+    String getPathAndQuery();
+
+    Headers getHeaders();
+
+    String getClientIp();
+
+    String getScheme();
+
+    int getPort();
+
+    String getServerName();
+
+    int getMaxBodySize();
+
+    String getInfoForLogging();
+
+    String getOriginalHost();
+
+    String getOriginalScheme();
+
+    int getOriginalPort();
+
+    URI reconstructURI();
 }

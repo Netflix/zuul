@@ -18,38 +18,48 @@
  * /
  */
 
-package com.netflix.zuul.context;
+package com.netflix.zuul.message;
 
+import com.netflix.zuul.context.SessionContext;
+import io.netty.buffer.ByteBuf;
 import rx.Observable;
+
+import java.nio.charset.Charset;
 
 /**
  * User: Mike Smith
- * Date: 7/15/15
- * Time: 5:36 PM
+ * Date: 7/16/15
+ * Time: 12:22 AM
  */
-public interface HttpRequestMessage extends HttpRequestInfo
+public interface ZuulMessage extends Cloneable
 {
-    void setProtocol(String protocol);
+    SessionContext getContext();
 
-    void setMethod(String method);
+    Headers getHeaders();
 
-    void setPath(String path);
+    void setHeaders(Headers newHeaders);
 
-    void setClientIp(String clientIp);
+    byte[] getBody();
 
-    void setScheme(String scheme);
+    void setBody(byte[] body);
 
-    void setPort(int port);
+    boolean hasBody();
 
-    void setServerName(String serverName);
+    void setBodyAsText(String bodyText, Charset cs);
 
-    Cookies parseCookies();
+    void setBodyAsText(String bodyText);
 
     Observable<byte[]> bufferBody();
 
+    int getMaxBodySize();
+
+    boolean isBodyBuffered();
+
+    Observable<ByteBuf> getBodyStream();
+
+    void setBodyStream(Observable<ByteBuf> bodyStream);
+
     ZuulMessage clone();
 
-    void storeInboundRequest();
-
-    HttpRequestInfo getInboundRequest();
+    String getInfoForLogging();
 }

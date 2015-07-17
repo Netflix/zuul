@@ -18,46 +18,39 @@
  * /
  */
 
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
 
-import java.net.URI;
+import com.netflix.zuul.message.ZuulMessage;
+import rx.Observable;
 
 /**
  * User: Mike Smith
  * Date: 7/15/15
- * Time: 1:18 PM
+ * Time: 5:36 PM
  */
-public interface HttpRequestInfo extends ZuulMessage
+public interface HttpRequestMessage extends HttpRequestInfo
 {
-    String getProtocol();
+    void setProtocol(String protocol);
 
-    String getMethod();
+    void setMethod(String method);
 
-    String getPath();
+    void setPath(String path);
 
-    HttpQueryParams getQueryParams();
+    void setClientIp(String clientIp);
 
-    String getPathAndQuery();
+    void setScheme(String scheme);
 
-    Headers getHeaders();
+    void setPort(int port);
 
-    String getClientIp();
+    void setServerName(String serverName);
 
-    String getScheme();
+    Cookies parseCookies();
 
-    int getPort();
+    Observable<byte[]> bufferBody();
 
-    String getServerName();
+    ZuulMessage clone();
 
-    int getMaxBodySize();
+    void storeInboundRequest();
 
-    String getInfoForLogging();
-
-    String getOriginalHost();
-
-    String getOriginalScheme();
-
-    int getOriginalPort();
-
-    URI reconstructURI();
+    HttpRequestInfo getInboundRequest();
 }

@@ -18,47 +18,35 @@
  * /
  */
 
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
 
-import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http.Cookie;
 import rx.Observable;
-
-import java.nio.charset.Charset;
 
 /**
  * User: Mike Smith
  * Date: 7/16/15
- * Time: 12:22 AM
+ * Time: 12:45 AM
  */
-public interface ZuulMessage extends Cloneable
+public interface HttpResponseMessage extends HttpResponseInfo
 {
-    SessionContext getContext();
+    void setStatus(int status);
 
-    Headers getHeaders();
-
-    void setHeaders(Headers newHeaders);
-
-    byte[] getBody();
-
-    void setBody(byte[] body);
-
-    boolean hasBody();
-
-    void setBodyAsText(String bodyText, Charset cs);
-
-    void setBodyAsText(String bodyText);
-
-    Observable<byte[]> bufferBody();
-
+    @Override
     int getMaxBodySize();
 
-    boolean isBodyBuffered();
+    @Override
+    Observable<byte[]> bufferBody();
 
-    Observable<ByteBuf> getBodyStream();
+    void addSetCookie(Cookie cookie);
 
-    void setBodyStream(Observable<ByteBuf> bodyStream);
+    /** The mutable request that will be sent to Origin. */
+    HttpRequestMessage getOutboundRequest();
 
-    ZuulMessage clone();
+    /** The immutable response that was received from Origin. */
+    HttpResponseInfo getInboundResponse();
 
-    String getInfoForLogging();
+    /** This should be called after response received from Origin, to store
+     * a copy of the response as-is. */
+    void storeInboundResponse();
 }

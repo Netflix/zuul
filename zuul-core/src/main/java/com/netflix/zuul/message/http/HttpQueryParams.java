@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
 
 import com.google.common.collect.*;
 import org.junit.Test;

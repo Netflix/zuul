@@ -22,6 +22,11 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.*
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpQueryParams
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.util.HttpUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream

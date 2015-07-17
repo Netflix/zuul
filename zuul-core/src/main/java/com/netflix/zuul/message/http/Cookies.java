@@ -18,7 +18,7 @@
  * /
  */
 
-package com.netflix.zuul.context;
+package com.netflix.zuul.message.http;
 
 import io.netty.handler.codec.http.Cookie;
 

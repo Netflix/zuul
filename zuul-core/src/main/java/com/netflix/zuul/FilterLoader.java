@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.zuul.context.ZuulMessage;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;

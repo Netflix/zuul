@@ -17,8 +17,8 @@ package com.netflix.zuul.rxnetty;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.context.HttpRequestMessage;
-import com.netflix.zuul.context.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.metrics.OriginStats;
 import com.netflix.zuul.origins.LoadBalancer;

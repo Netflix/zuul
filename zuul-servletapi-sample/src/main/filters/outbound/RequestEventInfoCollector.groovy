@@ -19,9 +19,9 @@ import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
-import com.netflix.zuul.context.HttpRequestInfo
-import com.netflix.zuul.context.HttpResponseInfo
-import com.netflix.zuul.context.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpRequestInfo
+import com.netflix.zuul.message.http.HttpResponseInfo
+import com.netflix.zuul.message.http.HttpResponseMessage
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.stats.AmazonInfoHolder
 import org.slf4j.Logger

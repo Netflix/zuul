@@ -15,8 +15,8 @@
  */
 package inbound
 
-import com.netflix.zuul.context.Headers
-import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert

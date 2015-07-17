@@ -92,6 +92,8 @@ public class FilterVerifier {
 
         String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
                 "import com.netflix.zuul.context.*\n" +
+                "import com.netflix.zuul.message.*\n" +
+                "import com.netflix.zuul.message.http.*\n" +
                 "\n" +
                 "class filter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {\n" +
                 "\n" +
@@ -116,6 +118,8 @@ public class FilterVerifier {
 
         String sNotZuulFilterGroovy = "import com.netflix.zuul.filters.*\n" +
                 "import com.netflix.zuul.context.*\n" +
+                "import com.netflix.zuul.message.*\n" +
+                "import com.netflix.zuul.message.http.*\n" +
                 "\n" +
                 "class filter  {\n" +
                 "\n" +
@@ -140,6 +144,8 @@ public class FilterVerifier {
 
         String sCompileFailCode = "import com.netflix.zuul.filters.*\n" +
                 "import com.netflix.zuul.context.*\n" +
+                "import com.netflix.zuul.message.*\n" +
+                "import com.netflix.zuul.message.http.*\n" +
                 "\n" +
                 "ccclass filter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {\n" +
                 "\n" +

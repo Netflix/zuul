@@ -17,6 +17,9 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;

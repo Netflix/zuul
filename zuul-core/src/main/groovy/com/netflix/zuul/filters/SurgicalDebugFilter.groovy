@@ -20,8 +20,8 @@ import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.constants.ZuulHeaders
-import com.netflix.zuul.context.HttpQueryParams
-import com.netflix.zuul.context.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpQueryParams
+import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 
 /**

@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
 
 public interface SessionContextFactory<T, V>

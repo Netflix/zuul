@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.ZuulMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

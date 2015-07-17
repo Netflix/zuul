@@ -16,7 +16,7 @@
 package com.netflix.zuul.accesslog;
 
 import com.netflix.config.DynamicStringListProperty;
-import com.netflix.zuul.context.Headers;
+import com.netflix.zuul.message.Headers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

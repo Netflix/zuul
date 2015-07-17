@@ -15,8 +15,8 @@
  */
 package endpoint
 
-import com.netflix.zuul.context.HttpRequestMessage
-import com.netflix.zuul.context.HttpResponseMessageImpl
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.filters.Endpoint
 import rx.Observable
 

@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.context;
+package com.netflix.zuul.message;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
+import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;

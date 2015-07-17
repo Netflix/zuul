@@ -17,6 +17,10 @@ package inbound
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test

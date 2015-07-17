@@ -17,17 +17,18 @@ package outbound
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.stats.StatsManager
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
-import static org.mockito.Mockito.when
-import static org.mockito.Mockito.when
 import static org.mockito.Mockito.when
 
 /**

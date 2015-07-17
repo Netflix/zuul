@@ -17,6 +17,11 @@ package com.netflix.zuul.filters
 
 import com.netflix.zuul.context.*
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.message.Headers
+import com.netflix.zuul.message.http.HttpQueryParams
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpRequestMessageImpl
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.monitoring.MonitoringHelper
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
