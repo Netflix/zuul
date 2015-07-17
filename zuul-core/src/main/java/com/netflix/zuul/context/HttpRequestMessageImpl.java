@@ -265,21 +265,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return clone;
     }
 
-
-
-    @Override
-    public String getInfoForLogging()
-    {
-        StringBuilder sb = new StringBuilder()
-                .append("uri=").append(reconstructURI().toString())
-                .append(", method=").append(getMethod())
-                ;
-        return sb.toString();
-    }
-
     protected HttpRequestInfo copyRequestInfo()
     {
-        return (HttpRequestInfo) this.clone();
+        // Unlike clone(), we create immutable copies of the Headers and HttpQueryParams here.
+        return new HttpRequestMessageImpl(message.getContext().clone(),
+                protocol, method, path,
+                queryParams.immutableCopy(), message.getHeaders().immutableCopy(), clientIp, scheme,
+                port, serverName);
     }
 
     @Override
@@ -292,6 +284,16 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public HttpRequestInfo getInboundRequest()
     {
         return inboundRequest;
+    }
+
+    @Override
+    public String getInfoForLogging()
+    {
+        StringBuilder sb = new StringBuilder()
+                .append("uri=").append(reconstructURI().toString())
+                .append(", method=").append(getMethod())
+                ;
+        return sb.toString();
     }
 
     /**

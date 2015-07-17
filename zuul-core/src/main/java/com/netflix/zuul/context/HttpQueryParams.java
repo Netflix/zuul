@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.context;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -34,8 +34,20 @@ import static junit.framework.Assert.assertEquals;
  */
 public class HttpQueryParams implements Cloneable
 {
-    private ArrayListMultimap<String, String> delegate = ArrayListMultimap.create();
+    private final ListMultimap<String, String> delegate;
+    private final boolean immutable;
 
+    public HttpQueryParams()
+    {
+        delegate = ArrayListMultimap.create();
+        immutable = false;
+    }
+
+    private HttpQueryParams(ListMultimap<String, String> delegate)
+    {
+        this.delegate = delegate;
+        immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
+    }
 
     public static HttpQueryParams parse(String queryString)
     {
@@ -107,7 +119,7 @@ public class HttpQueryParams implements Cloneable
 
     public void add(String name, String value)
     {
-        delegate.put(name,  value);
+        delegate.put(name, value);
     }
 
     public void clear()
@@ -173,6 +185,36 @@ public class HttpQueryParams implements Cloneable
         return copy;
     }
 
+    public HttpQueryParams immutableCopy()
+    {
+        return new HttpQueryParams(ImmutableListMultimap.copyOf(delegate));
+    }
+
+    public boolean isImmutable()
+    {
+        return immutable;
+    }
+
+
+    @Override
+    public int hashCode()
+    {
+        return delegate.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null)
+            return false;
+        if (! (obj instanceof HttpQueryParams))
+            return false;
+
+        HttpQueryParams hqp2 = (HttpQueryParams) obj;
+        return Iterables.elementsEqual(delegate.entries(), hqp2.delegate.entries());
+    }
+
+
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
     {
@@ -209,6 +251,19 @@ public class HttpQueryParams implements Cloneable
             qp = new HttpQueryParams();
             qp.add("k+", "\n");
             assertEquals("k+=\n", qp.toString());
+        }
+
+        @Test
+        public void testEquals()
+        {
+            HttpQueryParams qp1 = new HttpQueryParams();
+            qp1.add("k1", "v1");
+            qp1.add("k2", "v2");
+            HttpQueryParams qp2 = new HttpQueryParams();
+            qp2.add("k1", "v1");
+            qp2.add("k2", "v2");
+
+            assertEquals(qp1, qp2);
         }
     }
 }

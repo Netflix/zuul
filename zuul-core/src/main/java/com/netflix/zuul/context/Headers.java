@@ -17,6 +17,9 @@ package com.netflix.zuul.context;
 
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,16 +36,19 @@ import java.util.Set;
  */
 public class Headers implements Cloneable
 {
-    private final ArrayListMultimap<String, String> delegate;
+    private final ListMultimap<String, String> delegate;
+    private final boolean immutable;
 
     public Headers()
     {
         delegate = ArrayListMultimap.create();
+        immutable = false;
     }
 
-    private Headers(ArrayListMultimap<String, String> delegate)
+    private Headers(ListMultimap<String, String> delegate)
     {
         this.delegate = delegate;
+        immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
     }
 
     /**
@@ -155,18 +161,37 @@ public class Headers implements Cloneable
         return copy;
     }
 
+    public Headers immutableCopy()
+    {
+        return new Headers(ImmutableListMultimap.copyOf(delegate));
+    }
+
+    public boolean isImmutable()
+    {
+        return immutable;
+    }
+
     @Override
     public int hashCode()
     {
-        return delegate.hashCode();
+        return super.hashCode();
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (obj != null && obj instanceof Headers) {
-            return delegate.equals(((Headers) obj).delegate);
-        }
-        return false;
+        if (obj == null)
+            return false;
+        if (! (obj instanceof Headers))
+            return false;
+
+        Headers h2 = (Headers) obj;
+        return Iterables.elementsEqual(delegate.entries(), h2.delegate.entries());
+    }
+
+    @Override
+    public String toString()
+    {
+        return delegate.toString();
     }
 }

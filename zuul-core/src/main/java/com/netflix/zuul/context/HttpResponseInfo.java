@@ -8,7 +8,6 @@ package com.netflix.zuul.context;
 public interface HttpResponseInfo extends ZuulMessage
 {
     int getStatus();
-    Headers getHeaders();
 
     /** The immutable request that was originally received from client. */
     HttpRequestInfo getInboundRequest();
