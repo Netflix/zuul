@@ -44,8 +44,6 @@ public interface HttpRequestMessage extends HttpRequestInfo
 
     void setServerName(String serverName);
 
-    Cookies parseCookies();
-
     Observable<byte[]> bufferBody();
 
     ZuulMessage clone();

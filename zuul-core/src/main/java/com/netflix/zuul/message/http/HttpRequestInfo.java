@@ -63,4 +63,6 @@ public interface HttpRequestInfo extends ZuulMessage
     int getOriginalPort();
 
     URI reconstructURI();
+
+    Cookies parseCookies();
 }
