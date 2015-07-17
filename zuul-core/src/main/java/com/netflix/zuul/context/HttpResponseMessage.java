@@ -28,12 +28,8 @@ import rx.Observable;
  * Date: 7/16/15
  * Time: 12:45 AM
  */
-public interface HttpResponseMessage extends ZuulMessage
+public interface HttpResponseMessage extends HttpResponseInfo
 {
-    HttpRequestMessage getRequest();
-
-    int getStatus();
-
     void setStatus(int status);
 
     @Override
@@ -42,19 +38,7 @@ public interface HttpResponseMessage extends ZuulMessage
     @Override
     Observable<byte[]> bufferBody();
 
-    Cookies parseSetCookieHeader(String setCookieValue);
-
-    boolean hasSetCookieWithName(String cookieName);
-
     void addSetCookie(Cookie cookie);
 
-    @Override
-    ZuulMessage clone();
-
-    @Override
-    String getInfoForLogging();
-
-    void storeOriginalResponseInfo();
-
-    HttpResponseInfo getOriginalResponseInfo();
+    void storeInboundResponse();
 }

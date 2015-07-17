@@ -68,7 +68,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                 servletRequest.getScheme(), servletRequest.getServerPort(), servletRequest.getServerName());
 
         // Store this original request info for future reference (ie. for metrics and access logging purposes).
-        request.storeOriginalRequestInfo();
+        request.storeInboundRequest();
 
         // Get the inputstream of body.
         InputStream bodyInput;

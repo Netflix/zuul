@@ -51,7 +51,7 @@ public class ZuulMessageImpl implements ZuulMessage
     }
 
     public ZuulMessageImpl(SessionContext context, Headers headers) {
-        this.context = context;
+        this.context = context == null ? new SessionContext() : context;
         this.headers = headers == null ? new Headers() : headers;
     }
 

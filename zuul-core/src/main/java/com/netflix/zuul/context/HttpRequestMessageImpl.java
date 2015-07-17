@@ -53,7 +53,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private int port;
     private String serverName;
 
-    private HttpRequestInfo originalRequestInfo = null;
+    private HttpRequestInfo inboundRequest = null;
 
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
@@ -277,15 +277,15 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void storeOriginalRequestInfo()
+    public void storeInboundRequest()
     {
-        originalRequestInfo = copyRequestInfo();
+        inboundRequest = copyRequestInfo();
     }
 
     @Override
-    public HttpRequestInfo getOriginalRequestInfo()
+    public HttpRequestInfo getInboundRequest()
     {
-        return originalRequestInfo;
+        return inboundRequest;
     }
 
     /**
@@ -400,8 +400,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
 
-            request.storeOriginalRequestInfo();
-            HttpRequestInfo originalRequest = request.getOriginalRequestInfo();
+            request.storeInboundRequest();
+            HttpRequestInfo originalRequest = request.getInboundRequest();
 
             Assert.assertEquals(request.getPort(), originalRequest.getPort());
             Assert.assertEquals(request.getPath(), originalRequest.getPath());

@@ -5,24 +5,25 @@ package com.netflix.zuul.context;
  * Date: 7/6/15
  * Time: 5:27 PM
  */
-public class HttpResponseInfo
+public interface HttpResponseInfo extends ZuulMessage
 {
-    private final int status;
-    private final Headers headers;
+    int getStatus();
+    Headers getHeaders();
 
-    public HttpResponseInfo(int status, Headers headers)
-    {
-        this.status = status;
-        this.headers = headers == null ? new Headers() : headers;
-    }
+    /** The mutable request that will be sent to Origin. */
+    HttpRequestMessage getRequest();
 
-    public int getStatus()
-    {
-        return status;
-    }
+    /** The immutable request that was originally received from client. */
+    HttpRequestInfo getInboundRequest();
 
-    public Headers getHeaders()
-    {
-        return headers;
-    }
+    HttpResponseInfo getInboundResponse();
+
+    @Override
+    ZuulMessage clone();
+
+    @Override
+    String getInfoForLogging();
+
+    Cookies parseSetCookieHeader(String setCookieValue);
+    boolean hasSetCookieWithName(String cookieName);
 }

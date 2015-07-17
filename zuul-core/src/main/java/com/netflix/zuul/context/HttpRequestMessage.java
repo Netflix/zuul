@@ -49,7 +49,7 @@ public interface HttpRequestMessage extends HttpRequestInfo
 
     ZuulMessage clone();
 
-    void storeOriginalRequestInfo();
+    void storeInboundRequest();
 
-    HttpRequestInfo getOriginalRequestInfo();
+    HttpRequestInfo getInboundRequest();
 }

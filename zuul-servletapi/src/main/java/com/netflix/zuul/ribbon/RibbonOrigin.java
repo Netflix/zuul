@@ -184,7 +184,7 @@ public class RibbonOrigin implements Origin
         }
 
         // Store this original response info for future reference (ie. for metrics and access logging purposes).
-        respMsg.storeOriginalResponseInfo();
+        respMsg.storeInboundResponse();
 
         // Body.
         Observable<ByteBuf> responseBodyObs = ByteBufUtils.fromInputStream(ribbonResp.getInputStream());

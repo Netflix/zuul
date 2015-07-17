@@ -48,7 +48,7 @@ public class RxNettyUtils
         }
 
         // Store this original response info for future reference (ie. for metrics and access logging purposes).
-        zuulResp.storeOriginalResponseInfo();
+        zuulResp.storeInboundResponse();
 
         return zuulResp;
     }

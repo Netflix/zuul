@@ -18,41 +18,117 @@ package com.netflix.zuul.context;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.stats.Timing;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import rx.Observable;
+
+import java.nio.charset.Charset;
 
 /**
  * User: michaels
  * Date: 2/24/15
  * Time: 10:54 AM
  */
-public class HttpResponseMessageImpl extends ZuulMessageImpl implements HttpResponseMessage
+public class HttpResponseMessageImpl implements HttpResponseMessage
 {
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
 
-    private HttpRequestMessage request;
+    private ZuulMessage message;
+    private HttpRequestMessage outboundRequest;
     private int status;
-    private HttpResponseInfo originalResponse = null;
+    private HttpResponseInfo inboundResponse = null;
 
     public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int defaultStatus)
     {
-        super(context);
-        this.request = request;
+        this.message = new ZuulMessageImpl(context, new Headers());
+        this.outboundRequest = request;
         this.status = defaultStatus;
     }
 
-    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status) {
-        super(context, headers);
-        this.request = request;
+    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
+    {
+        this.message = new ZuulMessageImpl(context, headers);
+        this.outboundRequest = request;
         this.status = status;
     }
 
     @Override
+    public Headers getHeaders()
+    {
+        return message.getHeaders();
+    }
+
+    @Override
+    public SessionContext getContext()
+    {
+        return message.getContext();
+    }
+
+    @Override
+    public void setHeaders(Headers newHeaders)
+    {
+        message.setHeaders(newHeaders);
+    }
+
+    @Override
+    public byte[] getBody()
+    {
+        return message.getBody();
+    }
+
+    @Override
+    public void setBody(byte[] body)
+    {
+        message.setBody(body);
+    }
+
+    @Override
+    public boolean hasBody()
+    {
+        return message.hasBody();
+    }
+
+    @Override
+    public void setBodyAsText(String bodyText, Charset cs)
+    {
+        message.setBodyAsText(bodyText, cs);
+    }
+
+    @Override
+    public void setBodyAsText(String bodyText)
+    {
+        message.setBodyAsText(bodyText);
+    }
+
+    @Override
+    public boolean isBodyBuffered()
+    {
+        return message.isBodyBuffered();
+    }
+
+    @Override
+    public Observable<ByteBuf> getBodyStream()
+    {
+        return message.getBodyStream();
+    }
+
+    @Override
+    public void setBodyStream(Observable<ByteBuf> bodyStream)
+    {
+        message.setBodyStream(bodyStream);
+    }
+
+    @Override
     public HttpRequestMessage getRequest() {
-        return request;
+        return outboundRequest;
+    }
+
+    @Override
+    public HttpRequestInfo getInboundRequest() {
+        return outboundRequest.getInboundRequest();
     }
 
     @Override
@@ -75,7 +151,7 @@ public class HttpResponseMessageImpl extends ZuulMessageImpl implements HttpResp
         // Wrap the buffering of response body in a timer.
         Timing timing = getContext().getTimings().getResponseBodyRead();
         timing.start();
-        return super.bufferBody()
+        return message.bufferBody()
                 .finallyDo(() -> {
                     timing.end();
                 });
@@ -115,7 +191,9 @@ public class HttpResponseMessageImpl extends ZuulMessageImpl implements HttpResp
     @Override
     public ZuulMessage clone()
     {
-        return super.clone();
+        // TODO - not sure if should be cloning the request object here or not....
+        return new HttpResponseMessageImpl(getContext().clone(), getHeaders().clone(),
+                (HttpRequestMessage) getRequest().clone(), getStatus());
     }
 
     @Override
@@ -130,18 +208,18 @@ public class HttpResponseMessageImpl extends ZuulMessageImpl implements HttpResp
 
     protected HttpResponseInfo copyResponseInfo()
     {
-        return new HttpResponseInfo(status, headers.clone());
+        return (HttpResponseInfo) this.clone();
     }
 
     @Override
-    public void storeOriginalResponseInfo()
+    public void storeInboundResponse()
     {
-        originalResponse = copyResponseInfo();
+        inboundResponse = copyResponseInfo();
     }
 
     @Override
-    public HttpResponseInfo getOriginalResponseInfo()
+    public HttpResponseInfo getInboundResponse()
     {
-        return originalResponse;
+        return inboundResponse;
     }
 }
