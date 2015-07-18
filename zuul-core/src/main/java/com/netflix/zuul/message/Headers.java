@@ -93,6 +93,8 @@ public class Headers implements Cloneable
     /**
      * Replace any/all entries with this key, with this single entry.
      *
+     * If value is null, then not added, but any existing header of same name is removed.
+     *
      * @param name
      * @param value
      */
@@ -100,7 +102,9 @@ public class Headers implements Cloneable
     {
         String lc_name = name.toLowerCase();
         delegate.removeAll(lc_name);
-        delegate.put(lc_name,  value);
+        if (value != null) {
+            delegate.put(lc_name, value);
+        }
     }
 
     public boolean setIfAbsent(String name, String value)
