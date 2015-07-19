@@ -60,17 +60,21 @@ class Stats extends HttpOutboundSyncFilter
         dumpRequestDebug(ctx)
     }
 
-    public void dumpRequestDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.get("requestDebug");
+    public void dumpRequestDebug(SessionContext context)
+    {
+        String uuid = context.getUUID()
+        List<String> rd = Debug.getRequestDebug(context)
         rd?.each {
-            println("REQUEST_DEBUG::${it}");
+            println("${uuid} ${it}");
         }
     }
 
-    public void dumpRoutingDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.get("routingDebug");
+    public void dumpRoutingDebug(SessionContext ctx)
+    {
+        String uuid = ctx.getUUID()
+        List<String> rd = Debug.getRoutingDebug(ctx);
         rd?.each {
-            println("ZUUL_DEBUG::${it}");
+            println("${uuid} ${it}");
         }
     }
 

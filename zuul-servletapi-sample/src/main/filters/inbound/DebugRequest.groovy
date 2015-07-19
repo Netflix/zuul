@@ -91,8 +91,9 @@ class DebugRequest extends HttpInboundFilter
 
             ArrayList<String> debugList = Debug.getRequestDebug(context)
 
-            Assert.assertTrue(debugList.contains("REQUEST_INBOUND:: > LINE: method uri protocol"))
-            Assert.assertTrue(debugList.contains("REQUEST_INBOUND:: > host:moldfarm.com"))
+            Assert.assertEquals("REQUEST_INBOUND:: > LINE: METHOD uri protocol", debugList.get(0))
+            Assert.assertEquals("REQUEST_INBOUND:: > HDR: x-forwarded-proto:https", debugList.get(1))
+            Assert.assertEquals("REQUEST_INBOUND:: > HDR: host:moldfarm.com", debugList.get(2))
         }
     }
 }

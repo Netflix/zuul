@@ -18,6 +18,7 @@ package com.netflix.zuul.context;
 import com.netflix.zuul.origins.OriginManager;
 
 import javax.inject.Inject;
+import java.util.UUID;
 
 /**
  * User: michaels@netflix.com
@@ -38,6 +39,9 @@ public class SampleSessionContextDecorator implements SessionContextDecorator
     {
         // Add the configured OriginManager to context for use in route filter.
         ctx.put("origin_manager", originManager);
+
+        // Generate a UUID for this session.
+        ctx.setUUID(UUID.randomUUID().toString());
 
         return ctx;
     }

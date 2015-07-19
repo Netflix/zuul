@@ -67,7 +67,7 @@ class DebugResponse extends HttpOutboundFilter
             response.getHeaders().set("X-Zuul-Debug-Header", debugHeader)
         }
 
-        return Debug.writeDebugResponse(response.getContext(), response.getInboundResponse(), false)
+        return Debug.writeDebugResponse(response.getContext(), response, false)
                 .cast(HttpResponseMessage.class)
     }
 

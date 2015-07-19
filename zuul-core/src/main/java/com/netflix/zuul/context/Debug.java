@@ -171,7 +171,7 @@ public class Debug {
             String arrow = ">";
 
             Debug.addRequestDebug(context, String.format("%s:: %s LINE: %s %s %s",
-                    prefix, arrow, request.getMethod(), request.getPathAndQuery(), request.getProtocol()));
+                    prefix, arrow, request.getMethod().toUpperCase(), request.getPathAndQuery(), request.getProtocol()));
             obs = Debug.writeDebugMessage(context, request, prefix, arrow).cast(HttpRequestInfo.class);
         }
 
@@ -206,7 +206,7 @@ public class Debug {
 
 
         for (Map.Entry header : msg.getHeaders().entries()) {
-            Debug.addRequestDebug(context, String.format("%s:: %s %s:%s", prefix, arrow, header.getKey(), header.getValue()));
+            Debug.addRequestDebug(context, String.format("%s:: %s HDR: %s:%s", prefix, arrow, header.getKey(), header.getValue()));
         }
 
         // Capture the response body into a Byte array for later usage.
@@ -264,7 +264,7 @@ public class Debug {
             params = new HttpQueryParams();
             params.add("k1", "v1");
 
-            request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "POST", "/some/where",
+            request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
                     params, headers, "9.9.9.9", "https", 80, "localhost");
             request.setBodyAsText("some text");
 
@@ -298,7 +298,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(2, debugLines.size());
             assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_INBOUND:: > lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(1));
         }
 
         @Test
@@ -311,7 +311,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(2, debugLines.size());
             assertEquals("REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_OUTBOUND:: > lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_OUTBOUND:: > HDR: lah:deda", debugLines.get(1));
         }
 
         @Test
@@ -324,7 +324,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(3, debugLines.size());
             assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_INBOUND:: > lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(1));
             assertEquals("REQUEST_INBOUND:: > BODY: some text", debugLines.get(2));
         }
 
@@ -338,7 +338,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(2, debugLines.size());
             assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_INBOUND:: < lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(1));
         }
 
         @Test
@@ -351,7 +351,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(2, debugLines.size());
             assertEquals("RESPONSE_OUTBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_OUTBOUND:: < lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_OUTBOUND:: < HDR: lah:deda", debugLines.get(1));
         }
 
         @Test
@@ -364,7 +364,7 @@ public class Debug {
             List<String> debugLines = Debug.getRequestDebug(ctx);
             assertEquals(3, debugLines.size());
             assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_INBOUND:: < lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(1));
             assertEquals("RESPONSE_INBOUND:: < BODY: response text", debugLines.get(2));
         }
     }

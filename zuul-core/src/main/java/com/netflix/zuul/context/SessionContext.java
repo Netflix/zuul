@@ -43,6 +43,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
+    private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
     private static final String KEY_APPLY_FILTERS_PRIORITY = "_filter_priority";
@@ -156,6 +157,15 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
             }
         }
         return copy;
+    }
+
+    public String getUUID()
+    {
+        return getString(KEY_UUID);
+    }
+    public void setUUID(String uuid)
+    {
+        set(KEY_UUID, uuid);
     }
 
     /**
