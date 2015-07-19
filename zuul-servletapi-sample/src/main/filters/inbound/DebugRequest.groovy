@@ -15,24 +15,26 @@
  */
 package inbound
 
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.http.HttpInboundFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
+import static org.mockito.Mockito.when
 import org.mockito.runners.MockitoJUnitRunner
+import rx.Observable
 
 /**
  * @author Mikey Cohen
  * Date: 3/12/12
  * Time: 1:51 PM
  */
-class DebugRequest extends HttpInboundSyncFilter
+class DebugRequest extends HttpInboundFilter
 {
     @Override
     int filterOrder() {
@@ -41,27 +43,15 @@ class DebugRequest extends HttpInboundSyncFilter
 
     @Override
     boolean shouldFilter(HttpRequestMessage msg) {
-        return com.netflix.zuul.context.Debug.debugRequest(msg.getContext())
+        return Debug.debugRequest(msg.getContext())
 
     }
 
     @Override
-    HttpRequestMessage apply(HttpRequestMessage req) {
-
-        com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: " + req.getProtocol() + " " + req.getClientIp())
-
-        com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + req.getMethod() + " " + req.getPathAndQuery() + " " + req.getProtocol())
-
-        for (Map.Entry header : req.getHeaders().entries()) {
-            com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + header.getKey() + ":" + header.getValue())
-        }
-
-        if (req.getBody()) {
-            String bodyStr = new String(req.getBody(), "UTF-8");
-            com.netflix.zuul.context.Debug.addRequestDebug(req.getContext(), "REQUEST:: > " + bodyStr)
-        }
-
-        return req;
+    Observable<HttpRequestMessage> applyAsync(HttpRequestMessage req)
+    {
+        return Debug.writeDebugRequest(req.getContext(), req.getInboundRequest(), true)
+                .cast(HttpRequestMessage.class)
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -77,7 +67,8 @@ class DebugRequest extends HttpInboundSyncFilter
         @Before
         public void setup() {
             context = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(context)
+            when(request.getContext()).thenReturn(context)
+            when(request.getInboundRequest()).thenReturn(request)
         }
 
         @Test
@@ -85,26 +76,23 @@ class DebugRequest extends HttpInboundSyncFilter
 
             DebugRequest debugFilter = new DebugRequest()
 
-            Mockito.when(request.getClientIp()).thenReturn("1.1.1.1")
-            Mockito.when(request.method).thenReturn("method")
-            Mockito.when(request.protocol).thenReturn("protocol")
-            Mockito.when(request.getPathAndQuery()).thenReturn("uri")
+            when(request.getClientIp()).thenReturn("1.1.1.1")
+            when(request.getMethod()).thenReturn("method")
+            when(request.getProtocol()).thenReturn("protocol")
+            when(request.getPathAndQuery()).thenReturn("uri")
 
             Headers headers = new Headers()
-            Mockito.when(request.getHeaders()).thenReturn(headers)
+            when(request.getHeaders()).thenReturn(headers)
             headers.add("Host", "moldfarm.com")
             headers.add("X-Forwarded-Proto", "https")
 
-            debugFilter.apply(request)
+            context.setDebugRequest(true)
+            debugFilter.applyAsync(request).toBlocking().first()
 
-            ArrayList<String> debugList = com.netflix.zuul.context.Debug.getRequestDebug(context)
+            ArrayList<String> debugList = Debug.getRequestDebug(context)
 
-            Assert.assertTrue(debugList.contains("REQUEST:: protocol 1.1.1.1"))
-            Assert.assertTrue(debugList.contains("REQUEST:: > method uri protocol"))
-            Assert.assertTrue(debugList.contains("REQUEST:: > host:moldfarm.com"))
-
-
+            Assert.assertTrue(debugList.contains("REQUEST_INBOUND:: > LINE: method uri protocol"))
+            Assert.assertTrue(debugList.contains("REQUEST_INBOUND:: > host:moldfarm.com"))
         }
-
     }
 }

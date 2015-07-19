@@ -195,19 +195,19 @@ class ZuulHostRequest extends HttpSyncEndpoint
         if (Debug.debugRequest(context)) {
 
             request.getHeaders().entries().each {
-                Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
+                Debug.addRequestDebug(context, "REQUEST_INBOUND:: > ${it.key}  ${it.value}")
             }
             String query = ""
             request.getQueryParams().entries().each {
                 query += it.key + "=" + it.value + "&"
             }
 
-            Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
+            Debug.addRequestDebug(context, "REQUEST_INBOUND:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
 
             if (request.getBody() != null) {
                 if (!Debug.debugRequestHeadersOnly()) {
                     String entity = new ByteArrayInputStream(request.getBody()).getText()
-                    Debug.addRequestDebug(context, "ZUUL:: > ${entity}")
+                    Debug.addRequestDebug(context, "REQUEST_INBOUND:: > ${entity}")
                 }
             }
         }
@@ -297,7 +297,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
         if (Debug.debugRequest(context)) {
 
             resp.getHeaders().entries().each { header ->
-                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${header.getKey()}, ${header.getValue()}")
+                Debug.addRequestDebug(context, "RESPONSE_INBOUND:: < ${header.getKey()}, ${header.getValue()}")
             }
 
             if (resp.getBody()) {
@@ -305,7 +305,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
                 if (HttpUtils.isGzipped(resp.getHeaders()))
                     inStream = new GZIPInputStream(inStream);
                 String responseEntity = inStream.getText()
-                Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: < ${responseEntity}")
+                Debug.addRequestDebug(context, "RESPONSE_INBOUND:: < ${responseEntity}")
             }
         }
     }

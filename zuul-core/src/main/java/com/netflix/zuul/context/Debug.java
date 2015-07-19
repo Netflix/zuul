@@ -15,22 +15,29 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.*;
+import com.netflix.zuul.util.HttpUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
@@ -155,15 +162,114 @@ public class Debug {
 
     }
 
+    public static Observable<HttpRequestInfo> writeDebugRequest(SessionContext context,
+                                                                HttpRequestInfo request, boolean isInbound)
+    {
+        Observable<HttpRequestInfo> obs = null;
+        if (Debug.debugRequest(context)) {
+            String prefix = isInbound ? "REQUEST_INBOUND" : "REQUEST_OUTBOUND";
+            String arrow = ">";
+
+            Debug.addRequestDebug(context, String.format("%s:: %s LINE: %s %s %s",
+                    prefix, arrow, request.getMethod(), request.getPathAndQuery(), request.getProtocol()));
+            obs = Debug.writeDebugMessage(context, request, prefix, arrow).cast(HttpRequestInfo.class);
+        }
+
+        if (obs == null)
+            obs = Observable.just(request);
+
+        return obs;
+    }
+
+    public static Observable<HttpResponseInfo> writeDebugResponse(SessionContext context,
+                                                                  HttpResponseInfo response, boolean isInbound)
+    {
+        Observable<HttpResponseInfo> obs = null;
+        if (Debug.debugRequest(context)) {
+            String prefix = isInbound ? "RESPONSE_INBOUND" : "RESPONSE_OUTBOUND";
+            String arrow = "<";
+
+            Debug.addRequestDebug(context, String.format("%s:: %s STATUS: %s", prefix, arrow, response.getStatus()));
+            obs = Debug.writeDebugMessage(context, response, prefix, arrow).cast(HttpResponseInfo.class);
+        }
+
+        if (obs == null)
+            obs = Observable.just(response);
+
+        return obs;
+    }
+
+    public static Observable<ZuulMessage> writeDebugMessage(SessionContext context, ZuulMessage msg,
+                                                            String prefix, String arrow)
+    {
+        Observable<ZuulMessage> obs = null;
+
+
+        for (Map.Entry header : msg.getHeaders().entries()) {
+            Debug.addRequestDebug(context, String.format("%s:: %s %s:%s", prefix, arrow, header.getKey(), header.getValue()));
+        }
+
+        // Capture the response body into a Byte array for later usage.
+        if (msg.hasBody()) {
+            if (! Debug.debugRequestHeadersOnly(context)) {
+                // Convert body to a String and add to debug log.
+                obs = msg.bufferBody().map((bodyBytes) -> {
+
+                    String body = Debug.bodyToText(bodyBytes, msg.getHeaders());
+                    Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
+
+                    return msg;
+                });
+            }
+        }
+
+        if (obs == null)
+            obs = Observable.just(msg);
+
+        return obs;
+    }
+
+    public static String bodyToText(byte[] bodyBytes, Headers headers)
+    {
+        try {
+            if (HttpUtils.isGzipped(headers)) {
+                GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(bodyBytes));
+                bodyBytes = IOUtils.toByteArray(gzIn);
+            }
+            return IOUtils.toString(bodyBytes, "UTF-8");
+        }
+        catch (IOException e) {
+            LOG.error("Error reading message body for debugging.", e);
+            return "ERROR READING MESSAGE BODY!";
+        }
+    }
+
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest
     {
         private SessionContext ctx;
+        private Headers headers;
+        private HttpQueryParams params;
+        private HttpRequestMessage request;
+        private HttpResponseMessage response;
 
         @Before
         public void setup() {
             ctx = new SessionContext();
+
+            headers = new Headers();
+            headers.add("lah", "deda");
+
+            params = new HttpQueryParams();
+            params.add("k1", "v1");
+
+            request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "POST", "/some/where",
+                    params, headers, "9.9.9.9", "https", 80, "localhost");
+            request.setBodyAsText("some text");
+
+            response = new HttpResponseMessageImpl(ctx, headers, request, 200);
+            response.setBodyAsText("response text");
         }
 
         @Test
@@ -181,6 +287,85 @@ public class Debug {
             addRequestDebug(ctx, "test2");
             assertTrue(getRequestDebug(ctx).contains("test2"));
         }
-    }
 
+        @Test
+        public void testWriteInboundRequestDebug()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(true);
+            Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(2, debugLines.size());
+            assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
+            assertEquals("REQUEST_INBOUND:: > lah:deda", debugLines.get(1));
+        }
+
+        @Test
+        public void testWriteOutboundRequestDebug()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(true);
+            Debug.writeDebugRequest(ctx, request, false).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(2, debugLines.size());
+            assertEquals("REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
+            assertEquals("REQUEST_OUTBOUND:: > lah:deda", debugLines.get(1));
+        }
+
+        @Test
+        public void testWriteRequestDebug_WithBody()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(false);
+            Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(3, debugLines.size());
+            assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
+            assertEquals("REQUEST_INBOUND:: > lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > BODY: some text", debugLines.get(2));
+        }
+
+        @Test
+        public void testWriteInboundResponseDebug()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(true);
+            Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(2, debugLines.size());
+            assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
+            assertEquals("RESPONSE_INBOUND:: < lah:deda", debugLines.get(1));
+        }
+
+        @Test
+        public void testWriteOutboundResponseDebug()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(true);
+            Debug.writeDebugResponse(ctx, response, false).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(2, debugLines.size());
+            assertEquals("RESPONSE_OUTBOUND:: < STATUS: 200", debugLines.get(0));
+            assertEquals("RESPONSE_OUTBOUND:: < lah:deda", debugLines.get(1));
+        }
+
+        @Test
+        public void testWriteResponseDebug_WithBody()
+        {
+            ctx.setDebugRequest(true);
+            ctx.setDebugRequestHeadersOnly(false);
+            Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
+
+            List<String> debugLines = Debug.getRequestDebug(ctx);
+            assertEquals(3, debugLines.size());
+            assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
+            assertEquals("RESPONSE_INBOUND:: < lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < BODY: response text", debugLines.get(2));
+        }
+    }
 }

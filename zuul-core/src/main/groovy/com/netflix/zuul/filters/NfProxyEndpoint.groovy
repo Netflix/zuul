@@ -18,13 +18,12 @@ package com.netflix.zuul.filters
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
-import com.netflix.zuul.message.Headers
-import com.netflix.zuul.message.http.*
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.monitoring.MonitoringHelper
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
-import com.netflix.zuul.util.HttpUtils
-import org.apache.commons.io.IOUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -35,9 +34,6 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
-
-import java.nio.charset.Charset
-import java.util.zip.GZIPInputStream
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
@@ -61,7 +57,8 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
     {
         SessionContext context = request.getContext()
 
-        return debugRequest(context, request)
+        return Debug.writeDebugRequest(context, request, false)
+            .cast(HttpRequestMessage.class)
             .map({req ->
                 // Get the Origin.
                 Origin origin = getOrigin(request)
@@ -77,7 +74,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
                 context.put("origin_http_status", Integer.toString(originResp.getStatus()));
             })
             .flatMap({originResp ->
-                return debugResponse(context, originResp)
+                return Debug.writeDebugResponse(context, originResp, true)
             })
     }
 
@@ -95,80 +92,6 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
             throw new ZuulException("No Origin registered for name=${name}!", "UNKNOWN_VIP")
         }
         return origin
-    }
-
-    Observable<HttpRequestMessage> debugRequest(SessionContext context, HttpRequestMessage request)
-    {
-        Observable<HttpRequestMessage> obs = null
-
-        if (Debug.debugRequest(context)) {
-
-            request.getHeaders().entries().each {
-                Debug.addRequestDebug(context, "ZUUL:: > ${it.key}  ${it.value}")
-            }
-            String query = ""
-            request.getQueryParams().entries().each {
-                query += it.key + "=" + it.value + "&"
-            }
-
-            Debug.addRequestDebug(context, "ZUUL:: > ${request.getMethod()}  ${request.getPath()}?${query} ${request.getProtocol()}")
-
-            if (request.isBodyBuffered()) {
-                if (! Debug.debugRequestHeadersOnly()) {
-                    obs = request.bufferBody().map({bodyBytes ->
-                        String body = bodyToText(bodyBytes, request.getHeaders())
-                        Debug.addRequestDebug(context, "ZUUL:: > ${body}")
-                    })
-                }
-            }
-        }
-
-        if (obs == null)
-            obs = Observable.just(request)
-
-        return obs
-    }
-
-    Observable<HttpResponseMessage> debugResponse(SessionContext context, HttpResponseMessage response)
-    {
-        Observable<HttpResponseMessage> obs = null
-
-        if (Debug.debugRequest(context)) {
-            Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: <  STATUS: " + response.getStatus());
-
-
-            for (Map.Entry header : response.getHeaders().entries()) {
-                Debug.addRequestDebug(context, String.format("ORIGIN_RESPONSE:: < %s  %s", header.getKey(), header.getValue()));
-            }
-
-            // Capture the response body into a Byte array for later usage.
-            if (response.hasBody()) {
-                if (! Debug.debugRequestHeadersOnly(context)) {
-                    // Convert body to a String and add to debug log.
-                    obs = response.bufferBody().map({bodyBytes ->
-
-                        String body = NfProxyEndpoint.bodyToText(bodyBytes, response.getHeaders())
-                        Debug.addRequestDebug(context, String.format("ORIGIN_RESPONSE:: < %s", body))
-
-                        return response
-                    })
-                }
-            }
-        }
-
-        if (obs == null)
-            obs = Observable.just(response)
-
-        return obs
-    }
-
-    private static String bodyToText(byte[] bodyBytes, Headers headers)
-    {
-        if (HttpUtils.isGzipped(headers)) {
-            GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(bodyBytes));
-            bodyBytes = IOUtils.toByteArray(gzIn)
-        }
-        return IOUtils.toString(bodyBytes, "UTF-8")
     }
 
 
@@ -198,28 +121,6 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
 
             when(originManager.getOrigin("an-origin")).thenReturn(origin)
             ctx.put("origin_manager", originManager)
-        }
-
-        @Test
-        public void testDebug()
-        {
-            ctx.setDebugRequest(true)
-
-            Headers headers = new Headers()
-            headers.add("lah", "deda")
-
-            HttpQueryParams params = new HttpQueryParams()
-            params.add("k1", "v1")
-
-            HttpRequestMessage request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "POST", "/some/where",
-                    params, headers, "9.9.9.9", "https", 80, "localhost")
-
-            filter.debug(ctx, request)
-
-            List<String> debugLines = Debug.getRequestDebug(ctx)
-            assertEquals(2, debugLines.size())
-            assertEquals("ZUUL:: > lah  deda", debugLines.get(0))
-            assertEquals("ZUUL:: > POST  /some/where?k1=v1& HTTP/1.1", debugLines.get(1))
         }
 
         @Test
