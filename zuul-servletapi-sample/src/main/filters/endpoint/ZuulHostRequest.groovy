@@ -218,8 +218,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
         org.apache.http.HttpHost httpHost = getHttpHost(routeHost)
         URI uri
         if (params != null && params.entries().size() > 0) {
-            String queryString = params.entries().each{ URLEncoder.encode(it, "UTF-8") }.join("&")
-            uri = new URI(null, null, path, queryString, null)
+            uri = URI.create(path + "?" + params.toEncodedString())
         } else {
             uri = URI.create(path)
         }

@@ -21,7 +21,8 @@ package com.netflix.zuul;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.servo.monitor.DynamicCounter;
-import com.netflix.zuul.context.*;
+import com.netflix.zuul.context.Debug;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.*;
 import com.netflix.zuul.message.Headers;
@@ -112,7 +113,7 @@ public class FilterProcessor {
 
                     // Pull out the request object to use for building a new response.
                     HttpRequestMessage request;
-                    if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
+                    if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
                         request = ((HttpResponseMessage) msg).getOutboundRequest();
                     } else {
                         request = (HttpRequestMessage) msg;
@@ -126,7 +127,7 @@ public class FilterProcessor {
                 }
 
                 // Apply this endpoint.
-                if (HttpResponseMessageImpl.class.isAssignableFrom(msg.getClass())) {
+                if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
                     // if msg is a response, then we need to get it's request to pass to the error filter.
                     HttpResponseMessage response = (HttpResponseMessage) msg;
                     return processAsyncFilter(response.getOutboundRequest(), endpointFilter, (m2) -> m2, FilterPriority.LOW);

@@ -15,16 +15,16 @@
  */
 package com.netflix.zuul.filters
 
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.message.Headers
-import com.netflix.zuul.message.http.HttpQueryParams
-import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.message.http.HttpRequestMessageImpl
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
+import com.netflix.zuul.message.http.*
 import com.netflix.zuul.monitoring.MonitoringHelper
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
+import com.netflix.zuul.util.HttpUtils
+import org.apache.commons.io.IOUtils
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -35,6 +35,9 @@ import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
+
+import java.nio.charset.Charset
+import java.util.zip.GZIPInputStream
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.fail
@@ -54,38 +57,33 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
     private static final Logger LOG = LoggerFactory.getLogger(NfProxyEndpoint.class);
 
     @Override
-    Observable<HttpResponseMessageImpl> applyAsync(HttpRequestMessage request)
+    Observable<HttpResponseMessage> applyAsync(HttpRequestMessage request)
     {
-        debug(request.getContext(), request)
+        SessionContext context = request.getContext()
 
-        // Get the Origin.
-        Origin origin = getOrigin(request)
-
-        // Add execution of the request to the Observable chain, and return.
-        Observable<HttpResponseMessageImpl> respObs = origin.request(request)
-
-        // Store the status from origin (in case it's later overwritten).
-        respObs = respObs.doOnNext({ originResp ->
-            request.getContext().put("origin_http_status", Integer.toString(originResp.getStatus()));
-        })
-
-        return respObs
+        return debugRequest(context, request)
+            .map({req ->
+                // Get the Origin.
+                Origin origin = getOrigin(request)
+                return origin
+            })
+            .flatMap({origin ->
+                // Add execution of the request to the Observable chain, and return.
+                Observable<HttpResponseMessage> respObs = origin.request(request)
+                return respObs
+            })
+            .doOnNext({ originResp ->
+                // Store the status from origin (in case it's later overwritten).
+                context.put("origin_http_status", Integer.toString(originResp.getStatus()));
+            })
+            .flatMap({originResp ->
+                return debugResponse(context, originResp)
+            })
     }
 
-    HttpResponseMessageImpl apply(HttpRequestMessage request)
+    HttpResponseMessage apply(HttpRequestMessage request)
     {
-        debug(request.getContext(), request)
-
-        // Get the Origin.
-        Origin origin = getOrigin(request)
-
-        // Add execution of the request to the Observable chain, and block waiting for it to finish.
-        HttpResponseMessageImpl response = origin.request(request).toBlocking().first()
-
-        // Store the status from origin (in case it's later overwritten).
-        request.getContext().put("origin_http_status", Integer.toString(response.getStatus()));
-
-        return response
+        return applyAsync(request).toBlocking().first()
     }
 
     protected Origin getOrigin(HttpRequestMessage request)
@@ -99,7 +97,9 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
         return origin
     }
 
-    void debug(SessionContext context, HttpRequestMessage request) {
+    Observable<HttpRequestMessage> debugRequest(SessionContext context, HttpRequestMessage request)
+    {
+        Observable<HttpRequestMessage> obs = null
 
         if (Debug.debugRequest(context)) {
 
@@ -115,11 +115,60 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
 
             if (request.isBodyBuffered()) {
                 if (! Debug.debugRequestHeadersOnly()) {
-                    String entity = new ByteArrayInputStream(request.getBody()).getText()
-                    Debug.addRequestDebug(context, "ZUUL:: > ${entity}")
+                    obs = request.bufferBody().map({bodyBytes ->
+                        String body = bodyToText(bodyBytes, request.getHeaders())
+                        Debug.addRequestDebug(context, "ZUUL:: > ${body}")
+                    })
                 }
             }
         }
+
+        if (obs == null)
+            obs = Observable.just(request)
+
+        return obs
+    }
+
+    Observable<HttpResponseMessage> debugResponse(SessionContext context, HttpResponseMessage response)
+    {
+        Observable<HttpResponseMessage> obs = null
+
+        if (Debug.debugRequest(context)) {
+            Debug.addRequestDebug(context, "ORIGIN_RESPONSE:: <  STATUS: " + response.getStatus());
+
+
+            for (Map.Entry header : response.getHeaders().entries()) {
+                Debug.addRequestDebug(context, String.format("ORIGIN_RESPONSE:: < %s  %s", header.getKey(), header.getValue()));
+            }
+
+            // Capture the response body into a Byte array for later usage.
+            if (response.hasBody()) {
+                if (! Debug.debugRequestHeadersOnly(context)) {
+                    // Convert body to a String and add to debug log.
+                    obs = response.bufferBody().map({bodyBytes ->
+
+                        String body = NfProxyEndpoint.bodyToText(bodyBytes, response.getHeaders())
+                        Debug.addRequestDebug(context, String.format("ORIGIN_RESPONSE:: < %s", body))
+
+                        return response
+                    })
+                }
+            }
+        }
+
+        if (obs == null)
+            obs = Observable.just(response)
+
+        return obs
+    }
+
+    private static String bodyToText(byte[] bodyBytes, Headers headers)
+    {
+        if (HttpUtils.isGzipped(headers)) {
+            GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(bodyBytes));
+            bodyBytes = IOUtils.toByteArray(gzIn)
+        }
+        return IOUtils.toString(bodyBytes, "UTF-8")
     }
 
 
@@ -136,7 +185,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
 
         NfProxyEndpoint filter
         SessionContext ctx
-        HttpResponseMessageImpl response
+        HttpResponseMessage response
 
         @Before
         public void setup()
