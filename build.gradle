@@ -27,6 +27,7 @@ configurations.all {
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
+    apply plugin: 'groovy'
     apply plugin: 'nebula.provided-base'
     apply plugin: 'nebula.dependency-lock'
 
@@ -38,9 +39,29 @@ subprojects {
 
     sourceCompatibility = '1.8'
 
-    sourceSets.test.java.srcDir 'src/main/java'
 
-
+    sourceSets {
+        main {
+            java {
+                srcDirs  = ['src/main/java']
+                include '**/*.java'
+            }
+            groovy {
+                srcDirs  = ['src/main/groovy']
+                include '**/*.groovy'
+            }
+        }
+        test {
+            java {
+                srcDirs  = ['src/main/java']
+                include '**/*.java'
+            }
+            groovy {
+                srcDirs  = ['filters', 'src/main/groovy']
+                include '**/*.groovy'
+            }
+        }
+    }
 
     javadoc {
         options {
