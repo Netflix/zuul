@@ -81,7 +81,9 @@ public class FilterProcessor {
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        chain = applyFilterPhase(chain, "in", (request) -> request);
+        chain = applyFilterPhase(chain, "in", (request) -> {
+            return request;
+        } );
 
         chain = applyErrorEndpointIfNeeded(chain);
 
@@ -217,7 +219,7 @@ public class FilterProcessor {
     public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         return input.flatMap(msg -> processAsyncFilter(msg, filter,
-                defaultFilterResultChooser) );
+                defaultFilterResultChooser));
     }
 
     /**
@@ -282,7 +284,16 @@ public class FilterProcessor {
         });
 
         // If no resultContext returned from filter, then use the original context.
-        resultObs = resultObs.map(msg2 -> msg2 == null ? defaultFilterResultChooser.call(msg) : msg2);
+        resultObs = resultObs.map((msg2) -> {
+            ZuulMessage newMsg;
+            if (msg2 == null) {
+                newMsg = defaultFilterResultChooser.call(msg);
+            }
+            else {
+                newMsg = msg2;
+            }
+            return newMsg;
+        });
 
         // Record info when filter processing completes.
         resultObs = resultObs.doOnCompleted(() -> {

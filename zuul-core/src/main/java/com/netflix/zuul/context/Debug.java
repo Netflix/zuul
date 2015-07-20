@@ -162,48 +162,47 @@ public class Debug {
 
     }
 
-    public static Observable<HttpRequestInfo> writeDebugRequest(SessionContext context,
+    public static Observable<Boolean> writeDebugRequest(SessionContext context,
                                                                 HttpRequestInfo request, boolean isInbound)
     {
-        Observable<HttpRequestInfo> obs = null;
+        Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "REQUEST_INBOUND" : "REQUEST_OUTBOUND";
             String arrow = ">";
 
             Debug.addRequestDebug(context, String.format("%s:: %s LINE: %s %s %s",
                     prefix, arrow, request.getMethod().toUpperCase(), request.getPathAndQuery(), request.getProtocol()));
-            obs = Debug.writeDebugMessage(context, request, prefix, arrow).cast(HttpRequestInfo.class);
+            obs = Debug.writeDebugMessage(context, request, prefix, arrow);
         }
 
         if (obs == null)
-            obs = Observable.just(request);
+            obs = Observable.just(Boolean.FALSE);
 
         return obs;
     }
 
-    public static Observable<HttpResponseInfo> writeDebugResponse(SessionContext context,
+    public static Observable<Boolean> writeDebugResponse(SessionContext context,
                                                                   HttpResponseInfo response, boolean isInbound)
     {
-        Observable<HttpResponseInfo> obs = null;
+        Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "RESPONSE_INBOUND" : "RESPONSE_OUTBOUND";
             String arrow = "<";
 
             Debug.addRequestDebug(context, String.format("%s:: %s STATUS: %s", prefix, arrow, response.getStatus()));
-            obs = Debug.writeDebugMessage(context, response, prefix, arrow).cast(HttpResponseInfo.class);
+            obs = Debug.writeDebugMessage(context, response, prefix, arrow);
         }
 
         if (obs == null)
-            obs = Observable.just(response);
+            obs = Observable.just(Boolean.FALSE);
 
         return obs;
     }
 
-    public static Observable<ZuulMessage> writeDebugMessage(SessionContext context, ZuulMessage msg,
+    public static Observable<Boolean> writeDebugMessage(SessionContext context, ZuulMessage msg,
                                                             String prefix, String arrow)
     {
-        Observable<ZuulMessage> obs = null;
-
+        Observable<Boolean> obs = null;
 
         for (Map.Entry header : msg.getHeaders().entries()) {
             Debug.addRequestDebug(context, String.format("%s:: %s HDR: %s:%s", prefix, arrow, header.getKey(), header.getValue()));
@@ -214,17 +213,15 @@ public class Debug {
             if (! Debug.debugRequestHeadersOnly(context)) {
                 // Convert body to a String and add to debug log.
                 obs = msg.bufferBody().map((bodyBytes) -> {
-
                     String body = Debug.bodyToText(bodyBytes, msg.getHeaders());
                     Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
-
-                    return msg;
+                    return Boolean.TRUE;
                 });
             }
         }
 
         if (obs == null)
-            obs = Observable.just(msg);
+            obs = Observable.just(Boolean.FALSE);
 
         return obs;
     }

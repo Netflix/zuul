@@ -58,8 +58,7 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
         SessionContext context = request.getContext()
 
         return Debug.writeDebugRequest(context, request, false)
-            .cast(HttpRequestMessage.class)
-            .map({req ->
+            .map({bool ->
                 // Get the Origin.
                 Origin origin = getOrigin(request)
                 return origin
@@ -74,8 +73,8 @@ class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageIm
                 context.put("origin_http_status", Integer.toString(originResp.getStatus()));
             })
             .flatMap({originResp ->
-                return Debug.writeDebugResponse(context, originResp, true)
-            })
+                return Debug.writeDebugResponse(context, originResp, true).map({bool -> originResp});
+            });
     }
 
     HttpResponseMessage apply(HttpRequestMessage request)

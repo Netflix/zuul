@@ -51,7 +51,7 @@ class DebugRequest extends HttpInboundFilter
     Observable<HttpRequestMessage> applyAsync(HttpRequestMessage req)
     {
         return Debug.writeDebugRequest(req.getContext(), req.getInboundRequest(), true)
-                .cast(HttpRequestMessage.class)
+                .map({v -> req})
     }
 
     @RunWith(MockitoJUnitRunner.class)

@@ -68,7 +68,7 @@ class DebugResponse extends HttpOutboundFilter
         }
 
         return Debug.writeDebugResponse(response.getContext(), response, false)
-                .cast(HttpResponseMessage.class)
+                .map({bool -> response})
     }
 
     @RunWith(MockitoJUnitRunner.class)
