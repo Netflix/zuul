@@ -15,7 +15,10 @@
  */
 package com.netflix.zuul.message.http;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -103,6 +106,16 @@ public class HttpQueryParams implements Cloneable
     public List<String> get(String name)
     {
         return delegate.get(name.toLowerCase());
+    }
+
+    public boolean contains(String name)
+    {
+        return delegate.containsKey(name);
+    }
+
+    public boolean contains(String name, String value)
+    {
+        return delegate.containsEntry(name, value);
     }
 
     /**
