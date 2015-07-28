@@ -135,6 +135,11 @@ public class HttpQueryParams implements Cloneable
         delegate.put(name, value);
     }
 
+    public void removeAll(String name)
+    {
+        delegate.removeAll(name);
+    }
+
     public void clear()
     {
         delegate.clear();
