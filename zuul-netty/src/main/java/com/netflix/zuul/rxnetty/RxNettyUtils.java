@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.rxnetty;
 
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -57,7 +58,7 @@ public class RxNettyUtils
     {
         HttpClientRequest<ByteBuf> clientReq = HttpClientRequest.create(HttpMethod.valueOf(zuulReq.getMethod().toUpperCase()), zuulReq.getPathAndQuery());
 
-        for (Map.Entry<String, String> entry : zuulReq.getHeaders().entries()) {
+        for (Header entry : zuulReq.getHeaders().entries()) {
             // TODO - should we be filtering headers here like we do when using Ribbon?
             clientReq = clientReq.withHeader(entry.getKey(), entry.getValue());
         }

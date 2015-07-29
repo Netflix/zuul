@@ -15,9 +15,13 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.*;
+import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessageImpl;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -84,7 +88,7 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
-        for (Map.Entry<String, String> entry : zuulResp.getHeaders().entries()) {
+        for (Header entry : zuulResp.getHeaders().entries()) {
             nativeResponse.getHeaders().add(entry.getKey(), entry.getValue());
         }
 

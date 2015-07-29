@@ -27,6 +27,7 @@ import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -98,7 +99,7 @@ public class RibbonOrigin implements Origin
                 uri(uri);
 
         // Request headers.
-        for (Map.Entry<String, String> entry : headers.entries()) {
+        for (Header entry : headers.entries()) {
             if (ProxyUtils.isValidRequestHeader(entry.getKey())) {
                 builder.header(entry.getKey(), entry.getValue());
             }

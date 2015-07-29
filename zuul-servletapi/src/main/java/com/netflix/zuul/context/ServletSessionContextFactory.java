@@ -17,6 +17,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.*;
@@ -135,7 +136,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         servletResponse.setStatus(response.getStatus());
 
         // Headers.
-        for (Map.Entry<String, String> header : response.getHeaders().entries()) {
+        for (Header header : response.getHeaders().entries()) {
             servletResponse.addHeader(header.getKey(), header.getValue());
         }
 
