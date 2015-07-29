@@ -40,6 +40,8 @@ public interface HttpResponseMessage extends HttpResponseInfo
 
     void addSetCookie(Cookie cookie);
 
+    void setSetCookie(Cookie cookie);
+
     /** The mutable request that will be sent to Origin. */
     HttpRequestMessage getOutboundRequest();
 
