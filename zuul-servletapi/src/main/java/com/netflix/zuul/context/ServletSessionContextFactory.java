@@ -136,7 +136,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 
         // Headers.
         for (Map.Entry<String, String> header : response.getHeaders().entries()) {
-            servletResponse.setHeader(header.getKey(), header.getValue());
+            servletResponse.addHeader(header.getKey(), header.getValue());
         }
 
         // Body.
