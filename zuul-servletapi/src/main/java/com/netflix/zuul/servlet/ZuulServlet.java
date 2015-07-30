@@ -214,7 +214,7 @@ public class ZuulServlet extends HttpServlet {
             servlet.service(servletRequest, servletResponse);
 
             verify(servletResponse).setStatus(299);
-            verify(servletResponse).setHeader("new", "value");
+            verify(servletResponse).addHeader("new", "value");
         }
     }
 

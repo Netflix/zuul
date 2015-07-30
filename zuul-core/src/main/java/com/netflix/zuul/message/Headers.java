@@ -20,11 +20,15 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Wraps a ListMultimap and ensures all keys are lower-case as http headers are
@@ -36,7 +40,7 @@ import java.util.Set;
  */
 public class Headers implements Cloneable
 {
-    private final ListMultimap<String, String> delegate;
+    private final ListMultimap<HeaderName, String> delegate;
     private final boolean immutable;
 
     public Headers()
@@ -45,7 +49,7 @@ public class Headers implements Cloneable
         immutable = false;
     }
 
-    private Headers(ListMultimap<String, String> delegate)
+    private Headers(ListMultimap<HeaderName, String> delegate)
     {
         this.delegate = delegate;
         immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
@@ -60,7 +64,8 @@ public class Headers implements Cloneable
      */
     public String getFirst(String name)
     {
-        List<String> values = delegate.get(name.toLowerCase());
+        HeaderName hn = new HeaderName(name);
+        List<String> values = delegate.get(hn);
         if (values != null) {
             if (values.size() > 0) {
                 return values.get(0);
@@ -87,7 +92,8 @@ public class Headers implements Cloneable
 
     public List<String> get(String name)
     {
-        return delegate.get(name.toLowerCase());
+        HeaderName hn = new HeaderName(name);
+        return delegate.get(hn);
     }
 
     /**
@@ -100,19 +106,18 @@ public class Headers implements Cloneable
      */
     public void set(String name, String value)
     {
-        String lc_name = name.toLowerCase();
-        delegate.removeAll(lc_name);
+        HeaderName hn = new HeaderName(name);
+        delegate.removeAll(hn);
         if (value != null) {
-            delegate.put(lc_name, value);
+            delegate.put(hn, value);
         }
     }
 
     public boolean setIfAbsent(String name, String value)
     {
         boolean did = false;
-        String lc_name = name.toLowerCase();
-        if (! delegate.containsKey(lc_name)) {
-            set(lc_name, value);
+        if (! contains(name)) {
+            set(name, value);
             did = true;
         }
         return did;
@@ -120,7 +125,8 @@ public class Headers implements Cloneable
 
     public void add(String name, String value)
     {
-        delegate.put(name.toLowerCase(),  value);
+        HeaderName hn = new HeaderName(name);
+        delegate.put(hn, value);
     }
 
     public void putAll(Headers headers)
@@ -130,26 +136,34 @@ public class Headers implements Cloneable
 
     public List<String> remove(String name)
     {
-        return delegate.removeAll(name.toLowerCase());
+        HeaderName hn = new HeaderName(name);
+        return delegate.removeAll(hn);
     }
 
-    public Collection<Map.Entry<String, String>> entries()
+    public Collection<Header> entries()
     {
-        return delegate.entries();
+        return delegate.entries()
+                .stream()
+                .map(entry -> new Header(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
     }
 
-    public Set<String> keySet() {
-        return delegate.keySet();
+    public Set<String> keySet()
+    {
+        return delegate.keySet().stream()
+                .map(headerName -> headerName.getName())
+                .collect(Collectors.toSet());
     }
 
     public boolean contains(String name)
     {
-        return delegate.containsKey(name.toLowerCase());
+        return delegate.containsKey(new HeaderName(name));
     }
 
     public boolean contains(String name, String value)
     {
-        return delegate.containsEntry(name.toLowerCase(), value);
+        HeaderName hn = new HeaderName(name);
+        return delegate.containsEntry(hn, value);
     }
 
     public int size()
@@ -197,5 +211,63 @@ public class Headers implements Cloneable
     public String toString()
     {
         return delegate.toString();
+    }
+
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class UnitTest
+    {
+        @Test
+        public void testCaseInsensitiveKeys_Set()
+        {
+            Headers headers = new Headers();
+            headers.set("Content-Length", "5");
+            headers.set("content-length", "10");
+
+            assertEquals("10", headers.getFirst("Content-Length"));
+            assertEquals("10", headers.getFirst("content-length"));
+            assertEquals(1, headers.get("content-length").size());
+        }
+
+        @Test
+        public void testCaseInsensitiveKeys_Add()
+        {
+            Headers headers = new Headers();
+            headers.add("Content-Length", "5");
+            headers.add("content-length", "10");
+
+            List<String> values = headers.get("content-length");
+            assertTrue(values.contains("10"));
+            assertTrue(values.contains("5"));
+            assertEquals(2, values.size());
+        }
+
+        @Test
+        public void testCaseInsensitiveKeys_SetIfAbsent()
+        {
+            Headers headers = new Headers();
+            headers.set("Content-Length", "5");
+            headers.setIfAbsent("content-length", "10");
+
+            List<String> values = headers.get("content-length");
+            assertEquals(1, values.size());
+            assertEquals("5", values.get(0));
+        }
+
+        @Test
+        public void testCaseInsensitiveKeys_PutAll()
+        {
+            Headers headers = new Headers();
+            headers.add("Content-Length", "5");
+            headers.add("content-length", "10");
+
+            Headers headers2 = new Headers();
+            headers2.putAll(headers);
+
+            List<String> values = headers2.get("content-length");
+            assertTrue(values.contains("10"));
+            assertTrue(values.contains("5"));
+            assertEquals(2, values.size());
+        }
     }
 }

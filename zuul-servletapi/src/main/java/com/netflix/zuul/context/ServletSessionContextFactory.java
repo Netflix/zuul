@@ -17,9 +17,13 @@ package com.netflix.zuul.context;
 
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.*;
+import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessageImpl;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
@@ -32,8 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
+import java.security.cert.X509Certificate;
 import java.util.Enumeration;
-import java.util.Map;
 
 /**
  * User: michaels@netflix.com
@@ -43,6 +47,7 @@ import java.util.Map;
 public class ServletSessionContextFactory implements SessionContextFactory<HttpServletRequest, HttpServletResponse>
 {
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
+    private static final String JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
 
     @Override
     public ZuulMessage create(SessionContext context, HttpServletRequest servletRequest)
@@ -124,6 +129,16 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                 context.put(attrName.substring(zuulAttrPrefix.length()), servletRequest.getAttribute(attrName));
             }
         }
+
+        copyServletRequestX509Attributes(context, servletRequest);
+    }
+
+    private void copyServletRequestX509Attributes(SessionContext context, HttpServletRequest servletRequest)
+    {
+        // Copy X509 request attribute into the context.
+        X509Certificate[] certs = (X509Certificate[]) servletRequest.getAttribute(JAVAX_SERVLET_REQUEST_X509_CERTIFICATE);
+        if (certs != null)
+            context.set(JAVAX_SERVLET_REQUEST_X509_CERTIFICATE, certs);
     }
 
     @Override
@@ -135,8 +150,8 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         servletResponse.setStatus(response.getStatus());
 
         // Headers.
-        for (Map.Entry<String, String> header : response.getHeaders().entries()) {
-            servletResponse.setHeader(header.getKey(), header.getValue());
+        for (Header header : response.getHeaders().entries()) {
+            servletResponse.addHeader(header.getKey(), header.getValue());
         }
 
         // Body.

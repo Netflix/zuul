@@ -189,6 +189,12 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     @Override
     public void addSetCookie(Cookie cookie)
     {
+        getHeaders().add("Set-Cookie", ServerCookieEncoder.encode(cookie));
+    }
+
+    @Override
+    public void setSetCookie(Cookie cookie)
+    {
         getHeaders().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
     }
 

@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.*;
@@ -34,7 +35,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.*;
@@ -82,7 +82,7 @@ public class Debug {
     public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
     {
         try {
-            for (Map.Entry<String, String> header : message.getHeaders().entries()) {
+            for (Header header : message.getHeaders().entries()) {
                 Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
             }
 
@@ -204,7 +204,7 @@ public class Debug {
     {
         Observable<Boolean> obs = null;
 
-        for (Map.Entry header : msg.getHeaders().entries()) {
+        for (Header header : msg.getHeaders().entries()) {
             Debug.addRequestDebug(context, String.format("%s:: %s HDR: %s:%s", prefix, arrow, header.getKey(), header.getValue()));
         }
 
