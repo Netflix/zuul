@@ -158,13 +158,14 @@ public class FilterProcessor {
         chain = chain.flatMap(msg -> {
 
             SessionContext context = msg.getContext();
-            HttpRequestMessage request = (HttpRequestMessage) msg;
 
             // If an error filter has already generated a response, then don't run the endpoint.
             if (context.errorResponseSent()) {
                 // Therefore this msg is already a response, so just return that.
                 return Observable.just(msg);
             }
+
+            HttpRequestMessage request = (HttpRequestMessage) msg;
 
             // Get the previously chosen endpoint filter to use.
             String endpointName = context.getEndpoint();
