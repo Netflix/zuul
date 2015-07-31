@@ -193,8 +193,10 @@ public class RibbonOrigin implements Origin
         respMsg.storeInboundResponse();
 
         // Body.
-        Observable<ByteBuf> responseBodyObs = ByteBufUtils.fromInputStream(ribbonResp.getInputStream());
-        respMsg.setBodyStream(responseBodyObs);
+        if (ribbonResp.hasEntity()) {
+            Observable<ByteBuf> responseBodyObs = ByteBufUtils.fromInputStream(ribbonResp.getInputStream());
+            respMsg.setBodyStream(responseBodyObs);
+        }
 
         return respMsg;
     }
