@@ -243,7 +243,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         Cookies cookies = new Cookies();
         for (String aCookieHeader : getHeaders().get("cookie")) {
-            Set<Cookie> decode = CookieDecoder.decode(aCookieHeader);
+            Set<Cookie> decode = CookieDecoder.decode(aCookieHeader, false);
             for (Cookie cookie : decode) {
                 cookies.add(cookie);
             }
