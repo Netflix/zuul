@@ -142,6 +142,10 @@ public class RibbonOrigin implements Origin
             HttpResponse ribbonResp;
             try {
                 ribbonResp = client.executeWithLoadBalancer(httpClientRequest);
+
+                // Store the ribbon response on context, so that code in a Observable.finallyDo() can get access
+                // to it to release the resources.
+                requestMsg.getContext().set("_ribbonResp", ribbonResp);
             }
             catch (ClientException e) {
                 throw proxyError(requestMsg, e, e.getErrorType().toString());

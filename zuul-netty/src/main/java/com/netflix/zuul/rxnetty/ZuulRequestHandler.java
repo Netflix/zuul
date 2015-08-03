@@ -15,25 +15,15 @@
  */
 package com.netflix.zuul.rxnetty;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.netflix.zuul.FilterFileManager;
-import com.netflix.zuul.FilterProcessor;
-import com.netflix.zuul.RequestCompleteHandler;
-import com.netflix.zuul.context.*;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.ZuulHttpProcessor;
 import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.http.HttpMethod;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
 import io.reactivex.netty.protocol.http.server.RequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * An implementation of {@link RequestHandler} for zuul.
@@ -42,88 +32,14 @@ import javax.annotation.Nullable;
  * @author Mike Smith
  */
 @Singleton
-public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulRequestHandler.class);
-
+public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf>
+{
     @Inject
-    private FilterProcessor filterProcessor;
-
-    @Inject
-    private SessionContextFactory contextFactory;
-
-    @javax.inject.Inject
-    @Nullable
-    private SessionContextDecorator decorator;
-
-    @Inject
-    private HealthCheckRequestHandler healthCheckHandler;
-
-    @Inject @Nullable
-    private RequestCompleteHandler requestCompleteHandler;
-
-    /** Ensure that this is initialized. */
-    @Inject
-    private FilterFileManager filterManager;
-
+    private ZuulHttpProcessor zuulProcessor;
 
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse)
     {
-        // Setup the context for this request.
-        SessionContext context = new SessionContext();
-        // Optionally decorate the context.
-        if (decorator != null) {
-            context = decorator.decorate(context);
-        }
-
-        // Build a ZuulMessage from the netty request.
-        ZuulMessage request = contextFactory.create(context, nettyRequest);
-
-        // Start timing the request.
-        request.getContext().getTimings().getRequest().start();
-
-        // Create initial chain.
-        Observable<ZuulMessage> chain = Observable.just(request);
-
-        // Choose if this is a Healtcheck request, or a normal request, and build the chain accordingly.
-        if (nettyRequest.getHttpMethod().equals(HttpMethod.GET) && nettyRequest.getUri().startsWith("/healthcheck")) {
-            // Handle healthcheck requests.
-            // TODO - Refactor this healthcheck impl to a standard karyon impl? See SimpleRouter in nf-prana.
-            chain = chain.map(msg -> healthCheckHandler.handle((HttpRequestMessage) msg) );
-        }
-        else {
-            /**
-             * Delegate all of the filter application logic to {@link FilterProcessor}.
-             * This work is some combination of synchronous and asynchronous.
-             */
-            chain = filterProcessor.applyInboundFilters(chain);
-            chain = filterProcessor.applyEndpointFilter(chain);
-            chain = filterProcessor.applyOutboundFilters(chain);
-        }
-
-        // After the request is handled, write out the response.
-        chain = chain.flatMap(msg -> contextFactory.write(msg, nettyResponse));
-
-        // After complete, update metrics and access log.
-        chain = chain.map(msg -> {
-            // End the timing.
-            msg.getContext().getTimings().getRequest().end();
-
-            // Notify requestComplete listener if configured.
-            try {
-                if (requestCompleteHandler != null)
-                    requestCompleteHandler.handle((HttpResponseMessage) msg);
-            }
-            catch (Exception e) {
-                LOG.error("Error in RequestCompleteHandler.", e);
-            }
-            return msg;
-        });
-
-        // Convert to an Observable<Void>.
-        return chain
-            .ignoreElements()
-            .cast(Void.class);
+        return zuulProcessor.process(nettyRequest, nettyResponse);
     }
 }

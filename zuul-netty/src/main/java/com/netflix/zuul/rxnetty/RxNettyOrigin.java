@@ -160,6 +160,10 @@ public class RxNettyOrigin implements Origin {
     {
         return clientResp.map(resp -> {
 
+            // Store the rxnetty response on context, so that code in a Observable.finallyDo() can get access
+            // to it to release the resources.
+            zuulReq.getContext().set("_rxnettyResp", resp);
+
             HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(zuulReq, resp);
 
             //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();

@@ -32,10 +32,7 @@ import com.netflix.governator.guice.BootstrapBinder;
 import com.netflix.governator.guice.BootstrapModule;
 import com.netflix.governator.guice.LifecycleInjector;
 import com.netflix.governator.lifecycle.LifecycleManager;
-import com.netflix.zuul.context.RxNettySessionContextFactory;
-import com.netflix.zuul.context.SampleSessionContextDecorator;
-import com.netflix.zuul.context.SessionContextDecorator;
-import com.netflix.zuul.context.SessionContextFactory;
+import com.netflix.zuul.context.*;
 import com.netflix.zuul.init.ZuulFiltersModule;
 import com.netflix.zuul.metrics.OriginStatsFactory;
 import com.netflix.zuul.monitoring.CounterFactory;
@@ -47,10 +44,7 @@ import com.netflix.zuul.plugins.Counter;
 import com.netflix.zuul.plugins.MetricPoller;
 import com.netflix.zuul.plugins.ServoMonitor;
 import com.netflix.zuul.plugins.Tracer;
-import com.netflix.zuul.rxnetty.HealthCheckRequestHandler;
-import com.netflix.zuul.rxnetty.RxNettyOriginManager;
-import com.netflix.zuul.rxnetty.RxNettyRequestCompleteHandler;
-import com.netflix.zuul.rxnetty.ZuulRequestHandler;
+import com.netflix.zuul.rxnetty.*;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
@@ -215,6 +209,7 @@ public class NettySampleStartServer
 
             // Configure the OriginManager and LoadBalancer.
             bind(OriginManager.class).to(RxNettyOriginManager.class);
+            bind(SessionCleaner.class).to(RxNettySessionCleaner.class);
             bind(OriginStatsFactory.class).toProvider(Providers.of(null));
             bind(MetricEventsListenerFactory.class).to(SpectatorEventsListenerFactory.class);
             bind(LoadBalancerFactory.class).to(SimpleRRLoadBalancerFactory.class);

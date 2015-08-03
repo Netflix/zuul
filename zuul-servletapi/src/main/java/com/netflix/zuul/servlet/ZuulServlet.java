@@ -17,12 +17,13 @@ package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
-import com.netflix.zuul.RequestCompleteHandler;
-import com.netflix.zuul.context.*;
+import com.netflix.zuul.ZuulHttpProcessor;
+import com.netflix.zuul.context.ServletSessionContextFactory;
+import com.netflix.zuul.context.SessionCleaner;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.ServletConfig;
@@ -63,21 +63,14 @@ public class ZuulServlet extends HttpServlet {
     private static final long serialVersionUID = -3374242278843351501L;
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
-    @Inject
-    private FilterProcessor processor;
+    private ZuulHttpProcessor zuulProcessor;
 
     @Inject
-    private FilterFileManager filterManager;
-
-    @Inject
-    private ServletSessionContextFactory contextFactory;
-
-    @Inject @Nullable
-    private SessionContextDecorator decorator;
-
-    @com.google.inject.Inject
-    @Nullable
-    private RequestCompleteHandler requestCompleteHandler;
+    public ZuulServlet(ZuulHttpProcessor zuulProcessor)
+    {
+        super();
+        this.zuulProcessor = zuulProcessor;
+    }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -88,68 +81,17 @@ public class ZuulServlet extends HttpServlet {
     public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException
     {
         try {
-            // Setup the context for this request.
-            SessionContext context = new SessionContext();
-            // Optionally decorate the context.
-            if (decorator != null) {
-                context = decorator.decorate(context);
-            }
-
-            // Build a ZuulMessage from the servlet request.
-            ZuulMessage request = contextFactory.create(context, servletRequest);
-
-            // Start timing the request.
-            request.getContext().getTimings().getRequest().start();
-
-            // Create initial chain.
-            Observable<ZuulMessage> chain = Observable.just(request);
-
-            // Apply the filters to the chain.
-            chain = processor.applyInboundFilters(chain);
-            chain = processor.applyEndpointFilter(chain);
-            chain = processor.applyOutboundFilters(chain);
-
-            HttpResponseMessage response = null;
-            try {
-                // Execute and convert to blocking to get the resulting SessionContext.
-                try {
-                    response = (HttpResponseMessage) chain.single().toBlocking().first();
-                }
-                catch (Exception e) {
-                    LOG.error("Unexpected error in processing the zuul filter chain!", e);
-
-                    // Generate a default error response to be sent to client.
-                    response = new HttpResponseMessageImpl(context, (HttpRequestMessage) request, 500);
-                }
-
-                // Store this response as an attribute for any later ServletFilters that may want access to info in it.
-                servletRequest.setAttribute("_zuul_response", response);
-
-                // Write out the built response message to the HttpServletResponse.
-                try {
-                    contextFactory.write(response, servletResponse);
-                }
-                catch (Exception e) {
-                    LOG.error("Error writing response message!", e);
-                    throw new ServletException("Error writing response message!", e);
-                }
-            }
-            finally {
-                // Stop the request timer.
-                context.getTimings().getRequest().end();
-
-                // Notify requestComplete listener if configured.
-                try {
-                    if (requestCompleteHandler != null && response != null)
-                        requestCompleteHandler.handle(response);
-                }
-                catch (Exception e) {
-                    LOG.error("Error in RequestCompleteHandler.", e);
-                }
-            }
+            zuulProcessor
+                    .process(servletRequest, servletResponse)
+                    .doOnNext(msg -> {
+                        // Store this response as an attribute for any later ServletFilters that may want access to info in it.
+                        servletRequest.setAttribute("_zuul_response", msg);
+                    })
+                    .subscribe();
         }
         catch (Throwable e) {
-            throw new ServletException("Error initializing ZuulRunner for this request.", e);
+            LOG.error("Unexpected error running ZuulHttpProcessor for this request.", e);
+            throw new ServletException("Unexpected error running ZuulHttpProcessor for this request.");
         }
     }
 
@@ -166,13 +108,18 @@ public class ZuulServlet extends HttpServlet {
         @Mock
         FilterProcessor processor;
         @Mock
-        SessionContext context;
+        FilterFileManager filterFileMgr;
+        @Mock
+        SessionCleaner sessionCleaner;
+
         @Mock
         HttpRequestMessage request;
 
+        SessionContext context;
         HttpResponseMessage response;
 
         ZuulServlet servlet;
+        ZuulHttpProcessor zuulProcessor;
         ServletInputStreamWrapper servletInputStream;
         ServletSessionContextFactory contextFactory;
 
@@ -183,10 +130,9 @@ public class ZuulServlet extends HttpServlet {
             MockitoAnnotations.initMocks(this);
 
             contextFactory = new ServletSessionContextFactory();
-            servlet = new ZuulServlet();
-            servlet.contextFactory = contextFactory;
+            zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, filterFileMgr, sessionCleaner);
+            servlet = new ZuulServlet(zuulProcessor);
             servlet = spy(servlet);
-            servlet.processor = processor;
 
             when(servletRequest.getHeaderNames()).thenReturn(Collections.<String>emptyEnumeration());
             when(servletRequest.getAttributeNames()).thenReturn(Collections.<String>emptyEnumeration());
