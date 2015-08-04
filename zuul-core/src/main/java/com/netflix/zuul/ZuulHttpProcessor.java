@@ -50,6 +50,7 @@ public class ZuulHttpProcessor<I,O>
         this.decorator = decorator;
         this.requestCompleteHandler = requestCompleteHandler;
         this.filterManager = filterManager;
+        this.sessionCleaner = sessionCleaner;
     }
 
     public Observable<ZuulMessage> process(final I nativeRequest, final O nativeResponse)
