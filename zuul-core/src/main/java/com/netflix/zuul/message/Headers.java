@@ -192,11 +192,9 @@ public class Headers implements Cloneable
                 .collect(Collectors.toList());
     }
 
-    public Set<String> keySet()
+    public Set<HeaderName> keySet()
     {
-        return delegate.keySet().stream()
-                .map(headerName -> headerName.getName())
-                .collect(Collectors.toSet());
+        return delegate.keySet();
     }
 
     public boolean contains(String name)

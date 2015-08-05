@@ -19,6 +19,7 @@ import com.netflix.appinfo.AmazonInfo
 import com.netflix.appinfo.ApplicationInfoManager
 import com.netflix.appinfo.InstanceInfo
 import com.netflix.config.ConfigurationManager
+import com.netflix.zuul.message.HeaderName
 import com.netflix.zuul.message.http.HttpRequestInfo
 import com.netflix.zuul.message.http.HttpResponseInfo
 import com.netflix.zuul.message.http.HttpResponseMessage
@@ -74,11 +75,11 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
             event.put("status", resp.getStatus())
 
             // request headers
-            for (String name : req.getHeaders().keySet())
+            for (HeaderName headerName : req.getHeaders().keySet())
             {
                 final StringBuilder valBuilder = new StringBuilder();
                 boolean firstValue = true;
-                for (String value : req.getHeaders().get(name))
+                for (String value : req.getHeaders().get(headerName))
                 {
                     // only prepends separator for non-first header values
                     if (firstValue) firstValue = false;
@@ -88,7 +89,7 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
 
                     valBuilder.append(value);
                 }
-                event.put("request.header." + name, valBuilder.toString());
+                event.put("request.header." + headerName.getNormalised(), valBuilder.toString());
             }
 
             // request params
@@ -110,11 +111,11 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
             }
 
             // response headers
-            for (String name : resp.getHeaders().keySet())
+            for (HeaderName headerName : resp.getHeaders().keySet())
             {
                 final StringBuilder valBuilder = new StringBuilder();
                 boolean firstValue = true;
-                for (String value : resp.getHeaders().get(name))
+                for (String value : resp.getHeaders().get(headerName))
                 {
                     // only prepends separator for non-first header values
                     if (firstValue) firstValue = false;
@@ -124,7 +125,7 @@ class RequestEventInfoCollector extends HttpOutboundSyncFilter
 
                     valBuilder.append(value);
                 }
-                event.put("response.header." + name, valBuilder.toString());
+                event.put("response.header." + headerName.getNormalised(), valBuilder.toString());
             }
 
         } finally {
