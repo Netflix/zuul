@@ -64,6 +64,11 @@ public class HttpHeaderNames
     public static final HeaderName CACHE_CONTROL = HEADER_NAME_CACHE.get("Cache-Control");
     public static final HeaderName PRAGMA = HEADER_NAME_CACHE.get("Pragma");
 
+    public static final HeaderName X_FORWARDED_HOST = HEADER_NAME_CACHE.get("X-Forwarded-Host");
+    public static final HeaderName X_FORWARDED_FOR = HEADER_NAME_CACHE.get("X-Forwarded-For");
+    public static final HeaderName X_FORWARDED_PORT = HEADER_NAME_CACHE.get("X-Forwarded-Port");
+    public static final HeaderName X_FORWARDED_PROTO = HEADER_NAME_CACHE.get("X-Forwarded-Proto");
+
     /**
      * Looks up the name in the cache, and if does not exist, then creates and adds a new one
      * (up to the max cache size).
