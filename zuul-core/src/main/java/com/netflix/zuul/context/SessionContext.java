@@ -21,6 +21,7 @@ package com.netflix.zuul.context;
  * Time: 6:45 PM
  */
 
+import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.filters.FilterPriority;
 import com.netflix.zuul.stats.Timings;
@@ -43,6 +44,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
+    private static final int INITIAL_SIZE =
+            DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
+
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
@@ -57,7 +61,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
-        super(50);
+        super(INITIAL_SIZE);
 
         // Default to apply filters of any priority level.
         put(KEY_APPLY_FILTERS_PRIORITY, FilterPriority.LOW);
