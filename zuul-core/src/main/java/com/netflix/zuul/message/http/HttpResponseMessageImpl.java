@@ -204,7 +204,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         // TODO - not sure if should be cloning the outbound request object here or not....
         HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
                 getHeaders().clone(),
-                (HttpRequestMessage) getOutboundRequest(), getStatus());
+                getOutboundRequest(), getStatus());
         if (getInboundResponse() != null) {
             clone.inboundResponse = (HttpResponseInfo) getInboundResponse().clone();
         }
@@ -216,7 +216,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         // Unlike clone(), we create immutable copies of the Headers here.
         return new HttpResponseMessageImpl(getContext().clone(),
                 getHeaders().immutableCopy(),
-                (HttpRequestMessage) getOutboundRequest(), getStatus());
+               getOutboundRequest(), getStatus());
     }
 
     @Override
@@ -234,8 +234,9 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     @Override
     public String getInfoForLogging()
     {
+        HttpRequestInfo req = getInboundRequest() == null ? getOutboundRequest() : getInboundRequest();
         StringBuilder sb = new StringBuilder()
-                .append(getInboundRequest().getInfoForLogging())
+                .append(req.getInfoForLogging())
                 .append(",proxy-status=").append(getStatus())
                 ;
         return sb.toString();
