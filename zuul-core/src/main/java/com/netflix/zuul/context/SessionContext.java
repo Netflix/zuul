@@ -55,7 +55,9 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     public SessionContext()
     {
-        super();
+        // Use a higher than default initial capacity for the hashmap as we generally have more than the default
+        // 16 entries.
+        super(50);
 
         // Default to apply filters of any priority level.
         put(KEY_APPLY_FILTERS_PRIORITY, FilterPriority.LOW);
