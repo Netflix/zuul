@@ -26,6 +26,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.nio.charset.Charset;
@@ -39,23 +41,27 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
 {
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpResponseMessageImpl.class);
 
     private ZuulMessage message;
     private HttpRequestMessage outboundRequest;
     private int status;
     private HttpResponseInfo inboundResponse = null;
 
-    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int defaultStatus)
+    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status)
     {
-        this.message = new ZuulMessageImpl(context, new Headers());
-        this.outboundRequest = request;
-        this.status = defaultStatus;
+        this(context, new Headers(), request, status);
     }
 
     public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
     {
         this.message = new ZuulMessageImpl(context, headers);
         this.outboundRequest = request;
+        if (this.outboundRequest.getInboundRequest() == null) {
+            LOG.warn("HttpResponseMessage created with a request that does not have a stored inboundRequest! " +
+                    "Probably a bug in the filter that is creating this response.",
+                    new RuntimeException("Invalid HttpRequestMessage"));
+        }
         this.status = status;
     }
 
