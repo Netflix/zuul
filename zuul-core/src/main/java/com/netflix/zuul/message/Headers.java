@@ -20,6 +20,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -60,6 +61,11 @@ public class Headers implements Cloneable
         immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
     }
 
+    protected HeaderName getHeaderName(String name)
+    {
+        return HttpHeaderNames.get(name);
+    }
+
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return null.
@@ -69,7 +75,7 @@ public class Headers implements Cloneable
      */
     public String getFirst(String name)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         return getFirst(hn);
     }
     public String getFirst(HeaderName hn)
@@ -109,7 +115,7 @@ public class Headers implements Cloneable
 
     public List<String> get(String name)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         return get(hn);
     }
     public List<String> get(HeaderName hn)
@@ -127,7 +133,7 @@ public class Headers implements Cloneable
      */
     public void set(String name, String value)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         set(hn, value);
     }
     public void set(HeaderName hn, String value)
@@ -140,7 +146,7 @@ public class Headers implements Cloneable
 
     public boolean setIfAbsent(String name, String value)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         return setIfAbsent(hn, value);
     }
     public boolean setIfAbsent(HeaderName hn, String value)
@@ -155,7 +161,7 @@ public class Headers implements Cloneable
 
     public void add(String name, String value)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         add(hn, value);
     }
     public void add(HeaderName hn, String value)
@@ -170,7 +176,7 @@ public class Headers implements Cloneable
 
     public List<String> remove(String name)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         return remove(hn);
     }
     public List<String> remove(HeaderName hn)
@@ -195,7 +201,7 @@ public class Headers implements Cloneable
 
     public boolean contains(String name)
     {
-        return contains(new HeaderName(name));
+        return contains(getHeaderName(name));
     }
     public boolean contains(HeaderName hn)
     {
@@ -204,7 +210,7 @@ public class Headers implements Cloneable
 
     public boolean contains(String name, String value)
     {
-        HeaderName hn = new HeaderName(name);
+        HeaderName hn = getHeaderName(name);
         return contains(hn, value);
     }
     public boolean contains(HeaderName hn, String value)
