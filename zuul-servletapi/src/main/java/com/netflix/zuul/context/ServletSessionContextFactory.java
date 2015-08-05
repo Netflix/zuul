@@ -18,12 +18,10 @@ package com.netflix.zuul.context;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
+import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.HttpQueryParams;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpRequestMessageImpl;
-import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
@@ -58,9 +56,10 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         while (headerNames.hasMoreElements()) {
             String name = (String) headerNames.nextElement();
             Enumeration values = servletRequest.getHeaders(name);
+            HeaderName hn = HttpHeaderNames.get(name);
             while (values.hasMoreElements()) {
                 String value = (String) values.nextElement();
-                reqHeaders.add(name, value);
+                reqHeaders.add(hn, value);
             }
         }
 

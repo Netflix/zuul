@@ -27,7 +27,7 @@ package com.netflix.zuul.message;
  * Date: 7/29/15
  * Time: 1:07 PM
  */
-class HeaderName
+public class HeaderName
 {
     private final String name;
     private final String normalised;
@@ -42,6 +42,11 @@ class HeaderName
     public String getName()
     {
         return name;
+    }
+
+    public String getNormalised()
+    {
+        return normalised;
     }
 
     @Override

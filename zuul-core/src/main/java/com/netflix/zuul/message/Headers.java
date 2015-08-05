@@ -24,15 +24,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Wraps a ListMultimap and ensures all keys are lower-case as http headers are
- * case insensitive.
+ * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are
+ * compared case insensitively.
+ *
+ * There are methods for getting and setting headers by String AND by HeaderName. When possible, use the HeaderName
+ * variants and cache the HeaderName instances somewhere, to avoid case-insensitive String comparisons.
  *
  * User: michaels@netflix.com
  * Date: 2/20/15
@@ -65,6 +70,10 @@ public class Headers implements Cloneable
     public String getFirst(String name)
     {
         HeaderName hn = new HeaderName(name);
+        return getFirst(hn);
+    }
+    public String getFirst(HeaderName hn)
+    {
         List<String> values = delegate.get(hn);
         if (values != null) {
             if (values.size() > 0) {
@@ -89,10 +98,22 @@ public class Headers implements Cloneable
         }
         return value;
     }
+    public String getFirst(HeaderName hn, String defaultValue)
+    {
+        String value = getFirst(hn);
+        if (value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
 
     public List<String> get(String name)
     {
         HeaderName hn = new HeaderName(name);
+        return get(hn);
+    }
+    public List<String> get(HeaderName hn)
+    {
         return delegate.get(hn);
     }
 
@@ -107,6 +128,10 @@ public class Headers implements Cloneable
     public void set(String name, String value)
     {
         HeaderName hn = new HeaderName(name);
+        set(hn, value);
+    }
+    public void set(HeaderName hn, String value)
+    {
         delegate.removeAll(hn);
         if (value != null) {
             delegate.put(hn, value);
@@ -115,9 +140,14 @@ public class Headers implements Cloneable
 
     public boolean setIfAbsent(String name, String value)
     {
+        HeaderName hn = new HeaderName(name);
+        return setIfAbsent(hn, value);
+    }
+    public boolean setIfAbsent(HeaderName hn, String value)
+    {
         boolean did = false;
-        if (! contains(name)) {
-            set(name, value);
+        if (! contains(hn)) {
+            set(hn, value);
             did = true;
         }
         return did;
@@ -126,6 +156,10 @@ public class Headers implements Cloneable
     public void add(String name, String value)
     {
         HeaderName hn = new HeaderName(name);
+        add(hn, value);
+    }
+    public void add(HeaderName hn, String value)
+    {
         delegate.put(hn, value);
     }
 
@@ -137,6 +171,10 @@ public class Headers implements Cloneable
     public List<String> remove(String name)
     {
         HeaderName hn = new HeaderName(name);
+        return remove(hn);
+    }
+    public List<String> remove(HeaderName hn)
+    {
         return delegate.removeAll(hn);
     }
 
@@ -157,12 +195,20 @@ public class Headers implements Cloneable
 
     public boolean contains(String name)
     {
-        return delegate.containsKey(new HeaderName(name));
+        return contains(new HeaderName(name));
+    }
+    public boolean contains(HeaderName hn)
+    {
+        return delegate.containsKey(hn);
     }
 
     public boolean contains(String name, String value)
     {
         HeaderName hn = new HeaderName(name);
+        return contains(hn, value);
+    }
+    public boolean contains(HeaderName hn, String value)
+    {
         return delegate.containsEntry(hn, value);
     }
 

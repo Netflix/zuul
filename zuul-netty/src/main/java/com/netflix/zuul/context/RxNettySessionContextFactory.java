@@ -16,12 +16,10 @@
 package com.netflix.zuul.context;
 
 import com.netflix.zuul.message.Header;
+import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.HttpQueryParams;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpRequestMessageImpl;
-import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.*;
 import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -126,7 +124,8 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
     {
         Headers headers = new Headers();
         for (Map.Entry<String, String> entry : httpServerRequest.getHeaders().entries()) {
-            headers.add(entry.getKey(), entry.getValue());
+            HeaderName hn = HttpHeaderNames.get(entry.getKey());
+            headers.add(hn, entry.getValue());
         }
         return headers;
     }
