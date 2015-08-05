@@ -20,6 +20,8 @@
 
 package com.netflix.zuul.message;
 
+import com.netflix.config.DynamicPropertyFactory;
+
 /**
  * Immutable, case-insensitive wrapper around Header name.
  *
@@ -29,14 +31,18 @@ package com.netflix.zuul.message;
  */
 public class HeaderName
 {
+    private static final boolean SHOULD_INTERN =
+            DynamicPropertyFactory.getInstance().getBooleanProperty(
+                    "com.netflix.zuul.message.HeaderName.shouldIntern", true).get();
+
     private final String name;
     private final String normalised;
 
     public HeaderName(String name)
     {
         if (name == null) throw new NullPointerException("HeaderName cannot be null!");
-        this.name = name;
-        this.normalised = name.toLowerCase();
+        this.name = SHOULD_INTERN ? name.intern() : name;
+        this.normalised = SHOULD_INTERN ? name.toLowerCase().intern() : name.toLowerCase();
     }
 
     public String getName()
@@ -58,7 +64,12 @@ public class HeaderName
         HeaderName that = (HeaderName) o;
 
         // Ignore case when comparing.
-        return normalised.equals(that.normalised);
+        if (SHOULD_INTERN) {
+            return normalised == that.normalised;
+        }
+        else {
+            return normalised.equals(that.normalised);
+        }
     }
 
     @Override
