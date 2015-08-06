@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * User: michaels
@@ -46,6 +47,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 {
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024);
+
+    private static final Pattern PTN_COLON = Pattern.compile(":");
 
     private ZuulMessage message;
     private String protocol;
@@ -322,12 +325,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public String getOriginalHost()
     {
-        String host = getHeaders().getFirst("X-Forwarded-Host");
+        String host = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_HOST);
         if (host == null) {
-            host = getHeaders().getFirst("Host");
+            host = getHeaders().getFirst(HttpHeaderNames.HOST);
             if (host != null) {
                 // Host header may have a trailing port. Strip that out if it does.
-                host = host.split(":")[0];
+                host = PTN_COLON.split(host)[0];
             }
 
             if (host == null) {
@@ -340,7 +343,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public String getOriginalScheme()
     {
-        String scheme = getHeaders().getFirst("X-Forwarded-Proto");
+        String scheme = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO);
         if (scheme == null) {
             scheme = getScheme();
         }
@@ -351,12 +354,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public int getOriginalPort()
     {
         int port;
-        String portStr = getHeaders().getFirst("X-Forwarded-Port");
+        String portStr = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PORT);
         if (portStr == null) {
             // Check if port was specified on a Host header.
-            String hostHeader = getHeaders().getFirst("Host");
+            String hostHeader = getHeaders().getFirst(HttpHeaderNames.HOST);
             if (hostHeader != null) {
-                String[] hostParts = hostHeader.split(":");
+                String[] hostParts = PTN_COLON.split(hostHeader);
                 if (hostParts.length == 2) {
                     port = Integer.parseInt(hostParts[1]);
                 }
