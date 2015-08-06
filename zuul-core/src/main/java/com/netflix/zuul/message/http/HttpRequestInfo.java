@@ -64,5 +64,12 @@ public interface HttpRequestInfo extends ZuulMessage
 
     URI reconstructURI();
 
+    /** Parse and lazily cache the request cookies. */
     Cookies parseCookies();
+
+    /**
+     * Force parsing/re-parsing of the cookies. May want to do this if headers
+     * have been mutated since cookies were first parsed.
+     */
+    Cookies reParseCookies();
 }

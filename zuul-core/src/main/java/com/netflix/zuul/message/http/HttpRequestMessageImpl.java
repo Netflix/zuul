@@ -58,6 +58,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private String serverName;
 
     private HttpRequestInfo inboundRequest = null;
+    private Cookies parsedCookies = null;
 
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
@@ -241,13 +242,23 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public Cookies parseCookies()
     {
+        if (parsedCookies == null) {
+            parsedCookies = reParseCookies();
+        }
+        return parsedCookies;
+    }
+
+    @Override
+    public Cookies reParseCookies()
+    {
         Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().get("cookie")) {
+        for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE)) {
             Set<Cookie> decode = CookieDecoder.decode(aCookieHeader, false);
             for (Cookie cookie : decode) {
                 cookies.add(cookie);
             }
         }
+        parsedCookies = cookies;
         return cookies;
     }
 
