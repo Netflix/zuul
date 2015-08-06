@@ -47,10 +47,12 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final int INITIAL_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
 
+    /** Default to apply filters of any priority level. */
+    private FilterPriority filterPriority = FilterPriority.LOW;
+
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
-    private static final String KEY_APPLY_FILTERS_PRIORITY = "_filter_priority";
 
     private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "eventProperties";
@@ -62,9 +64,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
         super(INITIAL_SIZE);
-
-        // Default to apply filters of any priority level.
-        put(KEY_APPLY_FILTERS_PRIORITY, FilterPriority.LOW);
 
         put(KEY_TIMINGS, new Timings());
         put(KEY_FILTER_EXECS, new StringBuilder());
@@ -135,13 +134,14 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     }
 
     /**
-     * Makes a copy of the RequestContext. This is used for debugging.
+     * Makes a copy of the SessionContext. This is used for debugging.
      *
      * @return
      */
     public SessionContext copy()
     {
         SessionContext copy = new SessionContext();
+        copy.filterPriority = filterPriority;
         Iterator<String> it = keySet().iterator();
         String key = it.next();
         while (key != null) {
@@ -355,14 +355,14 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @return
      */
     public FilterPriority getFilterPriorityToApply() {
-        return (FilterPriority) get(KEY_APPLY_FILTERS_PRIORITY);
+        return filterPriority;
     }
     public void setFilterPriorityToApply(FilterPriority priority)
     {
         if (priority == null) {
             throw new NullPointerException("Passed FilterPriority is null!");
         }
-        set(KEY_APPLY_FILTERS_PRIORITY, priority);
+        this.filterPriority = priority;
     }
 
     public void setEventProperty(String key, Object value) {
