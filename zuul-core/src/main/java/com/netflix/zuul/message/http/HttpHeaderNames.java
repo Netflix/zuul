@@ -51,6 +51,7 @@ public class HttpHeaderNames
     public static final HeaderName VIA = HEADER_NAME_CACHE.get("Via");
     public static final HeaderName USER_AGENT = HEADER_NAME_CACHE.get("User-Agent");
     public static final HeaderName REFERER = HEADER_NAME_CACHE.get("Referer");
+    public static final HeaderName ORIGIN = HEADER_NAME_CACHE.get("Origin");
 
     public static final HeaderName CONTENT_TYPE = HEADER_NAME_CACHE.get("Content-Type");
     public static final HeaderName CONTENT_LENGTH = HEADER_NAME_CACHE.get("Content-Length");
@@ -58,6 +59,7 @@ public class HttpHeaderNames
     public static final HeaderName ACCEPT = HEADER_NAME_CACHE.get("Accept");
     public static final HeaderName ACCEPT_ENCODING = HEADER_NAME_CACHE.get("Accept-Encoding");
     public static final HeaderName ACCEPT_LANGUAGE = HEADER_NAME_CACHE.get("Accept-Language");
+    public static final HeaderName TRANSFER_ENCODING = HEADER_NAME_CACHE.get("Transfer-Encoding");
 
     public static final HeaderName LAST_MODIFIED = HEADER_NAME_CACHE.get("Last-Modified");
     public static final HeaderName ETAG = HEADER_NAME_CACHE.get("ETag");

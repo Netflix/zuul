@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.util;
 
-import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import org.junit.Test;
 
@@ -30,9 +30,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class HttpUtils
 {
-    public static final String X_FORWARDED_FOR_HEADER = "x-forwarded-for";
-
-
     /**
      * Get the IP address of client making the request.
      *
@@ -44,7 +41,7 @@ public class HttpUtils
      */
     public static String getClientIP(HttpRequestMessage request)
     {
-        final String xForwardedFor = request.getHeaders().getFirst(X_FORWARDED_FOR_HEADER);
+        final String xForwardedFor = request.getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_FOR);
         String clientIP;
         if (xForwardedFor == null) {
             clientIP = request.getClientIp();
@@ -84,12 +81,12 @@ public class HttpUtils
     }
 
     public static boolean isGzipped(Headers headers) {
-        String ce = headers.getFirst(ZuulHeaders.CONTENT_ENCODING);
+        String ce = headers.getFirst(HttpHeaderNames.CONTENT_ENCODING);
         return ce != null && isGzipped(ce);
     }
 
     public static boolean acceptsGzip(Headers headers) {
-        String ae = headers.getFirst(ZuulHeaders.ACCEPT_ENCODING);
+        String ae = headers.getFirst(HttpHeaderNames.ACCEPT_ENCODING);
         return ae != null && isGzipped(ae);
     }
 
