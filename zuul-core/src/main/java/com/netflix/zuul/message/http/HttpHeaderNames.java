@@ -41,6 +41,7 @@ public class HttpHeaderNames
 
     private static final HttpHeaderNamesCache HEADER_NAME_CACHE = new HttpHeaderNamesCache(100, MAX_CACHE_SIZE.get());
     
+    
     public static final HeaderName COOKIE = HEADER_NAME_CACHE.get("Cookie");
     public static final HeaderName SET_COOKIE = HEADER_NAME_CACHE.get("Set-Cookie");
 
@@ -52,6 +53,8 @@ public class HttpHeaderNames
     public static final HeaderName USER_AGENT = HEADER_NAME_CACHE.get("User-Agent");
     public static final HeaderName REFERER = HEADER_NAME_CACHE.get("Referer");
     public static final HeaderName ORIGIN = HEADER_NAME_CACHE.get("Origin");
+    public static final HeaderName LOCATION = HEADER_NAME_CACHE.get("Location");
+    public static final HeaderName UPGRADE = HEADER_NAME_CACHE.get("Upgrade");
 
     public static final HeaderName CONTENT_TYPE = HEADER_NAME_CACHE.get("Content-Type");
     public static final HeaderName CONTENT_LENGTH = HEADER_NAME_CACHE.get("Content-Length");
@@ -60,10 +63,17 @@ public class HttpHeaderNames
     public static final HeaderName ACCEPT_ENCODING = HEADER_NAME_CACHE.get("Accept-Encoding");
     public static final HeaderName ACCEPT_LANGUAGE = HEADER_NAME_CACHE.get("Accept-Language");
     public static final HeaderName TRANSFER_ENCODING = HEADER_NAME_CACHE.get("Transfer-Encoding");
+    public static final HeaderName TE = HEADER_NAME_CACHE.get("TE");
+    public static final HeaderName RANGE = HEADER_NAME_CACHE.get("Range");
+    public static final HeaderName ACCEPT_RANGES = HEADER_NAME_CACHE.get("Accept-Ranges");
+    public static final HeaderName ALLOW = HEADER_NAME_CACHE.get("Allow");
+    public static final HeaderName VARY = HEADER_NAME_CACHE.get("Vary");
 
     public static final HeaderName LAST_MODIFIED = HEADER_NAME_CACHE.get("Last-Modified");
     public static final HeaderName ETAG = HEADER_NAME_CACHE.get("ETag");
+    public static final HeaderName EXPIRES = HEADER_NAME_CACHE.get("Expires");
     public static final HeaderName CACHE_CONTROL = HEADER_NAME_CACHE.get("Cache-Control");
+    public static final HeaderName EDGE_CONTROL = HEADER_NAME_CACHE.get("Edge-Control");
     public static final HeaderName PRAGMA = HEADER_NAME_CACHE.get("Pragma");
 
     public static final HeaderName X_FORWARDED_HOST = HEADER_NAME_CACHE.get("X-Forwarded-Host");
@@ -75,6 +85,7 @@ public class HttpHeaderNames
     public static final HeaderName ACCESS_CONTROL_ALLOW_CREDENTIALS = HEADER_NAME_CACHE.get("Access-Control-Allow-Credentials");
     public static final HeaderName ACCESS_CONTROL_ALLOW_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Allow-Headers");
     public static final HeaderName ACCESS_CONTROL_ALLOW_METHODS = HEADER_NAME_CACHE.get("Access-Control-Allow-Methods");
+    public static final HeaderName STRICT_TRANSPORT_SECURITY = HEADER_NAME_CACHE.get("Strict-Transport-Security");
 
     /**
      * Looks up the name in the cache, and if does not exist, then creates and adds a new one
