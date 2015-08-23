@@ -212,7 +212,7 @@ public class FilterProcessor {
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
-            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser).single();
+            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser);
         }
         return chain;
     }
@@ -261,7 +261,7 @@ public class FilterProcessor {
                 // equal or above the requested.
                 FilterPriority requiredPriority = overrideFilterPriority == null ? msg.getContext().getFilterPriorityToApply() : overrideFilterPriority;
                 if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg).single();
+                    resultObs = filter.applyAsync(msg);
                 } else {
                     resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                     info.status = ExecutionStatus.SKIPPED;
