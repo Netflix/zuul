@@ -63,7 +63,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public FilterPriority getPriority()
     {
-        return FilterPriority.NORMAL;
+        return FilterPriority.HIGH;
     }
 
     /**
