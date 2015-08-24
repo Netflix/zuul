@@ -23,6 +23,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
@@ -54,6 +55,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
+    private static final String KEY_STATIC_RESPONSE = "_static_response";
 
     private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "eventProperties";
@@ -175,6 +177,13 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public void setUUID(String uuid)
     {
         set(KEY_UUID, uuid);
+    }
+
+    public void setStaticResponse(HttpResponseMessage response) {
+        set(KEY_STATIC_RESPONSE, response);
+    }
+    public HttpResponseMessage getStaticResponse() {
+        return (HttpResponseMessage) get(KEY_STATIC_RESPONSE);
     }
 
     /**

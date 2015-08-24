@@ -167,6 +167,13 @@ public class FilterProcessor {
 
             HttpRequestMessage request = (HttpRequestMessage) msg;
 
+            // If a static response has been set on the SessionContext, then just return that without attempting
+            // to run any endpoint filter.
+            HttpResponseMessage staticResponse = context.getStaticResponse();
+            if (staticResponse != null) {
+                return Observable.just(staticResponse);
+            }
+
             // Get the previously chosen endpoint filter to use.
             String endpointName = context.getEndpoint();
             if (endpointName == null) {
