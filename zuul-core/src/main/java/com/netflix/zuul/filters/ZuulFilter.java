@@ -56,7 +56,7 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      *
      * @return
      */
-    FilterPriority getPriority();
+    int getPriority();
 
     /**
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
