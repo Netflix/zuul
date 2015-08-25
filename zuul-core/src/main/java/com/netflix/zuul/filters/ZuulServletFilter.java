@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -50,8 +48,6 @@ import static org.mockito.Mockito.*;
  *         Time: 2:54 PM
  */
 public class ZuulServletFilter implements Filter {
-
-    private static Logger LOG = LoggerFactory.getLogger(ZuulServletFilter.class);
 
     private ZuulRunner zuulRunner;
 
@@ -113,7 +109,6 @@ public class ZuulServletFilter implements Filter {
     void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
-        LOG.error(e.getMessage(), e);
     }
 
     public void destroy() {

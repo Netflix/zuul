@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -47,10 +45,9 @@ import static org.mockito.Mockito.*;
  *         Time: 10:44 AM
  */
 public class ZuulServlet extends HttpServlet {
-    
+
     private static final long serialVersionUID = -3374242278843351500L;
     private ZuulRunner zuulRunner;
-    private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
 
     @Override
@@ -146,7 +143,6 @@ public class ZuulServlet extends HttpServlet {
     void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
-        LOG.error(e.getMessage(), e);
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -196,7 +192,7 @@ public class ZuulServlet extends HttpServlet {
                 RequestContext.testSetCurrentContext(null);
 
             } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             }
 
 
