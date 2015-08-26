@@ -161,18 +161,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             throw new RuntimeException("Error getting ServletOutputStream", e);
         }
 
-        if (msg.isBodyBuffered()) {
-            // Is already buffered as a byte array, so just flush that.
-            try {
-                output.write(msg.getBody());
-                output.flush();
-            } catch (IOException e) {
-                LOG.error("Error writing response to ServletOutputStream.", e);
-            } finally {
-                return Observable.just(msg);
-            }
-        }
-        else if (msg.getBodyStream() == null) {
+        if (msg.getBodyStream() == null) {
             return Observable.just(msg);
         }
         else {
@@ -193,11 +182,10 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                         }
                     })
                     .doOnError(t -> {
-                        LOG.error("Error writing repsonse to ServletOutputStream.", t);
+                        LOG.error("Error writing response to ServletOutputStream.", t);
                     })
                     .map(bb ->  msg);
 
-            writeBody.subscribe();
             return writeBody;
 
         }
