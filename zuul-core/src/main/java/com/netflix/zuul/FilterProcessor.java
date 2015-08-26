@@ -304,12 +304,12 @@ public class FilterProcessor {
         });
 
         // Record info when filter processing completes.
-        resultObs = resultObs.doOnCompleted(() -> {
+        resultObs = resultObs.doOnNext((msg1) -> {
             if (info.status == null) {
                 info.status = ExecutionStatus.SUCCESS;
             }
             info.execTime = System.currentTimeMillis() - ltime;
-            recordFilterCompletion(msg, filter, info);
+            recordFilterCompletion(msg1, filter, info);
         });
 
         return resultObs;
