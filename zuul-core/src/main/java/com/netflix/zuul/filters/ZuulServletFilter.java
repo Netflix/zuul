@@ -109,7 +109,6 @@ public class ZuulServletFilter implements Filter {
     void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
-        e.printStackTrace();
     }
 
     public void destroy() {

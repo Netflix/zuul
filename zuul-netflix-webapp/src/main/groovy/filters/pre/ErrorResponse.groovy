@@ -26,11 +26,15 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 class ErrorResponse extends ZuulFilter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ErrorResponse.class);
 
     @Override
     String filterType() {
@@ -53,6 +57,7 @@ class ErrorResponse extends ZuulFilter {
         RequestContext context = RequestContext.currentContext
         Throwable ex = context.getThrowable()
         try {
+            LOG.error(ex.getMessage(), ex);
             throw ex
         } catch (ZuulException e) {
             String cause = e.errorCause
