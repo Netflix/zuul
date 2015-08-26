@@ -74,7 +74,7 @@ public class FilterProcessor {
 
     public FilterProcessor()
     {
-        if (usageNotifier != null) {
+        if (usageNotifier == null) {
             usageNotifier = new BasicFilterUsageNotifier();
         }
     }
