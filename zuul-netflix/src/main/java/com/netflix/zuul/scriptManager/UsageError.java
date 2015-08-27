@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class UsageError {
+class UsageError {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UsageError.class);
 

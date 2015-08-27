@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
 
-final class ValidActionEvaluation {
+class ValidActionEvaluation {
 
     private static final Set<String> VALID_GET_ACTIONS = unmodifiableSet(newHashSet("LIST", "DOWNLOAD"));
     private static final Set<String> VALID_PUT_ACTIONS =
