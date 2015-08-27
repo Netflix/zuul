@@ -38,9 +38,11 @@ public class BasicRequestMetricsPublisher implements RequestMetricsPublisher
         recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "added", totalTimeAddedToOrigin);
     }
 
-    private void recordRequestTiming(String name, long time) {
-        if(time > -1) {
-            DynamicTimer.record(MonitorConfig.builder(name).build(), time);
+    private void recordRequestTiming(String name, long timeNs)
+    {
+        long timeMs = timeNs / 1000000;
+        if(timeMs > -1) {
+            DynamicTimer.record(MonitorConfig.builder(name).build(), timeMs);
         }
     }
 }
