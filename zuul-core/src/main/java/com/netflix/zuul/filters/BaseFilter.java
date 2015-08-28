@@ -56,14 +56,14 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
 
     /**
-     * Default to NORMAL priority.
+     * Default to a priority of 10.
      *
      * @return
      */
     @Override
-    public FilterPriority getPriority()
+    public int getPriority()
     {
-        return FilterPriority.HIGH;
+        return 10;
     }
 
     /**

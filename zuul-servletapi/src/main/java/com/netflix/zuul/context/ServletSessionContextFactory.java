@@ -182,11 +182,10 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                         }
                     })
                     .doOnError(t -> {
-                        LOG.error("Error writing repsonse to ServletOutputStream.", t);
+                        LOG.error("Error writing response to ServletOutputStream.", t);
                     })
                     .map(bb ->  msg);
 
-            writeBody.subscribe();
             return writeBody;
 
         }
