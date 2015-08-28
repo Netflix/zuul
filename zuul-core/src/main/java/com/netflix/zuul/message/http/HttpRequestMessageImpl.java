@@ -18,8 +18,8 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.stats.Timing;
@@ -30,10 +30,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -45,10 +45,15 @@ import java.util.regex.Pattern;
  */
 public class HttpRequestMessageImpl implements HttpRequestMessage
 {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
+
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024);
 
     private static final Pattern PTN_COLON = Pattern.compile(":");
+    private static final String URI_SCHEME_SEP = "://";
+    private static final String URI_SCHEME_HTTP = "http";
+    private static final String URI_SCHEME_HTTPS = "https";
 
     private ZuulMessage message;
     private String protocol;
@@ -308,8 +313,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public String getInfoForLogging()
     {
         StringBuilder sb = new StringBuilder()
-                .append("uri=").append(reconstructURI().toString())
+                .append("uri=").append(reconstructURI())
                 .append(", method=").append(getMethod())
+                .append(", clientip=").append(getClientIp())
                 ;
         return sb.toString();
     }
@@ -380,35 +386,34 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     /**
      * Attempt to reconstruct the full URI that the client used.
      *
-     * @return
+     * @return String
      */
     @Override
-    public URI reconstructURI()
+    public String reconstructURI()
     {
-        String scheme = getOriginalScheme();
-        String host = getOriginalHost();
-
-        int port = getOriginalPort();
-        if (("http".equalsIgnoreCase(scheme) && 80 == port)
-                || ("https".equalsIgnoreCase(scheme) && 443 == port)) {
-            // Don't need to include port.
-            port = -1;
-        }
-
-        String queryStr = null;
-        if (queryParams != null && queryParams.entries().size() > 0) {
-            queryStr = queryParams.toEncodedString();
-        }
-
-        URI uri;
         try {
-            uri = new URI(scheme, null, host, port, path, queryStr, null);
-        }
-        catch (URISyntaxException e) {
-            throw new RuntimeException("Error reconstructing request URI!", e);
-        }
+            StringBuilder uri = new StringBuilder(100);
 
-        return uri;
+            String scheme = getOriginalScheme().toLowerCase();
+            uri.append(scheme);
+            uri.append(URI_SCHEME_SEP).append(getOriginalHost());
+
+            int port = getOriginalPort();
+            if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port)
+                    || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
+                // Don't need to include port.
+            } else {
+                uri.append(':').append(port);
+            }
+
+            uri.append(getPathAndQuery());
+
+            return uri.toString();
+        }
+        catch (Exception e) {
+            LOG.error("Error reconstructing request URI!", e);
+            return "";
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -454,7 +459,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             headers.add("Host", "blah.netflix.com");
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
-            Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI().toString());
+            Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
 
             queryParams = new HttpQueryParams();
             headers = new Headers();
@@ -462,7 +467,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             headers.add("X-Forwarded-Port", "80");
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "http", 7002, "localhost");
-            Assert.assertEquals("http://place.netflix.com/some/where", request.reconstructURI().toString());
+            Assert.assertEquals("http://place.netflix.com/some/where", request.reconstructURI());
 
             queryParams = new HttpQueryParams();
             headers = new Headers();
@@ -471,21 +476,21 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             headers.add("X-Forwarded-Port", "443");
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "http", 7002, "localhost");
-            Assert.assertEquals("https://place.netflix.com/some/where", request.reconstructURI().toString());
+            Assert.assertEquals("https://place.netflix.com/some/where", request.reconstructURI());
 
             queryParams = new HttpQueryParams();
             headers = new Headers();
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "http", 7002, "localhost");
-            Assert.assertEquals("http://localhost:7002/some/where", request.reconstructURI().toString());
+            Assert.assertEquals("http://localhost:7002/some/where", request.reconstructURI());
 
             queryParams = new HttpQueryParams();
             queryParams.add("flag", "5");
             queryParams.add("flag B", "9");
             headers = new Headers();
-            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some where", queryParams, headers,
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some%20where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
-            Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI().toString());
+            Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI());
         }
 
         @Test

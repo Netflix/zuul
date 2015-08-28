@@ -23,8 +23,6 @@ package com.netflix.zuul.message.http;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 
-import java.net.URI;
-
 /**
  * User: Mike Smith
  * Date: 7/15/15
@@ -62,7 +60,7 @@ public interface HttpRequestInfo extends ZuulMessage
 
     int getOriginalPort();
 
-    URI reconstructURI();
+    String reconstructURI();
 
     /** Parse and lazily cache the request cookies. */
     Cookies parseCookies();
