@@ -16,6 +16,7 @@
 package com.netflix.zuul.message.http;
 
 
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.context.SessionContext;
@@ -48,7 +49,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
 
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024);
+            "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024
+    );
+    private static final DynamicBooleanProperty CLEAN_COOKIES = DynamicPropertyFactory.getInstance().getBooleanProperty(
+            "zuul.HttpRequestMessage.cookies.clean", false
+    );
 
     private static final Pattern PTN_COLON = Pattern.compile(":");
     private static final String URI_SCHEME_SEP = "://";
@@ -73,6 +78,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName)
     {
+        if (CLEAN_COOKIES.get()) {
+            headers = CookieCleaner.cleanCookieHeaders(headers);
+        }
+
         this.message = new ZuulMessageImpl(context, headers);
         this.protocol = protocol;
         this.method = method;
@@ -260,11 +269,19 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public Cookies reParseCookies()
     {
         Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE)) {
-            Set<Cookie> decode = CookieDecoder.decode(aCookieHeader, false);
-            for (Cookie cookie : decode) {
-                cookies.add(cookie);
+        for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE))
+        {
+            try {
+                Set<Cookie> decoded = CookieDecoder.decode(aCookieHeader, false);
+                for (Cookie cookie : decoded) {
+                    cookies.add(cookie);
+                }
             }
+            catch (Exception e) {
+                LOG.error(String.format("Error parsing request Cookie header. cookie=%s, request-info=%s",
+                        aCookieHeader, getInfoForLogging()));
+            }
+
         }
         parsedCookies = cookies;
         return cookies;
