@@ -59,7 +59,7 @@ public class CookieCleaner
         Headers cleanedHeaders = new Headers();
 
         for (Header h : headers.entries()) {
-            if (h.getName() == HttpHeaderNames.COOKIE) {
+            if (HttpHeaderNames.COOKIE.equals(h.getName())) {
                 String cookie = h.getValue();
                 for (Pattern stripPtn : RE_STRIP) {
                     Matcher matcher = stripPtn.matcher(cookie);
@@ -118,6 +118,17 @@ public class CookieCleaner
 
             assertEquals(1, cleaned.size());
             assertEquals("text/plain", cleaned.getFirst("Content-Type"));
+        }
+
+        @Test
+        public void testCleanCookieHeaders_CaseInsensitiveNames()
+        {
+            headers.add("cookie", "BlahId=12345; Secure, something=67890;");
+
+            Headers cleaned = CookieCleaner.cleanCookieHeaders(headers);
+
+            assertEquals(1, cleaned.size());
+            assertEquals("BlahId=12345; something=67890;", cleaned.getFirst("Cookie"));
         }
     }
 }
