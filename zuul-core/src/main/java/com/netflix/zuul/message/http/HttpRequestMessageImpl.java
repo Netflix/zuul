@@ -19,6 +19,7 @@ package com.netflix.zuul.message.http;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -36,8 +37,13 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: michaels
@@ -54,6 +60,17 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private static final DynamicBooleanProperty CLEAN_COOKIES = DynamicPropertyFactory.getInstance().getBooleanProperty(
             "zuul.HttpRequestMessage.cookies.clean", false
     );
+
+    /** ":::"-delimited list of regexes to strip out of the cookie headers. */
+    private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
+            new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
+    private static final List<Pattern> RE_STRIP;
+    static {
+        RE_STRIP = new ArrayList<>();
+        for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::")) {
+            RE_STRIP.add(Pattern.compile(ptn));
+        }
+    }
 
     private static final Pattern PTN_COLON = Pattern.compile(":");
     private static final String URI_SCHEME_SEP = "://";
@@ -78,10 +95,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName)
     {
-        if (CLEAN_COOKIES.get()) {
-            headers = CookieCleaner.cleanCookieHeaders(headers);
-        }
-
         this.message = new ZuulMessageImpl(context, headers);
         this.protocol = protocol;
         this.method = method;
@@ -272,6 +285,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE))
         {
             try {
+                if (CLEAN_COOKIES.get()) {
+                    aCookieHeader = cleanCookieHeader(aCookieHeader);
+                }
+
                 Set<Cookie> decoded = CookieDecoder.decode(aCookieHeader, false);
                 for (Cookie cookie : decoded) {
                     cookies.add(cookie);
@@ -285,6 +302,17 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
         parsedCookies = cookies;
         return cookies;
+    }
+
+    private static String cleanCookieHeader(String cookie)
+    {
+        for (Pattern stripPtn : RE_STRIP) {
+            Matcher matcher = stripPtn.matcher(cookie);
+            if (matcher.find()) {
+                cookie = matcher.replaceAll("");
+            }
+        }
+        return cookie;
     }
 
     @Override
@@ -568,6 +596,15 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
             Assert.assertEquals(7005, request.getOriginalPort());
+        }
+
+        @Test
+        public void testCleanCookieHeaders()
+        {
+            assertEquals("BlahId=12345; something=67890;", HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; Secure, something=67890;"));
+            assertEquals("BlahId=12345; something=67890;", HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; something=67890;"));
+            assertEquals(" BlahId=12345; something=67890;", HttpRequestMessageImpl.cleanCookieHeader(" Secure, BlahId=12345; Secure, something=67890;"));
+            assertEquals("", HttpRequestMessageImpl.cleanCookieHeader(""));
         }
     }
 }
