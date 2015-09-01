@@ -17,6 +17,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.ZuulMessage;
@@ -26,11 +27,20 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.ServerCookieEncoder;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.nio.charset.Charset;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: michaels
@@ -181,7 +191,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public boolean hasSetCookieWithName(String cookieName)
     {
         boolean has = false;
-        for (String setCookieValue : getHeaders().get("Set-Cookie")) {
+        for (String setCookieValue : getHeaders().get(HttpHeaderNames.SET_COOKIE)) {
             for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
                 if (cookie.getName().equalsIgnoreCase(cookieName)) {
                     has = true;
@@ -193,15 +203,47 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
+    public boolean removeExistingSetCookie(String cookieName)
+    {
+        String cookieNamePrefix = cookieName + "=";
+        boolean dirty = false;
+        Headers filtered = new Headers();
+        for (Header hdr : getHeaders().entries()) {
+            if (HttpHeaderNames.SET_COOKIE.equals(hdr.getName())) {
+                String value = hdr.getValue();
+
+                // Strip out this set-cookie as requested.
+                if (value.startsWith(cookieNamePrefix)) {
+                    // Don't copy it.
+                    dirty = true;
+                }
+                else {
+                    // Copy all other headers.
+                    filtered.add(hdr.getName(), hdr.getValue());
+                }
+            }
+            else {
+                // Copy all other headers.
+                filtered.add(hdr.getName(), hdr.getValue());
+            }
+        }
+
+        if (dirty) {
+            setHeaders(filtered);
+        }
+        return dirty;
+    }
+
+    @Override
     public void addSetCookie(Cookie cookie)
     {
-        getHeaders().add("Set-Cookie", ServerCookieEncoder.encode(cookie));
+        getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
     public void setSetCookie(Cookie cookie)
     {
-        getHeaders().set("Set-Cookie", ServerCookieEncoder.encode(cookie));
+        getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
@@ -246,5 +288,45 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
                 .append(",proxy-status=").append(getStatus())
                 ;
         return sb.toString();
+    }
+
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class UnitTest
+    {
+        @Mock
+        private HttpRequestMessage request;
+
+        private HttpResponseMessageImpl response;
+
+        @Before
+        public void setup()
+        {
+            response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
+        }
+
+        @Test
+        public void testHasSetCookieWithName()
+        {
+            response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
+            response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
+
+            assertTrue(response.hasSetCookieWithName("c1"));
+            assertTrue(response.hasSetCookieWithName("c2"));
+            assertFalse(response.hasSetCookieWithName("XX"));
+        }
+
+        @Test
+        public void testRemoveExistingSetCookie()
+        {
+            response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
+            response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
+
+            response.removeExistingSetCookie("c1");
+
+            assertEquals(1, response.getHeaders().size());
+            assertFalse(response.hasSetCookieWithName("c1"));
+            assertTrue(response.hasSetCookieWithName("c2"));
+        }
     }
 }
