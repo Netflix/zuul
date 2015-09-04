@@ -1,5 +1,15 @@
 language: java
 jdk:
-  - oraclejdk7
-  - openjdk6
-  - openjdk7
+- oraclejdk8
+sudo: false
+install: "./installViaTravis.sh"
+script: "./buildViaTravis.sh"
+env:
+  global:
+  - secure: JReOX/9ZzNHP0CWrw2KEQ699fcWH+59kR7WjJTPglYMhIDsrcQlSV+AKPfXVuEh71HanWDaEjVtw1i0nMiZGd8k8jgU5iMbOaO1PmpjTxEHB97vnh9xexYaPsL1wzKlj51fEfwLX26SS3z7kRrvT4tQp/2A11aLqNVLJENEJUrE=
+  - secure: BSCZkXsCLzPQmFrojsE9m5zdB7LUnUSVjtgDvvZjqjOac6HaKEr0uBxCIpizR/GPGZA4sNypuSD6jtsaHTU3TGKfNCTzz2QwIwvpVrmGNqXR3Tv/p+grNMEVCVA6P3jpMWY1P0zg7m+OTiyF6roAZXc6LftOzygox2lDPK85D3M=
+  - secure: UYgocA/3TXjgIaoZRmSCzA0Ed3xImJxuQUw6GV/HUeHWoQyCD5myBpQcdIkAaQsJnNWY6h587oL3yDvIVjycVb2/9uhUAQ5NHjz5oT4D4aNECpQvdcHivAtGPfH5jZV6Cj57Q5hLeedCG0oeWamiZcR6AlSkT/FMlP0lhAPJFNM=
+  - secure: GtgBxV/2hQ9kPXpTAY9Iq7gi8+DaGGgu7KuEtAUw0nLenl2CIY3GLU3cP0oAbvtKDcKlbmYhfTLgj7pDoDy4ZrfmCTBnKNoDqOAZjNfRLnrlEi3x2KL7VMgnWPqyemOHoAnGq3URXEr363GKNhBtrynehiXJNtVTxmOD0JS/Smg=
+cache:
+  directories:
+  - $HOME/.gradle
