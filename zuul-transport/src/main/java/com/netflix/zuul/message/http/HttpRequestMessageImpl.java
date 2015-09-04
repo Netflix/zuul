@@ -25,6 +25,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.stats.Timing;
+import com.netflix.zuul.util.HttpUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
@@ -351,10 +352,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public String getInfoForLogging()
     {
+        HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
         StringBuilder sb = new StringBuilder()
-                .append("uri=").append(reconstructURI())
-                .append(", method=").append(getMethod())
-                .append(", clientip=").append(getClientIp())
+                .append("uri=").append(req.reconstructURI())
+                .append(", method=").append(req.getMethod())
+                .append(", clientip=").append(HttpUtils.getClientIP(req))
                 ;
         return sb.toString();
     }

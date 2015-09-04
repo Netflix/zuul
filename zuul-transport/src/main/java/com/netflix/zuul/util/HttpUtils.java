@@ -17,7 +17,7 @@ package com.netflix.zuul.util;
 
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
-import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestInfo;
 
 /**
  * User: Mike Smith
@@ -35,7 +35,7 @@ public class HttpUtils
      * @param request <code>HttpRequestMessage</code>
      * @return <code>String</code> IP address
      */
-    public static String getClientIP(HttpRequestMessage request)
+    public static String getClientIP(HttpRequestInfo request)
     {
         final String xForwardedFor = request.getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_FOR);
         String clientIP;
