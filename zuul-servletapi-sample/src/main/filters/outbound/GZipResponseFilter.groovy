@@ -15,29 +15,17 @@
  */
 package outbound
 
-import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
-import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestInfo
-import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.message.http.HttpResponseMessage
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.util.HttpUtils
 import org.apache.commons.io.IOUtils
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-
-import static junit.framework.Assert.assertEquals
-import static junit.framework.Assert.assertNull
-import static org.mockito.Mockito.when
+import java.util.zip.ZipException
 
 class GZipResponseFilter extends HttpOutboundSyncFilter
 {
@@ -75,7 +63,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
                 response.getHeaders().remove("Content-Encoding")
                 response.getHeaders().set("Content-Length", Integer.toString(unGzippedBody.length))
 
-            } catch (java.util.zip.ZipException e) {
+            } catch (ZipException e) {
                 LOG.error("Gzip expected but not received assuming unencoded response. So sending body as-is.")
             }
         }
@@ -87,7 +75,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
                 response.getHeaders().set("Content-Encoding", "gzip")
                 response.getHeaders().set("Content-Length", Integer.toString(gzippedBody.length))
 
-            } catch (java.util.zip.ZipException e) {
+            } catch (ZipException e) {
                 LOG.error("Error gzipping response body. So just sending as-is.")
             }
         }
@@ -104,75 +92,4 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
 
         return baos.toByteArray()
     }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        GZipResponseFilter filter
-        SessionContext ctx
-        HttpResponseMessage response
-        Headers reqHeaders
-
-        @Mock
-        HttpRequestMessage request
-
-        @Before
-        public void setup() {
-            filter = new GZipResponseFilter()
-            ctx = new SessionContext()
-
-            when(request.getContext()).thenReturn(ctx)
-            when(request.getInboundRequest()).thenReturn(request)
-            reqHeaders = new Headers()
-            when(request.getHeaders()).thenReturn(reqHeaders)
-
-            response = new HttpResponseMessageImpl(ctx, request, 99)
-        }
-
-        @Test
-        public void prepareResponseBody_NeedsGZipping()
-        {
-            reqHeaders.set("Accept-Encoding", "gzip")
-
-            byte[] originBody = "blah".bytes
-            response.setBody(originBody)
-
-            filter.apply(response)
-
-            // Check body is a gzipped version of the origin body.
-            byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(response.getBody())).bytes
-            String bodyStr = new String(unzippedBytes, "UTF-8")
-            assertEquals("blah", bodyStr)
-            assertEquals("gzip", response.getHeaders().getFirst("Content-Encoding"))
-        }
-
-        @Test
-        public void prepareResponseBody_NeedsUnGZipping() {
-            reqHeaders.set("Accept-Encoding", "identity")
-            response.getHeaders().set("Content-Encoding", "gzip")
-
-            byte[] originBody = gzip("blah")
-            response.setBody(originBody)
-
-            filter.apply(response)
-
-            // Check returned body is same as origin body.
-            String bodyStr = new String(response.getBody(), "UTF-8")
-            assertEquals("blah", bodyStr)
-            assertNull(response.getHeaders().getFirst("Content-Encoding"))
-        }
-
-        private byte[] gzip(String data)
-        {
-            byte[] originBody = data.bytes
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream()
-            GZIPOutputStream gzOut = new GZIPOutputStream(baos)
-            gzOut.write(originBody)
-            gzOut.close()
-
-            return baos.toByteArray()
-        }
-    }
-
 }

@@ -1,0 +1,11 @@
+apply plugin: 'groovy'
+
+dependencies {
+
+    compile project(":zuul-transport")
+    compile project(":zuul-filters")
+    compile project(":zuul-common")
+    compile "io.reactivex:rxjava-string:1.0.+"
+    compile 'com.netflix.hystrix:hystrix-core:1.4.+'
+}
+

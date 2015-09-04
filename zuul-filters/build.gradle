@@ -1,0 +1,8 @@
+apply plugin: 'groovy'
+
+dependencies {
+
+    compile project(":zuul-transport")
+    compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
+}
+

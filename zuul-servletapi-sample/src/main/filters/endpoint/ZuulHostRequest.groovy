@@ -19,7 +19,8 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.message.Headers
@@ -30,7 +31,10 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.util.HttpUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
-import org.apache.http.*
+import org.apache.http.Header
+import org.apache.http.HttpHost
+import org.apache.http.HttpRequest
+import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -39,23 +43,14 @@ import org.apache.http.conn.ClientConnectionManager
 import org.apache.http.conn.scheme.PlainSocketFactory
 import org.apache.http.conn.scheme.Scheme
 import org.apache.http.conn.scheme.SchemeRegistry
-import org.apache.http.entity.ByteArrayEntity
 import org.apache.http.entity.InputStreamEntity
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
-import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicHttpRequest
 import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
@@ -355,84 +350,5 @@ class ZuulHostRequest extends HttpSyncEndpoint
             default:
                 return true;
         }
-    }
-
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit
-    {
-        @Mock
-        HttpRequestMessage request
-
-        SessionContext ctx
-        HttpResponseMessage response
-
-        @Before
-        public void setup()
-        {
-            ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 200)
-        }
-
-        @Test
-        public void testSetResponse() {
-
-            Debug.setDebugRouting(ctx, false)
-            Debug.setDebugRequest(ctx, false)
-
-            ZuulHostRequest filter = new ZuulHostRequest()
-            filter = Mockito.spy(filter)
-
-            Header[] headers = [
-                new BasicHeader("test", "test"),
-                new BasicHeader("content-length", "100")
-            ]
-
-            HttpResponse httpResponse = Mockito.mock(HttpResponse.class)
-            StatusLine status = Mockito.mock(StatusLine.class)
-            Mockito.when(status.getStatusCode()).thenReturn(200)
-            Mockito.when(httpResponse.getStatusLine()).thenReturn(status)
-
-            byte[] body = "test".bytes
-            HttpEntity entity = new ByteArrayEntity(body)
-            Mockito.when(httpResponse.getEntity()).thenReturn(entity)
-            Mockito.when(httpResponse.getAllHeaders()).thenReturn(headers)
-            response = filter.createHttpResponseMessage(httpResponse, request)
-
-            Assert.assertEquals(response.getStatus(), 200)
-            byte[] respBodyBytes = ByteBufUtils.toBytes(response.getBodyStream().toBlocking().single())
-            Assert.assertEquals(body.length, respBodyBytes.length)
-            Assert.assertTrue(response.getHeaders().contains('test', "test"))
-        }
-
-        @Test
-        public void testShouldFilter() {
-            ctx.setRouteHost(new URL("http://www.moldfarm.com"))
-            ZuulHostRequest filter = new ZuulHostRequest()
-            Assert.assertTrue(filter.shouldFilter(request))
-        }
-
-        @Test
-        public void testGetHost() {
-
-            ZuulHostRequest filter = new ZuulHostRequest()
-
-            URL url = new URL("http://www.moldfarm.com")
-            HttpHost host = filter.getHttpHost(url)
-            Assert.assertNotNull(host)
-            Assert.assertEquals(host.hostName, "www.moldfarm.com")
-            Assert.assertEquals(host.port, -1)
-            Assert.assertEquals(host.schemeName, "http")
-
-            url = new URL("https://www.moldfarm.com:8000")
-            host = filter.getHttpHost(url)
-            Assert.assertNotNull(host)
-            Assert.assertEquals(host.hostName, "www.moldfarm.com")
-            Assert.assertEquals(host.port, 8000)
-            Assert.assertEquals(host.schemeName, "https")
-        }
-
     }
 }

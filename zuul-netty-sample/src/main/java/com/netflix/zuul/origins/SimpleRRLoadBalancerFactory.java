@@ -16,18 +16,15 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.config.DynamicStringMapProperty;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Format of the zuul.loadbalancer.simplerr.registry property is a comma-delimited list of origin name to host&port lists:
@@ -77,7 +74,7 @@ public class SimpleRRLoadBalancerFactory implements LoadBalancerFactory
             this.registry.set(map);
         }
 
-        private void initFromProperty(DynamicStringMapProperty property)
+        void initFromProperty(DynamicStringMapProperty property)
         {
             Map<String, String> map = property.getMap();
             Map<String, List<ServerInfo>> newRegistry = new HashMap<>();
@@ -102,27 +99,6 @@ public class SimpleRRLoadBalancerFactory implements LoadBalancerFactory
         public List<ServerInfo> get(String name)
         {
             return registry.get().get(name);
-        }
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Test
-        public void testInitFromProperty()
-        {
-            ServerRegistry registry = new ServerRegistry(new HashMap<>());
-            DynamicStringMapProperty prop = new DynamicStringMapProperty("test.registry",
-                    "origin1=host1:8081;host2:8082,origin2=host3:8083,origin3=");
-            registry.initFromProperty(prop);
-
-            assertEquals(Arrays.asList(new ServerInfo("host1", 8081), new ServerInfo("host2", 8082)),
-                    registry.get("origin1"));
-            assertEquals(Arrays.asList(new ServerInfo("host3", 8083)), registry.get("origin2"));
-            assertNull(registry.get("origin3"));
-
-//            assertEquals(new ServerInfo("host1", 8081), registry.get("origin1").get(0));
-//            assertEquals(new ServerInfo("host2", 8082), registry.get("origin1").get(1));
         }
     }
 }
