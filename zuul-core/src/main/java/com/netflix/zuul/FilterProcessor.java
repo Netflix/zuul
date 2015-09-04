@@ -74,7 +74,7 @@ public class FilterProcessor {
 
     public FilterProcessor()
     {
-        if (usageNotifier != null) {
+        if (usageNotifier == null) {
             usageNotifier = new BasicFilterUsageNotifier();
         }
     }
@@ -132,10 +132,10 @@ public class FilterProcessor {
                 if (HttpResponseMessage.class.isAssignableFrom(msg.getClass())) {
                     // if msg is a response, then we need to get it's request to pass to the error filter.
                     HttpResponseMessage response = (HttpResponseMessage) msg;
-                    return processAsyncFilter(response.getOutboundRequest(), endpointFilter, (m2) -> m2, FilterPriority.LOW);
+                    return processAsyncFilter(response.getOutboundRequest(), endpointFilter, (m2) -> m2);
                 }
                 else {
-                    return processAsyncFilter(msg, endpointFilter, (m2) -> m2, FilterPriority.LOW);
+                    return processAsyncFilter(msg, endpointFilter, (m2) -> m2);
                 }
             }
             else {
@@ -167,6 +167,13 @@ public class FilterProcessor {
 
             HttpRequestMessage request = (HttpRequestMessage) msg;
 
+            // If a static response has been set on the SessionContext, then just return that without attempting
+            // to run any endpoint filter.
+            HttpResponseMessage staticResponse = context.getStaticResponse();
+            if (staticResponse != null) {
+                return Observable.just(staticResponse);
+            }
+
             // Get the previously chosen endpoint filter to use.
             String endpointName = context.getEndpoint();
             if (endpointName == null) {
@@ -188,7 +195,7 @@ public class FilterProcessor {
                 // this should always require an error response to be sent.
                 context.setShouldSendErrorResponse(true);
                 return input;
-            }, FilterPriority.LOW);
+            });
         });
 
         // Apply the error filters AGAIN. This is for if there was an error during the endpoint phase.
@@ -212,7 +219,7 @@ public class FilterProcessor {
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
-            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser);
+            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser).single();
         }
         return chain;
     }
@@ -234,13 +241,6 @@ public class FilterProcessor {
     public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter,
                                                       Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
-        return processAsyncFilter(msg, filter, defaultFilterResultChooser, null);
-    }
-
-    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter,
-                                                      Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser,
-                                                      FilterPriority overrideFilterPriority)
-    {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().debugRouting();
 
@@ -256,12 +256,19 @@ public class FilterProcessor {
             if (filter.isDisabled()) {
                 resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                 info.status = ExecutionStatus.DISABLED;
-            } else {
+            }
+            else if (msg.getContext().shouldStopFilterProcessing()) {
+                // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
+                // not processing any more filters.
+                resultObs = Observable.just(defaultFilterResultChooser.call(msg));
+                info.status = ExecutionStatus.SKIPPED;
+            }
+            else {
                 // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
                 // equal or above the requested.
-                FilterPriority requiredPriority = overrideFilterPriority == null ? msg.getContext().getFilterPriorityToApply() : overrideFilterPriority;
+                int requiredPriority = msg.getContext().getFilterPriorityToApply();
                 if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg);
+                    resultObs = filter.applyAsync(msg).single();
                 } else {
                     resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                     info.status = ExecutionStatus.SKIPPED;
@@ -297,20 +304,20 @@ public class FilterProcessor {
         });
 
         // Record info when filter processing completes.
-        resultObs = resultObs.doOnCompleted(() -> {
+        resultObs = resultObs.doOnNext((msg1) -> {
             if (info.status == null) {
                 info.status = ExecutionStatus.SUCCESS;
             }
             info.execTime = System.currentTimeMillis() - ltime;
-            recordFilterCompletion(msg, filter, info);
+            recordFilterCompletion(msg1, filter, info);
         });
 
         return resultObs;
     }
 
-    private boolean isFilterPriority(ZuulFilter filter, FilterPriority requiredPriority)
+    private boolean isFilterPriority(ZuulFilter filter, int requiredPriority)
     {
-        return filter.getPriority().getCode() >= requiredPriority.getCode();
+        return filter.getPriority() >= requiredPriority;
     }
 
     protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info)
@@ -413,7 +420,7 @@ public class FilterProcessor {
 
             when(filter.filterType()).thenReturn("pre");
             when(filter.shouldFilter(request)).thenReturn(true);
-            when(filter.getPriority()).thenReturn(FilterPriority.NORMAL);
+            when(filter.getPriority()).thenReturn(5);
         }
 
         @Test

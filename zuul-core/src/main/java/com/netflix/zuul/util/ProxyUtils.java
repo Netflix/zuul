@@ -33,7 +33,6 @@ public class ProxyUtils
             case "connection":
             case "keep-alive":
             case "content-length":
-            case "server":
             case "transfer-encoding":
                 return false;
             default:

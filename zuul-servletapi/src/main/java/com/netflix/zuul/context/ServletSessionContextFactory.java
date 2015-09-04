@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
@@ -46,6 +48,9 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
 {
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
     private static final String JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
+
+    private static final DynamicBooleanProperty SHOULD_ERROR_ON_SOCKET_READ_TIMEOUT = DynamicPropertyFactory.getInstance().getBooleanProperty(
+            "zuul.ServletSessionContextFactory.errorOnSocketReadTimeout", false);
 
     @Override
     public ZuulMessage create(SessionContext context, HttpServletRequest servletRequest)
@@ -93,21 +98,26 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             Observable<ByteBuf> bodyObs = ByteBufUtils.fromInputStream(bodyInput);
             bodyObs = bodyObs.onErrorReturn((e) -> {
                 if (SocketTimeoutException.class.isAssignableFrom(e.getClass())) {
+
                     // This can happen if the request body is smaller than the size specified in the
                     // Content-Length header, and using tomcat APR connector.
                     LOG.error("SocketTimeoutException reading request body from inputstream. error="
                             + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
-                } else {
+
+                    // Store the exception.
+                    ZuulException ze = new ZuulException(e.getMessage(), e, "TIMEOUT_READING_REQ_BODY");
+                    ze.setStatusCode(400);
+                    request.getContext().setError(ze);
+
+                    if (SHOULD_ERROR_ON_SOCKET_READ_TIMEOUT.get()) {
+                        // Flag to respond to client with an error. As we don't want to attempt proxying if we failed to read the body.
+                        request.getContext().setShouldSendErrorResponse(true);
+                    }
+                }
+                else {
                     LOG.error("Error reading request body from inputstream. error="
                             + String.valueOf(e.getMessage()) + ", request-info: " + request.getInfoForLogging());
                 }
-
-                // Store the exception, and flag to respond to client with an error. As we don't want
-                // to attempt proxying if we failed to read the body.
-                ZuulException ze = new ZuulException(e.getMessage(), e, "TIMEOUT_READING_REQ_BODY");
-                ze.setStatusCode(400);
-                request.getContext().setError(ze);
-                request.getContext().setShouldSendErrorResponse(true);
 
                 // Return an empty bytebuf.
                 return Unpooled.EMPTY_BUFFER;
@@ -182,11 +192,10 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
                         }
                     })
                     .doOnError(t -> {
-                        LOG.error("Error writing repsonse to ServletOutputStream.", t);
+                        LOG.error("Error writing response to ServletOutputStream.", t);
                     })
                     .map(bb ->  msg);
 
-            writeBody.subscribe();
             return writeBody;
 
         }

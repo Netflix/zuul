@@ -23,7 +23,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
-import com.netflix.zuul.filters.FilterPriority;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
@@ -47,12 +47,15 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final int INITIAL_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
 
-    /** Default to apply filters of any priority level. */
-    private FilterPriority filterPriority = FilterPriority.LOW;
+    /** Default to apply filters of all priority levels. */
+    private int filterPriority = 0;
+
+    private boolean shouldStopFilterProcessing = false;
 
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
+    private static final String KEY_STATIC_RESPONSE = "_static_response";
 
     private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "eventProperties";
@@ -142,6 +145,8 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         SessionContext copy = new SessionContext();
         copy.filterPriority = filterPriority;
+        copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
+
         Iterator<String> it = keySet().iterator();
         String key = it.next();
         while (key != null) {
@@ -172,6 +177,13 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public void setUUID(String uuid)
     {
         set(KEY_UUID, uuid);
+    }
+
+    public void setStaticResponse(HttpResponseMessage response) {
+        set(KEY_STATIC_RESPONSE, response);
+    }
+    public HttpResponseMessage getStaticResponse() {
+        return (HttpResponseMessage) get(KEY_STATIC_RESPONSE);
     }
 
     /**
@@ -318,6 +330,17 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
 
     /**
+     * This is typically set by a filter when wanting to reject a request, and also reduce load on the server
+     * by not processing any subsequent filters for this request.
+     */
+    public void stopFilterProcessing() {
+        shouldStopFilterProcessing = true;
+    }
+    public boolean shouldStopFilterProcessing() {
+        return shouldStopFilterProcessing;
+    }
+
+    /**
      * returns the routeVIP; that is the Eureka "vip" of registered instances
      *
      * @return
@@ -349,19 +372,16 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * The level of priority to use for applying filters. Only filters of specified priority
      * and above will be applied.
      *
-     * ie. if HIGH, then only filters of priority HIGH and above will be applied.
-     *     if LOW, then all filters will be applied.
+     * ie. if non-zero, then only filters of specified priority and above will be applied.
+     *     if zero, then all filters will be applied.
      *
      * @return
      */
-    public FilterPriority getFilterPriorityToApply() {
+    public int getFilterPriorityToApply() {
         return filterPriority;
     }
-    public void setFilterPriorityToApply(FilterPriority priority)
+    public void setFilterPriorityToApply(int priority)
     {
-        if (priority == null) {
-            throw new NullPointerException("Passed FilterPriority is null!");
-        }
         this.filterPriority = priority;
     }
 

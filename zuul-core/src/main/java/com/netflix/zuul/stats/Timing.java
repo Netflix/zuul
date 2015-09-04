@@ -43,7 +43,7 @@ public class Timing
     }
 
     public void end() {
-        this.endTime = System.currentTimeMillis();
+        this.endTime = System.nanoTime();
         this.duration = endTime - startTime;
 
         if (LOG.isDebugEnabled()) {

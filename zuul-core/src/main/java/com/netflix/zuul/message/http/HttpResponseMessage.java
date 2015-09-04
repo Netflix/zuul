@@ -42,6 +42,8 @@ public interface HttpResponseMessage extends HttpResponseInfo
 
     void setSetCookie(Cookie cookie);
 
+    boolean removeExistingSetCookie(String cookieName);
+
     /** The mutable request that will be sent to Origin. */
     HttpRequestMessage getOutboundRequest();
 
