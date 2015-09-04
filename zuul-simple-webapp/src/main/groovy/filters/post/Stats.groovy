@@ -13,19 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package scripts.postProcess
+package filters.post
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
-import org.junit.Assert
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.runners.MockitoJUnitRunner
-
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 /**
  * @author Mikey Cohen
  * Date: 2/3/12
