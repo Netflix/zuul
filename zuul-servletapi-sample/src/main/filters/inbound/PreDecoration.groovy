@@ -15,19 +15,8 @@
  */
 package inbound
 
-import com.netflix.zuul.context.*
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
-import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.message.http.HttpResponseMessage
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
 
 import static com.netflix.zuul.constants.ZuulHeaders.*
 
@@ -67,45 +56,6 @@ public class PreDecoration extends HttpInboundSyncFilter
         String xfproto = request.getHeaders().getFirst(X_FORWARDED_PROTO)
         if (xfproto != null) {
             request.getHeaders().set(X_NETFLIX_CLIENT_PROTO, xfproto)
-        }
-    }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        PreDecoration filter
-        SessionContext ctx
-        HttpResponseMessage response
-        Headers reqHeaders
-
-        @Mock
-        HttpRequestMessage request
-
-        @Before
-        public void setup() {
-            filter = new PreDecoration()
-
-            ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 99)
-            reqHeaders = new Headers()
-            Mockito.when(request.getHeaders()).thenReturn(reqHeaders)
-        }
-
-        @Test
-        public void testPreHeaders() {
-
-            Mockito.when(request.getClientIp()).thenReturn("1.1.1.1")
-            reqHeaders.set("Host", "moldfarm.com")
-            reqHeaders.set("X-Forwarded-Proto", "https")
-
-            filter.setOriginRequestHeaders(request)
-
-            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.request.toplevel.uuid"))
-            Assert.assertNotNull(reqHeaders.getFirst("x-forwarded-for"))
-            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-host"))
-            Assert.assertNotNull(reqHeaders.getFirst("x-netflix.client-proto"))
         }
     }
 }

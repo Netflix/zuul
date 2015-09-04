@@ -1,0 +1,10 @@
+apply plugin: 'groovy'
+
+dependencies {
+
+    compile project(":zuul-filters")
+    compile 'com.netflix.astyanax:astyanax-cassandra:1.56.48'
+    compile 'com.netflix.astyanax:astyanax-thrift:1.56.48'
+    compile 'com.netflix.hystrix:hystrix-core:1.4.+'
+}
+

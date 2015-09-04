@@ -8,8 +8,8 @@ configurations {
 
 dependencies {
 
-    compile project(':zuul-core')
-    compile project(':zuul-netty')
+    compile project(':zuul-common')
+    compile project(':zuul-transport-netty')
 
     compile "io.reactivex:rxnetty-spectator:${versions_rxnetty}"
 
@@ -21,21 +21,29 @@ dependencies {
 
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
 
-    compile "junit:junit:latest.release"
-    compile 'org.mockito:mockito-all:1.9.+'
-
     testCompile("org.spockframework:spock-core:1.0-groovy-2.3")
     testCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
 }
 
 sourceSets {
-    test {
+    src {
         java {
             srcDirs  = ['src/main/java']
             include '**/*.java'
         }
         groovy {
-            srcDirs  = ['src/main/filters', 'src/main/groovy', 'src/test/groovy']
+            srcDirs  = ['src/main/filters', 'src/main/groovy']
+            include '**/*.groovy'
+        }
+    }
+
+    test {
+        java {
+            srcDirs  = ['src/test/java']
+            include '**/*.java'
+        }
+        groovy {
+            srcDirs  = ['src/test/groovy']
             include '**/*.groovy'
         }
     }

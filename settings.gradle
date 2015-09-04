@@ -1,3 +1,10 @@
 rootProject.name='zuul'
 
-include 'zuul-core', 'zuul-servletapi', 'zuul-servletapi-sample', 'zuul-netty', 'zuul-netty-sample', 'zuul-jetty-sample'
+include 'zuul-transport'
+include 'zuul-filters'
+include 'zuul-cass-filters-store'
+include 'zuul-common'
+include 'zuul-transport-bio'
+include 'zuul-transport-netty'
+include 'zuul-servletapi-sample'
+include 'zuul-netty-sample'

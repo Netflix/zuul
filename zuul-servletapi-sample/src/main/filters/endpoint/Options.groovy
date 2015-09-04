@@ -15,20 +15,10 @@
  */
 package endpoint
 
+import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.message.http.HttpResponseMessage
 import com.netflix.zuul.message.http.HttpResponseMessageImpl
-import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.http.HttpSyncEndpoint
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
-
-import static org.junit.Assert.assertTrue
-import static org.mockito.Mockito.when
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,35 +35,4 @@ class Options extends HttpSyncEndpoint
         // Empty response body.
         return response
     }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        Options filter
-        SessionContext ctx
-
-        @Mock
-        HttpRequestMessage request
-
-        @Before
-        public void setup() {
-            filter = new Options()
-            ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-        }
-
-        @Test
-        public void testClientAccessPolicy() {
-
-            when(request.getPath()).thenReturn("/anything")
-            when(request.getMethod()).thenReturn("OPTIONS")
-            assertTrue(filter.shouldFilter(request))
-
-            HttpResponseMessage response = filter.apply(request)
-
-            assertTrue(response.getBody() == null)
-        }
-
-    }
-
 }
