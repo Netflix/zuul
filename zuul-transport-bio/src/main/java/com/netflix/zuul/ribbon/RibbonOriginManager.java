@@ -98,15 +98,4 @@ public class RibbonOriginManager implements OriginManager
         return origins.get(name);
     }
 
-    @Override
-    public Origin createOrigin(String name, String vip)
-    {
-        try {
-            initOrigin(RIBBON_NAMESPACE.get(), name);
-        }
-        catch (ClientException e) {
-            LOG.error("Error initializing Ribbon client! name={}", name, e);
-        }
-        return getOrigin(name);
-    }
 }

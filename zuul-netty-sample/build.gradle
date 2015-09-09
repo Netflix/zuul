@@ -11,14 +11,7 @@ dependencies {
     compile project(':zuul-common')
     compile project(':zuul-transport-netty')
 
-    compile "io.reactivex:rxnetty-spectator:${versions_rxnetty}"
-
-    // Hack to stop asm exceptions at runtime.
-    runtime 'org.ow2.asm:asm:5.0.3'
-    runtime 'org.ow2.asm:asm-all:5.0.3'
-    runtime 'org.apache.xbean:xbean-bundleutils:3.17'
-    runtime 'org.apache.xbean:xbean-finder:3.17'
-
+    compile 'org.slf4j:slf4j-log4j12:1.7.12'
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
 
     testCompile("org.spockframework:spock-core:1.0-groovy-2.3")

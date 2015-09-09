@@ -25,6 +25,8 @@ import rx.Observable;
  * Time: 3:14 PM
  */
 public interface Origin {
+
     String getName();
+
     Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg);
 }

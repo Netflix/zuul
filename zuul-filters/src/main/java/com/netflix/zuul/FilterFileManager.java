@@ -127,18 +127,34 @@ public class FilterFileManager {
      *
      * @return
      */
-    List<File> getFiles() {
-        List<File> list = new ArrayList<File>();
+    private List<File> getFiles() {
+        List<File> toReturn = new ArrayList<>();
         for (String sDirectory : config.getDirectories()) {
             if (sDirectory != null) {
                 File directory = getDirectory(sDirectory);
-                File[] aFiles = directory.listFiles(config.getFilenameFilter());
-                if (aFiles != null) {
-                    list.addAll(Arrays.asList(aFiles));
-                }
+                final List<File> filesForDir = getAllFilesForADir(directory);
+                toReturn.addAll(filesForDir);
             }
         }
-        return list;
+        return toReturn;
+    }
+
+    private List<File> getAllFilesForADir(File directory) {
+        final List<File> filesForDir = new ArrayList<>();
+        File[] aFiles = directory.listFiles();
+        if (null == aFiles) {
+            return filesForDir;
+        }
+
+        for (File aFile : aFiles) {
+            if (aFile.isDirectory()) {
+                List<File> allFiles = getAllFilesForADir(aFile);
+                filesForDir.addAll(allFiles);
+            } else if(config.getFilenameFilter().accept(directory, aFile.getName())) {
+                filesForDir.add(aFile);
+            }
+        }
+        return filesForDir;
     }
 
     /**

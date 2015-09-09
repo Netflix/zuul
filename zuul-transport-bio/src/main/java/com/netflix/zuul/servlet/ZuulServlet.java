@@ -41,10 +41,10 @@ public class ZuulServlet extends HttpServlet {
     private static final long serialVersionUID = -3374242278843351501L;
     private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
 
-    private ZuulHttpProcessor zuulProcessor;
+    private ZuulHttpProcessor<HttpServletRequest, HttpServletResponse> zuulProcessor;
 
     @Inject
-    public ZuulServlet(ZuulHttpProcessor zuulProcessor)
+    public ZuulServlet(ZuulHttpProcessor<HttpServletRequest, HttpServletResponse> zuulProcessor)
     {
         super();
         this.zuulProcessor = zuulProcessor;
@@ -59,13 +59,7 @@ public class ZuulServlet extends HttpServlet {
     public void service(HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException
     {
         try {
-            zuulProcessor
-                    .process(servletRequest, servletResponse)
-                    .doOnNext(msg -> {
-                        // Store this response as an attribute for any later ServletFilters that may want access to info in it.
-                        servletRequest.setAttribute("_zuul_response", msg);
-                    })
-                    .subscribe();
+            zuulProcessor.process(servletRequest, servletResponse).subscribe();
         }
         catch (Throwable e) {
             LOG.error("Unexpected error running ZuulHttpProcessor for this request.", e);

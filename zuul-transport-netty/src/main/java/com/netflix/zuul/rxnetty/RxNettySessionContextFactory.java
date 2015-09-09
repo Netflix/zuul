@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.context;
+package com.netflix.zuul.rxnetty;
 
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.message.Header;
-import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.*;
-import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
+import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessageImpl;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import io.reactivex.netty.protocol.http.server.HttpServerResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.net.InetSocketAddress;
@@ -35,36 +36,30 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 
-/**
- * User: michaels@netflix.com
- * Date: 2/25/15
- * Time: 4:03 PM
- */
-public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest, HttpServerResponse>
-{
-    private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
+public class RxNettySessionContextFactory
+        implements SessionContextFactory<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> {
 
     @Override
-    public ZuulMessage create(SessionContext context, HttpServerRequest httpServerRequest)
+    public ZuulMessage create(SessionContext context, HttpServerRequest<ByteBuf> req, HttpServerResponse<ByteBuf> resp)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
-        String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
+        String clientIp = getIpAddress(resp.unsafeNettyChannel());
 
         // TODO - How to get uri scheme from the netty request?
         String scheme = "http";
 
         // This is the only way I found to get the port of the request with netty...
-        int port = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getPort();
-        String serverName = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getHostString();
+        int port = ((InetSocketAddress) resp.unsafeNettyChannel().localAddress()).getPort();
+        String serverName = ((InetSocketAddress) resp.unsafeNettyChannel().localAddress()).getHostString();
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessageImpl(
                 context,
-                httpServerRequest.getHttpVersion().text(),
-                httpServerRequest.getHttpMethod().name().toLowerCase(),
-                httpServerRequest.getUri(),
-                copyQueryParams(httpServerRequest),
-                copyHeaders(httpServerRequest),
+                req.getHttpVersion().text(),
+                req.getHttpMethod().name().toLowerCase(),
+                req.getUri(),
+                copyQueryParams(req),
+                copyHeaders(req),
                 clientIp,
                 scheme,
                 port,
@@ -74,63 +69,49 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         // Store this original request info for future reference (ie. for metrics and access logging purposes).
         request.storeInboundRequest();
 
-        return wrapBody(request, httpServerRequest);
+        return wrapBody(request, req);
     }
 
     @Override
-    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse nativeResponse)
+    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse<ByteBuf> nativeResponse)
     {
         HttpResponseMessage zuulResp = (HttpResponseMessage) msg;
 
         // Set the response status code.
-        nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
+        nativeResponse = nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         for (Header entry : zuulResp.getHeaders().entries()) {
-            nativeResponse.getHeaders().add(entry.getKey(), entry.getValue());
+            nativeResponse = nativeResponse.addHeader(entry.getKey(), entry.getValue());
         }
 
-        // Write response body stream as received.
-        Observable<ZuulMessage> chain;
-        Observable<ByteBuf> bodyStream = zuulResp.getBodyStream();
-        if (bodyStream != null) {
-            chain = bodyStream
-                    .doOnNext(bb -> nativeResponse.writeBytesAndFlush(bb))
-                    .ignoreElements()
-                    .doOnCompleted(() -> nativeResponse.close())
-                    .map(bb -> msg);
-        }
-        else {
-            chain = Observable.just(msg);
-        }
-        return chain;
+        return nativeResponse.write(zuulResp.getBodyStream())
+                             .cast(ZuulMessage.class)
+                             .concatWith(Observable.just(msg));
     }
 
 
-    private ZuulMessage wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
-    {
-        //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
-        UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
-
-        // Subscribe to the response-content observable (retaining the ByteBufS first).
-        nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
-
-        request.setBodyStream(cachedContent);
-
+    private ZuulMessage wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest) {
+        request.setBodyStream(nettyServerRequest.getContent());
         return request;
     }
 
-    private Headers copyHeaders(HttpServerRequest httpServerRequest)
+    private Headers copyHeaders(HttpServerRequest<ByteBuf> req)
     {
         Headers headers = new Headers();
-        for (Map.Entry<String, String> entry : httpServerRequest.getHeaders().entries()) {
-            HeaderName hn = HttpHeaderNames.get(entry.getKey());
-            headers.add(hn, entry.getValue());
-        }
+
+        req.getHeaderNames()
+           .stream()
+           .forEach(name -> {
+               req.getAllHeaderValues(name)
+                  .stream()
+                  .forEach(value -> headers.add(name, value));
+           });
+
         return headers;
     }
 
-    private HttpQueryParams copyQueryParams(HttpServerRequest httpServerRequest)
+    private HttpQueryParams copyQueryParams(HttpServerRequest<ByteBuf> httpServerRequest)
     {
         HttpQueryParams queryParams = new HttpQueryParams();
         Map<String, List<String>> serverQueryParams = httpServerRequest.getQueryParameters();
