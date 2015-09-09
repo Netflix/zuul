@@ -5,13 +5,16 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.slf4j:slf4j-api:1.7.6'
 
+    compile ('io.netty:netty-codec-http:4.1.0.Beta5') {
+        force = true
+    }
+
+    compile('io.netty:netty-buffer:4.1.0.Beta5') {
+        force = true
+    }
+
     compile 'com.netflix.archaius:archaius-core:0.6.0'
     compile 'com.netflix.servo:servo-core:0.7.2'
     compile 'com.netflix.eureka:eureka-client:1.1.151'
-
-    // TEMP - ensure using same version as zuul-netty.
-    //compile "io.netty:netty-common:${versions_netty}"
-    compile "io.netty:netty-codec-http:${versions_netty}"
-    compile "io.netty:netty-buffer:${versions_netty}"
 }
 

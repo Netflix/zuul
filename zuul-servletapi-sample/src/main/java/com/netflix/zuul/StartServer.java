@@ -33,23 +33,16 @@ import com.netflix.karyon.server.KaryonServer;
 import com.netflix.servo.util.ThreadCpuStats;
 import com.netflix.zuul.dependency.cassandra.CassandraHelper;
 import com.netflix.zuul.dependency.cassandra.ZuulFilterDAOCassandra;
-import com.netflix.zuul.monitoring.CounterFactory;
-import com.netflix.zuul.monitoring.TracerFactory;
-import com.netflix.zuul.plugins.Counter;
-import com.netflix.zuul.plugins.MetricPoller;
-import com.netflix.zuul.plugins.ServoMonitor;
-import com.netflix.zuul.plugins.Tracer;
 import com.netflix.zuul.scriptManager.ZuulFilterDAO;
 import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
-import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import java.io.IOException;
 
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
+import static com.netflix.zuul.constants.ZuulConstants.*;
 
 public class StartServer extends GuiceServletContextListener {
 
@@ -109,10 +102,6 @@ public class StartServer extends GuiceServletContextListener {
     }
 
     protected void initialize() throws Exception {
-
-        CounterFactory.initialize(new Counter());
-        TracerFactory.initialize(new Tracer());
-
         AmazonInfoHolder.getInfo();
         initPlugins();
         initCassandra();
@@ -121,19 +110,6 @@ public class StartServer extends GuiceServletContextListener {
     }
 
     private void initPlugins() {
-        LOG.info("Registering Servo Monitor");
-        MonitorRegistry.getInstance().setPublisher(new ServoMonitor());
-
-        LOG.info("Starting Poller");
-        MetricPoller.startPoller();
-
-
-        LOG.info("Registering Servo Tracer");
-        TracerFactory.initialize(new Tracer());
-
-        LOG.info("Registering Servo Counter");
-        CounterFactory.initialize(new Counter());
-
         LOG.info("Starting CPU stats");
         final ThreadCpuStats stats = ThreadCpuStats.getInstance();
         stats.start();

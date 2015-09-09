@@ -61,19 +61,13 @@ public class FilterProcessor {
     protected static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = DynamicPropertyFactory.getInstance()
             .getStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
 
-    @Inject
-    private FilterLoader filterLoader;
+    private final FilterLoader filterLoader;
+    private final FilterUsageNotifier usageNotifier;
 
     @Inject
-    @Nullable
-    private FilterUsageNotifier usageNotifier;
-
-
-    public FilterProcessor()
-    {
-        if (usageNotifier == null) {
-            usageNotifier = new BasicFilterUsageNotifier();
-        }
+    public FilterProcessor(FilterLoader loader, FilterUsageNotifier usageNotifier) {
+        filterLoader = loader;
+        this.usageNotifier = usageNotifier;
     }
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)

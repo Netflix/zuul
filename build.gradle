@@ -32,6 +32,8 @@ subprojects {
     apply plugin: 'nebula.dependency-lock'
 
     repositories {
+        maven { url 'https://oss.jfrog.org/libs-snapshot' }
+        mavenCentral()
         jcenter()
     }
 

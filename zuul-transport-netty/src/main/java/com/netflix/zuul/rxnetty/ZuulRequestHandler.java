@@ -31,15 +31,16 @@ import javax.inject.Inject;
  * @author Nitesh Kant
  * @author Mike Smith
  */
-@Singleton
-public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf>
-{
-    @Inject
-    private ZuulHttpProcessor zuulProcessor;
+public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf> {
+
+    private final ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> zuulProcessor;
+
+    public ZuulRequestHandler(ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> processor) {
+        this.zuulProcessor = processor;
+    }
 
     @Override
-    public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse)
-    {
+    public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse) {
         return zuulProcessor.process(nettyRequest, nettyResponse);
     }
 }

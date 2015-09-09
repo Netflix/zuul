@@ -54,7 +54,7 @@ public class ZuulHttpProcessor<I,O>
         this.sessionCleaner = sessionCleaner;
     }
 
-    public Observable<ZuulMessage> process(final I nativeRequest, final O nativeResponse)
+    public Observable<Void> process(final I nativeRequest, final O nativeResponse)
     {
         // Setup the context for this request.
         final SessionContext context;
@@ -67,7 +67,7 @@ public class ZuulHttpProcessor<I,O>
         }
 
         // Build a ZuulMessage from the netty request.
-        final ZuulMessage request = contextFactory.create(context, nativeRequest);
+        final ZuulMessage request = contextFactory.create(context, nativeRequest, nativeResponse);
 
         // Start timing the request.
         request.getContext().getTimings().getRequest().start();

@@ -48,7 +48,7 @@ public class FilterProcessorTest {
                                              new Headers(), "127.0.0.1", "https", 80, "localhost");
         response = new HttpResponseMessageImpl(ctx, request, 200);
 
-        processor = new FilterProcessor();
+        processor = new FilterProcessor(null, null);
         processor = Mockito.spy(processor);
 
         Mockito.when(filter.filterType()).thenReturn("pre");

@@ -58,7 +58,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
             "zuul.ServletSessionContextFactory.errorOnSocketReadTimeout", false);
 
     @Override
-    public ZuulMessage create(SessionContext context, HttpServletRequest servletRequest)
+    public ZuulMessage create(SessionContext context, HttpServletRequest servletRequest, HttpServletResponse response)
     {
         // Parse the headers.
         Headers reqHeaders = new Headers();
