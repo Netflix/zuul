@@ -65,7 +65,7 @@ public class NettySampleStartServer {
         SessionCleaner cleaner = context -> Observable.empty();
 
         ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> processor =
-                new ZuulHttpProcessor<>(filterProcessor, sessionCtxFactory, ctxDecorator, null, filterFileManager,
+                new ZuulHttpProcessor<>(filterProcessor, sessionCtxFactory, ctxDecorator, null,
                                         cleaner);
 
         requestHandler = new ZuulRequestHandler(processor);

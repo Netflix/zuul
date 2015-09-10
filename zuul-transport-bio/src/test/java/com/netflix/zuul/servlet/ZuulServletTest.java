@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import rx.Observable;
+import rx.Single;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -26,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
-
-import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZuulServletTest {
@@ -62,7 +60,7 @@ public class ZuulServletTest {
         MockitoAnnotations.initMocks(this);
 
         contextFactory = new ServletSessionContextFactory();
-        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, filterFileMgr, sessionCleaner);
+        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, sessionCleaner);
         servlet = new ZuulServlet(zuulProcessor);
         servlet = Mockito.spy(servlet);
 
@@ -77,9 +75,9 @@ public class ZuulServletTest {
         response = new HttpResponseMessageImpl(context, request, 299);
         response.setBody("blah".getBytes());
 
-        Mockito.when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));
-        Mockito.when(processor.applyEndpointFilter(Matchers.any())).thenReturn(Observable.just(response));
-        Mockito.when(processor.applyOutboundFilters(Matchers.any())).thenReturn(Observable.just(response));
+        Mockito.when(processor.applyInboundFilters(Matchers.any())).thenReturn(Single.just(request));
+        Mockito.when(processor.applyEndpointFilter(Matchers.any())).thenReturn(Single.just(response));
+        Mockito.when(processor.applyOutboundFilters(Matchers.any())).thenReturn(Single.just(response));
     }
 
     @Test

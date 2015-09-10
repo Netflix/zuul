@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.message.http;
 
-import com.netflix.zuul.message.http.HttpResponseMessage;
+import rx.Observable;
 
 /**
  * User: michaels@netflix.com
@@ -28,6 +28,6 @@ public interface RequestCompleteHandler
      *
      * @param response HttpResponseMessage
      */
-    public void handle(HttpResponseMessage response);
+    Observable<Void> handle(HttpResponseMessage response);
 }
 

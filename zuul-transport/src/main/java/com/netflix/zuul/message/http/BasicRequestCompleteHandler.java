@@ -3,6 +3,7 @@ package com.netflix.zuul.message.http;
 import com.google.inject.Inject;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
+import rx.Observable;
 
 import javax.annotation.Nullable;
 
@@ -17,7 +18,7 @@ public class BasicRequestCompleteHandler implements RequestCompleteHandler
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
-    public void handle(HttpResponseMessage response)
+    public Observable<Void> handle(HttpResponseMessage response)
     {
         SessionContext context = response.getContext();
 
@@ -25,5 +26,7 @@ public class BasicRequestCompleteHandler implements RequestCompleteHandler
         if (requestMetricsPublisher != null) {
             requestMetricsPublisher.collectAndPublish(context);
         }
+
+        return Observable.empty();
     }
 }

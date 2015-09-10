@@ -33,18 +33,16 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
+import rx.Single;
 import rx.functions.Func1;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.netflix.zuul.context.SessionContext.KEY_FILTER_ERRORS;
+import static com.netflix.zuul.context.SessionContext.*;
 import static com.netflix.zuul.filters.ExecutionStatus.*;
-import static com.netflix.zuul.filters.ExecutionStatus.FAILED;
 
 /**
  * This the the core class to execute filters.
@@ -70,7 +68,7 @@ public class FilterProcessor {
         this.usageNotifier = usageNotifier;
     }
 
-    public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
+    public Single<ZuulMessage> applyInboundFilters(Single<ZuulMessage> chain)
     {
         chain = applyFilterPhase(chain, "in", (request) -> {
             return request;
@@ -81,7 +79,7 @@ public class FilterProcessor {
         return chain;
     }
 
-    public Observable<ZuulMessage> applyErrorEndpointIfNeeded(Observable<ZuulMessage> chain)
+    public Single<ZuulMessage> applyErrorEndpointIfNeeded(Single<ZuulMessage> chain)
     {
         return chain.flatMap(msg -> {
 
@@ -116,7 +114,7 @@ public class FilterProcessor {
                     HttpResponseMessage response = new HttpResponseMessageImpl(msg.getContext(), request, 500);
                     response.getHeaders().set("X-Zuul-Error-Cause", errorStr);
 
-                    return Observable.just(response);
+                    return Single.just(response);
                 }
 
                 // Apply this endpoint.
@@ -131,7 +129,7 @@ public class FilterProcessor {
             }
             else {
                 // Do nothing.
-                return Observable.just(msg);
+                return Single.just(msg);
             }
         });
     }
@@ -144,7 +142,7 @@ public class FilterProcessor {
      * @param chain
      * @return
      */
-    public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
+    public Single<ZuulMessage> applyEndpointFilter(Single<ZuulMessage> chain)
     {
         chain = chain.flatMap(msg -> {
 
@@ -153,7 +151,7 @@ public class FilterProcessor {
             // If an error filter has already generated a response, then don't run the endpoint.
             if (context.errorResponseSent()) {
                 // Therefore this msg is already a response, so just return that.
-                return Observable.just(msg);
+                return Single.just(msg);
             }
 
             HttpRequestMessage request = (HttpRequestMessage) msg;
@@ -162,7 +160,7 @@ public class FilterProcessor {
             // to run any endpoint filter.
             HttpResponseMessage staticResponse = context.getStaticResponse();
             if (staticResponse != null) {
-                return Observable.just(staticResponse);
+                return Single.just(staticResponse);
             }
 
             // Get the previously chosen endpoint filter to use.
@@ -170,13 +168,13 @@ public class FilterProcessor {
             if (endpointName == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter chosen!"));
-                return Observable.just(new HttpResponseMessageImpl(context, request, 500));
+                return Single.just(new HttpResponseMessageImpl(context, request, 500));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
-                return Observable.just(new HttpResponseMessageImpl(context, request, 500));
+                return Single.just(new HttpResponseMessageImpl(context, request, 500));
             }
 
             // Apply this endpoint. Make the default filter result be a HttpResponseMessage so that if this filter apply fails, the next filter still gets
@@ -195,7 +193,7 @@ public class FilterProcessor {
         return chain;
     }
 
-    public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
+    public Single<ZuulMessage> applyOutboundFilters(Single<ZuulMessage> chain)
     {
         // Apply POST filters.
         chain = applyFilterPhase(chain, "out", (response) -> response );
@@ -206,16 +204,16 @@ public class FilterProcessor {
         return chain;
     }
 
-    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    protected Single<ZuulMessage> applyFilterPhase(Single<ZuulMessage> chain, String filterType, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
-            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser).single();
+            chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser);
         }
         return chain;
     }
 
-    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    public Single<ZuulMessage> processFilterAsObservable(Single<ZuulMessage> input, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         return input.flatMap(msg -> processAsyncFilter(msg, filter,
                 defaultFilterResultChooser));
@@ -229,7 +227,7 @@ public class FilterProcessor {
      * @param filter IZuulFilter
      * @return the return value for that filter
      */
-    public Observable<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter,
+    public Single<ZuulMessage> processAsyncFilter(ZuulMessage msg, ZuulFilter filter,
                                                       Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         final FilterExecInfo info = new FilterExecInfo();
@@ -241,17 +239,17 @@ public class FilterProcessor {
         }
 
         // Apply this filter.
-        Observable<ZuulMessage> resultObs;
+        Single<ZuulMessage> resultObs;
         long ltime = System.currentTimeMillis();
         try {
             if (filter.isDisabled()) {
-                resultObs = Observable.just(defaultFilterResultChooser.call(msg));
+                resultObs = Single.just(defaultFilterResultChooser.call(msg));
                 info.status = DISABLED;
             }
             else if (msg.getContext().shouldStopFilterProcessing()) {
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
-                resultObs = Observable.just(defaultFilterResultChooser.call(msg));
+                resultObs = Single.just(defaultFilterResultChooser.call(msg));
                 info.status = SKIPPED;
             }
             else {
@@ -259,16 +257,16 @@ public class FilterProcessor {
                 // equal or above the requested.
                 int requiredPriority = msg.getContext().getFilterPriorityToApply();
                 if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg).single();
+                    resultObs = filter.applyAsync(msg).toSingle();
                 } else {
-                    resultObs = Observable.just(defaultFilterResultChooser.call(msg));
+                    resultObs = Single.just(defaultFilterResultChooser.call(msg));
                     info.status = SKIPPED;
                 }
             }
         }
         catch (Exception e) {
             msg.getContext().setError(e);
-            resultObs = Observable.just(defaultFilterResultChooser.call(msg));
+            resultObs = Single.just(defaultFilterResultChooser.call(msg));
             info.status = FAILED;
             recordFilterError(filter, msg, e);
         }
@@ -295,13 +293,13 @@ public class FilterProcessor {
         });
 
         // Record info when filter processing completes.
-        resultObs = resultObs.doOnNext((msg1) -> {
+        resultObs = resultObs.toObservable().doOnNext((msg1) -> {
             if (info.status == null) {
                 info.status = SUCCESS;
             }
             info.execTime = System.currentTimeMillis() - ltime;
             recordFilterCompletion(msg1, filter, info);
-        });
+        }).toSingle();
 
         return resultObs;
     }
