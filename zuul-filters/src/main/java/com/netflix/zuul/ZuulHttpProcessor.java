@@ -6,11 +6,11 @@ import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.message.http.RequestCompleteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import rx.Single;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -31,26 +31,21 @@ public class ZuulHttpProcessor<I,O>
     private static final Logger LOG = LoggerFactory.getLogger(ZuulHttpProcessor.class);
 
     private FilterProcessor filterProcessor;
-    private SessionContextFactory contextFactory;
+    private SessionContextFactory<I, O> contextFactory;
     private SessionContextDecorator decorator;
     private SessionCleaner sessionCleaner;
     private RequestCompleteHandler requestCompleteHandler;
 
-    /** Ensure that this is initialized. */
-    private FilterFileManager filterManager;
-
-
     @Inject
-    public ZuulHttpProcessor(FilterProcessor filterProcessor, SessionContextFactory contextFactory,
+    public ZuulHttpProcessor(FilterProcessor filterProcessor, SessionContextFactory<I, O> contextFactory,
                              @Nullable SessionContextDecorator decorator,
                              @Nullable RequestCompleteHandler requestCompleteHandler,
-                             FilterFileManager filterManager, SessionCleaner sessionCleaner)
+                             SessionCleaner sessionCleaner)
     {
         this.filterProcessor = filterProcessor;
         this.contextFactory = contextFactory;
         this.decorator = decorator;
         this.requestCompleteHandler = requestCompleteHandler;
-        this.filterManager = filterManager;
         this.sessionCleaner = sessionCleaner;
     }
 
@@ -73,7 +68,7 @@ public class ZuulHttpProcessor<I,O>
         request.getContext().getTimings().getRequest().start();
 
         // Create initial chain.
-        Observable<ZuulMessage> chain = Observable.just(request);
+        Single<ZuulMessage> chain = Single.just(request);
 
         /*
          * Delegate all of the filter application logic to {@link FilterProcessor}.
@@ -83,41 +78,29 @@ public class ZuulHttpProcessor<I,O>
         chain = filterProcessor.applyEndpointFilter(chain);
         chain = filterProcessor.applyOutboundFilters(chain);
 
-        return chain
-                .flatMap(msg -> {
-                    // Wrap this in a try/catch because we need to ensure no exception stops the observable, as
-                    // we need the following doOnNext to always run - as it records metrics.
-                    try {
-                        // Write out the response.
-                        return contextFactory.write(msg, nativeResponse);
-                    }
-                    catch (Exception e) {
-                        LOG.error("Error in writing response! request=" + request.getInfoForLogging(), e);
+        return chain.toObservable()
+                    .flatMap(msg -> {
+                        Observable<Void> toReturn = contextFactory.write(msg, nativeResponse);
 
-                        // Generate a default error response to be sent to client.
-                        return Observable.just(new HttpResponseMessageImpl(context, ((HttpResponseMessage) msg).getOutboundRequest(), 500));
-                    }
-                    finally {
-                        // End the timing.
-                        msg.getContext().getTimings().getRequest().end();
-                    }
-                })
-                .doOnError(e -> {
-                    LOG.error("Unexpected error in filter chain! request=" + request.getInfoForLogging(), e);
-                })
-                .doOnNext(msg -> {
-                    // Notify requestComplete listener if configured.
-                    try {
-                        if (requestCompleteHandler != null)
-                            requestCompleteHandler.handle((HttpResponseMessage) msg);
-                    }
-                    catch (Exception e) {
-                        LOG.error("Error in RequestCompleteHandler.", e);
-                    }
-                })
-                .finallyDo(() -> {
-                    // Cleanup any resources related to this request/response.
-                    sessionCleaner.cleanup(context);
-                });
+                        if (null != requestCompleteHandler) {
+                            toReturn = toReturn.concatWith(requestCompleteHandler.handle((HttpResponseMessage) msg));
+                        }
+
+                        return toReturn.finallyDo(() -> {
+                            msg.getContext().getTimings().getRequest().end();
+                        }).doOnError(throwable -> {
+                            LOG.error("Error in writing response! request=" + request.getInfoForLogging(), throwable);
+                        });
+
+                    })
+                    .doOnError(throwable -> {
+                        LOG.error("Unexpected error in filter chain! request=" + request.getInfoForLogging(),
+                                  throwable);
+                    })
+                    .ignoreElements()
+                    .finallyDo(() -> {
+                        // Cleanup any resources related to this request/response.
+                        sessionCleaner.cleanup(context);
+                    });
     }
 }

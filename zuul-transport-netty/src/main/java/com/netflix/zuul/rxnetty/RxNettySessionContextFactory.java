@@ -39,14 +39,21 @@ import java.util.Map;
 public class RxNettySessionContextFactory
         implements SessionContextFactory<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> {
 
+    private final String scheme;
+
+    public RxNettySessionContextFactory() {
+        this("http");
+    }
+
+    public RxNettySessionContextFactory(String scheme) {
+        this.scheme = scheme;
+    }
+
     @Override
     public ZuulMessage create(SessionContext context, HttpServerRequest<ByteBuf> req, HttpServerResponse<ByteBuf> resp)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         String clientIp = getIpAddress(resp.unsafeNettyChannel());
-
-        // TODO - How to get uri scheme from the netty request?
-        String scheme = "http";
 
         // This is the only way I found to get the port of the request with netty...
         int port = ((InetSocketAddress) resp.unsafeNettyChannel().localAddress()).getPort();
@@ -73,7 +80,7 @@ public class RxNettySessionContextFactory
     }
 
     @Override
-    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse<ByteBuf> nativeResponse)
+    public Observable<Void> write(ZuulMessage msg, HttpServerResponse<ByteBuf> nativeResponse)
     {
         HttpResponseMessage zuulResp = (HttpResponseMessage) msg;
 
@@ -85,9 +92,7 @@ public class RxNettySessionContextFactory
             nativeResponse = nativeResponse.addHeader(entry.getKey(), entry.getValue());
         }
 
-        return nativeResponse.write(zuulResp.getBodyStream())
-                             .cast(ZuulMessage.class)
-                             .concatWith(Observable.just(msg));
+        return nativeResponse.write(zuulResp.getBodyStream());
     }
 
 

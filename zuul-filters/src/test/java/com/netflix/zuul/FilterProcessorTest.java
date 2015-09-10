@@ -59,7 +59,7 @@ public class FilterProcessorTest {
     @Test
     public void testProcessFilter() throws Exception {
         Mockito.when(filter.applyAsync(request)).thenReturn(Observable.just(request));
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        processor.processAsyncFilter(request, filter, (m) -> m).toObservable().toBlocking().first();
         Mockito.verify(filter, Mockito.times(1)).applyAsync(request);
     }
 
@@ -67,7 +67,7 @@ public class FilterProcessorTest {
     public void testProcessFilter_ShouldFilterFalse() throws Exception
     {
         Mockito.when(filter.shouldFilter(request)).thenReturn(false);
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        processor.processAsyncFilter(request, filter, (m) -> m).toObservable().toBlocking().first();
         Mockito.verify(filter, Mockito.times(0)).applyAsync(request);
     }
 
@@ -76,7 +76,7 @@ public class FilterProcessorTest {
     {
         Exception e = new RuntimeException("Blah");
         Mockito.when(filter.applyAsync(request)).thenThrow(e);
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        processor.processAsyncFilter(request, filter, (m) -> m).toObservable().toBlocking().first();
 
         Mockito.verify(processor).recordFilterError(filter, request, e);
 

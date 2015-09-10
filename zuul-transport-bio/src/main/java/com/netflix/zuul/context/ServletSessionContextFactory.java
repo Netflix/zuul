@@ -156,7 +156,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
     }
 
     @Override
-    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServletResponse servletResponse)
+    public Observable<Void> write(ZuulMessage msg, HttpServletResponse servletResponse)
     {
         HttpResponseMessage response = (HttpResponseMessage) msg;
 
@@ -177,32 +177,27 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
         }
 
         if (msg.getBodyStream() == null) {
-            return Observable.just(msg);
+            return Observable.empty();
         }
         else {
             // Write out the response body stream of ByteBufS.
-            Observable<ZuulMessage> writeBody = msg.getBodyStream()
-                    .doOnNext((bb) -> {
-                        try {
-                            output.write(ByteBufUtils.toBytes(bb));
-                        } catch (IOException e) {
-                            LOG.error("Error writing response to ServletOutputStream.", e);
-                        }
-                    })
-                    .doOnCompleted(() -> {
+            return msg.getBodyStream()
+                      .flatMap((bb) -> {
+                          try {
+                              output.write(ByteBufUtils.toBytes(bb));
+                              return Observable.<Void>empty();
+                          } catch (IOException e) {
+                              return Observable.<Void>error(e);
+                          }
+                      })
+                      .concatWith(Observable.defer(() -> {
                         try {
                             output.flush();
+                            return Observable.empty();
                         } catch (IOException e) {
-                            LOG.error("Error flushing response to ServletOutputStream.", e);
+                            return Observable.error(e);
                         }
-                    })
-                    .doOnError(t -> {
-                        LOG.error("Error writing response to ServletOutputStream.", t);
-                    })
-                    .map(bb ->  msg);
-
-            return writeBody;
-
+                    }));
         }
     }
 }

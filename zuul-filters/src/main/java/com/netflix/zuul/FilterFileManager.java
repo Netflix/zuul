@@ -110,14 +110,16 @@ public class FilterFileManager {
         File  directory = new File(sPath);
         if (!directory.isDirectory()) {
             URL resource = FilterFileManager.class.getClassLoader().getResource(sPath);
-            try {
-                directory = new File(resource.toURI());
-            } catch (Exception e) {
-                LOG.error("Error accessing directory in classloader. path=" + sPath, e);
+            if (null != resource) {
+                try {
+                    directory = new File(resource.toURI());
+                } catch (Exception e) {
+                    LOG.error("Error accessing directory in classloader. path=" + sPath, e);
+                }
             }
-            if (!directory.isDirectory()) {
-                throw new RuntimeException(directory.getAbsolutePath() + " is not a valid directory");
-            }
+        }
+        if (!directory.isDirectory()) {
+            throw new RuntimeException(directory.getAbsolutePath() + " is not a valid directory.");
         }
         return directory;
     }
