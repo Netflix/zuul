@@ -220,17 +220,17 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
         switch (verb) {
             case 'POST':
-                httpRequest = new HttpPost(uri + getQueryString())
+                httpRequest = new HttpPost(uri + getSanitizedQueryString())
                 InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
                 httpRequest.setEntity(entity)
                 break
             case 'PUT':
-                httpRequest = new HttpPut(uri + getQueryString())
+                httpRequest = new HttpPut(uri + getSanitizedQueryString())
                 InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
                 httpRequest.setEntity(entity)
                 break;
             default:
-                httpRequest = new BasicHttpRequest(verb, uri + getQueryString())
+                httpRequest = new BasicHttpRequest(verb, uri + getSanitizedQueryString())
         }
 
         try {
@@ -248,6 +248,17 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
     HttpResponse forwardRequest(HttpClient httpclient, HttpHost httpHost, HttpRequest httpRequest) {
         return httpclient.execute(httpHost, httpRequest);
+    }
+
+    String getSanitizedQueryString() {
+        String encoding = "UTF-8"
+        String currentQueryString = getQueryString()
+        if (currentQueryString.equals("")) {
+            return ""
+        }
+
+        String decodedQueryString = URLDecoder.decode(currentQueryString, encoding)
+        return new URI(null, null, null, decodedQueryString, null).toString()
     }
 
     String getQueryString() {
