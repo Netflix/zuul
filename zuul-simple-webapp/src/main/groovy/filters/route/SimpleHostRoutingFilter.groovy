@@ -225,17 +225,17 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
         switch (verb) {
             case 'POST':
-                httpRequest = new HttpPost(uri + getSanitizedQueryString())
+                httpRequest = new HttpPost(uri + getQueryString())
                 InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
                 httpRequest.setEntity(entity)
                 break
             case 'PUT':
-                httpRequest = new HttpPut(uri + getSanitizedQueryString())
+                httpRequest = new HttpPut(uri + getQueryString())
                 InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
                 httpRequest.setEntity(entity)
                 break;
             default:
-                httpRequest = new BasicHttpRequest(verb, uri + getSanitizedQueryString())
+                httpRequest = new BasicHttpRequest(verb, uri + getQueryString())
         }
 
         try {
@@ -250,21 +250,16 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         return httpclient.execute(httpHost, httpRequest);
     }
 
-    String getSanitizedQueryString() {
+    String getQueryString() {
         String encoding = "UTF-8"
-        String currentQueryString = getQueryString()
-        if (currentQueryString.equals("")) {
+        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+        String currentQueryString = request.getQueryString()
+        if (currentQueryString == null || currentQueryString.equals("")) {
             return ""
         }
 
         String decodedQueryString = URLDecoder.decode(currentQueryString, encoding)
         return new URI(null, null, null, decodedQueryString, null).toString()
-    }
-
-    String getQueryString() {
-        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
-        String query = request.getQueryString()
-        return (query != null) ? query : "";
     }
 
     HttpHost getHttpHost() {
