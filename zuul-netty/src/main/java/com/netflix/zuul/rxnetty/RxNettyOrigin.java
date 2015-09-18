@@ -78,6 +78,11 @@ public class RxNettyOrigin implements Origin {
     }
 
     @Override
+    public boolean isAvailable() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getName() {
         return name;
     }
