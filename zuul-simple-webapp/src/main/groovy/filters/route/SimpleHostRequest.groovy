@@ -264,7 +264,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     String getQueryString() {
         HttpServletRequest request = RequestContext.currentContext.getRequest();
         String query = request.getQueryString()
-        return (query != null) ? "?${query}" : "";
+        return (query != null) ? query : "";
     }
 
     HttpHost getHttpHost() {
