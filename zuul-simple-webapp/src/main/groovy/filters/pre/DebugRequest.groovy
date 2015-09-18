@@ -13,21 +13,13 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package scripts.preProcess
+package filters.pre
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
-import org.junit.Assert
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.runners.MockitoJUnitRunner
 
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 /**
  * @author Mikey Cohen
  * Date: 3/12/12
@@ -62,7 +54,6 @@ class DebugRequest extends ZuulFilter {
             String name = (String) headerIt.next()
             String value = req.getHeader(name)
             Debug.addRequestDebug("REQUEST:: > " + name + ":" + value)
-
         }
 
         final RequestContext ctx = RequestContext.getCurrentContext()

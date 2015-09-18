@@ -33,6 +33,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.*;
@@ -60,8 +61,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     protected static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
 
     private HttpServletRequest req;
-    private byte[] contentData;
-    private HashMap<String, String[]> parameters;
+    private byte[] contentData = null;
+    private HashMap<String, String[]> parameters = null;
+
+    private long bodyBufferingTimeNs = 0;
 
     public HttpServletRequestWrapper() {
         //a trick for Groovy
@@ -98,12 +101,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     /**
      * This method is safe to use multiple times.
-     * Changing the returned array will not interfere with this class operation.
      *
-     * @return The cloned content data.
+     * @return The request body data.
      */
     public byte[] getContentData() {
-        return contentData.clone();
+        return contentData;
     }
 
 
@@ -139,17 +141,25 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             }
         }
 
-        LOG.debug("Path = " + req.getPathInfo());
-        LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
-        LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
-
-        LOG.debug("Content-Length header = " + req.getContentLength());
-        if (req.getContentLength() > 0) {
+        if (shouldBufferBody()) {
 
             // Read the request body inputstream into a byte array.
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(req.getInputStream(), baos);
-            contentData = baos.toByteArray();
+            try {
+                // Copy all bytes from inputstream to byte array, and record time taken.
+                long bufferStartTime = System.nanoTime();
+                IOUtils.copy(req.getInputStream(), baos);
+                bodyBufferingTimeNs = System.nanoTime() - bufferStartTime;
+
+                contentData = baos.toByteArray();
+            } catch (SocketTimeoutException e) {
+                // This can happen if the request body is smaller than the size specified in the
+                // Content-Length header, and using tomcat APR connector.
+                LOG.error("SocketTimeoutException reading request body from inputstream. error=" + String.valueOf(e.getMessage()));
+                if (contentData == null) {
+                    contentData = new byte[0];
+                }
+            }
 
             try {
                 LOG.debug("Length of contentData byte array = " + contentData.length);
@@ -160,48 +170,46 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
                 LOG.error("Error checking if request body gzipped!", e);
             }
 
-            String enc = req.getCharacterEncoding();
+            final boolean isPost = req.getMethod().equals("POST");
 
-            if (enc == null)
-                enc = "UTF-8";
-            String s = new String(contentData, enc), name, value;
-            StringTokenizer st = new StringTokenizer(s, "&");
-            int i;
+            String contentType = req.getContentType();
+            final boolean isFormBody = contentType != null && contentType.contains("application/x-www-form-urlencoded");
 
-            boolean decode = req.getContentType() != null && req.getContentType().equalsIgnoreCase("application/x-www-form-urlencoded");
-            while (st.hasMoreTokens()) {
-                s = st.nextToken();
-                i = s.indexOf("=");
-                if (i > 0 && s.length() > i + 1) {
-                    name = s.substring(0, i);
-                    value = s.substring(i + 1);
-                    if (decode) {
-                        try {
-                            name = URLDecoder.decode(name, "UTF-8");
-                        } catch (Exception e) {
+            // only does magic body param parsing for POST form bodies
+            if (isPost && isFormBody) {
+                String enc = req.getCharacterEncoding();
+
+                if (enc == null) enc = "UTF-8";
+                String s = new String(contentData, enc), name, value;
+                StringTokenizer st = new StringTokenizer(s, "&");
+                int i;
+
+                boolean decode = req.getContentType() != null;
+                while (st.hasMoreTokens()) {
+                    s = st.nextToken();
+                    i = s.indexOf("=");
+                    if (i > 0 && s.length() > i + 1) {
+                        name = s.substring(0, i);
+                        value = s.substring(i + 1);
+                        if (decode) {
+                            try {
+                                name = URLDecoder.decode(name, "UTF-8");
+                            } catch (Exception e) {
+                            }
+                            try {
+                                value = URLDecoder.decode(value, "UTF-8");
+                            } catch (Exception e) {
+                            }
                         }
-                        try {
-                            value = URLDecoder.decode(value, "UTF-8");
-                        } catch (Exception e) {
+                        list = mapA.get(name);
+                        if (list == null) {
+                            list = new LinkedList<String>();
+                            mapA.put(name, list);
                         }
+                        list.add(value);
                     }
-                    list = mapA.get(name);
-                    if (list == null) {
-                        list = new LinkedList<String>();
-                        mapA.put(name, list);
-                    }
-                    list.add(value);
                 }
             }
-
-        } else if (req.getContentLength() == -1) {
-            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
-            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
-                RequestContext.getCurrentContext().setChunkedRequestBody();
-                LOG.debug("Set flag that request body is chunked.");
-            }
-        } else {
-            LOG.warn("Content-Length is neither greater than zero or -1. = " + req.getContentLength());
         }
 
         HashMap<String, String[]> map = new HashMap<String, String[]>(mapA.size() * 2);
@@ -214,6 +222,39 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
     }
 
+    private boolean shouldBufferBody() {
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Path = " + req.getPathInfo());
+            LOG.debug("Transfer-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.TRANSFER_ENCODING)));
+            LOG.debug("Content-Encoding = " + String.valueOf(req.getHeader(ZuulHeaders.CONTENT_ENCODING)));
+            LOG.debug("Content-Length header = " + req.getContentLength());
+        }
+
+        boolean should = false;
+        if (req.getContentLength() > 0) {
+            should = true;
+        }
+        else if (req.getContentLength() == -1) {
+            final String transferEncoding = req.getHeader(ZuulHeaders.TRANSFER_ENCODING);
+            if (transferEncoding != null && transferEncoding.equals(ZuulHeaders.CHUNKED)) {
+                RequestContext.getCurrentContext().setChunkedRequestBody();
+                should = true;
+            }
+        }
+
+        return should;
+    }
+
+    /**
+     * Time taken to buffer the request body in nanoseconds.
+     * @return
+     */
+    public long getBodyBufferingTimeNs()
+    {
+        return bodyBufferingTimeNs;
+    }
+
     /**
      * This method is safe to call multiple times.
      * Calling it will not interfere with getParameterXXX() or getReader().
@@ -224,11 +265,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
     public ServletInputStream getInputStream() throws IOException {
         parseRequest();
 
-        if (RequestContext.getCurrentContext().isChunkedRequestBody()) {
-            return req.getInputStream();
-        } else {
-            return new ServletInputStreamWrapper(contentData);
-        }
+        return new ServletInputStreamWrapper(contentData);
     }
 
     /**
@@ -681,11 +718,53 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
             MockitoAnnotations.initMocks(this);
 
             RequestContext.getCurrentContext().setRequest(request);
+
+            method("GET");
+            contentType("zuul/test-content-type");
         }
 
         private void body(byte[] body) throws IOException {
             when(request.getInputStream()).thenReturn(new ServletInputStreamWrapper(body));
             when(request.getContentLength()).thenReturn(body.length);
+        }
+
+        private void method(String s) {
+            when(request.getMethod()).thenReturn(s);
+        }
+
+        private void contentType(String s) {
+            when(request.getContentType()).thenReturn(s);
+        }
+
+        private static String readZipInputStream(InputStream input) throws IOException {
+
+            byte[] uploadedBytes = getBytesFromInputStream(input);
+            input.close();
+
+            /* try to read it as a zip file */
+            String uploadFileTxt = null;
+            ZipInputStream zInput = new ZipInputStream(new ByteArrayInputStream(uploadedBytes));
+            ZipEntry zipEntry = zInput.getNextEntry();
+            if (zipEntry != null) {
+                // we have a ZipEntry, so this is a zip file
+                while (zipEntry != null) {
+                    byte[] fileBytes = getBytesFromInputStream(zInput);
+                    uploadFileTxt = new String(fileBytes);
+
+                    zipEntry = zInput.getNextEntry();
+                }
+            }
+            return uploadFileTxt;
+        }
+
+        private static byte[] getBytesFromInputStream(InputStream input) throws IOException {
+            int v = 0;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            while ((v = input.read()) != -1) {
+                bos.write(v);
+            }
+            bos.close();
+            return bos.toByteArray();
         }
 
         @Test
@@ -751,41 +830,52 @@ public class HttpServletRequestWrapper implements HttpServletRequest {
 
 
             assertEquals(body, readZipInputStream(wrapper.getInputStream()));
-
-
         }
 
-        public String readZipInputStream(InputStream input) throws IOException {
+        @Test
+        public void parsesParamsFromFormBody() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType("application/x-www-form-urlencoded");
 
-            byte[] uploadedBytes = getBytesFromInputStream(input);
-            input.close();
-
-            /* try to read it as a zip file */
-            String uploadFileTxt = null;
-            ZipInputStream zInput = new ZipInputStream(new ByteArrayInputStream(uploadedBytes));
-            ZipEntry zipEntry = zInput.getNextEntry();
-            if (zipEntry != null) {
-                // we have a ZipEntry, so this is a zip file
-                while (zipEntry != null) {
-                    byte[] fileBytes = getBytesFromInputStream(zInput);
-                    uploadFileTxt = new String(fileBytes);
-
-                    zipEntry = zInput.getNextEntry();
-                }
-            }
-            return uploadFileTxt;
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertTrue(params.containsKey("one"));
+            assertTrue(params.containsKey("two"));
         }
 
-        private byte[] getBytesFromInputStream(InputStream input) throws IOException {
-            int v = 0;
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            while ((v = input.read()) != -1) {
-                bos.write(v);
-            }
-            bos.close();
-            return bos.toByteArray();
+        @Test
+        public void ignoresParamsInBodyForNonPosts() throws Exception {
+            method("PUT");
+            body("one=1&two=2".getBytes());
+            contentType("application/x-www-form-urlencoded");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
         }
 
+        @Test
+        public void ignoresParamsInBodyForNonForms() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType("application/json");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
+        }
+
+        @Test
+        public void handlesPostsWithNoContentTypeHeader() throws Exception {
+            method("POST");
+            body("one=1&two=2".getBytes());
+            contentType(null);
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertFalse(params.containsKey("one"));
+        }
 
     }
 

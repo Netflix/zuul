@@ -13,39 +13,47 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
+package filters.pre
 
+import com.netflix.config.DynamicBooleanProperty
+import com.netflix.config.DynamicPropertyFactory
+import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.ZuulFilter
+import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.RequestContext
 
-/**
- * @author mhawthorne
- */
-class PreDecorationFilter extends ZuulFilter {
+class DebugFilter extends ZuulFilter {
 
-    @Override
-    int filterOrder() {
-        return 5
-    }
+    static final DynamicBooleanProperty routingDebug = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_DEBUG_REQUEST, true)
+    static final DynamicStringProperty debugParameter = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_PARAMETER, "d")
 
     @Override
     String filterType() {
-        return "pre"
+        return 'pre'
     }
 
     @Override
+    int filterOrder() {
+        return 1
+    }
+
     boolean shouldFilter() {
-        return true;
+        if ("true".equals(RequestContext.getCurrentContext().getRequest().getParameter(debugParameter.get()))) {
+            return true
+        }
+
+        return routingDebug.get();
     }
 
-    @Override
     Object run() {
         RequestContext ctx = RequestContext.getCurrentContext()
-
-        // sets origin
-        ctx.setRouteHost(new URL("http://apache.org/"));
-
-        // sets custom header to send to the origin
-        ctx.addOriginResponseHeader("cache-control", "max-age=3600");
+        ctx.setDebugRouting(true)
+        ctx.setDebugRequest(true)
+        return null;
     }
 
+
 }
+
+
+

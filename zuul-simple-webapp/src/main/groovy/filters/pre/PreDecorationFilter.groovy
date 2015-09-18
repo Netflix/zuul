@@ -13,49 +13,43 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package filters.post
+package filters.pre
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+
 /**
- * @author Mikey Cohen
- * Date: 2/3/12
- * Time: 2:48 PM
+ * @author mhawthorne
  */
-class Stats extends ZuulFilter {
-    @Override
-    String filterType() {
-        return "post"
-    }
+class PreDecorationFilter extends ZuulFilter {
 
     @Override
     int filterOrder() {
-        return 2000
+        return 5
+    }
+
+    @Override
+    String filterType() {
+        return "pre"
     }
 
     @Override
     boolean shouldFilter() {
-        return true
+        return true;
     }
 
     @Override
     Object run() {
-        dumpRoutingDebug()
-        dumpRequestDebug()
-    }
+        RequestContext ctx = RequestContext.getCurrentContext()
 
-    public void dumpRequestDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
-        rd?.each {
-            println("REQUEST_DEBUG::${it}");
-        }
-    }
+        // sets origin
+        ctx.setRouteHost(new URL("http://apache.org/"));
 
-    public void dumpRoutingDebug() {
-        List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
-        rd?.each {
-            println("ZUUL_DEBUG::${it}");
-        }
+        // set origin host header
+        ctx.addZuulRequestHeader("Host","apache.org");
+
+        // sets custom header to send to the origin
+        ctx.addOriginResponseHeader("cache-control", "max-age=3600");
     }
 
 }

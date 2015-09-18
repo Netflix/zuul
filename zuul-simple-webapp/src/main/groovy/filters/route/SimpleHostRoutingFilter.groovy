@@ -13,8 +13,7 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
-
+package filters.route
 
 import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
@@ -23,33 +22,33 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.RequestContext
 import com.netflix.zuul.util.HTTPRequestUtils
-import org.apache.http.Header
-import org.apache.http.HttpHost
-import org.apache.http.HttpRequest
-import org.apache.http.HttpResponse
+import org.apache.http.*
 import org.apache.http.client.HttpClient
+import org.apache.http.client.RedirectStrategy
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
-import org.apache.http.client.params.ClientPNames
-import org.apache.http.conn.ClientConnectionManager
-import org.apache.http.conn.scheme.PlainSocketFactory
-import org.apache.http.conn.scheme.Scheme
-import org.apache.http.conn.scheme.SchemeRegistry
+import org.apache.http.client.methods.HttpUriRequest
+import org.apache.http.config.Registry
+import org.apache.http.config.RegistryBuilder
+import org.apache.http.conn.HttpClientConnectionManager
+import org.apache.http.conn.socket.ConnectionSocketFactory
+import org.apache.http.conn.socket.PlainConnectionSocketFactory
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
+import org.apache.http.conn.ssl.SSLContexts
 import org.apache.http.entity.InputStreamEntity
-import org.apache.http.impl.client.DefaultHttpClient
+import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.message.BasicHeader
 import org.apache.http.message.BasicHttpRequest
-import org.apache.http.params.CoreConnectionPNames
-import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import javax.net.ssl.SSLContext
 import javax.servlet.http.HttpServletRequest
 import java.util.concurrent.atomic.AtomicReference
-import java.util.zip.GZIPInputStream
 
 class SimpleHostRoutingFilter extends ZuulFilter {
 
@@ -64,12 +63,12 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
     private static final DynamicIntProperty SOCKET_TIMEOUT =
-        DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_SOCKET_TIMEOUT_MILLIS, 10000)
+            DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_SOCKET_TIMEOUT_MILLIS, 10000)
 
     private static final DynamicIntProperty CONNECTION_TIMEOUT =
-        DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_CONNECT_TIMEOUT_MILLIS, 2000)
+            DynamicPropertyFactory.getInstance().getIntProperty(ZuulConstants.ZUUL_HOST_CONNECT_TIMEOUT_MILLIS, 2000)
 
-    private static final AtomicReference<HttpClient> CLIENT = new AtomicReference<HttpClient>(newClient());
+    private static final AtomicReference<CloseableHttpClient> CLIENT = new AtomicReference<CloseableHttpClient>(newClient());
 
     private static final Timer CONNECTION_MANAGER_TIMER = new Timer(true);
 
@@ -81,9 +80,13 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             @Override
             void run() {
                 try {
-                    final HttpClient hc = CLIENT.get();
-                    if (hc == null) return;
-                    hc.getConnectionManager().closeExpiredConnections();
+                    final CloseableHttpClient hc = CLIENT.get();
+
+                    if (hc == null) {
+                        return;
+                    }
+
+                    hc.close();
                 } catch (Throwable t) {
                     LOG.error("error closing expired connections", t);
                 }
@@ -93,12 +96,15 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
     public SimpleHostRoutingFilter() {}
 
-    private static final ClientConnectionManager newConnectionManager() {
-        SchemeRegistry schemeRegistry = new SchemeRegistry();
-        schemeRegistry.register(
-                new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
+    private static final HttpClientConnectionManager newConnectionManager() {
+        SSLContext sslContext = SSLContexts.createSystemDefault();
 
-        ClientConnectionManager cm = new ThreadSafeClientConnManager(schemeRegistry);
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.INSTANCE)
+                .register("https", new SSLConnectionSocketFactory(sslContext))
+                .build();
+
+        HttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
         cm.setMaxTotal(Integer.parseInt(System.getProperty("zuul.max.host.connections", "200")));
         cm.setDefaultMaxPerRoute(Integer.parseInt(System.getProperty("zuul.max.host.connections", "20")));
         return cm;
@@ -115,18 +121,18 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
     boolean shouldFilter() {
-        return RequestContext.currentContext.getRouteHost() != null && RequestContext.currentContext.sendZuulResponse()
+        return RequestContext.getCurrentContext().getRouteHost() != null && RequestContext.getCurrentContext().sendZuulResponse()
     }
 
     private static final void loadClient() {
-        final HttpClient oldClient = CLIENT.get();
+        final CloseableHttpClient oldClient = CLIENT.get();
         CLIENT.set(newClient())
         if (oldClient != null) {
             CONNECTION_MANAGER_TIMER.schedule(new TimerTask() {
                 @Override
                 void run() {
                     try {
-                        oldClient.getConnectionManager().shutdown();
+                        oldClient.close()
                     } catch (Throwable t) {
                         LOG.error("error shutting down old connection manager", t);
                     }
@@ -136,43 +142,42 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
     }
 
-    private static final HttpClient newClient() {
-        // I could statically cache the connection manager but we will probably want to make some of its properties
-        // dynamic in the near future also
-        HttpClient httpclient = new DefaultHttpClient(newConnectionManager());
-        HttpParams httpParams = httpclient.getParams();
-        httpParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, SOCKET_TIMEOUT.get())
-        httpParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CONNECTION_TIMEOUT.get())
-        httpclient.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(0, false))
-        httpParams.setParameter(ClientPNames.COOKIE_POLICY, org.apache.http.client.params.CookiePolicy.IGNORE_COOKIES);
-        httpclient.setRedirectStrategy(new org.apache.http.client.RedirectStrategy() {
+    private static final CloseableHttpClient newClient() {
+        HttpClientBuilder builder = HttpClientBuilder.create()
+        builder.setConnectionManager(newConnectionManager())
+        builder.setRetryHandler(new DefaultHttpRequestRetryHandler(0, false))
+        builder.setRedirectStrategy(new RedirectStrategy() {
             @Override
-            boolean isRedirected(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) {
+            boolean isRedirected(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws ProtocolException {
                 return false
             }
 
             @Override
-            org.apache.http.client.methods.HttpUriRequest getRedirect(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) {
+            HttpUriRequest getRedirect(HttpRequest httpRequest, HttpResponse httpResponse, HttpContext httpContext) throws ProtocolException {
                 return null
             }
         })
-        return httpclient
+
+        return builder.build()
     }
 
     Object run() {
-        HttpServletRequest request = RequestContext.currentContext.getRequest();
+        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
         Header[] headers = buildZuulRequestHeaders(request)
         String verb = getVerb(request);
         InputStream requestEntity = getRequestBody(request)
-        HttpClient httpclient = CLIENT.get()
+        CloseableHttpClient httpclient = CLIENT.get()
 
         String uri = request.getRequestURI()
-        if (RequestContext.currentContext.requestURI != null) {
-            uri = RequestContext.currentContext.requestURI
+        if (RequestContext.getCurrentContext().requestURI != null) {
+            uri = RequestContext.getCurrentContext().requestURI
         }
 
         try {
             HttpResponse response = forward(httpclient, verb, uri, request, headers, requestEntity)
+            Debug.addRequestDebug("ZUUL :: ${uri}")
+            Debug.addRequestDebug("ZUUL :: Response statusLine > ${response.getStatusLine()}")
+            Debug.addRequestDebug("ZUUL :: Response code > ${response.getStatusLine().statusCode}")
             setResponse(response)
         } catch (Exception e) {
             throw e;
@@ -180,18 +185,16 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         return null
     }
 
-    def InputStream debug(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
+    InputStream debug(String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
 
         if (Debug.debugRequest()) {
-
-            Debug.addRequestDebug("ZUUL:: host=${RequestContext.currentContext.getRouteHost()}")
-
+            Debug.addRequestDebug("ZUUL:: host=${RequestContext.getCurrentContext().getRouteHost()}")
             headers.each {
-                Debug.addRequestDebug("ZUUL::> ${it.name}  ${it.value}")
+                Debug.addRequestDebug("ZUUL:: Header > ${it.name}  ${it.value}")
             }
-            String query = request.queryString
+            String query = request.queryString != null ? "?" + request.queryString : ""
 
-            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}?${query} HTTP/1.1")
+            Debug.addRequestDebug("ZUUL:: > ${verb}  ${uri}${query} HTTP/1.1")
             if (requestEntity != null) {
                 requestEntity = debugRequestEntity(requestEntity)
             }
@@ -201,22 +204,24 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
     InputStream debugRequestEntity(InputStream inputStream) {
-        if (Debug.debugRequestHeadersOnly()) return inputStream
-        if (inputStream == null) return null
+        if (Debug.debugRequestHeadersOnly()) {
+            return inputStream
+        }
+
+        if (inputStream == null) {
+            return null
+        }
+
         String entity = inputStream.getText()
-        Debug.addRequestDebug("ZUUL::> ${entity}")
+        Debug.addRequestDebug("ZUUL:: Entity > ${entity}")
         return new ByteArrayInputStream(entity.bytes)
     }
 
-    def HttpResponse forward(HttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
+    HttpResponse forward(CloseableHttpClient httpclient, String verb, String uri, HttpServletRequest request, Header[] headers, InputStream requestEntity) {
 
-        requestEntity = debug(httpclient, verb, uri, request, headers, requestEntity)
-
-        org.apache.http.HttpHost httpHost
-
-        httpHost = getHttpHost()
-
-        org.apache.http.HttpRequest httpRequest;
+        requestEntity = debug(verb, uri, request, headers, requestEntity)
+        HttpHost httpHost = getHttpHost()
+        HttpRequest httpRequest;
 
         switch (verb) {
             case 'POST':
@@ -235,15 +240,10 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
         try {
             httpRequest.setHeaders(headers)
-            HttpResponse zuulResponse = forwardRequest(httpclient, httpHost, httpRequest)
-            return zuulResponse
+            return forwardRequest(httpclient, httpHost, httpRequest)
         } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-//            httpclient.getConnectionManager().shutdown();
+            //httpclient.close();
         }
-
     }
 
     HttpResponse forwardRequest(HttpClient httpclient, HttpHost httpHost, HttpRequest httpRequest) {
@@ -262,14 +262,14 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
     String getQueryString() {
-        HttpServletRequest request = RequestContext.currentContext.getRequest();
+        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
         String query = request.getQueryString()
         return (query != null) ? query : "";
     }
 
     HttpHost getHttpHost() {
         HttpHost httpHost
-        URL host = RequestContext.currentContext.getRouteHost()
+        URL host = RequestContext.getCurrentContext().getRouteHost()
 
         httpHost = new HttpHost(host.getHost(), host.getPort(), host.getProtocol())
 
@@ -277,73 +277,94 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
 
-    def getRequestBody(HttpServletRequest request) {
-        Object requestEntity = null;
+    InputStream getRequestBody(HttpServletRequest request) {
         try {
-            requestEntity = request.getInputStream();
+            return request.getInputStream();
         } catch (IOException e) {
-            //no requestBody is ok.
+            LOG.warn(e.getMessage())
+            return null
         }
-        return requestEntity
     }
 
     boolean isValidHeader(String name) {
-        if (name.toLowerCase().contains("content-length")) return false;
-        if (!RequestContext.currentContext.responseGZipped) {
-            if (name.toLowerCase().contains("accept-encoding")) return false;
+        if (name.toLowerCase().contains("content-length")) {
+            return false
         }
-        return true;
+
+        if (name.toLowerCase().equals("host")) {
+            return false
+        }
+
+        if (!RequestContext.getCurrentContext().responseGZipped) {
+            if (name.toLowerCase().contains("accept-encoding")) {
+                return false
+            }
+        }
+        return true
     }
 
-    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
+    Header[] buildZuulRequestHeaders(HttpServletRequest request) {
 
-        def headers = new ArrayList()
+        ArrayList<BasicHeader> headers = new ArrayList()
         Enumeration headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String name = (String) headerNames.nextElement();
+            String name = ((String) headerNames.nextElement()).toLowerCase();
             String value = request.getHeader(name);
             if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
         }
 
-        Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
+        Map<String, String> zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
 
-        zuulRequestHeaders.keySet().each {
+        zuulRequestHeaders.keySet().each { String it ->
             String name = it.toLowerCase()
             BasicHeader h = headers.find { BasicHeader he -> he.name == name }
             if (h != null) {
                 headers.remove(h)
             }
-            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
+            headers.add(new BasicHeader(it, zuulRequestHeaders[it]))
         }
 
-        if (RequestContext.currentContext.responseGZipped) {
+        if (RequestContext.getCurrentContext().responseGZipped) {
             headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
         }
+
         return headers
     }
 
 
-
-    String getVerb(HttpServletRequest request) {
-        String sMethod = request.getMethod();
-        return sMethod.toUpperCase();
+     String getVerb(HttpServletRequest request) {
+        return getVerb(request.getMethod().toUpperCase());
     }
 
     String getVerb(String sMethod) {
-        if (sMethod == null) return "GET";
+        if (sMethod == null) {
+            return "GET"
+        }
+
         sMethod = sMethod.toLowerCase();
-        if (sMethod.equalsIgnoreCase("post")) return "POST"
-        if (sMethod.equalsIgnoreCase("put")) return "PUT"
-        if (sMethod.equalsIgnoreCase("delete")) return "DELETE"
-        if (sMethod.equalsIgnoreCase("options")) return "OPTIONS"
-        if (sMethod.equalsIgnoreCase("head")) return "HEAD"
+
+        if (sMethod.equalsIgnoreCase("post")) {
+            return "POST"
+        }
+        if (sMethod.equalsIgnoreCase("put")) {
+            return "PUT"
+        }
+        if (sMethod.equalsIgnoreCase("delete")) {
+            return "DELETE"
+        }
+        if (sMethod.equalsIgnoreCase("options")) {
+            return "OPTIONS"
+        }
+        if (sMethod.equalsIgnoreCase("head")) {
+            return "HEAD"
+        }
         return "GET"
     }
 
     void setResponse(HttpResponse response) {
         RequestContext context = RequestContext.getCurrentContext()
 
-        RequestContext.currentContext.set("hostZuulResponse", response)
+        RequestContext.getCurrentContext().set("hostZuulResponse", response)
         RequestContext.getCurrentContext().setResponseStatusCode(response.getStatusLine().statusCode)
         RequestContext.getCurrentContext().responseDataStream = response?.entity?.content
 
@@ -368,16 +389,8 @@ class SimpleHostRoutingFilter extends ZuulFilter {
 
             if (context.responseDataStream) {
                 byte[] origBytes = context.getResponseDataStream().bytes
-                ByteArrayInputStream byteStream = new ByteArrayInputStream(origBytes)
-                InputStream inputStream = byteStream
-                if (RequestContext.currentContext.responseGZipped) {
-                    inputStream = new GZIPInputStream(byteStream);
-                }
-
-
                 context.setResponseDataStream(new ByteArrayInputStream(origBytes))
             }
-
         } else {
             response.getAllHeaders()?.each { Header header ->
                 RequestContext ctx = RequestContext.getCurrentContext()
@@ -406,7 +419,6 @@ class SimpleHostRoutingFilter extends ZuulFilter {
                 return true
         }
     }
-
 }
 
 

@@ -1,20 +1,16 @@
-apply plugin: 'java'
 apply plugin: 'war'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'jetty'
 
 
 dependencies {
     compile project(":zuul-core")
-    
-    compile 'org.apache.httpcomponents:httpclient:4.3.2'
-    provided 'javax.servlet:servlet-api:2.5'
+
+    compile 'org.apache.httpcomponents:httpclient:4.5'
+    providedCompile 'javax.servlet:servlet-api:2.5'
 }
 
 eclipse {
   classpath {
-        plusConfigurations += configurations.provided
         downloadSources = true
         downloadJavadoc = true
   }
@@ -26,12 +22,6 @@ war {
         from('src/main/groovy/filters') {
             into('classes')
         }
-    }
-}
-
-idea {
-    module {
-        scopes.PROVIDED.plus += configurations.provided
     }
 }
 

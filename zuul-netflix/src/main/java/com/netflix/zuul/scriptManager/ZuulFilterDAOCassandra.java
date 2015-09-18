@@ -15,18 +15,30 @@
  */
 package com.netflix.zuul.scriptManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Observable;
+
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.Row;
 import com.netflix.astyanax.model.Rows;
+import com.netflix.zuul.FilterId;
 import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByKeys;
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByQuery;
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraPut;
 import com.netflix.zuul.event.ZuulEvent;
-import net.jcip.annotations.ThreadSafe;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -35,11 +47,22 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import net.jcip.annotations.ThreadSafe;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * from zuul_filters
@@ -318,8 +341,10 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     public static String buildFilterID(String filter_type, String filter_name) {
-        return FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter_type, filter_name);
-
+        return new FilterId.Builder().filterType(filter_type)
+                                     .filterName(filter_name)
+                                     .build()
+                                     .toString();
     }
 
     @Override

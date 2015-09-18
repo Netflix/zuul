@@ -15,14 +15,24 @@
  */
 package com.netflix.zuul.scriptManager;
 
-import net.jcip.annotations.ThreadSafe;
-
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.netflix.zuul.FilterId;
+import com.netflix.zuul.ZuulApplicationInfo;
+import com.netflix.zuul.ZuulFilter;
+
+import org.junit.Test;
+
+import net.jcip.annotations.ThreadSafe;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
  */
+
 @ThreadSafe
 public class FilterInfo implements  Comparable<FilterInfo>{
 
@@ -34,20 +44,14 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     private final String filter_order;
     private final String application_name;
     private int revision;
-    private Date creationDate;
+    private Date creationDate = new Date();
+
     /* using AtomicBoolean so we can pass it into EndpointScriptMonitor */
     private final AtomicBoolean isActive = new AtomicBoolean();
     private final AtomicBoolean isCanary = new AtomicBoolean();
 
     /**
-     * Constructor
-     * @param filter_id
-     * @param filter_code
-     * @param filter_type
-     * @param filter_name
-     * @param disablePropertyName
-     * @param filter_order
-     * @param application_name
+     * Constructors
      */
     public FilterInfo(String filter_id, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
@@ -59,6 +63,32 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         this.application_name = application_name;
         isActive.set(false);
         isCanary.set(false);
+    }
+
+    public FilterInfo(String filterCode, String filterName, ZuulFilter filter) {
+        this.filter_code = filterCode;
+        this.filter_type = filter.filterType();
+        this.filter_name = filterName;
+        this.filter_disablePropertyName = filter.disablePropertyName();
+        this.filter_order = "" + filter.filterOrder();
+        this.application_name = ZuulApplicationInfo.getApplicationName();
+        isActive.set(false);
+        isCanary.set(false);
+        this.filter_id = buildFilterId();
+    }
+
+    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
+        this.filter_id = filter_id;
+        this.revision = revision;
+        this.creationDate = new Date(creationDate.getTime());
+        this.isActive.set(isActive);
+        this.isCanary.set(isCanary);
+        this.filter_code = filter_code;
+        this.filter_name = filter_name;
+        this.filter_type = filter_type;
+        this.filter_order = filter_order;
+        this.filter_disablePropertyName = disablePropertyName;
+        this.application_name = application_name;
     }
 
     /**
@@ -94,7 +124,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return filter_type;
     }
 
-
     @Override
     public String toString() {
         return "FilterInfo{" +
@@ -119,35 +148,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     /**
      *
-     * @param filter_id
-     * @param revision
-     * @param creationDate
-     * @param isActive
-     * @param isCanary
-     * @param filter_code
-     * @param filter_type
-     * @param filter_name
-     * @param disablePropertyName
-     * @param filter_order
-     * @param application_name
-     */
-    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
-        this.filter_id = filter_id;
-        this.revision = revision;
-        this.creationDate = creationDate;
-        this.isActive.set(isActive);
-        this.isCanary.set(isCanary);
-        this.filter_code = filter_code;
-        this.filter_name = filter_name;
-        this.filter_type = filter_type;
-        this.filter_order = filter_order;
-        this.filter_disablePropertyName = disablePropertyName;
-        this.application_name = application_name;
-
-    }
-
-    /**
-     *
      * @return the revision of this filter
      */
     public int getRevision() {
@@ -159,7 +159,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @return creation date
      */
     public Date getCreationDate() {
-        return creationDate;
+        return new Date(creationDate.getTime());
     }
 
     /**
@@ -178,7 +178,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     public boolean isCanary() {
         return isCanary.get();
     }
-
 
     /**
      *
@@ -204,7 +203,15 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @return key is application_name:filter_name:filter_type
      */
     public static String buildFilterID(String application_name, String filter_type, String filter_name) {
-        return application_name + ":" + filter_name + ":" + filter_type;
+        return new FilterId.Builder().applicationName(application_name)
+                                     .filterType(filter_type)
+                                     .filterName(filter_name)
+                                     .build()
+                                     .toString();
+    }
+
+    public String buildFilterId() {
+        return buildFilterID(application_name, filter_type, filter_name);
     }
 
     @Override
@@ -247,4 +254,32 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return filterInfo.getFilterName().compareTo(this.getFilterName());
     }
 
+    public static class UnitTest {
+
+        @Test
+        public void verifyFilterId() {
+            FilterInfo filterInfo = new FilterInfo("", "", "", "", "", "", "");
+            long originalCreationTime = filterInfo.getCreationDate().getTime();
+            filterInfo.getCreationDate().setTime(0);
+            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
+        }
+
+        @Test
+        public void creationDateIsCopiedInGetter() {
+            FilterInfo filterInfo = new FilterInfo("", "", "", "", "", "", "");
+            long originalCreationTime = filterInfo.getCreationDate().getTime();
+            filterInfo.getCreationDate().setTime(0);
+            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
+        }
+
+        @Test
+        public void creationDateIsCopiedInConstructor() {
+            Date date = new Date();
+            long originalCreationTime = date.getTime();
+            FilterInfo filterInfo =
+                new FilterInfo("", 1, date, false, false, "", "", "", "", "", "");
+            date.setTime(0);
+            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
+        }
+    }
 }

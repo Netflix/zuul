@@ -15,33 +15,27 @@
  */
 package com.netflix.zuul.http;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.ZuulRunner;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.netflix.zuul.FilterProcessor;
-import com.netflix.zuul.ZuulRunner;
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 /**
  * Core Zuul servlet which intializes and orchestrates zuulFilter execution
@@ -51,10 +45,20 @@ import com.netflix.zuul.exception.ZuulException;
  *         Time: 10:44 AM
  */
 public class ZuulServlet extends HttpServlet {
-    
+
     private static final long serialVersionUID = -3374242278843351500L;
-    private ZuulRunner zuulRunner = new ZuulRunner();
-    private static Logger LOG = LoggerFactory.getLogger(ZuulServlet.class);
+    private ZuulRunner zuulRunner;
+
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        String bufferReqsStr = config.getInitParameter("buffer-requests");
+        boolean bufferReqs = bufferReqsStr != null && bufferReqsStr.equals("true") ? true : false;
+
+        zuulRunner = new ZuulRunner(bufferReqs);
+    }
 
     @Override
     public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws ServletException, IOException {
@@ -90,6 +94,7 @@ public class ZuulServlet extends HttpServlet {
         } catch (Throwable e) {
             error(new ZuulException(e, 500, "UNHANDLED_EXCEPTION_" + e.getClass().getName()));
         } finally {
+            RequestContext.getCurrentContext().unset();
         }
     }
 
@@ -138,7 +143,6 @@ public class ZuulServlet extends HttpServlet {
     void error(ZuulException e) {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
-        LOG.error(e.getMessage(), e);
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -188,7 +192,7 @@ public class ZuulServlet extends HttpServlet {
                 RequestContext.testSetCurrentContext(null);
 
             } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
+                e.printStackTrace();
             }
 
 

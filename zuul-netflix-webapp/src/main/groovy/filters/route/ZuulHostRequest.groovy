@@ -319,34 +319,36 @@ class ZuulHostRequest extends ZuulFilter {
         return true;
     }
 
-    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
 
-        def headers = new ArrayList()
+    def Header[] buildZuulRequestHeaders(HttpServletRequest request) {
+        Map headers = new HashMap()
         Enumeration headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = (String) headerNames.nextElement();
-            String value = request.getHeader(name);
-            if (isValidHeader(name)) headers.add(new BasicHeader(name, value))
+
+            final StringBuilder valBuilder = new StringBuilder();
+            for (final Enumeration vals = request.getHeaders(name); vals.hasMoreElements();) {
+                valBuilder.append(vals.nextElement());
+                valBuilder.append(',')
+            }
+            valBuilder.setLength(valBuilder.length()-1)
+
+            if (isValidHeader(name)) {
+                headers.put(name.toLowerCase(),new BasicHeader(name, valBuilder.toString()))
+            }
         }
 
         Map zuulRequestHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
 
         zuulRequestHeaders.keySet().each {
-            String name = it.toLowerCase()
-            BasicHeader h = headers.find { BasicHeader he -> he.name == name }
-            if (h != null) {
-                headers.remove(h)
-            }
-            headers.add(new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
+            headers.put(it.toLowerCase(),new BasicHeader((String) it, (String) zuulRequestHeaders[it]))
         }
 
         if (RequestContext.currentContext.responseGZipped) {
-            headers.add(new BasicHeader("accept-encoding", "deflate, gzip"))
+            headers.put("accept-encoding",new BasicHeader("accept-encoding", "deflate, gzip"))
         }
-        return headers
+        return headers.values().toArray()
     }
-
-
 
     String getVerb(HttpServletRequest request) {
         String sMethod = request.getMethod();
