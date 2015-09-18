@@ -22,6 +22,7 @@ import com.netflix.client.http.HttpRequest;
 import com.netflix.client.http.HttpResponse;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.loadbalancer.Server;
 import com.netflix.niws.client.http.RestClient;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.constants.ZuulConstants;
@@ -51,6 +52,7 @@ import rx.Observable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -66,10 +68,12 @@ public class RibbonOrigin implements Origin
             ZuulConstants.ZUUL_REQUEST_BODY_MAX_SIZE, 25 * 1000 * 1024);
 
     private final String name;
+    private final RestClient client;
 
     public RibbonOrigin(String name)
     {
         this.name = name;
+        this.client = (RestClient) ClientFactory.getNamedClient(name);
     }
 
     @Override
@@ -78,12 +82,20 @@ public class RibbonOrigin implements Origin
         return name;
     }
 
+    @Override
+    public boolean isAvailable() {
+        if(client == null || client.getLoadBalancer() == null) {
+            return false;
+        }
+        List<Server> serverList = client.getLoadBalancer().getServerList(true);
+        return serverList != null && serverList.size() > 0;
+    }
+
 
     @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
     {
         SessionContext context = requestMsg.getContext();
-        RestClient client = (RestClient) ClientFactory.getNamedClient(name);
         if (client == null) {
             throw proxyError(requestMsg, new IllegalArgumentException("No RestClient found for name! name=" + String.valueOf(name)), null);
         }

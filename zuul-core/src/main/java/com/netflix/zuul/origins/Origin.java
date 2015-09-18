@@ -26,5 +26,6 @@ import rx.Observable;
  */
 public interface Origin {
     String getName();
+    boolean isAvailable();
     Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg);
 }
