@@ -251,9 +251,15 @@ class SimpleHostRoutingFilter extends ZuulFilter {
     }
 
     String getQueryString() {
+        String encoding = "UTF-8"
         HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
-        String query = request.getQueryString()
-        return (query != null) ? "?${query}" : "";
+        String currentQueryString = request.getQueryString()
+        if (currentQueryString == null || currentQueryString.equals("")) {
+            return ""
+        }
+
+        String decodedQueryString = URLDecoder.decode(currentQueryString, encoding)
+        return new URI(null, null, null, decodedQueryString, null).toString()
     }
 
     HttpHost getHttpHost() {
