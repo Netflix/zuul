@@ -1,5 +1,10 @@
+plugins {
+    id 'net.saliman.cobertura' version '2.2.7'
+}
 apply plugin: 'war'
 apply plugin: 'jetty'
+apply plugin: 'cobertura'
+apply plugin: 'groovy'
 
 
 dependencies {
@@ -29,4 +34,9 @@ jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
     System.setProperty("zuul.filter.root", "src/main/groovy/filters")
+}
+
+cobertura {
+    coverageSourceDirs = [sourceSets.main.groovy.srcDirs, sourceSets.main.java.srcDirs]
+    coverageFormats = ['xml', 'html']
 }
