@@ -5,6 +5,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import com.netflix.zuul.origins.OriginManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,12 +24,14 @@ public class PreDecorationTest {
 
     @Mock
     HttpRequestMessage request;
+    @Mock
+    OriginManager originManager;
 
     @Before
     public void setup() {
         filter = new PreDecoration();
 
-        ctx = new SessionContext();
+        ctx = new SessionContext(originManager);
         Mockito.when(request.getContext()).thenReturn(ctx);
         response = new HttpResponseMessageImpl(ctx, request, 99);
         reqHeaders = new Headers();

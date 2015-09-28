@@ -40,7 +40,7 @@ public class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMe
 
     protected Origin getOrigin(HttpRequestMessage request) {
         final String name = request.getContext().getRouteVIP();
-        OriginManager originManager = (OriginManager) request.getContext().get("origin_manager");
+        OriginManager originManager = request.getContext().getOriginManager();
         Origin origin = originManager.getOrigin(name);
         if (origin == null) {
             throw new ZuulException("No Origin registered for name=" + name + "!", "UNKNOWN_VIP");

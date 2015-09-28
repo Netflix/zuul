@@ -23,6 +23,7 @@ package com.netflix.zuul.context;
 
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import rx.functions.Func0;
@@ -44,6 +45,8 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final int INITIAL_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
 
+    private final OriginManager originManager;
+
     /** Default to apply filters of all priority levels. */
     private int filterPriority = 0;
 
@@ -59,11 +62,12 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
-    public SessionContext()
+    public SessionContext(OriginManager originManager)
     {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
         super(INITIAL_SIZE);
+        this.originManager = originManager;
 
         put(KEY_TIMINGS, new Timings());
         put(KEY_FILTER_EXECS, new StringBuilder());
@@ -139,7 +143,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      */
     public SessionContext copy()
     {
-        SessionContext copy = new SessionContext();
+        SessionContext copy = new SessionContext(originManager);
         copy.filterPriority = filterPriority;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
 
@@ -418,5 +422,9 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         put(key, newValue);
 
         return newValue;
+    }
+
+    public OriginManager getOriginManager() {
+        return originManager;
     }
 }

@@ -3,6 +3,7 @@ package com.netflix.zuul.ribbon;
 import com.netflix.client.http.CaseInsensitiveMultiMap;
 import com.netflix.client.http.HttpResponse;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import org.junit.Assert;
@@ -42,6 +43,8 @@ public class RibbonOriginTest {
         Mockito.when(proxyResp.getInputStream()).thenReturn(inp);
         Mockito.when(proxyResp.hasEntity()).thenReturn(true);
         Mockito.when(proxyResp.getHttpHeaders()).thenReturn(headers);
+        SessionContext ctx = new SessionContext(new RibbonOriginManager());
+        Mockito.when(request.getContext()).thenReturn(ctx);
 
         HttpResponseMessage response = origin.createHttpResponseMessage(proxyResp, request);
 

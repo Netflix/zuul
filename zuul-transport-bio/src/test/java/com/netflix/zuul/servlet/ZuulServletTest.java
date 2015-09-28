@@ -10,6 +10,8 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.monitoring.MonitoringHelper;
+import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.ribbon.RibbonOriginManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +43,8 @@ public class ZuulServletTest {
     FilterFileManager filterFileMgr;
     @Mock
     SessionCleaner sessionCleaner;
+    @Mock
+    OriginManager originManager;
 
     @Mock
     HttpRequestMessage request;
@@ -59,14 +63,16 @@ public class ZuulServletTest {
         MonitoringHelper.initMocks();
         MockitoAnnotations.initMocks(this);
 
+        context = new SessionContext(new RibbonOriginManager());
         contextFactory = new ServletSessionContextFactory();
-        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, sessionCleaner);
+        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, sessionCleaner, originManager);
         servlet = new ZuulServlet(zuulProcessor);
         servlet = Mockito.spy(servlet);
 
         Mockito.when(servletRequest.getHeaderNames()).thenReturn(Collections.<String>emptyEnumeration());
         Mockito.when(servletRequest.getAttributeNames()).thenReturn(Collections.<String>emptyEnumeration());
         servletInputStream = new ServletInputStreamWrapper("{}".getBytes());
+        Mockito.when(servletRequest.getInputStream()).thenReturn(servletInputStream);
         Mockito.when(servletRequest.getInputStream()).thenReturn(servletInputStream);
         Mockito.when(servletResponse.getOutputStream()).thenReturn(servletOutputStream);
 

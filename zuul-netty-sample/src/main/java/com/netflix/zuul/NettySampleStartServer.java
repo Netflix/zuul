@@ -66,7 +66,7 @@ public class NettySampleStartServer {
 
         ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> processor =
                 new ZuulHttpProcessor<>(filterProcessor, sessionCtxFactory, ctxDecorator, null,
-                                        cleaner);
+                                        cleaner, originManager);
 
         requestHandler = new ZuulRequestHandler(processor);
     }

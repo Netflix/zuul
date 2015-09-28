@@ -19,16 +19,16 @@ import rx.Observable;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NfProxyEndpointTest {
+
     @Before
     public void setup() {
         MonitoringHelper.initMocks();
         filter = new NfProxyEndpoint();
-        ctx = new SessionContext();
+        ctx = new SessionContext(originManager);
         Mockito.when(request.getContext()).thenReturn(ctx);
         response = new HttpResponseMessageImpl(ctx, request, 202);
 
         Mockito.when(originManager.getOrigin("an-origin")).thenReturn(origin);
-        ctx.put("origin_manager", originManager);
     }
 
     @Test

@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.message;
 
+import com.google.common.base.Preconditions;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
@@ -47,8 +48,9 @@ public class ZuulMessageImpl implements ZuulMessage
     }
 
     public ZuulMessageImpl(SessionContext context, Headers headers) {
-        this.context = context == null ? new SessionContext() : context;
-        this.headers = headers == null ? new Headers() : headers;
+        Preconditions.checkNotNull(context, "Session context can not be null.");
+        this.context = context;
+        this.headers = headers == null? new Headers() : headers;
     }
 
     @Override
