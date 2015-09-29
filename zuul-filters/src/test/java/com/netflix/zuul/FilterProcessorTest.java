@@ -1,5 +1,6 @@
 package com.netflix.zuul;
 
+import com.netflix.zuul.FilterProcessor.BasicFilterUsageNotifier;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.ExecutionStatus;
@@ -11,6 +12,7 @@ import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.monitoring.MonitoringHelper;
+import com.netflix.zuul.origins.OriginManager;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +27,9 @@ import rx.Observable;
 
 @RunWith(MockitoJUnitRunner.class)
 public class FilterProcessorTest {
+
+    @Mock
+    private OriginManager originManager;
 
     @Mock
     BaseSyncFilter filter;
@@ -43,12 +48,12 @@ public class FilterProcessorTest {
         MonitoringHelper.initMocks();
         MockitoAnnotations.initMocks(this);
 
-        ctx = new SessionContext();
+        ctx = new SessionContext(originManager);
         request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(),
                                              new Headers(), "127.0.0.1", "https", 80, "localhost");
         response = new HttpResponseMessageImpl(ctx, request, 200);
 
-        processor = new FilterProcessor(null, null);
+        processor = new FilterProcessor(null, new BasicFilterUsageNotifier());
         processor = Mockito.spy(processor);
 
         Mockito.when(filter.filterType()).thenReturn("pre");

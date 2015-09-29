@@ -2,6 +2,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.origins.OriginManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,9 @@ import static org.junit.Assert.*;
 public class HttpResponseMessageImplTest {
 
     @Mock
+    private OriginManager originManager;
+
+    @Mock
     private HttpRequestMessage request;
 
     private HttpResponseMessageImpl response;
@@ -21,7 +25,7 @@ public class HttpResponseMessageImplTest {
     @Before
     public void setup()
     {
-        response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
+        response = new HttpResponseMessageImpl(new SessionContext(originManager), new Headers(), request, 200);
     }
 
     @Test

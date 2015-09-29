@@ -37,9 +37,6 @@ public class SampleSessionContextDecorator implements SessionContextDecorator
     @Override
     public SessionContext decorate(SessionContext ctx)
     {
-        // Add the configured OriginManager to context for use in route filter.
-        ctx.put("origin_manager", originManager);
-
         // Generate a UUID for this session.
         ctx.setUUID(UUID.randomUUID().toString());
 

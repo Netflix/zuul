@@ -7,13 +7,13 @@ import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.RequestCompleteHandler;
+import com.netflix.zuul.origins.OriginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Single;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 /**
  * The main processing class for Zuul.
@@ -34,19 +34,20 @@ public class ZuulHttpProcessor<I,O>
     private SessionContextFactory<I, O> contextFactory;
     private SessionContextDecorator decorator;
     private SessionCleaner sessionCleaner;
+    private final OriginManager originManager;
     private RequestCompleteHandler requestCompleteHandler;
 
-    @Inject
     public ZuulHttpProcessor(FilterProcessor filterProcessor, SessionContextFactory<I, O> contextFactory,
                              @Nullable SessionContextDecorator decorator,
                              @Nullable RequestCompleteHandler requestCompleteHandler,
-                             SessionCleaner sessionCleaner)
+                             SessionCleaner sessionCleaner, OriginManager originManager)
     {
         this.filterProcessor = filterProcessor;
         this.contextFactory = contextFactory;
         this.decorator = decorator;
         this.requestCompleteHandler = requestCompleteHandler;
         this.sessionCleaner = sessionCleaner;
+        this.originManager = originManager;
     }
 
     public Observable<Void> process(final I nativeRequest, final O nativeResponse)
@@ -56,9 +57,9 @@ public class ZuulHttpProcessor<I,O>
 
         // Optionally decorate the context.
         if (decorator == null) {
-            context = new SessionContext();
+            context = new SessionContext(originManager);
         } else {
-            context = decorator.decorate(new SessionContext());
+            context = decorator.decorate(new SessionContext(originManager));
         }
 
         // Build a ZuulMessage from the netty request.

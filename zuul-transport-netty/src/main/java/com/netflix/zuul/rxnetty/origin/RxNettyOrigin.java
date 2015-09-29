@@ -65,6 +65,11 @@ public class RxNettyOrigin implements Origin {
     }
 
     @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg) {
         final SessionContext context = requestMsg.getContext();
         HttpMethod method = toNettyHttpMethod(requestMsg.getMethod());
