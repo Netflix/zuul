@@ -1,12 +1,26 @@
+plugins {
+    id 'net.saliman.cobertura' version '2.2.7'
+    id "com.bmuschko.tomcat" version "2.2.2"
+    id 'codenarc'
+    id 'findbugs'
+    id 'checkstyle'
+}
 apply plugin: 'war'
 apply plugin: 'jetty'
-
+apply plugin: 'cobertura'
+apply plugin: 'groovy'
 
 dependencies {
     compile project(":zuul-core")
 
     compile 'org.apache.httpcomponents:httpclient:4.5'
     providedCompile 'javax.servlet:servlet-api:2.5'
+
+    def tomcatVersion = '8.0.23'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+
 }
 
 eclipse {
@@ -28,5 +42,39 @@ war {
 jettyRun.contextPath = '/'
 
 jettyRun.doFirst {
+    System.setProperty("zuul.filter.root", "src/main/groovy/filters")
+}
+
+cobertura {
+    coverageSourceDirs = [sourceSets.main.groovy.srcDirs, sourceSets.main.java.srcDirs]
+    coverageFormats = ['xml', 'html']
+}
+
+checkstyle {
+    toolVersion = '6.7'
+    ignoreFailures = true
+    showViolations = false
+    sourceSets = [sourceSets.main]
+    reportsDir = rootProject.file('zuul-simple-webapp/build/reports/checkstyle')
+}
+
+codenarc {
+    configFile = rootProject.file('zuul-simple-webapp/config/codenarc/rules.groovy')
+    ignoreFailures = true
+    sourceSets = [sourceSets.main]
+    reportFormat = 'xml'
+}
+
+findbugs {
+    effort = 'min'
+    ignoreFailures = true
+    sourceSets = [sourceSets.main]
+}
+
+tomcat {
+    contextPath = '/'
+}
+
+[tomcatRun, tomcatRunWar]*.doFirst {
     System.setProperty("zuul.filter.root", "src/main/groovy/filters")
 }
