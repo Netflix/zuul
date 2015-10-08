@@ -36,6 +36,8 @@ public interface HttpRequestMessage extends HttpRequestInfo
 
     void setPath(String path);
 
+    void setQueryParams(HttpQueryParams queryParams);
+
     void setClientIp(String clientIp);
 
     void setScheme(String scheme);

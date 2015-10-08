@@ -21,10 +21,10 @@ import com.netflix.zuul.context.SampleSessionContextDecorator;
 import com.netflix.zuul.context.SessionCleaner;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import com.netflix.zuul.rxnetty.RxNettySessionContextFactory;
 import com.netflix.zuul.rxnetty.ZuulRequestHandler;
-import com.netflix.zuul.rxnetty.origin.RxNettyOriginManager;
+import com.netflix.zuul.rxnetty.origin.RxNettyOrigins;
 import com.netflix.zuul.rxnetty.origin.StaticHostSourceFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -45,7 +45,7 @@ public class NettySampleStartServer {
     private final static String DEFAULT_APP_NAME = "zuul";
     private final ZuulRequestHandler requestHandler;
 
-    public NettySampleStartServer(OriginManager originManager) throws Exception {
+    public NettySampleStartServer(Origins origins) throws Exception {
 
         loadProperties();
 
@@ -60,13 +60,13 @@ public class NettySampleStartServer {
         SessionContextFactory<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> sessionCtxFactory =
                 new RxNettySessionContextFactory();
 
-        SessionContextDecorator ctxDecorator = new SampleSessionContextDecorator(originManager);
+        SessionContextDecorator ctxDecorator = new SampleSessionContextDecorator(origins);
 
         SessionCleaner cleaner = context -> Observable.empty();
 
         ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> processor =
                 new ZuulHttpProcessor<>(filterProcessor, sessionCtxFactory, ctxDecorator, null,
-                                        cleaner, originManager);
+                                        cleaner, origins);
 
         requestHandler = new ZuulRequestHandler(processor);
     }
@@ -109,7 +109,7 @@ public class NettySampleStartServer {
 
         String[] vip = { "api_netflix" };
 
-        OriginManager staticOrigin = new RxNettyOriginManager(vip, new StaticHostSourceFactory(origin));
+        Origins staticOrigin = RxNettyOrigins.forOrigins(new StaticHostSourceFactory(origin), vip);
 
         NettySampleStartServer server = new NettySampleStartServer(staticOrigin);
         server.startAndAwaitShutdown(7001);

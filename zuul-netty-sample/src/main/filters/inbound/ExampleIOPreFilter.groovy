@@ -22,7 +22,7 @@ import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpInboundFilter
 import com.netflix.zuul.origins.Origin
-import com.netflix.zuul.origins.OriginManager
+import com.netflix.zuul.origins.Origins
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable
@@ -47,7 +47,7 @@ class ExampleIOPreFilter extends HttpInboundFilter
         SessionContext context = request.getContext()
 
         // Get the origin to send request to.
-        OriginManager originManager = context.get("origin_manager")
+        Origins originManager = context.get("origin_manager")
         String name = "api_netflix"
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {

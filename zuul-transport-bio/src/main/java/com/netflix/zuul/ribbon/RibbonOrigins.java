@@ -26,12 +26,13 @@ import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.origins.Origin;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.netflix.zuul.constants.ZuulConstants.*;
@@ -42,9 +43,9 @@ import static com.netflix.zuul.constants.ZuulConstants.*;
  * Time: 11:24 PM
  */
 @Singleton
-public class RibbonOriginManager implements OriginManager
+public class RibbonOrigins implements Origins
 {
-    private static final Logger LOG = LoggerFactory.getLogger(RibbonOriginManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RibbonOrigins.class);
 
     private static DynamicStringProperty RIBBON_NAMESPACE = DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_RIBBON_NAMESPACE, "ribbon");
 
@@ -93,9 +94,37 @@ public class RibbonOriginManager implements OriginManager
     }
 
     @Override
+    public boolean hasOrigin(String name) {
+        return origins.containsKey(name);
+    }
+
+    @Override
     public Origin getOrigin(String name)
     {
         return origins.get(name);
+    }
+
+    @Override
+    public boolean hasRemotePeer(String peerRegion) {
+        return false;
+    }
+
+    @Override
+    public Origin getRemotePeer(String peerRegion) {
+        throw new NoSuchElementException("Remote peers can not be registered.");
+    }
+
+    @Override
+    public Origin createOriginIfAbsent(String name) {
+        if (!hasOrigin(name)) {
+            try {
+                initOrigin(RIBBON_NAMESPACE.get(), name);
+            }
+            catch (ClientException e) {
+                LOG.error("Error initializing Ribbon client! name={}", name, e);
+            }
+        }
+        return getOrigin(name);
     }
 
 }

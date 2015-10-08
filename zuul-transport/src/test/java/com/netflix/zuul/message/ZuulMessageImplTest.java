@@ -1,7 +1,7 @@
 package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -10,8 +10,8 @@ import static org.junit.Assert.*;
 public class ZuulMessageImplTest {
     @Test
     public void testClone() {
-        OriginManager originManager = Mockito.mock(OriginManager.class);
-        SessionContext ctx1 = new SessionContext(originManager);
+        Origins origins = Mockito.mock(Origins.class);
+        SessionContext ctx1 = new SessionContext(origins);
         ctx1.set("k1", "v1");
         Headers headers1 = new Headers();
         headers1.set("k1", "v1");

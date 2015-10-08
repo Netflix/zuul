@@ -16,8 +16,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
-
 @RunWith(MockitoJUnitRunner.class)
 public class RibbonOriginTest {
     @Mock
@@ -43,7 +41,7 @@ public class RibbonOriginTest {
         Mockito.when(proxyResp.getInputStream()).thenReturn(inp);
         Mockito.when(proxyResp.hasEntity()).thenReturn(true);
         Mockito.when(proxyResp.getHttpHeaders()).thenReturn(headers);
-        SessionContext ctx = new SessionContext(new RibbonOriginManager());
+        SessionContext ctx = new SessionContext(new RibbonOrigins());
         Mockito.when(request.getContext()).thenReturn(ctx);
 
         HttpResponseMessage response = origin.createHttpResponseMessage(proxyResp, request);
