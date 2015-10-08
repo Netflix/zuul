@@ -7,7 +7,7 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import com.netflix.zuul.origins.Origin;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,11 +24,11 @@ public class NfProxyEndpointTest {
     public void setup() {
         MonitoringHelper.initMocks();
         filter = new NfProxyEndpoint();
-        ctx = new SessionContext(originManager);
+        ctx = new SessionContext(origins);
         Mockito.when(request.getContext()).thenReturn(ctx);
         response = new HttpResponseMessageImpl(ctx, request, 202);
 
-        Mockito.when(originManager.getOrigin("an-origin")).thenReturn(origin);
+        Mockito.when(origins.getOrigin("an-origin")).thenReturn(origin);
     }
 
     @Test
@@ -64,12 +64,12 @@ public class NfProxyEndpointTest {
 
     }
 
-    public OriginManager getOriginManager() {
-        return originManager;
+    public Origins getOrigins() {
+        return origins;
     }
 
-    public void setOriginManager(OriginManager originManager) {
-        this.originManager = originManager;
+    public void setOrigins(Origins origins) {
+        this.origins = origins;
     }
 
     public Origin getOrigin() {
@@ -113,7 +113,7 @@ public class NfProxyEndpointTest {
     }
 
     @Mock
-    private OriginManager originManager;
+    private Origins origins;
     @Mock
     private Origin origin;
     @Mock

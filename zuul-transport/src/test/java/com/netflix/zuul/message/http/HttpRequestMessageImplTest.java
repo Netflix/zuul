@@ -2,7 +2,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -154,6 +154,6 @@ public class HttpRequestMessageImplTest {
     }
 
     private static SessionContext newSessionContext() {
-        return new SessionContext(Mockito.mock(OriginManager.class));
+        return new SessionContext(Mockito.mock(Origins.class));
     }
 }

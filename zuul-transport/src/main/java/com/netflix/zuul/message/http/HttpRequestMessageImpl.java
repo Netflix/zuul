@@ -209,6 +209,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
+    public void setQueryParams(HttpQueryParams queryParams) {
+        this.queryParams = queryParams;
+    }
+
+    @Override
     public HttpQueryParams getQueryParams() {
         return queryParams;
     }

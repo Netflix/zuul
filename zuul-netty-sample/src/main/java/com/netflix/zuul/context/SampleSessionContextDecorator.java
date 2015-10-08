@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.context;
 
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 
 import javax.inject.Inject;
 import java.util.UUID;
@@ -27,11 +27,11 @@ import java.util.UUID;
  */
 public class SampleSessionContextDecorator implements SessionContextDecorator
 {
-    private final OriginManager originManager;
+    private final Origins origins;
 
     @Inject
-    public SampleSessionContextDecorator(OriginManager originManager) {
-        this.originManager = originManager;
+    public SampleSessionContextDecorator(Origins origins) {
+        this.origins = origins;
     }
 
     @Override

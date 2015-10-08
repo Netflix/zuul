@@ -22,8 +22,8 @@ import com.netflix.zuul.context.*;
 import com.netflix.zuul.filters.ZuulFiltersModule;
 import com.netflix.zuul.message.http.BasicRequestCompleteHandler;
 import com.netflix.zuul.message.http.RequestCompleteHandler;
-import com.netflix.zuul.origins.OriginManager;
-import com.netflix.zuul.ribbon.RibbonOriginManager;
+import com.netflix.zuul.origins.Origins;
+import com.netflix.zuul.ribbon.RibbonOrigins;
 import com.netflix.zuul.ribbon.RibbonSessionCleaner;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
@@ -57,7 +57,7 @@ public class ZuulBootStrap extends ServerBootstrap
                     @Override
                     protected void configure()
                     {
-                        bind(OriginManager.class).to(RibbonOriginManager.class);
+                        bind(Origins.class).to(RibbonOrigins.class);
                         bind(SessionContextFactory.class).to(ServletSessionContextFactory.class);
                         bind(SessionContextDecorator.class).to(SampleSessionContextDecorator.class);
                         bind(SessionCleaner.class).to(RibbonSessionCleaner.class);

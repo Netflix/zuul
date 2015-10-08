@@ -21,7 +21,7 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.origins.Origin;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.logging.LogLevel;
+import io.reactivex.netty.client.ConnectionProvider;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
 import io.reactivex.netty.spectator.http.HttpClientListener;
@@ -29,17 +29,12 @@ import netflix.ocelli.Instance;
 import netflix.ocelli.rxnetty.FailureListener;
 import netflix.ocelli.rxnetty.protocol.http.HttpLoadBalancer;
 import netflix.ocelli.rxnetty.protocol.http.WeightedHttpClientListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.functions.Func1;
 
 import java.net.SocketAddress;
-import java.nio.charset.Charset;
 
 public class RxNettyOrigin implements Origin {
-
-    private static final Logger logger = LoggerFactory.getLogger(RxNettyOrigin.class);
 
     private final String vip;
     private final HttpClient<ByteBuf, ByteBuf> client;
@@ -50,12 +45,15 @@ public class RxNettyOrigin implements Origin {
 
     public RxNettyOrigin(String vip, Observable<Instance<SocketAddress>> hostStream,
                          Func1<FailureListener, WeightedHttpClientListener> listenerFactory) {
+        this(vip, HttpLoadBalancer.<ByteBuf, ByteBuf>choiceOfTwo(hostStream, listenerFactory).toConnectionProvider());
+    }
+
+    public RxNettyOrigin(String vip, ConnectionProvider<ByteBuf, ByteBuf> loadBalancer) {
         if (null == vip) {
             throw new IllegalArgumentException("VIP can not be null.");
         }
         this.vip = vip;
-        HttpLoadBalancer<ByteBuf, ByteBuf> lb = HttpLoadBalancer.choiceOfTwo(hostStream, listenerFactory);
-        client = HttpClient.newClient(lb.toConnectionProvider());
+        client = HttpClient.newClient(loadBalancer);
         client.subscribe(new HttpClientListener("origin-" + vip));
     }
 
@@ -94,11 +92,11 @@ public class RxNettyOrigin implements Origin {
                                                                                                     headerVal)));
                           resp.setBodyStream(nettyResp.getContent());
                           return resp;
-                      })
-                      .retryWhen(new RetryWhenNoServersAvailable());
+                      });
     }
 
     private HttpMethod toNettyHttpMethod(String method) {
         return HttpMethod.valueOf(method.toUpperCase());
     }
+
 }

@@ -6,7 +6,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -24,7 +24,7 @@ public class DebugTest {
 
     @Before
     public void setup() {
-        ctx = new SessionContext(Mockito.mock(OriginManager.class));
+        ctx = new SessionContext(Mockito.mock(Origins.class));
 
         headers = new Headers();
         headers.add("lah", "deda");

@@ -10,8 +10,8 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import com.netflix.zuul.origins.OriginManager;
-import com.netflix.zuul.ribbon.RibbonOriginManager;
+import com.netflix.zuul.origins.Origins;
+import com.netflix.zuul.ribbon.RibbonOrigins;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +44,7 @@ public class ZuulServletTest {
     @Mock
     SessionCleaner sessionCleaner;
     @Mock
-    OriginManager originManager;
+    Origins origins;
 
     @Mock
     HttpRequestMessage request;
@@ -63,9 +63,9 @@ public class ZuulServletTest {
         MonitoringHelper.initMocks();
         MockitoAnnotations.initMocks(this);
 
-        context = new SessionContext(new RibbonOriginManager());
+        context = new SessionContext(new RibbonOrigins());
         contextFactory = new ServletSessionContextFactory();
-        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, sessionCleaner, originManager);
+        zuulProcessor = new ZuulHttpProcessor(processor, contextFactory, null, null, sessionCleaner, origins);
         servlet = new ZuulServlet(zuulProcessor);
         servlet = Mockito.spy(servlet);
 

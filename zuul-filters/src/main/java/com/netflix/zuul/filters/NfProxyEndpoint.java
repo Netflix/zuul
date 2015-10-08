@@ -6,7 +6,7 @@ import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.origins.Origin;
-import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.Origins;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -40,8 +40,8 @@ public class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMe
 
     protected Origin getOrigin(HttpRequestMessage request) {
         final String name = request.getContext().getRouteVIP();
-        OriginManager originManager = request.getContext().getOriginManager();
-        Origin origin = originManager.getOrigin(name);
+        Origins origins = request.getContext().getOrigins();
+        Origin origin = origins.getOrigin(name);
         if (origin == null) {
             throw new ZuulException("No Origin registered for name=" + name + "!", "UNKNOWN_VIP");
         }
