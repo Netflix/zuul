@@ -477,8 +477,8 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      *
      * @return the content-length of the origin response
      */
-    public Integer getOriginContentLength() {
-        return (Integer) get("originContentLength");
+    public Long getOriginContentLength() {
+        return (Long) get("originContentLength");
     }
 
     /**
@@ -486,7 +486,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      *
      * @param v
      */
-    public void setOriginContentLength(Integer v) {
+    public void setOriginContentLength(Long v) {
         set("originContentLength", v);
     }
 
@@ -497,7 +497,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      */
     public void setOriginContentLength(String v) {
         try {
-            final Integer i = Integer.valueOf(v);
+            final Long i = Long.valueOf(v);
             set("originContentLength", i);
         } catch (NumberFormatException e) {
             LOG.warn("error parsing origin content length", e);
