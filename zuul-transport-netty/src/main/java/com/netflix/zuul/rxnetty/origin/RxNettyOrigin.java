@@ -21,6 +21,7 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.origins.Origin;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.logging.LogLevel;
 import io.reactivex.netty.client.ConnectionProvider;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
@@ -53,7 +54,7 @@ public class RxNettyOrigin implements Origin {
             throw new IllegalArgumentException("VIP can not be null.");
         }
         this.vip = vip;
-        client = HttpClient.newClient(loadBalancer);
+        client = HttpClient.newClient(loadBalancer).enableWireLogging(LogLevel.DEBUG);
         client.subscribe(new HttpClientListener("origin-" + vip));
     }
 

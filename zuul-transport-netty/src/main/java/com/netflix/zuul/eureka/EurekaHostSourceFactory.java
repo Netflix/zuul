@@ -35,6 +35,7 @@ public class EurekaHostSourceFactory implements HostSourceFactory {
     public Observable<Instance<SocketAddress>> call(String vip) {
         return getInterestDsl().forVip(vip)
                                .asObservable()
+                               .filter(ii ->  ii != null)
                                .map(instance -> {
                                    final InstanceInfo ii = instance.getValue();
                                    final SocketAddress addr = toSocketAddress(ii);

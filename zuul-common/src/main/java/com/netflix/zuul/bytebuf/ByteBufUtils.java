@@ -16,8 +16,10 @@
 package com.netflix.zuul.bytebuf;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import rx.Observable;
+import rx.functions.Action2;
 
 import java.io.ByteArrayOutputStream;
 
@@ -49,13 +51,16 @@ public class ByteBufUtils
      */
     public static Observable<ByteBuf> aggregate(Observable<ByteBuf> source, int maxBodySize)
     {
-        return source.reduce((bb1, bb2) -> {
-            // Buffer the body into a single virtual ByteBuf.
-            // and apply some max size to this.
-            if (bb1.readableBytes() > maxBodySize) {
-                throw new RuntimeException("Max message body size exceeded! maxBodySize=" + maxBodySize);
+        return source.collect(Unpooled::compositeBuffer, new Action2<CompositeByteBuf, ByteBuf>() {
+            @Override
+            public void call(CompositeByteBuf composite, ByteBuf buf) {
+                int readable = buf.readableBytes();
+                if (composite.readableBytes() + readable > maxBodySize) {
+                    throw new RuntimeException("Max message body size exceeded! maxBodySize=" + maxBodySize);
+                }
+                composite.addComponents(buf);
+                composite.writerIndex(composite.writerIndex() + readable);
             }
-            return Unpooled.wrappedBuffer(bb1, bb2);
-        });
+        }).cast(ByteBuf.class);
     }
 }

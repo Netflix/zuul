@@ -92,7 +92,7 @@ public class RxNettySessionContextFactory
             nativeResponse = nativeResponse.addHeader(entry.getKey(), entry.getValue());
         }
 
-        return nativeResponse.write(zuulResp.getBodyStream());
+        return zuulResp.hasBody() ? nativeResponse.write(zuulResp.getBodyStream()) : nativeResponse;
     }
 
 
