@@ -4,13 +4,21 @@ import com.netflix.client.http.HttpRequest;
 import com.netflix.client.http.HttpResponse;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.hystrix.HystrixCommand;
+import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.niws.client.http.RestClient;
 import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.NFRequestContext;
+import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand;
 
 import javax.ws.rs.core.MultivaluedMap;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,13 +61,27 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
                          MultivaluedMap<String, String> params,
                          InputStream requestEntity) throws URISyntaxException {
 
-        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(commandKey)).andCommandPropertiesDefaults(
-                // we want to default to semaphore-isolation since this wraps
-                // 2 others commands that are already thread isolated
-                HystrixCommandProperties.Setter().withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
-                        .withExecutionIsolationSemaphoreMaxConcurrentRequests(DynamicPropertyFactory.getInstance().
-                                getIntProperty(ZuulConstants.ZUUL_EUREKA + commandKey + ".semaphore.maxSemaphores", 100).get())));
-
+        // Switch the command/group key to remain passive with the previous release which used the command key as the group key
+        this(commandKey, RibbonCommand.class.getSimpleName(), restClient, verb, uri, headers, params, requestEntity);
+    }
+    
+    public RibbonCommand(String groupKey, 
+                    String commandKey,
+                    RestClient restClient,
+                    Verb verb,
+                    String uri,
+                    MultivaluedMap<String, String> headers,
+                    MultivaluedMap<String, String> params,
+                    InputStream requestEntity) throws URISyntaxException {
+        
+        super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey(groupKey))
+                    .andCommandKey(HystrixCommandKey.Factory.asKey(commandKey)).andCommandPropertiesDefaults(
+           // we want to default to semaphore-isolation since this wraps
+           // 2 others commands that are already thread isolated
+           HystrixCommandProperties.Setter().withExecutionIsolationStrategy(HystrixCommandProperties.ExecutionIsolationStrategy.SEMAPHORE)
+                   .withExecutionIsolationSemaphoreMaxConcurrentRequests(DynamicPropertyFactory.getInstance().
+                           getIntProperty(ZuulConstants.ZUUL_EUREKA + commandKey + ".semaphore.maxSemaphores", 100).get())));
+        
         this.restClient = restClient;
         this.verb = verb;
         this.uri = new URI(uri);
@@ -107,6 +129,30 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
         context.setZuulResponse(response);
         return response;
     }
-
-
+    
+    public static class UnitTest {
+        
+        private static final String localhost = "http://localhost";
+        
+        @Test
+        public void testConstruction() throws URISyntaxException {
+            RibbonCommand rc = new RibbonCommand(null, null, localhost, null, null, null);
+            Assert.assertEquals("default", rc.getCommandGroup().name());
+            Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
+        }
+        
+        @Test
+        public void testConstructionWithCommandKey() throws URISyntaxException {
+            RibbonCommand rc = new RibbonCommand("myCommand", null, null, localhost, null, null, null);
+            Assert.assertEquals("myCommand", rc.getCommandGroup().name());
+            Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
+        }
+        
+        @Test
+        public void testConstructionWithGroupKeyAndCommandKey() throws URISyntaxException {
+            RibbonCommand rc = new RibbonCommand("myGroup", "myCommand", null, null, localhost, null, null, null);
+            Assert.assertEquals("myGroup", rc.getCommandGroup().name());
+            Assert.assertEquals("myCommand", rc.getCommandKey().name());
+        }
+    }
 }
