@@ -257,7 +257,7 @@ public class FilterProcessor {
                 // equal or above the requested.
                 int requiredPriority = msg.getContext().getFilterPriorityToApply();
                 if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg).toSingle();
+                    resultObs = filter.applyAsync(msg).defaultIfEmpty(msg).toSingle();
                 } else {
                     resultObs = Single.just(defaultFilterResultChooser.call(msg));
                     info.status = SKIPPED;
