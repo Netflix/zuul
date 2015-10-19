@@ -15,6 +15,6 @@ public class ByteBufUtilsTest {
         subscriber.awaitTerminalEvent();
         subscriber.assertNoErrors();
 
-        subscriber.assertNoValues();
+        subscriber.assertValueCount(1);
     }
 }
