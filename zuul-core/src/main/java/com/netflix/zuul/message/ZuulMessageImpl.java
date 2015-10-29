@@ -119,6 +119,7 @@ public class ZuulMessageImpl implements ZuulMessage
                         // Set the body on Response object.
                         byte[] body = ByteBufUtils.toBytes(bb);
                         setBody(body);
+                        bb.release(); // Since this is terminally consuming the buffer.
                         return body;
                     });
         } else {
