@@ -66,7 +66,7 @@ public class ZuulHttpProcessor<I,O>
         }
 
         // Build a ZuulMessage from the netty request.
-        final ZuulMessage request = contextFactory.create(context, nativeRequest);
+        final ZuulMessage request = contextFactory.create(context, nativeRequest, nativeResponse);
 
         // Start timing the request.
         request.getContext().getTimings().getRequest().start();

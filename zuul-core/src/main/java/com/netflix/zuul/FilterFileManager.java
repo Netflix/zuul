@@ -57,11 +57,15 @@ public class FilterFileManager {
     Thread poller;
     boolean bRunning = true;
 
-    @Inject
-    private FilterFileManagerConfig config;
+    private final FilterFileManagerConfig config;
+    private final FilterLoader filterLoader;
 
     @Inject
-    private FilterLoader filterLoader;
+    public FilterFileManager(FilterFileManagerConfig config, FilterLoader filterLoader) {
+        this.config = config;
+        this.filterLoader = filterLoader;
+    }
+
 
     /**
      * Initialized the GroovyFileManager.
@@ -231,9 +235,7 @@ public class FilterFileManager {
         public void testFileManagerInit() throws Exception
         {
             FilterFileManagerConfig config = new FilterFileManagerConfig(new String[]{"test", "test1"}, new String[]{"com.netflix.blah.SomeFilter"}, 1);
-            FilterFileManager manager = new FilterFileManager();
-            manager.config = config;
-            manager.filterLoader = filterLoader;
+            FilterFileManager manager = new FilterFileManager(config, filterLoader);
 
             manager = spy(manager);
             doNothing().when(manager).manageFiles();

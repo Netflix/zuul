@@ -2,10 +2,9 @@
 dependencies {
     compile project(':zuul-core')
 
-    compile "com.netflix.karyon:karyon2-core:${versions_karyon2}"
-    compile "com.netflix.karyon:karyon2-governator:${versions_karyon2}"
-    compile "com.netflix.karyon:karyon2-eureka:${versions_karyon2}"
-    compile "com.netflix.karyon:karyon2-servo:${versions_karyon2}"
-    compile "com.netflix.karyon:karyon2-archaius:${versions_karyon2}"
-    compile "com.netflix.karyon:karyon2-admin-web:${versions_karyon2}"
+    compile 'io.reactivex:rxnetty-http:0.5.0-SNAPSHOT'
+    compile 'io.reactivex:rxnetty-spectator-http:0.5.0-SNAPSHOT'
+    compile "com.netflix.ocelli:ocelli-rxnetty:0.0.8-SNAPSHOT"
+    compile "com.netflix.ocelli:ocelli-eureka:0.0.8-SNAPSHOT"
+    compile 'com.netflix.numerus:numerus:1.1'
 }

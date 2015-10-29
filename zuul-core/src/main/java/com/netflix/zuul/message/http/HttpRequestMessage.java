@@ -51,4 +51,6 @@ public interface HttpRequestMessage extends HttpRequestInfo
     void storeInboundRequest();
 
     HttpRequestInfo getInboundRequest();
+
+    void setQueryParams(HttpQueryParams queryParams);
 }
