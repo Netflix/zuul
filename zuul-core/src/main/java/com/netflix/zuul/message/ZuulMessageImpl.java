@@ -112,7 +112,7 @@ public class ZuulMessageImpl implements ZuulMessage
         if (isBodyBuffered()) {
             return Observable.just(getBody());
         }
-        else {
+        else if (null != bodyStream) {
             return ByteBufUtils
                     .aggregate(getBodyStream(), getMaxBodySize())
                     .map(bb -> {
@@ -121,6 +121,8 @@ public class ZuulMessageImpl implements ZuulMessage
                         setBody(body);
                         return body;
                     });
+        } else {
+            return Observable.empty();
         }
     }
 

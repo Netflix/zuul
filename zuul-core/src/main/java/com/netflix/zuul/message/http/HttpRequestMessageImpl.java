@@ -356,6 +356,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
+    public void setQueryParams(HttpQueryParams queryParams) {
+        this.queryParams = queryParams;
+    }
+
+    @Override
     public String getInfoForLogging()
     {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();

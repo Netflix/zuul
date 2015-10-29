@@ -15,29 +15,24 @@
  */
 package com.netflix.zuul.rxnetty;
 
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Header;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.metrics.OriginStats;
-import com.netflix.zuul.origins.LoadBalancer;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.origins.Origin;
-import com.netflix.zuul.origins.ServerInfo;
-import com.netflix.zuul.rx.UnicastDisposableCachingSubject;
-import com.netflix.zuul.stats.Timing;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.reactivex.netty.client.RxClient;
-import io.reactivex.netty.metrics.MetricEventsListener;
-import io.reactivex.netty.metrics.MetricEventsListenerFactory;
-import io.reactivex.netty.protocol.http.client.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.logging.LogLevel;
+import io.reactivex.netty.client.ConnectionProvider;
+import io.reactivex.netty.protocol.http.client.HttpClient;
+import io.reactivex.netty.protocol.http.client.HttpClientRequest;
+import netflix.ocelli.Instance;
+import netflix.ocelli.rxnetty.protocol.http.HttpLoadBalancer;
 import rx.Observable;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.net.SocketAddress;
 
 /**
  * User: michaels@netflix.com
@@ -45,41 +40,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Time: 2:19 PM
  */
 public class RxNettyOrigin implements Origin {
-    private static final Logger LOG = LoggerFactory.getLogger(RxNettyOrigin.class);
 
-    private final DynamicIntProperty ORIGIN_MAX_CONNS_PER_HOST = DynamicPropertyFactory.getInstance().getIntProperty("origin.max_conns_per_host", 250);
-    private final DynamicIntProperty ORIGIN_READ_TIMEOUT = DynamicPropertyFactory.getInstance().getIntProperty("origin.read_timeout", 15000);
-
-
-    private final String name;
     private final String vip;
-    private final LoadBalancer loadBalancer;
-    private final OriginStats stats;
-    private CompositeHttpClient<ByteBuf, ByteBuf> client;
+    private final HttpClient<ByteBuf, ByteBuf> client;
+    private final String name;
 
-    public RxNettyOrigin(String originName, String vip, LoadBalancer loadBalancer, OriginStats stats, MetricEventsListenerFactory metricEventsListenerFactory)
-    {
-        if (originName == null) {
-            throw new IllegalArgumentException("Requires a non-null originName.");
+    private RxNettyOrigin(String name, String vip, ConnectionProvider<ByteBuf, ByteBuf> loadBalancer,
+                         HttpClientMetrics clientMetrics) {
+        this.name = name;
+        if (null == vip) {
+            throw new IllegalArgumentException("VIP can not be null.");
         }
-        if (vip == null) {
-            throw new IllegalArgumentException("Requires a non-null VIP.");
-        }
-
-        this.name = originName;
         this.vip = vip;
-        this.loadBalancer = loadBalancer;
-        this.stats = stats;
-        this.client = createCompositeHttpClient();
-
-        // Configure rxnetty httpclient metrics for this client.
-        MetricEventsListener httpClientListener = metricEventsListenerFactory.forHttpClient(client);
-        this.client.subscribe(httpClientListener);
+        client = HttpClient.newClient(loadBalancer)
+                           .enableWireLogging(LogLevel.DEBUG);
+        client.subscribe(clientMetrics);
     }
 
-    @Override
-    public boolean isAvailable() {
-        throw new UnsupportedOperationException();
+    private RxNettyOrigin(String name, String vip, HttpClient<ByteBuf, ByteBuf> client) {
+        this.name = name;
+        if (null == vip) {
+            throw new IllegalArgumentException("VIP can not be null.");
+        }
+        this.vip = vip;
+        this.client = client;
+    }
+
+    public String getVip() {
+        return vip;
     }
 
     @Override
@@ -87,101 +75,61 @@ public class RxNettyOrigin implements Origin {
         return name;
     }
 
-    public String getVip() {
-        return vip;
+    @Override
+    public boolean isAvailable() {
+        return true;
     }
-
-    public LoadBalancer getLoadBalancer() {
-        return loadBalancer;
-    }
-
 
     @Override
-    public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg)
-    {
-        ServerInfo serverInfo = getLoadBalancer().getNextServer();
+    public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg) {
+        final SessionContext context = requestMsg.getContext();
+        HttpMethod method = toNettyHttpMethod(requestMsg.getMethod());
+        Headers headers = requestMsg.getHeaders();
+        HttpClientRequest<ByteBuf, ByteBuf> request = client.createRequest(method, requestMsg.getPathAndQuery());
 
-        HttpClientRequest<ByteBuf> clientRequest = RxNettyUtils.createHttpClientRequest(requestMsg);
+        for (Header header : headers.entries()) {
+            request = request.addHeader(header.getKey(), header.getValue());
+        }
 
-        // Convert to rxnetty ServerInfo impl.
-        RxClient.ServerInfo rxNettyServerInfo = new RxClient.ServerInfo(serverInfo.getHost(), serverInfo.getPort());
-
-        // Start timing.
-        SessionContext ctx = requestMsg.getContext();
-        final Timing timing = ctx.getTimings().getRequestProxy();
-        timing.start();
-        if (stats != null)
-            stats.started();
-
-        final AtomicBoolean isSuccess = new AtomicBoolean(true);
-
-        // Construct.
-        Observable<HttpClientResponse<ByteBuf>> respObs = client.submit(rxNettyServerInfo, clientRequest)
-        .doOnError(t -> {
-                    isSuccess.set(false);
-
-                    // Flag this as a proxy failure in the RequestContext. Error filter will then use this flag.
-                    ctx.setShouldSendErrorResponse(true);
-
-                    LOG.error(String.format("Error making http request to Origin. vip=%s, url=%s, target-host=%s",
-                            this.vip, requestMsg.getPathAndQuery(), serverInfo.getHost()), t);
-                }
-        )
-        .finallyDo(() -> {
-            timing.end();
-            if (stats != null)
-                stats.completed(isSuccess.get(), timing.getDuration());
-        });
-
-        return bufferHttpClientResponse(requestMsg, respObs);
+        return request.writeContent(requestMsg.getBodyStream())
+                      .map(nettyResp -> {
+                          HttpResponseMessage resp = new HttpResponseMessageImpl(context, requestMsg,
+                                                                                 nettyResp.getStatus().code());
+                          Headers respHeaders = resp.getHeaders();
+                          nettyResp.getHeaderNames()
+                                   .stream()
+                                   .forEach(headerName -> nettyResp.getAllHeaderValues(headerName)
+                                                                   .stream()
+                                                                   .forEach(headerVal ->
+                                                                                    respHeaders.add(headerName,
+                                                                                                    headerVal)));
+                          resp.setBodyStream(nettyResp.getContent());
+                          return resp;
+                      });
     }
 
-    private CompositeHttpClient<ByteBuf, ByteBuf> createCompositeHttpClient()
-    {
-        // Override the max HTTP header size.
-        int maxHeaderSize = 20000;
-        HttpClientPipelineConfigurator<ByteBuf, ByteBuf> clientPipelineConfigurator = new HttpClientPipelineConfigurator<>(
-                HttpClientPipelineConfigurator.MAX_INITIAL_LINE_LENGTH_DEFAULT,
-                maxHeaderSize,
-                HttpClientPipelineConfigurator.MAX_CHUNK_SIZE_DEFAULT,
-                // don't validate headers.
-                false);
-
-        CompositeHttpClient<ByteBuf, ByteBuf> client = new CompositeHttpClientBuilder<ByteBuf, ByteBuf>(new Bootstrap())
-                .withMaxConnections(ORIGIN_MAX_CONNS_PER_HOST.get())
-                .pipelineConfigurator(clientPipelineConfigurator)
-                .config(new HttpClient.HttpClientConfig.Builder()
-                                .setFollowRedirect(false)
-                                .readTimeout(ORIGIN_READ_TIMEOUT.get(), TimeUnit.MILLISECONDS)
-                                .build()
-                )
-                .build();
-
-        return client;
+    public static RxNettyOrigin newOrigin(String name, String vip, Observable<Instance<SocketAddress>> hostStream) {
+        HttpClientMetrics clientMetrics = new HttpClientMetrics(name);
+        ConnectionProvider<ByteBuf, ByteBuf> cp =
+                HttpLoadBalancer.<ByteBuf, ByteBuf>choiceOfTwo(hostStream,
+                                                               failureListener -> new HttpClientListenerImpl(failureListener,
+                                                                                                       clientMetrics))
+                                .toConnectionProvider();
+        return new RxNettyOrigin(name, vip, cp, clientMetrics);
     }
 
-    protected Observable<HttpResponseMessage> bufferHttpClientResponse(HttpRequestMessage zuulReq,
-                                                                           Observable<HttpClientResponse<ByteBuf>> clientResp)
-    {
-        return clientResp.map(resp -> {
-
-            // Store the rxnetty response on context, so that code in a Observable.finallyDo() can get access
-            // to it to release the resources.
-            zuulReq.getContext().set("_rxnettyResp", resp);
-
-            HttpResponseMessage zuulResp = RxNettyUtils.clientResponseToZuulResponse(zuulReq, resp);
-
-            //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
-            UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
-
-            // Subscribe to the response-content observable (retaining the ByteBufS first).
-            Observable<ByteBuf> content = resp.getContent();
-            content.map(ByteBuf::retain).subscribe(cachedContent);
-
-            // Store this content ref on the zuul response object.
-            zuulResp.setBodyStream(cachedContent);
-
-            return zuulResp;
-        });
+    public static RxNettyOrigin newOrigin(String name, String vip,
+                                          ConnectionProvider<ByteBuf, ByteBuf> connectionProvider,
+                                          HttpClientMetrics clientMetrics) {
+        return new RxNettyOrigin(name, vip, connectionProvider, clientMetrics);
     }
+
+    public static RxNettyOrigin newOrigin(String name, String vip, HttpClient<ByteBuf, ByteBuf> client) {
+        return new RxNettyOrigin(name, vip, client);
+    }
+
+    private HttpMethod toNettyHttpMethod(String method) {
+        return HttpMethod.valueOf(method.toUpperCase());
+    }
+
 }

@@ -34,8 +34,12 @@ import javax.inject.Inject;
 @Singleton
 public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf>
 {
+    private final ZuulHttpProcessor zuulProcessor;
+
     @Inject
-    private ZuulHttpProcessor zuulProcessor;
+    public ZuulRequestHandler(ZuulHttpProcessor zuulProcessor) {
+        this.zuulProcessor = zuulProcessor;
+    }
 
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse)

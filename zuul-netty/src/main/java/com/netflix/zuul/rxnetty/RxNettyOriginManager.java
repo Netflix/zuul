@@ -19,17 +19,14 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.netflix.config.DynamicStringMapProperty;
 import com.netflix.governator.annotations.WarmUp;
-import com.netflix.zuul.metrics.OriginStats;
-import com.netflix.zuul.metrics.OriginStatsFactory;
-import com.netflix.zuul.origins.LoadBalancer;
-import com.netflix.zuul.origins.LoadBalancerFactory;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.origins.OriginManager;
-import io.reactivex.netty.metrics.MetricEventsListenerFactory;
+import netflix.ocelli.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
 
-import javax.annotation.Nullable;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,20 +43,16 @@ public class RxNettyOriginManager implements OriginManager
 
     private final Map<String, Origin> origins = new ConcurrentHashMap<>();
 
-    private final LoadBalancerFactory loadBalancerFactory;
-    private final OriginStatsFactory originStatsFactory;
-    private final MetricEventsListenerFactory metricEventsListenerFactory;
+    private final HostSourceFactory hostSourceFactory;
 
     @Inject
-    public RxNettyOriginManager(LoadBalancerFactory loadBalancerFactory, @Nullable OriginStatsFactory originStatsFactory,
-                                MetricEventsListenerFactory metricEventsListenerFactory)
+    public RxNettyOriginManager(HostSourceFactory hostSourceFactory)
     {
-        if (loadBalancerFactory == null) {
-            throw new IllegalArgumentException("OriginManager.loadBalancerFactory is null.");
+        if (hostSourceFactory == null) {
+            throw new IllegalArgumentException("Host source factory is null.");
         }
-        this.loadBalancerFactory = loadBalancerFactory;
-        this.originStatsFactory = originStatsFactory;
-        this.metricEventsListenerFactory = metricEventsListenerFactory;
+        this.hostSourceFactory = hostSourceFactory;
+        initialize();
     }
 
     @WarmUp
@@ -79,7 +72,7 @@ public class RxNettyOriginManager implements OriginManager
                         }
                         catch (Exception e) {
                             // TODO - resolve why this is failing on first attempts at startup.
-                            LOG.error("Error creating loadbalancer for vip=" + vip, e);
+                            LOG.error("Error creating origin for vip=" + vip, e);
                         }
                     }
                 }
@@ -94,14 +87,8 @@ public class RxNettyOriginManager implements OriginManager
 
     private void initOrigin(String originName, String vip)
     {
-        LoadBalancer lb = loadBalancerFactory.create(vip);
-
-        OriginStats originStats = null;
-        if (originStatsFactory != null) {
-            originStats = originStatsFactory.create(originName);
-        }
-
-        this.origins.put(originName, new RxNettyOrigin(originName, vip, lb, originStats, metricEventsListenerFactory));
+        Observable<Instance<SocketAddress>> hosts = hostSourceFactory.call(vip);
+        this.origins.put(originName, RxNettyOrigin.newOrigin(originName, vip, hosts));
     }
 
     @Override

@@ -40,31 +40,37 @@ import java.util.Map;
  * Date: 2/25/15
  * Time: 4:03 PM
  */
-public class RxNettySessionContextFactory implements SessionContextFactory<HttpServerRequest, HttpServerResponse>
-{
-    private static final Logger LOG = LoggerFactory.getLogger(RxNettySessionContextFactory.class);
+public class RxNettySessionContextFactory
+        implements SessionContextFactory<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> {
+
+    private final String scheme;
+
+    public RxNettySessionContextFactory() {
+        this("http");
+    }
+
+    public RxNettySessionContextFactory(String scheme) {
+        this.scheme = scheme;
+    }
 
     @Override
-    public ZuulMessage create(SessionContext context, HttpServerRequest httpServerRequest)
+    public ZuulMessage create(SessionContext context, HttpServerRequest<ByteBuf> req, HttpServerResponse<ByteBuf> resp)
     {
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
-        String clientIp = getIpAddress(httpServerRequest.getNettyChannel());
-
-        // TODO - How to get uri scheme from the netty request?
-        String scheme = "http";
+        String clientIp = getIpAddress(resp.unsafeNettyChannel());
 
         // This is the only way I found to get the port of the request with netty...
-        int port = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getPort();
-        String serverName = ((InetSocketAddress) httpServerRequest.getNettyChannel().localAddress()).getHostString();
+        int port = ((InetSocketAddress) resp.unsafeNettyChannel().localAddress()).getPort();
+        String serverName = ((InetSocketAddress) resp.unsafeNettyChannel().localAddress()).getHostString();
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessageImpl(
                 context,
-                httpServerRequest.getHttpVersion().text(),
-                httpServerRequest.getHttpMethod().name().toLowerCase(),
-                httpServerRequest.getUri(),
-                copyQueryParams(httpServerRequest),
-                copyHeaders(httpServerRequest),
+                req.getHttpVersion().text(),
+                req.getHttpMethod().name().toLowerCase(),
+                req.getUri(),
+                copyQueryParams(req),
+                copyHeaders(req),
                 clientIp,
                 scheme,
                 port,
@@ -74,63 +80,49 @@ public class RxNettySessionContextFactory implements SessionContextFactory<HttpS
         // Store this original request info for future reference (ie. for metrics and access logging purposes).
         request.storeInboundRequest();
 
-        return wrapBody(request, httpServerRequest);
+        return wrapBody(request, req);
     }
 
     @Override
-    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse nativeResponse)
+    public Observable<ZuulMessage> write(ZuulMessage msg, HttpServerResponse<ByteBuf> nativeResponse)
     {
         HttpResponseMessage zuulResp = (HttpResponseMessage) msg;
 
         // Set the response status code.
-        nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
+        nativeResponse = nativeResponse.setStatus(HttpResponseStatus.valueOf(zuulResp.getStatus()));
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         for (Header entry : zuulResp.getHeaders().entries()) {
-            nativeResponse.getHeaders().add(entry.getKey(), entry.getValue());
+            nativeResponse = nativeResponse.addHeader(entry.getKey(), entry.getValue());
         }
 
-        // Write response body stream as received.
-        Observable<ZuulMessage> chain;
-        Observable<ByteBuf> bodyStream = zuulResp.getBodyStream();
-        if (bodyStream != null) {
-            chain = bodyStream
-                    .doOnNext(bb -> nativeResponse.writeBytesAndFlush(bb))
-                    .ignoreElements()
-                    .doOnCompleted(() -> nativeResponse.close())
-                    .map(bb -> msg);
-        }
-        else {
-            chain = Observable.just(msg);
-        }
-        return chain;
+        return (zuulResp.hasBody() ? nativeResponse.write(zuulResp.getBodyStream()) : nativeResponse)
+                .cast(ZuulMessage.class)
+                .concatWith(Observable.just(msg));
     }
 
 
-    private ZuulMessage wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest)
-    {
-        //PublishSubject<ByteBuf> cachedContent = PublishSubject.create();
-        UnicastDisposableCachingSubject<ByteBuf> cachedContent = UnicastDisposableCachingSubject.create();
-
-        // Subscribe to the response-content observable (retaining the ByteBufS first).
-        nettyServerRequest.getContent().map(ByteBuf::retain).subscribe(cachedContent);
-
-        request.setBodyStream(cachedContent);
-
+    private ZuulMessage wrapBody(HttpRequestMessage request, HttpServerRequest<ByteBuf> nettyServerRequest) {
+        request.setBodyStream(nettyServerRequest.getContent());
         return request;
     }
 
-    private Headers copyHeaders(HttpServerRequest httpServerRequest)
+    private Headers copyHeaders(HttpServerRequest<ByteBuf> req)
     {
         Headers headers = new Headers();
-        for (Map.Entry<String, String> entry : httpServerRequest.getHeaders().entries()) {
-            HeaderName hn = HttpHeaderNames.get(entry.getKey());
-            headers.add(hn, entry.getValue());
-        }
+
+        req.getHeaderNames()
+           .stream()
+           .forEach(name -> {
+               req.getAllHeaderValues(name)
+                  .stream()
+                  .forEach(value -> headers.add(name, value));
+           });
+
         return headers;
     }
 
-    private HttpQueryParams copyQueryParams(HttpServerRequest httpServerRequest)
+    private HttpQueryParams copyQueryParams(HttpServerRequest<ByteBuf> httpServerRequest)
     {
         HttpQueryParams queryParams = new HttpQueryParams();
         Map<String, List<String>> serverQueryParams = httpServerRequest.getQueryParameters();

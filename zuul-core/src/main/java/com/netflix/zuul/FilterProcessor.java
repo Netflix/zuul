@@ -64,19 +64,14 @@ public class FilterProcessor {
     protected static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = DynamicPropertyFactory.getInstance()
             .getStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
 
-    @Inject
-    private FilterLoader filterLoader;
+    private final FilterLoader filterLoader;
+    private final FilterUsageNotifier usageNotifier;
 
     @Inject
-    @Nullable
-    private FilterUsageNotifier usageNotifier;
-
-
-    public FilterProcessor()
+    public FilterProcessor(FilterLoader loader, FilterUsageNotifier usageNotifier)
     {
-        if (usageNotifier == null) {
-            usageNotifier = new BasicFilterUsageNotifier();
-        }
+        filterLoader = loader;
+        this.usageNotifier = usageNotifier;
     }
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
@@ -395,7 +390,10 @@ public class FilterProcessor {
 
         @Mock
         BaseSyncFilter filter;
-
+        @Mock
+        FilterUsageNotifier usageNotifier;
+        @Mock
+        FilterLoader loader;
         @Mock
         ShouldFilter additionalShouldFilter;
 
@@ -415,7 +413,7 @@ public class FilterProcessor {
                     new Headers(), "127.0.0.1", "https", 80, "localhost");
             response = new HttpResponseMessageImpl(ctx, request, 200);
 
-            processor = new FilterProcessor();
+            processor = new FilterProcessor(loader, usageNotifier);
             processor = spy(processor);
 
             when(filter.filterType()).thenReturn("pre");

@@ -11,8 +11,6 @@ dependencies {
     compile project(':zuul-core')
     compile project(':zuul-netty')
 
-    compile "io.reactivex:rxnetty-spectator:${versions_rxnetty}"
-
     // Hack to stop asm exceptions at runtime.
     runtime 'org.ow2.asm:asm:5.0.3'
     runtime 'org.ow2.asm:asm-all:5.0.3'
