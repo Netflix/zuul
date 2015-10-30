@@ -163,7 +163,7 @@ public class FilterLoader
         return false;
     }
 
-    private void putFilter(String sName, ZuulFilter filter, long lastModified)
+    void putFilter(String sName, ZuulFilter filter, long lastModified)
     {
         List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
         if (list != null) {

@@ -54,7 +54,7 @@ subprojects {
         }
         test {
             java {
-                srcDirs  = ['src/main/java']
+                srcDirs  = ['src/main/java', 'src/test/java']
                 include '**/*.java'
             }
             groovy {
