@@ -15,13 +15,13 @@ public class HttpClientMetrics extends HttpClientListener {
 
     public HttpClientMetrics(String monitorId) {
         super(monitorId);
-        hostsInPool = newGauge("requestBacklog", monitorId, new AtomicInteger());
+        hostsInPool = newGauge("hostsInPool", monitorId, new AtomicInteger());
         quarantinedHosts = newCounter("quarantinedHosts", monitorId);
         removedHosts = newCounter("removedHosts", monitorId);
     }
 
     public void onNewHost() {
-        hostsInPool.decrementAndGet();
+        hostsInPool.incrementAndGet();
     }
 
     public void onHostQuarantine() {
