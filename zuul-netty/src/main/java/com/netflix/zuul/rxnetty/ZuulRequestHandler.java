@@ -28,22 +28,23 @@ import javax.inject.Inject;
 /**
  * An implementation of {@link RequestHandler} for zuul.
  *
- * @author Nitesh Kant
  * @author Mike Smith
  */
 @Singleton
 public class ZuulRequestHandler implements RequestHandler<ByteBuf, ByteBuf>
 {
-    private final ZuulHttpProcessor zuulProcessor;
+    private final ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> zuulProcessor;
 
     @Inject
-    public ZuulRequestHandler(ZuulHttpProcessor zuulProcessor) {
+    public ZuulRequestHandler(ZuulHttpProcessor<HttpServerRequest<ByteBuf>, HttpServerResponse<ByteBuf>> zuulProcessor) {
         this.zuulProcessor = zuulProcessor;
     }
 
     @Override
     public Observable<Void> handle(HttpServerRequest<ByteBuf> nettyRequest, HttpServerResponse<ByteBuf> nettyResponse)
     {
-        return zuulProcessor.process(nettyRequest, nettyResponse);
+        return zuulProcessor.process(nettyRequest, nettyResponse)
+                            .ignoreElements()
+                            .cast(Void.class);
     }
 }
