@@ -27,6 +27,9 @@ public class FilterProcessorPerfTest
 
             long avgNs = test.runTest1_Original();
             System.out.println("Original averaged " + avgNs + " ns per run.");
+
+            avgNs = test.runTest1_Experimental();
+            System.out.println("Experiment averaged " + avgNs + " ns per run.");
         }
         catch(RuntimeException e) {
             e.printStackTrace();
@@ -36,8 +39,23 @@ public class FilterProcessorPerfTest
     long runTest1_Original()
     {
         FilterProcessorPerfTest test = new FilterProcessorPerfTest();
-        ArrayList<ZuulFilter> filters = test.createFilters(50, false);
+        ArrayList<ZuulFilter> filters = test.createFilters(100, false);
         FilterProcessor processor = test.setupProcessor(filters);
+
+        // warmup
+        test.runTest1(processor, 100);
+
+        // run for real.
+        long avgNs = test.runTest1(processor, 10000);
+
+        return avgNs;
+    }
+
+    long runTest1_Experimental()
+    {
+        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
+        ArrayList<ZuulFilter> filters = test.createFilters(100, false);
+        ExperimentalFilterProcessor processor = test.setupProcessor_Experimental(filters);
 
         // warmup
         test.runTest1(processor, 100);
@@ -73,6 +91,17 @@ public class FilterProcessorPerfTest
         }
 
         return new FilterProcessor(loader, ((filter, status) -> {}));
+    }
+
+    ExperimentalFilterProcessor setupProcessor_Experimental(Collection<ZuulFilter> filters)
+    {
+        FilterLoader loader = new FilterLoader();
+
+        for (ZuulFilter filter : filters) {
+            loader.putFilter(filter.filterName(), filter, 0);
+        }
+
+        return new ExperimentalFilterProcessor(loader, ((filter, status) -> {}));
     }
 
     ArrayList<ZuulFilter> createFilters(int count, boolean shouldFilter)
@@ -136,13 +165,13 @@ public class FilterProcessorPerfTest
         @Override
         public ZuulMessage apply(ZuulMessage input)
         {
-            // Do some work.
-            ArrayList<String> texts = new ArrayList<>();
-            for (int i = 0; i < 1000; i++) {
-                int y = i + 100;
-                String text = "some text - " + y;
-                texts.add(text);
-            }
+//            // Do some work.
+//            ArrayList<String> texts = new ArrayList<>();
+//            for (int i = 0; i < 1000; i++) {
+//                int y = i + 100;
+//                String text = "some text - " + y;
+//                texts.add(text);
+//            }
 
             return input;
         }

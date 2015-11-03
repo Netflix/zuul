@@ -307,7 +307,7 @@ public class FilterProcessor {
         return resultObs;
     }
 
-    private boolean isFilterPriority(ZuulFilter filter, int requiredPriority)
+    protected boolean isFilterPriority(ZuulFilter filter, int requiredPriority)
     {
         return filter.getPriority() >= requiredPriority;
     }
