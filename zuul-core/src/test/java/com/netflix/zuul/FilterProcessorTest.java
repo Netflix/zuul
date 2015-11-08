@@ -100,7 +100,7 @@ public class FilterProcessorTest
 
         addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
-        addFilterToLoader(loader, new MockEndpointFilter(0, true, response));
+        addFilterToLoader(loader, new MockEndpointFilter("endpoint.Proxy", response));
         addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
 
@@ -143,29 +143,13 @@ public class FilterProcessorTest
 
         addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
-        addFilterToLoader(loader, new MockEndpointFilter(0, true, response));
+        addFilterToLoader(loader, new MockEndpointFilter("endpoint.Proxy", response));
         addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
 
         // Mock an error endpoint that in turn throws an exception when it is applied async.
         String errorEndpointName = "endpoint.ErrorResponse";
-        ZuulFilter errorEndpoint = new Endpoint<HttpRequestMessage, HttpResponseMessage>()
-        {
-            @Override
-            public String filterName()
-            {
-                return errorEndpointName;
-            }
-
-            @Override
-            public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input)
-            {
-                return Observable.create(subscriber -> {
-                    Throwable t = new RuntimeException("Some error response problem.");
-                    subscriber.onError(t);
-                });
-            }
-        };
+        ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, response, new RuntimeException("Some error response problem."));
         loader.putFilter(errorEndpointName, errorEndpoint, 0);
 
         // Set this flag so that error endpoint is used.
@@ -190,11 +174,101 @@ public class FilterProcessorTest
     }
 
 
+    @Test
+    public void testErrorInEndpoint_Async()
+    {
+        FilterLoader loader = new FilterLoader();
+
+        addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
+
+        // Mock an endpoint that throws an exception when it is applied async.
+        String endpointName = "endpoint.ProxyEndpoint";
+        ZuulFilter endpoint = new MockEndpointFilter(endpointName, response, new RuntimeException("Some proxying problem!"));
+        addFilterToLoader(loader, endpoint);
+        ctx.setEndpoint(endpointName);
+
+        // Mock an error endpoint.
+        ZuulFilter errorEndpoint = mock(ZuulFilter.class);
+        when(errorEndpoint.filterName()).thenReturn("endpoint.ErrorResponse");
+        when(errorEndpoint.filterType()).thenReturn("end");
+        when(errorEndpoint.shouldFilter(request)).thenReturn(true);
+        when(errorEndpoint.getPriority()).thenReturn(5);
+        when(errorEndpoint.applyAsync(any())).thenReturn(Observable.just(response));
+        addFilterToLoader(loader, errorEndpoint);
+
+
+        FilterProcessor processor = new FilterProcessor(loader, usageNotifier);
+
+        Observable<ZuulMessage> chain = Observable.just(request);
+        chain = processor.applyInboundFilters(chain);
+        chain = processor.applyEndpointFilter(chain);
+        chain = processor.applyOutboundFilters(chain);
+
+        ZuulMessage output = chain.toBlocking().single();
+
+
+        verify(errorEndpoint).applyAsync(any());
+
+        // Should be only 1 errored filter.
+        assertEquals(1, ctx.getFilterErrors().size());
+        assertEquals(endpointName, ctx.getFilterErrors().get(0).getFilterName());
+
+        // Should be a HttpResponseMessage out.
+        assertEquals(HttpResponseMessageImpl.class, output.getClass());
+    }
+
+
+    @Test
+    public void testErrorInEndpointAndErrorResponse()
+    {
+        FilterLoader loader = new FilterLoader();
+
+        addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
+
+        // Mock an endpoint that throws an exception when it is applied async.
+        String endpointName = "endpoint.ProxyEndpoint";
+        ctx.setEndpoint(endpointName);
+        ZuulFilter endpoint = new MockEndpointFilter(endpointName, response, new RuntimeException("Some proxying problem!"));
+        addFilterToLoader(loader, endpoint);
+
+        // Mock an error endpoint that in turn throws an exception when it is applied async.
+        String errorEndpointName = "endpoint.ErrorResponse";
+        ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, response, new RuntimeException("Some error response problem."));
+        addFilterToLoader(loader, errorEndpoint);
+
+
+        FilterProcessor processor = new FilterProcessor(loader, usageNotifier);
+
+        Observable<ZuulMessage> chain = Observable.just(request);
+        chain = processor.applyInboundFilters(chain);
+        chain = processor.applyEndpointFilter(chain);
+        chain = processor.applyOutboundFilters(chain);
+
+        ZuulMessage output = chain.toBlocking().single();
+
+        assertEquals(2, ctx.getFilterErrors().size());
+        assertEquals(endpointName, ctx.getFilterErrors().get(0).getFilterName());
+        assertEquals(errorEndpointName, ctx.getFilterErrors().get(1).getFilterName());
+
+        // Should be a HttpResponseMessage out.
+        assertEquals(HttpResponseMessageImpl.class, output.getClass());
+        assertEquals(500, ((HttpResponseMessage) output).getStatus());
+    }
+
+
+
 
     private void addFilterToLoader(FilterLoader loader, ZuulFilter f)
     {
         loader.putFilter(f.filterName(), f, 0);
     }
+
 
     private class MockHttpInboundFilter extends HttpInboundFilter
     {
@@ -231,7 +305,6 @@ public class FilterProcessorTest
             return Observable.just(input);
         }
     }
-
 
     private class MockHttpOutboundFilter extends HttpOutboundFilter
     {
@@ -271,39 +344,53 @@ public class FilterProcessorTest
 
     private class MockEndpointFilter extends Endpoint<HttpRequestMessage, HttpResponseMessage>
     {
-        private int filterOrder;
-        private boolean shouldFilter;
+        private String name;
         private HttpResponseMessage response;
+        private Throwable error = null;
 
-        public MockEndpointFilter(int filterOrder, boolean shouldFilter, HttpResponseMessage response)
+        public MockEndpointFilter(String name, HttpResponseMessage response)
         {
-            this.filterOrder = filterOrder;
-            this.shouldFilter = shouldFilter;
+            this.name = name;
             this.response = response;
+        }
+
+        public MockEndpointFilter(String name, HttpResponseMessage response, Throwable error)
+        {
+            this.name = name;
+            this.response = response;
+            this.error = error;
         }
 
         @Override
         public String filterName()
         {
-            return super.filterName() + "_" + filterOrder;
+            return name;
         }
 
         @Override
         public boolean shouldFilter(HttpRequestMessage msg)
         {
-            return shouldFilter;
+            return true;
         }
 
         @Override
         public int filterOrder()
         {
-            return filterOrder;
+            return 0;
         }
 
         @Override
         public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input)
         {
-            return Observable.just(response);
+            if (error != null) {
+                return Observable.create(subscriber -> {
+                    Throwable t = new RuntimeException("Some error response problem.");
+                    subscriber.onError(t);
+                });
+            }
+            else {
+                return Observable.just(response);
+            }
         }
     }
 
