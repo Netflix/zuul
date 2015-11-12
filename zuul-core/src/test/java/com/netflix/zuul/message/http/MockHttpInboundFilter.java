@@ -14,6 +14,7 @@ public class MockHttpInboundFilter extends HttpInboundFilter
     private String filterName;
     private int filterOrder;
     private boolean shouldFilter;
+    private Throwable error;
 
     public MockHttpInboundFilter(int filterOrder, boolean shouldFilter)
     {
@@ -22,9 +23,15 @@ public class MockHttpInboundFilter extends HttpInboundFilter
 
     public MockHttpInboundFilter(String filterName, int filterOrder, boolean shouldFilter)
     {
+        this(filterName, filterOrder, shouldFilter, null);
+    }
+
+    public MockHttpInboundFilter(String filterName, int filterOrder, boolean shouldFilter, Throwable error)
+    {
         this.filterName = filterName;
         this.filterOrder = filterOrder;
         this.shouldFilter = shouldFilter;
+        this.error = error;
     }
 
     @Override
@@ -48,6 +55,14 @@ public class MockHttpInboundFilter extends HttpInboundFilter
     @Override
     public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage input)
     {
-        return Observable.just(input);
+        if (error != null) {
+            return Observable.create(subscriber -> {
+                Throwable t = new RuntimeException("Some error response problem.");
+                subscriber.onError(t);
+            });
+        }
+        else {
+            return Observable.just(input);
+        }
     }
 }

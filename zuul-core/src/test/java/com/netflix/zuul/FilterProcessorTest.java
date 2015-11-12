@@ -63,7 +63,7 @@ public class FilterProcessorTest
     @Test
     public void testProcessFilter() throws Exception {
         when(filter.applyAsync(request)).thenReturn(Observable.just(request));
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        processor.processAsyncFilter(request, filter, false).toBlocking().first();
         verify(filter, times(1)).applyAsync(request);
     }
 
@@ -71,7 +71,7 @@ public class FilterProcessorTest
     public void testProcessFilter_ShouldFilterFalse() throws Exception
     {
         when(filter.shouldFilter(request)).thenReturn(false);
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        processor.processAsyncFilter(request, filter, false).toBlocking().first();
         verify(filter, times(0)).applyAsync(request);
     }
 
@@ -80,7 +80,9 @@ public class FilterProcessorTest
     {
         Exception e = new RuntimeException("Blah");
         when(filter.applyAsync(request)).thenThrow(e);
-        processor.processAsyncFilter(request, filter, (m) -> m).toBlocking().first();
+        when(filter.getDefaultOutput(any())).thenReturn(request);
+
+        processor.processAsyncFilter(request, filter, false).toBlocking().first();
 
         verify(processor).recordFilterError(filter, request, e);
 
@@ -137,12 +139,7 @@ public class FilterProcessorTest
 
         // Mock an error endpoint that in turn throws an exception when it is applied.
         String errorEndpointName = "endpoint.ErrorResponse";
-        ZuulFilter errorEndpoint = mock(BaseFilter.class);
-        when(errorEndpoint.filterName()).thenReturn(errorEndpointName);
-        when(errorEndpoint.filterType()).thenReturn("end");
-        when(errorEndpoint.filterOrder()).thenReturn(0);
-        when(errorEndpoint.shouldFilter(any())).thenReturn(true);
-        when(errorEndpoint.applyAsync(any())).thenThrow(new RuntimeException("Some error response problem."));
+        ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, true, null, new RuntimeException("Some error response problem."));
         loader.putFilter(errorEndpointName, errorEndpoint, 0);
 
         // Set this flag so that error endpoint is used.
@@ -227,6 +224,7 @@ public class FilterProcessorTest
         when(errorEndpoint.filterType()).thenReturn("end");
         when(errorEndpoint.shouldFilter(request)).thenReturn(true);
         when(errorEndpoint.getPriority()).thenReturn(5);
+        when(errorEndpoint.getDefaultOutput(any())).thenReturn(HttpResponseMessageImpl.defaultErrorResponse(request));
         when(errorEndpoint.applyAsync(any())).thenReturn(Observable.just(response));
         addFilterToLoader(loader, errorEndpoint);
 

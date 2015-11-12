@@ -23,7 +23,6 @@ import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
-import rx.functions.Func1;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -54,11 +53,9 @@ public class ExperimentalFilterProcessor extends FilterProcessor
      *
      * @param chain
      * @param filters
-     * @param defaultFilterResultChooser
      * @return
      */
-    protected Observable<ZuulMessage> applyFilters(Observable<ZuulMessage> chain, List<ZuulFilter> filters,
-                                               Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    protected Observable<ZuulMessage> applyFilters(Observable<ZuulMessage> chain, List<ZuulFilter> filters)
     {
         ArrayList<BaseSyncFilter> batchOfSyncFilters = new ArrayList<>();
         for (ZuulFilter filter : filters)
@@ -70,18 +67,18 @@ public class ExperimentalFilterProcessor extends FilterProcessor
                 // if we have a batch of consecutive sync filters, then combine them now into
                 // one Observable.
                 if (batchOfSyncFilters.size() > 0) {
-                    chain = processSyncFilters(chain, batchOfSyncFilters, defaultFilterResultChooser);
+                    chain = processSyncFilters(chain, batchOfSyncFilters);
                     batchOfSyncFilters = new ArrayList<>();
                 }
 
                 // And then add this async filter to chain too.
-                chain = processFilterAsObservable(chain, filter, defaultFilterResultChooser);
+                chain = processFilterAsObservable(chain, filter, false);
             }
         }
 
         // Add any remaining sync filters.
         if (batchOfSyncFilters.size() > 0) {
-            chain = processSyncFilters(chain, batchOfSyncFilters, defaultFilterResultChooser);
+            chain = processSyncFilters(chain, batchOfSyncFilters);
             batchOfSyncFilters = new ArrayList<>();
         }
 
@@ -93,15 +90,13 @@ public class ExperimentalFilterProcessor extends FilterProcessor
      *
      * @param input
      * @param filters
-     * @param defaultFilterResultChooser
      * @return
      */
-    protected Observable<ZuulMessage> processSyncFilters(Observable<ZuulMessage> input, final List<BaseSyncFilter> filters,
-                                                     final Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    protected Observable<ZuulMessage> processSyncFilters(Observable<ZuulMessage> input, final List<BaseSyncFilter> filters)
     {
         return input.map(msg -> {
                     for (BaseSyncFilter filter : filters) {
-                        msg = processSyncFilter(msg, filter, defaultFilterResultChooser);
+                        msg = processSyncFilter(msg, filter);
                     }
                     return msg;
                 }
@@ -113,11 +108,9 @@ public class ExperimentalFilterProcessor extends FilterProcessor
      *
      * @param msg
      * @param filter
-     * @param defaultFilterResultChooser
      * @return
      */
-    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter,
-                                         Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().debugRouting();
@@ -132,13 +125,13 @@ public class ExperimentalFilterProcessor extends FilterProcessor
         long ltime = System.currentTimeMillis();
         try {
             if (filter.isDisabled()) {
-                result = defaultFilterResultChooser.call(msg);
+                result = filter.getDefaultOutput(msg);
                 info.status = DISABLED;
             }
             else if (msg.getContext().shouldStopFilterProcessing()) {
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
-                result = defaultFilterResultChooser.call(msg);
+                result = filter.getDefaultOutput(msg);
                 info.status = SKIPPED;
             }
             else {
@@ -150,17 +143,17 @@ public class ExperimentalFilterProcessor extends FilterProcessor
 
                     // If no result returned from filter, then use the original input.
                     if (result == null) {
-                        result = defaultFilterResultChooser.call(msg);
+                        result = filter.getDefaultOutput(msg);
                     }
                 }
                 else {
-                    result = defaultFilterResultChooser.call(msg);
+                    result = filter.getDefaultOutput(msg);
                     info.status = SKIPPED;
                 }
             }
         }
         catch (Exception e) {
-            result = defaultFilterResultChooser.call(msg);
+            result = filter.getDefaultOutput(msg);
             msg.getContext().setError(e);
             info.status = FAILED;
             recordFilterError(filter, msg, e);

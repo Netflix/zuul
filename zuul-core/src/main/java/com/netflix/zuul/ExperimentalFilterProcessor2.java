@@ -20,10 +20,10 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.filters.BaseSyncFilter;
+import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
-import rx.functions.Func1;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -75,15 +75,13 @@ public class ExperimentalFilterProcessor2 extends FilterProcessor
 
         ZuulFilter filter = filterChainIterator.next();
 
-        // TODO - move to be a method in ZuulFilter.getDefaultResult().
-        Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser = (input) -> input;
-
         if (BaseSyncFilter.class.isAssignableFrom(filter.getClass())) {
-            msg = processSyncFilter(msg, (BaseSyncFilter) filter, defaultFilterResultChooser);
+            msg = processSyncFilter(msg, (BaseSyncFilter) filter);
             return chainFilters(msg, filterChainIterator);
         }
         else {
-            return processAsyncFilter(msg, filter, defaultFilterResultChooser)
+            boolean shouldSendErrorResponse = Endpoint.class.isAssignableFrom(filter.getClass());
+            return processAsyncFilter(msg, filter, shouldSendErrorResponse)
                     .flatMap(msg2 -> {
                         return chainFilters(msg2, filterChainIterator);
                     });
@@ -95,11 +93,9 @@ public class ExperimentalFilterProcessor2 extends FilterProcessor
      *
      * @param msg
      * @param filter
-     * @param defaultFilterResultChooser
      * @return
      */
-    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter,
-                                         Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().debugRouting();
@@ -114,13 +110,13 @@ public class ExperimentalFilterProcessor2 extends FilterProcessor
         long ltime = System.currentTimeMillis();
         try {
             if (filter.isDisabled()) {
-                result = defaultFilterResultChooser.call(msg);
+                result = filter.getDefaultOutput(msg);
                 info.status = DISABLED;
             }
             else if (msg.getContext().shouldStopFilterProcessing()) {
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
-                result = defaultFilterResultChooser.call(msg);
+                result = filter.getDefaultOutput(msg);
                 info.status = SKIPPED;
             }
             else {
@@ -132,17 +128,17 @@ public class ExperimentalFilterProcessor2 extends FilterProcessor
 
                     // If no result returned from filter, then use the original input.
                     if (result == null) {
-                        result = defaultFilterResultChooser.call(msg);
+                        result = filter.getDefaultOutput(msg);
                     }
                 }
                 else {
-                    result = defaultFilterResultChooser.call(msg);
+                    result = filter.getDefaultOutput(msg);
                     info.status = SKIPPED;
                 }
             }
         }
         catch (Exception e) {
-            result = defaultFilterResultChooser.call(msg);
+            result = filter.getDefaultOutput(msg);
             msg.getContext().setError(e);
             info.status = FAILED;
             recordFilterError(filter, msg, e);
