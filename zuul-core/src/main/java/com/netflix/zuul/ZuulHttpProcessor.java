@@ -71,16 +71,11 @@ public class ZuulHttpProcessor<I,O>
         // Start timing the request.
         request.getContext().getTimings().getRequest().start();
 
-        // Create initial chain.
-        Observable<ZuulMessage> chain = Observable.just(request);
-
         /*
          * Delegate all of the filter application logic to {@link FilterProcessor}.
          * This work is some combination of synchronous and asynchronous.
          */
-        chain = filterProcessor.applyInboundFilters(chain);
-        chain = filterProcessor.applyEndpointFilter(chain);
-        chain = filterProcessor.applyOutboundFilters(chain);
+        Observable<ZuulMessage> chain = filterProcessor.applyFilterChain(request);
 
         return chain
                 .flatMap(msg -> {
