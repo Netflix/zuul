@@ -1,6 +1,6 @@
 package com.netflix.zuul.message.http;
 
-import com.netflix.zuul.filters.Endpoint;
+import com.netflix.zuul.filters.http.HttpAsyncEndpoint;
 import rx.Observable;
 
 /**
@@ -8,11 +8,12 @@ import rx.Observable;
  * Date: 11/11/15
  * Time: 7:33 PM
  */
-public class MockEndpointFilter extends Endpoint<HttpRequestMessage, HttpResponseMessage>
+public class MockEndpointFilter extends HttpAsyncEndpoint
 {
     private String filterName;
     private boolean shouldFilter;
     private HttpResponseMessage response;
+    private Throwable error = null;
 
     public MockEndpointFilter(boolean shouldFilter)
     {
@@ -29,6 +30,14 @@ public class MockEndpointFilter extends Endpoint<HttpRequestMessage, HttpRespons
         this.filterName = filterName;
         this.shouldFilter = shouldFilter;
         this.response = response;
+    }
+
+    public MockEndpointFilter(String filterName, boolean shouldFilter, HttpResponseMessage response, Throwable error)
+    {
+        this.filterName = filterName;
+        this.shouldFilter = shouldFilter;
+        this.response = response;
+        this.error = error;
     }
 
     @Override
@@ -52,11 +61,17 @@ public class MockEndpointFilter extends Endpoint<HttpRequestMessage, HttpRespons
     @Override
     public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input)
     {
-        if (response == null) {
-            return Observable.just(new HttpResponseMessageImpl(input.getContext(), input, 200));
+        if (error != null) {
+            return Observable.create(subscriber -> {
+                Throwable t = new RuntimeException("Some error response problem.");
+                subscriber.onError(t);
+            });
+        }
+        else if (response != null) {
+            return Observable.just(response);
         }
         else {
-            return Observable.just(response);
+            return Observable.just(new HttpResponseMessageImpl(input.getContext(), input, 200));
         }
     }
 }

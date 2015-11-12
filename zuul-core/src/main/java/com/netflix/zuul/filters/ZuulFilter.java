@@ -62,4 +62,11 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
      */
     Observable<O> applyAsync(I input);
+
+    /**
+     * Choose a default message to use if the applyAsync() method throws an exception.
+     *
+     * @return ZuulMessage
+     */
+    ZuulMessage getDefaultOutput(I input);
 }

@@ -18,6 +18,7 @@ package com.netflix.zuul.filters
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
+import com.netflix.zuul.filters.http.HttpAsyncEndpoint
 import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.message.http.HttpResponseMessage
 import com.netflix.zuul.message.http.HttpResponseMessageImpl
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.when
  * Date: 5/22/15
  * Time: 1:42 PM
  */
-class NfProxyEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessageImpl>
+class NfProxyEndpoint extends HttpAsyncEndpoint
 {
     private static final Logger LOG = LoggerFactory.getLogger(NfProxyEndpoint.class);
 

@@ -18,6 +18,7 @@ package com.netflix.zuul.filters;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -83,6 +84,12 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public boolean isDisabled() {
         return filterDisabled.get();
+    }
+
+    @Override
+    public ZuulMessage getDefaultOutput(I input)
+    {
+        return input;
     }
 
     @Override

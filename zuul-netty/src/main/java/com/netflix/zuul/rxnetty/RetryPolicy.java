@@ -2,6 +2,9 @@ package com.netflix.zuul.rxnetty;
 
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Action;
+import rx.functions.Action0;
+import rx.functions.Actions;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -13,16 +16,14 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
     private final int maxRetries;
     private final Func1<Throwable, Boolean> retryCriteria;
     private final Func1<Throwable, Observable<Long>> resumeStreamFunc;
-
-    private RetryPolicy(Func1<Throwable, Boolean> retryCriteria) {
-        this(1, retryCriteria, throwable -> Observable.just(1L)/*Retry immediately*/);
-    }
+    private final Action0 beforeRetryAction;
 
     private RetryPolicy(int maxRetries, Func1<Throwable, Boolean> retryCriteria,
-                        Func1<Throwable, Observable<Long>> resumeStreamFunc) {
+                        Func1<Throwable, Observable<Long>> resumeStreamFunc, Action0 beforeRetryAction) {
         this.maxRetries = maxRetries;
         this.retryCriteria = retryCriteria;
         this.resumeStreamFunc = resumeStreamFunc;
+        this.beforeRetryAction = beforeRetryAction;
     }
 
     @Override
@@ -33,6 +34,7 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
         return errStream.flatMap(err -> {
             int attempts = counts.incrementAndGet();
             if (attempts <= maxRetries && retryCriteria.call(err)) {
+                beforeRetryAction.call();
                 return resumeStreamFunc.call(err);
             } else {
                 return Observable.error(err);
@@ -50,7 +52,7 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
      * @return A new {@code RetryPolicy} instance.
      */
     public static RetryPolicy createSingleRetry(Func1<Throwable, Boolean> retryCriteria) {
-        return new RetryPolicy(retryCriteria).maxRetries(1);
+        return new RetryPolicy(1, retryCriteria, throwable -> Observable.just(1L)/*Retry immediately*/, Actions.empty());
     }
 
     /**
@@ -65,7 +67,7 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
     public RetryPolicy appendCriteria(Func1<Throwable, Boolean> retryCriteria) {
         return new RetryPolicy(maxRetries,
                                throwable -> this.retryCriteria.call(throwable) || retryCriteria.call(throwable),
-                               resumeStreamFunc);
+                               resumeStreamFunc, Actions.empty());
     }
 
     /**
@@ -77,7 +79,7 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
      * this policy.
      */
     public RetryPolicy maxRetries(int maxRetries) {
-        return new RetryPolicy(maxRetries, retryCriteria, resumeStreamFunc);
+        return new RetryPolicy(maxRetries, retryCriteria, resumeStreamFunc, Actions.empty());
     }
 
     /**
@@ -123,6 +125,18 @@ public final class RetryPolicy implements Func1<Observable<? extends Throwable>,
             int randomValue = (int) (minInterval + (Math.random() * (maxInterval - minInterval + 1)));
             currentIntervalMillis[0] = Math.min(currentInterval * 1.5, 60000); /*Max of 1 minute*/
             return Observable.timer(randomValue, TimeUnit.MILLISECONDS, timerScheduler);
-        });
+        }, Actions.empty());
+    }
+
+    /**
+     * Invokes the passed action, whenever this policy determines the request is to be retried.
+     *
+     * @param beforeRetry Action to invoke before every retry.
+     *
+     * @return A new {@code RetryPolicy} instance with the all existing properties of this policy and the passed retry
+     * action to be performed before retry.
+     */
+    public RetryPolicy doBeforeRetry(Action0 beforeRetry) {
+        return new RetryPolicy(maxRetries, retryCriteria, resumeStreamFunc, beforeRetry);
     }
 }
