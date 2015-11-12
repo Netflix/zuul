@@ -52,6 +52,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     private boolean shouldStopFilterProcessing = false;
 
+
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
@@ -84,7 +85,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         return (SessionContext) super.clone();
     }
-
 
     public String getString(String key)
     {

@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
  * Time: 5:28 PM
  */
 @RunWith(MockitoJUnitRunner.class)
-public class FilterProcessorTest
+public class ExperimentalFilterProcessor2Test
 {
     @Mock
     BaseSyncFilter filter;
@@ -40,7 +40,7 @@ public class FilterProcessorTest
     HttpRequestMessage request;
     HttpResponseMessage response;
 
-    FilterProcessor processor;
+    ExperimentalFilterProcessor2 processor;
 
     @Before
     public void before() {
@@ -52,7 +52,7 @@ public class FilterProcessorTest
                 new Headers(), "127.0.0.1", "https", 80, "localhost");
         response = new HttpResponseMessageImpl(ctx, request, 200);
 
-        processor = new FilterProcessor(loader, usageNotifier);
+        processor = new ExperimentalFilterProcessor2(loader, usageNotifier);
         processor = spy(processor);
 
         when(filter.filterType()).thenReturn("pre");
@@ -88,7 +88,6 @@ public class FilterProcessorTest
         verify(processor).recordFilterCompletion(same(request), same(filter), info.capture());
         assertEquals(ExecutionStatus.FAILED, info.getValue().status);
     }
-
 
     @Test
     public void testAllFiltersRan()
@@ -219,8 +218,6 @@ public class FilterProcessorTest
         HttpResponseMessage response = (HttpResponseMessage) output;
         assertEquals(500, response.getStatus());
     }
-
-
 
     private void addFilterToLoader(FilterLoader loader, ZuulFilter f)
     {
