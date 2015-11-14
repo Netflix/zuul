@@ -35,6 +35,7 @@ import rx.Observable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import static com.netflix.zuul.ExecutionStatus.*;
@@ -70,47 +71,40 @@ public class FilterProcessorImpl implements FilterProcessor
     {
         Observable<ZuulMessage> chain;
 
-        chain = chainFilters(msg, filterLoader.getFiltersByType("in").iterator());
+        Iterator<ZuulFilter> inFilterIterator = filterLoader.getFiltersByType("in").iterator();
+        chain = chainFilters(msg, inFilterIterator, "in");
 
         chain = applyEndpointFilter(chain);
 
         chain = chain.flatMap(msg2 -> {
-            Iterator<ZuulFilter> filterIterator = filterLoader.getFiltersByType("out").iterator();
-            return chainFilters(msg2, filterIterator);
-        });
-
-        // TODO - Make one final check to see if need to run the error endpoint?
-        chain = chain.flatMap(msg2 -> {
-            // Check if error endpoint is needed.
-            SessionContext context = msg2.getContext();
-            if (context.shouldSendErrorResponse()) {
-                HttpRequestMessage request = getRequestMessage(msg2);
-                return applyErrorEndpoint(msg2, request);
-            }
-            return Observable.just(msg2);
+            Iterator<ZuulFilter> outFilterIterator = filterLoader.getFiltersByType("out").iterator();
+            return chainFilters(msg2, outFilterIterator, "out");
         });
 
         return chain;
     }
 
 
-    protected Observable<ZuulMessage> chainFilters(ZuulMessage msg, final Iterator<ZuulFilter> filterChainIterator)
+    protected Observable<ZuulMessage> chainFilters(ZuulMessage msg, final Iterator<ZuulFilter> filterChainIterator, String phase)
     {
         if (! filterChainIterator.hasNext()) {
             // TODO - isn't there a better way of doing this without having to wrap in an Observable again?
             return Observable.just(msg);
         }
 
+        // If an error filter has already generated a response, and this is the inbound phase, then
+        // don't run any more filters in this phase.
+        SessionContext context = msg.getContext();
+        if ("in".equals(phase) && context.errorResponseSent()) {
+            // Therefore this msg is already a response, so just return that.
+            return Observable.just(msg);
+        }
+
         HttpRequestMessage request = getRequestMessage(msg);
 
         // Check if error endpoint is needed.
-        SessionContext context = msg.getContext();
         if (context.shouldSendErrorResponse()) {
-            return applyErrorEndpoint(msg, request)
-                    .flatMap(msg2 -> {
-                        // Recurse to the next filter in chain.
-                        return chainFilters(msg2, filterChainIterator);
-                    });
+            return applyErrorEndpoint(msg, request, filterChainIterator, phase);
         }
 
         // Get the next filter to apply from the chain.
@@ -121,51 +115,52 @@ public class FilterProcessorImpl implements FilterProcessor
             msg = processSyncFilter(msg, (BaseSyncFilter) filter, false);
 
             // Recurse to the next filter in chain.
-            return chainFilters(msg, filterChainIterator);
+            return chainFilters(msg, filterChainIterator, phase);
         }
         else {
             // Apply this async filter.
             return processAsyncFilter(msg, filter, false)
                     .flatMap(msg2 -> {
                         // Recurse to the next filter in chain.
-                        return chainFilters(msg2, filterChainIterator);
+                        return chainFilters(msg2, filterChainIterator, phase);
                     });
         }
     }
 
-    private Observable<ZuulMessage> applyErrorEndpoint(ZuulMessage msg, HttpRequestMessage request)
+    private Observable<ZuulMessage> applyErrorEndpoint(ZuulMessage msg, HttpRequestMessage request,
+                                                       Iterator<ZuulFilter> filterChainIterator, String phase)
     {
         // Get the error endpoint filter to use.
         ZuulFilter errorFilter = getErrorEndpoint(msg);
         if (errorFilter == null) {
             // No error filter to use, so send a basic default response.
-            resetContextErrorFlags(msg);
+            flagErrorSent(msg);
             return Observable.just(defaultErrorResponse(request));
         }
 
         // TODO - Move isSyncFilter() to be a method on ZuulFilter? Maybe as an Enum (SYNC, ASYNC) ?
         if (isSyncFilter(errorFilter)) {
-            return Observable.just(processSyncFilter(request, (BaseSyncFilter) errorFilter, false))
-                    .map(msg2 -> {
-                        // After running the error filter reset the error flags on context.
-                        // This is to stop failures in error filters from turning into a recursive stack overflow.
-                        resetContextErrorFlags(msg2);
-                        return msg2;
-                    });
+            // After running the error filter reset the error flags on context.
+            // This is to stop failures in error filters from turning into a recursive stack overflow.
+            flagErrorSent(msg);
+            processSyncFilter(request, (BaseSyncFilter) errorFilter, false);
+
+            // Recurse to the next filter in chain.
+            return chainFilters(msg, filterChainIterator, phase);
         }
         else {
-            // Apply this Async error filter.
+            // After running the error filter reset the error flags on context.
+            // This is to stop failures in error filters from turning into a recursive stack overflow.
+            flagErrorSent(msg);
             return processAsyncFilter(request, errorFilter, false)
-                    .map(msg2 -> {
-                        // After running the error filter reset the error flags on context.
-                        // This is to stop failures in error filters from turning into a recursive stack overflow.
-                        resetContextErrorFlags(msg2);
-                        return msg2;
+                    .flatMap(msg2 -> {
+                        // Recurse to the next filter in chain.
+                        return chainFilters(msg2, filterChainIterator, phase);
                     });
         }
     }
 
-    protected void resetContextErrorFlags(ZuulMessage msg)
+    protected void flagErrorSent(ZuulMessage msg)
     {
         msg.getContext().setShouldSendErrorResponse(false);
         msg.getContext().setErrorResponseSent(true);
@@ -238,7 +233,10 @@ public class FilterProcessorImpl implements FilterProcessor
 
             // Apply error filter instead if needed.
             if (context.shouldSendErrorResponse()) {
-                return applyErrorEndpoint(msg, request);
+                // Pass an empty filterchain to applyErrorEndpoint, as no other filters to run after this one
+                // in the endpoint phase.
+                Iterator<ZuulFilter> filterChainIterator = new ArrayList<ZuulFilter>().iterator();
+                return applyErrorEndpoint(msg, request, filterChainIterator, "end");
             }
 
             // If a static response has been set on the SessionContext, then just return that without attempting
@@ -315,9 +313,10 @@ public class FilterProcessorImpl implements FilterProcessor
             else {
                 // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
                 // equal or above the requested.
+                ZuulMessage input = chooseFilterInput(filter, msg);
                 int requiredPriority = msg.getContext().getFilterPriorityToApply();
-                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    resultObs = filter.applyAsync(msg).single();
+                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(input)) {
+                    resultObs = filter.applyAsync(input).single();
                 } else {
                     resultObs = Observable.just(filter.getDefaultOutput(msg));
                     info.status = ExecutionStatus.SKIPPED;
@@ -402,8 +401,9 @@ public class FilterProcessorImpl implements FilterProcessor
                 // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
                 // equal or above the requested.
                 int requiredPriority = msg.getContext().getFilterPriorityToApply();
-                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
-                    result = filter.apply(msg);
+                ZuulMessage input = chooseFilterInput(filter, msg);
+                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(input)) {
+                    result = filter.apply(input);
 
                     // If no result returned from filter, then use the original input.
                     if (result == null) {
@@ -419,6 +419,7 @@ public class FilterProcessorImpl implements FilterProcessor
         catch (Exception e) {
             result = filter.getDefaultOutput(msg);
             msg.getContext().setError(e);
+            if (shouldSendErrorResponse) msg.getContext().setShouldSendErrorResponse(true);
             info.status = FAILED;
             recordFilterError(filter, msg, e);
         }
@@ -431,6 +432,33 @@ public class FilterProcessorImpl implements FilterProcessor
         recordFilterCompletion(result, filter, info);
 
         return result;
+    }
+
+    protected ZuulMessage chooseFilterInput(ZuulFilter filter, ZuulMessage msg)
+    {
+        switch (filter.filterType()) {
+        case "in":
+            if (isAResponseMessage(msg))
+                return getRequestMessage(msg);
+            else
+                return msg;
+
+        case "out":
+            if (isAResponseMessage(msg))
+                return msg;
+            else
+                throw new IllegalArgumentException("Invalid input message type for outbound filter! " +
+                        "filter=" + String.valueOf(filter) + " msg-type=" + msg.getClass() + ", msg=" + msg.getInfoForLogging());
+
+        case "end":
+            if (isAResponseMessage(msg))
+                return getRequestMessage(msg);
+            else
+                return msg;
+
+        default:
+            throw new IllegalArgumentException("Unknown filterType! filter=" + String.valueOf(filter));
+        }
     }
 
     protected boolean isFilterPriority(ZuulFilter filter, int requiredPriority)

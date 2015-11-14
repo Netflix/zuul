@@ -15,6 +15,7 @@ public class MockHttpSyncInboundFilter extends HttpInboundSyncFilter
     private int filterOrder;
     private boolean shouldFilter;
     private Throwable error;
+    private boolean shouldSendErrorResponse;
 
     public MockHttpSyncInboundFilter(int filterOrder, boolean shouldFilter)
     {
@@ -23,15 +24,17 @@ public class MockHttpSyncInboundFilter extends HttpInboundSyncFilter
 
     public MockHttpSyncInboundFilter(String filterName, int filterOrder, boolean shouldFilter)
     {
-        this(filterName, filterOrder, shouldFilter, null);
+        this(filterName, filterOrder, shouldFilter, null, false);
     }
 
-    public MockHttpSyncInboundFilter(String filterName, int filterOrder, boolean shouldFilter, Throwable error)
+    public MockHttpSyncInboundFilter(String filterName, int filterOrder, boolean shouldFilter,
+                                     Throwable error, boolean shouldSendErrorResponse)
     {
         this.filterName = filterName;
         this.filterOrder = filterOrder;
         this.shouldFilter = shouldFilter;
         this.error = error;
+        this.shouldSendErrorResponse = shouldSendErrorResponse;
     }
 
     @Override
@@ -56,6 +59,7 @@ public class MockHttpSyncInboundFilter extends HttpInboundSyncFilter
     public HttpRequestMessage apply(HttpRequestMessage input)
     {
         if (error != null) {
+            if (shouldSendErrorResponse) input.getContext().setShouldSendErrorResponse(true);
             throw new RuntimeException("Some error response problem.");
         }
         else {
