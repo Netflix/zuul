@@ -16,7 +16,7 @@
 package com.netflix.zuul.servlet;
 
 import com.netflix.zuul.FilterFileManager;
-import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.FilterProcessorImpl;
 import com.netflix.zuul.ZuulHttpProcessor;
 import com.netflix.zuul.context.ServletSessionContextFactory;
 import com.netflix.zuul.context.SessionCleaner;
@@ -106,7 +106,7 @@ public class ZuulServlet extends HttpServlet {
         @Mock
         ServletOutputStream servletOutputStream;
         @Mock
-        FilterProcessor processor;
+        FilterProcessorImpl processor;
         @Mock
         FilterFileManager filterFileMgr;
         @Mock
@@ -145,9 +145,7 @@ public class ZuulServlet extends HttpServlet {
             response = new HttpResponseMessageImpl(context, request, 299);
             response.setBody("blah".getBytes());
 
-            when(processor.applyInboundFilters(Matchers.any())).thenReturn(Observable.just(request));
-            when(processor.applyEndpointFilter(Matchers.any())).thenReturn(Observable.just(response));
-            when(processor.applyOutboundFilters(Matchers.any())).thenReturn(Observable.just(response));
+            when(processor.applyFilterChain(Matchers.any())).thenReturn(Observable.just(request));
         }
 
         @Test

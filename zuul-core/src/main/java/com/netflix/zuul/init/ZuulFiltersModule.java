@@ -19,6 +19,7 @@ import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterProcessor;
+import com.netflix.zuul.FilterProcessorImpl;
 import com.netflix.zuul.FilterUsageNotifier;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
@@ -36,6 +37,9 @@ public class ZuulFiltersModule extends AbstractModule
     @Override
     protected void configure() {
         LOG.info("Starting Groovy Filter file manager");
+
+        // Choose the FilterProcessor impl.
+        bind(FilterProcessor.class).to(FilterProcessorImpl.class);
 
         // Get filter directories.
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
@@ -63,7 +67,7 @@ public class ZuulFiltersModule extends AbstractModule
         FilterFileManager.FilterFileManagerConfig filterConfig =
                 new FilterFileManager.FilterFileManagerConfig(filterLocations, filterClassNames, 5);
         bind(FilterFileManager.FilterFileManagerConfig.class).toInstance(filterConfig);
-        bind(FilterUsageNotifier.class).to(FilterProcessor.BasicFilterUsageNotifier.class);
+        bind(FilterUsageNotifier.class).to(FilterProcessorImpl.BasicFilterUsageNotifier.class);
 
         LOG.info("Groovy Filter file manager started");
     }

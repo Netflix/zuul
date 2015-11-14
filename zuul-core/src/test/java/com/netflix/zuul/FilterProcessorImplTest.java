@@ -16,6 +16,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import rx.Observable;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.*;
 
@@ -25,34 +27,35 @@ import static org.mockito.Mockito.*;
  * Time: 5:28 PM
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ExperimentalFilterProcessor2Test
+public class FilterProcessorImplTest
 {
     @Mock
     BaseSyncFilter filter;
     @Mock
     FilterUsageNotifier usageNotifier;
     @Mock
-    FilterLoader loader;
-    @Mock
     ShouldFilter additionalShouldFilter;
 
+    FilterLoader loader;
     SessionContext ctx;
     HttpRequestMessage request;
     HttpResponseMessage response;
 
-    ExperimentalFilterProcessor2 processor;
+    FilterProcessorImpl processor;
 
     @Before
     public void before() {
         MonitoringHelper.initMocks();
         MockitoAnnotations.initMocks(this);
 
+        loader = new FilterLoader();
+
         ctx = new SessionContext();
         request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "GET", "/somepath", new HttpQueryParams(),
                 new Headers(), "127.0.0.1", "https", 80, "localhost");
         response = new HttpResponseMessageImpl(ctx, request, 200);
 
-        processor = new ExperimentalFilterProcessor2(loader, usageNotifier);
+        processor = new FilterProcessorImpl(loader, usageNotifier);
         processor = spy(processor);
 
         when(filter.filterType()).thenReturn("pre");
@@ -86,16 +89,15 @@ public class ExperimentalFilterProcessor2Test
 
         verify(processor).recordFilterError(filter, request, e);
 
-        ArgumentCaptor<FilterProcessor.FilterExecInfo> info = ArgumentCaptor.forClass(FilterProcessor.FilterExecInfo.class);
+        ArgumentCaptor<FilterProcessorImpl.FilterExecInfo> info = ArgumentCaptor.forClass(FilterProcessorImpl.FilterExecInfo.class);
         verify(processor).recordFilterCompletion(same(request), same(filter), info.capture());
         assertEquals(ExecutionStatus.FAILED, info.getValue().status);
     }
 
+
     @Test
     public void testAllFiltersRan()
     {
-        FilterLoader loader = new FilterLoader();
-
         addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
 
@@ -107,13 +109,9 @@ public class ExperimentalFilterProcessor2Test
         addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
 
-        FilterProcessor processor = new FilterProcessor(loader, usageNotifier);
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
 
-        Observable<ZuulMessage> chain = Observable.just(request);
-        chain = processor.applyInboundFilters(chain);
-        chain = processor.applyEndpointFilter(chain);
-        chain = processor.applyOutboundFilters(chain);
-
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
         ZuulMessage output = chain.toBlocking().single();
 
         assertEquals(0, ctx.getFilterErrors().size());
@@ -125,11 +123,48 @@ public class ExperimentalFilterProcessor2Test
         assertEquals(202, response.getStatus());
     }
 
+
+    @Test
+    public void testOnlyOneEndpointApplied()
+    {
+        addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
+
+        response.setStatus(202);
+        request.getContext().setEndpoint("Endpoint2");
+
+        // Add 3 endpoints, only the 2nd of which should be applied.
+        ZuulFilter endpoint1 = new MockEndpointFilter("Endpoint1", true, response);
+        addFilterToLoader(loader, endpoint1);
+
+        ZuulFilter endpoint2 = new MockEndpointFilter("Endpoint2", true, response);
+        addFilterToLoader(loader, endpoint2);
+
+        ZuulFilter endpoint3 = new MockEndpointFilter("Endpoint3", true, response);
+        addFilterToLoader(loader, endpoint3);
+
+        addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
+
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
+        ZuulMessage output = chain.toBlocking().single();
+
+        assertEquals(0, ctx.getFilterErrors().size());
+
+        String filterExecStr = ctx.getFilterExecutionSummary().toString();
+        assertEquals(5, filterExecStr.split(",").length);
+
+        assertTrue(filterExecStr.contains("Endpoint2"));
+        assertFalse(filterExecStr.contains("Endpoint1"));
+        assertFalse(filterExecStr.contains("Endpoint3"));
+
+        HttpResponseMessage response = (HttpResponseMessage) output;
+        assertEquals(202, response.getStatus());
+    }
+
     @Test
     public void testErrorInErrorEndpoint()
     {
-        FilterLoader loader = new FilterLoader();
-
         addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
         addFilterToLoader(loader, new MockEndpointFilter(true, response));
@@ -144,13 +179,9 @@ public class ExperimentalFilterProcessor2Test
         // Set this flag so that error endpoint is used.
         ctx.setShouldSendErrorResponse(true);
 
-        FilterProcessor processor = new FilterProcessor(loader, usageNotifier);
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
 
-        Observable<ZuulMessage> chain = Observable.just(request);
-        chain = processor.applyInboundFilters(chain);
-        chain = processor.applyEndpointFilter(chain);
-        chain = processor.applyOutboundFilters(chain);
-
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
         ZuulMessage output = chain.toBlocking().single();
 
         // Should be only 1 errored filter.
@@ -166,8 +197,6 @@ public class ExperimentalFilterProcessor2Test
     @Test
     public void testErrorInErrorEndpoint_Async()
     {
-        FilterLoader loader = new FilterLoader();
-
         addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
         addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
         addFilterToLoader(loader, new MockEndpointFilter(true, response));
@@ -182,13 +211,9 @@ public class ExperimentalFilterProcessor2Test
         // Set this flag so that error endpoint is used.
         ctx.setShouldSendErrorResponse(true);
 
-        FilterProcessor processor = new FilterProcessor(loader, usageNotifier);
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
 
-        Observable<ZuulMessage> chain = Observable.just(request);
-        chain = processor.applyInboundFilters(chain);
-        chain = processor.applyEndpointFilter(chain);
-        chain = processor.applyOutboundFilters(chain);
-
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
         ZuulMessage output = chain.toBlocking().single();
 
         // Should be only 1 errored filter.
@@ -200,9 +225,85 @@ public class ExperimentalFilterProcessor2Test
         assertEquals(500, response.getStatus());
     }
 
+
+    @Test
+    public void testErrorInEndpoint_Async()
+    {
+        addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
+
+        // Mock an endpoint that throws an exception when it is applied async.
+        String endpointName = "endpoint.ProxyEndpoint";
+        ZuulFilter endpoint = new MockEndpointFilter(endpointName, true, response, new RuntimeException("Some proxying problem!"));
+        addFilterToLoader(loader, endpoint);
+        ctx.setEndpoint(endpointName);
+
+        // Mock an error endpoint.
+        ZuulFilter errorEndpoint = mock(ZuulFilter.class);
+        when(errorEndpoint.filterName()).thenReturn("endpoint.ErrorResponse");
+        when(errorEndpoint.filterType()).thenReturn("end");
+        when(errorEndpoint.shouldFilter(request)).thenReturn(true);
+        when(errorEndpoint.getPriority()).thenReturn(5);
+        when(errorEndpoint.getDefaultOutput(any())).thenReturn(HttpResponseMessageImpl.defaultErrorResponse(request));
+        when(errorEndpoint.applyAsync(any())).thenReturn(Observable.just(response));
+        addFilterToLoader(loader, errorEndpoint);
+
+
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
+
+        ZuulMessage output = chain.toBlocking().single();
+
+
+        verify(errorEndpoint).applyAsync(any());
+
+        // Should be only 1 errored filter.
+        assertEquals(1, ctx.getFilterErrors().size());
+        assertEquals(endpointName, ctx.getFilterErrors().get(0).getFilterName());
+
+        // Should be a HttpResponseMessage out.
+        assertEquals(HttpResponseMessageImpl.class, output.getClass());
+    }
+
+
+    @Test
+    public void testErrorInEndpointAndErrorResponse()
+    {
+        addFilterToLoader(loader, new MockHttpInboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpInboundFilter(1, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpOutboundFilter(1, true));
+
+        // Mock an endpoint that throws an exception when it is applied async.
+        String endpointName = "endpoint.ProxyEndpoint";
+        ctx.setEndpoint(endpointName);
+        ZuulFilter endpoint = new MockEndpointFilter(endpointName, true, response, new RuntimeException("Some proxying problem!"));
+        addFilterToLoader(loader, endpoint);
+
+        // Mock an error endpoint that in turn throws an exception when it is applied async.
+        String errorEndpointName = "endpoint.ErrorResponse";
+        ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, true, response, new RuntimeException("Some error response problem."));
+        addFilterToLoader(loader, errorEndpoint);
+
+
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
+
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
+        ZuulMessage output = chain.toBlocking().single();
+
+        assertEquals(2, ctx.getFilterErrors().size());
+        assertEquals(endpointName, ctx.getFilterErrors().get(0).getFilterName());
+        assertEquals(errorEndpointName, ctx.getFilterErrors().get(1).getFilterName());
+
+        // Should be a HttpResponseMessage out.
+        assertEquals(HttpResponseMessageImpl.class, output.getClass());
+        assertEquals(500, ((HttpResponseMessage) output).getStatus());
+    }
+
     private void addFilterToLoader(FilterLoader loader, ZuulFilter f)
     {
         loader.putFilter(f.filterName(), f, 0);
     }
-
 }

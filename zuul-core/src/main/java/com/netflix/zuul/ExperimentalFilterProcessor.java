@@ -41,7 +41,7 @@ import static com.netflix.zuul.ExecutionStatus.*;
  * @author Mike Smith
  */
 @Singleton
-public class ExperimentalFilterProcessor extends FilterProcessor
+public class ExperimentalFilterProcessor extends FilterProcessorImpl
 {
     @Inject
     public ExperimentalFilterProcessor(FilterLoader loader, FilterUsageNotifier usageNotifier) {
