@@ -41,4 +41,10 @@ public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessag
     }
 
     public abstract O apply(I input);
+
+    @Override
+    public FilterSyncType getSyncType()
+    {
+        return FilterSyncType.SYNC;
+    }
 }

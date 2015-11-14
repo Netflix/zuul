@@ -61,6 +61,8 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      */
     Observable<O> applyAsync(I input);
 
+    FilterSyncType getSyncType();
+
     /**
      * Choose a default message to use if the applyAsync() method throws an exception.
      *

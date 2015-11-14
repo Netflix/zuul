@@ -110,7 +110,7 @@ public class FilterProcessorImpl implements FilterProcessor
         // Get the next filter to apply from the chain.
         ZuulFilter filter = filterChainIterator.next();
 
-        if (isSyncFilter(filter)) {
+        if (filter.getSyncType() == FilterSyncType.SYNC) {
             // Apply this filter.
             msg = processSyncFilter(msg, (BaseSyncFilter) filter, false);
 
@@ -138,8 +138,7 @@ public class FilterProcessorImpl implements FilterProcessor
             return Observable.just(defaultErrorResponse(request));
         }
 
-        // TODO - Move isSyncFilter() to be a method on ZuulFilter? Maybe as an Enum (SYNC, ASYNC) ?
-        if (isSyncFilter(errorFilter)) {
+        if (errorFilter.getSyncType() == FilterSyncType.SYNC) {
             // After running the error filter reset the error flags on context.
             // This is to stop failures in error filters from turning into a recursive stack overflow.
             flagErrorSent(msg);
@@ -182,11 +181,6 @@ public class FilterProcessorImpl implements FilterProcessor
         }
 
         return errorEndpoint;
-    }
-
-    protected boolean isSyncFilter(ZuulFilter filter)
-    {
-        return BaseSyncFilter.class.isAssignableFrom(filter.getClass());
     }
 
     protected boolean isAResponseMessage(ZuulMessage msg)

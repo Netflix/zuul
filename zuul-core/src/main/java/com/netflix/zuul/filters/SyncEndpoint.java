@@ -46,4 +46,10 @@ public abstract class SyncEndpoint<I extends ZuulMessage, O extends ZuulMessage>
     }
 
     public abstract O apply(I input);
+
+    @Override
+    public FilterSyncType getSyncType()
+    {
+        return FilterSyncType.SYNC;
+    }
 }

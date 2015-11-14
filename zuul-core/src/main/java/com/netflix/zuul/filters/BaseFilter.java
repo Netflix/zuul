@@ -92,6 +92,12 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     }
 
     @Override
+    public FilterSyncType getSyncType()
+    {
+        return FilterSyncType.ASYNC;
+    }
+
+    @Override
     public String toString()
     {
         return String.valueOf(filterType()) + ":" + String.valueOf(filterName());
