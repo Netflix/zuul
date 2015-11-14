@@ -16,6 +16,7 @@
 package outbound
 
 import com.netflix.zuul.context.*
+import com.netflix.zuul.filters.FilterType
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestInfo
@@ -118,7 +119,7 @@ class PostDecoration extends HttpOutboundSyncFilter
             Assert.assertTrue(respHeaders.contains("X-Zuul-Instance", "unknown"))
             Assert.assertTrue(respHeaders.contains("Connection", "keep-alive"))
 
-            Assert.assertEquals("out", filter.filterType())
+            Assert.assertEquals(FilterType.OUTBOUND, filter.filterType())
             Assert.assertTrue(filter.shouldFilter(response))
         }
 

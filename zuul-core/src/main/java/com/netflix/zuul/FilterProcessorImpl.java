@@ -71,21 +71,21 @@ public class FilterProcessorImpl implements FilterProcessor
     {
         Observable<ZuulMessage> chain;
 
-        Iterator<ZuulFilter> inFilterIterator = filterLoader.getFiltersByType("in").iterator();
-        chain = chainFilters(msg, inFilterIterator, "in");
+        Iterator<ZuulFilter> inFilterIterator = filterLoader.getFiltersByType(FilterType.INBOUND).iterator();
+        chain = chainFilters(msg, inFilterIterator, FilterType.INBOUND);
 
         chain = applyEndpointFilter(chain);
 
         chain = chain.flatMap(msg2 -> {
-            Iterator<ZuulFilter> outFilterIterator = filterLoader.getFiltersByType("out").iterator();
-            return chainFilters(msg2, outFilterIterator, "out");
+            Iterator<ZuulFilter> outFilterIterator = filterLoader.getFiltersByType(FilterType.OUTBOUND).iterator();
+            return chainFilters(msg2, outFilterIterator, FilterType.OUTBOUND);
         });
 
         return chain;
     }
 
 
-    protected Observable<ZuulMessage> chainFilters(ZuulMessage msg, final Iterator<ZuulFilter> filterChainIterator, String phase)
+    protected Observable<ZuulMessage> chainFilters(ZuulMessage msg, final Iterator<ZuulFilter> filterChainIterator, FilterType phase)
     {
         if (! filterChainIterator.hasNext()) {
             // TODO - isn't there a better way of doing this without having to wrap in an Observable again?
@@ -95,7 +95,7 @@ public class FilterProcessorImpl implements FilterProcessor
         // If an error filter has already generated a response, and this is the inbound phase, then
         // don't run any more filters in this phase.
         SessionContext context = msg.getContext();
-        if ("in".equals(phase) && context.errorResponseSent()) {
+        if (phase == FilterType.INBOUND && context.errorResponseSent()) {
             // Therefore this msg is already a response, so just return that.
             return Observable.just(msg);
         }
@@ -128,7 +128,7 @@ public class FilterProcessorImpl implements FilterProcessor
     }
 
     private Observable<ZuulMessage> applyErrorEndpoint(ZuulMessage msg, HttpRequestMessage request,
-                                                       Iterator<ZuulFilter> filterChainIterator, String phase)
+                                                       Iterator<ZuulFilter> filterChainIterator, FilterType phase)
     {
         // Get the error endpoint filter to use.
         ZuulFilter errorFilter = getErrorEndpoint(msg);
@@ -175,7 +175,7 @@ public class FilterProcessorImpl implements FilterProcessor
             endpointName = DEFAULT_ERROR_ENDPOINT.get();
         }
 
-        ZuulFilter errorEndpoint = filterLoader.getFilterByNameAndType(endpointName, "end");
+        ZuulFilter errorEndpoint = filterLoader.getFilterByNameAndType(endpointName, FilterType.ENDPOINT);
         if (errorEndpoint == null) {
             String errorStr = "No error filter found of chosen name! name=" + endpointName;
             LOG.error("Errored but no error filter found, so sent default error response. " + errorStr, context.getError());
@@ -236,7 +236,7 @@ public class FilterProcessorImpl implements FilterProcessor
                 // Pass an empty filterchain to applyErrorEndpoint, as no other filters to run after this one
                 // in the endpoint phase.
                 Iterator<ZuulFilter> filterChainIterator = new ArrayList<ZuulFilter>().iterator();
-                return applyErrorEndpoint(msg, request, filterChainIterator, "end");
+                return applyErrorEndpoint(msg, request, filterChainIterator, FilterType.ENDPOINT);
             }
 
             // If a static response has been set on the SessionContext, then just return that without attempting
@@ -253,7 +253,7 @@ public class FilterProcessorImpl implements FilterProcessor
                 context.setError(new ZuulException("No endpoint filter chosen!"));
                 return Observable.just(defaultErrorResponse(request));
             }
-            ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
+            ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName,FilterType.ENDPOINT);
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
@@ -292,7 +292,7 @@ public class FilterProcessorImpl implements FilterProcessor
         info.bDebug = msg.getContext().debugRouting();
 
         if (info.bDebug) {
-            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
+            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType().toString() + " " + filter.filterOrder() + " " + filter.filterName());
             info.debugCopy = msg.clone();
         }
 
@@ -379,7 +379,7 @@ public class FilterProcessorImpl implements FilterProcessor
         info.bDebug = msg.getContext().debugRouting();
 
         if (info.bDebug) {
-            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
+            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType().toString() + " " + filter.filterOrder() + " " + filter.filterName());
             info.debugCopy = msg.clone();
         }
 
@@ -437,20 +437,20 @@ public class FilterProcessorImpl implements FilterProcessor
     protected ZuulMessage chooseFilterInput(ZuulFilter filter, ZuulMessage msg)
     {
         switch (filter.filterType()) {
-        case "in":
+        case INBOUND:
             if (isAResponseMessage(msg))
                 return getRequestMessage(msg);
             else
                 return msg;
 
-        case "out":
+        case OUTBOUND:
             if (isAResponseMessage(msg))
                 return msg;
             else
                 throw new IllegalArgumentException("Invalid input message type for outbound filter! " +
                         "filter=" + String.valueOf(filter) + " msg-type=" + msg.getClass() + ", msg=" + msg.getInfoForLogging());
 
-        case "end":
+        case ENDPOINT:
             if (isAResponseMessage(msg))
                 return getRequestMessage(msg);
             else
@@ -476,7 +476,7 @@ public class FilterProcessorImpl implements FilterProcessor
             case SUCCESS:
                 msg.getContext().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
                 if (info.bDebug) {
-                    Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType()
+                    Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType().toString()
                             + " ORDER:" + filter.filterOrder() + "} Execution time = " + info.execTime + "ms");
                     Debug.compareContextState(filter.filterName(), msg.getContext(), info.debugCopy.getContext());
                 }
@@ -507,7 +507,7 @@ public class FilterProcessorImpl implements FilterProcessor
         }
 
         // Store this filter error for possible future use. But we still continue with next filter in the chain.
-        msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType(), e));
+        msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType().toString(), e));
 
         boolean bDebug = msg.getContext().debugRouting();
         if (bDebug) {
@@ -523,7 +523,7 @@ public class FilterProcessorImpl implements FilterProcessor
 
         @Override
         public void notify(ZuulFilter filter, ExecutionStatus status) {
-            DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType());
+            DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType().toString());
         }
     }
 

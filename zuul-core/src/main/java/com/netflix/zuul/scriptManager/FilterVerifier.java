@@ -17,6 +17,7 @@ package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.filters.BaseFilter;
+import com.netflix.zuul.filters.FilterType;
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.junit.Before;
@@ -97,8 +98,8 @@ public class FilterVerifier {
                 "\n" +
                 "class filter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {\n" +
                 "\n" +
-                "    String filterType() {\n" +
-                "        return 'in'\n" +
+                "    FilterType filterType() {\n" +
+                "        return FilterType.INBOUND\n" +
                 "    }\n" +
                 "\n" +
                 "    int filterOrder() {\n" +
@@ -123,8 +124,8 @@ public class FilterVerifier {
                 "\n" +
                 "class filter  {\n" +
                 "\n" +
-                "    String filterType() {\n" +
-                "        return 'pre'\n" +
+                "    FilterType filterType() {\n" +
+                "        return FilterType.INBOUND\n" +
                 "    }\n" +
                 "\n" +
                 "    int filterOrder() {\n" +
@@ -149,8 +150,8 @@ public class FilterVerifier {
                 "\n" +
                 "ccclass filter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {\n" +
                 "\n" +
-                "    String filterType() {\n" +
-                "        return 'in'\n" +
+                "    FilterType filterType() {\n" +
+                "        return FilterType.INBOUND\n" +
                 "    }\n" +
                 "\n" +
                 "    int filterOrder() {\n" +
@@ -237,7 +238,7 @@ public class FilterVerifier {
                 FilterInfo filterInfo = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
                 assertNotNull(filterInfo);
                 assertEquals(filterInfo.getFilterID(), "null:filter:in");
-                assertEquals(filterInfo.getFilterType(), "in");
+                assertEquals(filterInfo.getFilterType(), FilterType.INBOUND);
                 assertEquals(filterInfo.getFilterName(), "filter");
                 assertFalse(filterInfo.isActive());
                 assertFalse(filterInfo.isCanary());

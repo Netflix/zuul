@@ -42,7 +42,7 @@ public abstract class SurgicalDebugFilter extends BaseSyncFilter<HttpRequestMess
 
 
     @Override
-    String filterType() {
+    FilterType filterType() {
         return "pre"
     }
 

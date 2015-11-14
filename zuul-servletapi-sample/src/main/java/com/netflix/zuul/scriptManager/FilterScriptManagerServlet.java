@@ -20,6 +20,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.constants.ZuulConstants;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.util.JsonUtility;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.fileupload.FileItemFactory;
@@ -613,9 +614,9 @@ public class FilterScriptManagerServlet extends HttpServlet {
 
             ZuulFilterDAO dao = mock(ZuulFilterDAOCassandra.class);
             List<FilterInfo> scriptsForEndpoint = new ArrayList<FilterInfo>();
-            scriptsForEndpoint.add(new FilterInfo("name1:type", "code", "type", "name", "disable", "order", "app"));
-            scriptsForEndpoint.add(new FilterInfo("name2:type", "code", "type", "name", "disable", "order", "app"));
-            scriptsForEndpoint.add(new FilterInfo("name3:type", "code", "type", "name", "disable", "order", "app"));
+            scriptsForEndpoint.add(new FilterInfo("name1:type", "code", FilterType.INBOUND, "name", "disable", "order", "app"));
+            scriptsForEndpoint.add(new FilterInfo("name2:type", "code", FilterType.INBOUND, "name", "disable", "order", "app"));
+            scriptsForEndpoint.add(new FilterInfo("name3:type", "code", FilterType.INBOUND, "name", "disable", "order", "app"));
             when(dao.getZuulFiltersForFilterId(anyString())).thenReturn(scriptsForEndpoint);
 
             /* construct servlet */

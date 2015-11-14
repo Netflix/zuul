@@ -16,6 +16,7 @@
 package com.netflix.zuul.filters.http;
 
 import com.netflix.zuul.filters.BaseFilter;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 
 /**
@@ -26,7 +27,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 public abstract class HttpInboundFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessage>
 {
     @Override
-    public String filterType() {
-        return "in";
+    public FilterType filterType() {
+        return FilterType.INBOUND;
     }
 }

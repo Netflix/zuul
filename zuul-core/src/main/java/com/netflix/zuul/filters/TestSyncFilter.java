@@ -35,8 +35,8 @@ public class TestSyncFilter extends BaseSyncFilter<HttpRequestMessage, HttpReque
     }
 
     @Override
-    public String filterType() {
-        return "in";
+    public FilterType filterType() {
+        return FilterType.INBOUND;
     }
 
     @Override

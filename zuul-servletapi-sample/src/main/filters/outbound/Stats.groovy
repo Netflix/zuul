@@ -16,6 +16,7 @@
 package outbound
 
 import com.netflix.zuul.context.*
+import com.netflix.zuul.filters.FilterType
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestMessage
@@ -107,7 +108,7 @@ class Stats extends HttpOutboundSyncFilter
         @Test
         public void testHeaderResponse() {
 
-            Assert.assertTrue(filter.filterType().equals("out"))
+            Assert.assertTrue(filter.filterType().equals(FilterType.OUTBOUND))
 
             ctx.route = "testStats"
             filter.apply(response)

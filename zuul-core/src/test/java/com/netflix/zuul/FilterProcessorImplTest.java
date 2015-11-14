@@ -58,7 +58,7 @@ public class FilterProcessorImplTest
         processor = new FilterProcessorImpl(loader, usageNotifier);
         processor = spy(processor);
 
-        when(filter.filterType()).thenReturn("in");
+        when(filter.filterType()).thenReturn(FilterType.INBOUND);
         when(filter.shouldFilter(request)).thenReturn(true);
         when(filter.getPriority()).thenReturn(5);
     }
@@ -298,7 +298,7 @@ public class FilterProcessorImplTest
         // Mock an error endpoint.
         ZuulFilter errorEndpoint = mock(ZuulFilter.class);
         when(errorEndpoint.filterName()).thenReturn("endpoint.ErrorResponse");
-        when(errorEndpoint.filterType()).thenReturn("end");
+        when(errorEndpoint.filterType()).thenReturn(FilterType.ENDPOINT);
         when(errorEndpoint.shouldFilter(request)).thenReturn(true);
         when(errorEndpoint.getPriority()).thenReturn(5);
         when(errorEndpoint.getDefaultOutput(any())).thenReturn(HttpResponseMessageImpl.defaultErrorResponse(request));

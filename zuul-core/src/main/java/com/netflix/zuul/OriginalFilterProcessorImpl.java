@@ -25,6 +25,7 @@ import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.FilterError;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -78,7 +79,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
 
     public Observable<ZuulMessage> applyInboundFilters(Observable<ZuulMessage> chain)
     {
-        chain = applyFilterPhase(chain, "in", (request) -> {
+        chain = applyFilterPhase(chain, FilterType.INBOUND, (request) -> {
             return request;
         } );
 
@@ -104,7 +105,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
                 if (endpointName == null) {
                     endpointName = DEFAULT_ERROR_ENDPOINT.get();
                 }
-                ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
+                ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName,FilterType.ENDPOINT);
                 if (endpointFilter == null) {
                     // No error filter to use, so send a basic default response.
                     String errorStr = "No error filter found of chosen name! name=" + endpointName;
@@ -191,7 +192,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
                 context.setError(new ZuulException("No endpoint filter chosen!"));
                 return Observable.just(defaultErrorResponse(request));
             }
-            ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, "end");
+            ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName, FilterType.ENDPOINT);
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
                 context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
@@ -222,7 +223,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
     public Observable<ZuulMessage> applyOutboundFilters(Observable<ZuulMessage> chain)
     {
         // Apply POST filters.
-        chain = applyFilterPhase(chain, "out", (response) -> response );
+        chain = applyFilterPhase(chain, FilterType.OUTBOUND, (response) -> response );
 
         // And apply one last time to catch any errors from outbound filters.
         chain = applyErrorEndpointIfNeeded(chain);
@@ -230,7 +231,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         return chain;
     }
 
-    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, String filterType, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
+    protected Observable<ZuulMessage> applyFilterPhase(Observable<ZuulMessage> chain, FilterType filterType, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         List<ZuulFilter> filters = filterLoader.getFiltersByType(filterType);
         for (ZuulFilter filter: filters) {
@@ -260,7 +261,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         info.bDebug = msg.getContext().debugRouting();
 
         if (info.bDebug) {
-            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
+            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType().toString() + " " + filter.filterOrder() + " " + filter.filterName());
             info.debugCopy = msg.clone();
         }
 
@@ -345,7 +346,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
             case SUCCESS:
                 msg.getContext().addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), info.execTime);
                 if (info.bDebug) {
-                    Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType()
+                    Debug.addRoutingDebug(msg.getContext(), "Filter {" + filter.filterName() + " TYPE:" + filter.filterType().toString()
                             + " ORDER:" + filter.filterOrder() + "} Execution time = " + info.execTime + "ms");
                     Debug.compareContextState(filter.filterName(), msg.getContext(), info.debugCopy.getContext());
                 }
@@ -376,11 +377,11 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         }
 
         // Store this filter error for possible future use. But we still continue with next filter in the chain.
-        msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType(), e));
+        msg.getContext().getFilterErrors().add(new FilterError(filter.filterName(), filter.filterType().toString(), e));
 
         boolean bDebug = msg.getContext().debugRouting();
         if (bDebug) {
-            Debug.addRoutingDebug(msg.getContext(), "Running Filter failed " + filter.filterName() + " type:" + filter.filterType() + " order:" + filter.filterOrder() + " " + e.getMessage());
+            Debug.addRoutingDebug(msg.getContext(), "Running Filter failed " + filter.filterName() + " type:" + filter.filterType().toString() + " order:" + filter.filterOrder() + " " + e.getMessage());
         }
     }
 
@@ -392,7 +393,7 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
 
         @Override
         public void notify(ZuulFilter filter, ExecutionStatus status) {
-            DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType());
+            DynamicCounter.increment(METRIC_PREFIX + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType().toString());
         }
     }
 

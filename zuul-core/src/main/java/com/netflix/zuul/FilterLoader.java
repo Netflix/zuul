@@ -15,11 +15,8 @@
  */
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.*;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.filters.BaseFilter;
-import com.netflix.zuul.filters.BaseSyncFilter;
-import com.netflix.zuul.filters.FilterRegistry;
-import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +53,7 @@ public class FilterLoader
     private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
     private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
-    private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
+    private final ConcurrentHashMap<FilterType, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ZuulFilter> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private FilterRegistry filterRegistry = new FilterRegistry();
@@ -211,7 +208,7 @@ public class FilterLoader
      * @param filterType
      * @return a List<ZuulFilter>
      */
-    public List<ZuulFilter> getFiltersByType(String filterType) {
+    public List<ZuulFilter> getFiltersByType(FilterType filterType) {
 
         List<ZuulFilter> list = hashFiltersByType.get(filterType);
         if (list != null) return list;
@@ -238,12 +235,12 @@ public class FilterLoader
         return list;
     }
 
-    public ZuulFilter getFilterByNameAndType(String name, String type)
+    public ZuulFilter getFilterByNameAndType(String name, FilterType type)
     {
         if (name == null || type == null)
             return null;
 
-        String nameAndType = type + ":" + name;
+        String nameAndType = type.toString() + ":" + name;
         return filtersByNameAndType.get(nameAndType);
     }
 
@@ -255,8 +252,8 @@ public class FilterLoader
         }
 
         @Override
-        public String filterType() {
-            return "test";
+        public FilterType filterType() {
+            return FilterType.INBOUND;
         }
 
         @Override
@@ -320,12 +317,12 @@ public class FilterLoader
             filters.add(filter);
             when(registry.getAllFilters()).thenReturn(filters);
 
-            List<ZuulFilter> list = loader.getFiltersByType("test");
+            List<ZuulFilter> list = loader.getFiltersByType(FilterType.INBOUND);
             assertTrue(list != null);
             assertTrue(list.size() == 1);
             ZuulFilter filter = list.get(0);
             assertTrue(filter != null);
-            assertTrue(filter.filterType().equals("test"));
+            assertTrue(filter.filterType().equals(FilterType.INBOUND));
         }
 
 

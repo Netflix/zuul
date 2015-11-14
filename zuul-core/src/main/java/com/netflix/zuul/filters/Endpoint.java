@@ -37,9 +37,9 @@ public abstract class Endpoint<I extends ZuulMessage, O extends ZuulMessage> ext
     }
 
     @Override
-    public String filterType()
+    public FilterType filterType()
     {
-        return "end";
+        return FilterType.ENDPOINT;
     }
 
     @Override

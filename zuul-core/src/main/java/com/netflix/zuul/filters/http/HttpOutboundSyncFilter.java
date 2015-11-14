@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.filters.http;
 
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.filters.BaseSyncFilter;
 
@@ -26,7 +27,7 @@ import com.netflix.zuul.filters.BaseSyncFilter;
 public abstract class HttpOutboundSyncFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
 {
     @Override
-    public String filterType() {
-        return "out";
+    public FilterType filterType() {
+        return FilterType.OUTBOUND;
     }
 }

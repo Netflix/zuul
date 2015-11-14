@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.scriptManager;
 
+import com.netflix.zuul.filters.FilterType;
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.Date;
@@ -29,7 +30,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     private final String filter_id;
     private final String filter_name;
     private final String filter_code;
-    private final String filter_type;
+    private final FilterType filter_type;
     private final String filter_disablePropertyName;
     private final String filter_order;
     private final String application_name;
@@ -49,7 +50,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @param filter_order
      * @param application_name
      */
-    public FilterInfo(String filter_id, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
+    public FilterInfo(String filter_id, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.filter_code = filter_code;
         this.filter_type = filter_type;
@@ -90,7 +91,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      *
      * @return the filter_type
      */
-    public String getFilterType() {
+    public FilterType getFilterType() {
         return filter_type;
     }
 
@@ -131,7 +132,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @param filter_order
      * @param application_name
      */
-    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, String filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
+    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.revision = revision;
         this.creationDate = creationDate;
@@ -203,8 +204,8 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @param filter_name
      * @return key is application_name:filter_name:filter_type
      */
-    public static String buildFilterID(String application_name, String filter_type, String filter_name) {
-        return application_name + ":" + filter_name + ":" + filter_type;
+    public static String buildFilterID(String application_name, FilterType filter_type, String filter_name) {
+        return application_name + ":" + filter_name + ":" + filter_type.toString();
     }
 
     @Override

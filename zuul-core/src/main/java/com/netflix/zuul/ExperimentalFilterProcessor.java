@@ -116,7 +116,7 @@ public class ExperimentalFilterProcessor extends FilterProcessorImpl
         info.bDebug = msg.getContext().debugRouting();
 
         if (info.bDebug) {
-            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType() + " " + filter.filterOrder() + " " + filter.filterName());
+            Debug.addRoutingDebug(msg.getContext(), "Filter " + filter.filterType().toString() + " " + filter.filterOrder() + " " + filter.filterName());
             info.debugCopy = msg.clone();
         }
 
