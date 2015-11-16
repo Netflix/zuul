@@ -112,12 +112,13 @@ public class FilterProcessorImpl implements FilterProcessor
 
         if (filter.getSyncType() == FilterSyncType.SYNC) {
             // Apply this filter.
-            msg = processSyncFilter(msg, (BaseSyncFilter) filter, false);
+            msg = processSyncFilter(msg, (SyncZuulFilter) filter, false);
 
             // Recurse to the next filter in chain.
             return chainFilters(msg, filterChainIterator, phase);
         }
         else {
+            // TODO - find a way of avoiding wrapping with observable unless shouldFilter/ignore/etc have passed.
             // Apply this async filter.
             return processAsyncFilter(msg, filter, false)
                     .flatMap(msg2 -> {
@@ -142,7 +143,7 @@ public class FilterProcessorImpl implements FilterProcessor
             // After running the error filter reset the error flags on context.
             // This is to stop failures in error filters from turning into a recursive stack overflow.
             flagErrorSent(msg);
-            processSyncFilter(request, (BaseSyncFilter) errorFilter, false);
+            msg = processSyncFilter(request, (SyncZuulFilter) errorFilter, false);
 
             // Recurse to the next filter in chain.
             return chainFilters(msg, filterChainIterator, phase);
@@ -367,7 +368,7 @@ public class FilterProcessorImpl implements FilterProcessor
      * @param filter
      * @return
      */
-    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter, boolean shouldSendErrorResponse)
+    public ZuulMessage processSyncFilter(ZuulMessage msg, SyncZuulFilter filter, boolean shouldSendErrorResponse)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().debugRouting();

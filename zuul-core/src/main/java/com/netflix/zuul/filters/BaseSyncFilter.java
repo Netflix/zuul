@@ -23,7 +23,7 @@ import rx.Observable;
  * Date: 5/8/15
  * Time: 2:46 PM
  */
-public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessage> extends BaseFilter<I,O>
+public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessage> extends BaseFilter<I,O> implements SyncZuulFilter<I, O>
 {
     /**
      * A wrapper implementation of applyAsync() that is intended just to aggregate a non-blocking apply() method
@@ -39,8 +39,6 @@ public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessag
     {
         return Observable.just(this.apply(input));
     }
-
-    public abstract O apply(I input);
 
     @Override
     public FilterSyncType getSyncType()

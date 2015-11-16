@@ -1,6 +1,7 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.*;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -30,7 +31,7 @@ import static org.mockito.Mockito.*;
 public class FilterProcessorImplTest
 {
     @Mock
-    BaseSyncFilter filter;
+    SyncZuulFilter filter;
     @Mock
     FilterUsageNotifier usageNotifier;
     @Mock
@@ -197,6 +198,37 @@ public class FilterProcessorImplTest
         // Should be a default error response.
         HttpResponseMessage response = (HttpResponseMessage) output;
         assertEquals(500, response.getStatus());
+    }
+
+    @Test
+    public void testErrorWithSpecificStatusCode()
+    {
+        addFilterToLoader(loader, new MockHttpSyncInboundFilter("ErroringInboundFilter", 0, true,
+                new RuntimeException("mock filter error"), true));
+        addFilterToLoader(loader, new MockHttpSyncInboundFilter(1, true));
+        addFilterToLoader(loader, new MockEndpointFilter(true, response));
+        addFilterToLoader(loader, new MockHttpSyncOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpSyncOutboundFilter(1, true));
+
+        // Mock an error endpoint.
+        String errorEndpointName = "endpoint.ErrorResponse";
+        HttpResponseMessage errorResponse = new HttpResponseMessageImpl(request.getContext(), request, 503);
+        errorResponse.setBodyAsText("BLAH");
+        ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, true, errorResponse);
+        loader.putFilter(errorEndpointName, errorEndpoint, 0);
+
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
+        ZuulMessage output = chain.toBlocking().single();
+
+        // Should be only 1 errored filter.
+        assertEquals(1, ctx.getFilterErrors().size());
+        assertEquals("ErroringInboundFilter", ctx.getFilterErrors().get(0).getFilterName());
+
+        // Should have the 503 status code in response.
+        HttpResponseMessage response = (HttpResponseMessage) output;
+        assertEquals(503, response.getStatus());
+        assertEquals("BLAH", new String(response.getBody()));
     }
 
     String[] getFilterExecutionLines(SessionContext ctx)

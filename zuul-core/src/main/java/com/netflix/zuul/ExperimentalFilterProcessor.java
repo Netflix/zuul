@@ -19,7 +19,8 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.context.Debug;
-import com.netflix.zuul.filters.BaseSyncFilter;
+import com.netflix.zuul.filters.FilterSyncType;
+import com.netflix.zuul.filters.SyncZuulFilter;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
@@ -57,11 +58,11 @@ public class ExperimentalFilterProcessor extends FilterProcessorImpl
      */
     protected Observable<ZuulMessage> applyFilters(Observable<ZuulMessage> chain, List<ZuulFilter> filters)
     {
-        ArrayList<BaseSyncFilter> batchOfSyncFilters = new ArrayList<>();
+        ArrayList<SyncZuulFilter> batchOfSyncFilters = new ArrayList<>();
         for (ZuulFilter filter : filters)
         {
-            if (BaseSyncFilter.class.isAssignableFrom(filter.getClass())) {
-                batchOfSyncFilters.add((BaseSyncFilter) filter);
+            if (filter.getSyncType() == FilterSyncType.SYNC) {
+                batchOfSyncFilters.add((SyncZuulFilter) filter);
             }
             else {
                 // if we have a batch of consecutive sync filters, then combine them now into
@@ -92,10 +93,10 @@ public class ExperimentalFilterProcessor extends FilterProcessorImpl
      * @param filters
      * @return
      */
-    protected Observable<ZuulMessage> processSyncFilters(Observable<ZuulMessage> input, final List<BaseSyncFilter> filters)
+    protected Observable<ZuulMessage> processSyncFilters(Observable<ZuulMessage> input, final List<SyncZuulFilter> filters)
     {
         return input.map(msg -> {
-                    for (BaseSyncFilter filter : filters) {
+                    for (SyncZuulFilter filter : filters) {
                         msg = processSyncFilter(msg, filter);
                     }
                     return msg;
@@ -110,7 +111,7 @@ public class ExperimentalFilterProcessor extends FilterProcessorImpl
      * @param filter
      * @return
      */
-    public ZuulMessage processSyncFilter(ZuulMessage msg, BaseSyncFilter filter)
+    public ZuulMessage processSyncFilter(ZuulMessage msg, SyncZuulFilter filter)
     {
         final FilterExecInfo info = new FilterExecInfo();
         info.bDebug = msg.getContext().debugRouting();
