@@ -1,5 +1,6 @@
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
 
@@ -11,4 +12,7 @@ import rx.Observable;
 public interface FilterProcessor
 {
     Observable<ZuulMessage> applyFilterChain(ZuulMessage msg);
+
+    // TEMP while i'm comparing old and new impls. Remove when finished.
+    Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, boolean shouldSendErrorResponse);
 }

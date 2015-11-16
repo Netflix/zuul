@@ -240,6 +240,13 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         return chain;
     }
 
+    // TODO - Temp while comparing old and new impls.
+    @Override
+    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, boolean shouldSendErrorResponse)
+    {
+        return processFilterAsObservable(input, filter, (msg) -> msg);
+    }
+
     public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, Func1<ZuulMessage, ZuulMessage> defaultFilterResultChooser)
     {
         return input.flatMap(msg -> processAsyncFilter(msg, filter,
