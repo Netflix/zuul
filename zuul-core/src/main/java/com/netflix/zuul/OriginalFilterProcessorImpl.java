@@ -280,17 +280,15 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
                 resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                 info.status = ExecutionStatus.DISABLED;
             }
-            else if (msg.getContext().shouldStopFilterProcessing()) {
+            else if (msg.getContext().shouldStopFilterProcessing() && ! filter.overrideStopFilterProcessing()) {
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
                 resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                 info.status = ExecutionStatus.SKIPPED;
             }
             else {
-                // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
-                // equal or above the requested.
-                int requiredPriority = msg.getContext().getFilterPriorityToApply();
-                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
+                // Only apply the filter if the shouldFilter() method is true.
+                if (filter.shouldFilter(msg)) {
                     resultObs = filter.applyAsync(msg).single();
                 } else {
                     resultObs = Observable.just(defaultFilterResultChooser.call(msg));
@@ -336,11 +334,6 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         });
 
         return resultObs;
-    }
-
-    private boolean isFilterPriority(ZuulFilter filter, int requiredPriority)
-    {
-        return filter.getPriority() >= requiredPriority;
     }
 
     protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info)

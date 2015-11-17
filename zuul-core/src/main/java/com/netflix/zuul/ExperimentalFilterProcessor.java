@@ -129,17 +129,15 @@ public class ExperimentalFilterProcessor extends FilterProcessorImpl
                 result = filter.getDefaultOutput(msg);
                 info.status = DISABLED;
             }
-            else if (msg.getContext().shouldStopFilterProcessing()) {
+            else if (msg.getContext().shouldStopFilterProcessing() && ! filter.overrideStopFilterProcessing()) {
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
                 result = filter.getDefaultOutput(msg);
                 info.status = SKIPPED;
             }
             else {
-                // Only apply the filter if both the shouldFilter() method AND the filter has a priority of
-                // equal or above the requested.
-                int requiredPriority = msg.getContext().getFilterPriorityToApply();
-                if (isFilterPriority(filter, requiredPriority) && filter.shouldFilter(msg)) {
+                // Only apply the filter if the shouldFilter() method is true.
+                if (filter.shouldFilter(msg)) {
                     result = filter.apply(msg);
 
                     // If no result returned from filter, then use the original input.

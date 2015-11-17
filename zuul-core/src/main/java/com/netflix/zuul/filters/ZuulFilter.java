@@ -48,13 +48,12 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     FilterType filterType();
 
     /**
-     * The priority level for this filter.
+     * Whether this filter's shouldFilter() method should be checked, and apply() called, even
+     * if SessionContext.stopFilterProcessing has been set.
      *
-     * In certain circumstances, lower priority filters may not be applied.
-     *
-     * @return
+     * @return boolean
      */
-    int getPriority();
+    boolean overrideStopFilterProcessing();
 
     /**
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter

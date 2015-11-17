@@ -61,7 +61,7 @@ public class FilterProcessorImplTest
 
         when(filter.filterType()).thenReturn(FilterType.INBOUND);
         when(filter.shouldFilter(request)).thenReturn(true);
-        when(filter.getPriority()).thenReturn(5);
+        when(filter.overrideStopFilterProcessing()).thenReturn(false);
     }
 
     @Test
@@ -332,7 +332,6 @@ public class FilterProcessorImplTest
         when(errorEndpoint.filterName()).thenReturn("endpoint.ErrorResponse");
         when(errorEndpoint.filterType()).thenReturn(FilterType.ENDPOINT);
         when(errorEndpoint.shouldFilter(request)).thenReturn(true);
-        when(errorEndpoint.getPriority()).thenReturn(5);
         when(errorEndpoint.getDefaultOutput(any())).thenReturn(HttpResponseMessageImpl.defaultErrorResponse(request));
         when(errorEndpoint.applyAsync(any())).thenReturn(Observable.just(response));
         addFilterToLoader(loader, errorEndpoint);

@@ -54,16 +54,10 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
         return this.getClass().getName();
     }
 
-
-    /**
-     * Default to a priority of 10.
-     *
-     * @return
-     */
     @Override
-    public int getPriority()
+    public boolean overrideStopFilterProcessing()
     {
-        return 10;
+        return false;
     }
 
     /**

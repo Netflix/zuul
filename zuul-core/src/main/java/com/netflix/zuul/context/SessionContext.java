@@ -47,9 +47,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final int INITIAL_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
 
-    /** Default to apply filters of all priority levels. */
-    private int filterPriority = 0;
-
+    private boolean brownoutMode = false;
     private boolean shouldStopFilterProcessing = false;
 
 
@@ -144,7 +142,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public SessionContext copy()
     {
         SessionContext copy = new SessionContext();
-        copy.filterPriority = filterPriority;
+        copy.brownoutMode = brownoutMode;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
 
         Iterator<String> it = keySet().iterator();
@@ -330,6 +328,21 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
 
     /**
+     * This can be used by filters for flagging if the server is getting overloaded, and then choose
+     * to disable/sample/rate-limit some optional features.
+     *
+     * @return
+     */
+    public boolean isInBrownoutMode()
+    {
+        return brownoutMode;
+    }
+    public void setInBrownoutMode()
+    {
+        this.brownoutMode = true;
+    }
+
+    /**
      * This is typically set by a filter when wanting to reject a request, and also reduce load on the server
      * by not processing any subsequent filters for this request.
      */
@@ -366,23 +379,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public String getEndpoint()
     {
         return (String) get(KEY_ENDPOINT);
-    }
-
-    /**
-     * The level of priority to use for applying filters. Only filters of specified priority
-     * and above will be applied.
-     *
-     * ie. if non-zero, then only filters of specified priority and above will be applied.
-     *     if zero, then all filters will be applied.
-     *
-     * @return
-     */
-    public int getFilterPriorityToApply() {
-        return filterPriority;
-    }
-    public void setFilterPriorityToApply(int priority)
-    {
-        this.filterPriority = priority;
     }
 
     public void setEventProperty(String key, Object value) {
