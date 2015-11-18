@@ -24,6 +24,7 @@ import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -280,7 +281,10 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
                 resultObs = Observable.just(defaultFilterResultChooser.call(msg));
                 info.status = ExecutionStatus.DISABLED;
             }
-            else if (msg.getContext().shouldStopFilterProcessing() && ! filter.overrideStopFilterProcessing()) {
+            else if (msg.getContext().shouldStopFilterProcessing()
+                    && ! filter.overrideStopFilterProcessing()
+                    && ! isEndpointFilter(filter)) {
+                // Skip this filter.
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
                 resultObs = Observable.just(defaultFilterResultChooser.call(msg));
@@ -334,6 +338,11 @@ public class OriginalFilterProcessorImpl implements FilterProcessor
         });
 
         return resultObs;
+    }
+
+    protected boolean isEndpointFilter(ZuulFilter filter)
+    {
+        return Endpoint.class.isAssignableFrom(filter.getClass());
     }
 
     protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info)

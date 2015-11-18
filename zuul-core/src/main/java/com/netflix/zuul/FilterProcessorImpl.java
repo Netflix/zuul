@@ -392,7 +392,10 @@ public class FilterProcessorImpl implements FilterProcessor
                 result = filter.getDefaultOutput(msg);
                 info.status = DISABLED;
             }
-            else if (msg.getContext().shouldStopFilterProcessing() && ! filter.overrideStopFilterProcessing()) {
+            else if (msg.getContext().shouldStopFilterProcessing()
+                    && ! filter.overrideStopFilterProcessing()
+                    && ! isEndpointFilter(filter)) {
+                // Skip this filter.
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
                 result = filter.getDefaultOutput(msg);
