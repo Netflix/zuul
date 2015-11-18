@@ -15,6 +15,7 @@
  */
 package outbound
 
+import com.netflix.zuul.filters.FilterType
 import com.netflix.zuul.message.http.HttpResponseMessage
 import com.netflix.zuul.message.ZuulMessage
 import com.netflix.zuul.filters.MessageBodyBufferFilter
@@ -33,7 +34,7 @@ class BufferingOutbound extends MessageBodyBufferFilter
     }
 
     @Override
-    String filterType() {
+    FilterType filterType() {
         return "out"
     }
 }

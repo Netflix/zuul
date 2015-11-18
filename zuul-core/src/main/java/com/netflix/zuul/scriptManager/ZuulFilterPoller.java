@@ -18,6 +18,7 @@ package com.netflix.zuul.scriptManager;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.constants.ZuulConstants;
+import com.netflix.zuul.filters.FilterType;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -137,10 +138,10 @@ public class ZuulFilterPoller {
     private void writeFilterToDisk(FilterInfo newFilter) throws IOException {
 
         String path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_PRE_PATH, null).get();
-        if (newFilter.getFilterType().equals("post")) {
+        if (newFilter.getFilterType().equals(FilterType.OUTBOUND)) {
             path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_POST_PATH, null).get();
         }
-        if (newFilter.getFilterType().equals("route")) {
+        if (newFilter.getFilterType().equals(FilterType.ENDPOINT)) {
             path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_ROUTING_PATH, null).get();
         }
 

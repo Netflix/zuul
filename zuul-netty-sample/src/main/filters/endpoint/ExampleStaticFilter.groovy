@@ -15,9 +15,9 @@
  */
 package endpoint
 
+import com.netflix.zuul.filters.http.HttpAsyncEndpoint
 import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.message.http.HttpResponseMessageImpl
-import com.netflix.zuul.filters.Endpoint
 import rx.Observable
 
 /**
@@ -25,7 +25,7 @@ import rx.Observable
  * Date: 5/12/15
  * Time: 1:53 PM
  */
-class ExampleStaticFilter extends Endpoint<HttpRequestMessage, HttpResponseMessageImpl>
+class ExampleStaticFilter extends HttpAsyncEndpoint
 {
     @Override
     Observable<HttpResponseMessageImpl> applyAsync(HttpRequestMessage request)

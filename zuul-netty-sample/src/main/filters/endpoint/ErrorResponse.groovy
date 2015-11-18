@@ -15,12 +15,12 @@
  */
 package endpoint
 
-import com.netflix.zuul.message.http.HttpQueryParams
-import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.exception.ZuulException
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
+import com.netflix.zuul.message.http.HttpQueryParams
+import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.monitoring.MonitoringHelper
 import org.junit.Before
 import org.junit.Test
@@ -58,7 +58,6 @@ class ErrorResponse extends HttpSyncEndpoint
 
         return response
     }
-
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit

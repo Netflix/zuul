@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul.scriptManager;
 
+import com.netflix.zuul.filters.FilterType;
+
 import java.util.List;
 
 /**
@@ -115,7 +117,7 @@ public interface ZuulFilterDAO {
      * @param filter_order
      * @return the filter
      */
-    FilterInfo addFilter(String filtercode, String filter_type, String filter_name, String disableFilterPropertyName, String filter_order);
+    FilterInfo addFilter(String filtercode, FilterType filter_type, String filter_name, String disableFilterPropertyName, String filter_order);
 
     /**
      *

@@ -20,9 +20,11 @@
 
 package com.netflix.zuul.filters.http;
 
+import com.netflix.zuul.filters.SyncEndpoint;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.filters.SyncEndpoint;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 
 /**
  * User: Mike Smith
@@ -31,4 +33,9 @@ import com.netflix.zuul.filters.SyncEndpoint;
  */
 public abstract class HttpSyncEndpoint extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
 {
+    @Override
+    public ZuulMessage getDefaultOutput(HttpRequestMessage request)
+    {
+        return HttpResponseMessageImpl.defaultErrorResponse(request);
+    }
 }

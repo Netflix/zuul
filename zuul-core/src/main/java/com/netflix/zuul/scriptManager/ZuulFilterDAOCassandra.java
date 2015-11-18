@@ -26,6 +26,7 @@ import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByKe
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraGetRowsByQuery;
 import com.netflix.zuul.dependency.cassandra.hystrix.HystrixCassandraPut;
 import com.netflix.zuul.event.ZuulEvent;
+import com.netflix.zuul.filters.FilterType;
 import net.jcip.annotations.ThreadSafe;
 import org.junit.Before;
 import org.junit.Test;
@@ -257,7 +258,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
             filterName = columns.getColumnByName("filter_name").getStringValue();
             String filter_id = columns.getColumnByName("filter_id").getStringValue();
-            String filterType = columns.getColumnByName("filter_type").getStringValue();
+            FilterType filterType = FilterType.parse(columns.getColumnByName("filter_type").getStringValue());
             String filterDisable = columns.getColumnByName("filter_disable") != null ? columns.getColumnByName("filter_disable").getStringValue() : "?";
             String filterOrder = columns.getColumnByName("filter_order") != null ? columns.getColumnByName("filter_order").getStringValue() : "?";
             revision = (int) columns.getColumnByName("revision").getLongValue();
@@ -277,7 +278,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
     }
 
     @Override
-    public FilterInfo addFilter(String filtercode, String filter_type, String filter_name, String disableFilterPropertyName, String filter_order) {
+    public FilterInfo addFilter(String filtercode, FilterType filter_type, String filter_name, String disableFilterPropertyName, String filter_order) {
         String filter_id = buildFilterID(filter_type, filter_name);
         FilterInfo latest = getLatestFilterInfoForFilter(filter_id);
         int revision = 1;
@@ -317,7 +318,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         return getFilterInfoForFilter(filter_id, revision);
     }
 
-    public static String buildFilterID(String filter_type, String filter_name) {
+    public static String buildFilterID(FilterType filter_type, String filter_name) {
         return FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter_type, filter_name);
 
     }
@@ -683,9 +684,9 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
             dao = spy(dao);
 
-            doReturn("name:type_1|name:type_2").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in_1|name:in_2").when(dao).getFilterIdsRaw(anyString());
 
-            String filter = "name:type";
+            String filter = "name:in";
 
             Calendar now = Calendar.getInstance();
 
@@ -694,7 +695,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ColumnList<String> columnList0 = mockColumnList(row0);
             mockColumn(columnList0, "filter_id", filter);
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "revision", 1L);
             mockColumn(columnList0, "active", true);
             mockColumn(columnList0, "canary", false);
@@ -709,7 +710,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "filter_id", filter);
             mockColumn(columnList1, "revision", 2L);
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "type");
+            mockColumn(columnList1, "filter_type", "in");
             mockColumn(columnList1, "active", false);
             mockColumn(columnList1, "canary", false);
             mockColumn(columnList1, "creation_date", now.getTime());
@@ -767,7 +768,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @Test
         public void testGetScriptForEndpointAndRevision() {
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
-            String filter = "name:type";
+            String filter = "name:in";
 
             Calendar now = Calendar.getInstance();
 
@@ -780,7 +781,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -797,7 +798,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(response.size()).thenReturn(1);
             dao = spy(dao);
 
-            doReturn("name:type_3").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in_3").when(dao).getFilterIdsRaw(anyString());
 
 
             /* exercise the method we're testing */
@@ -831,7 +832,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @Test
         public void testGetScriptForLatestEndpoint() {
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
-            String filter = "name:type";
+            String filter = "name:in";
 
             Calendar now = Calendar.getInstance();
 
@@ -844,7 +845,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -862,7 +863,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
             dao = spy(dao);
 
-            doReturn("name:type_4").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in_4").when(dao).getFilterIdsRaw(anyString());
 
             /* exercise the method we're testing */
             FilterInfo filterInfo = dao.getLatestFilterInfoForFilter(filter);
@@ -882,7 +883,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @Test
         public void testGetActiveScriptForEndpoint() {
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
-            String filter = "name:type";
+            String filter = "name:in";
 
             Calendar now = Calendar.getInstance();
 
@@ -895,7 +896,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -913,7 +914,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             when(iterator.next()).thenReturn(row0);
 
             dao = spy(dao);
-            doReturn("name:type_3").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in_3").when(dao).getFilterIdsRaw(anyString());
 
             /* exercise the method we're testing */
             FilterInfo filterInfo = dao.getActiveFilterInfoForFilter(filter);
@@ -935,7 +936,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          */
         @Test
         public void testAddScriptForNewEndpointUsingArray() {
-            String filter = "null:name:type";
+            String filter = "null:name:in";
 
             mockGetScriptForEndpoint(filter);
 
@@ -971,11 +972,11 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             /* exercise the method we're testing */
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(testGateway);
             dao = spy(dao);
-            doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in").when(dao).getFilterIdsRaw(anyString());
             when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
 
-            FilterInfo filterInfo = dao.addFilter("code", "type", "name", "disable", "order");
+            FilterInfo filterInfo = dao.addFilter("code", FilterType.INBOUND, "name", "disable", "order");
 
             /* validate that Cassandra receives the correct attributes */
             assertEquals(filter + "_1", upsertedRowKey.toString());
@@ -994,7 +995,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @SuppressWarnings("unchecked")
         @Test
         public void testAddScriptForExistingEndpoint() {
-            String filter = "name:type";
+            String filter = "name:in";
 
             /* mock data so that the getScriptForEndpoint at the end of the method will work */
             Calendar now = Calendar.getInstance();
@@ -1006,7 +1007,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1054,11 +1055,11 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(testGateway);
 
             dao = spy(dao);
-            doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in").when(dao).getFilterIdsRaw(anyString());
             doReturn(response).when(testGateway).getByFilterIds(anyList());
 
 
-            FilterInfo filterInfo = dao.addFilter("script body1", "type", "name", "disable", "order");
+            FilterInfo filterInfo = dao.addFilter("script body1", FilterType.INBOUND, "name", "disable", "order");
 
             /* validate that revision is 2 since the previous revision is 1 (defined in mock above) */
             assertEquals("null:" + filter + "_2", upsertedRowKey.toString());
@@ -1071,7 +1072,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @SuppressWarnings("unchecked")
         @Test
         public void testSetScriptActive() {
-            String filter = "name:type";
+            String filter = "name:in";
             Calendar now = Calendar.getInstance();
 
             /* define currently active script */
@@ -1083,7 +1084,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1099,7 +1100,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "creation_date", now.getTime());
             mockColumn(columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "type");
+            mockColumn(columnList1, "filter_type", "in");
             mockColumn(columnList1, "canary", true);
             mockColumn(columnList1, "application_name", "app_name");
 
@@ -1124,7 +1125,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(response2columnList1, "creation_date", now.getTime());
             mockColumn(response2columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(response2columnList1, "filter_name", "name");
-            mockColumn(response2columnList1, "filter_type", "type");
+            mockColumn(response2columnList1, "filter_type", "in");
             mockColumn(response2columnList1, "canary", true);
             mockColumn(response2columnList1, "application_name", "app_name");
 
@@ -1147,7 +1148,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(response3columnList1, "creation_date", now.getTime());
             mockColumn(response3columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(response3columnList1, "filter_name", "name");
-            mockColumn(response3columnList1, "filter_type", "type");
+            mockColumn(response3columnList1, "filter_type", "in");
             mockColumn(response3columnList1, "canary", true);
             mockColumn(response3columnList1, "application_name", "app_name");
 
@@ -1167,7 +1168,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ZuulFilterDAOCassandra dao = new ZuulFilterDAOCassandra(gateway);
 
             dao = spy(dao);
-            doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in").when(dao).getFilterIdsRaw(anyString());
             when(gateway.getByFilterIds(anyList())).thenReturn(response3, response, response2);
 
 
@@ -1200,7 +1201,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @SuppressWarnings("unchecked")
         @Test
         public void testSetScriptActiveHandlesPartialFailure() {
-            String filter = "name:type";
+            String filter = "name:in";
             Calendar now = Calendar.getInstance();
 
             /* define currently active script */
@@ -1212,7 +1213,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1228,7 +1229,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "creation_date", now.getTime());
             mockColumn(columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "type");
+            mockColumn(columnList1, "filter_type", "in");
             mockColumn(columnList1, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1253,7 +1254,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
 
             dao = spy(dao);
-            doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in").when(dao).getFilterIdsRaw(anyString());
             when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
             try {
@@ -1274,7 +1275,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         @SuppressWarnings("unchecked")
         @Test
         public void testSetScriptActiveDoesNotDeactivateWhatWasJustActivated() {
-            String filter = "name:type";
+            String filter = "name:in";
             Calendar now = Calendar.getInstance();
 
             /* define currently active script */
@@ -1286,7 +1287,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", true);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1304,7 +1305,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             /* exercise the method we're testing */
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(gateway);
             dao = spy(dao);
-            doReturn("name:type").when(dao).getFilterIdsRaw(anyString());
+            doReturn("name:in").when(dao).getFilterIdsRaw(anyString());
             when(gateway.getByFilterIds(anyList())).thenReturn(response);
 
             try {
@@ -1398,7 +1399,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "System.out.println(\"hello world\")".getBytes()); // what we put here doesn't matter
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "type");
+            mockColumn(columnList0, "filter_type", "in");
             mockColumn(columnList0, "canary", false);
 
             when(response.getRowByIndex(0)).thenReturn(row0);

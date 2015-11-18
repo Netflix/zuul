@@ -1,11 +1,10 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.ZuulMessageImpl;
+import com.netflix.zuul.message.http.*;
 import rx.Observable;
 
 import java.util.ArrayList;
@@ -25,8 +24,17 @@ public class FilterProcessorPerfTest
         try {
             FilterProcessorPerfTest test = new FilterProcessorPerfTest();
 
-            long avgNs = test.runTest1_Original();
+            long avgNs;
+
+            avgNs = test.runTest1_Experimental();
+            System.out.println("Experiment 1 averaged " + avgNs + " ns per run.");
+
+            avgNs = test.runTest1_Experimental2();
+            System.out.println("Experiment 2 averaged " + avgNs + " ns per run.");
+
+            avgNs = test.runTest1_Original();
             System.out.println("Original averaged " + avgNs + " ns per run.");
+
         }
         catch(RuntimeException e) {
             e.printStackTrace();
@@ -36,27 +44,64 @@ public class FilterProcessorPerfTest
     long runTest1_Original()
     {
         FilterProcessorPerfTest test = new FilterProcessorPerfTest();
-        ArrayList<ZuulFilter> filters = test.createFilters(50, false);
-        FilterProcessor processor = test.setupProcessor(filters);
+        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
+        FilterProcessor processor = new OriginalFilterProcessorImpl(setupFilterLoader(filters), ((filter, status) -> {}));
+        SessionContext context = new SessionContext();
+        context.setEndpoint("MockEndpointFilter");
 
         // warmup
-        test.runTest1(processor, 100);
+        test.runTest1(processor, context, 1000);
 
         // run for real.
-        long avgNs = test.runTest1(processor, 10000);
+        long avgNs = test.runTest1(processor, context, 10000);
 
         return avgNs;
     }
 
-    long runTest1(FilterProcessor processor, int testCount)
+    long runTest1_Experimental()
     {
-        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
+        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
+        FilterProcessor processor = new ExperimentalFilterProcessor(setupFilterLoader(filters), ((filter, status) -> {}));
+        SessionContext context = new SessionContext();
+        context.setEndpoint("MockEndpointFilter");
+
+        // warmup
+        test.runTest1(processor, context, 1000);
+
+        // run for real.
+        long avgNs = test.runTest1(processor, context, 10000);
+
+        return avgNs;
+    }
+
+    long runTest1_Experimental2()
+    {
+        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
+        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
+        FilterProcessor processor = new FilterProcessorImpl(setupFilterLoader(filters), ((filter, status) -> {}));
+        SessionContext context = new SessionContext();
+        context.setEndpoint("MockEndpointFilter");
+
+        // warmup
+        test.runTest1(processor, context, 1000);
+
+        // run for real.
+        long avgNs = test.runTest1(processor, context, 10000);
+
+        return avgNs;
+    }
+
+    long runTest1(FilterProcessor processor, SessionContext context, int testCount)
+    {
+        HttpRequestMessageImpl msg = new HttpRequestMessageImpl(context,
+                "HTTP/1.1", "get", "/", new HttpQueryParams(), new Headers(), "127.0.0.1", "https", 7001, "localhost");
+
 
         // Process the filters a loop and record time taken.
         long startTime = System.nanoTime();
         for (int i=0; i<testCount; i++) {
-            Observable<ZuulMessage> chain = Observable.just(msg);
-            chain = processor.applyInboundFilters(chain);
+            Observable<ZuulMessage> chain = processor.applyFilterChain(msg);
             chain.subscribe();
         }
         long duration = System.nanoTime() - startTime;
@@ -64,15 +109,13 @@ public class FilterProcessorPerfTest
         return avg;
     }
 
-    FilterProcessor setupProcessor(Collection<ZuulFilter> filters)
+    FilterLoader setupFilterLoader(Collection<ZuulFilter> filters)
     {
         FilterLoader loader = new FilterLoader();
-
         for (ZuulFilter filter : filters) {
             loader.putFilter(filter.filterName(), filter, 0);
         }
-
-        return new FilterProcessor(loader, ((filter, status) -> {}));
+        return loader;
     }
 
     ArrayList<ZuulFilter> createFilters(int count, boolean shouldFilter)
@@ -82,6 +125,9 @@ public class FilterProcessorPerfTest
         for (int i=0; i<count; i++) {
             filters.add(createFilter("in", i, shouldFilter));
         }
+
+        filters.add(createFilter("end", 0, shouldFilter));
+
         for (int i=0; i<count; i++) {
             filters.add(createFilter("out", i, shouldFilter));
         }
@@ -90,61 +136,15 @@ public class FilterProcessorPerfTest
 
     ZuulFilter createFilter(String filterType, int index, boolean shouldFilter)
     {
-        return new MockSyncFilter("dummyfilter-" + index, filterType, index, shouldFilter);
-    }
-
-
-    class MockSyncFilter extends BaseSyncFilter<ZuulMessage, ZuulMessage>
-    {
-        private String filterName;
-        private String filterType;
-        private int filterOrder;
-        private boolean shouldFilter;
-
-        public MockSyncFilter(String filterName, String filterType, int filterOrder, boolean shouldFilter)
-        {
-            this.filterName = filterName;
-            this.filterType = filterType;
-            this.filterOrder = filterOrder;
-            this.shouldFilter = shouldFilter;
-        }
-
-        @Override
-        public String filterType()
-        {
-            return filterType;
-        }
-
-        @Override
-        public String filterName()
-        {
-            return filterName;
-        }
-
-        @Override
-        public int filterOrder()
-        {
-            return filterOrder;
-        }
-
-        @Override
-        public boolean shouldFilter(ZuulMessage msg)
-        {
-            return shouldFilter;
-        }
-
-        @Override
-        public ZuulMessage apply(ZuulMessage input)
-        {
-            // Do some work.
-            ArrayList<String> texts = new ArrayList<>();
-            for (int i = 0; i < 1000; i++) {
-                int y = i + 100;
-                String text = "some text - " + y;
-                texts.add(text);
-            }
-
-            return input;
+        switch(filterType) {
+            case "in":
+                return new MockHttpSyncInboundFilter(index, shouldFilter);
+            case "out":
+                return new MockHttpSyncOutboundFilter(index, shouldFilter);
+            case "end":
+                return new MockEndpointFilter(shouldFilter);
+            default:
+                return null;
         }
     }
 }

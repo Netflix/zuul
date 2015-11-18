@@ -28,7 +28,7 @@ import rx.Observable;
  * Date: 5/16/15
  * Time: 2:00 PM
  */
-public abstract class SyncEndpoint<I extends ZuulMessage, O extends ZuulMessage> extends Endpoint<I,O>
+public abstract class SyncEndpoint<I extends ZuulMessage, O extends ZuulMessage> extends Endpoint<I,O> implements SyncZuulFilter<I, O>
 {
     /**
      * A wrapper implementation of applyAsync() that is intended just to aggregate a non-blocking apply() method
@@ -45,5 +45,9 @@ public abstract class SyncEndpoint<I extends ZuulMessage, O extends ZuulMessage>
         return Observable.just(this.apply(input));
     }
 
-    public abstract O apply(I input);
+    @Override
+    public FilterSyncType getSyncType()
+    {
+        return FilterSyncType.SYNC;
+    }
 }

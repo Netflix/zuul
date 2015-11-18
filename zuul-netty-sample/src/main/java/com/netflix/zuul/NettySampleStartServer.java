@@ -19,7 +19,7 @@ package com.netflix.zuul;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DeploymentContext;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
-import com.netflix.zuul.FilterProcessor.BasicFilterUsageNotifier;
+import com.netflix.zuul.FilterProcessorImpl.BasicFilterUsageNotifier;
 import com.netflix.zuul.context.RxNettySessionContextFactory;
 import com.netflix.zuul.context.SampleSessionContextDecorator;
 import com.netflix.zuul.context.SessionCleaner;
@@ -60,7 +60,7 @@ public class NettySampleStartServer
 
         OriginManager originManager = new RxNettyOriginManager(new StaticHostSourceFactory(origin));
         FilterLoader filterLoader = new FilterLoader();
-        FilterProcessor filterProcessor = new FilterProcessor(filterLoader, new BasicFilterUsageNotifier());
+        FilterProcessor filterProcessor = new FilterProcessorImpl(filterLoader, new BasicFilterUsageNotifier());
         FilterFileManagerConfig config =
                 new FilterFileManagerConfig(new String[] {
                         "/Users/nkant/work/workspace/github/zuul-revert/zuul-netty-sample/src/main/filters/endpoint",

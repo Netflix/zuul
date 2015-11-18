@@ -75,6 +75,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         this.status = status;
     }
 
+    public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
+    {
+        return new HttpResponseMessageImpl(request.getContext(), request, 500);
+    }
+
     @Override
     public Headers getHeaders()
     {

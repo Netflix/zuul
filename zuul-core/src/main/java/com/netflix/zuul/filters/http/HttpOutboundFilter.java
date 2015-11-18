@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul.filters.http;
 
+import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.filters.BaseFilter;
 
@@ -26,7 +28,13 @@ import com.netflix.zuul.filters.BaseFilter;
 public abstract class HttpOutboundFilter extends BaseFilter<HttpResponseMessage, HttpResponseMessage>
 {
     @Override
-    public String filterType() {
-        return "out";
+    public FilterType filterType() {
+        return FilterType.OUTBOUND;
+    }
+
+    @Override
+    public ZuulMessage getDefaultOutput(HttpResponseMessage input)
+    {
+        return input;
     }
 }
