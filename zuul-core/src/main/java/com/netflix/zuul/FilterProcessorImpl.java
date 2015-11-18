@@ -189,6 +189,11 @@ public class FilterProcessorImpl implements FilterProcessor
         return HttpResponseMessage.class.isAssignableFrom(msg.getClass());
     }
 
+    protected boolean isEndpointFilter(ZuulFilter filter)
+    {
+        return Endpoint.class.isAssignableFrom(filter.getClass());
+    }
+
     /**
      * Either get the request for this response (if msg is a response), or just return the msg if it is a request.
      *
@@ -299,7 +304,10 @@ public class FilterProcessorImpl implements FilterProcessor
                 resultObs = Observable.just(filter.getDefaultOutput(msg));
                 info.status = ExecutionStatus.DISABLED;
             }
-            else if (msg.getContext().shouldStopFilterProcessing() && ! filter.overrideStopFilterProcessing()) {
+            else if (msg.getContext().shouldStopFilterProcessing()
+                    && ! filter.overrideStopFilterProcessing()
+                    && ! isEndpointFilter(filter)) {
+                // Skip this filter.
                 // This is typically set by a filter when wanting to reject a request, and also reduce load on the server by
                 // not processing any more filters.
                 resultObs = Observable.just(filter.getDefaultOutput(msg));

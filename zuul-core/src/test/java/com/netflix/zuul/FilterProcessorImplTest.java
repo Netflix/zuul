@@ -203,8 +203,11 @@ public class FilterProcessorImplTest
     @Test
     public void testErrorWithSpecificStatusCode()
     {
-        addFilterToLoader(loader, new MockHttpSyncInboundFilter("ErroringInboundFilter", 0, true,
-                new RuntimeException("mock filter error"), true));
+        MockHttpSyncInboundFilter erroringInboundFilter = new MockHttpSyncInboundFilter(
+                "ErroringInboundFilter", 0, true,
+                new RuntimeException("mock filter error"), true);
+
+        addFilterToLoader(loader, erroringInboundFilter);
         addFilterToLoader(loader, new MockHttpSyncInboundFilter(1, true));
         addFilterToLoader(loader, new MockEndpointFilter(true, response));
         addFilterToLoader(loader, new MockHttpSyncOutboundFilter(0, true));
@@ -215,6 +218,41 @@ public class FilterProcessorImplTest
         HttpResponseMessage errorResponse = new HttpResponseMessageImpl(request.getContext(), request, 503);
         errorResponse.setBodyAsText("BLAH");
         ZuulFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, true, errorResponse);
+        loader.putFilter(errorEndpointName, errorEndpoint, 0);
+
+        FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
+        Observable<ZuulMessage> chain = processor.applyFilterChain(request);
+        ZuulMessage output = chain.toBlocking().single();
+
+        // Should be only 1 errored filter.
+        assertEquals(1, ctx.getFilterErrors().size());
+        assertEquals("ErroringInboundFilter", ctx.getFilterErrors().get(0).getFilterName());
+
+        // Should have the 503 status code in response.
+        HttpResponseMessage response = (HttpResponseMessage) output;
+        assertEquals(503, response.getStatus());
+        assertEquals("BLAH", new String(response.getBody()));
+    }
+
+    @Test
+    public void testErrorWithSpecificStatusCodeAndStopFilterProcessing()
+    {
+        MockHttpSyncInboundFilter erroringInboundFilter = new MockHttpSyncInboundFilter(
+                "ErroringInboundFilter", 0, true,
+                new RuntimeException("mock filter error"), true);
+        erroringInboundFilter.setShouldStopFilterProcessing(true);
+
+        addFilterToLoader(loader, erroringInboundFilter);
+        addFilterToLoader(loader, new MockHttpSyncInboundFilter(1, true));
+        addFilterToLoader(loader, new MockEndpointFilter(true, response));
+        addFilterToLoader(loader, new MockHttpSyncOutboundFilter(0, true));
+        addFilterToLoader(loader, new MockHttpSyncOutboundFilter(1, true));
+
+        // Mock an error endpoint.
+        String errorEndpointName = "endpoint.ErrorResponse";
+        HttpResponseMessage errorResponse = new HttpResponseMessageImpl(request.getContext(), request, 503);
+        errorResponse.setBodyAsText("BLAH");
+        MockEndpointFilter errorEndpoint = new MockEndpointFilter(errorEndpointName, true, errorResponse);
         loader.putFilter(errorEndpointName, errorEndpoint, 0);
 
         FilterProcessor processor = new FilterProcessorImpl(loader, usageNotifier);
