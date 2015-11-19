@@ -25,6 +25,8 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
+import com.netflix.zuul.routing.Route
+import com.netflix.zuul.routing.RoutingResult
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -75,8 +77,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
         SessionContext context = request.getContext()
 
         if (AltVIP.get() != null) {
-            context.routeVIP = AltVIP.get()
-            if (context.getRouteVIP().startsWith(RibbonConfig.getApplicationName())) {
+            context.getRoutingResult().assign(new Route(AltVIP.get()), WeightedLoadBalancer.class.getName());
+            if (context.getRoutingResult().getAssigned().getVip().startsWith(RibbonConfig.getApplicationName())) {
                 context.zuulToZuul = true // for zuulToZuul load testing
             }
         }
@@ -107,6 +109,7 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
         public void setup() {
             filter = Mockito.spy(new WeightedLoadBalancer())
             ctx = new SessionContext()
+            ctx.setRoutingResult(new RoutingResult())
             Mockito.when(request.getContext()).thenReturn(ctx)
             response = new HttpResponseMessageImpl(ctx, request, 99)
             RibbonConfig.setApplicationName("zuul")
@@ -137,7 +140,7 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
             filter.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
             Assert.assertTrue(filter.shouldFilter(request))
             filter.apply(request)
-            Assert.assertTrue(ctx.routeVIP == "test")
+            Assert.assertTrue(ctx.getRoutingResult().getAssigned().getVip() == "test")
             Assert.assertTrue(ctx.routeHost == null)
         }
 

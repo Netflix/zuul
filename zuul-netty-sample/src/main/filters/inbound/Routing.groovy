@@ -18,6 +18,7 @@ package inbound
 import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
+import com.netflix.zuul.routing.Route
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -47,20 +48,19 @@ class Routing extends HttpInboundSyncFilter
 
         // Choose vip to proxy to.
         if (request.getPath().startsWith("/yahoo/") || "www.yahoo.com" == request.getHeaders().getFirst("Host")) {
-            context.setRouteVIP("yahoo")
+            context.getRoutingResult().assign(new Route("yahoo"), Routing.class.getName())
             context.setEndpoint("endpoint.ZuulNFRequest")
         }
         else if (request.getPath() == "/blah") {
             // TEST - make use the static filters.
-            context.setRouteVIP(null)
             context.setEndpoint("endpoint.ExampleStaticFilter")
         }
         else if (request.getPath() == "/simulator/") {
-            context.setRouteVIP("simulator")
+            context.getRoutingResult().assign(new Route("simulator"), Routing.class.getName())
             context.setEndpoint("endpoint.ZuulNFRequest")
         }
         else {
-            context.setRouteVIP("api_netflix")
+            context.getRoutingResult().assign(new Route("api_netflix"), Routing.class.getName())
             context.setEndpoint("endpoint.ZuulNFRequest")
         }
 

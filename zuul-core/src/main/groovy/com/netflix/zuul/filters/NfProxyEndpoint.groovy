@@ -25,6 +25,8 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.monitoring.MonitoringHelper
 import com.netflix.zuul.origins.Origin
 import com.netflix.zuul.origins.OriginManager
+import com.netflix.zuul.routing.Route
+import com.netflix.zuul.routing.RoutingResult
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -85,7 +87,7 @@ class NfProxyEndpoint extends HttpAsyncEndpoint
 
     protected Origin getOrigin(HttpRequestMessage request)
     {
-        String name = request.getContext().getRouteVIP()
+        String name = request.getContext().getRoutingResult().getAssigned().getVip()
         OriginManager originManager = request.getContext().get("origin_manager")
         Origin origin = originManager.getOrigin(name)
         if (origin == null) {
@@ -116,6 +118,8 @@ class NfProxyEndpoint extends HttpAsyncEndpoint
             MonitoringHelper.initMocks();
             filter = new NfProxyEndpoint()
             ctx = new SessionContext()
+            ctx.setRoutingResult(new RoutingResult());
+            ctx.getRoutingResult().assign(new Route("an-origin"), "test");
             Mockito.when(request.getContext()).thenReturn(ctx)
             response = new HttpResponseMessageImpl(ctx, request, 202)
 
@@ -126,7 +130,6 @@ class NfProxyEndpoint extends HttpAsyncEndpoint
         @Test
         public void testApplyAsync()
         {
-            ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
             Observable<HttpRequestMessage> respObs = filter.applyAsync(request)
@@ -139,7 +142,6 @@ class NfProxyEndpoint extends HttpAsyncEndpoint
         @Test
         public void testApply()
         {
-            ctx.setRouteVIP("an-origin")
             when(origin.request(request)).thenReturn(Observable.just(response))
 
             HttpResponseMessageImpl response = filter.apply(request)
@@ -150,7 +152,7 @@ class NfProxyEndpoint extends HttpAsyncEndpoint
         @Test
         public void testApply_NoOrigin()
         {
-            ctx.setRouteVIP("a-different-origin")
+            ctx.getRoutingResult().assign(new Route("a-different-origin"), "test")
             try {
                 Observable<HttpResponseMessageImpl> respObs = filter.applyAsync(request)
                 respObs.toBlocking().single()
