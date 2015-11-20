@@ -16,14 +16,12 @@
 package com.netflix.zuul.message.http;
 
 
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
+import com.netflix.zuul.properties.CachedProperties;
 import com.netflix.zuul.stats.Timing;
 import com.netflix.zuul.util.HttpUtils;
 import io.netty.buffer.ByteBuf;
@@ -55,10 +53,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 {
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
 
-    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
+    private static final CachedProperties.Int MAX_BODY_SIZE_PROP = new CachedProperties.Int(
             "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024
     );
-    private static final DynamicBooleanProperty CLEAN_COOKIES = DynamicPropertyFactory.getInstance().getBooleanProperty(
+    private static final CachedProperties.Boolean CLEAN_COOKIES = new CachedProperties.Boolean(
             "zuul.HttpRequestMessage.cookies.clean", false
     );
 
