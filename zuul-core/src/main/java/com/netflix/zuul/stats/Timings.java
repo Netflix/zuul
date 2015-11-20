@@ -9,37 +9,44 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Timings
 {
-    protected final ConcurrentHashMap<String, Timing> timings = new ConcurrentHashMap<>();
+    private final Timing request = new Timing("_requestTiming");
+    private final Timing requestProxy = new Timing("_requestProxyTiming");
+    private final Timing requestBodyRead = new Timing("_requestBodyReadTiming");
+    private final Timing responseBodyRead = new Timing("_responseBodyReadTiming");
+    private final Timing requestBodyWrite = new Timing("_requestBodyWriteTiming");
+    private final Timing responseBodyWrite = new Timing("_responseBodyWriteTiming");
+
+    protected final ConcurrentHashMap<String, Timing> additionalTimings = new ConcurrentHashMap<>();
 
     public Timing get(String name)
     {
-        return timings.computeIfAbsent(name, (newName) -> new Timing(newName));
+        return additionalTimings.computeIfAbsent(name, (newName) -> new Timing(newName));
     }
 
     /* Following are some standard Zuul timings: */
 
     public Timing getRequest()
     {
-        return get("_requestTiming");
+        return request;
     }
     public Timing getRequestProxy()
     {
-        return get("_requestProxyTiming");
+        return requestProxy;
     }
     public Timing getRequestBodyRead()
     {
-        return get("_requestBodyReadTiming");
+        return requestBodyRead;
     }
     public Timing getResponseBodyRead()
     {
-        return get("_responseBodyReadTiming");
+        return responseBodyRead;
     }
     public Timing getRequestBodyWrite()
     {
-        return get("_requestBodyWriteTiming");
+        return requestBodyWrite;
     }
     public Timing getResponseBodyWrite()
     {
-        return get("_responseBodyWriteTiming");
+        return responseBodyWrite;
     }
 }

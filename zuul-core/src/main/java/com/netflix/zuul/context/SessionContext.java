@@ -49,6 +49,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     private boolean brownoutMode = false;
     private boolean shouldStopFilterProcessing = false;
+    private Timings timings = new Timings();
 
 
     private static final String KEY_UUID = "_uuid";
@@ -56,7 +57,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private static final String KEY_ENDPOINT = "_endpoint";
     private static final String KEY_STATIC_RESPONSE = "_static_response";
 
-    private static final String KEY_TIMINGS = "_timings";
     private static final String KEY_EVENT_PROPS = "eventProperties";
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
@@ -67,7 +67,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         // 16 entries.
         super(INITIAL_SIZE);
 
-        put(KEY_TIMINGS, new Timings());
         put(KEY_FILTER_EXECS, new StringBuilder());
         put(KEY_EVENT_PROPS, new HashMap<String, Object>());
         put(KEY_FILTER_ERRORS, new ArrayList<FilterError>());
@@ -144,6 +143,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         SessionContext copy = new SessionContext();
         copy.brownoutMode = brownoutMode;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
+        copy.timings = timings;
 
         Iterator<String> it = keySet().iterator();
         String key = it.next();
@@ -395,7 +395,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     public Timings getTimings()
     {
-        return (Timings) get(KEY_TIMINGS);
+        return timings;
     }
 
     public void setOriginReportedDuration(int duration)
