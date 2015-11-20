@@ -29,6 +29,10 @@ public class CachedProperties
         public boolean get() {
             return value;
         }
+
+        public void addCallback(Runnable callback) {
+            fastProperty.addCallback(callback);
+        }
     }
 
     public static class Int
@@ -47,6 +51,10 @@ public class CachedProperties
 
         public int get() {
             return value;
+        }
+
+        public void addCallback(Runnable callback) {
+            fastProperty.addCallback(callback);
         }
     }
 
@@ -67,6 +75,10 @@ public class CachedProperties
         public long get() {
             return value;
         }
+
+        public void addCallback(Runnable callback) {
+            fastProperty.addCallback(callback);
+        }
     }
 
     public static class Double
@@ -86,6 +98,10 @@ public class CachedProperties
         public double get() {
             return value;
         }
+
+        public void addCallback(Runnable callback) {
+            fastProperty.addCallback(callback);
+        }
     }
 
     public static class String
@@ -104,6 +120,10 @@ public class CachedProperties
 
         public java.lang.String get() {
             return value;
+        }
+
+        public void addCallback(Runnable callback) {
+            fastProperty.addCallback(callback);
         }
     }
 }
