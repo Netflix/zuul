@@ -49,6 +49,12 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     private boolean brownoutMode = false;
     private boolean shouldStopFilterProcessing = false;
+    private boolean shouldSendErrorResponse = false;
+    private boolean errorResponseSent = false;
+    private boolean debugRouting = false;
+    private boolean debugRequest = false;
+    private boolean debugRequestHeadersOnly = false;
+
     private Timings timings = new Timings();
 
 
@@ -143,6 +149,11 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         SessionContext copy = new SessionContext();
         copy.brownoutMode = brownoutMode;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
+        copy.shouldSendErrorResponse = shouldSendErrorResponse;
+        copy.errorResponseSent = errorResponseSent;
+        copy.debugRouting = debugRouting;
+        copy.debugRequest = debugRequest;
+        copy.debugRequestHeadersOnly = debugRequestHeadersOnly;
         copy.timings = timings;
 
         Iterator<String> it = keySet().iterator();
@@ -217,14 +228,14 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @param bDebug
      */
     public void setDebugRouting(boolean bDebug) {
-        set("debugRouting", bDebug);
+        this.debugRouting = bDebug;
     }
 
     /**
      * @return "debugRouting"
      */
     public boolean debugRouting() {
-        return getBoolean("debugRouting");
+        return debugRouting;
     }
 
     /**
@@ -233,7 +244,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @param bHeadersOnly
      */
     public void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
-        set("debugRequestHeadersOnly", bHeadersOnly);
+        this.debugRequestHeadersOnly = bHeadersOnly;
 
     }
 
@@ -241,7 +252,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @return "debugRequestHeadersOnly"
      */
     public boolean debugRequestHeadersOnly() {
-        return getBoolean("debugRequestHeadersOnly");
+        return this.debugRequestHeadersOnly;
     }
 
     /**
@@ -250,7 +261,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @param bDebug
      */
     public void setDebugRequest(boolean bDebug) {
-        set("debugRequest", bDebug);
+        this.debugRequest = bDebug;
     }
 
     /**
@@ -259,7 +270,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @return debugRequest
      */
     public boolean debugRequest() {
-        return getBoolean("debugRequest");
+        return this.debugRequest;
     }
 
     /**
@@ -305,7 +316,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
 
     public boolean shouldSendErrorResponse() {
-        return getBoolean("shouldSendErrorResponse", false);
+        return this.shouldSendErrorResponse;
     }
 
     /**
@@ -315,15 +326,15 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * @param should
      */
     public void setShouldSendErrorResponse(boolean should) {
-        set("shouldSendErrorResponse", Boolean.valueOf(should));
+        this.shouldSendErrorResponse = should;
     }
 
 
     public boolean errorResponseSent() {
-        return getBoolean("errorResponseSent", false);
+        return this.errorResponseSent;
     }
     public void setErrorResponseSent(boolean should) {
-        set("errorResponseSent", Boolean.valueOf(should));
+        this.errorResponseSent = should;
     }
 
 
