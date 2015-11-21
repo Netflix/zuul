@@ -19,8 +19,8 @@ public class CachedProperties
 
         public Boolean(java.lang.String propName, boolean initialValue)
         {
-            value = initialValue;
             fastProperty = DynamicPropertyFactory.getInstance().getBooleanProperty(propName, initialValue);
+            value = fastProperty.get();
 
             // Add a callback to update the volatile value when the property is changed.
             fastProperty.addCallback(() -> value = fastProperty.get() );
@@ -42,8 +42,8 @@ public class CachedProperties
 
         public Int(java.lang.String propName, int initialValue)
         {
-            value = initialValue;
             fastProperty = DynamicPropertyFactory.getInstance().getIntProperty(propName, initialValue);
+            value = fastProperty.get();
 
             // Add a callback to update the volatile value when the property is changed.
             fastProperty.addCallback(() -> value = fastProperty.get() );
@@ -65,8 +65,8 @@ public class CachedProperties
 
         public Long(java.lang.String propName, long initialValue)
         {
-            value = initialValue;
             fastProperty = DynamicPropertyFactory.getInstance().getLongProperty(propName, initialValue);
+            value = fastProperty.get();
 
             // Add a callback to update the volatile value when the property is changed.
             fastProperty.addCallback(() -> value = fastProperty.get() );
@@ -88,8 +88,8 @@ public class CachedProperties
 
         public Double(java.lang.String propName, double initialValue)
         {
-            value = initialValue;
             fastProperty = DynamicPropertyFactory.getInstance().getDoubleProperty(propName, initialValue);
+            value = fastProperty.get();
 
             // Add a callback to update the volatile value when the property is changed.
             fastProperty.addCallback(() -> value = fastProperty.get() );
@@ -111,8 +111,8 @@ public class CachedProperties
 
         public String(java.lang.String propName, java.lang.String initialValue)
         {
-            value = initialValue;
             fastProperty = DynamicPropertyFactory.getInstance().getStringProperty(propName, initialValue);
+            value = fastProperty.get();
 
             // Add a callback to update the volatile value when the property is changed.
             fastProperty.addCallback(() -> value = fastProperty.get() );
