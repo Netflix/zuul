@@ -87,7 +87,7 @@ public class CassandraHelper {
                     .buildKeyspace(ThriftFamilyFactory.getInstance());
 
             context.start();
-            zuulCassKeyspace = context.getEntity();
+            zuulCassKeyspace = context.getClient();
             return zuulCassKeyspace;
         } catch (Exception e) {
             LOG.error("Exception occurred when initializing Cassandra keyspace: " + e);
