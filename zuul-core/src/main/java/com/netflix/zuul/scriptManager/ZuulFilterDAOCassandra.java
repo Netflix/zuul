@@ -478,7 +478,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
 
         public CassandraGatewayProd(AstyanaxContext<Keyspace> context) {
-            keyspace = context.getEntity();
+            keyspace = context.getClient();
         }
 
         public CassandraGatewayProd(Keyspace keyspace) {
