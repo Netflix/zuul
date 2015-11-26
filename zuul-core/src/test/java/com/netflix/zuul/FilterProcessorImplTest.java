@@ -91,6 +91,7 @@ public class FilterProcessorImplTest
         verify(processor).recordFilterError(filter, request, e);
 
         ArgumentCaptor<FilterProcessorImpl.FilterExecInfo> info = ArgumentCaptor.forClass(FilterProcessorImpl.FilterExecInfo.class);
+
         verify(processor).recordFilterCompletion(same(request), same(filter), info.capture(), anyLong());
         assertEquals(ExecutionStatus.FAILED, info.getValue().status);
     }
