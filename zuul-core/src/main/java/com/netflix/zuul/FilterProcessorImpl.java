@@ -270,11 +270,6 @@ public class FilterProcessorImpl implements FilterProcessor
         return new HttpResponseMessageImpl(request.getContext(), request, 500);
     }
 
-    public Observable<ZuulMessage> processFilterAsObservable(Observable<ZuulMessage> input, ZuulFilter filter, boolean shouldSendErrorResponse)
-    {
-        return input.flatMap(msg -> processAsyncFilter(msg, filter, shouldSendErrorResponse));
-    }
-
     /**
      * Processes an individual ZuulFilter. This method adds Debug information. Any uncaught Throwables from filters
      * are caught by this method and stored for future insight on the SessionContext.getFilterErrors().
@@ -344,11 +339,7 @@ public class FilterProcessorImpl implements FilterProcessor
 
         // Record info when filter processing completes.
         resultObs = resultObs.doOnNext((msg1) -> {
-            if (info.status == null) {
-                info.status = ExecutionStatus.SUCCESS;
-            }
-            info.execTime = System.currentTimeMillis() - ltime;
-            recordFilterCompletion(msg1, filter, info);
+            recordFilterCompletion(msg1, filter, info, ltime);
         });
 
         return resultObs;
@@ -405,11 +396,7 @@ public class FilterProcessorImpl implements FilterProcessor
         }
 
         // Record info when filter processing completes.
-        if (info.status == null) {
-            info.status = SUCCESS;
-        }
-        info.execTime = System.currentTimeMillis() - ltime;
-        recordFilterCompletion(result, filter, info);
+        recordFilterCompletion(result, filter, info, ltime);
 
         return result;
     }
@@ -466,8 +453,13 @@ public class FilterProcessorImpl implements FilterProcessor
         }
     }
 
-    protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info)
+    protected void recordFilterCompletion(ZuulMessage msg, ZuulFilter filter, FilterExecInfo info, long startTime)
     {
+        if (info.status == null) {
+            info.status = ExecutionStatus.SUCCESS;
+        }
+        info.execTime = System.currentTimeMillis() - startTime;
+
         // Record the execution summary in context.
         switch (info.status) {
             case FAILED:
