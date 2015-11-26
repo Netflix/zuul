@@ -26,54 +26,54 @@ public class FilterProcessorPerfTest
 
             long avgNs;
 
-            avgNs = test.runTest1_Experimental();
-            System.out.println("Experiment 1 averaged " + avgNs + " ns per run.");
+//            avgNs = test.runTest1_Experimental();
+//            System.out.println("Experiment 1 averaged " + avgNs + " ns per run.");
 
             avgNs = test.runTest1_Experimental2();
             System.out.println("Experiment 2 averaged " + avgNs + " ns per run.");
-
-            avgNs = test.runTest1_Original();
-            System.out.println("Original averaged " + avgNs + " ns per run.");
+//
+//            avgNs = test.runTest1_Original();
+//            System.out.println("Original averaged " + avgNs + " ns per run.");
 
         }
         catch(RuntimeException e) {
             e.printStackTrace();
         }
     }
+//
+//    long runTest1_Original()
+//    {
+//        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
+//        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
+//        FilterProcessor processor = new OriginalFilterProcessorImpl(setupFilterLoader(filters), ((filter, status) -> {}));
+//        SessionContext context = new SessionContext();
+//        context.setEndpoint("MockEndpointFilter");
+//
+//        // warmup
+//        test.runTest1(processor, context, 1000);
+//
+//        // run for real.
+//        long avgNs = test.runTest1(processor, context, 10000);
+//
+//        return avgNs;
+//    }
 
-    long runTest1_Original()
-    {
-        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
-        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
-        FilterProcessor processor = new OriginalFilterProcessorImpl(setupFilterLoader(filters), ((filter, status) -> {}));
-        SessionContext context = new SessionContext();
-        context.setEndpoint("MockEndpointFilter");
-
-        // warmup
-        test.runTest1(processor, context, 1000);
-
-        // run for real.
-        long avgNs = test.runTest1(processor, context, 10000);
-
-        return avgNs;
-    }
-
-    long runTest1_Experimental()
-    {
-        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
-        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
-        FilterProcessor processor = new ExperimentalFilterProcessor(setupFilterLoader(filters), ((filter, status) -> {}));
-        SessionContext context = new SessionContext();
-        context.setEndpoint("MockEndpointFilter");
-
-        // warmup
-        test.runTest1(processor, context, 1000);
-
-        // run for real.
-        long avgNs = test.runTest1(processor, context, 10000);
-
-        return avgNs;
-    }
+//    long runTest1_Experimental()
+//    {
+//        FilterProcessorPerfTest test = new FilterProcessorPerfTest();
+//        ArrayList<ZuulFilter> filters = test.createFilters(50, true);
+//        FilterProcessor processor = new ExperimentalFilterProcessor(setupFilterLoader(filters), ((filter, status) -> {}));
+//        SessionContext context = new SessionContext();
+//        context.setEndpoint("MockEndpointFilter");
+//
+//        // warmup
+//        test.runTest1(processor, context, 1000);
+//
+//        // run for real.
+//        long avgNs = test.runTest1(processor, context, 10000);
+//
+//        return avgNs;
+//    }
 
     long runTest1_Experimental2()
     {
