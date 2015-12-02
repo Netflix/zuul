@@ -366,7 +366,7 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
     }
 
     /**
-     * If this value if true then the response should be sent to the client.
+     * If this value is true then the response should be sent to the client.
      *
      * @return
      */
