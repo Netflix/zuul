@@ -24,6 +24,7 @@ package com.netflix.zuul.context;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.routing.RoutingResult;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 import org.junit.Test;
@@ -59,13 +60,13 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
 
     private static final String KEY_UUID = "_uuid";
-    private static final String KEY_VIP = "routeVIP";
     private static final String KEY_ENDPOINT = "_endpoint";
     private static final String KEY_STATIC_RESPONSE = "_static_response";
 
     private static final String KEY_EVENT_PROPS = "eventProperties";
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
+    private static final String ROUTING_RESULT = "_routing_result";
 
     public SessionContext()
     {
@@ -364,23 +365,12 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         return shouldStopFilterProcessing;
     }
 
-    /**
-     * returns the routeVIP; that is the Eureka "vip" of registered instances
-     *
-     * @return
-     */
-    public String getRouteVIP() {
-        return (String) get(KEY_VIP);
+    public RoutingResult getRoutingResult() {
+        return (RoutingResult)get(ROUTING_RESULT);
     }
 
-    /**
-     * sets routeVIP; that is the Eureka "vip" of registered instances
-     *
-     * @return
-     */
-
-    public void setRouteVIP(String sVip) {
-        set(KEY_VIP, sVip);
+    public void setRoutingResult(RoutingResult routingResult) {
+        set(ROUTING_RESULT, routingResult);
     }
 
     public void setEndpoint(String endpoint)

@@ -16,6 +16,7 @@
 package com.netflix.zuul.context;
 
 import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.routing.RoutingResult;
 
 import javax.inject.Inject;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class SampleSessionContextDecorator implements SessionContextDecorator
 
         // Generate a UUID for this session.
         ctx.setUUID(UUID.randomUUID().toString());
+        ctx.setRoutingResult(new RoutingResult());
 
         return ctx;
     }
