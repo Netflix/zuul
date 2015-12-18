@@ -43,6 +43,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
 
 /**
  * User: michaels
@@ -76,6 +79,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private static final String URI_SCHEME_HTTP = "http";
     private static final String URI_SCHEME_HTTPS = "https";
 
+    private final boolean immutable;
     private ZuulMessage message;
     private String protocol;
     private String method;
@@ -89,11 +93,25 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private HttpRequestInfo inboundRequest = null;
     private Cookies parsedCookies = null;
 
+    // These attributes are populated only if immutable=true.
+    private String reconstructedUri = null;
+    private String pathAndQuery = null;
+    private String infoForLogging = null;
+
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName)
     {
+        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName, false);
+    }
+
+    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
+                                  HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
+                                  int port, String serverName,
+                                  boolean immutable)
+    {
+        this.immutable = immutable;
         this.message = new ZuulMessageImpl(context, headers);
         this.protocol = protocol;
         this.method = method;
@@ -104,6 +122,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.scheme = scheme;
         this.port = port;
         this.serverName = serverName;
+    }
+
+    private void immutableCheck()
+    {
+        if (immutable) {
+            throw new IllegalStateException("This HttpRequestMessageImpl is immutable. No mutating operations allowed!");
+        }
     }
 
     @Override
@@ -121,6 +146,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setHeaders(Headers newHeaders)
     {
+        immutableCheck();
         message.setHeaders(newHeaders);
     }
 
@@ -133,6 +159,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setBody(byte[] body)
     {
+        immutableCheck();
         message.setBody(body);
     }
 
@@ -145,12 +172,14 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setBodyAsText(String bodyText, Charset cs)
     {
+        immutableCheck();
         message.setBodyAsText(bodyText, cs);
     }
 
     @Override
     public void setBodyAsText(String bodyText)
     {
+        immutableCheck();
         message.setBodyAsText(bodyText);
     }
 
@@ -181,6 +210,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setBodyStream(Observable<ByteBuf> bodyStream)
     {
+        immutableCheck();
         message.setBodyStream(bodyStream);
     }
 
@@ -190,7 +220,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void setProtocol(String protocol) {
+    public void setProtocol(String protocol)
+    {
+        immutableCheck();
         this.protocol = protocol;
     }
 
@@ -199,7 +231,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return method;
     }
     @Override
-    public void setMethod(String method) {
+    public void setMethod(String method)
+    {
+        immutableCheck();
         this.method = method;
     }
 
@@ -208,7 +242,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return path;
     }
     @Override
-    public void setPath(String path) {
+    public void setPath(String path)
+    {
+        immutableCheck();
         this.path = path;
     }
 
@@ -219,6 +255,20 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public String getPathAndQuery()
+    {
+        // If this instance is immutable, then lazy-cache.
+        if (immutable) {
+            if (pathAndQuery == null) {
+                pathAndQuery = generatePathAndQuery();
+            }
+            return pathAndQuery;
+        }
+        else {
+            return generatePathAndQuery();
+        }
+    }
+
+    protected String generatePathAndQuery()
     {
         if (queryParams != null && queryParams.entries().size() > 0) {
             return getPath() + "?" + queryParams.toEncodedString();
@@ -233,7 +283,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return clientIp;
     }
     @Override
-    public void setClientIp(String clientIp) {
+    public void setClientIp(String clientIp)
+    {
+        immutableCheck();
         this.clientIp = clientIp;
     }
 
@@ -242,7 +294,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return scheme;
     }
     @Override
-    public void setScheme(String scheme) {
+    public void setScheme(String scheme)
+    {
+        immutableCheck();
         this.scheme = scheme;
     }
 
@@ -254,6 +308,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setPort(int port)
     {
+        immutableCheck();
         this.port = port;
     }
 
@@ -265,6 +320,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public void setServerName(String serverName)
     {
+        immutableCheck();
         this.serverName = serverName;
     }
 
@@ -338,7 +394,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
                 queryParams.immutableCopy(), message.getHeaders().immutableCopy(), clientIp, scheme,
-                port, serverName);
+                port, serverName, true);
     }
 
     @Override
@@ -354,12 +410,28 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void setQueryParams(HttpQueryParams queryParams) {
+    public void setQueryParams(HttpQueryParams queryParams)
+    {
+        immutableCheck();
         this.queryParams = queryParams;
     }
 
     @Override
     public String getInfoForLogging()
+    {
+        // If this instance is immutable, then lazy-cache generating this info.
+        if (immutable) {
+            if (infoForLogging == null) {
+                infoForLogging = generateInfoForLogging();
+            }
+            return infoForLogging;
+        }
+        else {
+            return generateInfoForLogging();
+        }
+    }
+
+    protected String generateInfoForLogging()
     {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
         StringBuilder sb = new StringBuilder()
@@ -441,6 +513,20 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public String reconstructURI()
     {
+        // If this instance is immutable, then lazy-cache reconstructing the uri.
+        if (immutable) {
+            if (reconstructedUri == null) {
+                reconstructedUri = _reconstructURI();
+            }
+            return reconstructedUri;
+        }
+        else {
+            return _reconstructURI();
+        }
+    }
+
+    protected String _reconstructURI()
+    {
         try {
             StringBuilder uri = new StringBuilder(100);
 
@@ -469,7 +555,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
     {
-        HttpRequestMessage request;
+        HttpRequestMessageImpl request;
 
         @Test
         public void testOriginalRequestInfo()
@@ -541,6 +627,77 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some%20where", queryParams, headers,
                     "192.168.0.2", "https", 7002, "localhost");
             Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI());
+        }
+
+        @Test
+        public void testReconstructURI_immutable()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            Headers headers = new Headers();
+            headers.add("Host", "blah.netflix.com");
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost", true);
+
+            // Check it's the same value 2nd time.
+            Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
+            Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
+
+            // Check that cached on 1st usage.
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, headers,
+                    "192.168.0.2", "https", 7002, "localhost", true);
+            request = spy(request);
+            when(request._reconstructURI()).thenReturn("http://testhost/blah");
+            verify(request, times(1))._reconstructURI();
+            Assert.assertEquals("http://testhost/blah", request.reconstructURI());
+            Assert.assertEquals("http://testhost/blah", request.reconstructURI());
+
+            // Check that throws exception if we try to mutate it.
+            try {
+                request.setPath("/new-path");
+                fail();
+            }
+            catch (IllegalStateException e) {
+                assertTrue(true);
+            }
+        }
+
+        @Test
+        public void testPathAndQuery()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, new Headers(),
+                    "192.168.0.2", "https", 7002, "localhost");
+
+            // Check that value changes.
+            Assert.assertEquals("/some/where?flag=5", request.getPathAndQuery());
+            request.getQueryParams().add("k", "v");
+            Assert.assertEquals("/some/where?flag=5&k=v", request.getPathAndQuery());
+            request.setPath("/other");
+            Assert.assertEquals("/other?flag=5&k=v", request.getPathAndQuery());
+        }
+
+        @Test
+        public void testPathAndQuery_immutable()
+        {
+            HttpQueryParams queryParams = new HttpQueryParams();
+            queryParams.add("flag", "5");
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, new Headers(),
+                    "192.168.0.2", "https", 7002, "localhost", true);
+
+            // Check it's the same value 2nd time.
+            Assert.assertEquals("/some/where?flag=5", request.getPathAndQuery());
+            Assert.assertEquals("/some/where?flag=5", request.getPathAndQuery());
+
+            // Check that cached on 1st usage.
+            request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams, new Headers(),
+                    "192.168.0.2", "https", 7002, "localhost", true);
+            request = spy(request);
+            when(request.generatePathAndQuery()).thenReturn("/blah");
+            verify(request, times(1)).generatePathAndQuery();
+            Assert.assertEquals("/blah", request.getPathAndQuery());
+            Assert.assertEquals("/blah", request.getPathAndQuery());
         }
 
         @Test
