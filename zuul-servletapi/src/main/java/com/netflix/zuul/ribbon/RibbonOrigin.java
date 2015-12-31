@@ -29,11 +29,9 @@ import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.*;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
+import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
-import com.netflix.zuul.message.http.HttpQueryParams;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import com.netflix.zuul.message.http.*;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.stats.Timing;
 import com.netflix.zuul.util.ProxyUtils;
@@ -112,7 +110,7 @@ public class RibbonOrigin implements Origin
 
         // Request headers.
         for (Header entry : headers.entries()) {
-            if (ProxyUtils.isValidRequestHeader(entry.getKey())) {
+            if (ProxyUtils.isValidRequestHeader(entry.getName())) {
                 builder.header(entry.getKey(), entry.getValue());
             }
         }
@@ -200,8 +198,9 @@ public class RibbonOrigin implements Origin
         HttpResponseMessage respMsg = new HttpResponseMessageImpl(request.getContext(), request, 500);
         respMsg.setStatus(ribbonResp.getStatus());
         for (Map.Entry<String, String> header : ribbonResp.getHttpHeaders().getAllHeaders()) {
-            if (ProxyUtils.isValidResponseHeader(header.getKey())) {
-                respMsg.getHeaders().add(header.getKey(), header.getValue());
+            HeaderName headerName = HttpHeaderNames.get(header.getKey());
+            if (ProxyUtils.isValidResponseHeader(headerName)) {
+                respMsg.getHeaders().add(headerName, header.getValue());
             }
         }
 

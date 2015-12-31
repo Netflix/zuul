@@ -47,6 +47,7 @@ public class HttpHeaderNames
 
     public static final HeaderName DATE = HEADER_NAME_CACHE.get("Date");
     public static final HeaderName CONNECTION = HEADER_NAME_CACHE.get("Connection");
+    public static final HeaderName KEEP_ALIVE = HEADER_NAME_CACHE.get("Keep-Alive");
     public static final HeaderName HOST = HEADER_NAME_CACHE.get("Host");
     public static final HeaderName SERVER = HEADER_NAME_CACHE.get("Server");
     public static final HeaderName VIA = HEADER_NAME_CACHE.get("Via");

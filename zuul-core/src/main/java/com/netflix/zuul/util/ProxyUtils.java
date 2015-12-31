@@ -1,12 +1,17 @@
 package com.netflix.zuul.util;
 
 import com.netflix.client.http.HttpResponse;
+import com.netflix.zuul.message.HeaderName;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * User: michaels@netflix.com
@@ -15,29 +20,21 @@ import org.mockito.runners.MockitoJUnitRunner;
  */
 public class ProxyUtils
 {
-    public static boolean isValidRequestHeader(String headerName)
-    {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "content-length":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
+    private static final Set<HeaderName> HEADERS_TO_STRIP = new HashSet<>();
+    static {
+        HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
+        HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
+        HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
     }
 
-    public static boolean isValidResponseHeader(String headerName)
+    public static boolean isValidRequestHeader(HeaderName headerName)
     {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "keep-alive":
-            case "content-length":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
+        return ! HEADERS_TO_STRIP.contains(headerName);
+    }
+
+    public static boolean isValidResponseHeader(HeaderName headerName)
+    {
+        return ! HEADERS_TO_STRIP.contains(headerName);
     }
 
 
@@ -53,9 +50,9 @@ public class ProxyUtils
         @Test
         public void testIsValidResponseHeader()
         {
-            Assert.assertTrue(isValidResponseHeader("test"));
-            Assert.assertFalse(isValidResponseHeader("content-length"));
-            Assert.assertFalse(isValidResponseHeader("connection"));
+            Assert.assertTrue(isValidResponseHeader(HttpHeaderNames.get("test")));
+            Assert.assertFalse(isValidResponseHeader(HttpHeaderNames.get("Keep-Alive")));
+            Assert.assertFalse(isValidResponseHeader(HttpHeaderNames.get("keep-alive")));
         }
     }
 }
