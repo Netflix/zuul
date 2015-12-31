@@ -55,6 +55,10 @@ public class ByteBufUtils
      */
     public static Observable<ByteBuf> aggregate(Observable<ByteBuf> source, int maxBodySize)
     {
+        if (source == null) {
+            return Observable.empty();
+        }
+
         return source.collect(Unpooled::compositeBuffer, new Action2<CompositeByteBuf, ByteBuf>() {
             @Override
             public void call(CompositeByteBuf composite, ByteBuf buf) {
