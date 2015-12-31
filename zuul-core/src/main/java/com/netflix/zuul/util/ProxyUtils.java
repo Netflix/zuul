@@ -24,21 +24,29 @@ public class ProxyUtils
 {
     private static final CachedProperties.Boolean OVERWRITE_XF_HEADERS = new CachedProperties.Boolean("zuul.headers.xforwarded.overwrite", false);
 
-    private static final Set<HeaderName> HEADERS_TO_STRIP = new HashSet<>();
+    private static final Set<HeaderName> RESP_HEADERS_TO_STRIP = new HashSet<>();
     static {
-        HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
-        HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
-        HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
+        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
+        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
+        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
+    }
+
+    private static final Set<HeaderName> REQ_HEADERS_TO_STRIP = new HashSet<>();
+    static {
+        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.CONTENT_LENGTH);  // Because the httpclient library sets this itself, and doesn't like it if set by us.
+        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
+        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
+        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
     }
 
     public static boolean isValidRequestHeader(HeaderName headerName)
     {
-        return ! HEADERS_TO_STRIP.contains(headerName);
+        return ! REQ_HEADERS_TO_STRIP.contains(headerName);
     }
 
     public static boolean isValidResponseHeader(HeaderName headerName)
     {
-        return ! HEADERS_TO_STRIP.contains(headerName);
+        return ! RESP_HEADERS_TO_STRIP.contains(headerName);
     }
 
     public static void addXForwardedHeaders(HttpRequestMessage request)
