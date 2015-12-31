@@ -19,15 +19,15 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.context.*
+import com.netflix.zuul.context.Debug
+import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
+import com.netflix.zuul.message.HeaderName
 import com.netflix.zuul.message.Headers
-import com.netflix.zuul.message.http.HttpQueryParams
-import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.message.http.HttpResponseMessage
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
+import com.netflix.zuul.message.http.*
 import com.netflix.zuul.util.HttpUtils
+import com.netflix.zuul.util.ProxyUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import org.apache.http.*
@@ -247,7 +247,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
         try {
             // Copy the request headers.
             headers.entries().each {
-                if (isValidRequestHeader(it.getKey())) {
+                if (ProxyUtils.isValidRequestHeader(it.getName())) {
                     httpRequest.addHeader(it.getKey(), it.getValue())
                 }
             }
@@ -318,8 +318,9 @@ class ZuulHostRequest extends HttpSyncEndpoint
 
         // Headers.
         for (Header header : ribbonResp.getAllHeaders()) {
-            if (isValidResponseHeader(header.getName())) {
-                respMsg.getHeaders().add(header.getName(), header.getValue());
+            HeaderName hn = HttpHeaderNames.get(header.getName())
+            if (ProxyUtils.isValidResponseHeader(hn)) {
+                respMsg.getHeaders().add(hn, header.getValue());
             }
         }
 
@@ -331,33 +332,6 @@ class ZuulHostRequest extends HttpSyncEndpoint
 
         return respMsg
     }
-
-    boolean isValidRequestHeader(String headerName)
-    {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "content-length":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
-    }
-
-    boolean isValidResponseHeader(String headerName)
-    {
-        switch (headerName.toLowerCase()) {
-            case "connection":
-            case "content-length":
-            case "server":
-            case "transfer-encoding":
-                return false;
-            default:
-                return true;
-        }
-    }
-
-
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit

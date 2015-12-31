@@ -17,11 +17,14 @@ package com.netflix.zuul.rxnetty;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Header;
+import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.origins.Origin;
+import com.netflix.zuul.util.ProxyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.logging.LogLevel;
@@ -83,12 +86,18 @@ public class RxNettyOrigin implements Origin {
     @Override
     public Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg) {
         final SessionContext context = requestMsg.getContext();
+
+        // Add X-Forwarded headers if not already there.
+        ProxyUtils.addXForwardedHeaders(requestMsg);
+
         HttpMethod method = toNettyHttpMethod(requestMsg.getMethod());
         Headers headers = requestMsg.getHeaders();
         HttpClientRequest<ByteBuf, ByteBuf> request = client.createRequest(method, requestMsg.getPathAndQuery());
 
         for (Header header : headers.entries()) {
-            request = request.addHeader(header.getKey(), header.getValue());
+            if (ProxyUtils.isValidRequestHeader(header.getName())) {
+                request = request.addHeader(header.getKey(), header.getValue());
+            }
         }
 
         return request.writeContent(requestMsg.getBodyStream())
@@ -100,9 +109,12 @@ public class RxNettyOrigin implements Origin {
                                    .stream()
                                    .forEach(headerName -> nettyResp.getAllHeaderValues(headerName)
                                                                    .stream()
-                                                                   .forEach(headerVal ->
-                                                                                    respHeaders.add(headerName,
-                                                                                                    headerVal)));
+                                                                   .forEach(headerVal -> {
+                                                                       HeaderName hn = HttpHeaderNames.get(headerName);
+                                                                       if (ProxyUtils.isValidResponseHeader(hn)) {
+                                                                           respHeaders.add(headerName, headerVal);
+                                                                       }
+                                                                   }));
                           resp.setBodyStream(nettyResp.getContent());
                           return resp;
                       });

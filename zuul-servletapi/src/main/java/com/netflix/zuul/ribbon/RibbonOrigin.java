@@ -108,6 +108,9 @@ public class RibbonOrigin implements Origin
                 verb(verb).
                 uri(uri);
 
+        // Add X-Forwarded headers if not already there.
+        ProxyUtils.addXForwardedHeaders(requestMsg);
+
         // Request headers.
         for (Header entry : headers.entries()) {
             if (ProxyUtils.isValidRequestHeader(entry.getName())) {

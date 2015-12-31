@@ -2,8 +2,10 @@ package com.netflix.zuul.util;
 
 import com.netflix.client.http.HttpResponse;
 import com.netflix.zuul.message.HeaderName;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.properties.CachedProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +22,8 @@ import java.util.Set;
  */
 public class ProxyUtils
 {
+    private static final CachedProperties.Boolean OVERWRITE_XF_HEADERS = new CachedProperties.Boolean("zuul.headers.xforwarded.overwrite", false);
+
     private static final Set<HeaderName> HEADERS_TO_STRIP = new HashSet<>();
     static {
         HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
@@ -35,6 +39,34 @@ public class ProxyUtils
     public static boolean isValidResponseHeader(HeaderName headerName)
     {
         return ! HEADERS_TO_STRIP.contains(headerName);
+    }
+
+    public static void addXForwardedHeaders(HttpRequestMessage request)
+    {
+        // Add standard Proxy request headers.
+        Headers headers = request.getHeaders();
+        addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_HOST, request.getOriginalHost());
+        addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_PORT, Integer.toString(request.getPort()));
+        addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_PROTO, request.getScheme());
+        addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_FOR, request.getClientIp());
+    }
+
+    public static void addXForwardedHeader(Headers headers, HeaderName name, String latestValue)
+    {
+        if (OVERWRITE_XF_HEADERS.get()) {
+            headers.set(name, latestValue);
+        }
+        else {
+            // If this proxy header already exists (possibly due to an upstream ELB or reverse proxy
+            // setting it) then keep that value.
+            String existingValue = headers.getFirst(name);
+            if (existingValue == null) {
+                // Otherwise set new value.
+                if (latestValue != null) {
+                    headers.set(name, latestValue);
+                }
+            }
+        }
     }
 
 
