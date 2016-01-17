@@ -258,8 +258,24 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             return ""
         }
 
-        String decodedQueryString = URLDecoder.decode(currentQueryString, encoding)
-        return new URI(null, null, null, decodedQueryString, null).toString()
+        String rebuiltQueryString = ""
+        for (String keyPair : currentQueryString.split("&")) {
+            if (rebuiltQueryString.length() > 0) {
+                rebuiltQueryString = rebuiltQueryString + "&"
+            }
+            def (name,value) = keyPair.split("=", 2)
+            if (value != null) {
+                value = URLDecoder.decode(value, encoding)
+                value = new URI(null, null, null, value, null).toString().substring(1)
+                value = value.replaceAll('&', '%26')
+                rebuiltQueryString = rebuiltQueryString + name + "=" + value
+            } else {
+                name = URLDecoder.decode(name, encoding)
+                value = new URI(null, null, null, value, null).toString().substring(1)
+                rebuiltQueryString = rebuiltQueryString + value
+            }
+        }
+        return "?" + rebuiltQueryString
     }
 
     HttpHost getHttpHost() {
