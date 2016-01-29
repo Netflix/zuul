@@ -95,4 +95,11 @@ subprojects {
         compile(group: 'com.google.inject.extensions', name: 'guice-servlet', version: "${versions_guice}")
         compile(group: 'com.google.inject.extensions', name: 'guice-throwingproviders', version: "${versions_guice}")
     }
+
+
+    test {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
 }
