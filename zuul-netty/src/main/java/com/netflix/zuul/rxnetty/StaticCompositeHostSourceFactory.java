@@ -1,9 +1,8 @@
 package com.netflix.zuul.rxnetty;
 
-import netflix.ocelli.Instance;
+import io.reactivex.netty.client.Host;
 import rx.Observable;
 
-import java.net.SocketAddress;
 import java.util.Map;
 
 public class StaticCompositeHostSourceFactory implements HostSourceFactory {
@@ -15,7 +14,7 @@ public class StaticCompositeHostSourceFactory implements HostSourceFactory {
     }
 
     @Override
-    public Observable<Instance<SocketAddress>> call(String vip) {
+    public Observable<Host> call(String vip) {
         StaticHostSourceFactory f = vipVsFactory.get(vip);
         if (null == f) {
             return Observable.error(new IllegalArgumentException("VIP " + vip + " is not registered"));

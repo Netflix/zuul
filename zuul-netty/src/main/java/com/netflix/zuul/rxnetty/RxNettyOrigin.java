@@ -28,14 +28,12 @@ import com.netflix.zuul.util.ProxyUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.logging.LogLevel;
-import io.reactivex.netty.client.ConnectionProvider;
+import io.reactivex.netty.client.Host;
+import io.reactivex.netty.client.loadbalancer.LoadBalancerFactory;
+import io.reactivex.netty.client.loadbalancer.LoadBalancingStrategy;
 import io.reactivex.netty.protocol.http.client.HttpClient;
 import io.reactivex.netty.protocol.http.client.HttpClientRequest;
-import netflix.ocelli.Instance;
-import netflix.ocelli.rxnetty.protocol.http.HttpLoadBalancer;
 import rx.Observable;
-
-import java.net.SocketAddress;
 
 /**
  * User: michaels@netflix.com
@@ -48,14 +46,14 @@ public class RxNettyOrigin implements Origin {
     private final HttpClient<ByteBuf, ByteBuf> client;
     private final String name;
 
-    private RxNettyOrigin(String name, String vip, ConnectionProvider<ByteBuf, ByteBuf> loadBalancer,
-                         HttpClientMetrics clientMetrics) {
+    private RxNettyOrigin(String name, String vip, LoadBalancingStrategy<ByteBuf, ByteBuf> lb,
+                          Observable<Host> hostStream, HttpClientMetrics clientMetrics) {
         this.name = name;
         if (null == vip) {
             throw new IllegalArgumentException("VIP can not be null.");
         }
         this.vip = vip;
-        client = HttpClient.newClient(loadBalancer)
+        client = HttpClient.newClient(LoadBalancerFactory.create(lb), hostStream)
                            .enableWireLogging(LogLevel.DEBUG);
         client.subscribe(clientMetrics);
     }
@@ -120,20 +118,15 @@ public class RxNettyOrigin implements Origin {
                       });
     }
 
-    public static RxNettyOrigin newOrigin(String name, String vip, Observable<Instance<SocketAddress>> hostStream) {
+    public static RxNettyOrigin newOrigin(String name, String vip, Observable<Host> hostStream) {
         HttpClientMetrics clientMetrics = new HttpClientMetrics(name);
-        ConnectionProvider<ByteBuf, ByteBuf> cp =
-                HttpLoadBalancer.<ByteBuf, ByteBuf>choiceOfTwo(hostStream,
-                                                               failureListener -> new HttpClientListenerImpl(failureListener,
-                                                                                                       clientMetrics))
-                                .toConnectionProvider();
-        return new RxNettyOrigin(name, vip, cp, clientMetrics);
+        LoadBalancingStrategy<ByteBuf, ByteBuf> lb = new PowerOfTwoChoices(clientMetrics);
+        return new RxNettyOrigin(name, vip, lb, hostStream, clientMetrics);
     }
 
-    public static RxNettyOrigin newOrigin(String name, String vip,
-                                          ConnectionProvider<ByteBuf, ByteBuf> connectionProvider,
-                                          HttpClientMetrics clientMetrics) {
-        return new RxNettyOrigin(name, vip, connectionProvider, clientMetrics);
+    public static RxNettyOrigin newOrigin(String name, String vip, LoadBalancingStrategy<ByteBuf, ByteBuf> lb,
+                                          Observable<Host> hostStream, HttpClientMetrics clientMetrics) {
+        return new RxNettyOrigin(name, vip, lb, hostStream, clientMetrics);
     }
 
     public static RxNettyOrigin newOrigin(String name, String vip, HttpClient<ByteBuf, ByteBuf> client) {

@@ -2,9 +2,7 @@
 dependencies {
     compile project(':zuul-core')
 
-    compile 'io.reactivex:rxnetty-http:0.5.0-SNAPSHOT'
-    compile 'io.reactivex:rxnetty-spectator-http:0.5.0-SNAPSHOT'
-    compile "com.netflix.ocelli:ocelli-rxnetty:0.0.8-SNAPSHOT"
-    compile "com.netflix.ocelli:ocelli-eureka:0.0.8-SNAPSHOT"
+    compile 'io.reactivex:rxnetty-http:0.5.2-SNAPSHOT'
+    compile 'io.reactivex:rxnetty-spectator-http:0.5.2-SNAPSHOT'
     compile 'com.netflix.numerus:numerus:1.1'
 }

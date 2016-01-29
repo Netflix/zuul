@@ -10,39 +10,37 @@ import static io.reactivex.netty.spectator.SpectatorUtils.*;
 public class HttpClientMetrics extends HttpClientListener {
 
     private final AtomicInteger hostsInPool;
-    private final Counter quarantinedHosts;
-    private final Counter removedHosts;
+    private final Counter foundUnusableHosts;
+    private final Counter noUsableHosts;
 
     public HttpClientMetrics(String monitorId) {
         super(monitorId);
         hostsInPool = newGauge("hostsInPool", monitorId, new AtomicInteger());
-        quarantinedHosts = newCounter("quarantinedHosts", monitorId);
-        removedHosts = newCounter("removedHosts", monitorId);
+        foundUnusableHosts = newCounter("foundUnusableHosts", monitorId);
+        noUsableHosts = newCounter("noUnusableHosts", monitorId);
     }
 
-    public void onNewHost() {
-        hostsInPool.incrementAndGet();
+    public void setHostsInPool(int hostsInPool) {
+        this.hostsInPool.set(hostsInPool);
     }
 
-    public void onHostQuarantine() {
-        quarantinedHosts.increment();
-        hostsInPool.decrementAndGet();
+    public void foundTwoUnusableHosts() {
+        this.foundUnusableHosts.increment();
     }
 
-    public void onHostRemoved() {
-        removedHosts.increment();
-        hostsInPool.decrementAndGet();
+    public void noUsableHostsFound() {
+        this.noUsableHosts.increment();
     }
 
-    public int getHostsInPool() {
-        return hostsInPool.intValue();
+    public AtomicInteger getHostsInPool() {
+        return hostsInPool;
     }
 
-    public long getQuarantinedHosts() {
-        return quarantinedHosts.count();
+    public Counter getFoundUnusableHosts() {
+        return foundUnusableHosts;
     }
 
-    public long getRemovedHosts() {
-        return removedHosts.count();
+    public Counter getNoUsableHosts() {
+        return noUsableHosts;
     }
 }
