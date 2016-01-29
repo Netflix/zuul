@@ -21,12 +21,11 @@ import com.netflix.config.DynamicStringMapProperty;
 import com.netflix.governator.annotations.WarmUp;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.origins.OriginManager;
-import netflix.ocelli.Instance;
+import io.reactivex.netty.client.Host;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
-import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -87,7 +86,7 @@ public class RxNettyOriginManager implements OriginManager
 
     private void initOrigin(String originName, String vip)
     {
-        Observable<Instance<SocketAddress>> hosts = hostSourceFactory.call(vip);
+        Observable<Host> hosts = hostSourceFactory.call(vip);
         this.origins.put(originName, RxNettyOrigin.newOrigin(originName, vip, hosts));
     }
 
