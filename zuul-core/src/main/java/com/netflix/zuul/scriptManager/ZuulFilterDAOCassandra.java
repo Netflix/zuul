@@ -258,7 +258,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
 
             filterName = columns.getColumnByName("filter_name").getStringValue();
             String filter_id = columns.getColumnByName("filter_id").getStringValue();
-            FilterType filterType = FilterType.parse(columns.getColumnByName("filter_type").getStringValue());
+            FilterType filterType = FilterType.valueOf(columns.getColumnByName("filter_type").getStringValue());
             String filterDisable = columns.getColumnByName("filter_disable") != null ? columns.getColumnByName("filter_disable").getStringValue() : "?";
             String filterOrder = columns.getColumnByName("filter_order") != null ? columns.getColumnByName("filter_order").getStringValue() : "?";
             revision = (int) columns.getColumnByName("revision").getLongValue();
@@ -695,7 +695,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             ColumnList<String> columnList0 = mockColumnList(row0);
             mockColumn(columnList0, "filter_id", filter);
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "revision", 1L);
             mockColumn(columnList0, "active", true);
             mockColumn(columnList0, "canary", false);
@@ -710,7 +710,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "filter_id", filter);
             mockColumn(columnList1, "revision", 2L);
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "in");
+            mockColumn(columnList1, "filter_type", "INBOUND");
             mockColumn(columnList1, "active", false);
             mockColumn(columnList1, "canary", false);
             mockColumn(columnList1, "creation_date", now.getTime());
@@ -781,7 +781,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -845,7 +845,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -896,7 +896,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1007,7 +1007,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1084,7 +1084,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1100,7 +1100,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "creation_date", now.getTime());
             mockColumn(columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "in");
+            mockColumn(columnList1, "filter_type", "INBOUND");
             mockColumn(columnList1, "canary", true);
             mockColumn(columnList1, "application_name", "app_name");
 
@@ -1125,7 +1125,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(response2columnList1, "creation_date", now.getTime());
             mockColumn(response2columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(response2columnList1, "filter_name", "name");
-            mockColumn(response2columnList1, "filter_type", "in");
+            mockColumn(response2columnList1, "filter_type", "INBOUND");
             mockColumn(response2columnList1, "canary", true);
             mockColumn(response2columnList1, "application_name", "app_name");
 
@@ -1148,7 +1148,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(response3columnList1, "creation_date", now.getTime());
             mockColumn(response3columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(response3columnList1, "filter_name", "name");
-            mockColumn(response3columnList1, "filter_type", "in");
+            mockColumn(response3columnList1, "filter_type", "INBOUND");
             mockColumn(response3columnList1, "canary", true);
             mockColumn(response3columnList1, "application_name", "app_name");
 
@@ -1213,7 +1213,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1229,7 +1229,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList1, "creation_date", now.getTime());
             mockColumn(columnList1, "filter_code", "script body 1".getBytes());
             mockColumn(columnList1, "filter_name", "name");
-            mockColumn(columnList1, "filter_type", "in");
+            mockColumn(columnList1, "filter_type", "INBOUND");
             mockColumn(columnList1, "canary", false);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1287,7 +1287,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "script body 1".getBytes());
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", true);
             mockColumn(columnList0, "application_name", "app_name");
 
@@ -1380,7 +1380,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          */
         @SuppressWarnings("unchecked")
         private static Row<String, String> mockRow() {
-            Row<String, String> row0 = mock(Row.class);
+            Row<String, String> row0 = mock(Row.class, "row0");
             return row0;
         }
 
@@ -1399,7 +1399,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             mockColumn(columnList0, "creation_date", now.getTime());
             mockColumn(columnList0, "filter_code", "System.out.println(\"hello world\")".getBytes()); // what we put here doesn't matter
             mockColumn(columnList0, "filter_name", "name");
-            mockColumn(columnList0, "filter_type", "in");
+            mockColumn(columnList0, "filter_type", "INBOUND");
             mockColumn(columnList0, "canary", false);
 
             when(response.getRowByIndex(0)).thenReturn(row0);

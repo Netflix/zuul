@@ -90,7 +90,9 @@ public class HystrixCassandraPut<RowKeyType> extends AbstractCassandraHystrixCom
                         cm.putColumn(key, (byte[]) o, ttlSeconds);
                     } else if (o instanceof ByteBuffer) {
                         cm.putColumn(key, (ByteBuffer) o, ttlSeconds);
-                    } else {
+                    } else if (o instanceof Enum) {
+                        cm.putColumn(key, ((Enum)o).name(), ttlSeconds);
+                    }else {
                         throw new IllegalArgumentException("Unsupported object instance type: " + o.getClass().getSimpleName());
                     }
                 }
