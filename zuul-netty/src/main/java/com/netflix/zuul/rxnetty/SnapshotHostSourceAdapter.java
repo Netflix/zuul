@@ -7,8 +7,8 @@ import org.junit.rules.ExternalResource;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import rx.Observable;
-import rx.Scheduler;
 import rx.functions.Func0;
+import rx.internal.operators.OperatorScan;
 import rx.observers.TestSubscriber;
 import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -31,37 +32,40 @@ public class SnapshotHostSourceAdapter {
     public static Observable<Host> toHostStream(Func0<List<SocketAddress>> sourceFactory,
                                                 Observable<Long> pollingSource) {
         return pollingSource.onBackpressureDrop()
-                            .scan(new HashMap<SocketAddress, Host>(), (lifecycles, tick) -> lifecycles)
+                            .lift(new OperatorScan<State, Long>(State::new, (lifecycles, tick) -> lifecycles))
                             .skip(1) /*Scan sends the initial value first, which isn't required for us*/
-                            .flatMap(lifecycles -> {
+                            .concatMap(state -> {
                                 List<SocketAddress> hosts = sourceFactory.call();
 
-                                final Set<SocketAddress> hostsToRemove = new HashSet<>(lifecycles.keySet());
+                                final Set<SocketAddress> hostsToRemove = new HashSet<>(state.hosts.keySet());
                                 final Set<Host> hostsAdded = new HashSet<>();
 
                                 for (SocketAddress host : hosts) {
                                     hostsToRemove.remove(host);
 
-                                    Host lastSeen = lifecycles.get(host);
+                                    Host lastSeen = state.hosts.get(host);
                                     if (null == lastSeen) {
                                         Host h = new Host(host, PublishSubject.create());
                                         hostsAdded.add(h);
-                                        lifecycles.put(host, h);
+                                        state.hosts.put(host, h);
                                     }
                                 }
 
                                 for (SocketAddress socketAddress : hostsToRemove) {
-                                    Host removed = lifecycles.remove(socketAddress);
+                                    Host removed = state.hosts.remove(socketAddress);
                                     ((PublishSubject) removed.getCloseNotifier()).onCompleted();
                                 }
 
                                 return Observable.from(hostsAdded);
-
-                            }, 1 /*Have at most one pending calculation*/);
+                            });
     }
 
     public static Observable<Host> toHostStream(Func0<List<SocketAddress>> sourceFactory) {
         return toHostStream(sourceFactory, Observable.interval(30, TimeUnit.SECONDS));
+    }
+
+    private static class State {
+        private final Map<SocketAddress, Host> hosts = new HashMap<>();
     }
 
     public static class UnitTest {
