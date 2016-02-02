@@ -80,13 +80,9 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             @Override
             void run() {
                 try {
-                    final CloseableHttpClient hc = CLIENT.get();
-
-                    if (hc == null) {
-                        return;
-                    }
-
-                    hc.close();
+                    final HttpClient hc = CLIENT.get();
+                    if (hc == null) return;
+                    hc.getConnectionManager().closeExpiredConnections();
                 } catch (Throwable t) {
                     LOG.error("error closing expired connections", t);
                 }
