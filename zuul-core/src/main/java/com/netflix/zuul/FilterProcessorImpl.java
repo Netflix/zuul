@@ -311,7 +311,7 @@ public class FilterProcessorImpl implements FilterProcessor
                 }
             }
         }
-        catch (Exception e) {
+        catch (Throwable e) {
             msg.getContext().setError(e);
             if (shouldSendErrorResponse) msg.getContext().setShouldSendErrorResponse(true);
             resultObs = Observable.just(filter.getDefaultOutput(msg));
@@ -391,7 +391,7 @@ public class FilterProcessorImpl implements FilterProcessor
                 }
             }
         }
-        catch (Exception e) {
+        catch (Throwable e) {
             result = handleFilterException(filter, msg, shouldSendErrorResponse, info, e);
         }
 
