@@ -80,13 +80,9 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             @Override
             void run() {
                 try {
-                    final CloseableHttpClient hc = CLIENT.get();
-
-                    if (hc == null) {
-                        return;
-                    }
-
-                    hc.close();
+                    final HttpClient hc = CLIENT.get();
+                    if (hc == null) return;
+                    hc.getConnectionManager().closeExpiredConnections();
                 } catch (Throwable t) {
                     LOG.error("error closing expired connections", t);
                 }
@@ -94,7 +90,9 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         }, 30000, 5000)
     }
 
-    public SimpleHostRoutingFilter() {}
+    public SimpleHostRoutingFilter() {
+        super();
+    }
 
     private static final HttpClientConnectionManager newConnectionManager() {
         SSLContext sslContext = SSLContexts.createSystemDefault();
@@ -165,7 +163,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
         Header[] headers = buildZuulRequestHeaders(request)
         String verb = getVerb(request);
-        InputStream requestEntity = getRequestBody(request)
+        InputStream requestEntity = request.getInputStream();
         CloseableHttpClient httpclient = CLIENT.get()
 
         String uri = request.getRequestURI()
@@ -226,7 +224,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         switch (verb) {
             case 'POST':
                 httpRequest = new HttpPost(uri + getQueryString())
-                InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
+                InputStreamEntity entity = new InputStreamEntity(requestEntity)
                 httpRequest.setEntity(entity)
                 break
             case 'PUT':
