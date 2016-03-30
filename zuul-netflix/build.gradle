@@ -13,7 +13,6 @@ dependencies {
     compile 'com.netflix.ribbon:ribbon-core:0.3.13'
     compile 'com.netflix.ribbon:ribbon-eureka:0.3.13'
     compile 'com.netflix.ribbon:ribbon-httpclient:0.3.13'
-    compile 'com.netflix.turbine:turbine-core:[0.4,)'
     
     provided 'org.powermock:powermock-api-mockito:1.5.4'
     provided 'junit:junit-dep:4.10'
