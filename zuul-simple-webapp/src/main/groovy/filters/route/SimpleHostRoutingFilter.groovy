@@ -261,14 +261,15 @@ class SimpleHostRoutingFilter extends ZuulFilter {
             if (rebuiltQueryString.length() > 0) {
                 rebuiltQueryString = rebuiltQueryString + "&"
             }
-            def (name,value) = keyPair.split("=", 2)
-            if (value != null) {
+
+            if (keyPair.contains("=")) {
+                def (name,value) = keyPair.split("=", 2)
                 value = URLDecoder.decode(value, encoding)
                 value = new URI(null, null, null, value, null).toString().substring(1)
                 value = value.replaceAll('&', '%26')
                 rebuiltQueryString = rebuiltQueryString + name + "=" + value
             } else {
-                name = URLDecoder.decode(name, encoding)
+                def value = URLDecoder.decode(keyPair, encoding)
                 value = new URI(null, null, null, value, null).toString().substring(1)
                 rebuiltQueryString = rebuiltQueryString + value
             }
