@@ -36,4 +36,9 @@ subprojects {
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
     }
+
+    test {
+        forkEvery = 1
+        maxParallelForks = 1
+    }
 }
