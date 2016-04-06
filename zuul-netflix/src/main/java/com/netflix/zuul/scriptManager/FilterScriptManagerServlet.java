@@ -27,16 +27,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -82,11 +78,6 @@ public class FilterScriptManagerServlet extends HttpServlet {
     
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
-
-    /* actions that we permit as an immutable Set */
-    private static final Set<String> VALID_GET_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"LIST", "DOWNLOAD"})));
-    private static final Set<String> VALID_PUT_ACTIONS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(new String[]{"UPLOAD", "ACTIVATE", "DEACTIVATE", "RUN", "CANARY"})));
-
 
     /* DAO for performing CRUD operations with scripts */
     private static ZuulFilterDAO scriptDAO;
@@ -458,31 +449,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
     private static boolean isValidAction(HttpServletRequest request, HttpServletResponse response) {
         String action = request.getParameter("action");
         if (action != null) {
-            action = action.trim().toUpperCase();
-            /* test for GET actions */
-            if (VALID_GET_ACTIONS.contains(action)) {
-                if (!request.getMethod().equals("GET")) {
-                    // valid action, wrong method
-                    setUsageError(405, "ERROR: Invalid HTTP method for action type.", response);
-                    return false;
-                }
-                // valid action and method
-                return true;
-            }
-
-            if (VALID_PUT_ACTIONS.contains(action)) {
-                if (!(request.getMethod().equals("PUT") || request.getMethod().equals("POST"))) {
-                    // valid action, wrong method
-                    setUsageError(405, "ERROR: Invalid HTTP method for action type.", response);
-                    return false;
-                }
-                // valid action and method
-                return true;
-            }
-
-            // wrong action
-            setUsageError(400, "ERROR: Unknown action type.", response);
-            return false;
+            return new ValidActionEvaluation(request, response).isValid();
         } else {
             setUsageError(400, "ERROR: Invalid arguments.", response);
             return false;
@@ -496,17 +463,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
      * @param response
      */
     private static void setUsageError(int statusCode, String message, HttpServletResponse response) {
-        response.setStatus(statusCode);
-        try {
-            Writer w = response.getWriter();
-            if (message != null) {
-                w.write(message + "\n\n");
-            }
-            w.write(getUsageDoc());
-        } catch (Exception e) {
-            logger.error("Failed to output usage error.", e);
-            // won't throw exception because this is not critical, logging the error is enough
-        }
+        new UsageError(statusCode, message).setOn(response);
     }
 
     /**
@@ -525,42 +482,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
      * @return
      */
     private static String getUsageDoc() {
-        StringBuilder s = new StringBuilder();
-        s.append("Usage: /scriptManager?action=<ACTION_TYPE>&<ARGS>").append("\n");
-        s.append("       Actions:").append("\n");
-        s.append("          LIST: List all endpoints with scripts or all scripts for a given endpoint.").append("\n");
-        s.append("              Arguments:").append("\n");
-        s.append("                  endpoint: [Optional (Default: All endpoints)] The endpoint of script revisions to list.").append("\n");
-        s.append("              Examples:").append("\n");
-        s.append("                GET /scriptManager?action=LIST").append("\n");
-        s.append("                GET /scriptManager?action=LIST&endpoint=/ps3/home").append("\n");
-        s.append("\n");
-
-        s.append("          DOWNLOAD: Download a given script.").append("\n");
-        s.append("              Arguments:").append("\n");
-        s.append("                  endpoint: [Required] The endpoint of script to download.").append("\n");
-        s.append("                  revision: [Optional (Default: last revision)] The revision to download.").append("\n");
-        s.append("              Examples:").append("\n");
-        s.append("                GET /scriptManager?action=DOWNLOAD&endpoint=/ps3/home").append("\n");
-        s.append("                GET /scriptManager?action=DOWNLOAD&endpoint=/ps3/home&revision=23").append("\n");
-        s.append("\n");
-
-        s.append("          UPLOAD: Upload a script for a given endpoint.").append("\n");
-        s.append("              Arguments:").append("\n");
-        s.append("                  endpoint: [Required] The endpoint to associated the script with. If it doesn't exist it will be created.").append("\n");
-        s.append("                  userAuthenticationRequired: [Optional (Default: true)] Whether the script requires an authenticated user to execute.").append("\n");
-        s.append("              Example:").append("\n");
-        s.append("                POST /scriptManager?action=UPLOAD&endpoint=/ps3/home").append("\n");
-        s.append("                POST /scriptManager?action=UPLOAD&endpoint=/ps3/home&userAuthenticationRequired=false").append("\n");
-        s.append("\n");
-
-        s.append("          ACTIVATE: Mark a particular script revision as active for production.").append("\n");
-        s.append("              Arguments:").append("\n");
-        s.append("                  endpoint: [Required] The endpoint for which a script revision should be activated.").append("\n");
-        s.append("                  revision: [Required] The script revision to activate.").append("\n");
-        s.append("              Example:").append("\n");
-        s.append("                PUT /scriptManager?action=ACTIVATE&endpoint=/ps3/home&revision=22").append("\n");
-        return s.toString();
+        return new UsageDoc().get();
     }
 
     public static class UnitTest {
@@ -977,4 +899,5 @@ public class FilterScriptManagerServlet extends HttpServlet {
             return script;
         }
     }
+
 }
