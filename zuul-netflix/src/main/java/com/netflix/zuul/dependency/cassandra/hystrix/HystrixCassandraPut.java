@@ -23,7 +23,6 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ConsistencyLevel;
 
-
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.Map;

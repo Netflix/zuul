@@ -15,16 +15,9 @@
  */
 package com.netflix.zuul.context;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
@@ -130,28 +123,4 @@ public class Debug {
         }
 
     }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Test
-        public void testRequestDebug() {
-            assertFalse(debugRouting());
-            assertFalse(debugRequest());
-            setDebugRouting(true);
-            setDebugRequest(true);
-            assertTrue(debugRouting());
-            assertTrue(debugRequest());
-
-            addRoutingDebug("test1");
-            assertTrue(getRoutingDebug().contains("test1"));
-
-            addRequestDebug("test2");
-            assertTrue(getRequestDebug().contains("test2"));
-
-
-        }
-    }
-
 }

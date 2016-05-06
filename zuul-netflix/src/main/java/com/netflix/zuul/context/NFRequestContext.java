@@ -16,20 +16,10 @@
 package com.netflix.zuul.context;
 
 import com.netflix.client.http.HttpResponse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Extended RequestContext adding Netflix library specific concepts and data
@@ -153,52 +143,4 @@ public class NFRequestContext extends RequestContext {
     public Map<String, Object> getEventProperties() {
         return (Map<String, Object>) this.get(EVENT_PROPS_KEY);
     }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Mock
-        private HttpResponse clientResponse;
-
-        @Before
-        public void before() {
-            RequestContext.getCurrentContext().unset();
-            RequestContext.setContextClass(NFRequestContext.class);
-            MockitoAnnotations.initMocks(this);
-
-        }
-
-        @Test
-        public void testGetContext() {
-            RequestContext.setContextClass(NFRequestContext.class);
-
-            NFRequestContext context = NFRequestContext.getCurrentContext();
-            assertNotNull(context);
-            Assert.assertEquals(context.getClass(), NFRequestContext.class);
-
-            RequestContext context1 = RequestContext.getCurrentContext();
-            assertNotNull(context1);
-            Assert.assertEquals(context1.getClass(), NFRequestContext.class);
-
-        }
-
-        @Test
-        public void testSetContextVariable() {
-            NFRequestContext context = NFRequestContext.getCurrentContext();
-            assertNotNull(context);
-            context.set("test", "moo");
-            Assert.assertEquals(context.get("test"), "moo");
-        }
-
-        @Test
-        public void testNFRequestContext() {
-            NFRequestContext context = NFRequestContext.getCurrentContext();
-            context.setZuulResponse(clientResponse);
-            assertEquals(context.getZuulResponse(), clientResponse);
-            context.setRouteVIP("vip");
-            assertEquals("vip", context.getRouteVIP());
-        }
-    }
-
 }

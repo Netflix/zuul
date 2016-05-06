@@ -17,12 +17,17 @@ package filters.post
 
 import com.netflix.zuul.ZuulFilter
 import com.netflix.zuul.context.RequestContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 /**
  * @author Mikey Cohen
  * Date: 2/3/12
  * Time: 2:48 PM
  */
 class Stats extends ZuulFilter {
+    private static final Logger LOG = LoggerFactory.getLogger(Stats.class);
+
     @Override
     String filterType() {
         return "post"
@@ -47,14 +52,14 @@ class Stats extends ZuulFilter {
     public void dumpRequestDebug() {
         List<String> rd = (List<String>) RequestContext.getCurrentContext().get("requestDebug");
         rd?.each {
-            println("REQUEST_DEBUG::${it}");
+            LOG.info("REQUEST_DEBUG::${it}");
         }
     }
 
     public void dumpRoutingDebug() {
         List<String> rd = (List<String>) RequestContext.getCurrentContext().get("routingDebug");
         rd?.each {
-            println("ZUUL_DEBUG::${it}");
+            LOG.info("ZUUL_DEBUG::${it}");
         }
     }
 

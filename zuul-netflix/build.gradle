@@ -1,21 +1,22 @@
 apply plugin: 'groovy'
 
+
 dependencies {
     compile project(':zuul-core')
-    
 
     compile 'commons-fileupload:commons-fileupload:1.3'
     compile 'org.json:json:20090211'
     
     compile 'com.netflix.astyanax:astyanax-cassandra:1.56.48'
     compile 'com.netflix.astyanax:astyanax-thrift:1.56.48'
-    compile 'com.netflix.hystrix:hystrix-core:1.4.0-RC4'
-    compile 'com.netflix.ribbon:ribbon-core:0.3.13'
-    compile 'com.netflix.ribbon:ribbon-eureka:0.3.13'
-    compile 'com.netflix.ribbon:ribbon-httpclient:0.3.13'
+    compile "com.netflix.hystrix:hystrix-core:$hystrixVersion"
+    compile "com.netflix.ribbon:ribbon-core:$ribbonVersion"
+    compile "com.netflix.ribbon:ribbon-eureka:$ribbonVersion"
+    compile "com.netflix.ribbon:ribbon-httpclient:$ribbonVersion"
+    compile 'com.netflix.turbine:turbine-core:1.0.0'
     
-    provided 'org.powermock:powermock-api-mockito:1.5.4'
-    provided 'junit:junit-dep:4.10'
+    testCompile "org.powermock:powermock-api-mockito:$powermockVersion"
+    testCompile 'junit:junit-dep:4.11'
 }
 
 jar {

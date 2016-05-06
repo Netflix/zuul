@@ -15,16 +15,9 @@
  */
 package com.netflix.zuul.http;
 
-import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.ZuulRunner;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -32,10 +25,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 /**
  * Core Zuul servlet which intializes and orchestrates zuulFilter execution
@@ -144,59 +133,4 @@ public class ZuulServlet extends HttpServlet {
         RequestContext.getCurrentContext().setThrowable(e);
         zuulRunner.error();
     }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Mock
-        HttpServletRequest servletRequest;
-        @Mock
-        HttpServletResponseWrapper servletResponse;
-        @Mock
-        FilterProcessor processor;
-        @Mock
-        PrintWriter writer;
-
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-        @Test
-        public void testProcessZuulFilter() {
-
-            ZuulServlet zuulServlet = new ZuulServlet();
-            zuulServlet = spy(zuulServlet);
-            RequestContext context = spy(RequestContext.getCurrentContext());
-
-
-            try {
-                FilterProcessor.setProcessor(processor);
-                RequestContext.testSetCurrentContext(context);
-                when(servletResponse.getWriter()).thenReturn(writer);
-
-                zuulServlet.init(servletRequest, servletResponse);
-                verify(zuulServlet, times(1)).init(servletRequest, servletResponse);
-                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
-                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
-
-                zuulServlet.preRoute();
-                verify(processor, times(1)).preRoute();
-
-                zuulServlet.postRoute();
-                verify(processor, times(1)).postRoute();
-//                verify(context, times(1)).unset();
-
-                zuulServlet.route();
-                verify(processor, times(1)).route();
-                RequestContext.testSetCurrentContext(null);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-        }
-    }
-
 }

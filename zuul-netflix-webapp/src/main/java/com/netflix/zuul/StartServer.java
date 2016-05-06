@@ -21,23 +21,7 @@ package com.netflix.zuul;
  * Time: 11:14 AM
  */
 
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_CUSTOM_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_POST_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_PRE_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_ROUTING_PATH;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_CLIENTLIST;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT;
-import static com.netflix.zuul.constants.ZuulConstants.ZUUL_RIBBON_NAMESPACE;
-
-import java.io.IOException;
-
-import javax.servlet.ServletContextEvent;
-
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.google.common.base.Throwables;
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceServletContextListener;
@@ -47,10 +31,15 @@ import com.netflix.astyanax.Keyspace;
 import com.netflix.client.ClientException;
 import com.netflix.client.ClientFactory;
 import com.netflix.client.config.DefaultClientConfigImpl;
+import com.netflix.config.ConcurrentCompositeConfiguration;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicConfiguration;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.config.FixedDelayPollingScheduler;
+import com.netflix.config.sources.DynamoDbConfigurationSource;
+import com.netflix.config.sources.URLConfigurationSource;
 import com.netflix.karyon.server.KaryonServer;
 import com.netflix.karyon.spi.Application;
 import com.netflix.servo.util.ThreadCpuStats;
@@ -60,6 +49,7 @@ import com.netflix.zuul.dependency.cassandra.CassandraHelper;
 import com.netflix.zuul.dependency.ribbon.RibbonConfig;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import com.netflix.zuul.groovy.GroovyFileFilter;
+import com.netflix.zuul.guice.AWSModule;
 import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.TracerFactory;
 import com.netflix.zuul.plugins.Counter;
@@ -71,11 +61,29 @@ import com.netflix.zuul.scriptManager.ZuulFilterDAOCassandra;
 import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.ServletContextEvent;
+import java.io.IOException;
+
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_ARCHAIUS_DYNAMODB_ENABLED;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_CUSTOM_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_POST_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_PRE_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_ROUTING_PATH;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_CLIENTLIST;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_NIWS_DEFAULTCLIENT;
+import static com.netflix.zuul.constants.ZuulConstants.ZUUL_RIBBON_NAMESPACE;
 
 @Application
 public class StartServer extends GuiceServletContextListener {
 
     private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_CASSANDRA_ENABLED, true);
+    private static final DynamicBooleanProperty archaiusDynamoDbEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_ARCHAIUS_DYNAMODB_ENABLED, false);
+
     private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
     private final KaryonServer server;
 
@@ -95,6 +103,7 @@ public class StartServer extends GuiceServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         try {
             server.start();
+
         } catch (Exception e) {
             LOG.error("Error while starting karyon.", e);
             throw Throwables.propagate(e);
@@ -121,12 +130,12 @@ public class StartServer extends GuiceServletContextListener {
 
     @Override
     protected Injector getInjector() {
-        return server.initialize();
+        return server.initialize().createChildInjector(new AWSModule());
     }
 
     protected void initialize() throws Exception {
-
         AmazonInfoHolder.getInfo();
+        initArchaiusWithDynamoDB();
         initPlugins();
         initZuul();
         initCassandra();
@@ -210,6 +219,36 @@ public class StartServer extends GuiceServletContextListener {
             ZuulFilterDAO dao = new ZuulFilterDAOCassandra(keyspace);
             LOG.info("Starting ZuulFilter Poller");
             ZuulFilterPoller.start(dao);
+        }
+    }
+
+    void initArchaiusWithDynamoDB() {
+        if (archaiusDynamoDbEnabled.get()) {
+            LOG.info("Fetch properties from DynamoDb enabled");
+            ConcurrentCompositeConfiguration finalConfig = new ConcurrentCompositeConfiguration();
+            DynamicStringProperty tableName = DynamicPropertyFactory.getInstance().getStringProperty("com.netflix.config.dynamo.tableName", "");
+            if(!tableName.get().isEmpty()) {
+                LOG.info("Fetch properties from table: {}", tableName.get());
+                DynamoDbConfigurationSource dynamoSource = new DynamoDbConfigurationSource(getInjector().getInstance(AmazonDynamoDB.class));
+                FixedDelayPollingScheduler dynamoScheduler = new FixedDelayPollingScheduler();
+                DynamicConfiguration dynamicConfig = new DynamicConfiguration(dynamoSource, dynamoScheduler);
+                finalConfig.addConfiguration(dynamicConfig);
+            } else {
+                LOG.info("No DynamoDb table specified, fetching just from files");
+            }
+
+            URLConfigurationSource sourceFiles = new URLConfigurationSource();
+            FixedDelayPollingScheduler schedulerFiles = new FixedDelayPollingScheduler();
+            DynamicConfiguration configurationFiles = new DynamicConfiguration(sourceFiles, schedulerFiles);
+            finalConfig.addConfiguration(configurationFiles);
+
+            if (ConfigurationManager.isConfigurationInstalled()) {
+                ConfigurationManager.loadPropertiesFromConfiguration(finalConfig);
+            } else {
+                ConfigurationManager.install(finalConfig);
+            }
+        } else {
+            LOG.info("Fetch properties from DynamoDb disabled");
         }
     }
 }

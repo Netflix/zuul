@@ -18,11 +18,14 @@ package com.netflix.zuul.dependency.ribbon;
 import com.netflix.client.ClientException;
 import com.netflix.client.ClientFactory;
 import com.netflix.client.config.DefaultClientConfigImpl;
-import com.netflix.config.*;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.config.DeploymentContext;
+import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.constants.ZuulConstants;
 import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,24 +200,4 @@ public class RibbonConfig {
 
         return String.format(vipAddressTemplate, client, stack);
     }
-
-
-    public static final class UnitTest {
-
-        @Test
-        public void defaultVipAddressForStandardStack() {
-            //todo fix
-//            assertEquals("null-prod.netflix.net:7001", RibbonConfig.getDefaultVipAddress("prod"));
-        }
-
-
-        @Test
-        public void defaultVipAddressForLatAmStack() {
-            //todo fix
-//            assertEquals("null-prod.latam.netflix.net:7001", RibbonConfig.getDefaultVipAddress("prod.latam"));
-        }
-
-
-    }
-
 }

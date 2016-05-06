@@ -23,7 +23,6 @@ import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.RowSliceQuery;
 import com.netflix.zuul.dependency.cassandra.CassandraCache;
 
-
 import java.util.Arrays;
 
 /**

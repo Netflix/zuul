@@ -15,19 +15,13 @@
  */
 package com.netflix.zuul.scriptManager;
 
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.netflix.zuul.FilterId;
 import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.ZuulFilter;
-
-import org.junit.Test;
-
 import net.jcip.annotations.ThreadSafe;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
@@ -252,34 +246,5 @@ public class FilterInfo implements  Comparable<FilterInfo>{
             return filterInfo.creationDate.compareTo(getCreationDate());
         }
         return filterInfo.getFilterName().compareTo(this.getFilterName());
-    }
-
-    public static class UnitTest {
-
-        @Test
-        public void verifyFilterId() {
-            FilterInfo filterInfo = new FilterInfo("", "", "", "", "", "", "");
-            long originalCreationTime = filterInfo.getCreationDate().getTime();
-            filterInfo.getCreationDate().setTime(0);
-            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
-        }
-
-        @Test
-        public void creationDateIsCopiedInGetter() {
-            FilterInfo filterInfo = new FilterInfo("", "", "", "", "", "", "");
-            long originalCreationTime = filterInfo.getCreationDate().getTime();
-            filterInfo.getCreationDate().setTime(0);
-            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
-        }
-
-        @Test
-        public void creationDateIsCopiedInConstructor() {
-            Date date = new Date();
-            long originalCreationTime = date.getTime();
-            FilterInfo filterInfo =
-                new FilterInfo("", 1, date, false, false, "", "", "", "", "", "");
-            date.setTime(0);
-            assertThat(filterInfo.getCreationDate().getTime(), is(originalCreationTime));
-        }
     }
 }

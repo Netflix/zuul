@@ -19,19 +19,9 @@ import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
 import com.netflix.zuul.http.HttpServletResponseWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 
 /**
@@ -111,61 +101,5 @@ public class ZuulRunner {
     public void error() {
         FilterProcessor.getInstance().error();
     }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Mock
-        ZuulFilter filter;
-
-        @Mock
-        HttpServletRequest servletRequest;
-
-        @Mock
-        HttpServletResponse servletResponse;
-
-        @Mock
-        FilterProcessor processor;
-
-        @Mock
-        PrintWriter writer;
-
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-        @Test
-        public void testProcessZuulFilter() {
-
-            ZuulRunner runner = new ZuulRunner();
-            runner = spy(runner);
-            RequestContext context = spy(RequestContext.getCurrentContext());
-
-            try {
-                FilterProcessor.setProcessor(processor);
-                RequestContext.testSetCurrentContext(context);
-                when(servletResponse.getWriter()).thenReturn(writer);
-
-                runner.init(servletRequest, servletResponse);
-                verify(runner, times(1)).init(servletRequest, servletResponse);
-                assertTrue(RequestContext.getCurrentContext().getRequest() instanceof HttpServletRequestWrapper);
-                assertTrue(RequestContext.getCurrentContext().getResponse() instanceof HttpServletResponseWrapper);
-
-                runner.preRoute();
-                verify(processor, times(1)).preRoute();
-
-                runner.postRoute();
-                verify(processor, times(1)).postRoute();
-
-                runner.route();
-                verify(processor, times(1)).route();
-                RequestContext.testSetCurrentContext(null);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
+

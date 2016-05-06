@@ -18,18 +18,11 @@ package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.DynamicCodeCompiler;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.spy;
 
 /**
  * Groovy code compiler
@@ -74,32 +67,6 @@ public class GroovyCompiler implements DynamicCodeCompiler {
         GroovyClassLoader loader = getGroovyClassLoader();
         Class groovyClass = loader.parseClass(file);
         return groovyClass;
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-        @Test
-        public void testLoadGroovyFromString() {
-
-            GroovyCompiler compiler = spy(new GroovyCompiler());
-
-            try {
-
-                String code = "class test { public String hello(){return \"hello\" } } ";
-                Class clazz = compiler.compile(code, "test");
-                assertNotNull(clazz);
-                assertEquals(clazz.getName(), "test");
-                GroovyObject groovyObject = (GroovyObject) clazz.newInstance();
-                Object[] args = {};
-                String s = (String) groovyObject.invokeMethod("hello", args);
-                assertEquals(s, "hello");
-
-
-            } catch (Exception e) {
-                assertFalse(true);
-            }
-
-        }
     }
 }
 

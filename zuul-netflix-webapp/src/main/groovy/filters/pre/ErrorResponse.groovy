@@ -97,27 +97,26 @@ class ErrorResponse extends ZuulFilter {
         }
 
     }
-    /*
-    JSON/ xml ErrorResponse responses
-
-v=1 or unspecified:
-<status>
-<status_code>status_code</status_code>
-<message>message</message>
-</status>
-
-v=1.5,2.0:
-<status>
-<message>user_id is invalid</message>
-</status>
-
-v=1.5,2.0:
-{"status": {"message": "user_id is invalid"}}
-
-v=1 or unspecified:
-
-     */
-
+     /*		
+     JSON/ xml ErrorResponse responses		
+ 		
+ v=1 or unspecified:		
+ <status>		
+ <status_code>status_code</status_code>		
+ <message>message</message>		
+ </status>		
+ 		
+ v=1.5,2.0:		
+ <status>		
+ <message>user_id is invalid</message>		
+ </status>		
+ 		
+ v=1.5,2.0:		
+ {"status": {"message": "user_id is invalid"}}		
+ 		
+ v=1 or unspecified:		
+ 		
+      */
     String getErrorMessage(Throwable ex, int status_code) {
         String ver = version
         String format = outputType
@@ -362,3 +361,4 @@ v=1 or unspecified:
 
 
 }
+

@@ -20,19 +20,10 @@ import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.annotations.MonitorTags;
 import com.netflix.servo.tag.BasicTag;
 import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.Tag;
 import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-
-import static org.junit.Assert.*;
 
 /**
  * counter for per route/status code counting
@@ -47,10 +38,10 @@ public class RouteStatusCodeMonitor implements NamedCount {
     TagList tagList;
 
 
-    String route_code;
+    String routeCode;
 
     String route;
-    int status_code;
+    int statusCode;
 
     @Monitor(name = "count", type = DataSourceType.COUNTER)
     private final AtomicLong count = new AtomicLong();
@@ -59,9 +50,9 @@ public class RouteStatusCodeMonitor implements NamedCount {
     public RouteStatusCodeMonitor(String route, int status_code) {
         if(route == null) route = "";
         this.route = route;
-        this.status_code = status_code;
-        route_code = route + "_" + status_code;
-        tagList = BasicTagList.of(new BasicTag("ID", route_code));
+        this.statusCode = status_code;
+        routeCode = route + "_" + status_code;
+        tagList = BasicTagList.of(new BasicTag("ID", routeCode));
 
     }
 
@@ -72,7 +63,7 @@ public class RouteStatusCodeMonitor implements NamedCount {
 
         RouteStatusCodeMonitor statsData = (RouteStatusCodeMonitor) o;
 
-        if (status_code != statsData.status_code) return false;
+        if (statusCode != statsData.statusCode) return false;
         if (route != null ? !route.equals(statsData.route) : statsData.route != null) return false;
 
         return true;
@@ -81,13 +72,13 @@ public class RouteStatusCodeMonitor implements NamedCount {
     @Override
     public int hashCode() {
         int result = route != null ? route.hashCode() : 0;
-        result = 31 * result + status_code;
+        result = 31 * result + statusCode;
         return result;
     }
 
     @Override
     public String getName() {
-        return route_code;
+        return routeCode;
     }
 
     public long getCount() {
@@ -101,34 +92,15 @@ public class RouteStatusCodeMonitor implements NamedCount {
         count.incrementAndGet();
     }
 
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Test
-        public void testUpdateStats() {
-            RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-            assertEquals(sd.route, "test");
-            sd.update();
-            assertEquals(sd.count.get(), 1);
-            sd.update();
-            assertEquals(sd.count.get(), 2);
-        }
-
-
-        @Test
-        public void testEquals() {
-            RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-            RouteStatusCodeMonitor sd1 = new RouteStatusCodeMonitor("test", 200);
-            RouteStatusCodeMonitor sd2 = new RouteStatusCodeMonitor("test1", 200);
-            RouteStatusCodeMonitor sd3 = new RouteStatusCodeMonitor("test", 201);
-
-            assertTrue(sd.equals(sd1));
-            assertTrue(sd1.equals(sd));
-            assertTrue(sd.equals(sd));
-            assertFalse(sd.equals(sd2));
-            assertFalse(sd.equals(sd3));
-            assertFalse(sd2.equals(sd3));
-        }
+    public int getStatusCode() {
+        return statusCode;
     }
 
+    public String getRoute() {
+        return route;
+    }
+
+    public String getRouteCode() {
+        return routeCode;
+    }
 }

@@ -18,6 +18,8 @@ package com.netflix.zuul.scriptManager;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.constants.ZuulConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,6 +37,7 @@ import java.util.Map;
  *         Time: 3:44 PM
  */
 public class ZuulFilterPoller {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZuulFilterPoller.class);
 
     Map<String, FilterInfo> runningFilters = new HashMap<String, FilterInfo>();
     ZuulFilterDAO dao;
@@ -128,7 +131,7 @@ public class ZuulFilterPoller {
     private void doFilterCheck(FilterInfo newFilter) throws IOException {
         FilterInfo existingFilter = runningFilters.get(newFilter.getFilterID());
         if (existingFilter == null || !existingFilter.equals(newFilter)) {
-            System.out.println("adding filter to disk" + newFilter.toString());
+            LOGGER.info("adding filter to disk" + newFilter.toString());
             writeFilterToDisk(newFilter);
             runningFilters.put(newFilter.getFilterID(), newFilter);
         }
@@ -150,7 +153,7 @@ public class ZuulFilterPoller {
         out.write(newFilter.getFilterCode());
         out.close();
         file.close();
-        System.out.println("filter written " + f.getPath());
+        LOGGER.info("filter written " + f.getPath());
     }
 
 
