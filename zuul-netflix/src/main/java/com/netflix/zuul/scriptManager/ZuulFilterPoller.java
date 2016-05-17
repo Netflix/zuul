@@ -65,6 +65,7 @@ public class ZuulFilterPoller {
      */
     public ZuulFilterPoller(ZuulFilterDAO dao) {
         this.dao = dao;
+        checkerThread.setDaemon(true);
         checkerThread.start();
 
     }
