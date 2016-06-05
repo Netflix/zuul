@@ -112,6 +112,7 @@ public class FilterFileManager {
                 }
             }
         };
+        poller.setDaemon(true);
         poller.start();
     }
 
