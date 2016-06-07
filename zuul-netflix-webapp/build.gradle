@@ -11,11 +11,14 @@ dependencies {
     compile 'com.netflix.karyon:karyon-admin:2.0.02'
     compile 'com.netflix.karyon:karyon-admin-web:2.0.02'
     compile 'com.netflix.karyon:karyon-extensions:2.0.02'
+    compile 'com.netflix.governator:governator-archaius:1.12.15'
+
     compile 'com.netflix.blitz4j:blitz4j:1.35'
-    compile 'com.sun.jersey:jersey-core:1.17.1'
-    compile 'com.sun.jersey:jersey-server:1.17.1'
-    compile 'com.sun.jersey:jersey-client:1.17.1'
-    compile 'com.sun.jersey:jersey-servlet:1.17.1'
+
+    compile 'com.sun.jersey:jersey-core:1.19'
+    compile 'com.sun.jersey:jersey-server:1.19'
+    compile 'com.sun.jersey:jersey-client:1.19'
+    compile 'com.sun.jersey:jersey-servlet:1.19'
 
     compile "org.codehaus.groovy:groovy-all:2.2.2"
     providedCompile 'junit:junit-dep:4.10'

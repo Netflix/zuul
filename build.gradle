@@ -17,6 +17,12 @@ idea {
     }
 }
 
+configurations.all {
+    // Exclude old asm 3.x versions.
+    exclude group: 'asm', module: 'asm'
+    exclude group: 'asm', module: 'asm-all'
+}
+
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
