@@ -127,8 +127,19 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
         HttpResponse response = restClient.executeWithLoadBalancer(httpClientRequest);
         context.setZuulResponse(response);
+
+        // Here we want to handle the case where this hystrix command timed-out before the
+        // ribbon client received a response from origin. So in this situation we want to
+        // cleanup this response (release connection) now, as we know that the zuul filter
+        // chain has already continued without us and therefore won't cleanup itself.
+        if (isResponseTimedOut()) {
+            response.close();
+        }
+
         return response;
     }
+
+
     
     public static class UnitTest {
         
