@@ -15,7 +15,7 @@
  */
 package endpoint
 
-import com.netflix.zuul.filters.NfProxyEndpoint
+import com.netflix.zuul.filters.endpoints.NfProxyEndpoint
 
 /*
  * Just inherit the NfProxyEndpoint implementation.
