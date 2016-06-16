@@ -99,6 +99,10 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         return new HttpServletRequestWrapper(req, contentData, parameters);
     }
 
+    public HttpServletRequest getOriginalRequest() {
+        return this.req;
+    }
+
     /**
      * This method is safe to use multiple times.
      *
