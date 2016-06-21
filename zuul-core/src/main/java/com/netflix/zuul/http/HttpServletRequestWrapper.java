@@ -96,7 +96,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         } catch (IOException e) {
             throw new IllegalStateException("Cannot parse the request!", e);
         }
-        return new HttpServletRequestWrapper(req, contentData, parameters);
+        return req;
     }
 
     /**
