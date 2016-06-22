@@ -20,7 +20,7 @@ dependencies {
     compile 'com.sun.jersey:jersey-client:1.19'
     compile 'com.sun.jersey:jersey-servlet:1.19'
 
-    compile "org.codehaus.groovy:groovy-all:2.2.2"
+    compile "org.codehaus.groovy:groovy-all:2.3.10"
     providedCompile 'junit:junit-dep:4.10'
 }
 
