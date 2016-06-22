@@ -126,7 +126,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
     }
 
     public int compareTo(ZuulFilter filter) {
-        return this.filterOrder() - filter.filterOrder();
+        return Integer.compare(this.filterOrder(), filter.filterOrder());
     }
 
     public static class TestUnit {
