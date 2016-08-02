@@ -67,19 +67,28 @@ public class FilterProcessorImpl implements FilterProcessor
     @Override
     public Observable<ZuulMessage> applyFilterChain(ZuulMessage msg)
     {
-        Observable<ZuulMessage> chain;
+        Observable<ZuulMessage> chain = Observable.just(msg);
 
-        Iterator<ZuulFilter> inFilterIterator = filterLoader.getFiltersByType(FilterType.INBOUND).iterator();
-        chain = chainFilters(msg, inFilterIterator, FilterType.INBOUND);
-
-        chain = applyEndpointFilter(chain);
-
-        chain = chain.flatMap(msg2 -> {
-            Iterator<ZuulFilter> outFilterIterator = filterLoader.getFiltersByType(FilterType.OUTBOUND).iterator();
-            return chainFilters(msg2, outFilterIterator, FilterType.OUTBOUND);
-        });
+        chain = applyInboundFilters(msg, chain);
+        chain = applyEndpointFilter(msg, chain);
+        chain = applyOutboundFilters(msg, chain);
 
         return chain;
+    }
+
+    protected Observable<ZuulMessage> applyInboundFilters(final ZuulMessage message, final Observable<ZuulMessage> chain) {
+        return applyFilters(chain, FilterType.INBOUND);
+    }
+
+    protected Observable<ZuulMessage> applyOutboundFilters(final ZuulMessage message, final Observable<ZuulMessage> chain) {
+        return applyFilters(chain, FilterType.OUTBOUND);
+    }
+
+    private Observable<ZuulMessage> applyFilters(final Observable<ZuulMessage> chain, final FilterType type) {
+        return chain.flatMap(msg -> {
+            Iterator<ZuulFilter> filterIterator = filterLoader.getFiltersByType(type).iterator();
+            return chainFilters(msg, filterIterator, type);
+        });
     }
 
 
@@ -215,9 +224,9 @@ public class FilterProcessorImpl implements FilterProcessor
      * @param chain
      * @return
      */
-    public Observable<ZuulMessage> applyEndpointFilter(Observable<ZuulMessage> chain)
+    public Observable<ZuulMessage> applyEndpointFilter(final ZuulMessage message, final Observable<ZuulMessage> chain)
     {
-        chain = chain.flatMap(msg -> {
+        return chain.flatMap(msg -> {
 
             SessionContext context = msg.getContext();
 
@@ -261,8 +270,6 @@ public class FilterProcessorImpl implements FilterProcessor
             // Apply this endpoint.
             return processAsyncFilter(msg, endpointFilter, true);
         });
-
-        return chain;
     }
 
     private HttpResponseMessageImpl defaultErrorResponse(HttpRequestMessage request)
