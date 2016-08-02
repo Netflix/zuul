@@ -1,8 +1,0 @@
-
-dependencies {
-    compile project(':zuul-core')
-
-    compile 'io.reactivex:rxnetty-http:0.5.2-SNAPSHOT'
-    compile 'io.reactivex:rxnetty-spectator-http:0.5.2-SNAPSHOT'
-    compile 'com.netflix.numerus:numerus:1.1'
-}
