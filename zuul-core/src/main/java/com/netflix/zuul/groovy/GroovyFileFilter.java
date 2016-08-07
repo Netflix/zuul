@@ -1,13 +1,5 @@
 package com.netflix.zuul.groovy;
 
-/**
- * Created with IntelliJ IDEA.
- * User: mcohen
- * Date: 5/30/13
- * Time: 11:47 AM
- * To change this template use File | Settings | File Templates.
- */
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +16,11 @@ import static org.mockito.Mockito.when;
 
 /**
  * Filters only .groovy files
+ *
+ * @author Mikey Cohen
+ * Date: 5/30/13
+ * Time: 11:47 AM
+ *
  */
 public class GroovyFileFilter implements FilenameFilter {
     public boolean accept(File dir, String name) {
