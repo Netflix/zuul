@@ -145,7 +145,7 @@ public class RibbonConfig {
     }
 
     /**
-     * sets the default origin applcation stack
+     * sets the default origin application stack
      *
      * @param stack
      */
