@@ -127,12 +127,12 @@ public class RibbonConfig {
     /**
      * sets the application name of the origin
      *
-     * @param app_name
+     * @param applicationName
      */
-    public static void setApplicationName(String app_name) {
-        RibbonConfig.APPLICATION_NAME = app_name;
-        if (ZuulApplicationInfo.getApplicationName() == null) ZuulApplicationInfo.setApplicationName(app_name);
-        LOG.info("Setting back end VIP application = " + app_name);
+    public static void setApplicationName(String applicationName) {
+        RibbonConfig.APPLICATION_NAME = applicationName;
+        if (ZuulApplicationInfo.getApplicationName() == null) ZuulApplicationInfo.setApplicationName(applicationName);
+        LOG.info("Setting back end VIP application = " + applicationName);
     }
 
     /**
