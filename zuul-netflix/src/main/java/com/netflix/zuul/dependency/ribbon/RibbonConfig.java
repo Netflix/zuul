@@ -131,7 +131,7 @@ public class RibbonConfig {
      */
     public static void setApplicationName(String app_name) {
         RibbonConfig.APPLICATION_NAME = app_name;
-        if (ZuulApplicationInfo.applicationName == null) ZuulApplicationInfo.applicationName = app_name;
+        if (ZuulApplicationInfo.getApplicationName() == null) ZuulApplicationInfo.setApplicationName(app_name);
         LOG.info("Setting back end VIP application = " + app_name);
     }
 
@@ -151,7 +151,7 @@ public class RibbonConfig {
      */
     public static void setApplicationStack(String stack) {
         RibbonConfig.APPLICATION_STACK = stack;
-        if (ZuulApplicationInfo.getStack() == null) ZuulApplicationInfo.stack = stack;
+        if (ZuulApplicationInfo.getStack() == null) ZuulApplicationInfo.setStack(stack);
         LOG.info("Setting back end VIP stack = " + stack);
     }
 
