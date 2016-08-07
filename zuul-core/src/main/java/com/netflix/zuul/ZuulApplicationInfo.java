@@ -22,8 +22,8 @@ package com.netflix.zuul;
  * Time: 1:56 PM
  */
 public class ZuulApplicationInfo {
-    public static String applicationName;
-    public static String stack;
+    private static String applicationName;
+    private static String stack;
 
     public static String getApplicationName() {
         return applicationName;
