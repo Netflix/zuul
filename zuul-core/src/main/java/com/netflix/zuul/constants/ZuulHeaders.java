@@ -42,4 +42,10 @@ public class ZuulHeaders {
     public static final String X_NETFLIX_CLIENT_PROTO = "X-Netflix.client-proto";
     public static final String X_ZUUL_SURGICAL_FILTER = "X-Zuul-Surgical-Filter";
     public static final String X_ZUUL_FILTER_EXECUTION_STATUS = "X-Zuul-Filter-Executions";
+
+    // Prevent instantiation
+    private ZuulHeaders() {
+        throw new AssertionError("Must not instantiate constant utility class");
+    }
+
 }
