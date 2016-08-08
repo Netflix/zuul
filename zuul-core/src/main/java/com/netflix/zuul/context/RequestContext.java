@@ -299,7 +299,9 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
      * appends filter name and status to the filter execution history for the
      * current request
      * 
-     * @param executedFilters - name of the filter
+     * @param name   filter name
+     * @param status execution status
+     * @param time   execution time in milliseconds
      */
     public void addFilterExecutionSummary(String name, String status, long time) {
             StringBuilder sb = getFilterExecutionSummary();

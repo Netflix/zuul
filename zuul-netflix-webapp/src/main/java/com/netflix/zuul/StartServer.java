@@ -15,12 +15,6 @@
  */
 package com.netflix.zuul;
 
-/**
- * @author Mikey Cohen
- * Date: 10/18/11
- * Time: 11:14 AM
- */
-
 import static com.netflix.zuul.constants.ZuulConstants.ZUUL_CASSANDRA_ENABLED;
 import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_CUSTOM_PATH;
 import static com.netflix.zuul.constants.ZuulConstants.ZUUL_FILTER_POST_PATH;
@@ -72,6 +66,11 @@ import com.netflix.zuul.scriptManager.ZuulFilterPoller;
 import com.netflix.zuul.stats.AmazonInfoHolder;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 
+/**
+ * @author Mikey Cohen
+ * Date: 10/18/11
+ * Time: 11:14 AM
+ */
 @Application
 public class StartServer extends GuiceServletContextListener {
 
