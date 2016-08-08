@@ -90,13 +90,11 @@ public class FilterProcessor {
     public void postRoute() throws ZuulException {
         try {
             runFilters("post");
+        } catch (ZuulException e) {
+            throw e;
         } catch (Throwable e) {
-            if (e instanceof ZuulException) {
-                throw (ZuulException) e;
-            }
             throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_POST_FILTER_" + e.getClass().getName());
         }
-
     }
 
     /**
@@ -118,10 +116,9 @@ public class FilterProcessor {
     public void route() throws ZuulException {
         try {
             runFilters("route");
+        } catch (ZuulException e) {
+            throw e;
         } catch (Throwable e) {
-            if (e instanceof ZuulException) {
-                throw (ZuulException) e;
-            }
             throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_ROUTE_FILTER_" + e.getClass().getName());
         }
     }
@@ -134,10 +131,9 @@ public class FilterProcessor {
     public void preRoute() throws ZuulException {
         try {
             runFilters("pre");
+        } catch (ZuulException e) {
+            throw e;
         } catch (Throwable e) {
-            if (e instanceof ZuulException) {
-                throw (ZuulException) e;
-            }
             throw new ZuulException(e, 500, "UNCAUGHT_EXCEPTION_IN_PRE_FILTER_" + e.getClass().getName());
         }
     }
