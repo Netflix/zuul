@@ -85,4 +85,9 @@ public class ZuulConstants {
     public static final String ZUUL_REQUEST_BODY_MAX_SIZE = "zuul.body.request.max.size";
     public static final String ZUUL_RESPONSE_BODY_MAX_SIZE = "zuul.body.response.max.size";
 
+    // Prevent instantiation
+    private ZuulConstants() {
+        throw new AssertionError("Must not instantiate constant utility class");
+    }
+
 }
