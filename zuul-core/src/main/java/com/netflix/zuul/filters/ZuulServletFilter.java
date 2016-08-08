@@ -69,7 +69,13 @@ public class ZuulServletFilter implements Filter {
                 postRouting();
                 return;
             }
-            filterChain.doFilter(servletRequest, servletResponse);
+            
+            // Only forward onto to the chain if a zuul response is not being sent
+            if (!RequestContext.getCurrentContext().sendZuulResponse()) {
+                filterChain.doFilter(servletRequest, servletResponse);
+                return;
+            }
+            
             try {
                 routing();
             } catch (ZuulException e) {

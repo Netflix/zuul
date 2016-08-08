@@ -7,7 +7,7 @@ import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
-import com.netflix.niws.client.http.RestClient;
+import com.netflix.client.AbstractLoadBalancerAwareClient;
 import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.NFRequestContext;
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand;
@@ -35,7 +35,7 @@ import static com.netflix.client.http.HttpRequest.Verb;
  */
 public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
-    RestClient restClient;
+    AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient;
     Verb verb;
     URI uri;
     MultivaluedMap<String, String> headers;
@@ -43,7 +43,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
     InputStream requestEntity;
 
 
-    public RibbonCommand(RestClient restClient,
+    public RibbonCommand(AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
                          Verb verb,
                          String uri,
                          MultivaluedMap<String, String> headers,
@@ -54,7 +54,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
 
     public RibbonCommand(String commandKey,
-                         RestClient restClient,
+                         AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
                          Verb verb,
                          String uri,
                          MultivaluedMap<String, String> headers,
@@ -67,7 +67,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
     
     public RibbonCommand(String groupKey, 
                     String commandKey,
-                    RestClient restClient,
+                    AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
                     Verb verb,
                     String uri,
                     MultivaluedMap<String, String> headers,
