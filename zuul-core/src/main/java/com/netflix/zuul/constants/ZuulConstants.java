@@ -68,4 +68,9 @@ public class ZuulConstants {
     public static final String ZUUL_DEBUG_VIP = "zuul.debug.vip";
     public static final String ZUUL_DEBUG_HOST = "zuul.debug.host";
 
+    // Prevent instantiation
+    private ZuulConstants() {
+        throw new AssertionError("Must not instantiate constant utility class");
+    }
+
 }
