@@ -22,10 +22,12 @@ package com.netflix.zuul.event;
  * Time: 10:09 AM
  */
 public class ZuulEvent {
-    String eventType;
-    String eventMessage;
 
-    public ZuulEvent( String eventType, String eventMessage) {
+    private String eventType;
+
+    private String eventMessage;
+
+    public ZuulEvent(String eventType, String eventMessage) {
         this.eventMessage = eventMessage;
         this.eventType = eventType;
     }
@@ -33,7 +35,9 @@ public class ZuulEvent {
     public String getEventType() {
         return this.eventType;
     }
+
     public String getEventMessage() {
         return this.eventMessage;
     }
+
 }
