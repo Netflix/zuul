@@ -95,6 +95,7 @@ public class NFRequestContext extends RequestContext {
     /**
      * unsets the requestContextVariables
      */
+    @Override
     public void unset() {
         if (getZuulResponse() != null) {
             getZuulResponse().close(); //check this?

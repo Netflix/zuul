@@ -108,6 +108,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         cassandraGateway.updateFilterIndex(index, filterIds);
     }
 
+    @Override
     public String getFilterIdsRaw(String index) {
         Rows<String, String> result = cassandraGateway.select("select filter_ids from zuul_filter_indices where index_name = '" + index + "'");
         if (result == null || result.isEmpty()) {
@@ -129,7 +130,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         }
     }
 
-
+    @Override
     public List<String> getFilterIdsIndex(String index) {
 
         String filter_ids = getFilterIdsRaw(index);
@@ -174,6 +175,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
         return getFilterIdsIndex(FILTER_ID + ZuulApplicationInfo.getApplicationName());
     }
 
+    @Override
     public FilterInfo getFilterInfo(String filter_id, int revision) {
         List<FilterInfo> filters = getZuulFiltersForFilterId(filter_id);
         if (filters == null) return null;
@@ -509,6 +511,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             this.keyspace = keyspace;
         }
 
+        @Override
         public void updateFilterIndex(String rowKey, String filter_ids) {
 
             HashMap<String, Object> attributes = new HashMap<String, Object>();
@@ -523,6 +526,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @param rowKey
          * @param attributes
          */
+        @Override
         public void upsert(String rowKey, Map<String, Object> attributes) {
             new HystrixCassandraPut<String>(keyspace, COLUMN_FAMILY, rowKey, attributes).execute();
         }
@@ -533,10 +537,12 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
          * @param cql
          * @return
          */
+        @Override
         public Rows<String, String> select(String cql) {
             return new HystrixCassandraGetRowsByQuery<String>(keyspace, COLUMN_FAMILY, String.class, cql).execute();
         }
 
+        @Override
         public Rows<String, String> getByFilterIds(List<String> filterIds) {
             String[] list = new String[filterIds.size()];
             for (int i = 0; i < filterIds.size(); i++) {
