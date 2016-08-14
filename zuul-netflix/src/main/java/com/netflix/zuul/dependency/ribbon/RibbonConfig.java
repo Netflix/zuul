@@ -33,13 +33,11 @@ import org.slf4j.LoggerFactory;
  */
 public class RibbonConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RibbonConfig.class);
 
     static String APPLICATION_NAME = null;
 
     static String APPLICATION_STACK = null;
-
-    private static Logger LOG = LoggerFactory.getLogger(RibbonConfig.class);
-
 
     private static final DynamicBooleanProperty AUTODETECT_BACKEND_VIPS =
             DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_AUTODETECT_BACKEND_VIPS, true);

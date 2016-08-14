@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MetricPoller {
 
-    private static Logger LOG = LoggerFactory.getLogger(MetricPoller.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MetricPoller.class);
 
     final static PollScheduler scheduler = PollScheduler.getInstance();
 

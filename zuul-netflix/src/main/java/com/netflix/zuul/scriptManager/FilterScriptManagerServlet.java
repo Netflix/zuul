@@ -77,7 +77,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
     public static final DynamicStringProperty redirectPath = new DynamicStringProperty(ZuulConstants.ZUUL_FILTER_ADMIN_REDIRECT, "filterLoader.jsp");
     
     private static final long serialVersionUID = -1L;
-    private static final Logger logger = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
 
     /* DAO for performing CRUD operations with scripts */
     private static ZuulFilterDAO scriptDAO;
@@ -266,7 +266,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
             } else {
                 if (script.getFilterCode() == null) {
                     // this shouldn't occur but I want to handle it if it does
-                    logger.error("Found FilterInfo object without scripts. Length==0. Request: " + request.getPathInfo());
+                    LOG.error("Found FilterInfo object without scripts. Length==0. Request: " + request.getPathInfo());
                     setUsageError(500, "ERROR: script files not found", response);
                 } else {
                     // output the single script
@@ -371,10 +371,10 @@ public class FilterScriptManagerServlet extends HttpServlet {
             try {
                 filterInfo = FilterVerifier.getInstance().verifyFilter(filter);
             } catch (IllegalAccessException e) {
-                logger.error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 setUsageError(500, "ERROR: Unable to process uploaded data. " + e.getMessage(), response);
             } catch (InstantiationException e) {
-                logger.error(e.getMessage(), e);
+                LOG.error(e.getMessage(), e);
                 setUsageError(500, "ERROR: Bad Filter. " + e.getMessage(), response);
             }
             filterInfo = scriptDAO.addFilter(filter, filterInfo.getFilterType(), filterInfo.getFilterName(), filterInfo.getFilterDisablePropertyName(), filterInfo.getFilterOrder());

@@ -74,8 +74,10 @@ import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 @Application
 public class StartServer extends GuiceServletContextListener {
 
+    private static final Logger LOG = LoggerFactory.getLogger(StartServer.class);
+
     private static final DynamicBooleanProperty cassandraEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZUUL_CASSANDRA_ENABLED, true);
-    private static Logger LOG = LoggerFactory.getLogger(StartServer.class);
+
     private final KaryonServer server;
 
     public StartServer() {
