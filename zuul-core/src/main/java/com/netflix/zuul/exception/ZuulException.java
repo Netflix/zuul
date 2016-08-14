@@ -24,8 +24,10 @@ import com.netflix.zuul.monitoring.CounterFactory;
  * Time: 4:33 PM
  */
 public class ZuulException extends Exception {
-    public int statusCode;
-    public String errorCause;
+
+    private int statusCode;
+
+    private String errorCause;
 
     /**
      * Source Throwable, message, status code and info about the cause
@@ -65,6 +67,14 @@ public class ZuulException extends Exception {
         this.statusCode = statusCode;
         this.errorCause = errorCause;
         incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + statusCode);
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getErrorCause() {
+        return errorCause;
     }
 
     private static final void incrementCounter(String name) {

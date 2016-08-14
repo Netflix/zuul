@@ -338,7 +338,7 @@ public class FilterProcessor {
                 processor.route();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 400);
+                assertEquals(e.getStatusCode(), 400);
             } catch (Throwable e) {
                 e.printStackTrace();
                 assertFalse(true);
@@ -363,7 +363,7 @@ public class FilterProcessor {
                 processor.route();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 500);
+                assertEquals(e.getStatusCode(), 500);
             } catch (Throwable e) {
                 assertFalse(true);
             }
@@ -386,7 +386,7 @@ public class FilterProcessor {
                 processor.preRoute();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 500);
+                assertEquals(e.getStatusCode(), 500);
             } catch (Throwable e) {
                 assertFalse(true);
             }
@@ -408,7 +408,7 @@ public class FilterProcessor {
                 processor.preRoute();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 400);
+                assertEquals(e.getStatusCode(), 400);
             } catch (Throwable e) {
                 e.printStackTrace();
                 assertFalse(true);
@@ -434,7 +434,7 @@ public class FilterProcessor {
                 processor.postRoute();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 500);
+                assertEquals(e.getStatusCode(), 500);
             } catch (Throwable e) {
                 assertFalse(true);
             }
@@ -456,7 +456,7 @@ public class FilterProcessor {
                 processor.postRoute();
             } catch (ZuulException e) {
                 assertEquals(e.getMessage(), "test");
-                assertEquals(e.nStatusCode, 400);
+                assertEquals(e.getStatusCode(), 400);
             } catch (Throwable e) {
                 e.printStackTrace();
                 assertFalse(true);
