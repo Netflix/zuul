@@ -51,6 +51,7 @@ public class ZuulServletFilter implements Filter {
 
     private ZuulRunner zuulRunner;
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
 
         String bufferReqsStr = filterConfig.getInitParameter("buffer-requests");
@@ -59,6 +60,7 @@ public class ZuulServletFilter implements Filter {
         zuulRunner = new ZuulRunner(bufferReqs);
     }
 
+    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
@@ -117,8 +119,8 @@ public class ZuulServletFilter implements Filter {
         zuulRunner.error();
     }
 
+    @Override
     public void destroy() {
-
     }
 
 

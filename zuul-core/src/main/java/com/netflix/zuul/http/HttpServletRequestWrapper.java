@@ -90,6 +90,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      *
      * @return The wrapped HttpServletRequest.
      */
+    @Override
     public HttpServletRequest getRequest() {
         try {
             parseRequest();
@@ -262,6 +263,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      *
      * @return A new ServletInputStream.
      */
+    @Override
     public ServletInputStream getInputStream() throws IOException {
         parseRequest();
 
@@ -275,6 +277,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      *
      * @return A new BufferedReader with the wrapped request's character encoding (or UTF-8 if null).
      */
+    @Override
     public BufferedReader getReader() throws IOException {
         parseRequest();
 
@@ -289,6 +292,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      *
      * @see javax.servlet.ServletRequest#getParameter(java.lang.String)
      */
+    @Override
     public String getParameter(String name) {
         try {
             parseRequest();
@@ -309,6 +313,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      * @see javax.servlet.ServletRequest#getParameterMap()
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Map getParameterMap() {
         try {
             parseRequest();
@@ -324,6 +329,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      * @see javax.servlet.ServletRequest#getParameterNames()
      */
     @SuppressWarnings("unchecked")
+    @Override
     public Enumeration getParameterNames() {
         try {
             parseRequest();
@@ -334,10 +340,12 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
             private String[] arr = getParameters().keySet().toArray(new String[0]);
             private int idx = 0;
 
+            @Override
             public boolean hasMoreElements() {
                 return idx < arr.length;
             }
 
+            @Override
             public String nextElement() {
                 return arr[idx++];
             }
@@ -351,6 +359,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
      *
      * @see javax.servlet.ServletRequest#getParameterValues(java.lang.String)
      */
+    @Override
     public String[] getParameterValues(String name) {
         try {
             parseRequest();

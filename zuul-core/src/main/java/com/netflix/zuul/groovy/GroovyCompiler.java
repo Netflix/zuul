@@ -49,6 +49,7 @@ public class GroovyCompiler implements DynamicCodeCompiler {
      * @param sName
      * @return
      */
+    @Override
     public Class compile(String sCode, String sName) {
         GroovyClassLoader loader = getGroovyClassLoader();
         LOG.warn("Compiling filter: " + sName);
@@ -70,6 +71,7 @@ public class GroovyCompiler implements DynamicCodeCompiler {
      * @return
      * @throws java.io.IOException
      */
+    @Override
     public Class compile(File file) throws IOException {
         GroovyClassLoader loader = getGroovyClassLoader();
         Class groovyClass = loader.parseClass(file);

@@ -71,6 +71,7 @@ public class DefaultCassandraCache<K> implements CassandraCache<K> {
      * @param keys
      * @return
      */
+    @Override
     public K fetchQuery(String... keys) {
         final String key = buildKey(keys);
         final K result = cacheMap.get(key);
@@ -92,6 +93,7 @@ public class DefaultCassandraCache<K> implements CassandraCache<K> {
      * @param response
      * @param keys
      */
+    @Override
     public void storeQuery(K response, String... keys) {
         final String key = buildKey(keys);
 
