@@ -2,7 +2,6 @@ package com.netflix.zuul.filters
 
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.context.SessionContextKeys
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpHeaderNames
@@ -40,6 +39,10 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(GZipResponseFilter.class);
 
+    private static final String OVERRIDE_GZIP_REQUESTED = "overrideGzipRequested";
+    private static final String GZIP_RESP_IF_ORIGIN_DIDNT = "gzipResponseIfOriginDidnt";
+
+
     @Override
     int filterOrder() {
         return 5
@@ -60,7 +63,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         // A flag on SessionContext can be set to override normal mechanism of checking if client
         // accepts gzip.
         boolean isGzipRequested
-        Boolean overrideGzipRequested = ctx.get(SessionContextKeys.OVERRIDE_GZIP_REQUESTED)
+        Boolean overrideGzipRequested = ctx.get(OVERRIDE_GZIP_REQUESTED)
         if (overrideGzipRequested != null) {
             isGzipRequested = overrideGzipRequested.booleanValue()
         }
@@ -69,7 +72,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         }
 
         // Default to gzipping response if origin did not.
-        boolean gzipResponseIfOriginDidnt = ctx.getBoolean(SessionContextKeys.GZIP_RESP_IF_ORIGIN_DIDNT, true)
+        boolean gzipResponseIfOriginDidnt = ctx.getBoolean(GZIP_RESP_IF_ORIGIN_DIDNT, true)
 
         // Check the headers to see if response is already gzipped.
         boolean isResponseGzipped = HttpUtils.isGzipped(respHeaders)
@@ -210,7 +213,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         @Test
         public void prepareResponseBody_NeedsGZipping_Overridden()
         {
-            context.set(SessionContextKeys.OVERRIDE_GZIP_REQUESTED, true)
+            context.set(OVERRIDE_GZIP_REQUESTED, true)
 
             byte[] originBody = "blah".bytes
             response.setBodyStream(Observable.just(Unpooled.wrappedBuffer(originBody)))
@@ -233,7 +236,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         public void prepareResponseBody_NeedsGZipping_OverriddenNot()
         {
             originalRequestHeaders.set("Accept-Encoding", "gzip")
-            context.set(SessionContextKeys.OVERRIDE_GZIP_REQUESTED, false)
+            context.set(OVERRIDE_GZIP_REQUESTED, false)
 
             byte[] originBody = "blah".bytes
             response.setBodyStream(Observable.just(Unpooled.wrappedBuffer(originBody)))
