@@ -73,13 +73,14 @@ import com.netflix.zuul.util.JsonUtility;
 @ThreadSafe
 public class FilterScriptManagerServlet extends HttpServlet {
 
-    //Set this property to true to enable the admin page. Note that the admin page should be protected to be
-    //accessed only internally, not open to the internet.
-    public static final DynamicBooleanProperty adminEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_FILTER_ADMIN_ENABLED, false);
     public static final DynamicStringProperty redirectPath = new DynamicStringProperty(ZuulConstants.ZUUL_FILTER_ADMIN_REDIRECT, "filterLoader.jsp");
     
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(FilterScriptManagerServlet.class);
+
+    //Set this property to true to enable the admin page. Note that the admin page should be protected to be
+    //accessed only internally, not open to the internet.
+    public static DynamicBooleanProperty adminEnabled = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_FILTER_ADMIN_ENABLED, false);
 
     /* DAO for performing CRUD operations with scripts */
     private static ZuulFilterDAO scriptDAO;
@@ -103,9 +104,10 @@ public class FilterScriptManagerServlet extends HttpServlet {
      *
      * @param sd
      */
-    private FilterScriptManagerServlet(ZuulFilterDAO sd) {
+    private FilterScriptManagerServlet(ZuulFilterDAO sd, DynamicBooleanProperty adminEnabledProperty) {
         super();
         scriptDAO = sd;
+        adminEnabled = adminEnabledProperty;
     }
 
     /**
@@ -509,7 +511,7 @@ public class FilterScriptManagerServlet extends HttpServlet {
         }
 
         private FilterScriptManagerServlet getEndpointScriptManagerImplementation(ZuulFilterDAO dao) {
-            return new FilterScriptManagerServlet(dao);
+            return new FilterScriptManagerServlet(dao, new DynamicBooleanProperty("test.admin.enabled", true));
         }
 
         /**
