@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.netflix.zuul.util.HttpUtils.stripMaliciousHeaderChars;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -64,6 +65,15 @@ public class Headers implements Cloneable
     protected HeaderName getHeaderName(String name)
     {
         return HttpHeaderNames.get(name);
+    }
+
+    private boolean delegatePut(HeaderName hn, String value) {
+        return delegate.put(hn, stripMaliciousHeaderChars(value));
+    }
+
+    private void delegatePutAll(Headers headers) {
+        // enforce using above delegatePut method, for stripping malicious characters
+        headers.delegate.entries().forEach(entry -> delegatePut(entry.getKey(), entry.getValue()));
     }
 
     /**
@@ -140,7 +150,7 @@ public class Headers implements Cloneable
     {
         delegate.removeAll(hn);
         if (value != null) {
-            delegate.put(hn, value);
+            delegatePut(hn, value);
         }
     }
 
@@ -166,12 +176,12 @@ public class Headers implements Cloneable
     }
     public void add(HeaderName hn, String value)
     {
-        delegate.put(hn, value);
+        delegatePut(hn, value);
     }
 
     public void putAll(Headers headers)
     {
-        delegate.putAll(headers.delegate);
+        delegatePutAll(headers);
     }
 
     public List<String> remove(String name)
@@ -225,7 +235,7 @@ public class Headers implements Cloneable
     public Headers clone()
     {
         Headers copy = new Headers();
-        copy.delegate.putAll(this.delegate);
+        copy.delegatePutAll(this);
         return copy;
     }
 

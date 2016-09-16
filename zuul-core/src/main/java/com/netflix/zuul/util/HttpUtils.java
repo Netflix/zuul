@@ -18,6 +18,7 @@ package com.netflix.zuul.util;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -89,6 +90,22 @@ public class HttpUtils
         String ae = headers.getFirst(HttpHeaderNames.ACCEPT_ENCODING);
         return ae != null && isGzipped(ae);
     }
+
+    /**
+     * Ensure decoded new lines are not propagated in headers, in order to prevent XSS
+     *
+     * @param input - decoded header string
+     * @return - clean header string
+     */
+    public static String stripMaliciousHeaderChars(String input) {
+        return MALICIOUS_HEADER_CHARS.translate(input);
+    }
+
+    private static final LookupTranslator MALICIOUS_HEADER_CHARS = new LookupTranslator(new String[][] {
+            {"\r", ""},
+            {"\n", ""},
+    });
+
 
     public static class UnitTest {
 
