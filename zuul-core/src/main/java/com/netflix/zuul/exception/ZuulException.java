@@ -44,7 +44,11 @@ public class ZuulException extends RuntimeException
      * @param errorCause
      */
     public ZuulException(String sMessage, String errorCause) {
-        super(sMessage);
+        this(sMessage, errorCause, false);
+    }
+
+    public ZuulException(String sMessage, String errorCause, boolean noStackTrace) {
+        super(sMessage, null, noStackTrace, ! noStackTrace);
         this.errorCause = errorCause;
     }
 
@@ -59,7 +63,11 @@ public class ZuulException extends RuntimeException
     }
 
     public ZuulException(String sMessage) {
-        super(sMessage);
+        this(sMessage, false);
+    }
+
+    public ZuulException(String sMessage, boolean noStackTrace) {
+        super(sMessage, null, noStackTrace, ! noStackTrace);
         this.errorCause = "GENERAL";
     }
 
