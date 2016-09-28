@@ -20,6 +20,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.*;
 import com.netflix.zuul.util.HttpUtils;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -363,6 +364,56 @@ public class Debug {
             assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
             assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(1));
             assertEquals("RESPONSE_INBOUND:: < BODY: response text", debugLines.get(2));
+        }
+
+        /**
+         * Tests that debug message is added when a context item is changed.
+         */
+        @Test
+        public void testCompareContextStateChangedItem() {
+            getRoutingDebug(ctx); // initialize debug structure in context
+            ctx.put("testKey", "changed value");
+
+            SessionContext previousCtx = new SessionContext();
+            previousCtx.put("testKey", "original value");
+
+            Debug.compareContextState("testFilter", ctx, previousCtx);
+            List<String> debugMessages = getRoutingDebug(ctx);
+            assertTrue(debugMessages.contains("{testFilter} changed testKey=changed value"));
+        }
+
+        /**
+         * Tests that a debug message is added when a context item is added.
+         */
+        @Test
+        public void testCompareContextStateAddedItem() {
+            getRoutingDebug(ctx); // initialize debug structure in context
+            ctx.put("newKey", "some value");
+
+            SessionContext previousCtx = new SessionContext();
+
+            Debug.compareContextState("testFilter", ctx, previousCtx);
+            List<String> debugMessages = getRoutingDebug(ctx);
+            assertTrue(debugMessages.contains("{testFilter} added newKey=some value"));
+        }
+
+        /**
+         * Tests that no debug messages are added when the context state did not change.
+         */
+        @Test
+        public void testCompareContextStateNoItemChanges() {
+            getRoutingDebug(ctx); // initialize debug structure in context
+            ctx.put("key", "value");
+
+            SessionContext previousCtx = ctx.clone();
+
+            Debug.compareContextState("testFilter", ctx, previousCtx);
+            // @formatter:off
+            boolean debugMessagesFound = getRoutingDebug(ctx).stream()
+                    .filter(message -> message.contains(" added key") || message.contains(" changed key"))
+                    .findAny().isPresent();
+            // @formatter:on
+            assertFalse(debugMessagesFound);
         }
     }
 }
