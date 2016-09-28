@@ -19,17 +19,15 @@ import com.netflix.config.DynamicIntProperty
 import com.netflix.config.DynamicPropertyFactory
 import com.netflix.config.DynamicStringProperty
 import com.netflix.zuul.constants.ZuulConstants
-import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.message.http.HttpResponseMessage
-import com.netflix.zuul.message.http.HttpResponseMessageImpl
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.ribbon.RibbonConfig
+import com.netflix.zuul.filters.BaseFilterTest
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
+import com.netflix.zuul.message.http.HttpRequestMessage
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 
@@ -94,21 +92,15 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
+    public static class TestUnit extends BaseFilterTest {
 
         WeightedLoadBalancer filter
-        SessionContext ctx
-        HttpResponseMessage response
-
-        @Mock
-        HttpRequestMessage request
 
         @Before
         public void setup() {
-            filter = Mockito.spy(new WeightedLoadBalancer())
-            ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 99)
+            super.setup()
+            
+            filter = new WeightedLoadBalancer()
             RibbonConfig.setApplicationName("zuul")
         }
 
@@ -137,8 +129,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
             filter.AltPercentMaxLimit = DynamicPropertyFactory.getInstance().getIntProperty("x", 100000)
             Assert.assertTrue(filter.shouldFilter(request))
             filter.apply(request)
-            Assert.assertTrue(ctx.routeVIP == "test")
-            Assert.assertTrue(ctx.routeHost == null)
+            Assert.assertTrue(context.routeVIP == "test")
+            Assert.assertTrue(context.routeHost == null)
         }
 
         @Test
@@ -151,8 +143,8 @@ class WeightedLoadBalancer extends HttpInboundSyncFilter
             Mockito.when(filter.AltHost.get()).thenReturn("http://www.moldfarm.com")
             Assert.assertTrue(filter.shouldFilter(request))
             filter.apply(request)
-            Assert.assertTrue(ctx.routeVIP == null)
-            Assert.assertTrue(ctx.routeHost != null)
+            Assert.assertTrue(context.routeVIP == null)
+            Assert.assertTrue(context.routeHost != null)
         }
 
     }

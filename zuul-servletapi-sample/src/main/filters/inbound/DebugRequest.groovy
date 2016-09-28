@@ -16,7 +16,7 @@
 package inbound
 
 import com.netflix.zuul.context.Debug
-import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.BaseFilterTest
 import com.netflix.zuul.filters.http.HttpInboundFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpRequestMessage
@@ -24,10 +24,10 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import static org.mockito.Mockito.when
 import org.mockito.runners.MockitoJUnitRunner
 import rx.Observable
+
+import static org.mockito.Mockito.when
 
 /**
  * @author Mikey Cohen
@@ -55,20 +55,11 @@ class DebugRequest extends HttpInboundFilter
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
-
-        @Mock
-        HttpRequestMessage response
-        @Mock
-        HttpRequestMessage request
-
-        SessionContext context
+    public static class TestUnit extends BaseFilterTest {
 
         @Before
         public void setup() {
-            context = new SessionContext()
-            when(request.getContext()).thenReturn(context)
-            when(request.getInboundRequest()).thenReturn(request)
+            super.setup()
         }
 
         @Test
@@ -76,13 +67,13 @@ class DebugRequest extends HttpInboundFilter
 
             DebugRequest debugFilter = new DebugRequest()
 
-            when(request.getClientIp()).thenReturn("1.1.1.1")
-            when(request.getMethod()).thenReturn("method")
-            when(request.getProtocol()).thenReturn("protocol")
-            when(request.getPathAndQuery()).thenReturn("uri")
+            when(originalRequest.getClientIp()).thenReturn("1.1.1.1")
+            when(originalRequest.getMethod()).thenReturn("method")
+            when(originalRequest.getProtocol()).thenReturn("protocol")
+            when(originalRequest.getPathAndQuery()).thenReturn("uri")
 
             Headers headers = new Headers()
-            when(request.getHeaders()).thenReturn(headers)
+            when(originalRequest.getHeaders()).thenReturn(headers)
             headers.add("Host", "moldfarm.com")
             headers.add("X-Forwarded-Proto", "https")
 

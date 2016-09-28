@@ -16,6 +16,7 @@
 package outbound
 
 import com.netflix.zuul.context.*
+import com.netflix.zuul.filters.BaseFilterTest
 import com.netflix.zuul.filters.FilterType
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.message.Headers
@@ -84,28 +85,14 @@ class PostDecoration extends HttpOutboundSyncFilter
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit {
+    public static class TestUnit extends BaseFilterTest {
 
         PostDecoration filter
-        SessionContext ctx
-        HttpResponseMessage response
-        Headers reqHeaders
-
-        @Mock
-        HttpRequestMessage request
 
         @Before
         public void setup() {
+            super.setup()
             filter = Mockito.spy(new PostDecoration())
-            ctx = new SessionContext()
-
-            when(request.getContext()).thenReturn(ctx)
-            when(request.getInboundRequest()).thenReturn(request)
-
-            reqHeaders = new Headers()
-            when(request.getHeaders()).thenReturn(reqHeaders)
-
-            response = new HttpResponseMessageImpl(ctx, request, 99)
         }
 
         @Test

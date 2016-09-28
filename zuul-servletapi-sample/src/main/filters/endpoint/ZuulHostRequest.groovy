@@ -22,6 +22,7 @@ import com.netflix.zuul.constants.ZuulConstants
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand
+import com.netflix.zuul.filters.BaseFilterTest
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.message.HeaderName
 import com.netflix.zuul.message.Headers
@@ -50,10 +51,8 @@ import org.apache.http.params.CoreConnectionPNames
 import org.apache.http.params.HttpParams
 import org.apache.http.protocol.HttpContext
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
@@ -334,27 +333,13 @@ class ZuulHostRequest extends HttpSyncEndpoint
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit
+    public static class TestUnit extends BaseFilterTest
     {
-        @Mock
-        HttpRequestMessage request
-
-        SessionContext ctx
-        HttpResponseMessage response
-
-        @Before
-        public void setup()
-        {
-            ctx = new SessionContext()
-            Mockito.when(request.getContext()).thenReturn(ctx)
-            response = new HttpResponseMessageImpl(ctx, request, 200)
-        }
-
         @Test
         public void testSetResponse() {
 
-            Debug.setDebugRouting(ctx, false)
-            Debug.setDebugRequest(ctx, false)
+            Debug.setDebugRouting(context, false)
+            Debug.setDebugRequest(context, false)
 
             ZuulHostRequest filter = new ZuulHostRequest()
             filter = Mockito.spy(filter)
@@ -383,7 +368,7 @@ class ZuulHostRequest extends HttpSyncEndpoint
 
         @Test
         public void testShouldFilter() {
-            ctx.setRouteHost(new URL("http://www.moldfarm.com"))
+            context.setRouteHost(new URL("http://www.moldfarm.com"))
             ZuulHostRequest filter = new ZuulHostRequest()
             Assert.assertTrue(filter.shouldFilter(request))
         }
