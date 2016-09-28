@@ -48,6 +48,10 @@ import static org.junit.Assert.*;
 public class Debug {
     private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
+    private static final String ROUTING_DEBUG_KEY = "routingDebug";
+
+    private static final String REQUEST_DEBUG_KEY = "requestDebug";
+
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
         ctx.setDebugRequest(bDebug);
     }
@@ -101,10 +105,10 @@ public class Debug {
      * @return Returns the list of routiong debug messages
      */
     public static List<String> getRoutingDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.get("routingDebug");
+        List<String> rd = (List<String>) ctx.get(ROUTING_DEBUG_KEY);
         if (rd == null) {
             rd = new ArrayList<String>();
-            ctx.set("routingDebug", rd);
+            ctx.set(ROUTING_DEBUG_KEY, rd);
         }
         return rd;
     }
@@ -123,10 +127,10 @@ public class Debug {
      * @return returns the list of request debug messages
      */
     public static List<String> getRequestDebug(SessionContext ctx) {
-        List<String> rd = (List<String>) ctx.get("requestDebug");
+        List<String> rd = (List<String>) ctx.get(REQUEST_DEBUG_KEY);
         if (rd == null) {
             rd = new ArrayList<String>();
-            ctx.set("requestDebug", rd);
+            ctx.set(REQUEST_DEBUG_KEY, rd);
         }
         return rd;
     }
@@ -140,7 +144,7 @@ public class Debug {
     public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
         // TODO - only comparing Attributes. Need to compare the messages too.
         for (String key : context.keySet()) {
-            if (key != null && !key.equals("routingDebug") && !key.equals("requestDebug")) {
+            if (key != null && !key.equals(ROUTING_DEBUG_KEY) && !key.equals(REQUEST_DEBUG_KEY)) {
                 Object newValue = context.get(key);
                 Object oldValue = copy.get(key);
                 if (oldValue == null && newValue != null) {
