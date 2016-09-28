@@ -34,7 +34,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -140,27 +139,17 @@ public class Debug {
      */
     public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
         // TODO - only comparing Attributes. Need to compare the messages too.
-        Iterator<String> it = context.keySet().iterator();
-        String key = it.next();
-        while (key != null) {
-            if ((!key.equals("routingDebug") && !key.equals("requestDebug"))) {
+        for (String key : context.keySet()) {
+            if (key != null && !key.equals("routingDebug") && !key.equals("requestDebug")) {
                 Object newValue = context.get(key);
                 Object oldValue = copy.get(key);
                 if (oldValue == null && newValue != null) {
-                    addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
-                } else if (oldValue != null && newValue != null) {
-                    if (!(oldValue.equals(newValue))) {
-                        addRoutingDebug(context, "{" +filterName + "} changed " + key + "=" + newValue.toString());
-                    }
+                    addRoutingDebug(context, String.format("{%s} added %s=%s", filterName, key, newValue));
+                } else if (oldValue != null && newValue != null && !oldValue.equals(newValue)) {
+                    addRoutingDebug(context, String.format("{%s} changed %s=%s", filterName, key, newValue));
                 }
             }
-            if (it.hasNext()) {
-                key = it.next();
-            } else {
-                key = null;
-            }
         }
-
     }
 
     public static Observable<Boolean> writeDebugRequest(SessionContext context,
