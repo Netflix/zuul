@@ -105,6 +105,7 @@ public class Debug {
      * @return Returns the list of routiong debug messages
      */
     public static List<String> getRoutingDebug(SessionContext ctx) {
+        @SuppressWarnings("unchecked")
         List<String> rd = (List<String>) ctx.get(ROUTING_DEBUG_KEY);
         if (rd == null) {
             rd = new ArrayList<String>();
@@ -127,6 +128,7 @@ public class Debug {
      * @return returns the list of request debug messages
      */
     public static List<String> getRequestDebug(SessionContext ctx) {
+        @SuppressWarnings("unchecked")
         List<String> rd = (List<String>) ctx.get(REQUEST_DEBUG_KEY);
         if (rd == null) {
             rd = new ArrayList<String>();
