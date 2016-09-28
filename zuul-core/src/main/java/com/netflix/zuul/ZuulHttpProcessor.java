@@ -5,6 +5,7 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.SessionContextFactory;
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import org.slf4j.Logger;
@@ -106,7 +107,7 @@ public class ZuulHttpProcessor<I,O>
                         // Notify requestComplete listener if configured.
                         try {
                             if (requestCompleteHandler != null)
-                                requestCompleteHandler.handle((HttpResponseMessage) msg);
+                                requestCompleteHandler.handle(((HttpRequestMessage) request).getInboundRequest(), (HttpResponseMessage) msg);
                         }
                         catch (Exception e) {
                             LOG.error("Error in RequestCompleteHandler.", e);

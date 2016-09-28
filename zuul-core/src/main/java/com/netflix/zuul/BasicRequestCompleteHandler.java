@@ -1,6 +1,7 @@
 package com.netflix.zuul;
 
 import com.google.inject.Inject;
+import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
@@ -18,9 +19,9 @@ public class BasicRequestCompleteHandler implements RequestCompleteHandler
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
-    public void handle(HttpResponseMessage response)
+    public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response)
     {
-        SessionContext context = response.getContext();
+        SessionContext context = inboundRequest.getContext();
 
         // Publish request-level metrics.
         if (requestMetricsPublisher != null) {
