@@ -5,9 +5,6 @@ apply plugin: 'jetty'
 configurations {
     all*.exclude group: 'asm', module: 'asm'
     all*.exclude group: 'asm', module: 'asm-all'
-
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -34,11 +31,6 @@ dependencies {
 
     compile "junit:junit:latest.release"
     compile 'org.mockito:mockito-all:1.9.+'
-
-    testCompile("org.spockframework:spock-core:1.0-groovy-2.3")
-    testCompile("org.codehaus.groovy.modules.http-builder:http-builder:0.7+")
-    //testCompile("org.eclipse.jetty.aggregate:jetty-all:9.3.+")
-    //testCompile("org.eclipse.jetty.aggregate:jetty-all-server:7.+")
 }
 
 sourceSets {
@@ -51,15 +43,6 @@ sourceSets {
             srcDirs  = ['src/main/filters', 'src/main/groovy']
             include '**/*.groovy'
         }
-    }
-
-    integrationTest {
-        groovy {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/integration-test/groovy')
-        }
-        resources.srcDir file('src/integration-test/resources')
     }
 }
 
@@ -97,24 +80,3 @@ jettyRun.doFirst {
     classpath = classpathWithoutGroovy
 }
 
-task integrationTest(type: Test, dependsOn: 'jettyRun') {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-
-    System.setProperty("integrationtest.port", "8099")
-
-    testLogging.showStandardStreams = true
-
-    //If you want to ensure that integration tests are run every time when you invoke
-    //this task, uncomment the following line.
-    outputs.upToDateWhen { false }
-}
-integrationTest.finalizedBy 'jettyStop'
-
-// Don't normally run integrationTest task.
-check.dependsOn -= integrationTest
-
-//Ensure that the HTML reports of unit and integration tests are written to different directories.
-tasks.withType(Test) {
-    reports.html.destination = file("${reporting.baseDir}/${name}")
-}
