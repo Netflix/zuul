@@ -1,0 +1,25 @@
+ext.githubProjectName = rootProject.name
+
+buildscript {
+    repositories { mavenCentral() }
+    apply from: file('gradle/buildscript.gradle'), to: buildscript
+}
+
+allprojects {
+    repositories { mavenCentral() }
+}
+
+apply plugin: 'idea'
+apply from: file('gradle/convention.gradle')
+apply from: file('gradle/maven.gradle')
+apply from: file('gradle/license.gradle')
+apply from: file('gradle/release.gradle')
+
+subprojects {
+
+    group = "com.netflix.${githubProjectName}"
+
+    tasks.withType(Javadoc).each {
+        it.classpath = sourceSets.main.compileClasspath
+    }
+}

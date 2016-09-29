@@ -1,0 +1,56 @@
+
+
+### The following uses UTF8 instead of Integer because "where revision=1" stops working after a period of time. See email thread "Help on Column Family Definition to Support Integer Where Query"
+
+create keyspace zuul_scripts with placement_strategy = 'org.apache.cassandra.locator.NetworkTopologyStrategy' and strategy_options=[{eu-west:3, us-east:3}];
+
+
+create column family zuul_filter_indices with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and column_metadata=[
+   		{column_name: index_name, validation_class: UTF8Type, index_type: KEYS},
+   		{column_name: filter_ids, validation_class: UTF8Type, index_type: 0}
+   ]
+   and rows_cached = 10000
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 1.0
+   and memtable_operations = 2
+   and memtable_throughput = 256
+   and read_repair_chance = 0.0;
+
+
+create column family zuul_filters with comparator = 'UTF8Type' and key_validation_class = 'UTF8Type'  and default_validation_class = 'BytesType'
+   and column_metadata=[
+   		{column_name: filter_id, validation_class: UTF8Type, index_type: KEYS},
+   		{column_name: filter_name, validation_class: UTF8Type, index_type: 0},
+   		{column_name: filter_type, validation_class: UTF8Type, index_type: 0},
+   		{column_name: revision, validation_class: LongType, index_type: KEYS},
+   		{column_name: active, validation_class: BooleanType, index_type: KEYS},
+   		{column_name: canary, validation_class: BooleanType, index_type: 0},
+   		{column_name: creation_date, validation_class: DateType, index_type: 0}
+   		{column_name: application_name, validation_class: UTF8Type, index_type: KEYS}
+   ]
+   and rows_cached = 10000
+   and row_cache_provider = SerializingCacheProvider
+   and keys_cached = 1.0
+   and memtable_operations = 2
+   and memtable_throughput = 256
+   and read_repair_chance = 0.0;
+
+
+
+### to update metadata, it's done like this
+
+update column family zuul_filters with  comparator=UTF8Type and column_metadata=[
+   		{column_name: filter_id, validation_class: UTF8Type, index_type: KEYS},
+   		{column_name: filter_name, validation_class: UTF8Type, index_type: 0},
+   		{column_name: filter_type, validation_class: UTF8Type, index_type: 0},
+   		{column_name: revision, validation_class: LongType, index_type: KEYS},
+   		{column_name: active, validation_class: BooleanType, index_type: KEYS},
+   		{column_name: canary, validation_class: BooleanType, index_type: 0},
+   		{column_name: creation_date, validation_class: DateType, index_type: 0}
+   		{column_name: application_name, validation_class: UTF8Type, index_type: KEYS}
+   ];
+
+
+update column family zuul_filters with column_metadata=[
+	   {column_name: application_name, validation_class: UTF8Type, index_type: 0}];
