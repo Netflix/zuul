@@ -267,7 +267,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     protected HttpResponseInfo copyResponseInfo()
     {
         // Unlike clone(), we create immutable copies of the Headers here.
-        return new HttpResponseMessageImpl(getContext().clone(),
+        return new HttpResponseMessageImpl(getContext(),
                 getHeaders().immutableCopy(),
                getOutboundRequest(), getStatus());
     }
