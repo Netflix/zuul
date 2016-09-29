@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+dependencies {
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.codehaus.groovy:groovy-all:2.2.2'
+    compile 'org.mockito:mockito-all:1.9.5'
+    compile 'org.slf4j:slf4j-api:1.7.6'
+    
+    provided 'junit:junit-dep:4.10'
+    provided 'javax.servlet:servlet-api:2.5'
+    groovy "org.codehaus.groovy:groovy-all:2.3.1"
+
+    compile 'com.netflix.archaius:archaius-core:0.6.0'
+    compile 'com.netflix.servo:servo-core:0.7.2'
+    compile 'com.netflix.netflix-commons:netflix-commons-util:0.1.1'
+}
+
+
+javadoc {
+    options {
+        doclet = "org.benjchristensen.doclet.DocletExclude"
+        docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
+        stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
+        windowTitle = "Zuul Javadoc ${project.version}"
+    }
+}
+
+eclipse {
+    classpath {
+        plusConfigurations += configurations.provided
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+
+idea {
+    module {
+        scopes.PROVIDED.plus += configurations.provided
+    }
+}
