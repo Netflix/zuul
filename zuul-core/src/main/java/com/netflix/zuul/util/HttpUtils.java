@@ -18,11 +18,11 @@ package com.netflix.zuul.util;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.util.regex.Pattern;
+
+import static org.junit.Assert.*;
 
 /**
  * User: Mike Smith
@@ -31,6 +31,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class HttpUtils
 {
+    private static final Pattern RE_MALICIOUS_HEADER_CHARS = Pattern.compile("(\r|\n)");
+
     /**
      * Get the IP address of client making the request.
      *
@@ -98,13 +100,12 @@ public class HttpUtils
      * @return - clean header string
      */
     public static String stripMaliciousHeaderChars(String input) {
-        return MALICIOUS_HEADER_CHARS.translate(input);
-    }
 
-    private static final LookupTranslator MALICIOUS_HEADER_CHARS = new LookupTranslator(new String[][] {
-            {"\r", ""},
-            {"\n", ""},
-    });
+        if (input == null) {
+            return null;
+        }
+        return RE_MALICIOUS_HEADER_CHARS.matcher(input).replaceAll("");
+    }
 
 
     public static class UnitTest {
@@ -122,6 +123,16 @@ public class HttpUtils
         @Test
         public void detectsGzipAmongOtherEncodings() {
             assertTrue(HttpUtils.isGzipped("gzip, deflate"));
+        }
+
+        @Test
+        public void stripMaliciousHeaderChars() {
+            assertEquals("something", HttpUtils.stripMaliciousHeaderChars("some\r\nthing"));
+            assertEquals("some thing", HttpUtils.stripMaliciousHeaderChars("some thing"));
+            assertEquals("something", HttpUtils.stripMaliciousHeaderChars("\nsome\r\nthing\r"));
+            assertEquals("", HttpUtils.stripMaliciousHeaderChars("\r"));
+            assertEquals("", HttpUtils.stripMaliciousHeaderChars(""));
+            assertNull(HttpUtils.stripMaliciousHeaderChars(null));
         }
     }
 }
