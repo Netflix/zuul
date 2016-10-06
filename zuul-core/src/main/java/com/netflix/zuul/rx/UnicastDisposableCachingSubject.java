@@ -133,21 +133,19 @@ public final class UnicastDisposableCachingSubject<T extends ReferenceCounted> e
          */
         private final class BufferedObserver extends Subscriber<T> {
 
-            private final NotificationLite<Object> nl = NotificationLite.instance();
-
             @Override
             public void onCompleted() {
-                buffer.add(nl.completed());
+                buffer.add(NotificationLite.completed());
             }
 
             @Override
             public void onError(Throwable e) {
-                buffer.add(nl.error(e));
+                buffer.add(NotificationLite.error(e));
             }
 
             @Override
             public void onNext(T t) {
-                buffer.add(nl.next(t));
+                buffer.add(NotificationLite.next(t));
             }
         }
     }
@@ -205,7 +203,6 @@ public final class UnicastDisposableCachingSubject<T extends ReferenceCounted> e
     private static final class ByteBufAwareBuffer<T> {
 
         private final ConcurrentLinkedQueue<Object> actual = new ConcurrentLinkedQueue<>();
-        private final NotificationLite<T> nl = NotificationLite.instance();
 
         private void add(Object toAdd) {
             ReferenceCountUtil.retain(toAdd); // Released when the notification is sent.
@@ -216,7 +213,7 @@ public final class UnicastDisposableCachingSubject<T extends ReferenceCounted> e
             Object notification; // Can be onComplete notification, onError notification or just the actual "T".
             while ((notification = actual.poll()) != null) {
                 try {
-                    nl.accept(observer, notification);
+                    NotificationLite.accept(observer, notification);
                 } finally {
                     ReferenceCountUtil.release(notification); // If it is the actual T for onNext and is a ByteBuf, it will be released.
                 }
