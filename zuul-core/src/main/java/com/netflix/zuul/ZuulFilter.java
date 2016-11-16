@@ -24,9 +24,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.*;
 
@@ -50,8 +54,7 @@ import static org.mockito.Mockito.*;
  */
 public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> {
 
-    private final DynamicBooleanProperty filterDisabled =
-            DynamicPropertyFactory.getInstance().getBooleanProperty(disablePropertyName(), false);
+    private final AtomicReference<DynamicBooleanProperty> filterDisabledRef = new AtomicReference<>();
 
     /**
      * to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
@@ -95,7 +98,8 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
      * @return
      */
     public boolean isFilterDisabled() {
-        return filterDisabled.get();
+        filterDisabledRef.compareAndSet(null, DynamicPropertyFactory.getInstance().getBooleanProperty(disablePropertyName(), false));
+        return filterDisabledRef.get().get();
     }
 
     /**
@@ -130,6 +134,17 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
     }
 
     public static class TestUnit {
+
+        static Field field = null;
+        static {
+            try {
+                field = ZuulFilter.class.getDeclaredField("filterDisabledRef");
+                field.setAccessible(true);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         @Mock
         private ZuulFilter f1;
         @Mock
@@ -239,6 +254,46 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
                 throwable.printStackTrace();
             }
 
+        }
+
+        @Test
+        public void testDisabledPropNameOnInit() throws Exception {
+            class TestZuulFilter extends ZuulFilter {
+
+                final String filterType;
+
+                public TestZuulFilter(String filterType) {
+                    this.filterType = filterType;
+                }
+
+                @Override
+                public boolean shouldFilter() {
+                    return false;
+                }
+
+                @Override
+                public Object run() {
+                    return null;
+                }
+
+                @Override
+                public String filterType() {
+                    return filterType;
+                }
+
+                @Override
+                public int filterOrder() {
+                    return 0;
+                }
+            }
+
+            TestZuulFilter filter = new TestZuulFilter("pre");
+            assertFalse(filter.isFilterDisabled());
+
+            @SuppressWarnings("unchecked")
+            AtomicReference<DynamicBooleanProperty> filterDisabledRef = (AtomicReference<DynamicBooleanProperty>) field.get(filter);
+            String filterName = filterDisabledRef.get().getName();
+            assertEquals("zuul.TestZuulFilter.pre.disable", filterName);
         }
 
     }
