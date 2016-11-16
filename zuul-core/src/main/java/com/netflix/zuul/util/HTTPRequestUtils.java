@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -159,7 +160,7 @@ public class HTTPRequestUtils {
 
         HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
 
-        qp = new HashMap<String, List<String>>();
+        qp = new LinkedHashMap<String, List<String>>();
 
         if (request.getQueryString() == null) return null;
         StringTokenizer st = new StringTokenizer(request.getQueryString(), "&");
@@ -250,9 +251,19 @@ public class HTTPRequestUtils {
         @Mock
         private HttpServletRequest request;
 
+        private Map<String, List<String>> qp;
+
+        private LinkedList<String> blankValue;
+
         @Before
         public void before() {
             MockitoAnnotations.initMocks(this);
+            blankValue = new LinkedList<String>();
+            blankValue.add("");
+
+            RequestContext.testSetCurrentContext(mockContext);
+            when(mockContext.getRequestQueryParams()).thenReturn(null);
+            when(mockContext.getRequest()).thenReturn(request);
         }
 
         @Test
@@ -272,13 +283,6 @@ public class HTTPRequestUtils {
 
         @Test
         public void testGetQueryParams() {
-            Map<String, List<String>> qp;
-            LinkedList<String> blankValue = new LinkedList<String>();
-            blankValue.add("");
-
-            RequestContext.testSetCurrentContext(mockContext);
-            when(mockContext.getRequestQueryParams()).thenReturn(null);
-            when(mockContext.getRequest()).thenReturn(request);
             when(request.getQueryString()).thenReturn("wsdl");
             
             qp = HTTPRequestUtils.getInstance().getQueryParams();
@@ -293,11 +297,18 @@ public class HTTPRequestUtils {
             
             qp = HTTPRequestUtils.getInstance().getQueryParams();
             assertEquals("123", qp.get("a").get(0));
-            // Not sure that order is supposed to be guaranteed here
             assertEquals("234", qp.get("b").get(0)); 
             assertEquals("345", qp.get("b").get(1));
             assertEquals(blankValue, qp.get("c"));
             assertEquals(blankValue, qp.get("d"));
+        }
+
+        @Test
+        public void testGetQueryParamsOrderIsPreserved() {
+            when(request.getQueryString()).thenReturn("WSDL&interface=Foo&part=FooImpl.wsdl");
+
+            qp = HTTPRequestUtils.getInstance().getQueryParams();
+            assertEquals("WSDL", qp.keySet().iterator().next());
         }
     }
 
