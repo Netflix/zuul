@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.context;
 
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
@@ -22,7 +23,6 @@ import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.*;
-import com.netflix.zuul.properties.CachedProperties;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class ServletSessionContextFactory implements SessionContextFactory<HttpS
     private static final Logger LOG = LoggerFactory.getLogger(ServletSessionContextFactory.class);
     private static final String JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
 
-    private static final CachedProperties.Boolean SHOULD_ERROR_ON_SOCKET_READ_TIMEOUT = new CachedProperties.Boolean(
+    private static final CachedDynamicBooleanProperty SHOULD_ERROR_ON_SOCKET_READ_TIMEOUT = new CachedDynamicBooleanProperty(
             "zuul.ServletSessionContextFactory.errorOnSocketReadTimeout", false);
 
     @Override

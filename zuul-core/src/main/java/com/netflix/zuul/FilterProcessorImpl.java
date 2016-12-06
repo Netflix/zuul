@@ -18,6 +18,7 @@
 
 package com.netflix.zuul;
 
+import com.netflix.config.DynamicStringProperty;
 import com.netflix.servo.monitor.DynamicCounter;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
@@ -27,7 +28,6 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.properties.CachedProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
@@ -52,7 +52,7 @@ public class FilterProcessorImpl implements FilterProcessor
     protected static final Logger LOG = LoggerFactory.getLogger(FilterProcessorImpl.class);
 
     /** The name of the error filter to use if none specified in the context. */
-    protected static final CachedProperties.String DEFAULT_ERROR_ENDPOINT = new CachedProperties.String("zuul.filters.error.default", "endpoint.ErrorResponse");
+    protected static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = new DynamicStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
 
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier usageNotifier;
