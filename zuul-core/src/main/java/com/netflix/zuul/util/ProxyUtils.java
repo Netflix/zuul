@@ -1,11 +1,11 @@
 package com.netflix.zuul.util;
 
 import com.netflix.client.http.HttpResponse;
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.properties.CachedProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class ProxyUtils
 {
-    private static final CachedProperties.Boolean OVERWRITE_XF_HEADERS = new CachedProperties.Boolean("zuul.headers.xforwarded.overwrite", false);
+    private static final CachedDynamicBooleanProperty OVERWRITE_XF_HEADERS = new CachedDynamicBooleanProperty("zuul.headers.xforwarded.overwrite", false);
 
     private static final Set<HeaderName> RESP_HEADERS_TO_STRIP = new HashSet<>();
     static {

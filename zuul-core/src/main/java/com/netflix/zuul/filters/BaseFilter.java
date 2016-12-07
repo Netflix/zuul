@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.filters;
 
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.properties.CachedProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
  */
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
-    private final CachedProperties.Boolean filterDisabled = new CachedProperties.Boolean(disablePropertyName(), false);
+    private final CachedDynamicBooleanProperty filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
 
     @Override
     public String filterName() {
