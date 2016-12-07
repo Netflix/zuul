@@ -72,8 +72,10 @@ public abstract class SurgicalDebugFilter extends ZuulFilter {
         DynamicStringProperty routeHost = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
         if (routeVip.get() != null || routeHost.get() != null) {
-            RequestContext.currentContext.routeHost = routeHost.get();
-            RequestContext.currentContext.routeVIP = routeVip.get();
+            //RequestContext.currentContext.routeHost = routeHost.get();
+            RequestContext.getCurrentContext().setRouteHost( new URL(routeHost.get()));
+            //RequestContext.currentContext.routeVIP = routeVip.get();
+            RequestContext.getCurrentContext().setRouteHost( new URL(routeVip.get()));
             RequestContext.currentContext.addZuulRequestHeader(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
             if (HTTPRequestUtils.getInstance().getQueryParams() == null) {
                 RequestContext.getCurrentContext().setRequestQueryParams(new HashMap<String, List<String>>());
