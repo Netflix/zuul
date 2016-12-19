@@ -78,7 +78,6 @@ public class FilterFileManager {
 
         INSTANCE.aDirectories = directories;
         INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
-        INSTANCE.manageFiles();
         INSTANCE.startPoller();
 
     }
@@ -104,8 +103,8 @@ public class FilterFileManager {
             public void run() {
                 while (bRunning) {
                     try {
-                        sleep(pollingIntervalSeconds * 1000);
                         manageFiles();
+                        sleep(pollingIntervalSeconds * 1000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
