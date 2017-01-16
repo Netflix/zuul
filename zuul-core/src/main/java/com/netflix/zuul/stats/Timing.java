@@ -66,4 +66,10 @@ public class Timing
     public long getDuration() {
         return duration;
     }
+
+    @Override
+    public String toString()
+    {
+        return Long.toString(duration);
+    }
 }

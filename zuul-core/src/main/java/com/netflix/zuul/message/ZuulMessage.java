@@ -45,6 +45,8 @@ public interface ZuulMessage extends Cloneable
 
     boolean hasBody();
 
+    void setHasBody(boolean hasbody);
+
     void setBodyAsText(String bodyText, Charset cs);
 
     void setBodyAsText(String bodyText);

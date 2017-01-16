@@ -167,6 +167,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         return message.hasBody();
     }
+    
+    @Override
+    public void setHasBody(boolean hasBody) 
+    {
+        message.setHasBody(hasBody);
+    }
 
     @Override
     public void setBodyAsText(String bodyText, Charset cs)
@@ -390,10 +396,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     protected HttpRequestInfo copyRequestInfo()
     {
         // Unlike clone(), we create immutable copies of the Headers and HttpQueryParams here.
-        return new HttpRequestMessageImpl(message.getContext(),
+        HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(),
                 protocol, method, path,
                 queryParams.immutableCopy(), message.getHeaders().immutableCopy(), clientIp, scheme,
                 port, serverName, true);
+        req.setHasBody(hasBody());
+        return req;
     }
 
     @Override

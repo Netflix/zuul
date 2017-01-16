@@ -16,9 +16,13 @@
 package com.netflix.zuul.util;
 
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
@@ -31,6 +35,7 @@ import static org.junit.Assert.*;
  */
 public class HttpUtils
 {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     private static final Pattern RE_MALICIOUS_HEADER_CHARS = Pattern.compile("(\r|\n)");
 
     /**
@@ -105,6 +110,35 @@ public class HttpUtils
             return null;
         }
         return RE_MALICIOUS_HEADER_CHARS.matcher(input).replaceAll("");
+    }
+
+
+    public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg)
+    {
+        boolean hasNonZeroValue = false;
+        String contentLengthValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
+        if (StringUtils.isNotEmpty(contentLengthValue) && StringUtils.isNumeric(contentLengthValue)) {
+            int value = 0;
+            try {
+                value = Integer.parseInt(contentLengthValue);
+            }
+            catch (NumberFormatException e) {
+                LOG.info("Invalid Content-Length header value on request. " +
+                        "value = " + String.valueOf(contentLengthValue));
+            }
+            hasNonZeroValue = value > 0;
+        }
+        return hasNonZeroValue;
+    }
+
+    public static boolean hasChunkedTransferEncodingHeader(ZuulMessage msg)
+    {
+        boolean isChunked = false;
+        String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
+        if (StringUtils.isNotEmpty(teValue)) {
+            isChunked = "chunked".equals(teValue.toLowerCase());
+        }
+        return isChunked;
     }
 
 

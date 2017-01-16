@@ -17,9 +17,9 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
-import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.stats.Timing;
@@ -38,9 +38,7 @@ import rx.Observable;
 
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * User: michaels
@@ -114,6 +112,12 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public boolean hasBody()
     {
         return message.hasBody();
+    }
+    
+    @Override
+    public void setHasBody(boolean hasBody)
+    {
+        message.setHasBody(hasBody);
     }
 
     @Override
@@ -267,9 +271,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     protected HttpResponseInfo copyResponseInfo()
     {
         // Unlike clone(), we create immutable copies of the Headers here.
-        return new HttpResponseMessageImpl(getContext(),
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(getContext(),
                 getHeaders().immutableCopy(),
                getOutboundRequest(), getStatus());
+        response.setHasBody(hasBody());
+        return response;
     }
 
     @Override

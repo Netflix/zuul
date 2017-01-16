@@ -43,6 +43,7 @@ public class ZuulMessageImpl implements ZuulMessage
 
     protected final SessionContext context;
     protected Headers headers;
+    protected boolean hasBody;
     protected Observable<ByteBuf> bodyStream = null;
     protected boolean bodyBuffered = false;
     protected byte[] body = null;
@@ -81,6 +82,7 @@ public class ZuulMessageImpl implements ZuulMessage
     public void setBody(byte[] body)
     {
         this.body = body;
+        this.hasBody = true;
 
         // Now that body is buffered, if anyone asks for the stream, then give them this wrapper.
         this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
@@ -91,7 +93,13 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public boolean hasBody()
     {
-        return bodyStream != null;
+        return this.hasBody;
+    }
+    
+    @Override
+    public void setHasBody(boolean hasBody)
+    {
+        this.hasBody = hasBody;
     }
 
     @Override
@@ -145,6 +153,7 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void setBodyStream(Observable<ByteBuf> bodyStream) {
         this.bodyStream = bodyStream;
+        setHasBody(true);
     }
 
     @Override
