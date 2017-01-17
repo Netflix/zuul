@@ -153,7 +153,6 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void setBodyStream(Observable<ByteBuf> bodyStream) {
         this.bodyStream = bodyStream;
-        setHasBody(true);
     }
 
     @Override
