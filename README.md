@@ -54,3 +54,7 @@ https://engineering.riotgames.com/news/riot-games-api-deep-dive
 http://instea.sk/2015/04/netflix-zuul-vs-nginx-performance/
 
 =======================================================================================================
+
+### Can I talk to Dana?
+
+There is no Dana, [only Zuul](https://youtu.be/lg7MAacSPNM?t=12s).
