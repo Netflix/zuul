@@ -68,4 +68,12 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      * @return ZuulMessage
      */
     ZuulMessage getDefaultOutput(I input);
+
+    /**
+     * Filter indicates it needs to read and buffer whole body before it can operate on the messages by returning true.
+     * The decision can be made at runtime, looking at the request type. For example if the incoming message is a MSL
+     * message MSL decryption filter can return true here to buffer whole MSL message before it tries to decrypt it.
+     * @return true if this filter needs to read whole body before it can run, false otherwise
+     */
+    boolean needsBodyBuffered(I input);
 }

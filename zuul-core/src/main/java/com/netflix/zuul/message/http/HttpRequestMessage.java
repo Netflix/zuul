@@ -44,7 +44,7 @@ public interface HttpRequestMessage extends HttpRequestInfo
 
     void setServerName(String serverName);
 
-    Observable<byte[]> bufferBody();
+//    Observable<byte[]> bufferBody();
 
     ZuulMessage clone();
 

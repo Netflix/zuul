@@ -95,6 +95,11 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
         return String.valueOf(filterType()) + ":" + String.valueOf(filterName());
     }
 
+    @Override
+    public boolean needsBodyBuffered(I input) {
+        return false;
+    }
+
     public static class TestUnit {
         @Mock
         private BaseFilter f1;

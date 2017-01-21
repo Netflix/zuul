@@ -24,8 +24,11 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.stats.Timing;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,22 +99,58 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         message.setHeaders(newHeaders);
     }
 
-    @Override
-    public byte[] getBody()
-    {
-        return message.getBody();
-    }
+//    @Override
+//    public byte[] getBody()
+//    {
+//        return message.getBody();
+//    }
+//
+//    @Override
+//    public void setBody(byte[] body)
+//    {
+//        message.setBody(body);
+//    }
+//
+//    @Override
+//    public boolean hasBody()
+//    {
+//        return message.hasBody();
+//    }
+//
+//    @Override
+//    public void setBodyAsText(String bodyText, Charset cs)
+//    {
+//        message.setBodyAsText(bodyText, cs);
+//    }
+//
+//    @Override
+//    public void setBodyAsText(String bodyText)
+//    {
+//        message.setBodyAsText(bodyText);
+//    }
+
+//    @Override
+//    public boolean isBodyBuffered()
+//    {
+//        return message.isBodyBuffered();
+//    }
+
+//    @Override
+//    public Observable<ByteBuf> getBodyStream()
+//    {
+//        return message.getBodyStream();
+//    }
+
+//    @Override
+//    public void setBodyStream(Observable<ByteBuf> bodyStream)
+//    {
+//        message.setBodyStream(bodyStream);
+//    }
+
 
     @Override
-    public void setBody(byte[] body)
-    {
-        message.setBody(body);
-    }
-
-    @Override
-    public boolean hasBody()
-    {
-        return message.hasBody();
+    public void setBodyAsText(String bodyText) {
+        message.setBodyAsText(bodyText);
     }
     
     @Override
@@ -121,33 +160,28 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public void setBodyAsText(String bodyText, Charset cs)
-    {
-        message.setBodyAsText(bodyText, cs);
+    public void setBodyBuffer(CompositeByteBuf bodyBuffer) {
+        message.setBodyBuffer(bodyBuffer);
     }
 
     @Override
-    public void setBodyAsText(String bodyText)
-    {
-        message.setBodyAsText(bodyText);
+    public CompositeByteBuf getBodyBuffer() {
+        return message.getBodyBuffer();
     }
 
     @Override
-    public boolean isBodyBuffered()
-    {
-        return message.isBodyBuffered();
+    public byte[] getBody() {
+        return message.getBody();
     }
 
     @Override
-    public Observable<ByteBuf> getBodyStream()
-    {
-        return message.getBodyStream();
+    public boolean hasBody() {
+        return message.hasBody();
     }
 
     @Override
-    public void setBodyStream(Observable<ByteBuf> bodyStream)
-    {
-        message.setBodyStream(bodyStream);
+    public void bufferBody(HttpContent chunk) {
+        message.bufferBody(chunk);
     }
 
     @Override
@@ -174,17 +208,17 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         return MAX_BODY_SIZE_PROP.get();
     }
 
-    @Override
-    public Observable<byte[]> bufferBody()
-    {
-        // Wrap the buffering of response body in a timer.
-        Timing timing = getContext().getTimings().getResponseBodyRead();
-        timing.start();
-        return message.bufferBody()
-                .finallyDo(() -> {
-                    timing.end();
-                });
-    }
+//    @Override
+//    public Observable<byte[]> bufferBody()
+//    {
+//        // Wrap the buffering of response body in a timer.
+//        Timing timing = getContext().getTimings().getResponseBodyRead();
+//        timing.start();
+//        return message.bufferBody()
+//                .finallyDo(() -> {
+//                    timing.end();
+//                });
+//    }
 
     @Override
     public Cookies parseSetCookieHeader(String setCookieValue)

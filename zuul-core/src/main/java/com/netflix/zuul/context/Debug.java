@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.context;
 
+import com.google.common.base.Charsets;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -81,18 +82,13 @@ public class Debug {
 
     public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
     {
-        try {
-            for (Header header : message.getHeaders().entries()) {
-                Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
-            }
-
-            if (message.getBody() != null) {
-                String bodyStr = new String(message.getBody(), "UTF-8");
-                Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
-            }
+        for (Header header : message.getHeaders().entries()) {
+            Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
         }
-        catch (UnsupportedEncodingException e) {
-            LOG.warn("Error writing message to debug log.", e);
+
+        if (message.hasBody()) {
+            String bodyStr = message.getBodyBuffer().toString(Charsets.UTF_8);
+            Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
         }
     }
 
@@ -212,11 +208,8 @@ public class Debug {
         if (msg.hasBody()) {
             if (! Debug.debugRequestHeadersOnly(context)) {
                 // Convert body to a String and add to debug log.
-                obs = msg.bufferBody().map((bodyBytes) -> {
-                    String body = Debug.bodyToText(bodyBytes, msg.getHeaders());
-                    Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
-                    return Boolean.TRUE;
-                });
+                String body = msg.getBodyBuffer().toString(Charsets.UTF_8);
+                Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
             }
         }
 

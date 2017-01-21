@@ -35,8 +35,8 @@ public interface HttpResponseMessage extends HttpResponseInfo
     @Override
     int getMaxBodySize();
 
-    @Override
-    Observable<byte[]> bufferBody();
+//    @Override
+//    Observable<byte[]> bufferBody();
 
     void addSetCookie(Cookie cookie);
 

@@ -22,6 +22,8 @@ package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 import java.nio.charset.Charset;
@@ -40,28 +42,36 @@ public interface ZuulMessage extends Cloneable
     void setHeaders(Headers newHeaders);
 
     byte[] getBody();
-
-    void setBody(byte[] body);
-
+//
+//    void setBody(byte[] body);
+//
     boolean hasBody();
+//
+//    void setBodyAsText(String bodyText, Charset cs);
+//
+    void setBodyAsText(String bodyText);
+//
+//    Observable<byte[]> bufferBody();
 
     void setHasBody(boolean hasbody);
 
-    void setBodyAsText(String bodyText, Charset cs);
+    void setBodyBuffer(CompositeByteBuf bodyBuffer);
+    CompositeByteBuf getBodyBuffer();
 
-    void setBodyAsText(String bodyText);
+    void bufferBody(HttpContent chunk);
 
-    Observable<byte[]> bufferBody();
+    boolean hasCompleteBody();
 
     int getMaxBodySize();
 
-    boolean isBodyBuffered();
+//    boolean isBodyBuffered();
 
-    Observable<ByteBuf> getBodyStream();
-
-    void setBodyStream(Observable<ByteBuf> bodyStream);
+//    Observable<ByteBuf> getBodyStream();
+//
+//    void setBodyStream(Observable<ByteBuf> bodyStream);
 
     ZuulMessage clone();
 
     String getInfoForLogging();
+
 }
