@@ -559,6 +559,27 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     }
 
+    @Override
+    public String toString() {
+        return "HttpRequestMessageImpl{" +
+                "immutable=" + immutable +
+                ", message=" + message +
+                ", protocol='" + protocol + '\'' +
+                ", method='" + method + '\'' +
+                ", path='" + path + '\'' +
+                ", queryParams=" + queryParams +
+                ", clientIp='" + clientIp + '\'' +
+                ", scheme='" + scheme + '\'' +
+                ", port=" + port +
+                ", serverName='" + serverName + '\'' +
+                ", inboundRequest=" + inboundRequest +
+                ", parsedCookies=" + parsedCookies +
+                ", reconstructedUri='" + reconstructedUri + '\'' +
+                ", pathAndQuery='" + pathAndQuery + '\'' +
+                ", infoForLogging='" + infoForLogging + '\'' +
+                '}';
+    }
+
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
     {

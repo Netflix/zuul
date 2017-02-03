@@ -279,6 +279,16 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
+    public String toString() {
+        return "HttpResponseMessageImpl{" +
+                "message=" + message +
+                ", outboundRequest=" + outboundRequest +
+                ", status=" + status +
+                ", inboundResponse=" + inboundResponse +
+                '}';
+    }
+
+    @Override
     public void storeInboundResponse()
     {
         inboundResponse = copyResponseInfo();
