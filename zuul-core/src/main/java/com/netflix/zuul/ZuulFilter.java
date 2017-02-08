@@ -153,6 +153,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
         @Before
         public void before() {
             MockitoAnnotations.initMocks(this);
+            MonitoringHelper.initMocks();
         }
 
         @Test
