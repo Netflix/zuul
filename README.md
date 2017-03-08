@@ -40,7 +40,7 @@ https://blog.heroku.com/using_netflix_zuul_to_proxy_your_microservices
 
 http://kubecloud.io/apigatewaypattern/
 
-http://www.ippon.tech/blog/jhipster-3-0-introducing-microservices/
+http://blog.ippon.tech/jhipster-3-0-introducing-microservices/
 
 
 =======================================================================================================
