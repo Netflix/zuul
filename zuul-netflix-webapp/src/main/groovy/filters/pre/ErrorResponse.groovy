@@ -63,7 +63,7 @@ class ErrorResponse extends ZuulFilter {
             String cause = e.errorCause
             if (cause == null) cause = "UNKNOWN"
             RequestContext.getCurrentContext().getResponse().addHeader("X-Netflix-Error-Cause", "Zuul Error: " + cause)
-            if (e.nStatusCode == 404) {
+            if (e.statusCode == 404) {
                 ErrorStatsManager.manager.putStats("ROUTE_NOT_FOUND", "")
             } else {
                 ErrorStatsManager.manager.putStats(RequestContext.getCurrentContext().route, "Zuul_Error_" + cause)
@@ -74,10 +74,10 @@ class ErrorResponse extends ZuulFilter {
 
 
             } else {
-                RequestContext.getCurrentContext().setResponseStatusCode(e.nStatusCode);
+                RequestContext.getCurrentContext().setResponseStatusCode(e.statusCode);
             }
             context.setSendZuulResponse(false)
-            context.setResponseBody("${getErrorMessage(e, e.nStatusCode)}")
+            context.setResponseBody("${getErrorMessage(e, e.statusCode)}")
 
         } catch (Throwable throwable) {
             RequestContext.getCurrentContext().getResponse().addHeader("X-Zuul-Error-Cause", "Zuul Error UNKNOWN Cause")

@@ -24,49 +24,57 @@ import com.netflix.zuul.monitoring.CounterFactory;
  * Time: 4:33 PM
  */
 public class ZuulException extends Exception {
-    public int nStatusCode;
-    public String errorCause;
+
+    private int statusCode;
+
+    private String errorCause;
 
     /**
      * Source Throwable, message, status code and info about the cause
      * @param throwable
-     * @param sMessage
-     * @param nStatusCode
+     * @param message
+     * @param statusCode
      * @param errorCause
      */
-    public ZuulException(Throwable throwable, String sMessage, int nStatusCode, String errorCause) {
-        super(sMessage, throwable);
-        this.nStatusCode = nStatusCode;
+    public ZuulException(Throwable throwable, String message, int statusCode, String errorCause) {
+        super(message, throwable);
+        this.statusCode = statusCode;
         this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + statusCode);
     }
 
     /**
      * error message, status code and info about the cause
-     * @param sMessage
-     * @param nStatusCode
+     * @param message
+     * @param statusCode
      * @param errorCause
      */
-    public ZuulException(String sMessage, int nStatusCode, String errorCause) {
-        super(sMessage);
-        this.nStatusCode = nStatusCode;
+    public ZuulException(String message, int statusCode, String errorCause) {
+        super(message);
+        this.statusCode = statusCode;
         this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
-
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + statusCode);
     }
 
     /**
      * Source Throwable,  status code and info about the cause
      * @param throwable
-     * @param nStatusCode
+     * @param statusCode
      * @param errorCause
      */
-    public ZuulException(Throwable throwable, int nStatusCode, String errorCause) {
+    public ZuulException(Throwable throwable, int statusCode, String errorCause) {
         super(throwable.getMessage(), throwable);
-        this.nStatusCode = nStatusCode;
+        this.statusCode = statusCode;
         this.errorCause = errorCause;
-        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + nStatusCode);
+        incrementCounter("ZUUL::EXCEPTION:" + errorCause + ":" + statusCode);
+    }
 
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getErrorCause() {
+        return errorCause;
     }
 
     private static final void incrementCounter(String name) {
