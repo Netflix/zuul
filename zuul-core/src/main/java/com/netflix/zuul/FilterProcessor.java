@@ -46,8 +46,9 @@ import static org.mockito.Mockito.*;
  */
 public class FilterProcessor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FilterProcessor.class);
+
     static FilterProcessor INSTANCE = new FilterProcessor();
-    protected static final Logger logger = LoggerFactory.getLogger(FilterProcessor.class);
 
     private FilterUsageNotifier usageNotifier;
 
@@ -104,7 +105,7 @@ public class FilterProcessor {
         try {
             runFilters("error");
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
+            LOG.error(e.getMessage(), e);
         }
     }
 

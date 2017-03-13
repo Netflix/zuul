@@ -28,9 +28,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class JsonUtility {
 
-
-    private static final Logger logger = LoggerFactory.getLogger(JsonUtility.class);
-
+    private static final Logger LOG = LoggerFactory.getLogger(JsonUtility.class);
 
     /**
      * Pass in a Map and this method will return a JSON string.
@@ -78,10 +76,10 @@ public class JsonUtility {
 
             json.endGroup();
 
-            logger.debug("created json from map => " + json.toString());
+            LOG.debug("created json from map => " + json.toString());
             return json.toString();
         } catch (Exception e) {
-            logger.error("Could not create JSON from Map. ", e);
+            LOG.error("Could not create JSON from Map. ", e);
             return "{}";
         }
 

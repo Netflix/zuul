@@ -49,7 +49,8 @@ import com.netflix.config.DynamicPropertyFactory;
  */
 public class CassandraHelper {
     
-    private static Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
+
     private static Keyspace zuulCassKeyspace;
 
     private CassandraHelper() {}

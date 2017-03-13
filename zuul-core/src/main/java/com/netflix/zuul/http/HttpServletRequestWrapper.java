@@ -53,8 +53,9 @@ import static org.mockito.Mockito.when;
  */
 public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
+
     private final static HashMap<String, String[]> EMPTY_MAP = new HashMap<String, String[]>();
-    protected static final Logger LOG = LoggerFactory.getLogger(HttpServletRequestWrapper.class);
 
     private HttpServletRequest req;
     private byte[] contentData = null;

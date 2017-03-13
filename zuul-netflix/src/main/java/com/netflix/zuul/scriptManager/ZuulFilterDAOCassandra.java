@@ -70,7 +70,8 @@ import static org.mockito.Mockito.when;
  */
 @ThreadSafe
 public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO {
-    private static final Logger logger = LoggerFactory.getLogger(ZuulFilterDAOCassandra.class);
+
+    private static final Logger LOG = LoggerFactory.getLogger(ZuulFilterDAOCassandra.class);
 
     private final CassandraGateway cassandraGateway;
 
@@ -123,7 +124,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
                     return filter_ids;
                 } catch (Exception e) {
                     // unable to retrieve data for this row, could be missing the uri column (which shouldn't happen)
-                    logger.warn("Unable to retrieve uri for row", e);
+                    LOG.warn("Unable to retrieve uri for row", e);
                 }
             }
             return "";
@@ -296,7 +297,7 @@ public class ZuulFilterDAOCassandra extends Observable implements ZuulFilterDAO 
             return filterInfo;
         } catch (Exception e) {
             // unable to retrieve data for this row, could be missing the uri column (which shouldn't happen)
-            logger.warn("Unable to retrieve data from row => uri : " + filterName + "  revision: " + revision + "  row: " + row, e);
+            LOG.warn("Unable to retrieve data from row => uri : " + filterName + "  revision: " + revision + "  row: " + row, e);
             return null;
         }
     }

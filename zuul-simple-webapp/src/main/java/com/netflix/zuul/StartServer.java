@@ -29,11 +29,11 @@ import org.slf4j.LoggerFactory;
 
 public class StartServer implements ServletContextListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(StartServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(StartServer.class);
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        logger.info("starting server");
+        LOG.info("starting server");
 
         // mocks monitoring infrastructure as we don't need it for this simple app
         MonitoringHelper.initMocks();
@@ -47,7 +47,7 @@ public class StartServer implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        logger.info("stopping server");
+        LOG.info("stopping server");
     }
 
     private void initGroovyFilterManager() {
@@ -84,7 +84,7 @@ public class StartServer implements ServletContextListener {
 
             @Override
             public Object run() {
-                logger.debug("running javaPreFilter");
+                LOG.debug("running javaPreFilter");
                 RequestContext.getCurrentContext().set("javaPreFilter-ran", true);
                 return null;
             }
@@ -108,7 +108,7 @@ public class StartServer implements ServletContextListener {
 
             @Override
             public Object run() {
-                logger.debug("running javaPostFilter");
+                LOG.debug("running javaPostFilter");
                 RequestContext.getCurrentContext().set("javaPostFilter-ran", true);
                 return null;
             }

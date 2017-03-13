@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 class UsageError {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UsageError.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UsageError.class);
 
     private final int statusCode;
     private final String message;
@@ -28,7 +28,7 @@ class UsageError {
             }
             w.write(new UsageDoc().get());
         } catch (Exception e) {
-            LOGGER.error("Failed to output usage error.", e);
+            LOG.error("Failed to output usage error.", e);
             // won't throw exception because this is not critical, logging the error is enough
         }
     }
