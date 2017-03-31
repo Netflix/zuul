@@ -25,15 +25,11 @@ import rx.Observable
  * Date: 5/28/15
  * Time: 10:54 AM
  */
-public abstract class MessageBodyBufferFilter extends BaseFilter<ZuulMessage, ZuulMessage>
-{
-    private static final Logger LOG = LoggerFactory.getLogger(MessageBodyBufferFilter.class);
+public abstract class MessageBodyBufferFilter extends BaseSyncFilter<ZuulMessage, ZuulMessage> {
 
     @Override
-    Observable<ZuulMessage> applyAsync(ZuulMessage msg)
-    {
-        return msg.bufferBody()
-                    .map({bytes -> msg})
+    ZuulMessage apply(ZuulMessage msg) {
+        return msg;
     }
 
     @Override
@@ -42,7 +38,13 @@ public abstract class MessageBodyBufferFilter extends BaseFilter<ZuulMessage, Zu
     }
 
     @Override
+    boolean needsBodyBuffered(ZuulMessage input) {
+        return true;
+    }
+
+    @Override
     int filterOrder() {
         return -10
     }
+
 }

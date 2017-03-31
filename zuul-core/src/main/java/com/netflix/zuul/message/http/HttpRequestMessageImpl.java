@@ -20,13 +20,12 @@ import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
-import com.netflix.zuul.stats.Timing;
 import com.netflix.zuul.util.HttpUtils;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
@@ -36,9 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -151,90 +148,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         message.setHeaders(newHeaders);
     }
 
-    public boolean hasBody()
-    {
-        return message.hasBody();
-    }
-    
     @Override
-    public void setHasBody(boolean hasBody) 
-    {
+    public void setHasBody(boolean hasBody) {
         message.setHasBody(hasBody);
-    }
-
-//    @Override
-//    public byte[] getBody()
-//    {
-//        return message.getBody();
-//    }
-//
-//    @Override
-//    public void setBody(byte[] body)
-//    {
-//        immutableCheck();
-//        message.setBody(body);
-//    }
-//
-//    @Override
-//    public boolean hasBody()
-//    {
-//        return message.hasBody();
-//    }
-//
-//    @Override
-//    public void setBodyAsText(String bodyText, Charset cs)
-//    {
-//        immutableCheck();
-//        message.setBodyAsText(bodyText, cs);
-//    }
-//
-//    @Override
-//    public void setBodyAsText(String bodyText)
-//    {
-//        immutableCheck();
-//        message.setBodyAsText(bodyText);
-//    }
-//
-//    @Override
-//    public boolean isBodyBuffered()
-//    {
-//        return message.isBodyBuffered();
-//    }
-//
-//    @Override
-//    public Observable<byte[]> bufferBody()
-//    {
-//        // Wrap the buffering of request body in a timer.
-//        Timing timing = getContext().getTimings().getRequestBodyRead();
-//        timing.start();
-//        return message.bufferBody()
-//                .finallyDo(() -> {
-//                    timing.end();
-//                });
-//    }
-//
-//    @Override
-//    public Observable<ByteBuf> getBodyStream()
-//    {
-//        return message.getBodyStream();
-//    }
-//
-//    @Override
-//    public void setBodyStream(Observable<ByteBuf> bodyStream)
-//    {
-//        immutableCheck();
-//        message.setBodyStream(bodyStream);
-//    }
-
-
-    @Override
-    public void setBodyBuffer(CompositeByteBuf bodyBuffer) {
-        message.setBodyBuffer(bodyBuffer);
-    }
-
-    @Override
-    public CompositeByteBuf getBodyBuffer() {
-        return message.getBodyBuffer();
     }
 
     @Override
@@ -243,13 +159,58 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
+    public void bufferBodyContents(HttpContent chunk) {
+        message.bufferBodyContents(chunk);
+    }
+
+    @Override
+    public void setBodyAsText(String bodyText) {
+        message.setBodyAsText(bodyText);
+    }
+
+    @Override
+    public void setBody(byte[] body) {
+        message.setBody(body);
+    }
+
+    @Override
+    public boolean finishBufferedBodyIfIncomplete() {
+        return message.finishBufferedBodyIfIncomplete();
+    }
+
+    @Override
+    public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
+        message.writeBufferedBodyContent(channel, retainBeyondWrite);
+    }
+
+    @Override
+    public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
+        message.runBufferedBodyContentThroughFilter(filter);
+    }
+
+    @Override
+    public String getBodyAsText() {
+        return message.getBodyAsText();
+    }
+
+    @Override
     public byte[] getBody() {
         return message.getBody();
     }
 
     @Override
-    public void bufferBody(HttpContent chunk) {
-        message.bufferBody(chunk);
+    public int getBodyLength() {
+        return message.getBodyLength();
+    }
+
+    @Override
+    public boolean hasCompleteBody() {
+        return message.hasCompleteBody();
+    }
+
+    @Override
+    public void disposeBufferedBody() {
+        message.disposeBufferedBody();
     }
 
     @Override

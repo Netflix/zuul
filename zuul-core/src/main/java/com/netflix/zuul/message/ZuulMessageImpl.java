@@ -16,20 +16,27 @@
 package com.netflix.zuul.message;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.zuul.bytebuf.ByteBufUtils;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.buffer.*;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.LastHttpContent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import rx.Observable;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: michaels@netflix.com
@@ -45,11 +52,9 @@ public class ZuulMessageImpl implements ZuulMessage
     protected final SessionContext context;
     protected Headers headers;
 
-    protected boolean hasBody;
-    protected Observable<ByteBuf> bodyStream = null;
-    protected boolean bodyBuffered = false;
-    protected byte[] body = null;
-    protected CompositeByteBuf bodyBuffer;
+    private boolean hasBody;
+    private boolean bodyBufferedCompletely;
+    private List<HttpContent> bodyChunks;
 
 
     public ZuulMessageImpl(SessionContext context) {
@@ -59,6 +64,7 @@ public class ZuulMessageImpl implements ZuulMessage
     public ZuulMessageImpl(SessionContext context, Headers headers) {
         this.context = context == null ? new SessionContext() : context;
         this.headers = headers == null ? new Headers() : headers;
+        this.bodyChunks = new ArrayList<>(16);
     }
 
     @Override
@@ -76,147 +82,143 @@ public class ZuulMessageImpl implements ZuulMessage
         this.headers = newHeaders;
     }
 
-//    @Override
-//    public byte[] getBody()
-//    {
-//        return this.body;
-//    }
-
-//    @Override
-//    public void setBody(byte[] body)
-//    {
-//        this.body = body;
-//
-//        // Now that body is buffered, if anyone asks for the stream, then give them this wrapper.
-//        this.bodyStream = Observable.just(Unpooled.wrappedBuffer(this.body));
-//
-//        this.bodyBuffered = true;
-//    }
-//
-//    @Override
-//    public boolean hasBody()
-//    {
-//        return bodyStream != null;
-//    }
-//
-//    @Override
-//    public void setBodyAsText(String bodyText, Charset cs)
-//    {
-//        setBody(bodyText.getBytes(cs));
-//    }
-//
-//    @Override
-//    public void setBodyAsText(String bodyText)
-//    {
-//        setBodyAsText(bodyText, CS_UTF8);
-//    }
-//
-//    @Override
-//    public Observable<byte[]> bufferBody()
-//    {
-//        if (isBodyBuffered()) {
-//            return Observable.just(getBody());
-//        }
-//        else if (null != bodyStream) {
-//            return ByteBufUtils
-//                    .aggregate(getBodyStream(), getMaxBodySize())
-//                    .map(bb -> {
-//                        // Set the body on Response object.
-//                        byte[] body = ByteBufUtils.toBytes(bb);
-//                        setBody(body);
-//                        bb.release(); // Since this is terminally consuming the buffer.
-//                        return body;
-//                    });
-//        } else {
-//            return Observable.empty();
-//        }
-//    }
-
-    @Override
-    public void setHasBody(boolean hasBody) {
-        this.hasBody = hasBody;
-    }
-    public void bufferBody(HttpContent chunk) {
-        bodyBuffer.addComponent(true, chunk.content());
-    }
-
     @Override
     public int getMaxBodySize() {
         return MAX_BODY_SIZE_PROP.get();
     }
 
-//    @Override
-//    public boolean isBodyBuffered() {
-//        return bodyBuffered;
-//    }
-
-//    @Override
-//    public Observable<ByteBuf> getBodyStream() {
-//        return bodyStream;
-//    }
-//
-//    @Override
-//    public void setBodyStream(Observable<ByteBuf> bodyStream) {
-//        this.bodyStream = bodyStream;
-//    }
-//
 
     @Override
-    public void setBodyAsText(String bodyText) {
-        if (bodyBuffer == null) {
-            bodyBuffer = ByteBufAllocator.DEFAULT.compositeBuffer();
-        } else {
-            bodyBuffer.clear();
-        }
-        ByteBufUtil.writeUtf8(bodyBuffer, bodyText);
-    }
-
-    @Override
-    public void setBodyBuffer(CompositeByteBuf bodyBuffer) {
-        this.bodyBuffer = bodyBuffer;
-    }
-
-    @Override
-    public CompositeByteBuf getBodyBuffer() {
-        return bodyBuffer;
-    }
-
-    @Override
-    public byte[] getBody() {
-        if (bodyBuffer != null) {
-            byte[] bytes = new byte[bodyBuffer.readableBytes()];
-            int readerIndex = bodyBuffer.readerIndex();
-            bodyBuffer.getBytes(readerIndex, bytes);
-            return bytes;
-        }
-        return null;
+    public void setHasBody(boolean hasBody) {
+        this.hasBody = hasBody;
     }
 
     @Override
     public boolean hasBody() {
-        return (bodyBuffer != null) && (bodyBuffer.readableBytes() > 0);
-    }
-
-    public static CompositeByteBuf copy(final CompositeByteBuf inBuff) {
-        final CompositeByteBuf outBuff = inBuff.alloc().compositeBuffer();
-        for (final ByteBuf buff : inBuff) {
-            outBuff.addComponent(true, buff.copy());
-        }
-        return outBuff;
+        return hasBody;
     }
 
     @Override
-    public ZuulMessage clone()
-    {
-        ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), headers.clone());
+    public boolean hasCompleteBody() {
+        return bodyBufferedCompletely;
+    }
 
-        // Clone body bytes if available, but don't try to clone the bodyStream.
-//        if (body != null) {
-//            copy.setBody(body.clone());
-//        }
-        if (bodyBuffer != null) {
-            copy.setBodyBuffer(copy(bodyBuffer));
+    @Override
+    public void bufferBodyContents(final HttpContent chunk) {
+        setHasBody(true);
+//        chunk.retain();
+        bodyChunks.add(chunk);
+        if (chunk instanceof LastHttpContent) {
+            bodyBufferedCompletely = true;
         }
+    }
+
+    @Override
+    public void setBodyAsText(String bodyText) {
+        disposeBufferedBody();
+        if (! Strings.isNullOrEmpty(bodyText)) {
+            final ByteBuf content = Unpooled.copiedBuffer(bodyText.getBytes(Charsets.UTF_8));
+            bufferBodyContents(new DefaultLastHttpContent(content));
+        } else {
+            bufferBodyContents(new DefaultLastHttpContent());
+        }
+    }
+
+    @Override
+    public void setBody(byte[] body) {
+        disposeBufferedBody();
+        if (body != null && body.length > 0) {
+            final ByteBuf content = Unpooled.copiedBuffer(body);
+            bufferBodyContents(new DefaultLastHttpContent(content));
+        } else {
+            bufferBodyContents(new DefaultLastHttpContent());
+        }
+    }
+
+    @Override
+    public String getBodyAsText() {
+        final StringBuilder builder = new StringBuilder();
+        bodyChunks.forEach(chunk -> builder.append(chunk.content().toString(Charsets.UTF_8)));
+        return builder.toString();
+    }
+
+    @Override
+    public byte[] getBody() {
+        if (bodyChunks.size() == 0) {
+            return null;
+        }
+
+        final CompositeByteBuf cbuff = Unpooled.compositeBuffer();
+        bodyChunks.forEach(chunk -> {
+            chunk.retain(); //CompositeByteBuf calls release() on ByteBuf
+            cbuff.addComponent(true, chunk.content());
+        });
+        final byte[] bytes = new byte[cbuff.readableBytes()];
+        cbuff.readBytes(bytes);
+        cbuff.release();
+        return bytes;
+    }
+
+    @Override
+    public int getBodyLength() {
+        return bodyChunks.stream().mapToInt((chunk) -> chunk.content().readableBytes()).sum();
+    }
+
+    @Override
+    public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
+        bodyChunks.forEach(chunk -> {
+            if (retainBeyondWrite) {
+                chunk.retain();
+            }
+            channel.write(chunk);
+        });
+    }
+
+    @Override
+    public boolean finishBufferedBodyIfIncomplete() {
+        if (! bodyBufferedCompletely) {
+            bufferBodyContents(new DefaultLastHttpContent());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void disposeBufferedBody() {
+        bodyChunks.forEach(chunk -> {
+            final int refCnt = chunk.refCnt();
+            if (refCnt > 0) {
+                chunk.release(refCnt);
+            }
+        });
+        bodyChunks.clear();
+    }
+
+    @Override
+    public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
+        //Loop optimized for the common case: Most filters' processContentChunk() return
+        // original chunk passed in as is without any processing
+        for (int i=0; i < bodyChunks.size(); i++) {
+            final HttpContent origChunk = bodyChunks.get(i);
+            final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
+            if (filteredChunk != origChunk) {
+                //filter actually did some processing, set the new chunk in and release the old chunk.
+                bodyChunks.set(i, filteredChunk);
+                final int refCnt = origChunk.refCnt();
+                if (refCnt > 0) {
+                    origChunk.release(refCnt);
+                }
+            }
+        }
+    }
+
+    @Override
+    public ZuulMessage clone() {
+        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), headers.clone());
+        this.bodyChunks.forEach(chunk -> {
+            chunk.retain();
+            copy.bufferBodyContents(chunk);
+        });
         return copy;
     }
 
@@ -245,7 +247,7 @@ public class ZuulMessageImpl implements ZuulMessage
             ZuulMessage msg1 = new ZuulMessageImpl(ctx1, headers1);
             ZuulMessage msg2 = msg1.clone();
 
-            assertEquals(msg1.getBodyBuffer().toString(Charsets.UTF_8), msg2.getBodyBuffer().toString(Charsets.UTF_8));
+            assertEquals(msg1.getBodyAsText(), msg2.getBodyAsText());
             assertEquals(msg1.getHeaders(), msg2.getHeaders());
             assertEquals(msg1.getContext(), msg2.getContext());
 
@@ -256,5 +258,99 @@ public class ZuulMessageImpl implements ZuulMessage
             assertEquals("v1", msg2.getHeaders().getFirst("k1"));
             assertEquals("v1", msg2.getContext().get("k1"));
         }
+
+        @Test
+        public void testBufferBody2GetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
+            msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+            final String body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testBufferBody3GetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
+            msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+            msg.bufferBodyContents(new DefaultLastHttpContent());
+            final String body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testBufferBody3GetBodyAsText() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
+            msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+            msg.bufferBodyContents(new DefaultLastHttpContent());
+            final String body = msg.getBodyAsText();
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testSetBodyGetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.setBody("Hello World!".getBytes());
+            final String body = new String(msg.getBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testSetBodyAsTextGetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.setBodyAsText("Hello World!");
+            final String body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testSetBodyAsTextGetBodyAsText() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.setBodyAsText("Hello World!");
+            final String body = msg.getBodyAsText();
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+        }
+
+        @Test
+        public void testMultiSetBodyAsTextGetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.setBodyAsText("Hello World!");
+            String body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+            msg.setBodyAsText("Goodbye World!");
+            body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Goodbye World!", body);
+        }
+
+        @Test
+        public void testMultiSetBodyGetBody() {
+            final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+            msg.setBody("Hello World!".getBytes());
+            String body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Hello World!", body);
+            msg.setBody("Goodbye World!".getBytes());
+            body = new String(msg.getBody());
+            assertTrue(msg.hasBody());
+            assertTrue(msg.hasCompleteBody());
+            assertEquals("Goodbye World!", body);
+        }
+
     }
 }

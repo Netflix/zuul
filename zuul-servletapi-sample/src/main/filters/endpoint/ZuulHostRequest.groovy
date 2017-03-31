@@ -26,12 +26,10 @@ import com.netflix.zuul.filters.BaseFilterTest
 import com.netflix.zuul.filters.http.HttpSyncEndpoint
 import com.netflix.zuul.message.HeaderName
 import com.netflix.zuul.message.Headers
-import com.netflix.zuul.message.http.*
 import com.netflix.zuul.util.HttpUtils
 import com.netflix.zuul.util.ProxyUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
-import org.apache.http.*
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
@@ -57,7 +55,6 @@ import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import rx.Observable
 
 import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream

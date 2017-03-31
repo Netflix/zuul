@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul.context;
 
-import com.google.common.base.Charsets;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -32,7 +31,6 @@ import rx.Observable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +85,7 @@ public class Debug {
         }
 
         if (message.hasBody()) {
-            String bodyStr = message.getBodyBuffer().toString(Charsets.UTF_8);
+            String bodyStr = message.getBodyAsText();
             Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
         }
     }
@@ -208,7 +206,7 @@ public class Debug {
         if (msg.hasBody()) {
             if (! Debug.debugRequestHeadersOnly(context)) {
                 // Convert body to a String and add to debug log.
-                String body = msg.getBodyBuffer().toString(Charsets.UTF_8);
+                String body = msg.getBodyAsText();
                 Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
             }
         }

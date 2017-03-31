@@ -16,6 +16,7 @@
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.message.ZuulMessage;
+import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 /**
@@ -76,4 +77,11 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      * @return true if this filter needs to read whole body before it can run, false otherwise
      */
     boolean needsBodyBuffered(I input);
+
+    /**
+     * Optionally transform HTTP content chunk received
+     * @param chunk
+     * @return
+     */
+    HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk);
 }
