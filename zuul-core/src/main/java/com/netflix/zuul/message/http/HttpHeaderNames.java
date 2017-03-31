@@ -89,6 +89,8 @@ public class HttpHeaderNames
     public static final HeaderName STRICT_TRANSPORT_SECURITY = HEADER_NAME_CACHE.get("Strict-Transport-Security");
     public static final HeaderName LINK = HEADER_NAME_CACHE.get("Link");
 
+    public static final HeaderName LINK = HEADER_NAME_CACHE.get("Link");
+    
     /**
      * Looks up the name in the cache, and if does not exist, then creates and adds a new one
      * (up to the max cache size).
