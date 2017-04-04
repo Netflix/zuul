@@ -24,8 +24,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.regex.Pattern;
-
 import static org.junit.Assert.*;
 
 /**
@@ -36,7 +34,7 @@ import static org.junit.Assert.*;
 public class HttpUtils
 {
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
-    private static final Pattern RE_MALICIOUS_HEADER_CHARS = Pattern.compile("(\r|\n)");
+    private static final char[] MALICIOUS_HEADER_CHARS = {'\r', '\n'};
 
     /**
      * Get the IP address of client making the request.
@@ -104,12 +102,12 @@ public class HttpUtils
      * @param input - decoded header string
      * @return - clean header string
      */
-    public static String stripMaliciousHeaderChars(String input) {
-
-        if (input == null) {
-            return null;
+    public static String stripMaliciousHeaderChars(String input) 
+    {
+        for (char c : MALICIOUS_HEADER_CHARS) {
+            input = StringUtils.remove(input, c);
         }
-        return RE_MALICIOUS_HEADER_CHARS.matcher(input).replaceAll("");
+        return input;
     }
 
 
