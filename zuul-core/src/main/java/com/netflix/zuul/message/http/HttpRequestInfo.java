@@ -58,6 +58,8 @@ public interface HttpRequestInfo extends ZuulMessage
 
     String getOriginalScheme();
 
+    String getOriginalProtocol();
+
     int getOriginalPort();
 
     String reconstructURI();
