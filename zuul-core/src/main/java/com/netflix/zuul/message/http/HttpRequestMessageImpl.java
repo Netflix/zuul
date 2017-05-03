@@ -480,6 +480,16 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
+    public String getOriginalProtocol()
+    {
+        String proto = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO_VERSION);
+        if (proto == null) {
+            proto = getProtocol();
+        }
+        return proto;
+    }
+
+    @Override
     public int getOriginalPort()
     {
         int port;
