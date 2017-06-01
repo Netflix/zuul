@@ -14,7 +14,7 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 public abstract class HttpAsyncEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage>
 {
     @Override
-    public ZuulMessage getDefaultOutput(HttpRequestMessage request)
+    public HttpResponseMessage getDefaultOutput(HttpRequestMessage request)
     {
         return HttpResponseMessageImpl.defaultErrorResponse(request);
     }

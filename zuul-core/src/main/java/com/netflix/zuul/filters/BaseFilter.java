@@ -79,9 +79,9 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     }
 
     @Override
-    public ZuulMessage getDefaultOutput(I input)
+    public O getDefaultOutput(I input)
     {
-        return input;
+        return (O)input;
     }
 
     @Override

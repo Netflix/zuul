@@ -106,7 +106,6 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void bufferBodyContents(final HttpContent chunk) {
         setHasBody(true);
-//        chunk.retain();
         bodyChunks.add(chunk);
         if (chunk instanceof LastHttpContent) {
             bodyBufferedCompletely = true;

@@ -68,7 +68,7 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      *
      * @return ZuulMessage
      */
-    ZuulMessage getDefaultOutput(I input);
+    O getDefaultOutput(I input);
 
     /**
      * Filter indicates it needs to read and buffer whole body before it can operate on the messages by returning true.
