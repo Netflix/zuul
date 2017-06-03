@@ -23,5 +23,5 @@ package com.netflix.zuul.origins;
 public interface OriginManager
 {
     Origin getOrigin(String name);
-    Origin createOrigin(String name, String vip);
+    Origin createOrigin(String group, String name, String vip);
 }

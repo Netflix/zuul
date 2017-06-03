@@ -99,7 +99,7 @@ public class RibbonOriginManager implements OriginManager
     }
 
     @Override
-    public Origin createOrigin(String name, String vip)
+    public Origin createOrigin(String group, String name, String vip)
     {
         try {
             initOrigin(RIBBON_NAMESPACE.get(), name);
