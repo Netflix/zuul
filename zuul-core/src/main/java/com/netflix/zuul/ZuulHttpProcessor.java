@@ -31,14 +31,14 @@ public class ZuulHttpProcessor<I,O>
 {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulHttpProcessor.class);
 
-    private FilterProcessor filterProcessor;
-    private SessionContextFactory contextFactory;
-    private SessionContextDecorator decorator;
-    private SessionCleaner sessionCleaner;
-    private RequestCompleteHandler requestCompleteHandler;
+    private final FilterProcessor filterProcessor;
+    private final SessionContextFactory<I,O> contextFactory;
+    private final SessionContextDecorator decorator;
+    private final SessionCleaner sessionCleaner;
+    private final RequestCompleteHandler requestCompleteHandler;
 
     /** Ensure that this is initialized. */
-    private FilterFileManager filterManager;
+    private final FilterFileManager filterManager;
 
 
     @Inject
@@ -67,7 +67,7 @@ public class ZuulHttpProcessor<I,O>
             context = decorator.decorate(new SessionContext());
         }
 
-        return Observable.defer((Func0<Observable<ZuulMessage>>) () -> {
+        return Observable.defer(() -> {
 
             // Build a ZuulMessage from the netty request.
             final ZuulMessage request = contextFactory.create(context, nativeRequest, nativeResponse);
@@ -114,7 +114,7 @@ public class ZuulHttpProcessor<I,O>
                         }
                     })
                     ;
-        }).finallyDo(() -> {
+        }).doAfterTerminate(() -> {
             // Cleanup any resources related to this request/response.
             sessionCleaner.cleanup(context);
         });
