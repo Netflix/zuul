@@ -185,9 +185,11 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void disposeBufferedBody() {
         bodyChunks.forEach(chunk -> {
-            final int refCnt = chunk.refCnt();
-            if (refCnt > 0) {
-                chunk.release(refCnt);
+            if (chunk != null) {
+                final int refCnt = chunk.refCnt();
+                if (refCnt > 0) {
+                    chunk.release(refCnt);
+                }
             }
         });
         bodyChunks.clear();
