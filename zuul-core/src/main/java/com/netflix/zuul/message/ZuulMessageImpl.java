@@ -136,9 +136,8 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public String getBodyAsText() {
-        final StringBuilder builder = new StringBuilder();
-        bodyChunks.forEach(chunk -> builder.append(chunk.content().toString(Charsets.UTF_8)));
-        return builder.toString();
+        final byte[] body = getBody();
+        return (body != null && body.length > 0) ? new String(getBody(), Charsets.UTF_8) : null;
     }
 
     @Override
@@ -147,26 +146,34 @@ public class ZuulMessageImpl implements ZuulMessage
             return null;
         }
 
-        final CompositeByteBuf cbuff = Unpooled.compositeBuffer();
-        bodyChunks.forEach(chunk -> {
-            chunk.retain(); //CompositeByteBuf calls release() on ByteBuf
-            cbuff.addComponent(true, chunk.content());
-        });
-        final byte[] bytes = new byte[cbuff.readableBytes()];
-        cbuff.readBytes(bytes);
-        cbuff.release();
-        return bytes;
+        int size = 0;
+        for (final HttpContent chunk : bodyChunks) {
+            size += chunk.content().readableBytes();
+        }
+        final byte[] body = new byte[size];
+        int offset = 0;
+        for (final HttpContent chunk : bodyChunks) {
+            final ByteBuf content = chunk.content();
+            final int len = content.readableBytes();
+            content.getBytes(content.readerIndex(), body, offset, len);
+            offset += len;
+        }
+        return body;
     }
 
     @Override
     public int getBodyLength() {
-        return bodyChunks.stream().mapToInt((chunk) -> chunk.content().readableBytes()).sum();
+        int size = 0;
+        for (final HttpContent chunk : bodyChunks) {
+            size += chunk.content().readableBytes();
+        }
+        return size;
     }
 
     @Override
     public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
         bodyChunks.forEach(chunk -> {
-            if (retainBeyondWrite) {
+            if (retainBeyondWrite && chunk.refCnt() > 0) {
                 chunk.retain();
             }
             channel.write(chunk);
