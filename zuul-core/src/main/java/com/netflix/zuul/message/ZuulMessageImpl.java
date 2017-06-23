@@ -173,7 +173,7 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
         bodyChunks.forEach(chunk -> {
-            if (retainBeyondWrite && chunk.refCnt() > 0) {
+            if (retainBeyondWrite) {
                 chunk.retain();
             }
             channel.write(chunk);
@@ -209,7 +209,7 @@ public class ZuulMessageImpl implements ZuulMessage
         for (int i=0; i < bodyChunks.size(); i++) {
             final HttpContent origChunk = bodyChunks.get(i);
             final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
-            if (filteredChunk != origChunk) {
+            if ((filteredChunk != null) && (filteredChunk != origChunk)) {
                 //filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
                 final int refCnt = origChunk.refCnt();
