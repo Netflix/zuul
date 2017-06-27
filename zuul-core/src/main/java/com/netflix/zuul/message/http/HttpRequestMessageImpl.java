@@ -179,8 +179,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
-        message.writeBufferedBodyContent(channel, retainBeyondWrite);
+    public Iterable<HttpContent> getBodyContents() {
+        return message.getBodyContents();
     }
 
     @Override

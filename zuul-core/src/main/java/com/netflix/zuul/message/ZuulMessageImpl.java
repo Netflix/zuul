@@ -33,6 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -171,13 +172,8 @@ public class ZuulMessageImpl implements ZuulMessage
     }
 
     @Override
-    public void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite) {
-        bodyChunks.forEach(chunk -> {
-            if (retainBeyondWrite) {
-                chunk.retain();
-            }
-            channel.write(chunk);
-        });
+    public Iterable<HttpContent> getBodyContents() {
+        return Collections.unmodifiableList(bodyChunks);
     }
 
     @Override

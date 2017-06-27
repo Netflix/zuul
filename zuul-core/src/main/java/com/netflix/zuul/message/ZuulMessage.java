@@ -58,11 +58,11 @@ public interface ZuulMessage extends Cloneable
 
     void bufferBodyContents(HttpContent chunk);
 
+    Iterable<HttpContent> getBodyContents();
+
     boolean finishBufferedBodyIfIncomplete();
 
     boolean hasCompleteBody();
-
-    void writeBufferedBodyContent(Channel channel, boolean retainBeyondWrite);
 
     void runBufferedBodyContentThroughFilter(ZuulFilter filter);
 
