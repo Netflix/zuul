@@ -108,7 +108,7 @@ public class ZuulMessageImpl implements ZuulMessage
     public void bufferBodyContents(final HttpContent chunk) {
         setHasBody(true);
         bodyChunks.add(chunk);
-        if (chunk instanceof LastHttpContent) {
+        if (chunk instanceof  LastHttpContent) {
             bodyBufferedCompletely = true;
         }
     }
@@ -188,11 +188,8 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void disposeBufferedBody() {
         bodyChunks.forEach(chunk -> {
-            if (chunk != null) {
-                final int refCnt = chunk.refCnt();
-                if (refCnt > 0) {
-                    chunk.release(refCnt);
-                }
+            if ((chunk != null) && (chunk.refCnt() > 0)) {
+                chunk.release();
             }
         });
         bodyChunks.clear();
