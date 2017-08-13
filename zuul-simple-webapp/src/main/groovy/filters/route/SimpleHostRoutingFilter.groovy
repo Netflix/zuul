@@ -224,7 +224,7 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         switch (verb) {
             case 'POST':
                 httpRequest = new HttpPost(uri + getQueryString())
-                InputStreamEntity entity = new InputStreamEntity(requestEntity)
+                InputStreamEntity entity = new InputStreamEntity(requestEntity, request.getContentLength())
                 httpRequest.setEntity(entity)
                 break
             case 'PUT':
@@ -430,5 +430,3 @@ class SimpleHostRoutingFilter extends ZuulFilter {
         }
     }
 }
-
-
