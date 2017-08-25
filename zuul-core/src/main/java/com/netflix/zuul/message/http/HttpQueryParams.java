@@ -64,7 +64,7 @@ public class HttpQueryParams implements Cloneable
         while (st.hasMoreTokens()) {
             String s = st.nextToken();
             i = s.indexOf("=");
-            if (i > 0 && s.length() > i + 1) {
+            if (i > 0 && s.length() >= i + 1) {
                 String name = s.substring(0, i);
                 String value = s.substring(i + 1);
 
@@ -282,6 +282,34 @@ public class HttpQueryParams implements Cloneable
             qp2.add("k2", "v2");
 
             assertEquals(qp1, qp2);
+        }
+
+        @Test
+        public void testParseKeysWithoutValues()
+        {
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("k1", "");
+            expected.add("k2", "v2");
+            expected.add("k3", "");
+
+            HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2&k3=");
+
+            assertEquals(expected, actual);
+
+            assertEquals("k1=&k2=v2&k3=", actual.toEncodedString());
+        }
+
+        @Test
+        public void testParseKeyWithoutValue()
+        {
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("k1", "");
+
+            HttpQueryParams actual = HttpQueryParams.parse("k1=");
+
+            assertEquals(expected, actual);
+
+            assertEquals("k1=", actual.toEncodedString());
         }
     }
 }
