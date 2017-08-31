@@ -15,12 +15,24 @@
  */
 package com.netflix.zuul.init;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.reflect.ClassPath;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.netflix.config.ConfigurationManager;
-import com.netflix.zuul.FilterFileManager;
+import com.netflix.zuul.DynamicCodeCompiler;
+import com.netflix.zuul.FilterFactory;
+import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
 import com.netflix.zuul.FilterProcessor;
 import com.netflix.zuul.FilterProcessorImpl;
 import com.netflix.zuul.FilterUsageNotifier;
+import com.netflix.zuul.guice.GuiceFilterFactory;
+import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.groovy.GroovyCompiler;
+import java.io.IOException;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +46,8 @@ public class ZuulFiltersModule extends AbstractModule
 {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
 
+    private static Predicate<String> blank = String::isEmpty;
+
     @Override
     protected void configure() {
         LOG.info("Starting Groovy Filter file manager");
@@ -41,34 +55,82 @@ public class ZuulFiltersModule extends AbstractModule
         // Choose the FilterProcessor impl.
         bind(FilterProcessor.class).to(FilterProcessorImpl.class);
 
-        // Get filter directories.
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-        String[] filterLocations = config.getStringArray("zuul.filters.locations");
-        if (filterLocations == null || filterLocations.length == 0) {
-            // Default to these locations.
-            filterLocations = "inbound,outbound,endpoint".split(",");
-        }
-        LOG.info("Using filter locations: ");
-        for (String location : filterLocations) {
-            LOG.info("  " + location);
-        }
+        bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
+        bind(FilterFactory.class).to(GuiceFilterFactory.class);
 
-        // Get compiled filter classes to be found on classpath.
-        String[] filterClassNames = config.getStringArray("zuul.filters.classes");
-        if (filterClassNames == null) {
-            filterClassNames = new String[0];
-        }
-        LOG.info("Using filter classnames: ");
-        for (String className : filterClassNames) {
-            LOG.info("  " + className);
-        }
-
-        // Init the FilterStore.
-        FilterFileManager.FilterFileManagerConfig filterConfig =
-                new FilterFileManager.FilterFileManagerConfig(filterLocations, filterClassNames, 5);
-        bind(FilterFileManager.FilterFileManagerConfig.class).toInstance(filterConfig);
         bind(FilterUsageNotifier.class).to(FilterProcessorImpl.BasicFilterUsageNotifier.class);
 
         LOG.info("Groovy Filter file manager started");
+    }
+
+    @Provides
+    FilterFileManagerConfig provideFilterFileManagerConfig() {
+        // Get filter directories.
+        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+
+        String[] filterLocations = findFilterLocations(config);
+        String[] filterClassNames = findClassNames(config);
+
+        // Init the FilterStore.
+        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5);
+        return filterConfig;
+    }
+
+    // Get compiled filter classes to be found on classpath.
+    @VisibleForTesting
+    String[] findClassNames(AbstractConfiguration config) {
+
+        // Find individually-specified filter classes.
+        String filterClassNamesStr = config.getString("zuul.filters.classes", "").trim();
+        Stream<String> classNameStream = Pattern.compile(",")
+                .splitAsStream(filterClassNamesStr)
+                .map(String::trim)
+                .filter(blank.negate());
+
+        // Find filter classes in specified packages.
+        String packageNamesStr = config.getString("zuul.filters.packages", "").trim();
+        ClassPath cp;
+        try {
+            cp = ClassPath.from(this.getClass().getClassLoader());
+        } catch (IOException e) {
+            throw new RuntimeException("Error attempting to read classpath to find filters!", e);
+        }
+        Stream<String> packageStream = Pattern.compile(",")
+                .splitAsStream(packageNamesStr)
+                .map(String::trim)
+                .filter(blank.negate())
+                .flatMap( packageName -> cp.getTopLevelClasses(packageName).stream())
+                .map(ClassPath.ClassInfo::load)
+                .filter(ZuulFilter.class::isAssignableFrom)
+                .map(Class::getCanonicalName);
+
+
+        String[] filterClassNames = Stream.concat(classNameStream, packageStream).toArray(String[]::new);
+        if (filterClassNames.length != 0) {
+            LOG.info("Using filter classnames: ");
+            for (String location : filterClassNames) {
+                LOG.info("  " + location);
+            }
+        }
+
+        return filterClassNames;
+    }
+
+    @VisibleForTesting
+    String[] findFilterLocations(AbstractConfiguration config) {
+        String filterLocationsStr = config.getString("zuul.filters.locations", "inbound,outbound,endpoint").trim();
+        String[] filterLocations = Pattern.compile(",")
+                .splitAsStream(filterLocationsStr)
+                .map(String::trim)
+                .filter(blank.negate())
+                .toArray(String[]::new);
+
+        if (filterLocations.length != 0) {
+            LOG.info("Using filter locations: ");
+            for (String location : filterLocations) {
+                LOG.info("  " + location);
+            }
+        }
+        return filterLocations;
     }
 }
