@@ -35,9 +35,6 @@ dependencies {
     compile 'org.mockito:mockito-all:1.9.+'
 
     testCompile 'com.netflix.governator:governator-test-junit:1.+'
-    testCompile 'com.netflix.archaius:archaius2-test:2.+'
-    testCompile 'com.netflix.archaius:archaius2-guice:2.+'
-    testCompile 'com.netflix.archaius:archaius2-archaius1-bridge:2.+'
 }
 
 jar {
