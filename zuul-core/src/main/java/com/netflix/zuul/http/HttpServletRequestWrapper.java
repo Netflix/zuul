@@ -284,7 +284,10 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         String enc = req.getCharacterEncoding();
         if (enc == null)
             enc = "UTF-8";
-        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(contentData), enc));
+        byte[] data = contentData;
+        if (data == null)
+            data = new byte[0];
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(data), enc));
     }
 
     /**
