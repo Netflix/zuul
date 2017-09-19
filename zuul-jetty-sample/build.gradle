@@ -9,6 +9,6 @@ dependencies {
     compile 'org.mortbay.jetty.alpn:alpn-boot:8.1.3.v20150130'
 
     compile "junit:junit:latest.release"
-    compile 'org.mockito:mockito-all:1.9.+'
+    compile 'org.mockito:mockito-core:1.9.+'
 }
 
