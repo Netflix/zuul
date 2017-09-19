@@ -17,6 +17,7 @@ package com.netflix.zuul.filters;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.zuul.message.ZuulMessage;
+import io.netty.handler.codec.http.HttpContent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -78,9 +79,9 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     }
 
     @Override
-    public ZuulMessage getDefaultOutput(I input)
+    public O getDefaultOutput(I input)
     {
-        return input;
+        return (O)input;
     }
 
     @Override
@@ -93,6 +94,16 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     public String toString()
     {
         return String.valueOf(filterType()) + ":" + String.valueOf(filterName());
+    }
+
+    @Override
+    public boolean needsBodyBuffered(I input) {
+        return false;
+    }
+
+    @Override
+    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
+        return chunk;
     }
 
     public static class TestUnit {

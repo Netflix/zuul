@@ -18,14 +18,15 @@ package com.netflix.zuul.message.http;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
-import com.netflix.zuul.stats.Timing;
-import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,9 +35,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
 
-import java.nio.charset.Charset;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -75,7 +75,9 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
     {
-        return new HttpResponseMessageImpl(request.getContext(), request, 500);
+        final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
+        resp.finishBufferedBodyIfIncomplete();
+        return resp;
     }
 
     @Override
@@ -97,57 +99,68 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public byte[] getBody()
-    {
-        return message.getBody();
-    }
-
-    @Override
-    public void setBody(byte[] body)
-    {
-        message.setBody(body);
-    }
-
-    @Override
-    public boolean hasBody()
-    {
-        return message.hasBody();
-    }
-    
-    @Override
-    public void setHasBody(boolean hasBody)
-    {
+    public void setHasBody(boolean hasBody) {
         message.setHasBody(hasBody);
     }
 
     @Override
-    public void setBodyAsText(String bodyText, Charset cs)
-    {
-        message.setBodyAsText(bodyText, cs);
+    public boolean hasBody() {
+        return message.hasBody();
     }
 
     @Override
-    public void setBodyAsText(String bodyText)
-    {
+    public void bufferBodyContents(HttpContent chunk) {
+        message.bufferBodyContents(chunk);
+    }
+
+    @Override
+    public void setBodyAsText(String bodyText) {
         message.setBodyAsText(bodyText);
     }
 
     @Override
-    public boolean isBodyBuffered()
-    {
-        return message.isBodyBuffered();
+    public void setBody(byte[] body) {
+        message.setBody(body);
     }
 
     @Override
-    public Observable<ByteBuf> getBodyStream()
-    {
-        return message.getBodyStream();
+    public String getBodyAsText() {
+        return message.getBodyAsText();
     }
 
     @Override
-    public void setBodyStream(Observable<ByteBuf> bodyStream)
-    {
-        message.setBodyStream(bodyStream);
+    public byte[] getBody() {
+        return message.getBody();
+    }
+
+    @Override
+    public int getBodyLength() {
+        return message.getBodyLength();
+    }
+
+    @Override
+    public boolean hasCompleteBody() {
+        return message.hasCompleteBody();
+    }
+
+    @Override
+    public boolean finishBufferedBodyIfIncomplete() {
+        return message.finishBufferedBodyIfIncomplete();
+    }
+
+    @Override
+    public Iterable<HttpContent> getBodyContents() {
+        return message.getBodyContents();
+    }
+
+    @Override
+    public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
+        message.runBufferedBodyContentThroughFilter(filter);
+    }
+
+    @Override
+    public void disposeBufferedBody() {
+        message.disposeBufferedBody();
     }
 
     @Override
@@ -172,18 +185,6 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     @Override
     public int getMaxBodySize() {
         return MAX_BODY_SIZE_PROP.get();
-    }
-
-    @Override
-    public Observable<byte[]> bufferBody()
-    {
-        // Wrap the buffering of response body in a timer.
-        Timing timing = getContext().getTimings().getResponseBodyRead();
-        timing.start();
-        return message.bufferBody()
-                .finallyDo(() -> {
-                    timing.end();
-                });
     }
 
     @Override

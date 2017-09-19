@@ -34,7 +34,7 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 public abstract class HttpSyncEndpoint extends SyncEndpoint<HttpRequestMessage, HttpResponseMessage>
 {
     @Override
-    public ZuulMessage getDefaultOutput(HttpRequestMessage request)
+    public HttpResponseMessage getDefaultOutput(HttpRequestMessage request)
     {
         return HttpResponseMessageImpl.defaultErrorResponse(request);
     }

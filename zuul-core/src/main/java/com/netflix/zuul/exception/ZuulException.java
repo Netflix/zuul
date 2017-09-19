@@ -52,8 +52,8 @@ public class ZuulException extends RuntimeException
         this.errorCause = errorCause;
     }
 
-    public ZuulException(Throwable throwable, String sMessage) {
-        super(sMessage, throwable);
+    public ZuulException(Throwable throwable, String sMessage, boolean noStackTrace) {
+        super(sMessage, throwable, noStackTrace, ! noStackTrace);
         this.errorCause = "GENERAL";
     }
 

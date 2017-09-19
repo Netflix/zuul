@@ -33,7 +33,7 @@ public abstract class HttpOutboundFilter extends BaseFilter<HttpResponseMessage,
     }
 
     @Override
-    public ZuulMessage getDefaultOutput(HttpResponseMessage input)
+    public HttpResponseMessage getDefaultOutput(HttpResponseMessage input)
     {
         return input;
     }

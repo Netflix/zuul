@@ -21,10 +21,15 @@
 package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * User: Mike Smith
@@ -39,29 +44,36 @@ public interface ZuulMessage extends Cloneable
 
     void setHeaders(Headers newHeaders);
 
+    boolean hasBody();
+
+    void setHasBody(boolean hasBody);
+
     byte[] getBody();
+
+    int getBodyLength();
 
     void setBody(byte[] body);
 
-    boolean hasBody();
-
-    void setHasBody(boolean hasbody);
-
-    void setBodyAsText(String bodyText, Charset cs);
-
     void setBodyAsText(String bodyText);
 
-    Observable<byte[]> bufferBody();
+    void bufferBodyContents(HttpContent chunk);
+
+    Iterable<HttpContent> getBodyContents();
+
+    boolean finishBufferedBodyIfIncomplete();
+
+    boolean hasCompleteBody();
+
+    void runBufferedBodyContentThroughFilter(ZuulFilter filter);
+
+    void disposeBufferedBody();
+
+    String getBodyAsText();
 
     int getMaxBodySize();
-
-    boolean isBodyBuffered();
-
-    Observable<ByteBuf> getBodyStream();
-
-    void setBodyStream(Observable<ByteBuf> bodyStream);
 
     ZuulMessage clone();
 
     String getInfoForLogging();
+
 }

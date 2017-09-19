@@ -257,13 +257,13 @@ public class FilterProcessorImpl implements FilterProcessor
             String endpointName = context.getEndpoint();
             if (endpointName == null) {
                 context.setShouldSendErrorResponse(true);
-                context.setError(new ZuulException("No endpoint filter chosen!"));
+                context.setError(new ZuulException("No endpoint filter chosen!", true));
                 return Observable.just(defaultErrorResponse(request));
             }
             ZuulFilter endpointFilter = filterLoader.getFilterByNameAndType(endpointName,FilterType.ENDPOINT);
             if (endpointFilter == null) {
                 context.setShouldSendErrorResponse(true);
-                context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName));
+                context.setError(new ZuulException("No endpoint filter found of chosen name! name=" + endpointName, true));
                 return Observable.just(defaultErrorResponse(request));
             }
 
