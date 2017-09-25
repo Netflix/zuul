@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
  * filterType() - to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
  * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
  * We also support a "static" type for static responses see  StaticResponseFilter.
- * Any filterType made be created or added and run by calling FilterProcessor.runFilters(type)
  * <p/>
  * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
  * important for a filter. filterOrders do not need to be sequential.
