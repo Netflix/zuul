@@ -27,6 +27,6 @@ import rx.Observable;
 public interface Origin {
     String getName();
     boolean isAvailable();
-    boolean isWarmServerAvailable();
+    boolean isCold();
     Observable<HttpResponseMessage> request(HttpRequestMessage requestMsg);
 }
