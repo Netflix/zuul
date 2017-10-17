@@ -113,20 +113,34 @@ public class HttpUtils
 
     public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg)
     {
-        boolean hasNonZeroValue = false;
-        String contentLengthValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
+        final Integer contentLengthVal = getContentLengthIfPresent(msg);
+        return (contentLengthVal != null) && (contentLengthVal.intValue() > 0);
+    }
+
+    public static Integer getContentLengthIfPresent(ZuulMessage msg)
+    {
+        final String contentLengthValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
         if (StringUtils.isNotEmpty(contentLengthValue) && StringUtils.isNumeric(contentLengthValue)) {
-            int value = 0;
             try {
-                value = Integer.parseInt(contentLengthValue);
+                return Integer.valueOf(contentLengthValue);
             }
             catch (NumberFormatException e) {
                 LOG.info("Invalid Content-Length header value on request. " +
                         "value = " + String.valueOf(contentLengthValue));
             }
-            hasNonZeroValue = value > 0;
         }
-        return hasNonZeroValue;
+        return null;
+    }
+
+    public static Integer getBodySizeIfKnown(ZuulMessage msg) {
+        final Integer bodySize = getContentLengthIfPresent(msg);
+        if (bodySize != null) {
+            return bodySize.intValue();
+        }
+        if (msg.hasCompleteBody()) {
+            return msg.getBodyLength();
+        }
+        return null;
     }
 
     public static boolean hasChunkedTransferEncodingHeader(ZuulMessage msg)

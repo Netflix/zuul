@@ -1,5 +1,6 @@
 package com.netflix.zuul.filters
 
+import com.netflix.config.CachedDynamicIntProperty
 import com.netflix.zuul.bytebuf.ByteBufUtils
 import com.netflix.zuul.context.SessionContext
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
@@ -20,18 +21,15 @@ import org.apache.commons.io.IOUtils
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.mockito.runners.MockitoJUnitRunner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import rx.Observable
 
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 
-import static junit.framework.Assert.assertEquals
-import static junit.framework.Assert.assertFalse
-import static junit.framework.Assert.assertNull
-import static junit.framework.Assert.assertTrue
+import static junit.framework.Assert.*
 
 /**
  * General-purpose filter for gzipping/ungzipping response bodies if requested/needed.
@@ -44,10 +42,13 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
 {
     private static final Logger LOG = LoggerFactory.getLogger(GZipResponseFilter.class);
 
-    private static final String OVERRIDE_GZIP_REQUESTED = "overrideGzipRequested";
-    private static final String GZIP_RESP_IF_ORIGIN_DIDNT = "gzipResponseIfOriginDidnt";
-    private static final String SHOULD_UNGZIP_RESPONSE = "shouldungzipresponse";
-    private static final String SHOULD_GZIP_RESPONSE = "shouldgzipresponse";
+    private static final String OVERRIDE_GZIP_REQUESTED = "overrideGzipRequested"
+    private static final String GZIP_RESP_IF_ORIGIN_DIDNT = "gzipResponseIfOriginDidnt"
+    private static final String SHOULD_UNGZIP_RESPONSE = "shouldungzipresponse"
+    private static final String SHOULD_GZIP_RESPONSE = "shouldgzipresponse"
+    // https://webmasters.stackexchange.com/questions/31750/what-is-recommended-minimum-object-size-for-gzip-performance-benefits
+    private static final CachedDynamicIntProperty MIN_BODY_SIZE_FOR_GZIP =
+            new CachedDynamicIntProperty('zuul.min.gzip.body.size', 860)
 
     @Override
     int filterOrder() {
@@ -57,7 +58,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
     @Override
     boolean shouldFilter(HttpResponseMessage response) {
         if (! response.hasBody()) {
-            return false;
+            return false
         }
 
         final HttpRequestInfo request = response.getInboundRequest()
@@ -83,11 +84,16 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
 
         // Decide what to do.
         boolean shouldUnGzip = isResponseGzipped && !isGzipRequested
-        ctx.set(SHOULD_UNGZIP_RESPONSE, shouldUnGzip);
-        boolean shouldGzip = gzipResponseIfOriginDidnt && isGzipRequested && !isResponseGzipped
-        ctx.set(SHOULD_GZIP_RESPONSE, shouldGzip);
+        ctx.set(SHOULD_UNGZIP_RESPONSE, shouldUnGzip)
+        boolean shouldGzip = gzipResponseIfOriginDidnt && isGzipRequested && !isResponseGzipped && isRightSizeForGzip(response)
+        ctx.set(SHOULD_GZIP_RESPONSE, shouldGzip)
 
-        return (shouldGzip || shouldUnGzip);
+        return (shouldGzip || shouldUnGzip)
+    }
+
+    boolean isRightSizeForGzip(HttpResponseMessage response) {
+        final Integer bodySize = HttpUtils.getBodySizeIfKnown(response)
+        return (bodySize != null) && (bodySize.intValue() >= MIN_BODY_SIZE_FOR_GZIP.get())
     }
 
     @Override
@@ -165,14 +171,14 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit extends BaseFilterTest {
+    static class TestUnit extends BaseFilterTest {
         GZipResponseFilter filter
         HttpResponseMessage response
 
         @Before
-        public void setup() {
+        void setup() {
             super.setup()
-            filter = new GZipResponseFilter()
+            filter = Mockito.spy(new GZipResponseFilter())
             response = new HttpResponseMessageImpl(context, request, 99)
         }
 
@@ -185,18 +191,17 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         }
 
         @Test
-        public void prepareResponseBody_NeedsGZipping() {
+        void prepareResponseBody_NeedsGZipping() {
             originalRequestHeaders.set("Accept-Encoding", "gzip")
-
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
             response.getHeaders().set("Content-Length", Integer.toString(originBody.length))
-
-            assertTrue(filter.shouldFilter(response));
+            Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(Boolean.TRUE) //Force GZip for small response
+            assertTrue(filter.shouldFilter(response))
 
             HttpResponseMessage result = filter.apply(response)
             HttpContent bodyChunk = filter.processContentChunk(response, toHttpContent(originBody))
-            byte[] body = fromHttpContent(bodyChunk);
+            byte[] body = fromHttpContent(bodyChunk)
 
             // Check body is a gzipped version of the origin body.
             byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(body)).bytes
@@ -209,7 +214,16 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         }
 
         @Test
-        public void prepareResponseBody_NeedsUnGZipping() {
+        void prepareResponseBody_NeedsGZipping_butTooSmall() {
+            originalRequestHeaders.set("Accept-Encoding", "gzip")
+            byte[] originBody = "blah".bytes
+            response.setBody(originBody)
+            response.getHeaders().set("Content-Length", Integer.toString(originBody.length))
+            assertFalse(filter.shouldFilter(response))
+        }
+
+        @Test
+        void prepareResponseBody_NeedsUnGZipping() {
             originalRequestHeaders.set("Accept-Encoding", "identity")
             response.getHeaders().set("Content-Encoding", "gzip")
 
@@ -217,7 +231,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
             response.setBody(originBody)
             response.getHeaders().set("Content-Length", Integer.toString(originBody.length))
 
-            assertTrue(filter.shouldFilter(response));
+            assertTrue(filter.shouldFilter(response))
 
             HttpResponseMessage result = filter.apply(response)
             HttpContent bodyChunk = filter.processContentChunk(response, toHttpContent(originBody))
@@ -233,18 +247,18 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         }
 
         @Test
-        public void prepareResponseBody_NeedsGZipping_Overridden() {
+        void prepareResponseBody_NeedsGZipping_Overridden() {
             context.set(OVERRIDE_GZIP_REQUESTED, true)
 
             byte[] originBody = "blah".bytes
             response.setBody(originBody)
             response.getHeaders().set("Content-Length", Integer.toString(originBody.length))
-
-            assertTrue(filter.shouldFilter(response));
+            Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(Boolean.TRUE) //Force GZip for small response
+            assertTrue(filter.shouldFilter(response))
 
             HttpResponseMessage result = filter.apply(response)
             HttpContent bodyChunk = filter.processContentChunk(response, toHttpContent(originBody))
-            byte[] body = fromHttpContent(bodyChunk);
+            byte[] body = fromHttpContent(bodyChunk)
 
             // Check body is a gzipped version of the origin body.
             byte[] unzippedBytes = new GZIPInputStream(new ByteArrayInputStream(body)).bytes
@@ -257,7 +271,7 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
         }
 
         @Test
-        public void prepareResponseBody_NeedsGZipping_OverriddenNot() {
+        void prepareResponseBody_NeedsGZipping_OverriddenNot() {
             originalRequestHeaders.set("Accept-Encoding", "gzip")
             context.set(OVERRIDE_GZIP_REQUESTED, false)
 
