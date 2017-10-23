@@ -33,12 +33,12 @@ import static com.netflix.client.http.HttpRequest.Verb;
  */
 public class RibbonCommand<T extends AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> extends HystrixCommand<HttpResponse> {
 
-    T restClient;
-    Verb verb;
-    URI uri;
-    MultivaluedMap<String, String> headers;
-    MultivaluedMap<String, String> params;
-    InputStream requestEntity;
+    private final T restClient;
+    private final Verb verb;
+    private final URI uri;
+    private final MultivaluedMap<String, String> headers;
+    private final MultivaluedMap<String, String> params;
+    private final InputStream requestEntity;
 
 
     public RibbonCommand(T restClient,
@@ -171,21 +171,24 @@ public class RibbonCommand<T extends AbstractLoadBalancerAwareClient<HttpRequest
         
         @Test
         public void testConstruction() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand(null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>(null, null, localhost, null, null, null);
             Assert.assertEquals("default", rc.getCommandGroup().name());
             Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
         }
         
         @Test
         public void testConstructionWithCommandKey() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand("myCommand", null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>("myCommand", null, null, localhost, null, null, null);
             Assert.assertEquals("myCommand", rc.getCommandGroup().name());
             Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
         }
         
         @Test
         public void testConstructionWithGroupKeyAndCommandKey() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand("myGroup", "myCommand", null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>("myGroup", "myCommand", null, null, localhost, null, null, null);
             Assert.assertEquals("myGroup", rc.getCommandGroup().name());
             Assert.assertEquals("myCommand", rc.getCommandKey().name());
         }
