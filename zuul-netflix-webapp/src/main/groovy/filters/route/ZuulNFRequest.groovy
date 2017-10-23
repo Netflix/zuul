@@ -15,6 +15,7 @@
  */
 package filters.route
 
+import com.netflix.client.AbstractLoadBalancerAwareClient
 import com.netflix.client.ClientException
 import com.netflix.client.ClientFactory
 import com.netflix.client.IClient
@@ -144,7 +145,7 @@ class ZuulNFRequest extends ZuulFilter {
         route = route.replace("/", "_")
 
 
-        RibbonCommand command = new RibbonCommand(restClient, verb, uri, headers, params, requestEntity);
+        RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> command = new RibbonCommand<>(restClient, verb, uri, headers, params, requestEntity);
         try {
             HttpResponse response = command.execute();
             return response

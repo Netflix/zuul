@@ -8,16 +8,14 @@ import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandProperties;
 import com.netflix.client.AbstractLoadBalancerAwareClient;
+import com.netflix.client.ClientException;
 import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.context.NFRequestContext;
-import com.netflix.zuul.dependency.httpclient.hystrix.HostCommand;
 
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -33,17 +31,17 @@ import static com.netflix.client.http.HttpRequest.Verb;
  *         Date: 2/6/12
  *         Time: 2:54 PM
  */
-public class RibbonCommand extends HystrixCommand<HttpResponse> {
+public class RibbonCommand<T extends AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> extends HystrixCommand<HttpResponse> {
 
-    AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient;
-    Verb verb;
-    URI uri;
-    MultivaluedMap<String, String> headers;
-    MultivaluedMap<String, String> params;
-    InputStream requestEntity;
+    private final T restClient;
+    private final Verb verb;
+    private final URI uri;
+    private final MultivaluedMap<String, String> headers;
+    private final MultivaluedMap<String, String> params;
+    private final InputStream requestEntity;
 
 
-    public RibbonCommand(AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
+    public RibbonCommand(T restClient,
                          Verb verb,
                          String uri,
                          MultivaluedMap<String, String> headers,
@@ -54,7 +52,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
 
     public RibbonCommand(String commandKey,
-                         AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
+                         T restClient,
                          Verb verb,
                          String uri,
                          MultivaluedMap<String, String> headers,
@@ -67,7 +65,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
     
     public RibbonCommand(String groupKey, 
                     String commandKey,
-                    AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse> restClient,
+                    T restClient,
                     Verb verb,
                     String uri,
                     MultivaluedMap<String, String> headers,
@@ -88,6 +86,30 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
         this.headers = headers;
         this.params = params;
         this.requestEntity = requestEntity;
+    }
+
+    protected T getRestClient() {
+        return restClient;
+    }
+
+    protected Verb getVerb() {
+        return verb;
+    }
+
+    protected URI getUri() {
+        return uri;
+    }
+
+    protected MultivaluedMap<String, String> getHeaders() {
+        return headers;
+    }
+
+    protected MultivaluedMap<String, String> getParams() {
+        return params;
+    }
+
+    protected InputStream getRequestEntity() {
+        return requestEntity;
     }
 
     @Override
@@ -125,7 +147,7 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
         HttpRequest httpClientRequest = builder.build();
 
-        HttpResponse response = restClient.executeWithLoadBalancer(httpClientRequest);
+        HttpResponse response = execute(httpClientRequest);
         context.setZuulResponse(response);
 
         // Here we want to handle the case where this hystrix command timed-out before the
@@ -138,8 +160,10 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
 
         return response;
     }
-
-
+    
+    protected HttpResponse execute(HttpRequest httpClientRequest) throws ClientException {
+        return restClient.executeWithLoadBalancer(httpClientRequest);
+    }
     
     public static class UnitTest {
         
@@ -147,21 +171,24 @@ public class RibbonCommand extends HystrixCommand<HttpResponse> {
         
         @Test
         public void testConstruction() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand(null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>(null, null, localhost, null, null, null);
             Assert.assertEquals("default", rc.getCommandGroup().name());
             Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
         }
         
         @Test
         public void testConstructionWithCommandKey() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand("myCommand", null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>("myCommand", null, null, localhost, null, null, null);
             Assert.assertEquals("myCommand", rc.getCommandGroup().name());
             Assert.assertEquals(RibbonCommand.class.getSimpleName(), rc.getCommandKey().name());
         }
         
         @Test
         public void testConstructionWithGroupKeyAndCommandKey() throws URISyntaxException {
-            RibbonCommand rc = new RibbonCommand("myGroup", "myCommand", null, null, localhost, null, null, null);
+            RibbonCommand<AbstractLoadBalancerAwareClient<HttpRequest, HttpResponse>> rc
+                = new RibbonCommand<>("myGroup", "myCommand", null, null, localhost, null, null, null);
             Assert.assertEquals("myGroup", rc.getCommandGroup().name());
             Assert.assertEquals("myCommand", rc.getCommandKey().name());
         }
