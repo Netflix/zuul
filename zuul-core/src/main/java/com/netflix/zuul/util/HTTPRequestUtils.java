@@ -87,9 +87,8 @@ public class HTTPRequestUtils {
         String tokenized[] = xForwardedFor.split(",");
         if (tokenized.length == 0) {
             return null;
-        } else {
-            return tokenized[0].trim();
-        }
+        } 
+        return tokenized[0].trim();
     }
 
     /**
