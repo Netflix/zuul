@@ -17,6 +17,7 @@ package com.netflix.zuul;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.monitoring.MonitoringHelper;
 import com.netflix.zuul.monitoring.Tracer;
 import com.netflix.zuul.monitoring.TracerFactory;
 import org.junit.Before;
@@ -153,6 +154,7 @@ public abstract class ZuulFilter implements IZuulFilter, Comparable<ZuulFilter> 
         @Before
         public void before() {
             MockitoAnnotations.initMocks(this);
+            MonitoringHelper.initMocks();
         }
 
         @Test
