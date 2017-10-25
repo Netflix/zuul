@@ -93,7 +93,8 @@ class GZipResponseFilter extends HttpOutboundSyncFilter
 
     boolean isRightSizeForGzip(HttpResponseMessage response) {
         final Integer bodySize = HttpUtils.getBodySizeIfKnown(response)
-        return (bodySize != null) && (bodySize.intValue() >= MIN_BODY_SIZE_FOR_GZIP.get())
+        //bodySize == null is chunked encoding which is eligible for gzip compression
+        return (bodySize == null) || (bodySize.intValue() >= MIN_BODY_SIZE_FOR_GZIP.get())
     }
 
     @Override
