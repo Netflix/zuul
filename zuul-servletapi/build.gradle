@@ -1,7 +1,0 @@
-
-dependencies {
-    compile project(':zuul-core')
-
-    compile "junit:junit:latest.release"
-    compile 'org.mockito:mockito-core:1.9.+'
-}
