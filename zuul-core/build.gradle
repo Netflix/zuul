@@ -28,11 +28,13 @@ dependencies {
     compile "io.netty:netty-buffer:${versions_netty}"
 
     // To ensure that zuul-netty gets this correct later version.
-    compile "com.netflix.governator:governator:1.6.+"
-    compile "com.netflix.governator:governator-archaius:1.6.+"
+    compile "com.netflix.governator:governator:1.+"
+    compile "com.netflix.governator:governator-archaius:1.+"
 
     compile "junit:junit:latest.release"
     compile 'org.mockito:mockito-core:1.9.+'
+
+    testCompile 'com.netflix.governator:governator-test-junit:1.+'
 }
 
 jar {
