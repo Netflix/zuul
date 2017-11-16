@@ -21,6 +21,7 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import io.netty.buffer.*;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.DefaultHttpContent;
@@ -113,14 +114,21 @@ public class ZuulMessageImpl implements ZuulMessage
         }
     }
 
+    private void setContentLength(int length) {
+        headers.remove(HttpHeaderNames.TRANSFER_ENCODING);
+        headers.set(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(length));
+    }
+
     @Override
     public void setBodyAsText(String bodyText) {
         disposeBufferedBody();
         if (! Strings.isNullOrEmpty(bodyText)) {
             final ByteBuf content = Unpooled.copiedBuffer(bodyText.getBytes(Charsets.UTF_8));
             bufferBodyContents(new DefaultLastHttpContent(content));
+            setContentLength(bodyText.getBytes(CS_UTF8).length);
         } else {
             bufferBodyContents(new DefaultLastHttpContent());
+            setContentLength(0);
         }
     }
 
@@ -130,8 +138,10 @@ public class ZuulMessageImpl implements ZuulMessage
         if (body != null && body.length > 0) {
             final ByteBuf content = Unpooled.copiedBuffer(body);
             bufferBodyContents(new DefaultLastHttpContent(content));
+            setContentLength(body.length);
         } else {
             bufferBodyContents(new DefaultLastHttpContent());
+            setContentLength(0);
         }
     }
 
