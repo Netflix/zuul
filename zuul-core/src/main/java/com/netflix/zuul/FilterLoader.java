@@ -18,6 +18,7 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.*;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.groovy.GroovyCompiler;
+import javax.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -56,35 +57,22 @@ public class FilterLoader
     private final ConcurrentHashMap<FilterType, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, ZuulFilter> filtersByNameAndType = new ConcurrentHashMap<>();
 
-    private FilterRegistry filterRegistry = new FilterRegistry();
+    private final FilterRegistry filterRegistry;
 
-    private DynamicCodeCompiler compiler = new GroovyCompiler();
+    private final DynamicCodeCompiler compiler;
     
-    static FilterFactory FILTER_FACTORY = new DefaultFilterFactory();
+    private final FilterFactory filterFactory;
 
-    /**
-     * Sets a Dynamic Code Compiler
-     *
-     * @param compiler
-     */
-    public void setCompiler(DynamicCodeCompiler compiler) {
+    public FilterLoader() {
+        this(new FilterRegistry(), new GroovyCompiler(), new DefaultFilterFactory());
+    }
+
+    @Inject
+    public FilterLoader(FilterRegistry filterRegistry, DynamicCodeCompiler compiler, FilterFactory filterFactory) {
+        this.filterRegistry = filterRegistry;
         this.compiler = compiler;
+        this.filterFactory = filterFactory;
     }
-
-    // overidden by tests
-    public void setFilterRegistry(FilterRegistry r) {
-        this.filterRegistry = r;
-    }
-
-    /**
-     * Sets a FilterFactory
-     * 
-     * @param factory
-     */
-    public void setFilterFactory(FilterFactory factory) {
-        FILTER_FACTORY = factory;
-    }
-
 
     /**
      * Given source and name will compile and store the filter if it detects that the filter code has changed or
@@ -109,7 +97,7 @@ public class FilterLoader
         if (filter == null) {
             Class clazz = compiler.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = FILTER_FACTORY.newInstance(clazz);
+                filter = filterFactory.newInstance(clazz);
             }
         }
         return filter;
@@ -146,7 +134,7 @@ public class FilterLoader
             if (filter == null) {
                 Class clazz = compiler.compile(file);
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
-                    filter = FILTER_FACTORY.newInstance(clazz);
+                    filter = filterFactory.newInstance(clazz);
                     putFilter(sName, filter, file.lastModified());
                     return true;
                 }
@@ -196,7 +184,7 @@ public class FilterLoader
             throw new IllegalArgumentException("Specified filter class does not implement ZuulFilter interface!");
         }
         else {
-            ZuulFilter filter = FILTER_FACTORY.newInstance(clazz);
+            ZuulFilter filter = filterFactory.newInstance(clazz);
             putFilter(className, filter, System.currentTimeMillis());
             return filter;
         }
@@ -284,6 +272,8 @@ public class FilterLoader
         @Mock
         FilterRegistry registry;
 
+        FilterFactory filterFactory = new DefaultFilterFactory();
+
         FilterLoader loader;
 
         TestZuulFilter filter = new TestZuulFilter();
@@ -293,9 +283,7 @@ public class FilterLoader
         {
             MockitoAnnotations.initMocks(this);
 
-            loader = spy(new FilterLoader());
-            loader.setCompiler(compiler);
-            loader.setFilterRegistry(registry);
+            loader = spy(new FilterLoader(registry, compiler, filterFactory));
 
             doReturn(TestZuulFilter.class).when(compiler).compile(file);
             when(file.getAbsolutePath()).thenReturn("/filters/in/SomeFilter.groovy");
