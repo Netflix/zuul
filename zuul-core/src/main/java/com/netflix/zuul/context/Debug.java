@@ -255,6 +255,7 @@ public class Debug {
             request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
                     params, headers, "9.9.9.9", "https", 80, "localhost");
             request.setBodyAsText("some text");
+            request.storeInboundRequest();
 
             response = new HttpResponseMessageImpl(ctx, headers, request, 200);
             response.setBodyAsText("response text");
@@ -284,9 +285,10 @@ public class Debug {
             Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(2, debugLines.size());
+            assertEquals(3, debugLines.size());
             assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(2));
         }
 
         @Test
@@ -297,9 +299,10 @@ public class Debug {
             Debug.writeDebugRequest(ctx, request, false).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(2, debugLines.size());
+            assertEquals(3, debugLines.size());
             assertEquals("REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_OUTBOUND:: > HDR: lah:deda", debugLines.get(1));
+            assertEquals("REQUEST_OUTBOUND:: > HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("REQUEST_OUTBOUND:: > HDR: lah:deda", debugLines.get(2));
         }
 
         @Test
@@ -310,10 +313,11 @@ public class Debug {
             Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(3, debugLines.size());
+            assertEquals(4, debugLines.size());
             assertEquals("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", debugLines.get(0));
-            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(1));
-            assertEquals("REQUEST_INBOUND:: > BODY: some text", debugLines.get(2));
+            assertEquals("REQUEST_INBOUND:: > HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("REQUEST_INBOUND:: > HDR: lah:deda", debugLines.get(2));
+            assertEquals("REQUEST_INBOUND:: > BODY: some text", debugLines.get(3));
         }
 
         @Test
@@ -324,9 +328,10 @@ public class Debug {
             Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(2, debugLines.size());
+            assertEquals(3, debugLines.size());
             assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(2));
         }
 
         @Test
@@ -337,9 +342,10 @@ public class Debug {
             Debug.writeDebugResponse(ctx, response, false).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(2, debugLines.size());
+            assertEquals(3, debugLines.size());
             assertEquals("RESPONSE_OUTBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_OUTBOUND:: < HDR: lah:deda", debugLines.get(1));
+            assertEquals("RESPONSE_OUTBOUND:: < HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("RESPONSE_OUTBOUND:: < HDR: lah:deda", debugLines.get(2));
         }
 
         @Test
@@ -350,10 +356,11 @@ public class Debug {
             Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
 
             List<String> debugLines = Debug.getRequestDebug(ctx);
-            assertEquals(3, debugLines.size());
+            assertEquals(4, debugLines.size());
             assertEquals("RESPONSE_INBOUND:: < STATUS: 200", debugLines.get(0));
-            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(1));
-            assertEquals("RESPONSE_INBOUND:: < BODY: response text", debugLines.get(2));
+            assertEquals("RESPONSE_INBOUND:: < HDR: Content-Length:13", debugLines.get(1));
+            assertEquals("RESPONSE_INBOUND:: < HDR: lah:deda", debugLines.get(2));
+            assertEquals("RESPONSE_INBOUND:: < BODY: response text", debugLines.get(3));
         }
     }
 }
