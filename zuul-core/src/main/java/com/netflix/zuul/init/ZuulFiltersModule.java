@@ -20,11 +20,10 @@ import com.google.common.reflect.ClassPath;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.netflix.config.ConfigurationManager;
+import com.netflix.zuul.BasicFilterUsageNotifier;
 import com.netflix.zuul.DynamicCodeCompiler;
 import com.netflix.zuul.FilterFactory;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
-import com.netflix.zuul.FilterProcessor;
-import com.netflix.zuul.FilterProcessorImpl;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.guice.GuiceFilterFactory;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -52,13 +51,10 @@ public class ZuulFiltersModule extends AbstractModule
     protected void configure() {
         LOG.info("Starting Groovy Filter file manager");
 
-        // Choose the FilterProcessor impl.
-        bind(FilterProcessor.class).to(FilterProcessorImpl.class);
-
         bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
         bind(FilterFactory.class).to(GuiceFilterFactory.class);
 
-        bind(FilterUsageNotifier.class).to(FilterProcessorImpl.BasicFilterUsageNotifier.class);
+        bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
 
         LOG.info("Groovy Filter file manager started");
     }
