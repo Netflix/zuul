@@ -162,22 +162,25 @@ public class FilterLoader
         filterClassLastModified.put(sName, lastModified);
     }
 
-    public List<ZuulFilter> putFiltersForClasses(String[] classNames)
+    /**
+     * Load and cache filters by className
+     *
+     * @param classNames The class names to load
+     * @return List of the loaded filters
+     * @throws Exception If any specified filter fails to load, this will abort. This is a safety mechanism so we can
+     * prevent running in a partially loaded state.
+     */
+    public List<ZuulFilter> putFiltersForClasses(String[] classNames) throws Exception
     {
-        ArrayList<ZuulFilter> newFilters = new ArrayList<>();
+        List<ZuulFilter> newFilters = new ArrayList<>();
         for (String className : classNames)
         {
-            try {
-                newFilters.add(putFilterForClassName(className));
-            }
-            catch (Exception e) {
-                LOG.error("Error putting filter for className=" + className, e);
-            }
+            newFilters.add(putFilterForClassName(className));
         }
         return newFilters;
     }
 
-    public ZuulFilter putFilterForClassName(String className) throws ClassNotFoundException, Exception
+    public ZuulFilter putFilterForClassName(String className) throws Exception
     {
         Class clazz = Class.forName(className);
         if (! ZuulFilter.class.isAssignableFrom(clazz)) {
@@ -293,6 +296,25 @@ public class FilterLoader
         public void testGetFilterFromFile() throws Exception {
             assertTrue(loader.putFilter(file));
             verify(registry).put(any(String.class), any(BaseFilter.class));
+        }
+
+        @Test
+        public void testPutFiltersForClasses() throws Exception {
+            loader.putFiltersForClasses(new String[]{TestZuulFilter.class.getName()});
+            verify(registry).put(any(String.class), any(BaseFilter.class));
+        }
+
+        @Test
+        public void testPutFiltersForClassesException() throws Exception {
+            Exception caught = null;
+            try {
+                loader.putFiltersForClasses(new String[]{"asdf"});
+            }
+            catch (ClassNotFoundException e) {
+                caught = e;
+            }
+            assertTrue(caught != null);
+            verify(registry, times(0)).put(any(String.class), any(BaseFilter.class));
         }
 
         @Test
