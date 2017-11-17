@@ -1,12 +1,12 @@
 buildscript {
     repositories { jcenter() }
     dependencies {
-        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.0'
+        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0'
     }
 }
 
 plugins {
-    id 'nebula.netflixoss' version '4.0.2'
+    id 'nebula.netflixoss' version '4.1.0'
 }
 
 ext.githubProjectName = rootProject.name
@@ -28,7 +28,6 @@ subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
     apply plugin: 'groovy'
-    apply plugin: 'nebula.provided-base'
     apply plugin: 'nebula.dependency-lock'
 
     repositories {
