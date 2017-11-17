@@ -1,0 +1,600 @@
+{
+    "compile": {
+        "com.google.inject.extensions:guice-assistedinject": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-grapher": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-multibindings": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-servlet": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-throwingproviders": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject:guice": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.netflix.archaius:archaius-core": {
+            "locked": "0.7.5",
+            "requested": "0.7.5"
+        },
+        "com.netflix.astyanax:astyanax-cassandra": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.astyanax:astyanax-thrift": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.8.6",
+            "requested": "latest.release"
+        },
+        "com.netflix.governator:governator": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-archaius": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.hystrix:hystrix-core": {
+            "locked": "1.4.26",
+            "requested": "1.4.+"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.ribbon:ribbon-httpclient": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.10.1",
+            "requested": "0.7.2"
+        },
+        "commons-fileupload:commons-fileupload": {
+            "locked": "1.3",
+            "requested": "1.3"
+        },
+        "commons-io:commons-io": {
+            "locked": "2.4",
+            "requested": "2.4"
+        },
+        "io.netty:netty-buffer": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-codec-http": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-common": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.reactivex:rxjava": {
+            "locked": "1.2.3",
+            "requested": "1.2.1"
+        },
+        "io.reactivex:rxjava-string": {
+            "locked": "1.1.1",
+            "requested": "1.1.+"
+        },
+        "junit:junit": {
+            "locked": "4.12",
+            "requested": "latest.release"
+        },
+        "org.apache.commons:commons-lang3": {
+            "locked": "3.4",
+            "requested": "3.4"
+        },
+        "org.codehaus.groovy:groovy-all": {
+            "locked": "2.3.10",
+            "requested": "2.3.10"
+        },
+        "org.json:json": {
+            "locked": "20090211",
+            "requested": "20090211"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "1.9.5",
+            "requested": "1.9.+"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.12",
+            "requested": "1.7.6"
+        }
+    },
+    "default": {
+        "com.google.inject.extensions:guice-assistedinject": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-grapher": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-multibindings": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-servlet": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-throwingproviders": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject:guice": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.netflix.archaius:archaius-core": {
+            "locked": "0.7.5",
+            "requested": "0.7.5"
+        },
+        "com.netflix.astyanax:astyanax-cassandra": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.astyanax:astyanax-thrift": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.8.6",
+            "requested": "latest.release"
+        },
+        "com.netflix.governator:governator": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-archaius": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.hystrix:hystrix-core": {
+            "locked": "1.4.26",
+            "requested": "1.4.+"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.ribbon:ribbon-httpclient": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.10.1",
+            "requested": "0.7.2"
+        },
+        "commons-fileupload:commons-fileupload": {
+            "locked": "1.3",
+            "requested": "1.3"
+        },
+        "commons-io:commons-io": {
+            "locked": "2.4",
+            "requested": "2.4"
+        },
+        "io.netty:netty-buffer": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-codec-http": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-common": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.reactivex:rxjava": {
+            "locked": "1.2.3",
+            "requested": "1.2.1"
+        },
+        "io.reactivex:rxjava-string": {
+            "locked": "1.1.1",
+            "requested": "1.1.+"
+        },
+        "junit:junit": {
+            "locked": "4.12",
+            "requested": "latest.release"
+        },
+        "org.apache.commons:commons-lang3": {
+            "locked": "3.4",
+            "requested": "3.4"
+        },
+        "org.codehaus.groovy:groovy-all": {
+            "locked": "2.3.10",
+            "requested": "2.3.10"
+        },
+        "org.json:json": {
+            "locked": "20090211",
+            "requested": "20090211"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "1.9.5",
+            "requested": "1.9.+"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.12",
+            "requested": "1.7.6"
+        }
+    },
+    "runtime": {
+        "com.google.inject.extensions:guice-assistedinject": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-grapher": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-multibindings": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-servlet": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-throwingproviders": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject:guice": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.netflix.archaius:archaius-core": {
+            "locked": "0.7.5",
+            "requested": "0.7.5"
+        },
+        "com.netflix.astyanax:astyanax-cassandra": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.astyanax:astyanax-thrift": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.8.6",
+            "requested": "latest.release"
+        },
+        "com.netflix.governator:governator": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-archaius": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.hystrix:hystrix-core": {
+            "locked": "1.4.26",
+            "requested": "1.4.+"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.ribbon:ribbon-httpclient": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.10.1",
+            "requested": "0.7.2"
+        },
+        "commons-fileupload:commons-fileupload": {
+            "locked": "1.3",
+            "requested": "1.3"
+        },
+        "commons-io:commons-io": {
+            "locked": "2.4",
+            "requested": "2.4"
+        },
+        "io.netty:netty-buffer": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-codec-http": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-common": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.reactivex:rxjava": {
+            "locked": "1.2.3",
+            "requested": "1.2.1"
+        },
+        "io.reactivex:rxjava-string": {
+            "locked": "1.1.1",
+            "requested": "1.1.+"
+        },
+        "junit:junit": {
+            "locked": "4.12",
+            "requested": "latest.release"
+        },
+        "org.apache.commons:commons-lang3": {
+            "locked": "3.4",
+            "requested": "3.4"
+        },
+        "org.codehaus.groovy:groovy-all": {
+            "locked": "2.3.10",
+            "requested": "2.3.10"
+        },
+        "org.json:json": {
+            "locked": "20090211",
+            "requested": "20090211"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "1.9.5",
+            "requested": "1.9.+"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.12",
+            "requested": "1.7.6"
+        }
+    },
+    "testCompile": {
+        "com.google.inject.extensions:guice-assistedinject": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-grapher": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-multibindings": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-servlet": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-throwingproviders": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject:guice": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.netflix.archaius:archaius-core": {
+            "locked": "0.7.5",
+            "requested": "0.7.5"
+        },
+        "com.netflix.astyanax:astyanax-cassandra": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.astyanax:astyanax-thrift": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.8.6",
+            "requested": "latest.release"
+        },
+        "com.netflix.governator:governator": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-archaius": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-test-junit": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.hystrix:hystrix-core": {
+            "locked": "1.4.26",
+            "requested": "1.4.+"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.ribbon:ribbon-httpclient": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.10.1",
+            "requested": "0.7.2"
+        },
+        "commons-fileupload:commons-fileupload": {
+            "locked": "1.3",
+            "requested": "1.3"
+        },
+        "commons-io:commons-io": {
+            "locked": "2.4",
+            "requested": "2.4"
+        },
+        "io.netty:netty-buffer": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-codec-http": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-common": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.reactivex:rxjava": {
+            "locked": "1.2.3",
+            "requested": "1.2.1"
+        },
+        "io.reactivex:rxjava-string": {
+            "locked": "1.1.1",
+            "requested": "1.1.+"
+        },
+        "junit:junit": {
+            "locked": "4.12",
+            "requested": "latest.release"
+        },
+        "org.apache.commons:commons-lang3": {
+            "locked": "3.4",
+            "requested": "3.4"
+        },
+        "org.codehaus.groovy:groovy-all": {
+            "locked": "2.3.10",
+            "requested": "2.3.10"
+        },
+        "org.json:json": {
+            "locked": "20090211",
+            "requested": "20090211"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "1.9.5",
+            "requested": "1.9.+"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.12",
+            "requested": "1.7.6"
+        }
+    },
+    "testRuntime": {
+        "com.google.inject.extensions:guice-assistedinject": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-grapher": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-multibindings": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-servlet": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject.extensions:guice-throwingproviders": {
+            "locked": "4.0",
+            "requested": "4.0"
+        },
+        "com.google.inject:guice": {
+            "locked": "4.1.0",
+            "requested": "4.0"
+        },
+        "com.netflix.archaius:archaius-core": {
+            "locked": "0.7.5",
+            "requested": "0.7.5"
+        },
+        "com.netflix.astyanax:astyanax-cassandra": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.astyanax:astyanax-thrift": {
+            "locked": "1.56.48",
+            "requested": "1.56.48"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.8.6",
+            "requested": "latest.release"
+        },
+        "com.netflix.governator:governator": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-archaius": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-test-junit": {
+            "locked": "1.17.5-SNAPSHOT",
+            "requested": "1.+"
+        },
+        "com.netflix.hystrix:hystrix-core": {
+            "locked": "1.4.26",
+            "requested": "1.4.+"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.ribbon:ribbon-httpclient": {
+            "locked": "2.0.0",
+            "requested": "2.0.0"
+        },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.10.1",
+            "requested": "0.7.2"
+        },
+        "commons-fileupload:commons-fileupload": {
+            "locked": "1.3",
+            "requested": "1.3"
+        },
+        "commons-io:commons-io": {
+            "locked": "2.4",
+            "requested": "2.4"
+        },
+        "io.netty:netty-buffer": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-codec-http": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.netty:netty-common": {
+            "locked": "4.1.11.Final",
+            "requested": "4.1.11.Final"
+        },
+        "io.reactivex:rxjava": {
+            "locked": "1.2.3",
+            "requested": "1.2.1"
+        },
+        "io.reactivex:rxjava-string": {
+            "locked": "1.1.1",
+            "requested": "1.1.+"
+        },
+        "junit:junit": {
+            "locked": "4.12",
+            "requested": "latest.release"
+        },
+        "org.apache.commons:commons-lang3": {
+            "locked": "3.4",
+            "requested": "3.4"
+        },
+        "org.codehaus.groovy:groovy-all": {
+            "locked": "2.3.10",
+            "requested": "2.3.10"
+        },
+        "org.json:json": {
+            "locked": "20090211",
+            "requested": "20090211"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "1.9.5",
+            "requested": "1.9.+"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.12",
+            "requested": "1.7.6"
+        }
+    }
+}

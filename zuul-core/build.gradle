@@ -21,9 +21,7 @@ dependencies {
     compile "io.reactivex:rxjava:1.2.1"
     compile "io.reactivex:rxjava-string:1.1.+"
 
-
-    // TEMP - ensure using same version as zuul-netty.
-    //compile "io.netty:netty-common:${versions_netty}"
+    compile "io.netty:netty-common:${versions_netty}"
     compile "io.netty:netty-codec-http:${versions_netty}"
     compile "io.netty:netty-buffer:${versions_netty}"
 
