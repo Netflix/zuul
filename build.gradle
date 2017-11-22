@@ -1,12 +1,8 @@
-buildscript {
-    repositories { jcenter() }
-    dependencies {
-        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.2.0'
-    }
-}
 
 plugins {
     id 'nebula.netflixoss' version '4.1.0'
+    id 'nebula.dependency-lock' version '4.1.0'
+    id "com.google.osdetector" version "1.4.0"
 }
 
 ext.githubProjectName = rootProject.name
@@ -28,10 +24,10 @@ subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
     apply plugin: 'groovy'
+    apply plugin: 'nebula.javadoc-jar'
     apply plugin: 'nebula.dependency-lock'
 
     repositories {
-        maven { url 'https://oss.jfrog.org/libs-snapshot' }
         jcenter()
     }
 
@@ -39,18 +35,7 @@ subprojects {
 
     sourceCompatibility = '1.8'
 
-
     sourceSets {
-        main {
-            java {
-                srcDirs  = ['src/main/java']
-                include '**/*.java'
-            }
-            groovy {
-                srcDirs  = ['src/main/groovy']
-                include '**/*.groovy'
-            }
-        }
         test {
             java {
                 srcDirs  = ['src/main/java', 'src/test/java']

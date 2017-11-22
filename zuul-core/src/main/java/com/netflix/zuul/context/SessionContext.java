@@ -1,17 +1,17 @@
-/**
- * Copyright 2015 Netflix, Inc.
+/*
+ * Copyright 2018 Netflix, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *          http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
  */
 package com.netflix.zuul.context;
 
@@ -54,6 +54,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private boolean debugRouting = false;
     private boolean debugRequest = false;
     private boolean debugRequestHeadersOnly = false;
+    private boolean cancelled = false;
 
     private Timings timings = new Timings();
 
@@ -148,6 +149,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         SessionContext copy = new SessionContext();
         copy.brownoutMode = brownoutMode;
+        copy.cancelled = cancelled;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
         copy.shouldSendErrorResponse = shouldSendErrorResponse;
         copy.errorResponseSent = errorResponseSent;
@@ -420,6 +422,14 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
             return (Integer) value;
         }
         return -1;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void cancel() {
+        this.cancelled = true;
     }
 
     @RunWith(MockitoJUnitRunner.class)
