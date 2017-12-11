@@ -15,11 +15,10 @@ dependencies {
     compile 'com.netflix.astyanax:astyanax-cassandra:1.56.48'
     compile 'com.netflix.astyanax:astyanax-thrift:1.56.48'
     compile 'com.netflix.hystrix:hystrix-core:1.4.+'
-    compile 'com.netflix.ribbon:ribbon-core:2.0.0'
-    compile 'com.netflix.ribbon:ribbon-httpclient:2.0.0'
+    compile 'com.netflix.ribbon:ribbon-core:2.+'
+    compile 'com.netflix.ribbon:ribbon-httpclient:2.+'
     compile 'com.netflix.eureka:eureka-client:latest.release'
     compile "io.reactivex:rxjava:1.2.1"
-    compile "io.reactivex:rxjava-string:1.1.+"
 
     compile "io.netty:netty-common:${versions_netty}"
     compile "io.netty:netty-codec-http:${versions_netty}"

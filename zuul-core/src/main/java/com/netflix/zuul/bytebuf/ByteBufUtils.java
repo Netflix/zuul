@@ -21,11 +21,9 @@ import io.netty.buffer.Unpooled;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Action2;
-import rx.observables.StringObservable;
 import rx.observers.TestSubscriber;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 
 /**
  * User: michaels@netflix.com
@@ -70,13 +68,6 @@ public class ByteBufUtils
                 composite.writerIndex(composite.writerIndex() + readable);
             }
         }).cast(ByteBuf.class);
-    }
-
-    public static Observable<ByteBuf> fromInputStream(InputStream input)
-    {
-        return StringObservable.from(input)
-                .map(Unpooled::wrappedBuffer)
-                .defaultIfEmpty(Unpooled.buffer());
     }
 
     public static class TestUnit {

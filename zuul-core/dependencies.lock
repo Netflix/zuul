@@ -88,10 +88,6 @@
             "locked": "1.2.3",
             "requested": "1.2.1"
         },
-        "io.reactivex:rxjava-string": {
-            "locked": "1.1.1",
-            "requested": "1.1.+"
-        },
         "junit:junit": {
             "locked": "4.12",
             "requested": "latest.release"
@@ -206,10 +202,6 @@
             "locked": "1.2.3",
             "requested": "1.2.1"
         },
-        "io.reactivex:rxjava-string": {
-            "locked": "1.1.1",
-            "requested": "1.1.+"
-        },
         "junit:junit": {
             "locked": "4.12",
             "requested": "latest.release"
@@ -323,10 +315,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.3",
             "requested": "1.2.1"
-        },
-        "io.reactivex:rxjava-string": {
-            "locked": "1.1.1",
-            "requested": "1.1.+"
         },
         "junit:junit": {
             "locked": "4.12",
@@ -446,10 +434,6 @@
             "locked": "1.2.3",
             "requested": "1.2.1"
         },
-        "io.reactivex:rxjava-string": {
-            "locked": "1.1.1",
-            "requested": "1.1.+"
-        },
         "junit:junit": {
             "locked": "4.12",
             "requested": "latest.release"
@@ -567,10 +551,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.3",
             "requested": "1.2.1"
-        },
-        "io.reactivex:rxjava-string": {
-            "locked": "1.1.1",
-            "requested": "1.1.+"
         },
         "junit:junit": {
             "locked": "4.12",
