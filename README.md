@@ -3,6 +3,14 @@
 Zuul is an edge service that provides dynamic routing, monitoring, resiliency, security, and more.
 Please view the wiki for usage, information, HOWTO, etc https://github.com/Netflix/zuul/wiki
 
+If you are looking for the OpenStack related test automation tool that is also named Zuul, you can find it here:
+
+https://docs.openstack.org/infra/zuul/feature/zuulv3/
+
+If you are looking for the javascript testing tool named Zuul, you can find it here:
+
+https://github.com/defunctzombie/zuul
+
 Here are some links to help you learn more about the Zuul Project. Feel free to PR to add any other info, presentations, etc.
 
 ---
