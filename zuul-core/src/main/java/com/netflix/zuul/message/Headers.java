@@ -27,7 +27,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.netflix.zuul.util.HttpUtils.stripMaliciousHeaderChars;
@@ -192,6 +194,10 @@ public class Headers implements Cloneable
     public List<String> remove(HeaderName hn)
     {
         return delegate.removeAll(hn);
+    }
+
+    public boolean removeIf(Predicate<? super Map.Entry<HeaderName, String>> filter) {
+        return delegate.entries().removeIf(filter);
     }
 
     public Collection<Header> entries()
