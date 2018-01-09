@@ -19,11 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import com.google.common.collect.Sets;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
-import com.netflix.loadbalancer.LoadBalancerStats;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerStats;
-import com.netflix.loadbalancer.ZoneAwareLoadBalancer;
+import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
@@ -166,17 +162,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 }
             }
         }
-
-        try {
-            addServerMetrics(newSet);
-        }
-        catch (Throwable t) {
-            LOG.warn("Could not update server list for Zuul Netty Metrics Registry.", t);
-        }
-    }
-
-    protected void addServerMetrics(Set<Server> newSet) {
-        // override for server metrics
     }
 
     @Override
