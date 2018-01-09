@@ -33,25 +33,22 @@ import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpHeaderNames;
-import com.netflix.zuul.message.http.HttpQueryParams;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import com.netflix.zuul.message.http.*;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.BasicRequestStat;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.connectionpool.RequestStat;
-import com.netflix.zuul.filters.SyncZuulFilterAdapter;
+import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.netty.server.MethodBinding;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
-import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.NettyOrigin;
@@ -61,6 +58,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
+import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import com.netflix.zuul.util.HttpUtils;
 import com.netflix.zuul.util.ProxyUtils;
 import com.netflix.zuul.util.VipUtils;
@@ -68,11 +66,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -91,14 +85,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
 import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_FAILED;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_RETRY_START;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_NOT_FOUND;
+import static com.netflix.zuul.passport.PassportState.*;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.*;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -731,7 +719,27 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             zuulResponse.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
 
-        return transformResponse(zuulResponse);
+        transformResponse(zuulResponse);
+
+        // Request was a success even if server may have responded with an error code 5XX, except for 503.
+        if (originConn != null) {
+            if (statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
+                origin.onRequestExecutionFailed(zuulRequest, originConn.getServer(), attemptNum,
+                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
+            }
+            else {
+                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
+            }
+        }
+
+        origin.recordFinalResponse(zuulResponse);
+        origin.recordFinalError(zuulRequest, ex);
+        origin.getProxyTiming(zuulRequest).end();
+        zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+        zuulCtx.setError(ex);
+        zuulCtx.put("origin_http_status", Integer.toString(respStatus));
+
+        return zuulResponse;
     }
 
     private HttpResponseMessage transformResponse(HttpResponseMessage resp) {
