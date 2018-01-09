@@ -133,15 +133,31 @@ public class HTTPRequestUtils {
         if(headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
-                String value = request.getHeader(name);
-
-                if(name != null && !name.isEmpty() && value != null) {
-                    List<String> valueList = new ArrayList<String>();
-                    if(headers.containsKey(name)) {
-                        headers.get(name).add(value);
+                if (name != null && !name.isEmpty()){
+                    Enumeration values = request.getHeaders(name);
+                    if (values == null){
+                        continue;
                     }
-                    valueList.add(value);
-                    headers.put(name, valueList);
+                    if (headers.get(name) != null){
+                        while (values.hasMoreElements()){
+                            Object value = values.nextElement();
+                            if (value == null){
+                                continue;
+                            }
+                            headers.get(name).add(String.valueOf(value));
+                        }
+                    }else{
+                        List<String> list = new ArrayList<>();
+                        while (values.hasMoreElements()){
+                            Object value = values.nextElement();
+                            if (value == null){
+                                continue;
+                            }
+                            list.add(String.valueOf(value));
+                        }
+                        headers.put(name, list);
+                    }
+
                 }
             }
         }
