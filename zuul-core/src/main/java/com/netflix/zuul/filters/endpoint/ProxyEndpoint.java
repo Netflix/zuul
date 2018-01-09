@@ -785,6 +785,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             currentRequestAttempt.complete(respStatus, duration, obe);
         }
 
+        // If throttled by origin server, then we also need to invoke onRequestExceptionWithServer().
+        if (statusCategory == FAILURE_ORIGIN_THROTTLED) {
+            origin.onRequestExceptionWithServer(zuulRequest, chosenServer, attemptNum,
+                    new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
+        }
+
         if ((isBelowRetryLimit()) && (isRetryable5xxResponse(zuulRequest, originResponse))) {
             LOG.debug("Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
                     respStatus, attemptNum, origin.getMaxRetriesForRequest(context),
