@@ -298,6 +298,21 @@ public class HTTPRequestUtils {
         }
 
         @Test
+        public void testgetRequestHeaderMap(){
+            when(request.getHeaderNames()).thenReturn(new StringTokenizer("accept;language",";"));
+            when(request.getHeaders("accept")).thenReturn(new StringTokenizer("1;2;3;4",";"));
+            when(request.getHeaders("language")).thenReturn(new StringTokenizer("zh;ch;ab;de;japan",";"));
+            Map<String, List<String>> headerMap = HTTPRequestUtils.getInstance().getRequestHeaderMap();
+            assertEquals(headerMap.get("accept").size(),4);
+            assertEquals(headerMap.get("accept").get(0),"1");
+            assertEquals(headerMap.get("accept").get(1),"2");
+            assertEquals(headerMap.get("accept").get(2),"3");
+            assertEquals(headerMap.get("accept").get(3),"4");
+
+            assertEquals(headerMap.get("language").size(),5);
+        }
+
+        @Test
         public void testGetQueryParams() {
             when(request.getQueryString()).thenReturn("wsdl");
             
