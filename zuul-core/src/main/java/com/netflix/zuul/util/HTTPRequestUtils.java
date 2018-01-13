@@ -135,29 +135,26 @@ public class HTTPRequestUtils {
                 String name = headerNames.nextElement();
                 if (name != null && !name.isEmpty()){
                     Enumeration values = request.getHeaders(name);
-                    if (values == null){
-                        continue;
-                    }
-                    if (headers.get(name) != null){
-                        while (values.hasMoreElements()){
-                            Object value = values.nextElement();
-                            if (value == null){
-                                continue;
+                    if (values != null){
+                        if (headers.get(name) != null){
+                            while (values.hasMoreElements()){
+                                Object value = values.nextElement();
+                                if (value != null){
+                                    headers.get(name).add(String.valueOf(value));
+                                }
                             }
-                            headers.get(name).add(String.valueOf(value));
-                        }
-                    }else{
-                        List<String> list = new ArrayList<>();
-                        while (values.hasMoreElements()){
-                            Object value = values.nextElement();
-                            if (value == null){
-                                continue;
-                            }
-                            list.add(String.valueOf(value));
-                        }
-                        headers.put(name, list);
-                    }
+                        }else{
+                            List<String> list = new ArrayList<>();
+                            while (values.hasMoreElements()){
+                                Object value = values.nextElement();
+                                if (value != null){
+                                    list.add(String.valueOf(value));
+                                }
 
+                            }
+                            headers.put(name, list);
+                        }
+                    }
                 }
             }
         }

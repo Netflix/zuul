@@ -185,7 +185,7 @@ public class StartServer extends GuiceServletContextListener {
 
         LOG.info("Starting Groovy Filter file manager");
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-
+        Thread.sleep(40000);
         final String preFiltersPath = config.getString(ZUUL_FILTER_PRE_PATH);
         final String postFiltersPath = config.getString(ZUUL_FILTER_POST_PATH);
         final String routingFiltersPath = config.getString(ZUUL_FILTER_ROUTING_PATH);
