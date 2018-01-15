@@ -39,6 +39,17 @@ public class ZuulException extends RuntimeException
     }
 
     /**
+     * Source Throwable, message, status code and info about the cause
+     * @param sMessage
+     * @param throwable
+     * @param errorCause
+     */
+    public ZuulException(String sMessage, Throwable throwable, String errorCause, boolean noStackTrace) {
+        super(sMessage, throwable, noStackTrace, ! noStackTrace);
+        this.errorCause = errorCause;
+    }
+
+    /**
      * error message, status code and info about the cause
      * @param sMessage
      * @param errorCause
