@@ -28,7 +28,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -54,7 +57,9 @@ import com.netflix.zuul.util.DeepCopy;
  *         Date: 10/13/11
  *         Time: 10:21 AM
  */
-public class RequestContext extends ConcurrentHashMap<String, Object> {
+public class RequestContext implements ConcurrentMap<String,Object> {
+
+    private ConcurrentMap<String,Object> concurrentMap = new ConcurrentHashMap<String,Object>();
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestContext.class);
 
@@ -536,6 +541,9 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         threadLocal.remove();
     }
 
+
+
+
     /**
      * Mkaes a copy of the RequestContext. This is used for debugging.
      *
@@ -582,6 +590,95 @@ public class RequestContext extends ConcurrentHashMap<String, Object> {
         put("requestQueryParams", qp);
     }
 
+    @Override
+    public Object putIfAbsent(String key, Object value) {
+        return concurrentMap.putIfAbsent(key, value);
+    }
+
+    @Override
+    public boolean remove(Object key, Object value) {
+        return concurrentMap.remove(key, value);
+    }
+
+    @Override
+    public boolean replace(String key, Object oldValue, Object newValue) {
+        return concurrentMap.replace(key, oldValue, newValue);
+    }
+
+    @Override
+    public Object replace(String key, Object value) {
+        return concurrentMap.replace(key, value);
+    }
+
+    @Override
+    public int size() {
+        return concurrentMap.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return concurrentMap.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return concurrentMap.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return concurrentMap.containsValue(value);
+    }
+
+    @Override
+    public Object get(Object key) {
+        return concurrentMap.get(key);
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return concurrentMap.put(key, value);
+    }
+
+    @Override
+    public Object remove(Object key) {
+        return concurrentMap.remove(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ?> m) {
+        concurrentMap.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        concurrentMap.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return concurrentMap.keySet();
+    }
+
+    @Override
+    public Collection<Object> values() {
+        return concurrentMap.values();
+    }
+
+    @Override
+    public Set<Entry<String, Object>> entrySet() {
+        return concurrentMap.entrySet();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return concurrentMap.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return concurrentMap.hashCode();
+    }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class UnitTest {
