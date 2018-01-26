@@ -114,12 +114,20 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", originName, new AtomicInteger());
     }
 
-    protected OriginChannelInitializer getChannelInitializer(IClientConfig clientConfig, ConnectionPoolConfig connPoolConfig, Registry registry) {
+    public void init()
+    {
+        // Load channel initializer and conn factory.
+        // We don't do this within the constructor because some subclass may not be initialized until post-construct.
+        this.channelInitializer = createChannelInitializer(clientConfig, connPoolConfig, spectatorRegistry);
+        this.clientConnFactory = createNettyClientConnectionFactory(connPoolConfig, channelInitializer);
+    }
+
+    protected OriginChannelInitializer createChannelInitializer(IClientConfig clientConfig, ConnectionPoolConfig connPoolConfig, Registry registry) {
         return new DefaultOriginChannelInitializer(connPoolConfig, registry);
     }
 
-    protected NettyClientConnectionFactory getNettyClientConnectionFactory(ConnectionPoolConfig connPoolConfig,
-                                                                 ChannelInitializer<? extends Channel> clientConnInitializer) {
+    protected NettyClientConnectionFactory createNettyClientConnectionFactory(ConnectionPoolConfig connPoolConfig,
+                                                                              ChannelInitializer<? extends Channel> clientConnInitializer) {
         return new NettyClientConnectionFactory(connPoolConfig, clientConnInitializer);
     }
 
@@ -291,12 +299,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public Promise<PooledConnection> acquire(final EventLoop eventLoop, final Object key, final String httpMethod,
                                              final String uri, final int attemptNum, final CurrentPassport passport,
                                              final AtomicReference<Server> selectedServer) {
-
-        // Lazy load channel initializer and conn factory
-        if (channelInitializer == null && clientConnFactory == null) {
-            this.channelInitializer = getChannelInitializer(clientConfig, connPoolConfig, spectatorRegistry);
-            this.clientConnFactory = getNettyClientConnectionFactory(connPoolConfig, channelInitializer);
-        }
 
         if (attemptNum < 1) {
             throw new IllegalArgumentException("attemptNum must be greater than zero");
