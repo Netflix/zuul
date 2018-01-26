@@ -43,7 +43,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
     private static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
-    private final AtomicInteger connections = new AtomicInteger(0);
+    private final static AtomicInteger connections = new AtomicInteger(0);
     private final int maxConnections;
 
     public MaxInboundConnectionsHandler(int maxConnections)
