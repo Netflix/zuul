@@ -69,6 +69,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.registry = registry;
         this.config = setupClientConfig(name);
         this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
+        this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
     }
 

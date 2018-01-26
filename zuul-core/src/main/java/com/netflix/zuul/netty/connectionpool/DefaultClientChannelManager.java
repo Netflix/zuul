@@ -114,6 +114,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", originName, new AtomicInteger());
     }
 
+    @Override
     public void init()
     {
         // Load channel initializer and conn factory.

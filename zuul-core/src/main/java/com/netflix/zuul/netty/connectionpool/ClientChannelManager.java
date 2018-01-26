@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface ClientChannelManager
 {
+    void init();
+
     boolean isAvailable();
 
     int getInflightRequestsCount();
