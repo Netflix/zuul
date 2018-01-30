@@ -18,17 +18,12 @@ package com.netflix.zuul.netty.server;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.DefaultSelectStrategyFactory;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
@@ -65,8 +60,6 @@ public class Server
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
-    private static final DynamicIntProperty INCOMING_ACCEPTOR_THREADS = new DynamicIntProperty("zuul.server.netty.threads.acceptor", 1);
-    private static final DynamicIntProperty INCOMING_WORKER_THREADS = new DynamicIntProperty("zuul.server.netty.threads.worker", 4);
     private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS = new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
 
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
@@ -77,21 +70,19 @@ public class Server
     private final ServerStatusManager serverStatusManager;
 
     private final Map<Integer, ChannelInitializer> portsToChannelInitializers;
-    private final int acceptorThreads;
-    private final int workerThreads;
+    private final EventLoopConfig eventLoopConfig;
 
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
     {
-        this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics, INCOMING_ACCEPTOR_THREADS.get(), INCOMING_WORKER_THREADS.get());
+        this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics, new DefaultEventLoopConfig());
     }
 
-    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics, int acceptorThreads, int workerThreads)
+    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics, EventLoopConfig eventLoopConfig)
     {
         this.portsToChannelInitializers = portsToChannelInitializers;
         this.serverStatusManager = serverStatusManager;
         this.clientConnectionsShutdown = clientConnectionsShutdown;
-        this.acceptorThreads = acceptorThreads;
-        this.workerThreads = workerThreads;
+        this.eventLoopConfig = eventLoopConfig;
         this.eventLoopGroupMetrics = eventLoopGroupMetrics;
         this.jvmShutdownHook = new Thread(() -> stop(), "Zuul-JVM-shutdown-hook");
     }
@@ -113,7 +104,7 @@ public class Server
 
     public void start(boolean sync)
     {
-        serverGroup = new ServerGroup("Salamander", acceptorThreads, workerThreads, eventLoopGroupMetrics);
+        serverGroup = new ServerGroup("Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
         try {
             List<ChannelFuture> allBindFutures = new ArrayList<>();
