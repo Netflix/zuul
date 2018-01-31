@@ -527,11 +527,20 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         try {
             final SessionContext zuulCtx = context;
             final ErrorType err = requestAttemptFactory.mapNettyToOutboundErrorType(ex);
+
+            // Be cautious about how much we log about errors from origins, as it can have perf implications at high rps.
             if (zuulCtx.isInBrownoutMode()) {
-                LOG.error(err.getStatusCategory().name() + ", origin = " + origin.getName() + ": ", ex);
+                // Don't include the stacktrace or the channel info.
+                LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ": " + String.valueOf(ex));
             } else {
                 final String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
-                LOG.error(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", origin channel info = " + origChInfo, ex);
+                if (LOG.isInfoEnabled()) {
+                    // Include the stacktrace.
+                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", origin channel info = " + origChInfo, ex);
+                }
+                else {
+                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", " + String.valueOf(ex) + ", origin channel info = " + origChInfo);
+                }
             }
 
             // Update the NIWS stat.
