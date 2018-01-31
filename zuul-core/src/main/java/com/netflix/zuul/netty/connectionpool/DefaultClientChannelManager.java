@@ -23,6 +23,7 @@ import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
@@ -77,6 +78,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     private final Counter connTakenFromPoolIsNotOpen;
     private final Counter maxConnsPerHostExceededCounter;
     private final Counter closeWrtBusyConnCounter;
+    private final PercentileTimer connEstablishTimer;
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
 
@@ -110,6 +112,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.connTakenFromPoolIsNotOpen = SpectatorUtils.newCounter(METRIC_PREFIX + "_fromPoolIsClosed", originName);
         this.maxConnsPerHostExceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_maxConnsPerHostExceeded", originName);
         this.closeWrtBusyConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeWrtBusyConnCounter", originName);
+        this.connEstablishTimer = PercentileTimer.get(spectatorRegistry, spectatorRegistry.createId(METRIC_PREFIX + "_createTiming", "id", originName));
         this.connsInPool = SpectatorUtils.newGauge(METRIC_PREFIX + "_inPool", originName, new AtomicInteger());
         this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", originName, new AtomicInteger());
     }
@@ -355,6 +358,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     reuseConnCounter,
                     connTakenFromPoolIsNotOpen,
                     maxConnsPerHostExceededCounter,
+                    connEstablishTimer,
                     connsInPool,
                     connsInUse
             );

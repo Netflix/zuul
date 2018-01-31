@@ -23,9 +23,11 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import com.netflix.zuul.stats.Timing;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
@@ -66,6 +68,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final Counter reuseConnCounter;
     private final Counter connTakenFromPoolIsNotOpen;
     private final Counter maxConnsPerHostExceededCounter;
+    private final Timer connEstablishTimer;
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
 
@@ -89,6 +92,7 @@ public class PerServerConnectionPool implements IConnectionPool
                                    Counter requestConnCounter, Counter reuseConnCounter, 
                                    Counter connTakenFromPoolIsNotOpen,
                                    Counter maxConnsPerHostExceededCounter,
+                                   Timer connEstablishTimer,
                                    AtomicInteger connsInPool, AtomicInteger connsInUse)
     {
         this.server = server;
@@ -105,6 +109,7 @@ public class PerServerConnectionPool implements IConnectionPool
         this.reuseConnCounter = reuseConnCounter;
         this.connTakenFromPoolIsNotOpen = connTakenFromPoolIsNotOpen;
         this.maxConnsPerHostExceededCounter = maxConnsPerHostExceededCounter;
+        this.connEstablishTimer = connEstablishTimer;
         this.connsInPool = connsInPool;
         this.connsInUse = connsInUse;
         
@@ -234,6 +239,7 @@ public class PerServerConnectionPool implements IConnectionPool
             return;
         }
 
+        Timing timing = startConnEstablishTimer();
         try {
             createNewConnCounter.increment();
             connCreationsInProgress.incrementAndGet();
@@ -245,12 +251,14 @@ public class PerServerConnectionPool implements IConnectionPool
             final ChannelFuture cf = connectionFactory.connect(eventLoop, host, server.getPort(), passport);
 
             if (cf.isDone()) {
+                endConnEstablishTimer(timing);
                 handleConnectCompletion(cf, promise, httpMethod, uri, attemptNum,
                         passport);
             }
             else {
                 cf.addListener(future -> {
                     try {
+                        endConnEstablishTimer(timing);
                         handleConnectCompletion((ChannelFuture) future, promise, httpMethod, uri, attemptNum,
                                 passport);
                     }
@@ -265,8 +273,22 @@ public class PerServerConnectionPool implements IConnectionPool
             }
         }
         catch (Throwable e) {
+            endConnEstablishTimer(timing);
             promise.setFailure(e);
         }
+    }
+
+    private Timing startConnEstablishTimer()
+    {
+        Timing timing = new Timing("connection_establish");
+        timing.start();
+        return timing;
+    }
+
+    private void endConnEstablishTimer(Timing timing)
+    {
+        timing.end();
+        connEstablishTimer.record(timing.getDuration(), TimeUnit.NANOSECONDS);
     }
 
     private String getHostFromServer(Server server) 
