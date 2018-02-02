@@ -269,7 +269,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast(new ClientRequestReceiver(sessionContextDecorator));
         pipeline.addLast(passportLoggingHandler);
         addZuulFilterChainHandler(pipeline);
-        pipeline.addLast(new ClientResponseWriter(requestCompleteHandler));
+        pipeline.addLast(new ClientResponseWriter(requestCompleteHandler, registry));
     }
 
     protected void addZuulFilterChainHandler(final ChannelPipeline pipeline) {

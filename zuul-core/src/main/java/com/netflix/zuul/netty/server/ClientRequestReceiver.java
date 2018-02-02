@@ -38,16 +38,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import com.netflix.netty.common.SourceAddressChannelHandler;
@@ -79,6 +70,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     private static final String SCHEME_HTTPS = "https";
     public static final AttributeKey<HttpRequestMessage> ATTR_ZUUL_REQ = AttributeKey.newInstance("_zuul_request");
     public static final AttributeKey<HttpResponseMessage> ATTR_ZUUL_RESP = AttributeKey.newInstance("_zuul_response");
+    public static final AttributeKey<Boolean> ATTR_LAST_CONTENT_RECEIVED = AttributeKey.newInstance("_last_content_received");
 
 
     public ClientRequestReceiver(SessionContextDecorator decorator) {
@@ -91,6 +83,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     public static HttpResponseMessage getResponseFromChannel(Channel ch) {
         return ch.attr(ATTR_ZUUL_RESP).get();
+    }
+
+    public static boolean isLastContentReceivedForChannel(Channel ch) {
+        Boolean value = ch.attr(ATTR_LAST_CONTENT_RECEIVED).get();
+        return value == null ? false : value.booleanValue();
     }
 
     @Override
@@ -118,6 +115,13 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ctx.fireChannelRead(zuulRequest);
         }
         else if (msg instanceof HttpContent) {
+            // Flag that we have now received the LastContent for this request from the client.
+            // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
+            // a response to the client channel.
+            if (msg instanceof LastHttpContent) {
+                ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
+            }
+
             if ((zuulRequest != null) && (! zuulRequest.getContext().isCancelled())) {
                 ctx.fireChannelRead(msg);
             } else {
@@ -174,6 +178,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             final Channel channel = ctx.channel();
             channel.attr(ATTR_ZUUL_REQ).set(null);
             channel.attr(ATTR_ZUUL_RESP).set(null);
+            channel.attr(ATTR_LAST_CONTENT_RECEIVED).set(null);
         }
     }
 

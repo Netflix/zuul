@@ -16,7 +16,9 @@
 
 package com.netflix.zuul.netty.server;
 
-//import com.netflix.server.context.RequestInfo;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.NoopRegistry;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.exception.ZuulException;
@@ -24,10 +26,6 @@ import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.ChannelUtils;
-/*import com.netflix.zuul.netty.platform.NFFilterChannelHandler;
-import com.netflix.zuul.netty.prefetch.PrefetchRequest;
-import com.netflix.zuul.stats.NfStatus;
-import com.netflix.zuul.stats.NfStatusUtils;*/
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,7 +60,10 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
  */
 public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
+    private static final Registry NOOP_REGISTRY = new NoopRegistry();
+
     private final RequestCompleteHandler requestCompleteHandler;
+    private final Counter responseBeforeReceivedLastContentCounter;
 
     //state
     private boolean isHandlingRequest;
@@ -75,7 +76,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(ClientResponseWriter.class);
 
     public ClientResponseWriter(RequestCompleteHandler requestCompleteHandler) {
+        this(requestCompleteHandler, NOOP_REGISTRY);
+    }
+
+    public ClientResponseWriter(RequestCompleteHandler requestCompleteHandler, Registry registry) {
         this.requestCompleteHandler = requestCompleteHandler;
+        this.responseBeforeReceivedLastContentCounter = registry.counter("server.http.requests.responseBeforeReceivedLastContent");
     }
 
     @Override
@@ -105,9 +111,19 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             if ("close".equalsIgnoreCase(zuulResponse.getHeaders().getFirst("Connection"))) {
                 closeConnection = true;
             }
-            ctx.attr(ATTR_ZUUL_RESP).set(zuulResponse);
+            channel.attr(ATTR_ZUUL_RESP).set(zuulResponse);
 
             if (channel.isActive()) {
+
+                // Track if this is happening.
+                if (! ClientRequestReceiver.isLastContentReceivedForChannel(channel)) {
+                    responseBeforeReceivedLastContentCounter.increment();
+                    LOG.warn("Writing response to client channel before have received the LastContent of request! "
+                            + zuulResponse.getInboundRequest().getInfoForLogging() + ", "
+                            + ChannelUtils.channelInfoForLogging(channel));
+                }
+
+                // Write out and flush the response to the client channel.
                 channel.write(buildHttpResponse(zuulResponse));
                 writeBufferedBodyContent(zuulResponse, channel);
                 channel.flush();
