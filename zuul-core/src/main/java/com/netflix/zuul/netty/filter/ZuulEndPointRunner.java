@@ -206,6 +206,11 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
 
         @Override
+        public boolean needsBodyBuffered(HttpRequestMessage input) {
+            return true;
+        }
+
+        @Override
         public HttpResponseMessage getDefaultOutput(HttpRequestMessage input) {
             return HttpResponseMessageImpl.defaultErrorResponse(input);
         }
