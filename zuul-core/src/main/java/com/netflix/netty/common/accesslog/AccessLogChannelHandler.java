@@ -76,8 +76,11 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
         {
             if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent)
             {
+                // Get the stored request, and remove the attr from channel to cleanup.
+                RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
+                ctx.channel().attr(ATTR_REQ_STATE).set(null);
+
                 // Response complete, so now write to access log.
-                RequestState state = ctx.attr(ATTR_REQ_STATE).get();
                 long durationNs = System.nanoTime() - state.startTimeNs;
                 String remoteIp = ctx.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
                 Integer localPort = ctx.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get();

@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.insights;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,7 +48,6 @@ public class PassportStateHttpServerHandler extends CombinedChannelDuplexHandler
     
     private static class InboundHandler extends ChannelInboundHandlerAdapter
     {
-
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
         {
@@ -74,6 +74,19 @@ public class PassportStateHttpServerHandler extends CombinedChannelDuplexHandler
             }
             
             super.channelRead(ctx, msg);
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
+        {
+            try {
+                super.userEventTriggered(ctx, evt);
+            }
+            finally {
+                if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+                    CurrentPassport.clearFromChannel(ctx.channel());
+                }
+            }
         }
     }
 
