@@ -16,6 +16,8 @@
 
 package com.netflix.netty.common.metrics;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
+import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -78,6 +80,19 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
             }
 
             super.channelRead(ctx, msg);
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
+        {
+            try {
+                super.userEventTriggered(ctx, evt);
+            }
+            finally {
+                if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+                    ctx.channel().attr(ATTR_STATE).set(null);
+                }
+            }
         }
     }
 

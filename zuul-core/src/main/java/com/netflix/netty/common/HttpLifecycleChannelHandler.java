@@ -90,11 +90,13 @@ public abstract class HttpLifecycleChannelHandler extends CombinedChannelDuplexH
 
         HttpRequest request = ctx.channel().attr(ATTR_HTTP_REQ).get();
         HttpResponse response = ctx.channel().attr(ATTR_HTTP_RESP).get();
-        ctx.pipeline().fireUserEventTriggered(new CompleteEvent(reason, request, response));
-        
+
         // Cleanup channel attributes.
         ctx.channel().attr(ATTR_HTTP_REQ).set(null);
         ctx.channel().attr(ATTR_HTTP_RESP).set(null);
+
+        // Fire the event to whole pipeline.
+        ctx.pipeline().fireUserEventTriggered(new CompleteEvent(reason, request, response));
         
         return true;
     }
