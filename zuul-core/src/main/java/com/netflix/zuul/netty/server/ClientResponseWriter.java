@@ -24,8 +24,12 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpRequestInfo;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.stats.status.StatusCategory;
+import com.netflix.zuul.stats.status.StatusCategoryUtils;
+import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -117,10 +121,17 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
                 // Track if this is happening.
                 if (! ClientRequestReceiver.isLastContentReceivedForChannel(channel)) {
-                    responseBeforeReceivedLastContentCounter.increment();
-                    LOG.warn("Writing response to client channel before have received the LastContent of request! "
-                            + zuulResponse.getInboundRequest().getInfoForLogging() + ", "
-                            + ChannelUtils.channelInfoForLogging(channel));
+
+                    StatusCategory status = StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
+                    if (ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT.equals(status)) {
+                        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because the connection will have to be discarded anyway.
+                    }
+                    else {
+                        responseBeforeReceivedLastContentCounter.increment();
+                        LOG.warn("Writing response to client channel before have received the LastContent of request! "
+                                + zuulResponse.getInboundRequest().getInfoForLogging() + ", "
+                                + ChannelUtils.channelInfoForLogging(channel));
+                    }
                 }
 
                 // Write out and flush the response to the client channel.
