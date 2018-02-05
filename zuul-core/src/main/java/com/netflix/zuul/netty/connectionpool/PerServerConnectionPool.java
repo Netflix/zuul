@@ -28,10 +28,8 @@ import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.zuul.stats.Timing;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,17 +136,13 @@ public class PerServerConnectionPool implements IConnectionPool
         return true;
     }
 
-    private void resetIdleStateHandler(final Channel ch, ConnectionPoolConfig connectionPoolConfig) {
-        ch.pipeline().remove("idleStateHandler");
-        ch.pipeline().addBefore("originNettyLogger", "idleStateHandler", new IdleStateHandler(0, 0, connectionPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
-    }
 
     /** function to run when a connection is acquired before returning it to caller. */
     private void onAcquire(final PooledConnection conn, String httpMethod, String uriStr, 
                            int attemptNum, CurrentPassport passport)
     {
         passport.setOnChannel(conn.getChannel());
-        resetIdleStateHandler(conn.getChannel(), conn.getConfig());
+        DefaultClientChannelManager.removeHandlerFromPipeline(DefaultClientChannelManager.IDLE_STATE_HANDLER_NAME, conn.getChannel().pipeline());
 
         conn.setInUse();
         if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: " + conn.toString());

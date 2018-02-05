@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.netty.common.HttpClientLifecycleChannelHandler;
+import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.insights.PassportStateOriginHandler;
@@ -25,11 +27,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.handler.timeout.IdleStateHandler;
-import com.netflix.netty.common.HttpClientLifecycleChannelHandler;
-import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
-
-import java.util.concurrent.TimeUnit;
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
@@ -67,7 +64,6 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
                 false
         ));
         pipeline.addLast(new PassportStateHttpClientHandler());
-        pipeline.addLast("idleStateHandler", new IdleStateHandler(0, 0, connectionPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
         pipeline.addLast("originNettyLogger", nettyLogger);
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
