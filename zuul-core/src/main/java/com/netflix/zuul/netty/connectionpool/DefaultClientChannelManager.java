@@ -26,12 +26,14 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.SpectatorUtils;
+import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -86,6 +89,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
+
+    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
 
     public DefaultClientChannelManager(String originName, String vip, IClientConfig clientConfig, Registry spectatorRegistry) {
         this.loadBalancer = createLoadBalancer(clientConfig);
@@ -245,6 +250,9 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         else {
             final ChannelPipeline pipeline = conn.getChannel().pipeline();
             removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
+            pipeline.addAfter(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, IDLE_STATE_HANDLER_NAME,
+                new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
+
 
             // Attempt to return connection to the pool.
             PerServerConnectionPool pool = perServerPools.get(conn.getServer());
@@ -265,7 +273,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return released;
     }
 
-    private void removeHandlerFromPipeline(String handlerName, ChannelPipeline pipeline) {
+    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
         if (pipeline.get(handlerName) != null) {
             pipeline.remove(handlerName);
         }
