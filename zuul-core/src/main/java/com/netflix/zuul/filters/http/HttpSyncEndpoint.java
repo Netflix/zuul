@@ -38,8 +38,7 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
     // Feature flag for enabling this while we get some real data for the impact.
     private static final CachedDynamicBooleanProperty WAIT_FOR_LASTCONTENT = new CachedDynamicBooleanProperty("zuul.endpoint.sync.wait_for_lastcontent", true);
 
-    private ZuulMessage response = null;
-    private Subscriber subscriber = null;
+    private static final String KEY_FOR_SUBSCRIBER = "_HttpSyncEndpoint_subscriber";
 
     @Override
     public HttpResponseMessage getDefaultOutput(HttpRequestMessage request)
@@ -54,8 +53,9 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
             // Return an observable that won't complete until after we have received the LastContent from client (ie. that we've
             // received the whole request body), so that we can't potentially corrupt the clients' http state on this connection.
             return Observable.create(subscriber -> {
-                this.response = this.apply(input);
-                this.subscriber = subscriber;
+                ZuulMessage response = this.apply(input);
+                ResponseState state = new ResponseState(response, subscriber);
+                input.getContext().set(KEY_FOR_SUBSCRIBER, state);
             });
         }
         else {
@@ -68,13 +68,25 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
     {
         // Only call onNext() after we've received the LastContent of request from client.
         if (chunk instanceof LastHttpContent) {
-            if (subscriber != null) {
-                subscriber.onNext(response);
-                subscriber.onCompleted();
-                response = null;
-                subscriber = null;
+            ResponseState state = (ResponseState) zuulMessage.getContext().get(KEY_FOR_SUBSCRIBER);
+            if (state != null) {
+                state.subscriber.onNext(state.response);
+                state.subscriber.onCompleted();
+                zuulMessage.getContext().remove(KEY_FOR_SUBSCRIBER);
             }
         }
         return super.processContentChunk(zuulMessage, chunk);
+    }
+
+    private static class ResponseState
+    {
+        final ZuulMessage response;
+        final Subscriber subscriber;
+
+        public ResponseState(ZuulMessage response, Subscriber subscriber)
+        {
+            this.response = response;
+            this.subscriber = subscriber;
+        }
     }
 }
