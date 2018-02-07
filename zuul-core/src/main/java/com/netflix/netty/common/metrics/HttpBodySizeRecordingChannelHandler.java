@@ -17,13 +17,7 @@
 package com.netflix.netty.common.metrics;
 
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
-import com.netflix.zuul.passport.CurrentPassport;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.AttributeKey;
@@ -54,8 +48,20 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         return new ResponseBodySizeProvider(ch);
     }
     
-    private static State getCurrentState(Channel ch) {
-        return ch.attr(ATTR_STATE).get();
+    private static State getOrCreateCurrentState(Channel ch)
+    {
+        State state = ch.attr(ATTR_STATE).get();
+        if (state == null) {
+            state = createNewState(ch);
+        }
+        return state;
+    }
+
+    private static State createNewState(Channel ch)
+    {
+        State state = new State();
+        ch.attr(ATTR_STATE).set(state);
+        return state;
     }
 
     private static class InboundChannelHandler extends ChannelInboundHandlerAdapter
@@ -67,14 +73,13 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
             
             // Reset the state as each new request comes in.
             if (msg instanceof HttpRequest) {
-                state = new State();
-                ctx.channel().attr(ATTR_STATE).set(state);
+                state = createNewState(ctx.channel());
             }
             
             // Update the request body size with this chunk.
             if (msg instanceof HttpContent) {
                 if (state == null) {
-                    state = getCurrentState(ctx.channel());
+                    state = getOrCreateCurrentState(ctx.channel());
                 }
                 state.requestBodySize += ((HttpContent) msg).content().readableBytes();
             }
@@ -101,7 +106,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
         {
-            State state = getCurrentState(ctx.channel());
+            State state = getOrCreateCurrentState(ctx.channel());
 
             // Update the response body size with this chunk.
             if (msg instanceof HttpContent) {
@@ -130,7 +135,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         @Override
         public Long get()
         {
-            State state = getCurrentState(channel);
+            State state = getOrCreateCurrentState(channel);
             return state == null ? 0 : state.requestBodySize;
         }
     }
@@ -147,7 +152,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         @Override
         public Long get()
         {
-            State state = getCurrentState(channel);
+            State state = getOrCreateCurrentState(channel);
             return state == null ? 0 : state.responseBodySize;
         }
     }
