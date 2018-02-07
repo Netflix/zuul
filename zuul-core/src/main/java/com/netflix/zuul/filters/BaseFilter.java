@@ -16,12 +16,18 @@
 package com.netflix.zuul.filters;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.config.CachedDynamicIntProperty;
+import com.netflix.spectator.api.Counter;
+import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.HttpContent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -45,7 +51,23 @@ import static org.mockito.Mockito.when;
  */
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
-    private final CachedDynamicBooleanProperty filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
+    private final String baseName;
+    private final AtomicInteger concurrentCount;
+    private final Counter concurrencyRejections;
+
+    private final CachedDynamicBooleanProperty filterDisabled;
+    private final CachedDynamicIntProperty filterConcurrencyLimit;
+
+    private static final CachedDynamicBooleanProperty concurrencyProtectEnabled = new CachedDynamicBooleanProperty("zuul.filter.concurrency.protect.enabled", true);
+
+
+    protected BaseFilter() {
+        baseName = this.getClass().getSimpleName() + "." + filterType().toString();
+        concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
+        concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
+        filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
+        filterConcurrencyLimit = new CachedDynamicIntProperty(maxConcurrencyPropertyName(), 4000);
+    }
 
     @Override
     public String filterName() {
@@ -64,7 +86,16 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
      * @return
      */
     public String disablePropertyName() {
-        return "zuul." + this.getClass().getSimpleName() + "." + filterType().toString() + ".disable";
+        return "zuul." + baseName + ".disable";
+    }
+
+    /**
+     * The name of the Archaius property for this filter's max concurrency. by default it is zuul.[classname].[filtertype].concurrency.limit
+     *
+     * @return
+     */
+    public String maxConcurrencyPropertyName() {
+        return "zuul." + baseName + ".concurrency.limit";
     }
 
     /**
@@ -103,6 +134,21 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
         return chunk;
+    }
+
+    @Override
+    public void incrementConcurrency() throws ZuulFilterConcurrencyExceededException {
+        final int limit = filterConcurrencyLimit.get();
+        if ((concurrencyProtectEnabled.get()) && (concurrentCount.get() >= limit)) {
+            concurrencyRejections.increment();
+            throw new ZuulFilterConcurrencyExceededException(this, limit);
+        }
+        concurrentCount.incrementAndGet();
+    }
+
+    @Override
+    public void decrementConcurrency() {
+        concurrentCount.decrementAndGet();
     }
 
     public static class TestUnit {

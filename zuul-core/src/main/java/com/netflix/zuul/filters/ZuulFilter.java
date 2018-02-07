@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.filters;
 
+import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
@@ -57,9 +58,22 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     boolean overrideStopFilterProcessing();
 
     /**
+     * Called by zuul filter runner before sending request through this filter. The filter can throw
+     * ZuulFilterConcurrencyExceededException if it has reached its concurrent requests limit and does
+     * not wish to process the request. Generally only useful for async filters.
+     */
+    void incrementConcurrency() throws ZuulFilterConcurrencyExceededException;
+
+    /**
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
      */
     Observable<O> applyAsync(I input);
+
+    /**
+     * Called by zuul filter after request is processed by this filter.
+     *
+     */
+    void decrementConcurrency();
 
     FilterSyncType getSyncType();
 

@@ -17,6 +17,7 @@
 package com.netflix.zuul.filters.http;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.SyncZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
@@ -76,6 +77,16 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
             }
         }
         return super.processContentChunk(zuulMessage, chunk);
+    }
+
+    @Override
+    public void incrementConcurrency() {
+        //NOOP, since this is supposed to be a SYNC filter in spirit
+    }
+
+    @Override
+    public void decrementConcurrency() {
+        //NOOP, since this is supposed to be a SYNC filter in spirit
     }
 
     private static class ResponseState
