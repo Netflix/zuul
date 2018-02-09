@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.filters;
 
+import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
@@ -86,4 +87,13 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
         return chunk;
     }
 
+    @Override
+    public void incrementConcurrency() {
+        //NOOP for sync filters
+    }
+
+    @Override
+    public void decrementConcurrency() {
+        //NOOP for sync filters
+    }
 }
