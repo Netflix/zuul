@@ -807,6 +807,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             //detach from current origin.
             unlinkFromOrigin();
             //retry request with different origin
+            passport.add(ORIGIN_RETRY_START);
             proxyRequestToOrigin();
         } else {
             SessionContext zuulCtx = context;
