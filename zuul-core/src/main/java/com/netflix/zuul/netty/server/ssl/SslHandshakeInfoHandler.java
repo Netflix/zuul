@@ -100,17 +100,32 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
                 else {
                     String clientIP = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
                     Throwable cause = sslEvent.cause();
-                    String msg = "Unsuccessful SSL Handshake: " + String.valueOf(sslEvent)
-                            + ", client_ip = " + String.valueOf(clientIP)
-                            + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel())
-                            + ", error = " + String.valueOf(cause);
-                    if (cause != null && cause instanceof ClosedChannelException) {
-                        LOG.warn(msg);
-                    } else {
-                        LOG.warn(msg, cause);
-                    }
-                    incrementCounters(sslEvent, null);
 
+                    PassportState passportState = CurrentPassport.fromChannel(ctx.channel()).getState();
+                    if (cause instanceof ClosedChannelException &&
+                            (PassportState.SERVER_CH_INACTIVE.equals(passportState) || PassportState.SERVER_CH_IDLE_TIMEOUT.equals(passportState))) {
+                        // Either client closed the connection without/before having completed a handshake, or
+                        // the connection idle timed-out before handshake.
+                        // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then closing terminal
+                        // without sending anything.
+                        // So don't treat these as SSL handshake failures.
+                        LOG.info("Client closed connection or it idle timed-out without doing an ssl handshake. "
+                                + ", client_ip = " + String.valueOf(clientIP)
+                                + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    }
+                    else {
+                        String msg = "Unsuccessful SSL Handshake: " + String.valueOf(sslEvent)
+                                + ", client_ip = " + String.valueOf(clientIP)
+                                + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel())
+                                + ", error = " + String.valueOf(cause);
+                        if (cause != null && cause instanceof ClosedChannelException) {
+                            LOG.warn(msg);
+                        }
+                        else {
+                            LOG.warn(msg, cause);
+                        }
+                        incrementCounters(sslEvent, null);
+                    }
 
                     // ### TESTING
 
