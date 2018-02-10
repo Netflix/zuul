@@ -24,6 +24,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.loadbalancer.Server;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
@@ -110,11 +111,29 @@ public class RequestAttempt
             if (availabilityZone != null && availabilityZone.length() > 0) {
                 region = availabilityZone.substring(0, availabilityZone.length() - 1);
             }
-            final Server.MetaInfo metaInfo = server.getMetaInfo();
-            if (metaInfo != null) {
-                this.asg = metaInfo.getServerGroup();
-                this.vip = metaInfo.getServiceIdForDiscovery();
-                this.instanceId = metaInfo.getInstanceId();
+
+            if (server instanceof DiscoveryEnabledServer) {
+                InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
+                this.app = instanceInfo.getAppName().toLowerCase();
+                this.asg = instanceInfo.getASGName();
+                this.instanceId = instanceInfo.getInstanceId();
+                this.host = instanceInfo.getHostName();
+                this.port = instanceInfo.getPort();
+
+                if (server.getPort() == instanceInfo.getSecurePort()) {
+                    this.vip = instanceInfo.getSecureVipAddress();
+                }
+                else {
+                    this.vip = instanceInfo.getVIPAddress();
+                }
+            }
+            else {
+                final Server.MetaInfo metaInfo = server.getMetaInfo();
+                if (metaInfo != null) {
+                    this.asg = metaInfo.getServerGroup();
+                    this.vip = metaInfo.getServiceIdForDiscovery();
+                    this.instanceId = metaInfo.getInstanceId();
+                }
             }
         }
 

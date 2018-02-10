@@ -171,10 +171,13 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
             }
 
-            //async filter
+            // async filter
+            filter.incrementConcurrency();
+            final FilterChainResumer resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
             filter.applyAsync(inMesg)
-                    .observeOn(Schedulers.from(getChannelHandlerContext(inMesg).executor()))
-                    .subscribe(new FilterChainResumer(inMesg, filter, snapshot, startTime));
+                .observeOn(Schedulers.from(getChannelHandlerContext(inMesg).executor()))
+                .doOnUnsubscribe(resumer::decrementConcurrency)
+                .subscribe(resumer);
 
             return null;  //wait for the async filter to finish
         }
@@ -306,12 +309,21 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private final ZuulFilter<I, O> filter;
         private ZuulMessage snapshot;
         private final long startTime;
+        private volatile boolean decrementDone;
 
         public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
             this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
             this.filter = Preconditions.checkNotNull(filter, "filter");
             this.snapshot = snapshot;
             this.startTime = startTime;
+            this.decrementDone = false;
+        }
+
+        void decrementConcurrency() {
+            if (! decrementDone) {
+                filter.decrementConcurrency();
+                decrementDone = true;
+            }
         }
 
         @Override
@@ -332,6 +344,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         @Override
         public void onError(Throwable ex) {
             try {
+                decrementConcurrency();
                 recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
                 final O outMesg = handleFilterException(inMesg, filter, ex);
                 resumeInBindingContext(outMesg, filter.filterName());
@@ -343,7 +356,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         @Override
         public void onCompleted() {
-            //NOOP
+            decrementConcurrency();
         }
     }
 
