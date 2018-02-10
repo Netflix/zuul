@@ -17,11 +17,7 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.netty.common.Http1ConnectionCloseHandler;
-import com.netflix.netty.common.Http1ConnectionExpiryHandler;
-import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
-import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
-import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.netty.common.*;
 import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -247,6 +243,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addTimeoutHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new IdleStateHandler(0, 0, idleTimeout, TimeUnit.MILLISECONDS));
+        pipeline.addLast(new CloseOnIdleStateHandler());
     }
 
     protected void addSslInfoHandlers(ChannelPipeline pipeline, boolean isSSlFromIntermediary) {
