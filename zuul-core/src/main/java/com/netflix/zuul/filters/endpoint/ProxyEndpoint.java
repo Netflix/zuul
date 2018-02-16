@@ -22,6 +22,7 @@ import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.CachedDynamicIntProperty;
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
@@ -119,11 +120,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private int attemptNum;
     private RequestAttempt currentRequestAttempt;
     private RequestStat requestStat;
-
+    private final byte[] sslRetryBodyCache;
 
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
-    private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent",
-            "500");
+    private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
+    private static final DynamicBooleanProperty ENABLE_CACHING_SSL_BODIES = new DynamicBooleanProperty("zuul.cache.ssl.bodies", true);
 
     private static final CachedDynamicIntProperty MAX_OUTBOUND_READ_TIMEOUT = new CachedDynamicIntProperty("zuul.origin.readtimeout.max", 90 * 1000);
 
@@ -133,6 +134,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
+    private final Counter populatedSslRetryBody;
 
 
     public ProxyEndpoint(final HttpRequestMessage inMesg, final ChannelHandlerContext ctx,
@@ -151,6 +153,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         requestAttempts = RequestAttempts.getFromSessionContext(context);
         passport = CurrentPassport.fromSessionContext(context);
         chosenServer = new AtomicReference<>();
+
+        this.sslRetryBodyCache = preCacheBodyForRetryingSslRequests();
+        this.populatedSslRetryBody = SpectatorUtils.newCounter("zuul.populated.ssl.retry.body", origin.getVip());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -462,6 +467,16 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
+    private byte[] preCacheBodyForRetryingSslRequests() {
+        // Netty SSL handler clears body ByteBufs, so we need to cache the body if we want to retry POSTs
+        if (ENABLE_CACHING_SSL_BODIES.get() &&
+                // only cache requests if already buffered
+                origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure, false) && zuulRequest.hasCompleteBody()) {
+            return zuulRequest.getBody();
+        }
+        return null;
+    }
+
     private void writeClientRequestToOrigin(final PooledConnection conn) {
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
@@ -474,6 +489,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         final ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
         pipeline.addBefore("connectionPoolHandler", OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
+
+        // if SSL origin request body is cached and has been cleared by Netty SslHandler, set it from cache
+        // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
+        if (sslRetryBodyCache != null && attemptNum > 1 && zuulRequest.getBody() != null && zuulRequest.getBody().length == 0) {
+            zuulRequest.setBody(sslRetryBodyCache);
+            populatedSslRetryBody.increment();
+        }
 
         ch.write(zuulRequest);
         writeBufferedBodyContent(zuulRequest, ch);
