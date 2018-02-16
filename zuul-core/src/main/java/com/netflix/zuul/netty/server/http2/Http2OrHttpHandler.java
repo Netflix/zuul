@@ -52,6 +52,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
     private final ChannelHandler http2StreamHandler;
     private final int maxConcurrentStreams;
+    private final int initialWindowSize;
     private final long maxHeaderTableSize;
     private final long maxHeaderListSize;
     private final Http2MetricsChannelHandlers http2MetricsChannelHandlers;
@@ -66,6 +67,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         super(ApplicationProtocolNames.HTTP_1_1);
         this.http2StreamHandler = http2StreamHandler;
         this.maxConcurrentStreams = channelConfig.get(CommonChannelConfigKeys.maxConcurrentStreams);
+        this.initialWindowSize = channelConfig.get(CommonChannelConfigKeys.initialWindowSize);
         this.maxRequestsPerConnection = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnection);
         this.maxExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
         this.maxHeaderTableSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderTableSize);
@@ -100,6 +102,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         // setup the initial stream settings for the server to use.
         Http2Settings settings = new Http2Settings()
                 .maxConcurrentStreams(maxConcurrentStreams)
+                .initialWindowSize(initialWindowSize)
                 .headerTableSize(maxHeaderTableSize)
                 .maxHeaderListSize(maxHeaderListSize);
 
@@ -131,7 +134,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
         pipeline.addAfter("h2_metrics_outbound", "h2_muliplex_codec", multiplexCodec);
 
-        // Add this max-requests handler imbetween the h2 codex and the multiplex codec.
+        // Add this max-requests handler imbetween the h2 codec and the multiplex codec.
         pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_max_requests_per_conn",
                 new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, maxExpiry));
         pipeline.addAfter("h2_max_requests_per_conn", "h2_conn_close", connectionCloseHandler);
