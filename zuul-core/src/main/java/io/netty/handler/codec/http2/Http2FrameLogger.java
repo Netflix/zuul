@@ -65,99 +65,99 @@ public class Http2FrameLogger extends ChannelHandlerAdapter {
     public void logData(Direction direction, ChannelHandlerContext ctx, int streamId, ByteBuf data, int padding,
                         boolean endStream) {
         if (enabled()) {
-            log(direction,
-                    "%s DATA: streamId=%d, padding=%d, endStream=%b, length=%d, bytes=%s",
-                    ctx.channel(), streamId, padding, endStream, data.readableBytes(), toString(data));
+            log(direction, ctx,
+                    "DATA: streamId=%d, endStream=%b, length=%d",
+                    streamId, endStream, data.readableBytes());
         }
     }
 
     public void logHeaders(Direction direction, ChannelHandlerContext ctx, int streamId, Http2Headers headers,
                            int padding, boolean endStream) {
         if (enabled()) {
-            log(direction, "%s HEADERS: streamId=%d, headers=%s, padding=%d, endStream=%b",
-                    ctx.channel(), streamId, headers, padding, endStream);
+            log(direction, ctx, "HEADERS: streamId=%d, headers=%s, endStream=%b",
+                    streamId, headers, endStream);
         }
     }
 
     public void logHeaders(Direction direction, ChannelHandlerContext ctx, int streamId, Http2Headers headers,
                            int streamDependency, short weight, boolean exclusive, int padding, boolean endStream) {
         if (enabled()) {
-            log(direction,
-                    "%s HEADERS: streamId=%d, headers=%s, streamDependency=%d, weight=%d, "
-                            + "exclusive=%b, padding=%d, endStream=%b",
-                    ctx.channel(), streamId, headers, streamDependency, weight, exclusive, padding, endStream);
+            log(direction, ctx,
+                    "HEADERS: streamId=%d, headers=%s, streamDependency=%d, weight=%d, "
+                            + "exclusive=%b, endStream=%b",
+                    streamId, headers, streamDependency, weight, exclusive, endStream);
         }
     }
 
     public void logPriority(Direction direction, ChannelHandlerContext ctx, int streamId, int streamDependency,
                             short weight, boolean exclusive) {
         if (enabled()) {
-            log(direction, "%s PRIORITY: streamId=%d, streamDependency=%d, weight=%d, exclusive=%b",
-                    ctx.channel(), streamId, streamDependency, weight, exclusive);
+            log(direction, ctx, "PRIORITY: streamId=%d, streamDependency=%d, weight=%d, exclusive=%b",
+                    streamId, streamDependency, weight, exclusive);
         }
     }
 
     public void logRstStream(Direction direction, ChannelHandlerContext ctx, int streamId, long errorCode) {
         if (enabled()) {
-            log(direction, "%s RST_STREAM: streamId=%d, errorCode=%d", ctx.channel(), streamId, errorCode);
+            log(direction, ctx, "RST_STREAM: streamId=%d, errorCode=%d", streamId, errorCode);
         }
     }
 
     public void logSettingsAck(Direction direction, ChannelHandlerContext ctx) {
         if (enabled()) {
-            log(direction, "%s SETTINGS: ack=true", ctx.channel());
+            log(direction, ctx, "SETTINGS: ack=true");
         }
     }
 
     public void logSettings(Direction direction, ChannelHandlerContext ctx, Http2Settings settings) {
         if (enabled()) {
-            log(direction, "%s SETTINGS: ack=false, settings=%s", ctx.channel(), settings);
+            log(direction, ctx, "SETTINGS: ack=false, settings=%s", settings);
         }
     }
 
     public void logPing(Direction direction, ChannelHandlerContext ctx, ByteBuf data) {
         if (enabled()) {
-            log(direction, "%s PING: ack=false, length=%d, bytes=%s", ctx.channel(),
+            log(direction, ctx, "PING: ack=false, length=%d, bytes=%s",
                     data.readableBytes(), toString(data));
         }
     }
 
     public void logPingAck(Direction direction, ChannelHandlerContext ctx, ByteBuf data) {
         if (enabled()) {
-            log(direction, "%s PING: ack=true, length=%d, bytes=%s",
-                    ctx.channel(), data.readableBytes(), toString(data));
+            log(direction, ctx, "PING: ack=true, length=%d, bytes=%s",
+                    data.readableBytes(), toString(data));
         }
     }
 
     public void logPushPromise(Direction direction, ChannelHandlerContext ctx, int streamId, int promisedStreamId,
                                Http2Headers headers, int padding) {
         if (enabled()) {
-            log(direction, "%s PUSH_PROMISE: streamId=%d, promisedStreamId=%d, headers=%s, padding=%d",
-                    ctx.channel(), streamId, promisedStreamId, headers, padding);
+            log(direction, ctx, "PUSH_PROMISE: streamId=%d, promisedStreamId=%d, headers=%s, padding=%d",
+                    streamId, promisedStreamId, headers, padding);
         }
     }
 
     public void logGoAway(Direction direction, ChannelHandlerContext ctx, int lastStreamId, long errorCode,
                           ByteBuf debugData) {
         if (enabled()) {
-            log(direction, "%s GO_AWAY: lastStreamId=%d, errorCode=%d, length=%d, bytes=%s",
-                    ctx.channel(), lastStreamId, errorCode, debugData.readableBytes(), toString(debugData));
+            log(direction, ctx, "GO_AWAY: lastStreamId=%d, errorCode=%d, length=%d, bytes=%s",
+                    lastStreamId, errorCode, debugData.readableBytes(), toString(debugData));
         }
     }
 
     public void logWindowsUpdate(Direction direction, ChannelHandlerContext ctx, int streamId,
                                  int windowSizeIncrement) {
         if (enabled()) {
-            log(direction, "%s WINDOW_UPDATE: streamId=%d, windowSizeIncrement=%d",
-                    ctx.channel(), streamId, windowSizeIncrement);
+            log(direction, ctx, "WINDOW_UPDATE: streamId=%d, windowSizeIncrement=%d",
+                    streamId, windowSizeIncrement);
         }
     }
 
     public void logUnknownFrame(Direction direction, ChannelHandlerContext ctx, byte frameType, int streamId,
                                 Http2Flags flags, ByteBuf data) {
         if (enabled()) {
-            log(direction, "%s UNKNOWN: frameType=%d, streamId=%d, flags=%d, length=%d, bytes=%s",
-                    ctx.channel(), frameType & 0xFF, streamId, flags.value(), data.readableBytes(), toString(data));
+            log(direction, ctx, "UNKNOWN: frameType=%d, streamId=%d, flags=%d, length=%d, bytes=%s",
+                    frameType & 0xFF, streamId, flags.value(), data.readableBytes(), toString(data));
         }
     }
 
@@ -176,13 +176,13 @@ public class Http2FrameLogger extends ChannelHandlerAdapter {
         return ByteBufUtil.hexDump(buf, buf.readerIndex(), length) + "...";
     }
 
-    private void log(Direction direction, String format, Object... args) {
-        StringBuilder b = new StringBuilder(200);
-        b.append("\n----------------")
+    private void log(Direction direction, ChannelHandlerContext ctx, String format, Object... args) {
+        StringBuilder b = new StringBuilder(200)
                 .append(direction.name())
-                .append("--------------------\n")
+                .append(": ")
                 .append(String.format(format, args))
-                .append("\n------------------------------------");
+                .append(" -- ")
+                .append(String.valueOf(ctx.channel()));
         logger.log(level, b.toString());
     }
 }
