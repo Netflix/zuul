@@ -170,11 +170,13 @@ public abstract class BaseServerStartup
 
     public static void addHttp2DefaultConfig(ChannelConfig config) {
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxConcurrentStreams,
-                new DynamicIntProperty("zuul.server.http2.max.concurrent.streams", 50).get()));
+                new DynamicIntProperty("server.http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue()).get()));
+        config.add(new ChannelConfigValue(CommonChannelConfigKeys.initialWindowSize,
+                new DynamicIntProperty("server.http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue()).get()));
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
-                new DynamicIntProperty("zuul.server.http2.maxheadertablesize", 65536).get()));
+                new DynamicIntProperty("server.http2.maxheadertablesize", 65536).get()));
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderListSize,
-                new DynamicIntProperty("zuul.server.http2.maxheaderlistsize", 32768).get()));
+                new DynamicIntProperty("server.http2.maxheaderlistsize", 32768).get()));
 
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
