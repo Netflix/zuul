@@ -16,25 +16,22 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.netflix.spectator.api.Registry;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.DefaultHttp2FrameWriter;
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2FrameCodecWithInitialSettings;
-import io.netty.handler.codec.http2.Http2MultiplexCodec;
-import io.netty.handler.codec.http2.Http2Settings;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.handler.ssl.ApplicationProtocolNames;
-import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
-import io.netty.util.AttributeKey;
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
+import com.netflix.spectator.api.Registry;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2MultiplexCodec;
+import io.netty.handler.codec.http2.Http2MultiplexCodecBuilder;
+import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.ssl.ApplicationProtocolNames;
+import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
+import io.netty.util.AttributeKey;
 
 import java.util.function.Consumer;
 
@@ -106,35 +103,20 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .headerTableSize(maxHeaderTableSize)
                 .maxHeaderListSize(maxHeaderListSize);
 
-        // NOTE: 20170303 - we're explicitly creating a DefaultHttp2FrameWriter here and passing it to the Http2FrameCodecWithInitialSettings
-        // constructor, only because it's the only way we've found to override the maxHeaderListSize for _Decoding_ (it does use it for Encoding).
-        // The one in Http2Settings seems to get ignored. Maybe a bug in the netty impl.
-        // Or maybe it's a problem with our own Http2FrameCodecWithInitialSettings class?
-        DefaultHttp2FrameWriter frameWriter = new DefaultHttp2FrameWriter();
-        try {
-            frameWriter.headersConfiguration().maxHeaderListSize(maxHeaderListSize);
-        }
-        catch (Http2Exception e) {
-            throw new IllegalArgumentException("Error setting maxHeaderListSize!", e);
-        }
-
-        Http2FrameCodecWithInitialSettings frameCodec = new Http2FrameCodecWithInitialSettings(true, frameWriter, settings);
+        Http2MultiplexCodec multiplexCodec = Http2MultiplexCodecBuilder
+                .forServer(http2StreamHandler)
+                .initialSettings(settings)
+                .validateHeaders(false)
+                .build();
+        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexCodec);
 
         // Need to pass the connection to our handler later, so store it on channel now.
-        Http2Connection connection = frameCodec.connection();
+        Http2Connection connection = multiplexCodec.connection();
         pipeline.channel().attr(H2_CONN_KEY).set(connection);
 
-        Http2StreamChannelBootstrap http2StreamChannelBootstrap = new Http2StreamChannelBootstrap().handler(http2StreamHandler);
-        Http2MultiplexCodec multiplexCodec = new Http2MultiplexCodec(true, http2StreamChannelBootstrap);
-
-        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, frameCodec);
-
+        // TODO - These handlers might need to be juggled around now that only using the multiplex codec.
         pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
-        pipeline.addAfter("h2_metrics_inbound", "h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
-
-        pipeline.addAfter("h2_metrics_outbound", "h2_muliplex_codec", multiplexCodec);
-
-        // Add this max-requests handler imbetween the h2 codec and the multiplex codec.
+        pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
         pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_max_requests_per_conn",
                 new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, maxExpiry));
         pipeline.addAfter("h2_max_requests_per_conn", "h2_conn_close", connectionCloseHandler);

@@ -22,7 +22,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2ServerDowngrader;
+import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
 import io.netty.util.AttributeKey;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
@@ -63,7 +63,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline)
     {
         pipeline.addLast(http2ResetFrameHandler);
-        pipeline.addLast("h2_downgrader", new Http2ServerDowngrader(false));
+        pipeline.addLast("h2_downgrader", new Http2StreamFrameToHttpObjectCodec(true));
         pipeline.addLast(http2StreamHeaderCleaner);
     }
 
