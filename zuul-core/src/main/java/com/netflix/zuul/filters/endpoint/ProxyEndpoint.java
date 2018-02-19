@@ -477,6 +477,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return null;
     }
 
+    private void repopulateRetryBody() {
+        // if SSL origin request body is cached and has been cleared by Netty SslHandler, set it from cache
+        // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
+        if (sslRetryBodyCache != null && attemptNum > 1 && zuulRequest.getBody() != null && zuulRequest.getBody().length == 0) {
+            zuulRequest.setBody(sslRetryBodyCache);
+            populatedSslRetryBody.increment();
+        }
+    }
+
     private void writeClientRequestToOrigin(final PooledConnection conn) {
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
@@ -490,12 +499,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         originResponseReceiver = getOriginResponseReceiver();
         pipeline.addBefore("connectionPoolHandler", OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
 
-        // if SSL origin request body is cached and has been cleared by Netty SslHandler, set it from cache
-        // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
-        if (sslRetryBodyCache != null && attemptNum > 1 && zuulRequest.getBody() != null && zuulRequest.getBody().length == 0) {
-            zuulRequest.setBody(sslRetryBodyCache);
-            populatedSslRetryBody.increment();
-        }
+        // check if body needs to be repopulated for retry
+        repopulateRetryBody();
 
         ch.write(zuulRequest);
         writeBufferedBodyContent(zuulRequest, ch);

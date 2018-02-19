@@ -190,6 +190,12 @@ public class PooledConnection {
         return channel.close();
     }
 
+    public void updateServerStats() {
+        final ServerStats stats = getServerStats();
+        stats.decrementOpenConnectionsCount();
+        stats.close();
+    }
+
     public ChannelFuture closeAndRemoveFromPool()
     {
         channelManager.remove(this);
