@@ -16,6 +16,12 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import com.netflix.netty.common.Http2ConnectionCloseHandler;
+import com.netflix.netty.common.Http2ConnectionExpiryHandler;
+import com.netflix.netty.common.channel.config.ChannelConfig;
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
+import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.zuul.logging.Http2FrameLoggingPerClientIpHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
@@ -24,9 +30,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
-import com.netflix.netty.common.channel.config.ChannelConfig;
-import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
-import com.netflix.netty.common.ssl.ServerSslConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +92,14 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
         pipeline.addLast("ssl", sslHandler);
         addSslInfoHandlers(pipeline, isSSlFromIntermediary);
         addSslClientCertChecks(pipeline);
+
+        Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry,"server", "http2-" + port);
+        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(channelConfig.get(CommonChannelConfigKeys.connCloseDelay));
+        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
+
         pipeline.addLast("http2CodecSwapper", new Http2OrHttpHandler(
-                new Http2StreamInitializer(ch, this::http1Handlers),
-                channelConfig, registry, port, maxRequestsPerConnectionInBrownout,
+                new Http2StreamInitializer(ch, this::http1Handlers, http2MetricsChannelHandlers, connectionCloseHandler, connectionExpiryHandler),
+                channelConfig,
                 cp -> {
                     http1Codec(cp);
                     http1Handlers(cp);

@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
 /**
@@ -25,6 +26,7 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
  * Date: 2/8/17
  * Time: 9:58 AM
  */
+@ChannelHandler.Sharable
 public class Http2ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler
 {
     public Http2ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry)

@@ -16,13 +16,9 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.netflix.netty.common.Http2ConnectionCloseHandler;
-import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
-import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
-import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -57,31 +53,18 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     private final int initialWindowSize;
     private final long maxHeaderTableSize;
     private final long maxHeaderListSize;
-    private final Http2MetricsChannelHandlers http2MetricsChannelHandlers;
-    private final int maxRequestsPerConnection;
-    private final int maxExpiry;
-    private final Http2ConnectionCloseHandler connectionCloseHandler;
-    private int maxRequestsPerConnectionInBrownout;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
 
-    public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig, Registry spectatorRegistry,
-                              int port, int maxRequestsPerConnectionInBrownout, Consumer<ChannelPipeline> addHttpHandlerFn) {
+    public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig,
+                              Consumer<ChannelPipeline> addHttpHandlerFn) {
         super(ApplicationProtocolNames.HTTP_1_1);
         this.http2StreamHandler = http2StreamHandler;
         this.maxConcurrentStreams = channelConfig.get(CommonChannelConfigKeys.maxConcurrentStreams);
         this.initialWindowSize = channelConfig.get(CommonChannelConfigKeys.initialWindowSize);
-        this.maxRequestsPerConnection = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnection);
-        this.maxExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
         this.maxHeaderTableSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderTableSize);
         this.maxHeaderListSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderListSize);
-        this.maxRequestsPerConnectionInBrownout = maxRequestsPerConnectionInBrownout;
         this.addHttpHandlerFn = addHttpHandlerFn;
-
-        this.http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(spectatorRegistry, "server", "http2-" + port);
-
-        int connCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
-        connectionCloseHandler = new Http2ConnectionCloseHandler(connCloseDelay);
     }
 
     @Override
@@ -120,14 +103,6 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         // Need to pass the connection to our handler later, so store it on channel now.
         Http2Connection connection = multiplexCodec.connection();
         pipeline.channel().attr(H2_CONN_KEY).set(connection);
-
-        // TODO - These handlers might need to be juggled around now that only using the multiplex codec.
-        pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
-        pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
-        pipeline.addAfter(HTTP_CODEC_HANDLER_NAME, "h2_max_requests_per_conn",
-                new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, maxExpiry));
-        pipeline.addAfter("h2_max_requests_per_conn", "h2_conn_close", connectionCloseHandler);
-
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
