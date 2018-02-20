@@ -20,15 +20,18 @@ import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2MultiplexCodec;
 import io.netty.handler.codec.http2.Http2MultiplexCodecBuilder;
 import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AttributeKey;
@@ -47,6 +50,8 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
     public static final AttributeKey<Http2Connection> H2_CONN_KEY = AttributeKey.newInstance("h2_connection");
 
+    private static final DynamicHttp2FrameLogger FRAME_LOGGER = new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
+
     private final ChannelHandler http2StreamHandler;
     private final int maxConcurrentStreams;
     private final int initialWindowSize;
@@ -58,6 +63,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     private final Http2ConnectionCloseHandler connectionCloseHandler;
     private int maxRequestsPerConnectionInBrownout;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
+
 
     public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig, Registry spectatorRegistry,
                               int port, int maxRequestsPerConnectionInBrownout, Consumer<ChannelPipeline> addHttpHandlerFn) {
@@ -105,6 +111,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
         Http2MultiplexCodec multiplexCodec = Http2MultiplexCodecBuilder
                 .forServer(http2StreamHandler)
+                .frameLogger(FRAME_LOGGER)
                 .initialSettings(settings)
                 .validateHeaders(false)
                 .build();
