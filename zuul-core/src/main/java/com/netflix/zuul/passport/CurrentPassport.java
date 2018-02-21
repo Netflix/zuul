@@ -239,21 +239,23 @@ public class CurrentPassport
     public List<StartAndEnd> findEachPairOf(PassportState startState, PassportState endState)
     {
         ArrayList<StartAndEnd> items = new ArrayList<>();
-        
+
+        StartAndEnd currentPair = null;
+
         for (PassportItem item : history) {
+
             if (item.getState() == startState) {
-                StartAndEnd sae = new StartAndEnd();
-                sae.startTime = item.getTime();
-                items.add(sae);
+                if (currentPair == null) {
+                    currentPair = new StartAndEnd();
+                    currentPair.startTime = item.getTime();
+                }
             }
-        }
-        
-        int i = 0;
-        for (PassportItem item : history) {
-            if (item.getState() == endState) {
-                StartAndEnd sae = items.get(i);
-                sae.endTime = item.getTime();
-                i++;
+            else if (item.getState() == endState) {
+                if (currentPair != null) {
+                    currentPair.endTime = item.getTime();
+                    items.add(currentPair);
+                    currentPair = null;
+                }
             }
         }
         
