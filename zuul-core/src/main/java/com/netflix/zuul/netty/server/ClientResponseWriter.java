@@ -53,6 +53,7 @@ import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
 import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
@@ -230,7 +231,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             // Choose to either close the connection, or prepare it for next use.
             final CompleteEvent completeEvent = (CompleteEvent)evt;
             final CompleteReason reason = completeEvent.getReason();
-            if (reason == SESSION_COMPLETE) {
+            if (reason == SESSION_COMPLETE || reason == INACTIVE) {
                 if (! closeConnection) {
                     //Start reading next request over HTTP 1.1 persistent connection
                     ctx.channel().read();

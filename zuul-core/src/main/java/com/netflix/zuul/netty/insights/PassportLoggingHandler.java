@@ -104,7 +104,8 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter
         // Some logging of session states if certain criteria match:
         if (LOG.isInfoEnabled()) {
             if (passport.wasProxyAttempt()) {
-                if (passport.getState() != PassportState.OUT_RESP_LAST_CONTENT_SENT) {
+
+                if (passport.findStateBackwards(PassportState.OUT_RESP_LAST_CONTENT_SENDING) == null) {
                     incompleteProxySessionCounter.increment();
                     LOG.info("Incorrect final state! toplevelid = " + topLevelRequestId + ", " + ChannelUtils.channelInfoForLogging(channel));
                 }

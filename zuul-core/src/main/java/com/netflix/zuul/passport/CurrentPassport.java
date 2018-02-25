@@ -30,6 +30,7 @@ import io.netty.util.AttributeKey;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -265,6 +266,18 @@ public class CurrentPassport
     public PassportItem findState(PassportState state)
     {
         for (PassportItem item : history) {
+            if (item.getState() == state) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public PassportItem findStateBackwards(PassportState state)
+    {
+        Iterator itr = history.descendingIterator();
+        while (itr.hasNext()) {
+            PassportItem item = (PassportItem) itr.next();
             if (item.getState() == state) {
                 return item;
             }
