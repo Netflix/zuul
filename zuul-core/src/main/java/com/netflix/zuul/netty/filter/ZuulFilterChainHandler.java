@@ -18,7 +18,6 @@ package com.netflix.zuul.netty.filter;
 
 import com.google.common.base.Preconditions;
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.Headers;
@@ -82,9 +81,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             requestFilterChain.filter(zuulRequest, (HttpContent) msg);
         }
         else {
-            LOG.warn("Wrong message type: {}", msg.getClass().getSimpleName());
+            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
             ReferenceCountUtil.release(msg);
-            throw new ZuulException("ZuulFilterChainHandler received invalid message or null request filters");
         }
     }
 

@@ -135,9 +135,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ReferenceCountUtil.release(msg);
         }
         else {
-            //should never happen
+            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
             ReferenceCountUtil.release(msg);
-            throw new ZuulException("Invalid message type " +  msg.getClass().getSimpleName(), true);
         }
     }
 
