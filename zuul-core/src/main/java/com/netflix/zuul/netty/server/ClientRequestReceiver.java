@@ -92,6 +92,14 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+
+        // Flag that we have now received the LastContent for this request from the client.
+        // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
+        // a response to the client channel.
+        if (msg instanceof LastHttpContent) {
+            ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
+        }
+
         if (msg instanceof HttpRequest) {
             clientRequest = (HttpRequest) msg;
 
@@ -115,13 +123,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ctx.fireChannelRead(zuulRequest);
         }
         else if (msg instanceof HttpContent) {
-            // Flag that we have now received the LastContent for this request from the client.
-            // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
-            // a response to the client channel.
-            if (msg instanceof LastHttpContent) {
-                ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
-            }
-
             if ((zuulRequest != null) && (! zuulRequest.getContext().isCancelled())) {
                 ctx.fireChannelRead(msg);
             } else {
