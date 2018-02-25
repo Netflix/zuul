@@ -62,8 +62,6 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        // TODO - hacking SslHandler just to allow some insight into why ClosedChannelExceptionS are frequently getting thrown.
-//        SslHandler sslHandler = new HackedSslHandler(sslContext.newEngine(ch.alloc()), false);
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 
