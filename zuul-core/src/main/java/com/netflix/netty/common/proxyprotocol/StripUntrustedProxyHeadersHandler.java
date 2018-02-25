@@ -44,7 +44,6 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
 
     private static final Collection<AsciiString> HEADERS_TO_STRIP = Sets.newHashSet(
             new AsciiString("x-forwarded-for"),
-            new AsciiString("x-forwarded-host"),
             new AsciiString("x-forwarded-port"),
             new AsciiString("x-forwarded-proto"),
             new AsciiString("x-forwarded-proto-version"),
