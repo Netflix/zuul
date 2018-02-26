@@ -527,8 +527,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         });
     }
 
+    protected boolean isRemoteZuulRetriesBelowRetryLimit(int maxAllowedRetries) {
+        // override for custom header checking..
+        return true;
+    }
+
     protected boolean isBelowRetryLimit() {
-        return (attemptNum <= origin.getMaxRetriesForRequest(context));
+        int maxAllowedRetries = origin.getMaxRetriesForRequest(context);
+        return (attemptNum <= maxAllowedRetries) &&
+                isRemoteZuulRetriesBelowRetryLimit(maxAllowedRetries);
     }
 
     public void errorFromOrigin(final Throwable ex) {
