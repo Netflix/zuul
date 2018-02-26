@@ -155,7 +155,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         chosenServer = new AtomicReference<>();
 
         this.sslRetryBodyCache = preCacheBodyForRetryingSslRequests();
-        this.populatedSslRetryBody = SpectatorUtils.newCounter("zuul.populated.ssl.retry.body", origin.getVip());
+        this.populatedSslRetryBody = SpectatorUtils.newCounter("zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getVip());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -469,7 +469,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private byte[] preCacheBodyForRetryingSslRequests() {
         // Netty SSL handler clears body ByteBufs, so we need to cache the body if we want to retry POSTs
-        if (ENABLE_CACHING_SSL_BODIES.get() &&
+        if (ENABLE_CACHING_SSL_BODIES.get() && origin != null &&
                 // only cache requests if already buffered
                 origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure, false) && zuulRequest.hasCompleteBody()) {
             return zuulRequest.getBody();
