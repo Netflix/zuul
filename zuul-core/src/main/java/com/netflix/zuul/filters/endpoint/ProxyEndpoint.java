@@ -732,26 +732,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private HttpResponseMessage buildZuulHttpResponse(final HttpResponse httpResponse, final StatusCategory statusCategory, final Throwable ex) {
         startedSendingResponseToClient = true;
 
+        // Translate the netty HttpResponse into a zuul HttpResponseMessage.
         final SessionContext zuulCtx = context;
         final int respStatus = httpResponse.status().code();
         final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus);
-
-        // Request was a success even if server may have responded with an error code 5XX, except for 503.
-        if (originConn != null) {
-            if (statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
-                origin.onRequestExecutionFailed(zuulRequest, originConn.getServer(), attemptNum,
-                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
-            }
-            else {
-                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
-            }
-        }
-        origin.recordFinalResponse(zuulResponse);
-        origin.recordFinalError(zuulRequest, ex);
-        origin.getProxyTiming(zuulRequest).end();
-        zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
-        zuulCtx.setError(ex);
-        zuulCtx.put("origin_http_status", Integer.toString(respStatus));
 
         final Headers respHeaders = zuulResponse.getHeaders();
         for (Map.Entry<String, String> entry : httpResponse.headers()) {
@@ -774,6 +758,26 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             final ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
             zuulResponse.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
+
+        // Invoke any Ribbon execution listeners.
+        // Request was a success even if server may have responded with an error code 5XX, except for 503.
+        if (originConn != null) {
+            if (statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
+                origin.onRequestExecutionFailed(zuulRequest, originConn.getServer(), attemptNum,
+                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
+            }
+            else {
+                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
+            }
+        }
+
+        // Collect some info about the received response.
+        origin.recordFinalResponse(zuulResponse);
+        origin.recordFinalError(zuulRequest, ex);
+        origin.getProxyTiming(zuulRequest).end();
+        zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+        zuulCtx.setError(ex);
+        zuulCtx.put("origin_http_status", Integer.toString(respStatus));
 
         return transformResponse(zuulResponse);
     }
