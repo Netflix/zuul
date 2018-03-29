@@ -153,6 +153,7 @@ public class PerServerConnectionPool implements IConnectionPool
                                              int attemptNum, CurrentPassport passport)
     {
         requestConnCounter.increment();
+        stats.incrementActiveRequestsCount();
         
         Promise<PooledConnection> promise = eventLoop.newPromise();
 
@@ -161,7 +162,6 @@ public class PerServerConnectionPool implements IConnectionPool
         if (conn != null) {
             // There was a pooled connection available, so use this one.
             conn.startRequestTimer();
-            stats.incrementActiveRequestsCount();
             conn.incrementUsageCount();
             conn.getChannel().read();
             onAcquire(conn, httpMethod, uri, attemptNum, passport);
@@ -317,7 +317,6 @@ public class PerServerConnectionPool implements IConnectionPool
             passport.add(PassportState.ORIGIN_CH_CONNECTED);
             
             stats.incrementOpenConnectionsCount();
-            stats.incrementActiveRequestsCount();
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
             
@@ -332,6 +331,7 @@ public class PerServerConnectionPool implements IConnectionPool
         else {
             stats.incrementSuccessiveConnectionFailureCount();
             stats.addToFailureCount();
+            stats.decrementActiveRequestsCount();
             createConnFailedCounter.increment();
             callerPromise.setFailure(new OriginConnectException(cf.cause().getMessage(), OutboundErrorType.CONNECT_ERROR));
         }
