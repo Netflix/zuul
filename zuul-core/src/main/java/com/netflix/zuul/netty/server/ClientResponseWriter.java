@@ -196,11 +196,11 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         }
 
         final HttpRequest nativeReq = (HttpRequest) zuulResp.getContext().get(CommonContextKeys.NETTY_HTTP_REQUEST);
-        if (HttpUtil.isKeepAlive(nativeReq)) {
+        if (!closeConnection && HttpUtil.isKeepAlive(nativeReq)) {
             HttpUtil.setKeepAlive(nativeResponse, true);
         } else {
             // Send a Connection: close response header (only needed for HTTP/1.0 but no harm in doing for 1.1 too).
-            nativeResponse.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+            nativeResponse.headers().set("Connection", "close");
         }
 
         // TODO - temp hack for http/2 handling.
@@ -235,6 +235,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 if (! closeConnection) {
                     //Start reading next request over HTTP 1.1 persistent connection
                     ctx.channel().read();
+                } else {
+                    ctx.close();
                 }
             }
             else {
