@@ -245,8 +245,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         else if (!conn.isActive()) {
             // Connection is already closed, so discard.
             alreadyClosedCounter.increment();
-            // make sure to decrement OpenConnectionCounts
-            conn.updateServerStats();
             conn.setInPool(false);
         }
         else {
