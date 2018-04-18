@@ -189,7 +189,7 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
                 while (st.hasMoreTokens()) {
                     s = st.nextToken();
                     i = s.indexOf("=");
-                    if (i > 0 && s.length() > i + 1) {
+                    if (i > 0) {
                         name = s.substring(0, i);
                         value = s.substring(i + 1);
                         if (decode) {
@@ -505,6 +505,18 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         public void parsesParamsFromFormBody() throws Exception {
             method("POST");
             body("one=1&two=2".getBytes());
+            contentType("application/x-www-form-urlencoded");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertTrue(params.containsKey("one"));
+            assertTrue(params.containsKey("two"));
+        }
+
+        @Test
+        public void parsesParamsFromFormBodyIncludeEmptyValue() throws Exception {
+            method("POST");
+            body("one=1&two=".getBytes());
             contentType("application/x-www-form-urlencoded");
 
             final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
