@@ -514,6 +514,18 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         }
 
         @Test
+        public void parsesParamsFromFormBodyIncludeEmptyValue() throws Exception {
+            method("POST");
+            body("one=1&two=".getBytes());
+            contentType("application/x-www-form-urlencoded");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertTrue(params.containsKey("one"));
+            assertTrue(params.containsKey("two"));
+        }
+
+        @Test
         public void ignoresParamsInBodyForNonPosts() throws Exception {
             method("PUT");
             body("one=1&two=2".getBytes());
