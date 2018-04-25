@@ -189,7 +189,8 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
                 while (st.hasMoreTokens()) {
                     s = st.nextToken();
                     i = s.indexOf("=");
-                    if (i > 0 && s.length() > i + 1) {
+                    // key and value
+                    if (i > 0) {
                         name = s.substring(0, i);
                         value = s.substring(i + 1);
                         if (decode) {
@@ -208,6 +209,20 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
                             mapA.put(name, list);
                         }
                         list.add(value);
+                    }
+                    // key only
+                    else if (s.length() > 0) {
+                        name = s;
+                        if (decode) {
+                            try {
+                                name = URLDecoder.decode(name, "UTF-8");
+                            } catch (Exception e) {
+                            }
+                        }
+                        if (!mapA.containsKey(name)) {
+                            list = new LinkedList<String>();
+                            mapA.put(name, list);
+                        }
                     }
                 }
             }
@@ -454,6 +469,24 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
         }
 
         @Test
+        public void handlesKeyOnlyParams() {
+            when(request.getQueryString()).thenReturn("path=one&key1=val1&three");
+            final HttpServletRequestWrapper w = new HttpServletRequestWrapper(request);
+
+            // getParameters doesn't call parseRequest internally, not sure why
+            // so I'm forcing it here
+            w.getParameterMap();
+
+            final Map<String, String[]> params = w.getParameters();
+            assertFalse("params should not be empty", params.isEmpty());
+            assertEquals("one", params.get("path")[0]);
+            assertEquals("val1", params.get("key1")[0]);
+
+            assertTrue("", params.containsKey("three"));
+            assertEquals("", params.get("three")[0]);
+        }
+
+        @Test
         public void handlesPlainRequestBody() throws IOException {
             final String body = "hello";
             body(body.getBytes());
@@ -511,6 +544,19 @@ public class HttpServletRequestWrapper extends javax.servlet.http.HttpServletReq
             final Map params = wrapper.getParameterMap();
             assertTrue(params.containsKey("one"));
             assertTrue(params.containsKey("two"));
+        }
+
+        @Test
+        public void parsesParamsFromFormBodyKeyOnly() throws Exception {
+            method("POST");
+            body("one=1&two=2&three".getBytes());
+            contentType("application/x-www-form-urlencoded");
+
+            final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request);
+            final Map params = wrapper.getParameterMap();
+            assertTrue(params.containsKey("one"));
+            assertTrue(params.containsKey("two"));
+            assertTrue(params.containsKey("three"));
         }
 
         @Test
