@@ -19,6 +19,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -52,8 +53,7 @@ public class HttpQueryParams implements Cloneable
         immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
     }
 
-    public static HttpQueryParams parse(String queryString)
-    {
+    public static HttpQueryParams parse(String queryString) {
         HttpQueryParams queryParams = new HttpQueryParams();
         if (queryString == null) {
             return queryParams;
@@ -64,21 +64,33 @@ public class HttpQueryParams implements Cloneable
         while (st.hasMoreTokens()) {
             String s = st.nextToken();
             i = s.indexOf("=");
-            if (i > 0 && s.length() >= i + 1) {
+            // key-value query param
+            if (i > 0) {
                 String name = s.substring(0, i);
                 String value = s.substring(i + 1);
 
                 try {
                     name = URLDecoder.decode(name, "UTF-8");
                     value = URLDecoder.decode(value, "UTF-8");
-                } catch (Exception e) {
                 }
-                try {
-
-                } catch (Exception e) {
+                catch (Exception e) {
+                    // do nothing
                 }
 
                 queryParams.add(name, value);
+            }
+            // key only
+            else if (s.length() > 0) {
+                String name = s;
+
+                try {
+                    name = URLDecoder.decode(name, "UTF-8");
+                }
+                catch (Exception e) {
+                    // do nothing
+                }
+
+                queryParams.add(name, "");
             }
         }
 
@@ -160,8 +172,10 @@ public class HttpQueryParams implements Cloneable
         try {
             for (Map.Entry<String, String> entry : entries()) {
                 sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                sb.append('=');
-                sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                if (StringUtils.isNotEmpty(entry.getValue())) {
+                    sb.append('=');
+                    sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                }
                 sb.append('&');
             }
 
@@ -183,8 +197,10 @@ public class HttpQueryParams implements Cloneable
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : entries()) {
             sb.append(entry.getKey());
-            sb.append('=');
-            sb.append(entry.getValue());
+            if (StringUtils.isNotEmpty(entry.getValue())) {
+                sb.append('=');
+                sb.append(entry.getValue());
+            }
             sb.append('&');
         }
 
@@ -296,11 +312,11 @@ public class HttpQueryParams implements Cloneable
 
             assertEquals(expected, actual);
 
-            assertEquals("k1=&k2=v2&k3=", actual.toEncodedString());
+            assertEquals("k1&k2=v2&k3", actual.toEncodedString());
         }
 
         @Test
-        public void testParseKeyWithoutValue()
+        public void testParseKeyWithoutValueEquals()
         {
             HttpQueryParams expected = new HttpQueryParams();
             expected.add("k1", "");
@@ -309,7 +325,33 @@ public class HttpQueryParams implements Cloneable
 
             assertEquals(expected, actual);
 
-            assertEquals("k1=", actual.toEncodedString());
+            assertEquals("k1", actual.toEncodedString());
+        }
+
+        @Test
+        public void testParseKeyWithoutValue()
+        {
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("k1", "");
+
+            HttpQueryParams actual = HttpQueryParams.parse("k1");
+
+            assertEquals(expected, actual);
+
+            assertEquals("k1", actual.toEncodedString());
+        }
+
+        @Test
+        public void testParseKeyWithoutValueShort()
+        {
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("=", "");
+
+            HttpQueryParams actual = HttpQueryParams.parse("=");
+
+            assertEquals(expected, actual);
+
+            assertEquals("%3D", actual.toEncodedString());
         }
     }
 }
