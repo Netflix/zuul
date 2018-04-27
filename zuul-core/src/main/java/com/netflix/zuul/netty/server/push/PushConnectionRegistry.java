@@ -1,4 +1,4 @@
-package com.netflix.zuul.netty.push;
+package com.netflix.zuul.netty.server.push;
 
 import com.google.common.base.Charsets;
 import com.google.inject.Inject;
@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by saroskar on 9/26/16.
  */
 @Singleton
-public class PushConnectionRegistry {
+public class PushConnectionRegistry<K> {
 
-    private final ConcurrentMap<String, PushConnection> clientPushConnectionMap;
+    private final ConcurrentMap<K, PushConnection> clientPushConnectionMap;
 
     @Inject
     private PushConnectionRegistry() {

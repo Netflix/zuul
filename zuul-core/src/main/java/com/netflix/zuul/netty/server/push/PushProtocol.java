@@ -1,16 +1,12 @@
-package com.netflix.zuul.netty.push;
+package com.netflix.zuul.netty.server.push;
 
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import com.netflix.zuul.netty.push.PushConnectionRegistry.PushConnection;
 
 /**
  * Created by saroskar on 10/10/16.
