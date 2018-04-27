@@ -19,6 +19,8 @@ package com.netflix.zuul.origins;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
+import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -41,6 +43,7 @@ import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
@@ -63,6 +66,10 @@ public class BasicNettyOrigin implements NettyOrigin {
     private final ClientChannelManager clientChannelManager;
     private final NettyRequestAttemptFactory requestAttemptFactory;
 
+    private final AtomicInteger concurrentRequests;
+    private final CachedDynamicIntProperty concurrencyMax;
+    private final CachedDynamicBooleanProperty concurrencyProtectionEnabled;
+
     public BasicNettyOrigin(String name, String vip, Registry registry) {
         this.name = name;
         this.vip = vip;
@@ -71,6 +78,10 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
+
+        this.concurrentRequests = new AtomicInteger(0);
+        this.concurrencyMax = new CachedDynamicIntProperty("zuul.origin." + name + ".concurrency.max.requests", 200);
+        this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.origin." + name + ".concurrency.protect.enabled", true);
     }
 
     protected IClientConfig setupClientConfig(String name) {
@@ -207,6 +218,19 @@ public class BasicNettyOrigin implements NettyOrigin {
         }
     }
 
+    @Override
+    public void preRequestChecks(HttpRequestMessage zuulRequest) {
+        if (concurrencyProtectionEnabled.get() && concurrentRequests.get() > concurrencyMax.get()) {
+            throw new OriginConcurrencyExceededException(getName());
+        }
+
+        concurrentRequests.incrementAndGet();
+    }
+
+    @Override
+    public void recordProxyRequestEnd() {
+        concurrentRequests.decrementAndGet();
+    }
 
     /* Not required for basic operation */
 
@@ -245,18 +269,10 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public void preRequestChecks(HttpRequestMessage zuulRequest) {
-    }
-
-    @Override
     public void recordSuccessResponse() {
     }
 
     @Override
     public void recordErrorResponse(String chosenOriginLBGroupFirstAttempt) {
-    }
-
-    @Override
-    public void recordProxyRequestEnd() {
     }
 }
