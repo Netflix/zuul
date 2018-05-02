@@ -21,6 +21,7 @@ import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.niws.RequestAttempts;
+import com.netflix.zuul.origins.OriginConcurrencyExceededException;
 import io.netty.channel.unix.Errors;
 import io.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.channels.ClosedChannelException;
 
 import static com.netflix.zuul.exception.OutboundErrorType.NO_AVAILABLE_SERVERS;
+import static com.netflix.zuul.exception.OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED;
 import static com.netflix.zuul.exception.OutboundErrorType.OTHER;
 import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
 import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
@@ -41,6 +43,10 @@ public class NettyRequestAttemptFactory {
     public ErrorType mapNettyToOutboundErrorType(final Throwable t) {
         if (t instanceof ReadTimeoutException) {
             return READ_TIMEOUT;
+        }
+
+        if (t instanceof OriginConcurrencyExceededException) {
+            return ORIGIN_CONCURRENCY_EXCEEDED;
         }
 
         if (t instanceof OriginConnectException) {
