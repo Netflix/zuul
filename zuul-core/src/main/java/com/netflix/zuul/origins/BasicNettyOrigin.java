@@ -24,6 +24,7 @@ import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -31,6 +32,7 @@ import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
+import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.ClientChannelManager;
 import com.netflix.zuul.netty.connectionpool.DefaultClientChannelManager;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
@@ -67,6 +69,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     private final NettyRequestAttemptFactory requestAttemptFactory;
 
     private final AtomicInteger concurrentRequests;
+    private final Counter rejectedRequests;
     private final CachedDynamicIntProperty concurrencyMax;
     private final CachedDynamicBooleanProperty concurrencyProtectionEnabled;
 
@@ -79,7 +82,8 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
-        this.concurrentRequests = new AtomicInteger(0);
+        this.concurrentRequests = SpectatorUtils.newGauge("zuul.origin.concurrent.requests", name, new AtomicInteger(0));
+        this.rejectedRequests = SpectatorUtils.newCounter("zuul.origin.rejected.requests", name);
         this.concurrencyMax = new CachedDynamicIntProperty("zuul.origin." + name + ".concurrency.max.requests", 200);
         this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.origin." + name + ".concurrency.protect.enabled", true);
     }
@@ -221,6 +225,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public void preRequestChecks(HttpRequestMessage zuulRequest) {
         if (concurrencyProtectionEnabled.get() && concurrentRequests.get() > concurrencyMax.get()) {
+            rejectedRequests.increment();
             throw new OriginConcurrencyExceededException(getName());
         }
 
