@@ -63,7 +63,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
                 false,
                 false
         ));
-        pipeline.addLast(new PassportStateHttpClientHandler());
+        pipeline.addLast(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, new PassportStateHttpClientHandler());
         pipeline.addLast("originNettyLogger", nettyLogger);
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
