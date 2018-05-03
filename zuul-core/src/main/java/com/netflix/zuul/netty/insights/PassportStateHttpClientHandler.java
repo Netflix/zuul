@@ -35,7 +35,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public class PassportStateHttpClientHandler extends CombinedChannelDuplexHandler
 {
-    public static final String PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME = "PassportStateHttpClientHandler";
+    public static final String PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME = "PassportStateHttpClientHandler#0";
 
     public PassportStateHttpClientHandler()
     {

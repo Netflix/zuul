@@ -90,7 +90,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
 
-    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
+    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler#0";
 
     public DefaultClientChannelManager(String originName, String vip, IClientConfig clientConfig, Registry spectatorRegistry) {
         this.loadBalancer = createLoadBalancer(clientConfig);
