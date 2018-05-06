@@ -62,6 +62,10 @@ public class ZuulServletFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        // Marks this request as having passed through the "Zuul engine", as opposed to servlets
+        // explicitly bound in web.xml, for which requests will not have the same data attached
+        RequestContext context = RequestContext.getCurrentContext();
+        context.setZuulEngineRan();
         try {
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
             try {
