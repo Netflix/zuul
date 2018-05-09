@@ -32,7 +32,6 @@ import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 
 import java.util.function.Consumer;
 
-import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
 /**
@@ -43,6 +42,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
 {
     private static final Http2StreamHeaderCleaner http2StreamHeaderCleaner = new Http2StreamHeaderCleaner();
     private static final Http2ResetFrameHandler http2ResetFrameHandler = new Http2ResetFrameHandler();
+    private static final Http2StreamErrorHandler http2StreamErrorHandler = new Http2StreamErrorHandler();
 
     private final Channel parent;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
@@ -84,6 +84,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
 
         pipeline.addLast(http2ResetFrameHandler);
         pipeline.addLast("h2_downgrader", new Http2StreamFrameToHttpObjectCodec(true));
+        pipeline.addLast(http2StreamErrorHandler);
         pipeline.addLast(http2StreamHeaderCleaner);
     }
 
