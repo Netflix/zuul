@@ -22,11 +22,18 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.insights.PassportStateOriginHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
@@ -69,6 +76,10 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         addMethodBindingHandler(pipeline);
         pipeline.addLast("httpLifecycle", new HttpClientLifecycleChannelHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
+
+        if(connectionPoolConfig.isSecure()) {
+            pipeline.addFirst("ssl", getClientSslContext().newHandler(ch.alloc()));
+        }
     }
 
     /**
@@ -80,6 +91,14 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
      * @param pipeline the channel pipeline
      */
     protected void addMethodBindingHandler(ChannelPipeline pipeline) {
+    }
+
+    private SslContext getClientSslContext() throws SSLException {
+        return SslContextBuilder
+                    .forClient()
+                    .sslProvider(BaseSslContextFactory.chooseSslProvider())
+                    .startTls(true)
+                    .build();
     }
 
     public HttpMetricsChannelHandler getHttpMetricsHandler() {
