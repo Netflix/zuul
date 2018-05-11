@@ -16,13 +16,19 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.config.DynamicStringProperty;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.ProtocolDetectionResult;
 import io.netty.handler.codec.ProtocolDetectionState;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
+import io.netty.util.CharsetUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Chooses whether a new connection is prefixed with the ProxyProtocol from an ELB. If it is, then
@@ -35,21 +41,34 @@ import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 public class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
 {
     public static final String NAME = "OptionalHAProxyMessageDecoder";
+    private static final Logger logger = LoggerFactory.getLogger("OptionalHAProxyMessageDecoder");
+    CachedDynamicBooleanProperty dumpHAProxyByteBuf = new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
     {
         if (msg instanceof ByteBuf) {
-            ProtocolDetectionResult<HAProxyProtocolVersion> result = HAProxyMessageDecoder.detectProtocol((ByteBuf) msg);
+            try {
+                ProtocolDetectionResult<HAProxyProtocolVersion> result = HAProxyMessageDecoder.detectProtocol((ByteBuf) msg);
 
-            // TODO - is it possible that this message could be split over multiple ByteBufS, and therefore this would fail?
-            if (result.state() == ProtocolDetectionState.DETECTED) {
-                // Add the actual HAProxy decoder.
-                // Note that the HAProxyMessageDecoder will remove itself once it has finished decoding the initial ProxyProtocol message(s).
-                ctx.pipeline().addAfter(NAME, null, new HAProxyMessageDecoder());
+                // TODO - is it possible that this message could be split over multiple ByteBufS, and therefore this would fail?
+                if (result.state() == ProtocolDetectionState.DETECTED) {
+                    // Add the actual HAProxy decoder.
+                    // Note that the HAProxyMessageDecoder will remove itself once it has finished decoding the initial ProxyProtocol message(s).
+                    ctx.pipeline().addAfter(NAME, null, new HAProxyMessageDecoder());
 
-                // Remove this handler, as now no longer needed.
-                ctx.pipeline().remove(this);
+                    // Remove this handler, as now no longer needed.
+                    ctx.pipeline().remove(this);
+                }
+            } catch (Exception e) {
+                if (msg != null) {
+                    logger.error("Exception in OptionalHAProxyMessageDecoder {}" + e.getClass().getCanonicalName());
+                    if (dumpHAProxyByteBuf.get()) {
+                        logger.error("Exception Stack: {}" + e.getStackTrace());
+                        logger.error("Bytebuf is:  {} " + ((ByteBuf) msg).toString(CharsetUtil.US_ASCII));
+                    }
+                    ((ByteBuf) msg).release();
+                }
             }
         }
         super.channelRead(ctx, msg);
