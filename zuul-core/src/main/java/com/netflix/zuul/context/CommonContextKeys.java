@@ -39,6 +39,7 @@ public class CommonContextKeys {
     public static final String ROUTING_LOG = "routing_log";
     public static final String USE_FULL_VIP_NAME = "use_full_vip_name";
     public static final String ACTUAL_VIP = "origin_vip_actual";
+    public static final String ORIGIN_VIP_SECURE = "origin_vip_secure";
 
     public static final String SSL_HANDSHAKE_INFO = "ssl_handshake_info";
 

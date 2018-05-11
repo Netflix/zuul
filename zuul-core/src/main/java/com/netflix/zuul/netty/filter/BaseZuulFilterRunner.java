@@ -40,6 +40,7 @@ import rx.Observer;
 import rx.schedulers.Schedulers;
 
 import javax.annotation.concurrent.ThreadSafe;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -129,6 +130,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     protected final O filter(final ZuulFilter<I, O> filter, final I inMesg) {
         final long startTime = System.currentTimeMillis();
         final ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
+        FilterChainResumer resumer = null;
 
         try {
             ExecutionStatus filterRunStatus = null;
@@ -173,7 +175,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
             // async filter
             filter.incrementConcurrency();
-            final FilterChainResumer resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
+            resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
             filter.applyAsync(inMesg)
                 .observeOn(Schedulers.from(getChannelHandlerContext(inMesg).executor()))
                 .doOnUnsubscribe(resumer::decrementConcurrency)
@@ -182,6 +184,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             return null;  //wait for the async filter to finish
         }
         catch (Throwable t) {
+            if (resumer != null) {
+                resumer.decrementConcurrency();
+            }
             final O outMesg = handleFilterException(inMesg, filter, t);
             outMesg.finishBufferedBodyIfIncomplete();
             recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
@@ -309,20 +314,19 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private final ZuulFilter<I, O> filter;
         private ZuulMessage snapshot;
         private final long startTime;
-        private volatile boolean decrementDone;
+        private AtomicBoolean concurrencyDecremented;
 
         public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
             this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
             this.filter = Preconditions.checkNotNull(filter, "filter");
             this.snapshot = snapshot;
             this.startTime = startTime;
-            this.decrementDone = false;
+            this.concurrencyDecremented = new AtomicBoolean(false);
         }
 
         void decrementConcurrency() {
-            if (! decrementDone) {
+            if (concurrencyDecremented.compareAndSet(false, true)) {
                 filter.decrementConcurrency();
-                decrementDone = true;
             }
         }
 
@@ -336,6 +340,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 resumeInBindingContext(outMesg, filter.filterName());
             }
             catch (Exception e) {
+                decrementConcurrency();
                 handleException(inMesg, filter.filterName(), e);
             }
 

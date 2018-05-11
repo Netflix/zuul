@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'application'
 
 dependencies {
     compile project(":zuul-core")
@@ -9,4 +10,13 @@ dependencies {
 jar {
     from sourceSets.main.allGroovy
 }
+
+mainClassName = "com.netflix.zuul.sample.Bootstrap"
+
+applicationDefaultJvmArgs = ["-DTZ=GMT",
+                             "-Dcom.sun.management.jmxremote",
+                             "-Dcom.sun.management.jmxremote.local.only=false",
+                             "-Deureka.validateInstanceId=false",
+                             "-Deureka.mt.num_retries=1"]
+
 

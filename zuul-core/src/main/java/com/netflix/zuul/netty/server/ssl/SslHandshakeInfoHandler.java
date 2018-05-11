@@ -32,6 +32,7 @@ import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
 import java.nio.channels.ClosedChannelException;
@@ -110,6 +111,11 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
                         // without sending anything.
                         // So don't treat these as SSL handshake failures.
                         LOG.info("Client closed connection or it idle timed-out without doing an ssl handshake. "
+                                + ", client_ip = " + String.valueOf(clientIP)
+                                + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    }
+                    else if (cause instanceof SSLException && "handshake timed out".equals(cause.getMessage())) {
+                        LOG.info("Client timed-out doing the ssl handshake. "
                                 + ", client_ip = " + String.valueOf(clientIP)
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     }

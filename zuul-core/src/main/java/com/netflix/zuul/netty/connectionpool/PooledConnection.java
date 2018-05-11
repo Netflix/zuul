@@ -186,7 +186,6 @@ public class PooledConnection {
         final ServerStats stats = getServerStats();
         stats.decrementOpenConnectionsCount();
         closeConnCounter.increment();
-        stats.close();
         return channel.close();
     }
 

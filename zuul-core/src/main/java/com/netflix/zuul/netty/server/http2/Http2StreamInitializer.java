@@ -16,19 +16,23 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import com.netflix.netty.common.Http2ConnectionCloseHandler;
+import com.netflix.netty.common.Http2ConnectionExpiryHandler;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2ServerDowngrader;
+import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
 import io.netty.util.AttributeKey;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 
 import java.util.function.Consumer;
 
+import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
 /**
@@ -43,10 +47,21 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     private final Channel parent;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
-    public Http2StreamInitializer(Channel parent, Consumer<ChannelPipeline> addHttpHandlerFn)
+    private final Http2MetricsChannelHandlers http2MetricsChannelHandlers;
+    private final Http2ConnectionCloseHandler connectionCloseHandler;
+    private final Http2ConnectionExpiryHandler connectionExpiryHandler;
+
+    public Http2StreamInitializer(Channel parent, Consumer<ChannelPipeline> addHttpHandlerFn,
+                                  Http2MetricsChannelHandlers http2MetricsChannelHandlers,
+                                  Http2ConnectionCloseHandler connectionCloseHandler,
+                                  Http2ConnectionExpiryHandler connectionExpiryHandler)
     {
         this.parent = parent;
         this.addHttpHandlerFn = addHttpHandlerFn;
+
+        this.http2MetricsChannelHandlers = http2MetricsChannelHandlers;
+        this.connectionCloseHandler = connectionCloseHandler;
+        this.connectionExpiryHandler = connectionExpiryHandler;
     }
 
     @Override
@@ -62,8 +77,13 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
 
     protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline)
     {
+        pipeline.addLast("h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
+        pipeline.addLast("h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
+        pipeline.addLast("h2_max_requests_per_conn", connectionExpiryHandler);
+        pipeline.addLast("h2_conn_close", connectionCloseHandler);
+
         pipeline.addLast(http2ResetFrameHandler);
-        pipeline.addLast("h2_downgrader", new Http2ServerDowngrader(false));
+        pipeline.addLast("h2_downgrader", new Http2StreamFrameToHttpObjectCodec(true));
         pipeline.addLast(http2StreamHeaderCleaner);
     }
 

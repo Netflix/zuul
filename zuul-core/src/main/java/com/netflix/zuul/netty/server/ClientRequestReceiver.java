@@ -92,6 +92,14 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+
+        // Flag that we have now received the LastContent for this request from the client.
+        // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
+        // a response to the client channel.
+        if (msg instanceof LastHttpContent) {
+            ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
+        }
+
         if (msg instanceof HttpRequest) {
             clientRequest = (HttpRequest) msg;
 
@@ -115,13 +123,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ctx.fireChannelRead(zuulRequest);
         }
         else if (msg instanceof HttpContent) {
-            // Flag that we have now received the LastContent for this request from the client.
-            // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
-            // a response to the client channel.
-            if (msg instanceof LastHttpContent) {
-                ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
-            }
-
             if ((zuulRequest != null) && (! zuulRequest.getContext().isCancelled())) {
                 ctx.fireChannelRead(msg);
             } else {
@@ -135,9 +136,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ReferenceCountUtil.release(msg);
         }
         else {
-            //should never happen
+            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
             ReferenceCountUtil.release(msg);
-            throw new ZuulException("Invalid message type " +  msg.getClass().getSimpleName(), true);
         }
     }
 
@@ -158,8 +158,15 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             if (reason != SESSION_COMPLETE && zuulRequest != null) {
                 final SessionContext zuulCtx = zuulRequest.getContext();
                 if (clientRequest != null) {
-                    LOG.warn("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
-                        zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    if (LOG.isInfoEnabled()) {
+                        // With http/2, the netty codec closes/completes the stream immediately after writing the lastcontent
+                        // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up state. But
+                        // thats ok, so don't log in that case.
+                        if (! "HTTP/2".equals(zuulRequest.getProtocol())) {
+                            LOG.info("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
+                                    zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
+                        }
+                    }
                 }
                 if (zuulCtx.debugRequest()) {
                     LOG.debug("Endpoint = {}", zuulCtx.getEndpoint());

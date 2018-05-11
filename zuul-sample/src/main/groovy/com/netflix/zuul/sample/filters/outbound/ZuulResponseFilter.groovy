@@ -24,6 +24,7 @@ import com.netflix.zuul.filters.http.HttpOutboundSyncFilter
 import com.netflix.zuul.message.Headers
 import com.netflix.zuul.message.http.HttpResponseMessage
 import com.netflix.zuul.niws.RequestAttempts
+import com.netflix.zuul.passport.CurrentPassport
 import com.netflix.zuul.stats.status.StatusCategory
 import com.netflix.zuul.stats.status.StatusCategoryUtils
 import org.slf4j.Logger
@@ -84,6 +85,9 @@ class ZuulResponseFilter extends HttpOutboundSyncFilter {
                         error instanceof ZuulException ? ((ZuulException) error).getErrorCause() : "UNKNOWN_CAUSE")
             }
 
+            if (response.getStatus() >= 500) {
+                log.info("Passport: {}", CurrentPassport.fromSessionContext(context))
+            }
         }
 
         if (context.debugRequest()) {

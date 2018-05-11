@@ -42,8 +42,8 @@ public class DefaultHttp2PushPromiseFrame extends AbstractHttp2StreamFrame imple
     }
 
     @Override
-    public DefaultHttp2PushPromiseFrame streamId(int streamId) {
-        super.streamId(streamId);
+    public DefaultHttp2PushPromiseFrame stream(Http2FrameStream stream) {
+        super.stream(stream);
         return this;
     }
 
@@ -74,7 +74,7 @@ public class DefaultHttp2PushPromiseFrame extends AbstractHttp2StreamFrame imple
 
     @Override
     public String toString() {
-        return "DefaultHttp2PushPromiseFrame(streamId=" + streamId() + ", headers=" + headers
+        return "DefaultHttp2PushPromiseFrame(streamId=" + stream().id() + ", headers=" + headers
                 + ", endStream=" + endStream + ", padding=" + padding + ", promisedStreamId=" + promisedStreamId + ")";
     }
 

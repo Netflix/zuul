@@ -45,8 +45,8 @@ public class CommonChannelConfigKeys
     public static final ChannelConfigKey<SslContextFactory> sslContextFactory = new ChannelConfigKey<>("sslContextFactory");
 
     // HTTP/2 specific:
-    public static final ChannelConfigKey<Integer> maxConcurrentStreams = new ChannelConfigKey<>("maxConcurrentStreams");
-    public static final ChannelConfigKey<Integer> initialWindowSize = new ChannelConfigKey<>("initialWindowSize", 524288);
+    public static final ChannelConfigKey<Integer> maxConcurrentStreams = new ChannelConfigKey<>("maxConcurrentStreams", 100);
+    public static final ChannelConfigKey<Integer> initialWindowSize = new ChannelConfigKey<>("initialWindowSize", 5242880);  // 5MB
     public static final ChannelConfigKey<Integer> connCloseDelay = new ChannelConfigKey<>("connCloseDelay");
     public static final ChannelConfigKey<Integer> maxHttp2HeaderTableSize = new ChannelConfigKey<>("maxHttp2HeaderTableSize", 4096);
     public static final ChannelConfigKey<Integer> maxHttp2HeaderListSize = new ChannelConfigKey<>("maxHttp2HeaderListSize");
