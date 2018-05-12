@@ -78,22 +78,26 @@ public class ZuulFiltersModule extends AbstractModule
     String[] findClassNames(AbstractConfiguration config) {
 
         // Find individually-specified filter classes.
-        String filterClassNamesStr = config.getString("zuul.filters.classes", "").trim();
-        Stream<String> classNameStream = Pattern.compile(",")
-                .splitAsStream(filterClassNamesStr)
+        String[] filterClassNamesStrArray = config.getStringArray("zuul.filters.classes");
+        if (filterClassNamesStrArray == null) {
+            filterClassNamesStrArray = new String[0];
+        }
+        Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray)
                 .map(String::trim)
                 .filter(blank.negate());
 
         // Find filter classes in specified packages.
-        String packageNamesStr = config.getString("zuul.filters.packages", "").trim();
+        String[] packageNamesStrArray = config.getStringArray("zuul.filters.packages");
+        if (packageNamesStrArray == null) {
+            packageNamesStrArray = new String[0];
+        }
         ClassPath cp;
         try {
             cp = ClassPath.from(this.getClass().getClassLoader());
         } catch (IOException e) {
             throw new RuntimeException("Error attempting to read classpath to find filters!", e);
         }
-        Stream<String> packageStream = Pattern.compile(",")
-                .splitAsStream(packageNamesStr)
+        Stream<String> packageStream = Arrays.stream(packageNamesStrArray)
                 .map(String::trim)
                 .filter(blank.negate())
                 .flatMap( packageName -> cp.getTopLevelClasses(packageName).stream())
