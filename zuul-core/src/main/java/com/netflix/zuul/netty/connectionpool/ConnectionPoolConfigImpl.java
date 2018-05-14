@@ -128,6 +128,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     }
 
     @Override
+    public boolean isSecure()
+    {
+        return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.IsSecure, false);
+    }
+
+    @Override
     public boolean useIPAddrForServer()
     {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.UseIPAddrForServer, true);
