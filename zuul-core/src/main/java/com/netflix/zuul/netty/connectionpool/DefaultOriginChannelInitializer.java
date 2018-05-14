@@ -22,18 +22,13 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.insights.PassportStateOriginHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
-import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
+import com.netflix.zuul.netty.ssl.ClientSslContextFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLException;
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
@@ -48,6 +43,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     private final ConnectionPoolHandler connectionPoolHandler;
     private final HttpMetricsChannelHandler httpMetricsHandler;
     private final LoggingHandler nettyLogger;
+    private final SslContext sslContext;
 
     public DefaultOriginChannelInitializer(ConnectionPoolConfig connPoolConfig, Registry spectatorRegistry) {
         this.connectionPoolConfig = connPoolConfig;
@@ -55,6 +51,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         this.connectionPoolHandler = new ConnectionPoolHandler(originName);
         this.httpMetricsHandler = new HttpMetricsChannelHandler(spectatorRegistry, "client", originName);
         this.nettyLogger = new LoggingHandler("zuul.origin.nettylog." + originName, LogLevel.INFO);
+        this.sslContext = getClientSslContext(spectatorRegistry);
     }
 
     @Override
@@ -63,8 +60,8 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
         pipeline.addLast(new PassportStateOriginHandler());
 
-        if(connectionPoolConfig.isSecure()) {
-            pipeline.addLast("ssl", getClientSslContext().newHandler(ch.alloc()));
+        if (connectionPoolConfig.isSecure()) {
+            pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
         }
 
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
@@ -83,6 +80,16 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     }
 
     /**
+     * This method can be overridden to create your own custom SSL context
+     *
+     * @param spectatorRegistry metrics registry
+     * @return Netty SslContext
+     */
+    protected SslContext getClientSslContext(Registry spectatorRegistry) {
+        return new ClientSslContextFactory(spectatorRegistry).getClientSslContext();
+    }
+
+    /**
      * This method can be overridden to add your own MethodBinding handler for preserving thread locals or thread variables.
      *
      * This should be a CombinedChannelDuplexHandler that binds downstream channelRead and userEventTriggered with the
@@ -91,13 +98,6 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
      * @param pipeline the channel pipeline
      */
     protected void addMethodBindingHandler(ChannelPipeline pipeline) {
-    }
-
-    private SslContext getClientSslContext() throws SSLException {
-        return SslContextBuilder
-                    .forClient()
-                    .sslProvider(BaseSslContextFactory.chooseSslProvider())
-                    .build();
     }
 
     public HttpMetricsChannelHandler getHttpMetricsHandler() {
