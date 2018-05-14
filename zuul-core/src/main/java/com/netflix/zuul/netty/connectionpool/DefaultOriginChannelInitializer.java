@@ -63,6 +63,10 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
         pipeline.addLast(new PassportStateOriginHandler());
 
+        if(connectionPoolConfig.isSecure()) {
+            pipeline.addLast("ssl", getClientSslContext().newHandler(ch.alloc()));
+        }
+
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
                 BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
                 BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),
@@ -76,10 +80,6 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         addMethodBindingHandler(pipeline);
         pipeline.addLast("httpLifecycle", new HttpClientLifecycleChannelHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
-
-        if(connectionPoolConfig.isSecure()) {
-            pipeline.addFirst("ssl", getClientSslContext().newHandler(ch.alloc()));
-        }
     }
 
     /**
@@ -97,7 +97,6 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         return SslContextBuilder
                     .forClient()
                     .sslProvider(BaseSslContextFactory.chooseSslProvider())
-                    .startTls(true)
                     .build();
     }
 
