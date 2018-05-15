@@ -42,7 +42,7 @@ public class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
 {
     public static final String NAME = "OptionalHAProxyMessageDecoder";
     private static final Logger logger = LoggerFactory.getLogger("OptionalHAProxyMessageDecoder");
-    CachedDynamicBooleanProperty dumpHAProxyByteBuf = new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
+    private static final CachedDynamicBooleanProperty dumpHAProxyByteBuf = new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
