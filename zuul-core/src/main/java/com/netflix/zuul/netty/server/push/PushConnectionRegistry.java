@@ -10,37 +10,32 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Maintains client key to web socket or SSE channel mapping.
+ * Maintains client identity to web socket or SSE channel mapping.
  *
  * Created by saroskar on 9/26/16.
  */
 @Singleton
-public class PushConnectionRegistry<K> {
+public class PushConnectionRegistry {
 
-    private final ConcurrentMap<K, PushConnection> clientPushConnectionMap;
+    private final ConcurrentMap<String, PushConnection> clientPushConnectionMap;
 
     @Inject
     private PushConnectionRegistry() {
         clientPushConnectionMap = new ConcurrentHashMap<>(1024 * 8);
     }
 
-    public static String buildKey(final String cid, final String esn) {
-        return cid + "^" + esn;
+    public PushConnection get(final String clientId) {
+        return clientPushConnectionMap.get(clientId);
     }
 
-    public PushConnection get(final String cid, final String esn) {
-        return clientPushConnectionMap.get(buildKey(cid, esn));
+    public void put(final String clientId, final PushConnection pushConnection) {
+        clientPushConnectionMap.put(clientId, pushConnection);
     }
 
-    public void put(final String cid, final String esn, final PushConnection pushConnection) {
-        clientPushConnectionMap.put(buildKey(cid, esn), pushConnection);
-    }
-
-    public PushConnection remove(final String cid, final String esn) {
-        final PushConnection pc = clientPushConnectionMap.remove(buildKey(cid, esn));
+    public PushConnection remove(final String clientId) {
+        final PushConnection pc = clientPushConnectionMap.remove(clientId);
         return pc;
     }
 
