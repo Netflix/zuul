@@ -57,8 +57,8 @@ public class ZuulFiltersModuleTest {
 
     @Test
     public void testEmptyClassNames() {
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{"   "});
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"   "});
+        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
+        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{});
 
         String[] classNames = module.findClassNames(configuration);
 
@@ -85,7 +85,7 @@ public class ZuulFiltersModuleTest {
 
         Class expectedClass = TestZuulFilter.class;
 
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{""});
+        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
         when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"com.netflix.zuul.init"});
 
         String[] classNames = module.findClassNames(configuration);
