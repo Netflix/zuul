@@ -239,16 +239,23 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     @Override
     public HttpResponseMessage apply(final HttpRequestMessage input) {
         // If no Origin has been selected, then just return a 404 static response.
-        if (origin == null) {
-            handleNoOriginSelected();
+        // handle any exception here
+        try {
+
+            if (origin == null) {
+                handleNoOriginSelected();
+                return null;
+            }
+
+            origin.getProxyTiming(zuulRequest).start();
+            origin.onRequestExecutionStart(zuulRequest, 1);
+            proxyRequestToOrigin();
+            //Doesn't return origin response to caller, calls invokeNext() internally in response filter chain
+            return null;
+        } catch (Exception ex) {
+            handleError(ex);
             return null;
         }
-
-        origin.getProxyTiming(zuulRequest).start();
-        origin.onRequestExecutionStart(zuulRequest, 1);
-        proxyRequestToOrigin();
-        //Doesn't return origin response to caller, calls invokeNext() internally in response filter chain
-        return null;
     }
 
     @Override

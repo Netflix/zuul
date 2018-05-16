@@ -77,7 +77,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
             requestFilterChain.filter(zuulRequest);
         }
-        else if (msg instanceof HttpContent) {
+        else if ((msg instanceof HttpContent)&&(zuulRequest != null)) {
             requestFilterChain.filter(zuulRequest, (HttpContent) msg);
         }
         else {

@@ -22,11 +22,13 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.insights.PassportStateOriginHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import com.netflix.zuul.netty.ssl.ClientSslContextFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslContext;
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
@@ -41,6 +43,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     private final ConnectionPoolHandler connectionPoolHandler;
     private final HttpMetricsChannelHandler httpMetricsHandler;
     private final LoggingHandler nettyLogger;
+    private final SslContext sslContext;
 
     public DefaultOriginChannelInitializer(ConnectionPoolConfig connPoolConfig, Registry spectatorRegistry) {
         this.connectionPoolConfig = connPoolConfig;
@@ -48,6 +51,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         this.connectionPoolHandler = new ConnectionPoolHandler(originName);
         this.httpMetricsHandler = new HttpMetricsChannelHandler(spectatorRegistry, "client", originName);
         this.nettyLogger = new LoggingHandler("zuul.origin.nettylog." + originName, LogLevel.INFO);
+        this.sslContext = getClientSslContext(spectatorRegistry);
     }
 
     @Override
@@ -56,6 +60,10 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
         pipeline.addLast(new PassportStateOriginHandler());
 
+        if (connectionPoolConfig.isSecure()) {
+            pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
+        }
+
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
                 BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
                 BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),
@@ -63,12 +71,22 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
                 false,
                 false
         ));
-        pipeline.addLast(new PassportStateHttpClientHandler());
+        pipeline.addLast(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, new PassportStateHttpClientHandler());
         pipeline.addLast("originNettyLogger", nettyLogger);
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
         pipeline.addLast("httpLifecycle", new HttpClientLifecycleChannelHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
+    }
+
+    /**
+     * This method can be overridden to create your own custom SSL context
+     *
+     * @param spectatorRegistry metrics registry
+     * @return Netty SslContext
+     */
+    protected SslContext getClientSslContext(Registry spectatorRegistry) {
+        return new ClientSslContextFactory(spectatorRegistry).getClientSslContext();
     }
 
     /**

@@ -52,5 +52,7 @@ public interface ConnectionPoolConfig {
 
     boolean getNettyAutoRead();
 
+    boolean isSecure();
+
     boolean useIPAddrForServer();
 }

@@ -96,7 +96,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .forServer(http2StreamHandler)
                 .frameLogger(FRAME_LOGGER)
                 .initialSettings(settings)
-                .validateHeaders(false)
+                .validateHeaders(true)
                 .build();
         pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexCodec);
 

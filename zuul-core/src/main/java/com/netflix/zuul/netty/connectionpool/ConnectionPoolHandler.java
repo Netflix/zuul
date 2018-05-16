@@ -90,8 +90,13 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         //super.exceptionCaught(ctx, cause);
         errorCounter.increment();
         final String mesg = "Exception on Origin channel for origin - " + originName + ". "
-                + ChannelUtils.channelInfoForLogging(ctx.channel()) + cause.getMessage();
+                + ChannelUtils.channelInfoForLogging(ctx.channel()) + " - " +
+                cause.getClass().getCanonicalName() + ": " + cause.getMessage();
         closeConnection(ctx, mesg);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(mesg, cause);
+        }
     }
 
     @Override

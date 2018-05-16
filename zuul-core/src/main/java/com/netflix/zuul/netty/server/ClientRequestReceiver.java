@@ -110,6 +110,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         + ", uri = " + String.valueOf(clientRequest.uri())
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 String causeMsg = String.valueOf(clientRequest.decoderResult().cause());
+                ReferenceCountUtil.release(msg);
                 clientRequest = null;
                 final ZuulException ze = new ZuulException(errorMsg, causeMsg, true);
                 ze.setStatusCode(400);

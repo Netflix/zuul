@@ -16,13 +16,19 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
+import io.netty.handler.codec.haproxy.HAProxyTLV;
 import io.netty.util.AttributeKey;
+
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass
@@ -38,6 +44,8 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
 {
     public static final String NAME = "ElbProxyProtocolChannelHandler";
     public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey.newInstance("_haproxy_message");
+
+    private static final Logger logger = LoggerFactory.getLogger("ElbProxyProtocolChannelHandler");
 
     private final boolean withProxyProtocol;
 
@@ -83,10 +91,21 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).set(sourceAddress);
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).set(hapm.sourcePort());
                 }
-                
+
+                // PPV2 passes dynamic fields in TLV format which
+                // HAProxyMessage decodes into bytebufs retaining
+                // refCounts..call release to avoid bytebuf leaks
+                List<HAProxyTLV> haProxyTLVList = hapm.tlvs();
+                if (haProxyTLVList != null) {
+                    logger.debug("Decoded PPV2 TLV list count: {}, List: {}", haProxyTLVList.size(), haProxyTLVList);
+                    for (int i = 0; i < haProxyTLVList.size(); i++) {
+                        HAProxyTLV haProxyTLV = haProxyTLVList.get(i);
+                        haProxyTLV.release();
+                    }
+                }
+
                 // TODO - fire an additional event to notify interested parties that we now know the IP?
-                
-                
+
                 // Remove ourselves (this handler) from the channel now, as no more work to do.
                 ctx.pipeline().remove(this);
             }
