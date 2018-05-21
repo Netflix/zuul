@@ -29,6 +29,7 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.unix.Errors;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
@@ -37,6 +38,8 @@ import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpRequestReadTimeoutEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.channels.ClosedChannelException;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
@@ -145,7 +148,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOG.error("zuul filter chain handler caught exception. cause=" + String.valueOf(cause), cause);
-        if (zuulRequest != null) {
+        if (zuulRequest != null && !isClientChannelClosed(cause)) {
             final SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.setError(cause);
             zuulCtx.setShouldSendErrorResponse(true);
@@ -156,4 +159,15 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+
+    // Race condition: channel.isActive() did not catch
+    // channel close..resulting in an i/o exception
+    private boolean isClientChannelClosed(Throwable cause) {
+        if (cause instanceof ClosedChannelException ||
+                cause instanceof Errors.NativeIoException) {
+            LOG.error("ZuulFilterChainHandler::isClientChannelClosed - IO Exception");
+            return true;
+        }
+        return false;
+    }
 }
