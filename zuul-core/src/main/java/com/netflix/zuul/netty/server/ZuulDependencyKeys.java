@@ -28,6 +28,7 @@ import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
+import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import io.netty.channel.ChannelHandler;
 
 import javax.inject.Provider;
@@ -54,4 +55,5 @@ public class ZuulDependencyKeys {
 
     public static final ChannelConfigKey<Provider<ChannelHandler>> rateLimitingChannelHandlerProvider = new ChannelConfigKey<>("rateLimitingChannelHandlerProvider");
     public static final ChannelConfigKey<Provider<ChannelHandler>> sslClientCertCheckChannelHandlerProvider = new ChannelConfigKey<>("sslClientCertCheckChannelHandlerProvider");
+    public static final ChannelConfigKey<PushConnectionRegistry> pushConnectionRegistry = new ChannelConfigKey<>("pushConnectionRegistry");
 }

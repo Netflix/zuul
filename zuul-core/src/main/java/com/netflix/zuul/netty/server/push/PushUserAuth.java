@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.zuul.netty.server;
+package com.netflix.zuul.netty.server.push;
 
-public interface EventLoopConfig
-{
-    int eventLoopCount();
+public interface PushUserAuth {
 
-    int acceptorCount();
+    boolean isSuccess();
+
+    int statusCode();
+
+    String getClientIdentity();
+
 }

@@ -24,12 +24,12 @@ import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
-import com.netflix.zuul.netty.server.BaseServerStartup;
-import com.netflix.zuul.netty.server.DirectMemoryMonitor;
-import com.netflix.zuul.netty.server.Http1MutualSslChannelInitializer;
+import com.netflix.zuul.netty.server.*;
 import com.netflix.zuul.netty.server.http2.Http2SslChannelInitializer;
-import com.netflix.zuul.netty.server.ZuulServerChannelInitializer;
+import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
+import com.netflix.zuul.sample.push.SamplePushChannelInitializer;
+import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
@@ -60,10 +60,13 @@ public class SampleServerStartup extends BaseServerStartup {
         HTTP,
         HTTP2,
         HTTP_MUTUAL_TLS,
+        WEBSOCKET
     }
 
     private static final String[] WWW_PROTOCOLS = new String[]{"TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
     private static final ServerType SERVER_TYPE = ServerType.HTTP;
+    private final PushConnectionRegistry pushConnectionRegistry;
+    private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
     @Inject
     public SampleServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
@@ -71,9 +74,13 @@ public class SampleServerStartup extends BaseServerStartup {
                                RequestCompleteHandler reqCompleteHandler, Registry registry,
                                DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
                                EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
-                               AccessLogPublisher accessLogPublisher) {
+                               AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry,
+                               SamplePushMessageSenderInitializer pushSenderInitializer) {
         super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
-                directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager, accessLogPublisher);
+                directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
+                accessLogPublisher);
+        this.pushConnectionRegistry = pushConnectionRegistry;
+        this.pushSenderInitializer = pushSenderInitializer;
     }
 
     @Override
@@ -151,6 +158,26 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 portsToChannels.put(port, new Http1MutualSslChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
                 logPortConfigured(port, sslConfig);
+                break;
+
+            /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
+             * server using WebSockets */
+            case WEBSOCKET:
+                channelConfig.set(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER);
+                channelConfig.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
+                channelConfig.set(CommonChannelConfigKeys.isSSlFromIntermediary, false);
+                channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, true);
+
+                channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
+
+                portsToChannels.put(port, new SamplePushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
+                logPortConfigured(port, null);
+
+                // port to accept push message from the backend, should be accessible on internal network only.
+                int portPush = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
+                portsToChannels.put(portPush, pushSenderInitializer);
+                logPortConfigured(portPush, null);
+
                 break;
         }
 
