@@ -16,9 +16,12 @@
 
 package com.netflix.netty.common;
 
+import com.netflix.config.DynamicIntProperty;
+import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.util.AttributeKey;
 
 import java.net.InetSocketAddress;
@@ -42,6 +45,10 @@ public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
     public static final AttributeKey<String> ATTR_LOCAL_ADDRESS = AttributeKey.newInstance("_local_address");
     public static final AttributeKey<Integer> ATTR_LOCAL_PORT = AttributeKey.newInstance("_local_port");
 
+    public static final AttributeKey<Boolean> ATTR_TCP_PASSTHROUGH_INBOUND_CONN = AttributeKey.newInstance("_tcp_passthrough_inbound_conn");
+    public static final DynamicIntProperty INBOUND_TCP_PASSTHROUGH__PORT =
+            new DynamicIntProperty("zuul.server.port.tcp.passthrough", 7006);
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception
     {
@@ -54,7 +61,9 @@ public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
         ctx.channel().attr(ATTR_LOCAL_INET_ADDR).setIfAbsent(localAddress);
         ctx.channel().attr(ATTR_LOCAL_ADDRESS).setIfAbsent(localAddress.getAddress().getHostAddress());
         ctx.channel().attr(ATTR_LOCAL_PORT).setIfAbsent(localAddress.getPort());
-
+        if (INBOUND_TCP_PASSTHROUGH__PORT.get() == ctx.channel().attr(ATTR_LOCAL_PORT).get()) {
+            ctx.channel().attr(ATTR_TCP_PASSTHROUGH_INBOUND_CONN).set(true);
+        }
         super.channelActive(ctx);
     }
 

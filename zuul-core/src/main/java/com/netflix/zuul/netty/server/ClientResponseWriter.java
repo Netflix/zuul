@@ -221,6 +221,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             zuulResponse = null;
         }
         else if (evt instanceof CompleteEvent) {
+            HttpResponse response = ((CompleteEvent) evt).getResponse();
+            if (response != null) {
+                if ("close".equalsIgnoreCase(response.headers().get("Connection"))) {
+                    closeConnection = true;
+                }
+            }
             if (zuulResponse != null) {
                 zuulResponse.disposeBufferedBody();
             }
