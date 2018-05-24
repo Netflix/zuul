@@ -1,4 +1,20 @@
 
+// This buildscript is a hack to get around a conflict between different versions of nebula used in this
+// project vs internally at netflix. Once some transitive versions of netflixoss get uptodate, then this can
+// be removed.
+// And note that the error seen without this is:
+//    java.lang.NoClassDefFoundError: org/jfrog/gradle/plugin/artifactory/task/BuildInfoBaseTask
+buildscript {
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.+'
+    }
+    configurations.classpath {
+        resolutionStrategy {
+            force 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7'
+        }
+    }
+}
+
 plugins {
     id 'nebula.netflixoss' version '4.1.0'
     id 'nebula.dependency-lock' version '4.1.0'
