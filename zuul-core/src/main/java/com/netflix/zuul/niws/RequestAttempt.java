@@ -107,10 +107,6 @@ public class RequestAttempt
             this.host = server.getHost();
             this.port = server.getPort();
             this.availabilityZone = server.getZone();
-            // HACK - get region by just removing the last char from zone.
-            if (availabilityZone != null && availabilityZone.length() > 0) {
-                region = availabilityZone.substring(0, availabilityZone.length() - 1);
-            }
 
             if (server instanceof DiscoveryEnabledServer) {
                 InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
@@ -126,6 +122,9 @@ public class RequestAttempt
                 else {
                     this.vip = instanceInfo.getVIPAddress();
                 }
+                if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
+                    this.availabilityZone = ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
+                }
             }
             else {
                 final Server.MetaInfo metaInfo = server.getMetaInfo();
@@ -134,6 +133,10 @@ public class RequestAttempt
                     this.vip = metaInfo.getServiceIdForDiscovery();
                     this.instanceId = metaInfo.getInstanceId();
                 }
+            }
+            // HACK - get region by just removing the last char from zone.
+            if (availabilityZone != null && availabilityZone.length() > 0) {
+                region = availabilityZone.substring(0, availabilityZone.length() - 1);
             }
         }
 
