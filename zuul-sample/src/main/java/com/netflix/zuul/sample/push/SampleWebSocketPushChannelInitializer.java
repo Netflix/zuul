@@ -18,32 +18,34 @@ package com.netflix.zuul.sample.push;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.zuul.netty.server.ZuulDependencyKeys;
 import com.netflix.zuul.netty.server.push.*;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 
 /**
  * Author: Susheel Aroskar
  * Date: 5/16/18
  */
-public class SamplePushChannelInitializer extends PushChannelInitializer {
+public class SampleWebSocketPushChannelInitializer extends PushChannelInitializer {
 
     private final PushConnectionRegistry pushConnectionRegistry;
     private final PushAuthHandler pushAuthHandler;
 
-    public SamplePushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+    public SampleWebSocketPushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(port, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
-        pushAuthHandler = new SamplePushAuthHandler();
+        pushAuthHandler = new SamplePushAuthHandler(PushProtocol.WEBSOCKET.getPath());
     }
 
 
     @Override
-    protected PushAuthHandler getPushAuthHandler() {
-        return pushAuthHandler;
+    protected void addPushHandlers(final ChannelPipeline pipeline) {
+        pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
+        pipeline.addLast(new WebSocketServerCompressionHandler());
+        pipeline.addLast(new WebSocketServerProtocolHandler(PushProtocol.WEBSOCKET.getPath(), null, true));
+        pipeline.addLast(new SampleWebSocketPushRegistrationHandler(pushConnectionRegistry));
     }
 
-    @Override
-    protected PushRegistrationHandler getPushRegistrationHandler() {
-        return new SamplePushRegistrationHandler(pushConnectionRegistry, PushProtocol.WEBSOCKET);
-    }
 
 }

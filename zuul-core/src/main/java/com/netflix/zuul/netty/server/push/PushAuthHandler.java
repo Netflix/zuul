@@ -74,7 +74,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         else if (pushConnectionPath.equals(path)) {
             // CSRF protection
             final String origin = req.headers().get(HttpHeaderNames.ORIGIN);
-            if ((origin == null) || (!origin.toLowerCase().endsWith(originDomain))) {
+            if (((PushProtocol.WEBSOCKET.getPath().equals(pushConnectionPath))) &&
+                ((origin == null) || (!origin.toLowerCase().endsWith(originDomain)))) {
                 logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
                 sendHttpResponse(req, ctx, BAD_REQUEST);
             }
