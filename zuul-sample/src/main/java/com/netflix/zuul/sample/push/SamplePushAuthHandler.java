@@ -18,7 +18,6 @@ package com.netflix.zuul.sample.push;
 import com.google.common.base.Strings;
 import com.netflix.zuul.message.http.Cookies;
 import com.netflix.zuul.netty.server.push.PushAuthHandler;
-import com.netflix.zuul.netty.server.push.PushProtocol;
 import com.netflix.zuul.netty.server.push.PushUserAuth;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -37,8 +36,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 @ChannelHandler.Sharable
 public class SamplePushAuthHandler extends PushAuthHandler {
 
-    public SamplePushAuthHandler() {
-        super(PushProtocol.WEBSOCKET.getPath(), ".sample.netflix.com");
+    public SamplePushAuthHandler(String path) {
+        super(path, ".sample.netflix.com");
     }
 
     /**

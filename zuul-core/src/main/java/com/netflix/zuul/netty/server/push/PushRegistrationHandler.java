@@ -16,11 +16,9 @@
 package com.netflix.zuul.netty.server.push;
 
 import com.netflix.config.CachedDynamicIntProperty;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,35 +61,19 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
         this.destroyed = new AtomicBoolean();
     }
 
-    protected final static boolean isAuthenticated(PushUserAuth authEvent) {
+    protected final boolean isAuthenticated() {
         return (authEvent != null && authEvent.isSuccess());
+    }
+
+    protected final PushUserAuth getAuthEvent() {
+        return authEvent;
     }
 
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         this.ctx = ctx;
-        pushConnection = new PushConnection(pushProtocol, ctx);
-
         try {
-            if (msg instanceof PingWebSocketFrame) {
-                logger.debug("received ping frame");
-                ctx.writeAndFlush(new PongWebSocketFrame());
-            }
-            else if (msg instanceof CloseWebSocketFrame) {
-                logger.debug("received close frame");
-                ctx.close();
-            }
-            else if (msg instanceof TextWebSocketFrame) {
-                final TextWebSocketFrame tf = (TextWebSocketFrame) msg;
-                final String text = tf.text();
-                logger.debug("received test frame: {}", text);
-                handleTextWebSocketFrame(authEvent, pushConnection, text);
-            }
-            else if (msg instanceof BinaryWebSocketFrame) {
-                final BinaryWebSocketFrame bf = (BinaryWebSocketFrame) msg;
-                logger.debug("received binary frame");
-                handleBinaryWebSocketFrame(authEvent, pushConnection, bf.content());
-            }
+            handleRead(ctx, msg);
         }
         finally {
             ReferenceCountUtil.release(msg);
@@ -123,7 +105,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     }
 
     protected final void sendErrorAndClose(int statusCode, String reasonText) {
-        ctx.writeAndFlush(new CloseWebSocketFrame(statusCode, reasonText)).addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(serverClosingConnectionMessage(statusCode, reasonText)).addListener(ChannelFutureListener.CLOSE);
     }
 
     protected final void forceCloseConnectionFromServerSide() {
@@ -134,7 +116,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     }
 
     private void closeIfNotAuthenticated() {
-        if (! isAuthenticated(authEvent)) {
+        if (! isAuthenticated()) {
             logger.error("Closing connection because it is still unauthenticated after {} seconds.", UNAUTHENTICATED_CONN_TTL.get());
             forceCloseConnectionFromServerSide();
         }
@@ -143,7 +125,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     private void requestClientToCloseConnection() {
         if (ctx.channel().isActive()) {
             // Application level protocol for asking client to close connection
-            ctx.writeAndFlush(goAwayFrame());
+            ctx.writeAndFlush(goAwayMessage());
             // Force close connection if client doesn't close in reasonable time after we made request
             ctx.executor().schedule(() -> forceCloseConnectionFromServerSide(), CLIENT_CLOSE_GRACE_PERIOD.get(), TimeUnit.SECONDS);
         } else {
@@ -169,11 +151,14 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
             }
             else if (evt instanceof PushUserAuth) {
                 authEvent = (PushUserAuth) evt;
-                logger.debug("registering client {}", authEvent);
-
-                ctx.pipeline().remove(PushAuthHandler.NAME);
-                registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
-                logger.debug("Authentication complete {}", authEvent);
+                if (authEvent.isSuccess()) {
+                    logger.debug("registering client {}", authEvent);
+                    ctx.pipeline().remove(PushAuthHandler.NAME);
+                    registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
+                    logger.debug("Authentication complete {}", authEvent);
+                } else {
+                    sendErrorAndClose(1008, "Auth Failed");
+                }
             }
         }
         super.userEventTriggered(ctx, evt);
@@ -201,24 +186,23 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     }
 
 
-    /**
-     * Implement your application specific protocol over TextWebSocketFrame here
-     * @param text WebSocketFrame contents
-     */
-    protected abstract void handleTextWebSocketFrame(PushUserAuth authEvent, PushConnection conn, String text);
-
-    /**
-     * Implement your application specific protocol over BinaryebSocketFrame here
-     * @param byteBuf WebSocketFrame contents
-     */
-    protected abstract void handleBinaryWebSocketFrame(PushUserAuth authEvent, PushConnection conn, ByteBuf byteBuf);
-
 
     /**
      * Application level protocol for asking client to close connection
      * @return WebSocketFrame which when sent to client will cause it to close the WebSocket
      */
-    protected abstract WebSocketFrame goAwayFrame();
+    protected abstract Object goAwayMessage();
 
+    /**
+     * Message server sends to the client just before it force closes connection from its side
+     * @return
+     */
+    protected abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
+
+    /**
+     * Implement this method to parse application level protocol if your push connection is duplex, i.e.
+     * Client can send messages to server as well as server pushing messages to the client.
+     */
+    protected abstract void handleRead(ChannelHandlerContext ctx, Object msg);
 
 }
