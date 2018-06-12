@@ -196,9 +196,8 @@ public class SampleServerStartup extends BaseServerStartup {
                 logPortConfigured(port, null);
 
                 // port to accept push message from the backend, should be accessible on internal network only.
-                int portPush = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
-                portsToChannels.put(portPush, pushSenderInitializer);
-                logPortConfigured(portPush, null);
+                portsToChannels.put(pushPort, pushSenderInitializer);
+                logPortConfigured(pushPort, null);
 
                 break;
         }
