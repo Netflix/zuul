@@ -258,6 +258,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         immutableCheck();
         this.path = path;
+        this.decodedPath = path;
     }
 
     @Override
