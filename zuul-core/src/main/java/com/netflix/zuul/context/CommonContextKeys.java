@@ -58,4 +58,5 @@ public class CommonContextKeys {
     public static final String RESP_BODY_SIZE_PROVIDER = "response_body_size";
 
     public static final String PASSPORT = "_passport";
+    public static final String ZUUL_USE_DECODED_URI = "zuul_use_decoded_uri";
 }
