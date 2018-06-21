@@ -137,7 +137,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     private static final Set<HeaderName> RESPONSE_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
-    public static final String POOLED_ORIGIN_CONNECTION_KEY = "_origin_pooled_conn";
+    public static final String POOLED_ORIGIN_CONNECTION_KEY =    "_origin_pooled_conn";
     private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
@@ -677,7 +677,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     protected boolean isRetryable(final ErrorType err) {
-        if (err == OutboundErrorType.READ_TIMEOUT  || err == OutboundErrorType.RESET_CONNECTION || err == OutboundErrorType.CONNECT_ERROR) {
+        if ((err == OutboundErrorType.RESET_CONNECTION) ||
+            (err == OutboundErrorType.CONNECT_ERROR) ||
+            (err == OutboundErrorType.READ_TIMEOUT && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase()))){
             return isRequestReplayable() ;
         }
         return false;
