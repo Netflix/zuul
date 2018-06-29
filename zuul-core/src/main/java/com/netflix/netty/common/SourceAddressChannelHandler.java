@@ -47,7 +47,7 @@ public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
 
     public static final AttributeKey<Boolean> ATTR_TCP_PASSTHROUGH_INBOUND_CONN = AttributeKey.newInstance("_tcp_passthrough_inbound_conn");
     public static final DynamicIntProperty INBOUND_TCP_PASSTHROUGH__PORT =
-            new DynamicIntProperty("zuul.server.port.tcp.passthrough", 7006);
+            new DynamicIntProperty("zuul.server.port.tcp.passthrough", 7009);
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception
