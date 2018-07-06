@@ -89,44 +89,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -255,44 +255,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -421,44 +421,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -587,44 +587,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -753,44 +753,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -923,44 +923,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1093,44 +1093,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1263,44 +1263,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1433,44 +1433,44 @@
             "requested": "2.4"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.7.Final",
+            "locked": "2.0.12.Final",
             "requested": "2.0.7.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.21.Final",
-            "requested": "4.1.21.Final"
+            "locked": "4.1.25.Final",
+            "requested": "4.1.25.Final"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
