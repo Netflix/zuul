@@ -116,17 +116,15 @@ public class Http2FrameLogger extends ChannelHandlerAdapter {
         }
     }
 
-    public void logPing(Direction direction, ChannelHandlerContext ctx, ByteBuf data) {
+    public void logPing(Direction direction, ChannelHandlerContext ctx, long data) {
         if (enabled()) {
-            log(direction, "PING", ctx, "ack=false, length=%d, bytes=%s",
-                    data.readableBytes(), toString(data));
+            log(direction, "PING", ctx, "ack=false, length=%d", data);
         }
     }
 
-    public void logPingAck(Direction direction, ChannelHandlerContext ctx, ByteBuf data) {
+    public void logPingAck(Direction direction, ChannelHandlerContext ctx, long data) {
         if (enabled()) {
-            log(direction, "PING", ctx, "ack=true, length=%d, bytes=%s",
-                    data.readableBytes(), toString(data));
+            log(direction, "PING", ctx, "ack=true, length=%d", data);
         }
     }
 

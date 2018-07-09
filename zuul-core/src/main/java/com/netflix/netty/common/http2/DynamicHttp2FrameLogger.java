@@ -96,14 +96,14 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger
     }
 
     @Override
-    public void logPing(Direction direction, ChannelHandlerContext ctx, ByteBuf data)
+    public void logPing(Direction direction, ChannelHandlerContext ctx, long data)
     {
         if (enabled(ctx))
             super.logPing(direction, ctx, data);
     }
 
     @Override
-    public void logPingAck(Direction direction, ChannelHandlerContext ctx, ByteBuf data)
+    public void logPingAck(Direction direction, ChannelHandlerContext ctx, long data)
     {
         if (enabled(ctx))
             super.logPingAck(direction, ctx, data);
