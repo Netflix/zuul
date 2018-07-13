@@ -147,8 +147,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error("zuul filter chain handler caught exception. cause=" + String.valueOf(cause), cause);
         if (zuulRequest != null && !isClientChannelClosed(cause)) {
+            LOG.error("zuul filter chain handler caught exception. cause=" + String.valueOf(cause), cause);
             final SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.setError(cause);
             zuulCtx.setShouldSendErrorResponse(true);
