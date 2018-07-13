@@ -30,6 +30,8 @@ import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import com.netflix.zuul.stats.status.StatusCategoryUtils;
+import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import com.netflix.zuul.util.HttpUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -332,9 +334,20 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) throws Exception {
+
         final String errMesg = String.format("Error writing %s to client", requestPart);
-        LOG.error(errMesg, cause);
-        ctx.fireExceptionCaught(new ZuulException(cause, errMesg, true));
+
+        if (cause instanceof java.nio.channels.ClosedChannelException) {
+            LOG.info(errMesg + " - client connection is closed.");
+            if (zuulRequest != null) {
+                zuulRequest.getContext().cancel();
+                StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
+            }
+        }
+        else {
+            LOG.error(errMesg, cause);
+            ctx.fireExceptionCaught(new ZuulException(cause, errMesg, true));
+        }
     }
 
 }
