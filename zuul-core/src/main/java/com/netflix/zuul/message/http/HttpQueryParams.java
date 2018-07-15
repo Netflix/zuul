@@ -40,17 +40,20 @@ public class HttpQueryParams implements Cloneable
 {
     private final ListMultimap<String, String> delegate;
     private final boolean immutable;
+    private final HashMap<String, Boolean> trailingEquals;
 
     public HttpQueryParams()
     {
         delegate = ArrayListMultimap.create();
         immutable = false;
+        trailingEquals = new HashMap<>();
     }
 
     private HttpQueryParams(ListMultimap<String, String> delegate)
     {
         this.delegate = delegate;
         immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
+        trailingEquals = new HashMap<>();
     }
 
     public static HttpQueryParams parse(String queryString) {
@@ -78,6 +81,11 @@ public class HttpQueryParams implements Cloneable
                 }
 
                 queryParams.add(name, value);
+
+                // respect trailing equals for key-only params
+                if (s.endsWith("=") && StringUtils.isBlank(value)) {
+                    queryParams.setTrailingEquals(name, true);
+                }
             }
             // key only
             else if (s.length() > 0) {
@@ -176,6 +184,9 @@ public class HttpQueryParams implements Cloneable
                     sb.append('=');
                     sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 }
+                else if (isTrailingEquals(entry.getKey())) {
+                    sb.append('=');
+                }
                 sb.append('&');
             }
 
@@ -229,6 +240,13 @@ public class HttpQueryParams implements Cloneable
         return immutable;
     }
 
+    public boolean isTrailingEquals(String key) {
+        return trailingEquals.getOrDefault(key, false);
+    }
+
+    public void setTrailingEquals(String key, boolean trailingEquals) {
+        this.trailingEquals.put(key, trailingEquals);
+    }
 
     @Override
     public int hashCode()
@@ -312,7 +330,7 @@ public class HttpQueryParams implements Cloneable
 
             assertEquals(expected, actual);
 
-            assertEquals("k1&k2=v2&k3", actual.toEncodedString());
+            assertEquals("k1=&k2=v2&k3=", actual.toEncodedString());
         }
 
         @Test
@@ -325,7 +343,7 @@ public class HttpQueryParams implements Cloneable
 
             assertEquals(expected, actual);
 
-            assertEquals("k1", actual.toEncodedString());
+            assertEquals("k1=", actual.toEncodedString());
         }
 
         @Test
@@ -353,5 +371,22 @@ public class HttpQueryParams implements Cloneable
 
             assertEquals("%3D", actual.toEncodedString());
         }
+
+        @Test
+        public void testParseKeysWithoutValuesMixedTrailers()
+        {
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("k1", "");
+            expected.add("k2", "v2");
+            expected.add("k3", "");
+            expected.add("k4", "v4");
+
+            HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2&k3&k4=v4");
+
+            assertEquals(expected, actual);
+
+            assertEquals("k1=&k2=v2&k3&k4=v4", actual.toEncodedString());
+        }
+
     }
 }

@@ -49,12 +49,6 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
         pipeline.addLast(new HttpObjectAggregator(8192));
     }
 
-    protected void addPushHandlers(final ChannelPipeline pipeline) {
-        pipeline.addLast(PushAuthHandler.NAME, getPushAuthHandler());
-        pipeline.addLast(new WebSocketServerCompressionHandler());
-        pipeline.addLast(new WebSocketServerProtocolHandler(PushProtocol.WEBSOCKET.getPath(), null, true));
-        pipeline.addLast(getPushRegistrationHandler());
-    }
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
@@ -66,7 +60,6 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
     }
 
 
-    protected abstract PushAuthHandler getPushAuthHandler();
-    protected abstract PushRegistrationHandler getPushRegistrationHandler();
+    protected abstract void addPushHandlers(final ChannelPipeline pipeline);
 
 }

@@ -35,6 +35,7 @@ public class CommonContextKeys {
     public static final String ZUUL_ENDPOINT = "_zuul_endpoint";
     public static final String ZUUL_FILTER_CHAIN = "_zuul_filter_chain";
     public static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
+    public static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
     public static final String ORIGIN_MANAGER = "origin_manager";
     public static final String ROUTING_LOG = "routing_log";
     public static final String USE_FULL_VIP_NAME = "use_full_vip_name";
@@ -57,4 +58,5 @@ public class CommonContextKeys {
     public static final String RESP_BODY_SIZE_PROVIDER = "response_body_size";
 
     public static final String PASSPORT = "_passport";
+    public static final String ZUUL_USE_DECODED_URI = "zuul_use_decoded_uri";
 }

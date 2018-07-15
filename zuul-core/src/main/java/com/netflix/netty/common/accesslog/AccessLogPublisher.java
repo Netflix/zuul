@@ -51,7 +51,7 @@ public class AccessLogPublisher
     }
 
     public void log(Channel channel, HttpRequest request, HttpResponse response, LocalDateTime dateTime, Integer localPort, String remoteIp,
-                    Long durationNs, Integer responseBodySize)
+                    Long durationNs, Integer requestBodySize, Integer responseBodySize)
     {
         StringBuilder sb = new StringBuilder();
 
@@ -73,6 +73,7 @@ public class AccessLogPublisher
         // Convert duration to microseconds.
         String durationStr = (durationNs != null && durationNs.longValue() > 0) ? String.valueOf(durationNs / 1000) : "-";
 
+        String requestBodySizeStr = (requestBodySize != null && requestBodySize.intValue() > 0) ? requestBodySize.toString() : "-";
         String responseBodySizeStr = (responseBodySize != null && responseBodySize.intValue() > 0) ? responseBodySize.toString() : "-";
 
 
@@ -87,6 +88,7 @@ public class AccessLogPublisher
                 .append(DELIM).append(durationStr)
                 .append(DELIM).append(responseBodySizeStr)
                 .append(DELIM).append(requestId)
+                .append(DELIM).append(requestBodySizeStr)
                 ;
 
         if (request != null && request.headers() != null) {

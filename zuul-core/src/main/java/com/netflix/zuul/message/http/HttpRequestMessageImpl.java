@@ -19,6 +19,7 @@ package com.netflix.zuul.message.http;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.Headers;
@@ -36,6 +37,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -82,6 +84,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private String protocol;
     private String method;
     private String path;
+    private String decodedPath;
     private HttpQueryParams queryParams;
     private String clientIp;
     private String scheme;
@@ -114,6 +117,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.protocol = protocol;
         this.method = method;
         this.path = path;
+        try {
+            this.decodedPath = URLDecoder.decode(path, "UTF-8");
+        } catch (Exception e) {
+            // fail to decode URI
+            // just set decodedPath to original path
+            this.decodedPath = path;
+        }
         // Don't allow this to be null.
         this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
@@ -238,6 +248,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public String getPath() {
+        if (message.getContext().containsKey(CommonContextKeys.ZUUL_USE_DECODED_URI)) {
+            return decodedPath;
+        }
         return path;
     }
     @Override
@@ -245,6 +258,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         immutableCheck();
         this.path = path;
+        this.decodedPath = path;
     }
 
     @Override

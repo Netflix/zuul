@@ -65,7 +65,15 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
                 RequestState state = new RequestState();
                 state.request = (HttpRequest) msg;
                 state.startTimeNs = System.nanoTime();
-                ctx.attr(ATTR_REQ_STATE).set(state);
+                state.requestBodySize = 0;
+                ctx.channel().attr(ATTR_REQ_STATE).set(state);
+            }
+
+            if (msg instanceof HttpContent) {
+                RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
+                if (state !=  null) {
+                    state.requestBodySize += ((HttpContent) msg).content().readableBytes();
+                }
             }
 
             super.channelRead(ctx, msg);
@@ -82,8 +90,8 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
 
                 // Response complete, so now write to access log.
                 long durationNs = System.nanoTime() - state.startTimeNs;
-                String remoteIp = ctx.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
-                Integer localPort = ctx.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get();
+                String remoteIp = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
+                Integer localPort = ctx.channel().attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get();
 
                 if (state.response == null) {
                     LOG.debug("Response null in AccessLog, Complete reason={}, duration={}, url={}, method={}",
@@ -93,7 +101,7 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
                 }
 
                 publisher.log(ctx.channel(), state.request, state.response, state.dateTime, localPort, remoteIp, durationNs,
-                        state.responseBodySize);
+                        state.requestBodySize, state.responseBodySize);
             }
 
             super.userEventTriggered(ctx, evt);
@@ -105,7 +113,7 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
         {
-            RequestState state = ctx.attr(ATTR_REQ_STATE).get();
+            RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
 
             if (msg instanceof HttpResponse) {
                 state.response = (HttpResponse) msg;
@@ -126,6 +134,7 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
         HttpRequest request;
         HttpResponse response;
         long startTimeNs;
+        int requestBodySize = 0;
         int responseBodySize = 0;
     }
 }

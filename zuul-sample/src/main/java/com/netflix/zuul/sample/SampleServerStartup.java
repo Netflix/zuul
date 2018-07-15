@@ -28,7 +28,8 @@ import com.netflix.zuul.netty.server.*;
 import com.netflix.zuul.netty.server.http2.Http2SslChannelInitializer;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
-import com.netflix.zuul.sample.push.SamplePushChannelInitializer;
+import com.netflix.zuul.sample.push.SampleSSEPushChannelInitializer;
+import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
 import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
@@ -60,7 +61,8 @@ public class SampleServerStartup extends BaseServerStartup {
         HTTP,
         HTTP2,
         HTTP_MUTUAL_TLS,
-        WEBSOCKET
+        WEBSOCKET,
+        SSE
     }
 
     private static final String[] WWW_PROTOCOLS = new String[]{"TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
@@ -92,6 +94,7 @@ public class SampleServerStartup extends BaseServerStartup {
         int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
 
         ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig();
+        int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
         ServerSslConfig sslConfig;
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
          * or directly on the internet.
@@ -170,13 +173,31 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
-                portsToChannels.put(port, new SamplePushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
+                portsToChannels.put(port, new SampleWebSocketPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
                 logPortConfigured(port, null);
 
                 // port to accept push message from the backend, should be accessible on internal network only.
-                int portPush = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
-                portsToChannels.put(portPush, pushSenderInitializer);
-                logPortConfigured(portPush, null);
+                portsToChannels.put(pushPort, pushSenderInitializer);
+                logPortConfigured(pushPort, null);
+
+                break;
+
+            /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
+             * server using Server Sent Events (SSE) */
+            case SSE:
+                channelConfig.set(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER);
+                channelConfig.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
+                channelConfig.set(CommonChannelConfigKeys.isSSlFromIntermediary, false);
+                channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, true);
+
+                channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
+
+                portsToChannels.put(port, new SampleSSEPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
+                logPortConfigured(port, null);
+
+                // port to accept push message from the backend, should be accessible on internal network only.
+                portsToChannels.put(pushPort, pushSenderInitializer);
+                logPortConfigured(pushPort, null);
 
                 break;
         }

@@ -137,7 +137,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     private static final Set<HeaderName> RESPONSE_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
-    public static final String POOLED_ORIGIN_CONNECTION_KEY = "_origin_pooled_conn";
+    public static final String POOLED_ORIGIN_CONNECTION_KEY =    "_origin_pooled_conn";
     private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
@@ -319,16 +319,19 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void logOriginServerIpAddr() {
-        Map<Integer, String> attempToIpAddressMap = (Map) context.getEventProperties().get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
+    private void logOriginRequestInfo() {
+        final Map<String, Object> eventProps = context.getEventProperties();
+        Map<Integer, String> attempToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
         if (attempToIpAddressMap == null) {
             attempToIpAddressMap = new HashMap<>();
         }
         String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
         if (ipAddr != null) {
             attempToIpAddressMap.put(attemptNum, ipAddr);
-            context.getEventProperties().put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
         }
+
+        eventProps.put(CommonContextKeys.ZUUL_ORIGIN_REQUEST_URI, zuulRequest.getPathAndQuery());
     }
 
     private void proxyRequestToOrigin() {
@@ -340,7 +343,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             concurrentReqCount++;
             promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer);
 
-            logOriginServerIpAddr();
+            logOriginRequestInfo();
             currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
             requestAttempts.add(currentRequestAttempt);
             passport.add(PassportState.ORIGIN_CONN_ACQUIRE_START);
@@ -353,7 +356,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         catch (Exception ex) {
             LOG.error("Error while connecting to origin, UUID {} " + context.getUUID(), ex);
-            logOriginServerIpAddr();
+            logOriginRequestInfo();
             if (promise != null && ! promise.isDone()) {
                 promise.setFailure(ex);
             } else {
@@ -674,7 +677,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     protected boolean isRetryable(final ErrorType err) {
-        if (err == OutboundErrorType.READ_TIMEOUT  || err == OutboundErrorType.RESET_CONNECTION || err == OutboundErrorType.CONNECT_ERROR) {
+        if ((err == OutboundErrorType.RESET_CONNECTION) ||
+            (err == OutboundErrorType.CONNECT_ERROR) ||
+            (err == OutboundErrorType.READ_TIMEOUT && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase()))){
             return isRequestReplayable() ;
         }
         return false;
