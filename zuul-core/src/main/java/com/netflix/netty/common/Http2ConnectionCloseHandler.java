@@ -17,12 +17,14 @@
 package com.netflix.netty.common;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.spectator.api.Registry;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.unix.Errors;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Error;
@@ -46,13 +48,19 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
     private static final DynamicBooleanProperty ALLOW_GRACEFUL_DELAYED = new DynamicBooleanProperty(
             "server.connection.close.graceful.delayed.allow", true);
 
+    private static final DynamicBooleanProperty SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE = new DynamicBooleanProperty(
+            "server.connection.close.swallow.unknown.exceptions", false);
+
     private static final SwallowHttp2ExceptionShutdownHint SWALLOW_EXCEPTION_HANDLER = new SwallowHttp2ExceptionShutdownHint();
 
     private final int gracefulCloseDelay;
 
-    public Http2ConnectionCloseHandler(int gracefulCloseDelay)
+    protected static Registry registry;
+
+    public Http2ConnectionCloseHandler(int gracefulCloseDelay, Registry registry)
     {
         this.gracefulCloseDelay = gracefulCloseDelay;
+        this.registry = registry;
     }
 
     @Override
@@ -228,6 +236,13 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
     }
 
 
+    protected static void incrementExceptionCounter(Throwable throwable) {
+        registry.counter("server.connection.exception",
+                "handler", "Http2ConnectionCloseHandler",
+                "id", throwable.getClass().getSimpleName())
+                .increment();
+    }
+
     @Sharable
     static class SwallowHttp2ExceptionShutdownHint extends ChannelOutboundHandlerAdapter
     {
@@ -245,8 +260,15 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
                     super.exceptionCaught(ctx, cause);
                 }
             }
+            else if (cause instanceof Errors.NativeIoException) {
+                LOG.debug("SwallowHttp2ExceptionShutdownHint, NativeIoException " + cause);
+                Http2ConnectionCloseHandler.incrementExceptionCounter(cause);
+            }
             else {
-                super.exceptionCaught(ctx, cause);
+                LOG.debug("SwallowHttp2ExceptionShutdownHint unknown exception " + cause);
+                if (!SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE.get()) {
+                    super.exceptionCaught(ctx, cause);
+                }
             }
 
         }

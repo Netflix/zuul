@@ -182,7 +182,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addPassportHandler(ChannelPipeline pipeline)
     {
-        pipeline.addLast(new PassportStateServerHandler());
+        pipeline.addLast(new PassportStateServerHandler(registry));
     }
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)

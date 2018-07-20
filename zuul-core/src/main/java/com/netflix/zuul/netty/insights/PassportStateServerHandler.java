@@ -18,12 +18,17 @@ package com.netflix.zuul.netty.insights;
 
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.CombinedChannelDuplexHandler;
+import io.netty.channel.unix.Errors;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * User: Mike Smith
@@ -32,9 +37,14 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class PassportStateServerHandler extends CombinedChannelDuplexHandler
 {
-    public PassportStateServerHandler()
+    private static final Logger LOG = LoggerFactory.getLogger(PassportStateServerHandler.class);
+
+    private static Registry registry;
+
+    public PassportStateServerHandler(Registry registry)
     {
         super(new InboundHandler(), new OutboundHandler());
+        this.registry = registry;
     }
 
     private static CurrentPassport passport(ChannelHandlerContext ctx)
@@ -42,6 +52,14 @@ public class PassportStateServerHandler extends CombinedChannelDuplexHandler
         return CurrentPassport.fromChannel(ctx.channel());
     }
     
+
+    protected static void incrementExceptionCounter(Throwable throwable, String handler) {
+        registry.counter("server.connection.exception",
+                "handler", handler,
+                "id", throwable.getClass().getSimpleName())
+                .increment();
+    }
+
     private static class InboundHandler extends ChannelInboundHandlerAdapter
     {
         @Override
@@ -62,7 +80,12 @@ public class PassportStateServerHandler extends CombinedChannelDuplexHandler
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
         {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
-            super.exceptionCaught(ctx, cause);
+            if (cause instanceof Errors.NativeIoException) {
+                LOG.debug("PassportStateServerHandler Inbound NativeIoException " + cause);
+                incrementExceptionCounter(cause, "PassportStateServerHandler.Inbound");
+            } else {
+                super.exceptionCaught(ctx, cause);
+            }
         }
 
         @Override
@@ -98,7 +121,12 @@ public class PassportStateServerHandler extends CombinedChannelDuplexHandler
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
         {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
-            super.exceptionCaught(ctx, cause);
+            if (cause instanceof Errors.NativeIoException) {
+                LOG.debug("PassportStateServerHandler Outbound NativeIoException " + cause);
+                incrementExceptionCounter(cause, "PassportStateServerHandler.Outbound");
+            } else {
+                super.exceptionCaught(ctx, cause);
+            }
         }
     }
 }
