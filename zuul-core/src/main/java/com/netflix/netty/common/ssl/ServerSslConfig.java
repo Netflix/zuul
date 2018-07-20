@@ -52,13 +52,14 @@ public class ServerSslConfig
     private final List<String> ciphers;
     private final File certChainFile;
     private final File keyFile;
-    
+
     private final ClientAuth clientAuth;
     private final File clientAuthTrustStoreFile;
     private final String clientAuthTrustStorePassword;
     private final File clientAuthTrustStorePasswordFile;
-    
-    private final boolean decryptKeyUsingMetatron;
+
+    private final boolean decryptKeyUsingMetatronPolicy;
+    private final boolean decryptKeyUsingMetatronBundle;
     private final byte[] metatronPolicy;
 
     private final long sessionTimeout;
@@ -83,7 +84,8 @@ public class ServerSslConfig
         this.ciphers = ciphers != null ? Arrays.asList(ciphers) : null;
         this.certChainFile = certChainFile;
         this.keyFile = keyFile;
-        this.decryptKeyUsingMetatron = (metatronPolicy != null);
+        this.decryptKeyUsingMetatronPolicy = (metatronPolicy != null);
+        this.decryptKeyUsingMetatronBundle = false;
         this.metatronPolicy = metatronPolicy;
         this.clientAuth = clientAuth;
         this.clientAuthTrustStoreFile = clientAuthTrustStoreFile;
@@ -92,17 +94,18 @@ public class ServerSslConfig
         this.sessionTimeout = DEFAULT_SESSION_TIMEOUT.get();
         this.sessionTicketsEnabled = sessionTicketsEnabled;
     }
-    
-    public ServerSslConfig(String[] protocols, String[] ciphers, File certChainFile, File keyFile, 
-                           byte[] metatronPolicy, 
-                           ClientAuth clientAuth, File clientAuthTrustStoreFile, String clientAuthTrustStorePassword, 
-        boolean sessionTicketsEnabled)
+
+    public ServerSslConfig(String[] protocols, String[] ciphers, File certChainFile, File keyFile,
+                           byte[] metatronPolicy,
+                           ClientAuth clientAuth, File clientAuthTrustStoreFile, String clientAuthTrustStorePassword,
+                           boolean sessionTicketsEnabled)
     {
         this.protocols = protocols;
         this.ciphers = Arrays.asList(ciphers);
         this.certChainFile = certChainFile;
         this.keyFile = keyFile;
-        this.decryptKeyUsingMetatron = (metatronPolicy != null);
+        this.decryptKeyUsingMetatronPolicy = (metatronPolicy != null);
+        this.decryptKeyUsingMetatronBundle = false;
         this.metatronPolicy = metatronPolicy;
         this.clientAuth = clientAuth;
         this.clientAuthTrustStoreFile = clientAuthTrustStoreFile;
@@ -111,7 +114,27 @@ public class ServerSslConfig
         this.sessionTimeout = DEFAULT_SESSION_TIMEOUT.get();
         this.sessionTicketsEnabled = sessionTicketsEnabled;
     }
-    
+
+    public ServerSslConfig(String[] protocols, String[] ciphers, File certChainFile, File keyFile,
+                           boolean metatronBundle,
+                           ClientAuth clientAuth, File clientAuthTrustStoreFile, String clientAuthTrustStorePassword,
+                           boolean sessionTicketsEnabled)
+    {
+        this.protocols = protocols;
+        this.ciphers = Arrays.asList(ciphers);
+        this.certChainFile = certChainFile;
+        this.keyFile = keyFile;
+        this.decryptKeyUsingMetatronBundle = metatronBundle;
+        this.decryptKeyUsingMetatronPolicy = false;
+        this.metatronPolicy = null;
+        this.clientAuth = clientAuth;
+        this.clientAuthTrustStoreFile = clientAuthTrustStoreFile;
+        this.clientAuthTrustStorePassword = clientAuthTrustStorePassword;
+        this.clientAuthTrustStorePasswordFile = null;
+        this.sessionTimeout = DEFAULT_SESSION_TIMEOUT.get();
+        this.sessionTicketsEnabled = sessionTicketsEnabled;
+    }
+
     public static String[] getDefaultCiphers()
     {
         return DEFAULT_CIPHERS;
@@ -142,9 +165,14 @@ public class ServerSslConfig
         return keyFile;
     }
 
-    public boolean shouldDecryptKeyUsingMetatron()
+    public boolean shouldDecryptKeyUsingMetatronPolicy()
     {
-        return decryptKeyUsingMetatron;
+        return decryptKeyUsingMetatronPolicy;
+    }
+
+    public boolean shouldDecryptKeyUsingMetatronBundle()
+    {
+        return decryptKeyUsingMetatronBundle;
     }
 
     public byte[] getMetatronPolicyFile()
@@ -192,7 +220,8 @@ public class ServerSslConfig
                 ", keyFile=" + keyFile +
                 ", clientAuth=" + clientAuth +
                 ", clientAuthTrustStoreFile=" + clientAuthTrustStoreFile +
-                ", decryptKeyUsingMetatron=" + decryptKeyUsingMetatron +
+                ", decryptKeyUsingMetatronPolicy=" + decryptKeyUsingMetatronPolicy +
+                ", decryptKeyUsingMetatronBundle=" + decryptKeyUsingMetatronBundle +
                 ", sessionTimeout=" + sessionTimeout +
                 ", sessionTicketsEnabled=" + sessionTicketsEnabled +
                 '}';
