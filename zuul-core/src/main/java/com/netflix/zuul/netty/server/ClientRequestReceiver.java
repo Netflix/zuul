@@ -39,6 +39,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.unix.Errors;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
@@ -337,7 +338,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         final String errMesg = String.format("Error writing %s to client", requestPart);
 
-        if (cause instanceof java.nio.channels.ClosedChannelException) {
+        if (cause instanceof java.nio.channels.ClosedChannelException ||
+                cause instanceof Errors.NativeIoException) {
             LOG.info(errMesg + " - client connection is closed.");
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
