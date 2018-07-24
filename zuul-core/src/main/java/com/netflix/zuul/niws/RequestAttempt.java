@@ -51,7 +51,6 @@ public class RequestAttempt
     private String vip;
     private String region;
     private String availabilityZone;
-    private String chosenOriginWarmupLB;
     private int readTimeout;
     private int connectTimeout;
     private int maxRetries;
@@ -76,8 +75,6 @@ public class RequestAttempt
             if (targetVip == null) {
                 this.vip = server.getVIPAddress();
             }
-
-            this.chosenOriginWarmupLB = chosenWarmupLB;
 
             if (server.getDataCenterInfo() instanceof AmazonInfo) {
                 this.availabilityZone = ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
@@ -226,12 +223,6 @@ public class RequestAttempt
         return connectTimeout;
     }
 
-    public String getChosenOriginWarmupLB() { return chosenOriginWarmupLB; }
-
-    public void setChosenOriginWarmupLB(String chosenOriginWarmupLB) {
-        this.chosenOriginWarmupLB = chosenOriginWarmupLB;
-    }
-
     public int getMaxRetries()
     {
         return maxRetries;
@@ -366,7 +357,6 @@ public class RequestAttempt
         putNullableAttribute(root, "asg", asg);
         putNullableAttribute(root, "instanceId", instanceId);
         putNullableAttribute(root, "vip", vip);
-        putNullableAttribute(root, "chosenOriginWarmupLB", chosenOriginWarmupLB);
 
         if (status < 1) {
             root.put("readTimeout", readTimeout);

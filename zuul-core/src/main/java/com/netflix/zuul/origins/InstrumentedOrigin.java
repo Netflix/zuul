@@ -35,7 +35,5 @@ public interface InstrumentedOrigin extends Origin {
 
     void recordSuccessResponse();
 
-    void recordErrorResponse(String chosenOriginLBGroupFirstAttempt);
-
     void recordProxyRequestEnd();
 }

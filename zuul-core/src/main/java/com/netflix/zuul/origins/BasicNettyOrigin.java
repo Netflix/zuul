@@ -276,8 +276,4 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public void recordSuccessResponse() {
     }
-
-    @Override
-    public void recordErrorResponse(String chosenOriginLBGroupFirstAttempt) {
-    }
 }
