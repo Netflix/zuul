@@ -230,8 +230,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         final String clientIp = channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
 
         // This is the only way I found to get the port of the request with netty...
-        final int port = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get();
-        final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get();
+        final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
+        final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
 
         // Store info about the SSL handshake if applicable, and choose the http scheme.
         String scheme = SCHEME_HTTP;
