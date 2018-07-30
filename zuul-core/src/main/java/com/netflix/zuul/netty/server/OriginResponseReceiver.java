@@ -249,6 +249,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             edgeProxy.errorFromOrigin(ex);
         }
         super.channelInactive(ctx);
+        ctx.close();
     }
 
 }

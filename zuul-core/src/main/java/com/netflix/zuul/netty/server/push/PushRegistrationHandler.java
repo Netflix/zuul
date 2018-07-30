@@ -95,6 +95,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     public final void channelInactive(ChannelHandlerContext ctx) throws Exception {
         tearDown();
         super.channelInactive(ctx);
+        ctx.close();
     }
 
     @Override
