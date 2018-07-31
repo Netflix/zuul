@@ -186,10 +186,12 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
     {
         try {
             if (sslHandshakeCompletionEvent.isSuccess()) {
+                String proto = handshakeInfo.getProtocol().length() > 0 ? handshakeInfo.getProtocol() : "unknown";
+                String ciphsuite = handshakeInfo.getCipherSuite().length() > 0 ? handshakeInfo.getCipherSuite() : "unknown";
                 spectatorRegistry.counter("server.ssl.handshake",
                         "success", String.valueOf(sslHandshakeCompletionEvent.isSuccess()),
-                        "protocol", String.valueOf(handshakeInfo.getProtocol()),
-                        "ciphersuite", String.valueOf(handshakeInfo.getCipherSuite()),
+                        "protocol", String.valueOf(proto),
+                        "ciphersuite", String.valueOf(ciphsuite),
                         "clientauth", String.valueOf(handshakeInfo.getClientAuthRequirement())
                                          )
                         .increment();
