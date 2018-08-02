@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.bootstrap.ZuulBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -26,8 +27,11 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 /**
  * Created by saroskar on 3/16/16.
@@ -36,6 +40,9 @@ public class NettyClientConnectionFactory {
 
     private final ConnectionPoolConfig connPoolConfig;
     private final ChannelInitializer<? extends Channel> channelInitializer;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyClientConnectionFactory.class);
+
 
     NettyClientConnectionFactory(final ConnectionPoolConfig connPoolConfig,
                                  final ChannelInitializer<? extends Channel> channelInitializer) {
@@ -52,6 +59,8 @@ public class NettyClientConnectionFactory {
             socketChannelClass = NioSocketChannel.class;
         }
 
+        SocketAddress socketAddress = new InetSocketAddress(host, port);
+
         final Bootstrap bootstrap = new Bootstrap()
                 .channel(socketChannelClass)
                 .handler(channelInitializer)
@@ -65,8 +74,12 @@ public class NettyClientConnectionFactory {
                 .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, connPoolConfig.getNettyWriteBufferHighWaterMark())
                 .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, connPoolConfig.getNettyWriteBufferLowWaterMark())
                 .option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
-                .remoteAddress(new InetSocketAddress(host, port));
+                .remoteAddress(socketAddress);
 
+        ZuulBootstrap zuulBootstrap = new ZuulBootstrap(bootstrap);
+        if (!zuulBootstrap.getResolver(eventLoop).isResolved(socketAddress)) {
+            LOGGER.warn("NettyClientConnectionFactory got an unresolved server address, host: " + host + ", port: " + port);
+        }
         return bootstrap.connect();
     }
 
