@@ -133,15 +133,20 @@ public class HTTPRequestUtils {
         if(headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
-                String value = request.getHeader(name);
+                if(name != null && !name.isEmpty()) {
 
-                if(name != null && !name.isEmpty() && value != null) {
-                    List<String> valueList = new ArrayList<String>();
-                    if(headers.containsKey(name)) {
-                        headers.get(name).add(value);
+                    Enumeration<?> headerValues = request.getHeaders(name);
+                    if(headerValues != null) {
+                        if(!headers.containsKey(name)) {
+                            List<String> valueList = new ArrayList<String>();
+                            headers.put(name, valueList);
+                        }
+                        while (headerValues.hasMoreElements()) {
+                            String value = (String) headerValues.nextElement();
+                            headers.get(name).add(value);
+                        }
                     }
-                    valueList.add(value);
-                    headers.put(name, valueList);
+
                 }
             }
         }
@@ -309,6 +314,19 @@ public class HTTPRequestUtils {
 
             qp = HTTPRequestUtils.getInstance().getQueryParams();
             assertEquals("WSDL", qp.keySet().iterator().next());
+        }
+        
+        @Test
+        public void testGetRequestHeaderMap() {
+            when(request.getHeaderNames()).thenReturn(new StringTokenizer("Cookie;Accept-Language", ";"));
+            when(request.getHeaders("Cookie")).thenReturn(new StringTokenizer("_gauges_unique_month=1;_gauges_unique_year=1", ";"));
+            when(request.getHeaders("Accept-Language")).thenReturn(new StringTokenizer("zh-CN,zh;q=0.9", ";"));
+            
+            Map<String,List<String>> headers = HTTPRequestUtils.getInstance().getRequestHeaderMap();
+            assertEquals("_gauges_unique_month=1", headers.get("Cookie").get(0));
+            assertEquals("_gauges_unique_year=1", headers.get("Cookie").get(1));
+            assertEquals("zh-CN,zh", headers.get("Accept-Language").get(0));
+            assertEquals("q=0.9", headers.get("Accept-Language").get(1));
         }
     }
 
