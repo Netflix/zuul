@@ -24,7 +24,7 @@ dependencies {
     compile "com.netflix.ribbon:ribbon-httpclient:${versions_ribbon}"
     compile "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
     compile "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
-    compile "com.netflix.eureka:eureka-client:latest.release"
+    compile "com.netflix.eureka:eureka-client:1.9.4"
     compile "io.reactivex:rxjava:1.2.1"
 
     compile "io.netty:netty-common:${versions_netty}"

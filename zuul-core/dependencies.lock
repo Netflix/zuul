@@ -37,7 +37,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -203,7 +203,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -369,7 +369,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -535,7 +535,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -701,7 +701,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -867,7 +867,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -1037,7 +1037,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -1207,7 +1207,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {
@@ -1377,7 +1377,7 @@
             "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.8.6",
+            "locked": "1.9.4",
             "requested": "latest.release"
         },
         "com.netflix.governator:governator": {

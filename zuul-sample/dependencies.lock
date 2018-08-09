@@ -68,7 +68,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -329,7 +329,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -590,7 +590,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -851,7 +851,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1112,7 +1112,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1373,7 +1373,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1634,7 +1634,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1895,7 +1895,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -2156,7 +2156,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8.6"
+            "locked": "1.9.4"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [

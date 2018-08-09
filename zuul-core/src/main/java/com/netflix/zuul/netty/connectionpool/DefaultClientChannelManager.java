@@ -336,7 +336,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 ((DiscoveryEnabledServer) chosenServer).getInstanceInfo() :
                 // create mock instance info for non-discovery instances
                 new InstanceInfo(chosenServer.getId(), null, null, chosenServer.getHost(), chosenServer.getId(),
-                        null, null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null, null);
+                        null, null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null, null, null);
 
 
         selectedServer.set(chosenServer);
