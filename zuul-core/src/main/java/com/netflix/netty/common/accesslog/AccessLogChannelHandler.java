@@ -91,7 +91,7 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
                 // Response complete, so now write to access log.
                 long durationNs = System.nanoTime() - state.startTimeNs;
                 String remoteIp = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
-                Integer localPort = ctx.channel().attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get();
+                Integer localPort = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
 
                 if (state.response == null) {
                     LOG.debug("Response null in AccessLog, Complete reason={}, duration={}, url={}, method={}",
