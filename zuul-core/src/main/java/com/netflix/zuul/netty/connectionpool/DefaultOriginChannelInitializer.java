@@ -40,10 +40,10 @@ import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODE
  */
 public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     private final ConnectionPoolConfig connectionPoolConfig;
-    private final ConnectionPoolHandler connectionPoolHandler;
-    private final HttpMetricsChannelHandler httpMetricsHandler;
-    private final LoggingHandler nettyLogger;
     private final SslContext sslContext;
+    protected final ConnectionPoolHandler connectionPoolHandler;
+    protected final HttpMetricsChannelHandler httpMetricsHandler;
+    protected final LoggingHandler nettyLogger;
 
     public DefaultOriginChannelInitializer(ConnectionPoolConfig connPoolConfig, Registry spectatorRegistry) {
         this.connectionPoolConfig = connPoolConfig;

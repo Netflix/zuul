@@ -212,8 +212,8 @@ public class PerServerConnectionPool implements IConnectionPool
         return pool;
     }
 
-    private void tryMakingNewConnection(final EventLoop eventLoop, final Promise<PooledConnection> promise, 
-                                        final String httpMethod, final String uri, final int attemptNum, 
+    protected void tryMakingNewConnection(final EventLoop eventLoop, final Promise<PooledConnection> promise,
+                                        final String httpMethod, final String uri, final int attemptNum,
                                         final CurrentPassport passport)
     {
         // Enforce MaxConnectionsPerHost config.
@@ -285,7 +285,7 @@ public class PerServerConnectionPool implements IConnectionPool
         connEstablishTimer.record(timing.getDuration(), TimeUnit.NANOSECONDS);
     }
 
-    private String getHostFromServer(Server server) 
+    protected String getHostFromServer(Server server)
     {
         String host = server.getHost();
         if (! config.useIPAddrForServer()) {
@@ -303,12 +303,12 @@ public class PerServerConnectionPool implements IConnectionPool
         return host;
     }
 
-    private void handleConnectCompletion(final ChannelFuture cf,
-                                         final Promise<PooledConnection> callerPromise,
-                                         final String httpMethod,
-                                         final String uri,
-                                         final int attemptNum,
-                                         final CurrentPassport passport)
+    protected void handleConnectCompletion(final ChannelFuture cf,
+                                           final Promise<PooledConnection> callerPromise,
+                                           final String httpMethod,
+                                           final String uri,
+                                           final int attemptNum,
+                                           final CurrentPassport passport)
     {
         connCreationsInProgress.decrementAndGet();
         
@@ -319,14 +319,8 @@ public class PerServerConnectionPool implements IConnectionPool
             stats.incrementOpenConnectionsCount();
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
-            
-            final PooledConnection conn = pooledConnectionFactory.create(cf.channel());
-            
-            conn.incrementUsageCount();
-            conn.startRequestTimer();
-            conn.getChannel().read();
-            onAcquire(conn, httpMethod, uri, attemptNum, passport);
-            callerPromise.setSuccess(conn);
+
+            createConnection(cf, callerPromise, httpMethod, uri, attemptNum, passport);
         }
         else {
             stats.incrementSuccessiveConnectionFailureCount();
@@ -335,6 +329,17 @@ public class PerServerConnectionPool implements IConnectionPool
             createConnFailedCounter.increment();
             callerPromise.setFailure(new OriginConnectException(cf.cause().getMessage(), OutboundErrorType.CONNECT_ERROR));
         }
+    }
+
+    protected void createConnection(ChannelFuture cf, Promise<PooledConnection> callerPromise, String httpMethod, String uri,
+                                    int attemptNum, CurrentPassport passport) {
+        final PooledConnection conn = pooledConnectionFactory.create(cf.channel());
+
+        conn.incrementUsageCount();
+        conn.startRequestTimer();
+        conn.getChannel().read();
+        onAcquire(conn, httpMethod, uri, attemptNum, passport);
+        callerPromise.setSuccess(conn);
     }
 
     @Override

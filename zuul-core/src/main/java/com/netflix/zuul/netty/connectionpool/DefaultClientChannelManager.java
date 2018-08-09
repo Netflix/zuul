@@ -85,7 +85,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
 
-    private final ConcurrentHashMap<Server, PerServerConnectionPool> perServerPools;
+    private final ConcurrentHashMap<Server, IConnectionPool> perServerPools;
 
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
@@ -173,7 +173,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     + ". " + removedSet.size() + " servers gone.");
 
             for (Server s : removedSet) {
-                PerServerConnectionPool pool = perServerPools.remove(s);
+                IConnectionPool pool = perServerPools.remove(s);
                 if (pool != null) {
                     pool.shutdown();
                 }
@@ -207,7 +207,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         loadBalancer.shutdown();
 
-        for (PerServerConnectionPool pool : perServerPools.values()) {
+        for (IConnectionPool pool : perServerPools.values()) {
             pool.shutdown();
         }
     }
@@ -257,7 +257,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
 
             // Attempt to return connection to the pool.
-            PerServerConnectionPool pool = perServerPools.get(conn.getServer());
+            IConnectionPool pool = perServerPools.get(conn.getServer());
             if (pool != null) {
                 released = pool.release(conn);
             }
@@ -291,7 +291,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         // Attempt to remove the connection from the pool.
-        PerServerConnectionPool pool = perServerPools.get(conn.getServer());
+        IConnectionPool pool = perServerPools.get(conn.getServer());
         if (pool != null) {
             return pool.remove(conn);
         }
@@ -342,8 +342,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         selectedServer.set(chosenServer);
 
         // Now get the connection-pool for this server.
-        PerServerConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
-
+        IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
             // Get the stats from LB for this server.
             LoadBalancerStats lbStats = loadBalancer.getLoadBalancerStats();
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
@@ -353,28 +352,42 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     instanceInfo, stats, closeConnCounter, closeWrtBusyConnCounter);
 
             // Create a new pool for this server.
-            return new PerServerConnectionPool(
-                    chosenServer,
-                    stats,
-                    instanceInfo,
-                    clientConnFactory,
-                    pcf,
-                    connPoolConfig,
-                    clientConfig,
-                    createNewConnCounter,
-                    createConnSucceededCounter,
-                    createConnFailedCounter,
-                    requestConnCounter,
-                    reuseConnCounter,
-                    connTakenFromPoolIsNotOpen,
-                    maxConnsPerHostExceededCounter,
-                    connEstablishTimer,
-                    connsInPool,
-                    connsInUse
-            );
+            return createConnectionPool(chosenServer, stats, instanceInfo, clientConnFactory, pcf, connPoolConfig,
+                    clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
+                    requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, maxConnsPerHostExceededCounter,
+                    connEstablishTimer, connsInPool, connsInUse);
         });
 
         return pool.acquire(eventLoop, null, httpMethod, uri, attemptNum, passport);
+    }
+
+    protected IConnectionPool createConnectionPool(Server chosenServer, ServerStats stats, InstanceInfo instanceInfo,
+                                                   NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
+                                                   ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig,
+                                                   Counter createNewConnCounter, Counter createConnSucceededCounter,
+                                                   Counter createConnFailedCounter, Counter requestConnCounter,
+                                                   Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen,
+                                                   Counter maxConnsPerHostExceededCounter, PercentileTimer connEstablishTimer,
+                                                   AtomicInteger connsInPool, AtomicInteger connsInUse) {
+        return new PerServerConnectionPool(
+                chosenServer,
+                stats,
+                instanceInfo,
+                clientConnFactory,
+                pcf,
+                connPoolConfig,
+                clientConfig,
+                createNewConnCounter,
+                createConnSucceededCounter,
+                createConnFailedCounter,
+                requestConnCounter,
+                reuseConnCounter,
+                connTakenFromPoolIsNotOpen,
+                maxConnsPerHostExceededCounter,
+                connEstablishTimer,
+                connsInPool,
+                connsInUse
+        );
     }
 
     @Override
@@ -396,7 +409,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return this.loadBalancer.getClientConfig();
     }
 
-    protected ConcurrentHashMap<Server, PerServerConnectionPool> getPerServerPools() {
+    protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() {
         return perServerPools;
     }
 }
