@@ -72,7 +72,7 @@ public class PooledConnection {
     private boolean shouldClose = false;
     private boolean released = false;
 
-    PooledConnection(final Channel channel, final Server server, final ClientChannelManager channelManager,
+    public PooledConnection(final Channel channel, final Server server, final ClientChannelManager channelManager,
                      final InstanceInfo serverKey,
                      final ServerStats serverStats, 
                      final Counter closeConnCounter, 

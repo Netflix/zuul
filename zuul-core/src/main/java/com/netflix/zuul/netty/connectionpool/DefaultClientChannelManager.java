@@ -348,8 +348,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
 
             final ClientChannelManager clientChannelMgr = this;
-            PooledConnectionFactory pcf = ch -> new PooledConnection(ch, chosenServer, clientChannelMgr,
-                    instanceInfo, stats, closeConnCounter, closeWrtBusyConnCounter);
+            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, instanceInfo, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
 
             // Create a new pool for this server.
             return createConnectionPool(chosenServer, stats, instanceInfo, clientConnFactory, pcf, connPoolConfig,
@@ -359,6 +358,11 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         });
 
         return pool.acquire(eventLoop, null, httpMethod, uri, attemptNum, passport);
+    }
+
+    protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, InstanceInfo instanceInfo, ServerStats stats, ClientChannelManager clientChannelMgr,
+                                                                    Counter closeConnCounter, Counter closeWrtBusyConnCounter) {
+        return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, instanceInfo, stats, closeConnCounter, closeWrtBusyConnCounter);
     }
 
     protected IConnectionPool createConnectionPool(Server chosenServer, ServerStats stats, InstanceInfo instanceInfo,
