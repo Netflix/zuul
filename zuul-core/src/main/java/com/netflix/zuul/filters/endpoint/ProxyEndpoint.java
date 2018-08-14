@@ -746,7 +746,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Translate the netty HttpResponse into a zuul HttpResponseMessage.
         final SessionContext zuulCtx = context;
         final int respStatus = httpResponse.status().code();
-        final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus);
+        final String respReasonPhrase = httpResponse.status().reasonPhrase();
+        final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus, respReasonPhrase);
 
         final Headers respHeaders = zuulResponse.getHeaders();
         for (Map.Entry<String, String> entry : httpResponse.headers()) {

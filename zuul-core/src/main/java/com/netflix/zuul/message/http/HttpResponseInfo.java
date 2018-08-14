@@ -27,6 +27,8 @@ public interface HttpResponseInfo extends ZuulMessage
 {
     int getStatus();
 
+    String getReasonPhrase();
+
     /** The immutable request that was originally received from client. */
     HttpRequestInfo getInboundRequest();
 

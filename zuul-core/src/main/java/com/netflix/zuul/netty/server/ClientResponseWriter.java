@@ -181,8 +181,14 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         }
 
         // Create the main http response to send, with body.
-        final DefaultHttpResponse nativeResponse = new DefaultHttpResponse(responseHttpVersion,
-                HttpResponseStatus.valueOf(zuulResp.getStatus()), false, false);
+        HttpResponseStatus responseStatus;
+        if (zuulResp.getReasonPhrase() != null) {
+            responseStatus = HttpResponseStatus.valueOf(zuulResp.getStatus(), zuulResp.getReasonPhrase());
+        }
+        else {
+            responseStatus = HttpResponseStatus.valueOf(zuulResp.getStatus());
+        }
+        final DefaultHttpResponse nativeResponse = new DefaultHttpResponse(responseHttpVersion, responseStatus, false, false);
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         final HttpHeaders nativeHeaders = nativeResponse.headers();

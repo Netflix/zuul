@@ -54,14 +54,25 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     private ZuulMessage message;
     private HttpRequestMessage outboundRequest;
     private int status;
+    private String reasonPhrase = null;
     private HttpResponseInfo inboundResponse = null;
 
     public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status)
     {
-        this(context, new Headers(), request, status);
+        this(context, new Headers(), request, status, null);
     }
 
     public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
+    {
+        this(context, headers, request, status, null);
+    }
+
+    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status, String reasonPhrase)
+    {
+        this(context, new Headers(), request, status, reasonPhrase);
+    }
+
+    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status, String reasonPhrase)
     {
         this.message = new ZuulMessageImpl(context, headers);
         this.outboundRequest = request;
@@ -71,6 +82,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
                     new RuntimeException("Invalid HttpRequestMessage"));
         }
         this.status = status;
+        this.reasonPhrase = reasonPhrase;
     }
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
@@ -180,6 +192,15 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     @Override
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    @Override
+    public String getReasonPhrase() {
+        return reasonPhrase;
+    }
+    @Override
+    public void setReasonPhrase(String reasonPhrase) {
+        this.reasonPhrase = reasonPhrase;
     }
 
     @Override

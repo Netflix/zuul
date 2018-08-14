@@ -27,6 +27,8 @@ public interface HttpResponseMessage extends HttpResponseInfo
 {
     void setStatus(int status);
 
+    void setReasonPhrase(String reasonPhrase);
+
     @Override
     int getMaxBodySize();
 
