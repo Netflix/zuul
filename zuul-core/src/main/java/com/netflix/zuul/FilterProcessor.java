@@ -225,7 +225,6 @@ public class FilterProcessor {
                 throw (ZuulException) e;
             } else {
                 ZuulException ex = new ZuulException(e, "Filter threw Exception", 500, filter.filterType() + ":" + filterName);
-                ctx.addFilterExecutionSummary(filterName, ExecutionStatus.FAILED.name(), execTime);
                 throw ex;
             }
         }
