@@ -341,7 +341,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             requestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
             concurrentReqCount++;
+
+            // We pass this AtomicReference<Server> here and the origin impl will assign the chosen server to it.
             promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer);
+
+            origin.onRequestStartWithServer(zuulRequest, chosenServer.get(), attemptNum);
 
             logOriginRequestInfo();
             currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
@@ -395,8 +399,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
                         readTimeout = getReadTimeout(requestConfig, attemptNum);
                         requestConfig.set(ReadTimeout, readTimeout);
-
-                        origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
                     }
                     catch (Throwable e) {
                         handleError(e);
@@ -559,8 +561,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // Flag that there was an origin server related error for the loadbalancer to choose
             // whether to circuit-trip this server.
             if (originConn != null) {
+                // NOTE: if originConn is null, then these stats will have been incremented within PerServerConnectionPool
+                // so don't need to be here.
                 originConn.getServerStats().incrementSuccessiveConnectionFailureCount();
                 originConn.getServerStats().addToFailureCount();
+
                 originConn.flagShouldClose();
             }
 
