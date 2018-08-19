@@ -345,8 +345,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // We pass this AtomicReference<Server> here and the origin impl will assign the chosen server to it.
             promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer);
 
-            origin.onRequestStartWithServer(zuulRequest, chosenServer.get(), attemptNum);
-
             logOriginRequestInfo();
             currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
             requestAttempts.add(currentRequestAttempt);
@@ -385,20 +383,25 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // MUST run this within bindingcontext because RequestExpiryProcessor (and probably other things) depends on ThreadVariables.
         try {
             methodBinding.bind(() -> {
-                // Handle the connection.
-                if (connectResult.isSuccess()) {
+
+                Integer readTimeout = null;
+                Server server = chosenServer.get();
+
+                // The chosen server would be null if the loadbalancer found no available servers.
+                if (server != null) {
+                    if (requestStat != null) {
+                        requestStat.server(server);
+                    }
+
                     // Invoke the ribbon execution listeners (including RequestExpiry).
                     final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest, attemptNum);
                     IClientConfig requestConfig = executionContext.getRequestConfig();
                     final Object previousOverriddenReadTimeout = requestConfig.getProperty(ReadTimeout, null);
-                    Integer readTimeout;
                     try {
-                        Server server = chosenServer.get();
-                        if (requestStat != null)
-                            requestStat.server(server);
-
                         readTimeout = getReadTimeout(requestConfig, attemptNum);
                         requestConfig.set(ReadTimeout, readTimeout);
+
+                        origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
                     }
                     catch (Throwable e) {
                         handleError(e);
@@ -409,11 +412,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                         // preference on subsequent retry attempts in RequestExpiryProcessor.
                         if (previousOverriddenReadTimeout == null) {
                             requestConfig.setProperty(ReadTimeout, null);
-                        } else {
+                        }
+                        else {
                             requestConfig.setProperty(ReadTimeout, previousOverriddenReadTimeout);
                         }
                     }
+                }
 
+                // Handle the connection establishment result.
+                if (connectResult.isSuccess()) {
                     onOriginConnectSucceeded(connectResult.getNow(), readTimeout);
                 } else {
                     onOriginConnectFailed(connectResult.cause());
@@ -1063,4 +1070,3 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
 }
-
