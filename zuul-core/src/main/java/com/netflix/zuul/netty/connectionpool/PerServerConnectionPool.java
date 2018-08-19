@@ -257,7 +257,9 @@ public class PerServerConnectionPool implements IConnectionPool
                                 passport);
                     }
                     catch (Throwable e) {
-                        promise.setFailure(e);
+                        if (! promise.isDone()) {
+                            promise.setFailure(e);
+                        }
                         LOG.warn("Error creating new connection! "
                                         + "origin=" + config.getOriginName()
                                         + ", host=" + instanceInfo.getId()
