@@ -42,7 +42,8 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
                                               int attemptNumber, CurrentPassport passport,
-                                              AtomicReference<Server> chosenServer);
+                                              AtomicReference<Server> chosenServer,
+                                              AtomicReference<String> chosenHostAddr);
 
     Timing getProxyTiming(HttpRequestMessage zuulReq);
 

@@ -306,13 +306,16 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public Promise<PooledConnection> acquire(final EventLoop eventLoop) {
-        return acquire(eventLoop, null, null, null, 1, CurrentPassport.create(), new AtomicReference<>());
+        return acquire(eventLoop, null, null, null, 1, CurrentPassport.create(),
+                new AtomicReference<>(), new AtomicReference<>());
     }
 
     @Override
     public Promise<PooledConnection> acquire(final EventLoop eventLoop, final Object key, final String httpMethod,
                                              final String uri, final int attemptNum, final CurrentPassport passport,
-                                             final AtomicReference<Server> selectedServer) {
+                                             final AtomicReference<Server> selectedServer,
+                                             final AtomicReference<String> selectedHostAdddr)
+    {
 
         if (attemptNum < 1) {
             throw new IllegalArgumentException("attemptNum must be greater than zero");
@@ -357,7 +360,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     connEstablishTimer, connsInPool, connsInUse);
         });
 
-        return pool.acquire(eventLoop, null, httpMethod, uri, attemptNum, passport);
+        return pool.acquire(eventLoop, null, httpMethod, uri, attemptNum, passport, selectedHostAdddr);
     }
 
     protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, InstanceInfo instanceInfo, ServerStats stats, ClientChannelManager clientChannelMgr,

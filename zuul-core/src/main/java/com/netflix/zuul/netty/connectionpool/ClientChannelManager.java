@@ -44,7 +44,8 @@ public interface ClientChannelManager
     Promise<PooledConnection> acquire(EventLoop eventLoop);
 
     Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri, int retryNum,
-                                      CurrentPassport passport, AtomicReference<Server> selectedServer);
+                                      CurrentPassport passport, AtomicReference<Server> selectedServer,
+                                      AtomicReference<String> selectedHostAddr);
 
     boolean isCold();
 

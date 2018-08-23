@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * User: michaels@netflix.com
@@ -149,8 +150,9 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri, 
-                                             int attemptNum, CurrentPassport passport)
+    public Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
+                                             int attemptNum, CurrentPassport passport,
+                                             AtomicReference<String> selectedHostAddr)
     {
         requestConnCounter.increment();
         stats.incrementActiveRequestsCount();
@@ -166,10 +168,11 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.getChannel().read();
             onAcquire(conn, httpMethod, uri, attemptNum, passport);
             promise.setSuccess(conn);
+            selectedHostAddr.set(getHostFromServer(conn.getServer()));
         }
         else {
             // connection pool empty, create new connection using client connection factory.
-            tryMakingNewConnection(eventLoop, promise, httpMethod, uri, attemptNum, passport);
+            tryMakingNewConnection(eventLoop, promise, httpMethod, uri, attemptNum, passport, selectedHostAddr);
         }
 
         return promise;
@@ -214,7 +217,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     protected void tryMakingNewConnection(final EventLoop eventLoop, final Promise<PooledConnection> promise,
                                         final String httpMethod, final String uri, final int attemptNum,
-                                        final CurrentPassport passport)
+                                        final CurrentPassport passport, final AtomicReference<String> selectedHostAddr)
     {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
@@ -241,6 +244,7 @@ public class PerServerConnectionPool implements IConnectionPool
             
             // Choose to use either IP or hostname.
             String host = getHostFromServer(server);
+            selectedHostAddr.set(host);
             
             final ChannelFuture cf = connectionFactory.connect(eventLoop, host, server.getPort(), passport);
 

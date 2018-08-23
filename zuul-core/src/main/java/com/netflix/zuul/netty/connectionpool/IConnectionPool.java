@@ -20,6 +20,8 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * User: michaels@netflix.com
  * Date: 7/8/16
@@ -28,7 +30,7 @@ import io.netty.util.concurrent.Promise;
 public interface IConnectionPool
 {
     Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
-                                      int retryNum, CurrentPassport passport);
+                                      int retryNum, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
     boolean release(PooledConnection conn);
     boolean remove(PooledConnection conn);
     void shutdown();
