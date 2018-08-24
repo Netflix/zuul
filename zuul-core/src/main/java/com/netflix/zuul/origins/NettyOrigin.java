@@ -49,7 +49,7 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     int getMaxRetriesForRequest(SessionContext context);
 
-    void onRequestExecutionStart(final HttpRequestMessage zuulReq, int attempt);
+    void onRequestExecutionStart(final HttpRequestMessage zuulReq);
 
     void onRequestStartWithServer(final HttpRequestMessage zuulReq, final Server originServer, int attemptNum);
 
@@ -74,5 +74,5 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     Registry getSpectatorRegistry();
 
-    ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest, int attemptNum);
+    ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest);
 }

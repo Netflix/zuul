@@ -164,7 +164,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest, int attemptNum) {
+    public ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest) {
         ExecutionContext<?> execCtx = (ExecutionContext<?>) zuulRequest.getContext().get(CommonContextKeys.REST_EXECUTION_CONTEXT);
         if (execCtx == null) {
             IClientConfig overriddenClientConfig = (IClientConfig) zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
@@ -252,7 +252,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public void onRequestExecutionStart(HttpRequestMessage zuulReq, int attempt) {
+    public void onRequestExecutionStart(HttpRequestMessage zuulReq) {
     }
 
     @Override
