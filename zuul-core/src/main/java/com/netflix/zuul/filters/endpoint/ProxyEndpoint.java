@@ -321,7 +321,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void logOriginRequestInfo() {
+    private void storeAndLogOriginRequestInfo() {
         final Map<String, Object> eventProps = context.getEventProperties();
         Map<Integer, String> attempToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
         Map<Integer, String> attempToChosenHostMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY);
@@ -334,9 +334,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
         if (ipAddr != null) {
             attempToIpAddressMap.put(attemptNum, ipAddr);
-            attempToChosenHostMap.put(attemptNum, chosenHostAddr.get());
             eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
             context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
+        }
+        if (chosenHostAddr.get() != null) {
+            attempToChosenHostMap.put(attemptNum, chosenHostAddr.get());
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToIpAddressMap);
             context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToChosenHostMap);
         }
 
@@ -354,7 +357,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // We pass this AtomicReference<Server> here and the origin impl will assign the chosen server to it.
             promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer, chosenHostAddr);
 
-            logOriginRequestInfo();
+            storeAndLogOriginRequestInfo();
             currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
             requestAttempts.add(currentRequestAttempt);
             passport.add(PassportState.ORIGIN_CONN_ACQUIRE_START);
@@ -367,7 +370,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         catch (Exception ex) {
             LOG.error("Error while connecting to origin, UUID {} " + context.getUUID(), ex);
-            logOriginRequestInfo();
+            storeAndLogOriginRequestInfo();
             if (promise != null && ! promise.isDone()) {
                 promise.setFailure(ex);
             } else {
