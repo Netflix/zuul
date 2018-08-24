@@ -119,6 +119,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private MethodBinding<?> methodBinding;
     private HttpResponseMessage zuulResponse;
     private boolean startedSendingResponseToClient;
+    private Object originalReadTimeout;
 
     /* Individual retry related state */
     private volatile PooledConnection originConn;
@@ -250,8 +251,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
 
             origin.getProxyTiming(zuulRequest).start();
-            origin.onRequestExecutionStart(zuulRequest, 1);
+
+            // To act the same as Ribbon, we must do this before starting execution (as well as before each attempt).
+            IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
+            originalReadTimeout = requestConfig.getProperty(ReadTimeout, null);
+            setReadTimeoutOnContext(requestConfig);
+
+            origin.onRequestExecutionStart(zuulRequest);
             proxyRequestToOrigin();
+
             //Doesn't return origin response to caller, calls invokeNext() internally in response filter chain
             return null;
         } catch (Exception ex) {
@@ -387,6 +395,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return basicRequestStat;
     }
 
+    private Integer setReadTimeoutOnContext(IClientConfig requestConfig)
+    {
+        Integer readTimeout = getReadTimeout(requestConfig, attemptNum);
+        requestConfig.set(ReadTimeout, readTimeout);
+        return readTimeout;
+    }
+
     @Override
     public void operationComplete(final Future<PooledConnection> connectResult) {
         // MUST run this within bindingcontext because RequestExpiryProcessor (and probably other things) depends on ThreadVariables.
@@ -403,12 +418,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     }
 
                     // Invoke the ribbon execution listeners (including RequestExpiry).
-                    final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest, attemptNum);
+                    final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest);
                     IClientConfig requestConfig = executionContext.getRequestConfig();
-                    final Object previousOverriddenReadTimeout = requestConfig.getProperty(ReadTimeout, null);
                     try {
-                        readTimeout = getReadTimeout(requestConfig, attemptNum);
-                        requestConfig.set(ReadTimeout, readTimeout);
+                        readTimeout = setReadTimeoutOnContext(requestConfig);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
                     }
@@ -419,11 +432,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     finally {
                         // Reset the timeout in overriddenConfig back to what it was before, otherwise it will take
                         // preference on subsequent retry attempts in RequestExpiryProcessor.
-                        if (previousOverriddenReadTimeout == null) {
+                        if (originalReadTimeout == null) {
                             requestConfig.setProperty(ReadTimeout, null);
                         }
                         else {
-                            requestConfig.setProperty(ReadTimeout, previousOverriddenReadTimeout);
+                            requestConfig.setProperty(ReadTimeout, originalReadTimeout);
                         }
                     }
                 }
