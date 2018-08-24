@@ -255,7 +255,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // To act the same as Ribbon, we must do this before starting execution (as well as before each attempt).
             IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
             originalReadTimeout = requestConfig.getProperty(ReadTimeout, null);
-            setReadTimeoutOnContext(requestConfig);
+            setReadTimeoutOnContext(requestConfig, 1);
 
             origin.onRequestExecutionStart(zuulRequest);
             proxyRequestToOrigin();
@@ -395,9 +395,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return basicRequestStat;
     }
 
-    private Integer setReadTimeoutOnContext(IClientConfig requestConfig)
+    private Integer setReadTimeoutOnContext(IClientConfig requestConfig, int attempt)
     {
-        Integer readTimeout = getReadTimeout(requestConfig, attemptNum);
+        Integer readTimeout = getReadTimeout(requestConfig, attempt);
         requestConfig.set(ReadTimeout, readTimeout);
         return readTimeout;
     }
@@ -421,7 +421,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest);
                     IClientConfig requestConfig = executionContext.getRequestConfig();
                     try {
-                        readTimeout = setReadTimeoutOnContext(requestConfig);
+                        readTimeout = setReadTimeoutOnContext(requestConfig, attemptNum);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
                     }
