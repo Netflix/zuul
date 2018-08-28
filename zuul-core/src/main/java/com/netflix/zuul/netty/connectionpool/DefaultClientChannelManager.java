@@ -250,11 +250,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             conn.setInPool(false);
         }
         else {
-            final ChannelPipeline pipeline = conn.getChannel().pipeline();
-            removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
-            pipeline.addAfter(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, IDLE_STATE_HANDLER_NAME,
-                new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
-
+            releaseHandlers(conn);
 
             // Attempt to return connection to the pool.
             IConnectionPool pool = perServerPools.get(conn.getServer());
@@ -273,6 +269,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         return released;
+    }
+
+    protected void releaseHandlers(PooledConnection conn) {
+        final ChannelPipeline pipeline = conn.getChannel().pipeline();
+        removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
+        pipeline.addAfter(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, IDLE_STATE_HANDLER_NAME,
+            new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
     public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {

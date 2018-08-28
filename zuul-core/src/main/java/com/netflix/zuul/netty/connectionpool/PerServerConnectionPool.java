@@ -143,10 +143,14 @@ public class PerServerConnectionPool implements IConnectionPool
                            int attemptNum, CurrentPassport passport)
     {
         passport.setOnChannel(conn.getChannel());
-        DefaultClientChannelManager.removeHandlerFromPipeline(DefaultClientChannelManager.IDLE_STATE_HANDLER_NAME, conn.getChannel().pipeline());
+        removeIdleStateHandler(conn);
 
         conn.setInUse();
         if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: " + conn.toString());
+    }
+
+    protected void removeIdleStateHandler(PooledConnection conn) {
+        DefaultClientChannelManager.removeHandlerFromPipeline(DefaultClientChannelManager.IDLE_STATE_HANDLER_NAME, conn.getChannel().pipeline());
     }
 
     @Override
@@ -186,8 +190,10 @@ public class PerServerConnectionPool implements IConnectionPool
 
             conn.setInPool(false);
 
+            initConnection(conn);
+
             /* Check that the connection is still open. */
-            if ((conn.isActive() && conn.getChannel().isOpen())) {
+            if (isValidFromPool(conn)) {
                 reuseConnCounter.increment();
                 connsInUse.incrementAndGet();
                 connsInPool.decrementAndGet();
@@ -200,6 +206,14 @@ public class PerServerConnectionPool implements IConnectionPool
             }
         }
         return null;
+    }
+
+    protected boolean isValidFromPool(PooledConnection conn) {
+        return conn.isActive() && conn.getChannel().isOpen();
+    }
+
+    protected void initConnection(PooledConnection conn) {
+        // custom init code
     }
 
     protected Deque<PooledConnection> getPoolForEventLoop(EventLoop eventLoop)
