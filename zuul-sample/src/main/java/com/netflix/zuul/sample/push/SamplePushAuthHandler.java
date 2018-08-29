@@ -21,7 +21,7 @@ import com.netflix.zuul.netty.server.push.PushAuthHandler;
 import com.netflix.zuul.netty.server.push.PushUserAuth;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -55,8 +55,8 @@ public class SamplePushAuthHandler extends PushAuthHandler {
     protected PushUserAuth doAuth(FullHttpRequest req) {
         final Cookies cookies = parseCookies(req);
         for (final Cookie c : cookies.getAll()) {
-            if(c.getName().equals("userAuthCookie")) {
-                final String customerId = c.getValue();
+            if(c.name().equals("userAuthCookie")) {
+                final String customerId = c.value();
                 if (!Strings.isNullOrEmpty(customerId)) {
                     return new SamplePushUserAuth(customerId);
                 }

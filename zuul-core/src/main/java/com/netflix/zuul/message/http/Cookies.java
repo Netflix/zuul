@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.message.http;
 
-import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.cookie.Cookie;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,10 +35,10 @@ public class Cookies
 
     public void add(Cookie cookie)
     {
-        List<Cookie> existing = map.get(cookie.getName());
+        List<Cookie> existing = map.get(cookie.name());
         if (existing == null) {
             existing = new ArrayList<>();
-            map.put(cookie.getName(), existing);
+            map.put(cookie.name(), existing);
         }
         existing.add(cookie);
         all.add(cookie);
@@ -68,7 +68,7 @@ public class Cookies
         Cookie c = getFirst(name);
         String value;
         if (c != null) {
-            value = c.getValue();
+            value = c.value();
         } else {
             value = null;
         }
