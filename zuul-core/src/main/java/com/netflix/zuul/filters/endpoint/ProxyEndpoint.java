@@ -427,6 +427,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                         readTimeout = setReadTimeoutOnContext(requestConfig, attemptNum);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
+
+                        // As the read-timeout can be overridden in the listeners executed from onRequestStartWithServer() above
+                        // check now to see if it was. And if it was, then use that.
+                        Object overriddenReadTimeoutObj = requestConfig.get(IClientConfigKey.Keys.ReadTimeout);
+                        if (overriddenReadTimeoutObj != null && overriddenReadTimeoutObj instanceof Integer) {
+                            int overriddenReadTimeout = (Integer) overriddenReadTimeoutObj;
+                            readTimeout = overriddenReadTimeout;
+                        }
                     }
                     catch (Throwable e) {
                         handleError(e);
