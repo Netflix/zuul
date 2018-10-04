@@ -930,22 +930,17 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* static utility methods */
 
     protected HttpRequestMessage transformRequest(HttpRequestMessage requestMsg) {
-        requestMsg = massageRequestURI(requestMsg);
+        final HttpRequestMessage massagedRequest = massageRequestURI(requestMsg);
 
-        final Headers headers = requestMsg.getHeaders();
-        for (Header entry : headers.entries()) {
-            String headerName = entry.getName().getNormalised();
-            if (REQUEST_HEADERS_TO_REMOVE.contains(headerName)) {
-                headers.remove(entry.getKey());
-            }
-        }
+        Headers headers = massagedRequest.getHeaders();
+        REQUEST_HEADERS_TO_REMOVE.forEach(headerName -> headers.remove(headerName.getName()));
 
         addCustomRequestHeaders(headers);
 
         // Add X-Forwarded headers if not already there.
-        ProxyUtils.addXForwardedHeaders(requestMsg);
+        ProxyUtils.addXForwardedHeaders(massagedRequest);
 
-        return requestMsg;
+        return massagedRequest;
     }
 
     protected void addCustomRequestHeaders(Headers headers) {
