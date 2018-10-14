@@ -16,6 +16,13 @@
 
 package com.netflix.zuul.netty.filter;
 
+import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
+
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.spectator.impl.Preconditions;
@@ -24,22 +31,17 @@ import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.endpoint.MissingEndpointHandlingFilter;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.filters.endpoint.MissingEndpointHandlingFilter;
-import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.netty.server.MethodBinding;
+
 import io.netty.handler.codec.http.HttpContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.concurrent.ThreadSafe;
-
-import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
 
 
 /**
@@ -134,7 +136,12 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
                 if (isFilterAwaitingBody(zuulReq) && zuulReq.hasCompleteBody() && !(endpoint instanceof ProxyEndpoint)) {
                     //whole body has arrived, resume filter chain
-                    invokeNextStage(filter(endpoint, zuulReq));
+                    HttpResponseMessage zuulResp = filter(endpoint, zuulReq);
+                    if (zuulResp != null) {
+                        //async endponit calls invokeNextStage resumer
+                        logger.debug("Endpoint calling invokeNextStage, UUID {}", zuulReq.getContext().getUUID());
+                        invokeNextStage(zuulResp);
+                    }
                 }
             }
         }
