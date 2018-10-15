@@ -427,6 +427,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                         readTimeout = setReadTimeoutOnContext(requestConfig, attemptNum);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
+
+                        // As the read-timeout can be overridden in the listeners executed from onRequestStartWithServer() above
+                        // check now to see if it was. And if it was, then use that.
+                        Object overriddenReadTimeoutObj = requestConfig.get(IClientConfigKey.Keys.ReadTimeout);
+                        if (overriddenReadTimeoutObj != null && overriddenReadTimeoutObj instanceof Integer) {
+                            int overriddenReadTimeout = (Integer) overriddenReadTimeoutObj;
+                            readTimeout = overriddenReadTimeout;
+                        }
                     }
                     catch (Throwable e) {
                         handleError(e);
@@ -922,22 +930,17 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* static utility methods */
 
     protected HttpRequestMessage transformRequest(HttpRequestMessage requestMsg) {
-        requestMsg = massageRequestURI(requestMsg);
+        final HttpRequestMessage massagedRequest = massageRequestURI(requestMsg);
 
-        final Headers headers = requestMsg.getHeaders();
-        for (Header entry : headers.entries()) {
-            String headerName = entry.getName().getNormalised();
-            if (REQUEST_HEADERS_TO_REMOVE.contains(headerName)) {
-                headers.remove(entry.getKey());
-            }
-        }
+        Headers headers = massagedRequest.getHeaders();
+        REQUEST_HEADERS_TO_REMOVE.forEach(headerName -> headers.remove(headerName.getName()));
 
         addCustomRequestHeaders(headers);
 
         // Add X-Forwarded headers if not already there.
-        ProxyUtils.addXForwardedHeaders(requestMsg);
+        ProxyUtils.addXForwardedHeaders(massagedRequest);
 
-        return requestMsg;
+        return massagedRequest;
     }
 
     protected void addCustomRequestHeaders(Headers headers) {
@@ -1029,16 +1032,17 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         boolean useFullName = context.getBoolean(CommonContextKeys.USE_FULL_VIP_NAME);
         String restClientName = useFullName ? restClientVIP : VipUtils.getVIPPrefix(restClientVIP);
 
+        NettyOrigin origin = null;
+        if (restClientName != null) {
+            // This is the normal flow - that a RoutingFilter has assigned a route
+            origin = getOrCreateOrigin(originManager, restClientName, restClientVIP, request.reconstructURI(), useFullName, context);
+        }
+
+        // Use the custom vip instead if one has been provided.
         Pair<String, String> customVip = injectCustomVip(request);
         if (customVip != null) {
             restClientVIP = customVip.getLeft();
             restClientName = customVip.getRight();
-        }
-
-        NettyOrigin origin = null;
-
-        if (restClientName != null) {
-            // This is the normal flow - that a RoutingFilter has assigned a route
             origin = getOrCreateOrigin(originManager, restClientName, restClientVIP, request.reconstructURI(), useFullName, context);
         }
 
