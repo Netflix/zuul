@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.filter;
 
+import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -65,6 +66,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     private final String RUNNING_FILTER_IDX_SESSION_CTX_KEY;
     private final String AWAITING_BODY_FLAG_SESSION_CTX_KEY;
     private static final Logger LOG = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
+
+    private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME = new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
 
 
     protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage) {
@@ -253,6 +256,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         final SessionContext zuulCtx = zuulMesg.getContext();
         final long execTime = System.currentTimeMillis() - startTime;
+        if (execTime >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
+            LOG.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTime, status.name());
+        }
 
         // Record the execution summary in context.
         switch (status) {
