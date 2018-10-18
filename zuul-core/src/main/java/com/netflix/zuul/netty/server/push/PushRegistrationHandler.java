@@ -27,8 +27,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.netflix.zuul.netty.server.push.PushConnectionRegistry.PushConnection;
-
 /**
  * Author: Susheel Aroskar
  * Date: 5/14/18

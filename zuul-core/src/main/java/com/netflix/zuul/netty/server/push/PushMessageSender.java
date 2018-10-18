@@ -23,7 +23,6 @@ import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.netflix.zuul.netty.server.push.PushConnectionRegistry.PushConnection;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -112,6 +111,12 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
                 return;
             }
 
+            if (pushConn.isRateLimited()) {
+                sendHttpResponse(ctx, request, HttpResponseStatus.SERVICE_UNAVAILABLE, userAuth);
+                logRateLimited();
+                return;
+            }
+
             final ChannelFuture clientFuture = pushConn.sendPushMessage(body);
             clientFuture.addListener(cf -> {
                 HttpResponseStatus status;
@@ -149,6 +154,10 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
 
     protected void logPushError(Throwable t) {
         logger.debug("pushing notification error", t);
+    }
+
+    protected void logRateLimited() {
+        logger.warn("Push message was rejected because of the rate limiting");
     }
 
     protected void logPushEvent(FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {

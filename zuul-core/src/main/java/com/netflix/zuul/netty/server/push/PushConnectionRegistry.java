@@ -15,13 +15,8 @@
  */
 package com.netflix.zuul.netty.server.push;
 
-import com.google.common.base.Charsets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -56,28 +51,6 @@ public class PushConnectionRegistry {
 
     public int size() {
         return clientPushConnectionMap.size();
-    }
-
-    public static class PushConnection {
-        private final PushProtocol pushProtocol;
-        private final ChannelHandlerContext ctx;
-
-        public PushConnection(PushProtocol pushProtocol, ChannelHandlerContext ctx) {
-            this.pushProtocol = pushProtocol;
-            this.ctx = ctx;
-        }
-
-        public ChannelFuture sendPushMessage(ByteBuf mesg) {
-            return pushProtocol.sendPushMessage(ctx, mesg);
-        }
-
-        public ChannelFuture sendPushMessage(String mesg) {
-            return sendPushMessage(Unpooled.copiedBuffer(mesg, Charsets.UTF_8));
-        }
-
-        public ChannelFuture sendPing() {
-            return pushProtocol.sendPing(ctx);
-        }
     }
 
 }
