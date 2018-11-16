@@ -48,6 +48,7 @@ public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
         addTcpRelatedHandlers(pipeline);
         addHttp1Handlers(pipeline);
         addHttpRelatedHandlers(pipeline);
+        addTrafficShaping(pipeline);
         addZuulHandlers(pipeline);
     }
 }

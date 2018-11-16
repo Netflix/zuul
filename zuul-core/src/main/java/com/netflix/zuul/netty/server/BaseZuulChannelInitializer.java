@@ -61,6 +61,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -257,6 +258,17 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
                 throw new IllegalArgumentException("A sslClientCertCheckChannelHandler is required!");
             }
             pipeline.addLast(this.sslClientCertCheckChannelHandler);
+        }
+    }
+
+    protected void addTrafficShaping(ChannelPipeline pipeline)
+    {
+        if (channelConfig.get(ZuulDependencyKeys.USE_TRAFFIC_SHAPING)) {
+            long writeLimit = channelConfig.get(ZuulDependencyKeys.writeLimit);
+            long readLimit = channelConfig.get(ZuulDependencyKeys.readLimit);
+            long trafficCheckInterval = channelConfig.get(ZuulDependencyKeys.trafficCheckInterval);
+            long trafficDelayMaxTime = channelConfig.get(ZuulDependencyKeys.trafficDelayMaxTime);
+            pipeline.addLast(new ChannelTrafficShapingHandler(writeLimit, readLimit, trafficCheckInterval, trafficDelayMaxTime));
         }
     }
 

@@ -52,6 +52,11 @@ public class ZuulDependencyKeys {
     public static final ChannelConfigKey<ApplicationInfoManager> applicationInfoManager = new ChannelConfigKey<>("applicationInfoManager");
     public static final ChannelConfigKey<ServerStatusManager> serverStatusManager = new ChannelConfigKey<>("serverStatusManager");
     public static final ChannelConfigKey<Boolean> SSL_CLIENT_CERT_CHECK_REQUIRED = new ChannelConfigKey<>("requiresSslClientCertCheck", false);
+    public static final ChannelConfigKey<Boolean> USE_TRAFFIC_SHAPING = new ChannelConfigKey<>("useTrafficShaping", false);
+    public static final ChannelConfigKey<Long> writeLimit = new ChannelConfigKey<>("writeLimit");
+    public static final ChannelConfigKey<Long> readLimit = new ChannelConfigKey<>("readLimit");
+    public static final ChannelConfigKey<Long> trafficCheckInterval = new ChannelConfigKey<>("trafficCheckInterval");
+    public static final ChannelConfigKey<Long> trafficDelayMaxTime = new ChannelConfigKey<>("trafficDelayMaxTime");
 
     public static final ChannelConfigKey<Provider<ChannelHandler>> rateLimitingChannelHandlerProvider = new ChannelConfigKey<>("rateLimitingChannelHandlerProvider");
     public static final ChannelConfigKey<Provider<ChannelHandler>> sslClientCertCheckChannelHandlerProvider = new ChannelConfigKey<>("sslClientCertCheckChannelHandlerProvider");
