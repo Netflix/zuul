@@ -44,7 +44,8 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
         pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(PushProtocol.WEBSOCKET.getPath(), null, true));
-        pipeline.addLast(new SampleWebSocketPushRegistrationHandler(pushConnectionRegistry));
+        pipeline.addLast(new PushRegistrationHandler(pushConnectionRegistry, PushProtocol.WEBSOCKET));
+        pipeline.addLast(new SampleWebSocketPushClientProtocolHandler());
     }
 
 

@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.netty.server.push;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.netty.buffer.ByteBuf;
@@ -41,6 +42,7 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
 
     private final PushConnectionRegistry pushConnectionRegistry;
 
+    public static final String SECURE_TOKEN_HEADER_NAME = "X-Zuul.push.secure.token";
     private static final Logger logger = LoggerFactory.getLogger(PushMessageSender.class);
 
 
@@ -61,8 +63,17 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
         logPushEvent(request, status, userAuth);
     }
 
+    protected boolean verifySecureToken(final FullHttpRequest request, final PushConnection conn) {
+        final String secureToken = request.headers().get(SECURE_TOKEN_HEADER_NAME);
+        if (Strings.isNullOrEmpty(secureToken)) {
+            // caller is not asking to verify secure token
+            return true;
+        }
+        return secureToken.equals(conn.getSecureToken());
+    }
 
-    @Override
+
+        @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) throws Exception {
         if (!request.decoderResult().isSuccess()) {
             sendHttpResponse(ctx, request, BAD_REQUEST, null);
@@ -96,6 +107,12 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
             if (pushConn == null) {
                 sendHttpResponse(ctx, request, NOT_FOUND, userAuth);
                 logClientNotConnected();
+                return;
+            }
+
+            if (! verifySecureToken(request, pushConn)) {
+                sendHttpResponse(ctx, request, FORBIDDEN, userAuth);
+                logSecurityTokenVerificationFail();
                 return;
             }
 
@@ -160,11 +177,17 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
         logger.warn("Push message was rejected because of the rate limiting");
     }
 
+    protected void logSecurityTokenVerificationFail() {
+        logger.warn("Push secure token verification failed");
+    }
+
     protected void logPushEvent(FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
         logger.debug("Push notification status: {}, auth: {}", status.code(), userAuth != null ? userAuth : "-");
     }
 
     protected abstract PushUserAuth getPushUserAuth(FullHttpRequest request);
+
+
 
 
 

@@ -19,6 +19,7 @@ import com.netflix.config.CachedDynamicIntProperty;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Author: Susheel Aroskar
  * Date: 5/14/18
  */
-public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
+public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
 
     protected final PushConnectionRegistry pushConnectionRegistry;
     protected final PushProtocol pushProtocol;
@@ -63,22 +64,6 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
         return (authEvent != null && authEvent.isSuccess());
     }
 
-    protected final PushUserAuth getAuthEvent() {
-        return authEvent;
-    }
-
-    @Override
-    public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        this.ctx = ctx;
-        try {
-            handleRead(ctx, msg);
-        }
-        finally {
-            ReferenceCountUtil.release(msg);
-        }
-    }
-
-
     private void tearDown()  {
         if (! destroyed.get()) {
             destroyed.set(true);
@@ -103,14 +88,10 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
         super.exceptionCaught(ctx, cause);
     }
 
-    protected final void sendErrorAndClose(int statusCode, String reasonText) {
-        ctx.writeAndFlush(serverClosingConnectionMessage(statusCode, reasonText)).addListener(ChannelFutureListener.CLOSE);
-    }
-
     protected final void forceCloseConnectionFromServerSide() {
         if (! destroyed.get()) {
-            sendErrorAndClose(1000, "server closed connection");
             logger.debug("server forcing close connection");
+            pushProtocol.sendErrorAndClose(ctx, 1000, "Server closed connection");
         }
     }
 
@@ -124,7 +105,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
     private void requestClientToCloseConnection() {
         if (ctx.channel().isActive()) {
             // Application level protocol for asking client to close connection
-            ctx.writeAndFlush(goAwayMessage());
+            ctx.writeAndFlush(pushProtocol.goAwayMessage());
             // Force close connection if client doesn't close in reasonable time after we made request
             ctx.executor().schedule(() -> forceCloseConnectionFromServerSide(), CLIENT_CLOSE_GRACE_PERIOD.get(), TimeUnit.SECONDS);
         } else {
@@ -156,7 +137,7 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
                     registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
                     logger.debug("Authentication complete {}", authEvent);
                 } else {
-                    sendErrorAndClose(1008, "Auth Failed");
+                    pushProtocol.sendErrorAndClose(ctx,1008, "Auth failed");
                 }
             }
         }
@@ -183,25 +164,5 @@ public abstract class PushRegistrationHandler extends ChannelInboundHandlerAdapt
         //Make client reconnect after ttl seconds by closing this connection to limit stickiness of the client
         ctx.executor().schedule(this::requestClientToCloseConnection, ditheredReconnectDeadline(), TimeUnit.SECONDS);
     }
-
-
-
-    /**
-     * Application level protocol for asking client to close connection
-     * @return WebSocketFrame which when sent to client will cause it to close the WebSocket
-     */
-    protected abstract Object goAwayMessage();
-
-    /**
-     * Message server sends to the client just before it force closes connection from its side
-     * @return
-     */
-    protected abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
-
-    /**
-     * Implement this method to parse application level protocol if your push connection is duplex, i.e.
-     * Client can send messages to server as well as server pushing messages to the client.
-     */
-    protected abstract void handleRead(ChannelHandlerContext ctx, Object msg);
 
 }

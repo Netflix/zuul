@@ -15,6 +15,7 @@ public class PushConnection {
 
     private final PushProtocol pushProtocol;
     private final ChannelHandlerContext ctx;
+    private String secureToken;
 
     //Token bucket implementation state.
     private double tkBktAllowance;
@@ -29,6 +30,14 @@ public class PushConnection {
         this.ctx = ctx;
         tkBktAllowance = TOKEN_BUCKET_RATE.get();
         tkBktLastCheckTime = System.currentTimeMillis();
+    }
+
+    public String getSecureToken() {
+        return secureToken;
+    }
+
+    public void setSecureToken(String secureToken) {
+        this.secureToken = secureToken;
     }
 
     /**
@@ -68,10 +77,4 @@ public class PushConnection {
         return pushProtocol.sendPing(ctx);
     }
 
-    public static void main(String[] args) {
-        double a = 200;
-        long b = 300;
-        double c= a/b;
-        System.out.println("="+c);
-    }
 }
