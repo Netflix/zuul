@@ -30,6 +30,7 @@ import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import com.netflix.zuul.util.HttpUtils;
@@ -40,6 +41,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.unix.Errors;
+import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.http.*;
 import io.netty.util.AttributeKey;
@@ -106,22 +108,25 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         if (msg instanceof HttpRequest) {
             clientRequest = (HttpRequest) msg;
 
-            // Don't process invalid requests.
+            zuulRequest = buildZuulHttpRequest(clientRequest, ctx);
+            handleExpect100Continue(ctx, clientRequest);
+
+            // Handle invalid HTTP requests.
             if (clientRequest.decoderResult().isFailure()) {
                 String errorMsg = "Invalid http request. "
                         + "clientRequest = " + clientRequest.toString()
                         + ", uri = " + String.valueOf(clientRequest.uri())
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 String causeMsg = String.valueOf(clientRequest.decoderResult().cause());
-                ReferenceCountUtil.release(msg);
-                clientRequest = null;
                 final ZuulException ze = new ZuulException(errorMsg, causeMsg, true);
                 ze.setStatusCode(400);
-                throw ze;
-            }
 
-            zuulRequest = buildZuulHttpRequest(clientRequest, ctx);
-            handleExpect100Continue(ctx, clientRequest);
+                StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+
+                zuulRequest.getContext().setError(ze);
+                zuulRequest.getContext().setShouldSendErrorResponse(true);
+            }
 
             //Send the request down the filter pipeline
             ctx.fireChannelRead(zuulRequest);
@@ -191,6 +196,16 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             channel.attr(ATTR_ZUUL_RESP).set(null);
             channel.attr(ATTR_LAST_CONTENT_RECEIVED).set(null);
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
+    {
+        if (cause instanceof TooLongFrameException) {
+
+        }
+
+        super.exceptionCaught(ctx, cause);
     }
 
     private static void dumpDebugInfo(final List<String> debugInfo) {

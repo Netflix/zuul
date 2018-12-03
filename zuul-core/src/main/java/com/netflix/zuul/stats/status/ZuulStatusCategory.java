@@ -50,6 +50,7 @@ public enum ZuulStatusCategory implements StatusCategory {
     FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY(ZuulStatusCategoryGroup.FAILURE, 8), // when zuul throttles for a vip because concurrency is too high.
     FAILURE_LOCAL_IDLE_TIMEOUT(ZuulStatusCategoryGroup.FAILURE, 9),
 
+    FAILURE_CLIENT_BAD_REQUEST(ZuulStatusCategoryGroup.FAILURE, 12),
     FAILURE_CLIENT_CANCELLED(ZuulStatusCategoryGroup.FAILURE, 13),  // client abandoned/closed the connection before origin responded.
     FAILURE_CLIENT_PIPELINE_REJECT(ZuulStatusCategoryGroup.FAILURE, 17),
     FAILURE_CLIENT_TIMEOUT(ZuulStatusCategoryGroup.FAILURE, 18),
