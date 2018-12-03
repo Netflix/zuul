@@ -264,13 +264,13 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
     private void handleComplete(Channel channel) {
         try {
-            if ((isHandlingRequest) && (zuulResponse != null)) {
+            if ((isHandlingRequest)) {
                 completeMetrics(channel, zuulResponse);
 
                 // Notify requestComplete listener if configured.
-                final HttpRequestInfo httpRequestInfo = zuulResponse.getInboundRequest();
-                if ((requestCompleteHandler != null) && (httpRequestInfo != null)) {
-                    requestCompleteHandler.handle(httpRequestInfo, zuulResponse);
+                final HttpRequestMessage zuulRequest = ClientRequestReceiver.getRequestFromChannel(channel);
+                if ((requestCompleteHandler != null) && (zuulRequest != null)) {
+                    requestCompleteHandler.handle(zuulRequest.getInboundRequest(), zuulResponse);
                 }
             }
         }
