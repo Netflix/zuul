@@ -35,7 +35,6 @@ import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
-import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -847,10 +846,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         final int respStatus = originResponse.status().code();
         OutboundException obe;
         StatusCategory statusCategory;
+        ClientException.ErrorType niwsErrorType;
 
         if (respStatus == 503) {
             //Treat 503 status from Origin similarly to connection failures, ie. we want to back off from this server
             statusCategory = FAILURE_ORIGIN_THROTTLED;
+            niwsErrorType = ClientException.ErrorType.SERVER_THROTTLED;
             obe = new OutboundException(OutboundErrorType.SERVICE_UNAVAILABLE, requestAttempts);
             if (originConn != null) {
                 originConn.getServerStats().incrementSuccessiveConnectionFailureCount();
@@ -863,6 +864,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
         } else {
             statusCategory = FAILURE_ORIGIN;
+            niwsErrorType = ClientException.ErrorType.GENERAL;
             obe = new OutboundException(OutboundErrorType.ERROR_STATUS_RESPONSE, requestAttempts);
             if (requestStat != null) {
                 requestStat.updateWithHttpStatusCode(respStatus);
@@ -881,11 +883,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             currentRequestAttempt.complete(respStatus, duration, obe);
         }
 
-        // If throttled by origin server, then we also need to invoke onRequestExceptionWithServer().
-        if (statusCategory == FAILURE_ORIGIN_THROTTLED) {
-            origin.onRequestExceptionWithServer(zuulRequest, chosenServer, attemptNum,
-                    new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
-        }
+        // Flag this error with the ExecutionListener.
+        origin.onRequestExceptionWithServer(zuulRequest, chosenServer, attemptNum,
+                new ClientException(niwsErrorType));
 
         if ((isBelowRetryLimit()) && (isRetryable5xxResponse(zuulRequest, originResponse))) {
             LOG.debug("Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
