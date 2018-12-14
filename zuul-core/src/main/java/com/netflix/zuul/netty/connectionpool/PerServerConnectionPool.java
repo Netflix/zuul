@@ -260,19 +260,17 @@ public class PerServerConnectionPool implements IConnectionPool
             String host = getHostFromServer(server);
             selectedHostAddr.set(host);
             
-            final ChannelFuture cf = connectionFactory.connect(eventLoop, host, server.getPort(), passport);
+            final ChannelFuture cf = connectToServer(eventLoop, passport, host);
 
             if (cf.isDone()) {
                 endConnEstablishTimer(timing);
-                handleConnectCompletion(cf, promise, httpMethod, uri, attemptNum,
-                        passport);
+                handleConnectCompletion(cf, promise, httpMethod, uri, attemptNum, passport);
             }
             else {
                 cf.addListener(future -> {
                     try {
                         endConnEstablishTimer(timing);
-                        handleConnectCompletion((ChannelFuture) future, promise, httpMethod, uri, attemptNum,
-                                passport);
+                        handleConnectCompletion((ChannelFuture) future, promise, httpMethod, uri, attemptNum, passport);
                     }
                     catch (Throwable e) {
                         if (! promise.isDone()) {
@@ -290,6 +288,10 @@ public class PerServerConnectionPool implements IConnectionPool
             endConnEstablishTimer(timing);
             promise.setFailure(e);
         }
+    }
+
+    protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, String host) {
+        return connectionFactory.connect(eventLoop, host, server.getPort(), passport);
     }
 
     private Timing startConnEstablishTimer()
