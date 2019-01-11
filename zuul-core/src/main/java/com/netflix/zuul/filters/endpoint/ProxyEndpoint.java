@@ -91,6 +91,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
+import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
 import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
 import static com.netflix.zuul.passport.PassportState.*;
 import static com.netflix.zuul.stats.status.ZuulStatusCategory.*;
@@ -547,10 +548,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
 
-        context.set("_origin_channel", ch);
+        context.set(ORIGIN_CHANNEL, ch);
         context.set(POOLED_ORIGIN_CONNECTION_KEY, conn);
 
-        preWriteToOrigin(chosenServer.get(), context);
+        preWriteToOrigin(chosenServer.get(), zuulRequest);
 
         final ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
@@ -574,7 +575,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return new OriginResponseReceiver(this);
     }
 
-    protected void preWriteToOrigin(Server chosenServer, SessionContext context) {
+    protected void preWriteToOrigin(Server chosenServer, HttpRequestMessage zuulRequest) {
         // override for custom metrics or processing
     }
 

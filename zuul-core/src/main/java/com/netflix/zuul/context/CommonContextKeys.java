@@ -37,6 +37,7 @@ public class CommonContextKeys {
     public static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
     public static final String ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY = "_zuul_origin_chosen_host_addr_map";
     public static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
+    public static final String ORIGIN_CHANNEL = "_origin_channel";
     public static final String ORIGIN_MANAGER = "origin_manager";
     public static final String ROUTING_LOG = "routing_log";
     public static final String USE_FULL_VIP_NAME = "use_full_vip_name";
