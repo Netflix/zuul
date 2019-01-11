@@ -21,7 +21,6 @@ package com.netflix.zuul.constants;
  * Time: 2:22 PM
  */
 public class ZuulConstants {
-    public static final String ZUUL_CASSANDRA_ENABLED = "zuul.cassandra.enabled";
     public static final String ZUUL_NIWS_CLIENTLIST = "zuul.niws.clientlist";
     public static final String DEFAULT_NFASTYANAX_READCONSISTENCY = "default.nfastyanax.readConsistency";
     public static final String DEFAULT_NFASTYANAX_WRITECONSISTENCY = "default.nfastyanax.writeConsistency";
