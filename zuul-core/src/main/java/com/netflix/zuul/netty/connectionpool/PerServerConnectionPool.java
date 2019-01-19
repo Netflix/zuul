@@ -171,7 +171,7 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.incrementUsageCount();
             conn.getChannel().read();
             onAcquire(conn, httpMethod, uri, attemptNum, passport);
-            promise.setSuccess(conn);
+            initPooledConnection(conn, promise);
             selectedHostAddr.set(getHostFromServer(conn.getServer()));
         }
         else {
@@ -189,8 +189,6 @@ public class PerServerConnectionPool implements IConnectionPool
         while ((conn = connections.poll()) != null) {
 
             conn.setInPool(false);
-
-            initConnection(conn);
 
             /* Check that the connection is still open. */
             if (isValidFromPool(conn)) {
@@ -212,8 +210,9 @@ public class PerServerConnectionPool implements IConnectionPool
         return conn.isActive() && conn.getChannel().isOpen();
     }
 
-    protected void initConnection(PooledConnection conn) {
-        // custom init code
+    protected void initPooledConnection(PooledConnection conn, Promise<PooledConnection> promise) {
+        // add custom init code by overriding this method
+        promise.setSuccess(conn);
     }
 
     protected Deque<PooledConnection> getPoolForEventLoop(EventLoop eventLoop)
