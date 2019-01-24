@@ -20,7 +20,7 @@ Zuul 2: http://techblog.netflix.com/2016/09/zuul-2-netflix-journey-to-asynchrono
 Netflix presentations about Zuul:
 
 Strange Loop 2017 - Zuul 2: https://youtu.be/2oXqbLhMS_A
-
+AWS re:Invent 2018 - Scaling push messaging for millions of Netflix devices: https://youtu.be/IdR6N9B-S1E
 ---
 
 Slides from Netflix presentations about Zuul:
@@ -30,6 +30,8 @@ http://www.slideshare.net/MikeyCohen1/zuul-netflix-springone-platform
 http://www.slideshare.net/MikeyCohen1/rethinking-cloud-proxies-54923218
 
 https://github.com/strangeloop/StrangeLoop2017/blob/master/slides/ArthurGonigberg-ZuulsJourneyToNonBlocking.pdf
+
+https://www.slideshare.net/SusheelAroskar/scaling-push-messaging-for-millions-of-netflix-devices
 
 ---
 
