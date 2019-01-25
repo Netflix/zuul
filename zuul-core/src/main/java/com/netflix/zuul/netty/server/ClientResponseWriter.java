@@ -247,7 +247,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             }
             else {
                 if (isHandlingRequest) {
-                    LOG.warn("Received complete event while still handling the request. With reason: " + reason.name() + ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    LOG.warn("Received complete event while still handling the request. With reason: " + reason.name() + " -- " +
+                            ChannelUtils.channelInfoForLogging(ctx.channel()));
                 }
                 ctx.close();
             }
