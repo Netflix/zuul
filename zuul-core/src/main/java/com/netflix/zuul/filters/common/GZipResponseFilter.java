@@ -17,6 +17,7 @@
 package com.netflix.zuul.filters.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringSetProperty;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -68,14 +69,20 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
     private static final CachedDynamicIntProperty MIN_BODY_SIZE_FOR_GZIP =
             new CachedDynamicIntProperty("zuul.min.gzip.body.size", 860);
 
+    private static final CachedDynamicBooleanProperty ENABLED =
+            new CachedDynamicBooleanProperty("zuul.response.gzip.filter.enabled", true);
+
     @Override
     public int filterOrder() {
-        return 5;
+
+        // run as late as possible to ensure the
+        // final encoded body length is considered
+        return 110;
     }
 
     @Override
     public boolean shouldFilter(HttpResponseMessage response) {
-        if (!response.hasBody() || response.getContext().isInBrownoutMode()) {
+        if (!ENABLED.get() || !response.hasBody() || response.getContext().isInBrownoutMode()) {
             return false;
         }
 
