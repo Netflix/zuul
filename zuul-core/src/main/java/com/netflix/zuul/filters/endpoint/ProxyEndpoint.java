@@ -354,6 +354,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         eventProps.put(CommonContextKeys.ZUUL_ORIGIN_REQUEST_URI, zuulRequest.getPathAndQuery());
     }
 
+    protected void updateOriginRpsTrackers(NettyOrigin origin, int attempt) {
+        // override
+    }
+
     private void proxyRequestToOrigin() {
         Promise<PooledConnection> promise = null;
         try {
@@ -361,6 +365,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             requestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
             concurrentReqCount++;
+
+            // update RPS trackers
+            updateOriginRpsTrackers(origin, attemptNum);
 
             // We pass this AtomicReference<Server> here and the origin impl will assign the chosen server to it.
             promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer, chosenHostAddr);

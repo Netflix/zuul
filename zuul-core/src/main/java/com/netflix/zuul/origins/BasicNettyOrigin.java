@@ -117,6 +117,11 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
+    public double getNormalizedDeviceRps(String devType) {
+        return 0d;
+    }
+
+    @Override
     public Promise<PooledConnection> connectToOrigin(HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber,
                                                      CurrentPassport passport, AtomicReference<Server> chosenServer,
                                                      AtomicReference<String> chosenHostAddr) {
