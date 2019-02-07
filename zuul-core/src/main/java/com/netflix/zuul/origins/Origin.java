@@ -25,5 +25,4 @@ public interface Origin {
     String getVip();
     boolean isAvailable();
     boolean isCold();
-    double getNormalizedDeviceRps(String devType);
 }
