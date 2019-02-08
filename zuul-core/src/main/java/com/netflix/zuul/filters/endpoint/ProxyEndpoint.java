@@ -481,6 +481,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         passport.add(ORIGIN_CONN_ACQUIRE_END);
 
         if (context.isCancelled()) {
+            LOG.info("Client cancelled after successful origin connect: {}", conn.getChannel());
+
+            // conn isn't actually busy so we can put it in the pool
+            conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
             conn.release();
         }
         else {
