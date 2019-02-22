@@ -110,7 +110,8 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
         // Close according to the specified close type.
         Channel parent = parentChannel(ctx);
         ConnectionCloseType type = ConnectionCloseType.fromChannel(parent);
-        closeChannel(ctx, parent, type, promise);
+        ChannelPromise parentPromise = parent.newPromise();
+        closeChannel(ctx, parent, type, parentPromise);
 
         // Don't pass this event further down the pipeline.
     }
