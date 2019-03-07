@@ -205,13 +205,13 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             return false;
         }
         final SessionContext zuulCtx = inMesg.getContext();
-        if (!filter.shouldFilter(inMesg)) {
-            return true;
-        }
         if ((zuulCtx.shouldStopFilterProcessing()) && (!filter.overrideStopFilterProcessing())) {
             return true;
         }
         if (zuulCtx.isCancelled()) {
+            return true;
+        }
+        if (!filter.shouldFilter(inMesg)) {
             return true;
         }
         return false;
