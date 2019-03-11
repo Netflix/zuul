@@ -15,12 +15,12 @@
  */
 package com.netflix.zuul.netty.server.push;
 
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.websocketx.*;
-import io.netty.util.ReferenceCountUtil;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +44,15 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     protected final AtomicBoolean destroyed;
     private ChannelHandlerContext ctx;
     private volatile PushConnection pushConnection;
+    private ScheduledFuture<?> keepAliveTask;
 
 
     public static final CachedDynamicIntProperty PUSH_REGISTRY_TTL = new CachedDynamicIntProperty("zuul.push.registry.ttl.seconds", 30 * 60);
     public static final CachedDynamicIntProperty RECONNECT_DITHER = new CachedDynamicIntProperty("zuul.push.reconnect.dither.seconds", 3 * 60);
     public static final CachedDynamicIntProperty UNAUTHENTICATED_CONN_TTL = new CachedDynamicIntProperty("zuul.push.noauth.ttl.seconds", 8);
     public static final CachedDynamicIntProperty CLIENT_CLOSE_GRACE_PERIOD = new CachedDynamicIntProperty("zuul.push.client.close.grace.period", 4);
+    public static final CachedDynamicBooleanProperty KEEP_ALIVE_ENABLED = new CachedDynamicBooleanProperty("zuul.push.keepalive.enabled", true);
+    public static final CachedDynamicIntProperty KEEP_ALIVE_INTERVAL = new CachedDynamicIntProperty("zuul.push.keepalive.interval.seconds", 3 * 60);
 
     private static Logger logger = LoggerFactory.getLogger(PushRegistrationHandler.class);
 
@@ -71,6 +74,10 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
                 pushConnectionRegistry.remove(authEvent.getClientIdentity());
                 logger.debug("Closing connection for {}", authEvent);
             }
+        }
+        if (keepAliveTask != null) {
+            keepAliveTask.cancel(false);
+            keepAliveTask = null;
         }
     }
 
@@ -110,6 +117,12 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
             ctx.executor().schedule(() -> forceCloseConnectionFromServerSide(), CLIENT_CLOSE_GRACE_PERIOD.get(), TimeUnit.SECONDS);
         } else {
             forceCloseConnectionFromServerSide();
+        }
+    }
+
+    protected void keepAlive() {
+        if (KEEP_ALIVE_ENABLED.get()) {
+            ctx.writeAndFlush(new PingWebSocketFrame());
         }
     }
 
@@ -163,6 +176,9 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         registry.put(authEvent.getClientIdentity(), conn);
         //Make client reconnect after ttl seconds by closing this connection to limit stickiness of the client
         ctx.executor().schedule(this::requestClientToCloseConnection, ditheredReconnectDeadline(), TimeUnit.SECONDS);
+        if (KEEP_ALIVE_ENABLED.get()) {
+            keepAliveTask = ctx.executor().scheduleWithFixedDelay(this::keepAlive, KEEP_ALIVE_INTERVAL.get(), KEEP_ALIVE_INTERVAL.get(), TimeUnit.SECONDS);
+        }
     }
 
 }
