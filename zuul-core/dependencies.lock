@@ -1,5 +1,13 @@
 {
     "compile": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -25,32 +33,24 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
+            "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -73,12 +73,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -133,19 +141,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -166,6 +178,14 @@
         }
     },
     "compileClasspath": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -194,29 +214,21 @@
             "locked": "0.7.5",
             "requested": "0.7.5"
         },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
+            "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -239,12 +251,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.7.2",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -299,19 +319,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -332,6 +356,14 @@
         }
     },
     "default": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -357,32 +389,24 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
+            "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -405,12 +429,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -465,19 +497,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -498,6 +534,14 @@
         }
     },
     "runtime": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -523,32 +567,24 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
+            "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -571,12 +607,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -631,19 +675,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -664,6 +712,14 @@
         }
     },
     "runtimeClasspath": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -689,32 +745,24 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
+            "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -737,12 +785,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -797,19 +853,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -830,6 +890,14 @@
         }
     },
     "testCompile": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -855,36 +923,28 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
-        },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -907,12 +967,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -967,19 +1035,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1000,6 +1072,14 @@
         }
     },
     "testCompileClasspath": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -1028,33 +1108,25 @@
             "locked": "0.7.5",
             "requested": "0.7.5"
         },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
-        },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -1077,12 +1149,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.7.2",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -1137,19 +1217,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1170,6 +1254,14 @@
         }
     },
     "testRuntime": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -1195,36 +1287,28 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
-        },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -1247,12 +1331,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -1307,19 +1399,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1340,6 +1436,14 @@
         }
     },
     "testRuntimeClasspath": {
+        "com.fasterxml.jackson.core:jackson-core": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.9.8",
+            "requested": "2.9.8"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -1365,36 +1469,28 @@
             "requested": "4.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
+            "locked": "0.7.6",
             "requested": "0.7.5"
-        },
-        "com.netflix.astyanax:astyanax-cassandra": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
-        },
-        "com.netflix.astyanax:astyanax-thrift": {
-            "locked": "1.56.48",
-            "requested": "1.56.48"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.4",
-            "requested": "latest.release"
+            "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
+            "requested": "1.+"
+        },
+        "com.netflix.governator:governator-core": {
+            "locked": "1.17.5",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.4",
+            "locked": "1.17.5",
             "requested": "1.+"
-        },
-        "com.netflix.hystrix:hystrix-core": {
-            "locked": "1.4.26",
-            "requested": "1.4.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0",
@@ -1417,12 +1513,20 @@
             "requested": "2.2.4"
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.12.21",
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.59.0",
             "requested": "0.59.0"
+        },
+        "commons-collections:commons-collections": {
+            "locked": "3.2.2",
+            "requested": "3.2.2"
+        },
+        "commons-configuration:commons-configuration": {
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "commons-fileupload:commons-fileupload": {
             "locked": "1.3",
@@ -1477,19 +1581,23 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.12",
+            "locked": "4.13-beta-2",
             "requested": "latest.release"
+        },
+        "log4j:log4j": {
+            "locked": "1.2.17",
+            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.59",
+            "locked": "1.61",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1504,7 +1612,7 @@
             "locked": "1.9.5",
             "requested": "1.9.+"
         },
-        "org.slf4j:slf4j-alpi": {
+        "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
             "requested": "1.7.25"
         }
