@@ -19,7 +19,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.constants.ZuulConstants;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -38,6 +42,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public class HttpQueryParams implements Cloneable
 {
+    private static final DynamicPropertyFactory propertyFactory = DynamicPropertyFactory.getInstance();
     private final ListMultimap<String, String> delegate;
     private final boolean immutable;
     private final HashMap<String, Boolean> trailingEquals;
@@ -57,6 +62,7 @@ public class HttpQueryParams implements Cloneable
     }
 
     public static HttpQueryParams parse(String queryString) {
+
         HttpQueryParams queryParams = new HttpQueryParams();
         if (queryString == null) {
             return queryParams;
@@ -72,12 +78,17 @@ public class HttpQueryParams implements Cloneable
                 String name = s.substring(0, i);
                 String value = s.substring(i + 1);
 
-                try {
-                    name = URLDecoder.decode(name, "UTF-8");
-                    value = URLDecoder.decode(value, "UTF-8");
-                }
-                catch (Exception e) {
-                    // do nothing
+                if (!propertyFactory.getBooleanProperty(
+                    ZuulConstants.ZUUL_KEEP_ORIGINAL_QUERY_STRING_ENCODING,
+                    false).getValue()
+                ){
+                    try {
+                        name = URLDecoder.decode(name, "UTF-8");
+                        value = URLDecoder.decode(value, "UTF-8");
+                    }
+                    catch (Exception e) {
+                        // do nothing
+                    }
                 }
 
                 queryParams.add(name, value);
@@ -176,30 +187,34 @@ public class HttpQueryParams implements Cloneable
 
     public String toEncodedString()
     {
-        StringBuilder sb = new StringBuilder();
-        try {
-            for (Map.Entry<String, String> entry : entries()) {
-                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                if (StringUtils.isNotEmpty(entry.getValue())) {
-                    sb.append('=');
-                    sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+        if (propertyFactory.getBooleanProperty(ZuulConstants.ZUUL_KEEP_ORIGINAL_QUERY_STRING_ENCODING,false).getValue()) {
+            return toString();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            try {
+                for (Map.Entry<String, String> entry : entries()) {
+                    sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+                    if (StringUtils.isNotEmpty(entry.getValue())) {
+                        sb.append('=');
+                        sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+                    }
+                    else if (isTrailingEquals(entry.getKey())) {
+                        sb.append('=');
+                    }
+                    sb.append('&');
                 }
-                else if (isTrailingEquals(entry.getKey())) {
-                    sb.append('=');
-                }
-                sb.append('&');
-            }
 
-            // Remove trailing '&'.
-            if (sb.length() > 0 && '&' == sb.charAt(sb.length() - 1)) {
-                sb.deleteCharAt(sb.length() - 1);
+                // Remove trailing '&'.
+                if (sb.length() > 0 && '&' == sb.charAt(sb.length() - 1)) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
             }
+            catch (UnsupportedEncodingException e) {
+                // Won't happen.
+                e.printStackTrace();
+            }
+            return sb.toString();
         }
-        catch (UnsupportedEncodingException e) {
-            // Won't happen.
-            e.printStackTrace();
-        }
-        return sb.toString();
     }
 
     @Override
@@ -270,6 +285,13 @@ public class HttpQueryParams implements Cloneable
     @RunWith(MockitoJUnitRunner.class)
     public static class TestUnit
     {
+        Properties testProperties = new Properties();
+
+        @Before
+        public void setupDefaultResource(){
+            setKeepOriginalEncoding(false);
+        }
+
         @Test
         public void testMultiples()
         {
@@ -388,5 +410,28 @@ public class HttpQueryParams implements Cloneable
             assertEquals("k1=&k2=v2&k3&k4=v4", actual.toEncodedString());
         }
 
+        @Test
+        public void testParseKeysWithoutValuesWithOriginalEncoding()
+        {
+            setKeepOriginalEncoding(true);
+            HttpQueryParams expected = new HttpQueryParams();
+            expected.add("k1", "");
+            expected.add("k2", "v2%20eq%20value_2");
+            expected.add("k3", "");
+            expected.add("k4", "v4%20eq%20%27quoted_string%27");
+            expected.add("$k5", "key%20eq%20%27quotedString%27");
+
+            HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2%20eq%20value_2&k3&k4=v4%20eq%20%27quoted_string%27&$k5=key%20eq%20%27quotedString%27");
+
+            assertEquals(expected, actual);
+
+            assertEquals("k1&k2=v2%20eq%20value_2&k3&k4=v4%20eq%20%27quoted_string%27&$k5=key%20eq%20%27quotedString%27", actual.toEncodedString());
+            assertEquals("k1&k2=v2%20eq%20value_2&k3&k4=v4%20eq%20%27quoted_string%27&$k5=key%20eq%20%27quotedString%27", actual.toString());
+        }
+
+        private void setKeepOriginalEncoding(boolean keepOriginalEncoding) {
+            testProperties.setProperty(ZuulConstants.ZUUL_KEEP_ORIGINAL_QUERY_STRING_ENCODING, String.valueOf(keepOriginalEncoding));
+            ConfigurationManager.loadProperties(testProperties);
+        }
     }
 }

@@ -67,6 +67,7 @@ public class ZuulConstants {
     public static final String ZUUL_DEBUG_HOST = "zuul.debug.host";
     public static final String ZUUL_REQUEST_BODY_MAX_SIZE = "zuul.body.request.max.size";
     public static final String ZUUL_RESPONSE_BODY_MAX_SIZE = "zuul.body.response.max.size";
+    public static final String ZUUL_KEEP_ORIGINAL_QUERY_STRING_ENCODING = "zuul.keepOriginalQueryStringEncoding";
 
     // Prevent instantiation
     private ZuulConstants() {

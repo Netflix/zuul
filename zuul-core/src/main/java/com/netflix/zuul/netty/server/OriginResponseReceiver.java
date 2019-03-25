@@ -168,7 +168,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             return request.getPath();
         }
         else {
-            return request.getPath() + "?" + cleanParams.toEncodedString();
+            return request.getPath() + "?" + cleanQueryStr;
         }
     }
 
