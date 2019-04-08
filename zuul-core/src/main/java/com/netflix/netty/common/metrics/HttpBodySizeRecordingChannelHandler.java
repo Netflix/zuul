@@ -19,7 +19,7 @@ package com.netflix.netty.common.metrics;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpMessage;
 import io.netty.util.AttributeKey;
 
 import javax.inject.Provider;
@@ -38,14 +38,14 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         super(new InboundChannelHandler(), new OutboundChannelHandler());
     }
     
-    public static Provider<Long> getCurrentRequestBodySize(Channel ch)
+    public static Provider<Long> getCurrentInboundBodySize(Channel ch)
     {
-        return new RequestBodySizeProvider(ch);
+        return new InboundBodySizeProvider(ch);
     }
 
-    public static Provider<Long> getCurrentResponseBodySize(Channel ch)
+    public static Provider<Long> getCurrentOutboundBodySize(Channel ch)
     {
-        return new ResponseBodySizeProvider(ch);
+        return new OutboundBodySizeProvider(ch);
     }
     
     private static State getOrCreateCurrentState(Channel ch)
@@ -71,17 +71,17 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         {
             State state = null;
             
-            // Reset the state as each new request comes in.
-            if (msg instanceof HttpRequest) {
+            // Reset the state as each new inbound message comes in.
+            if (msg instanceof HttpMessage) {
                 state = createNewState(ctx.channel());
             }
             
-            // Update the request body size with this chunk.
+            // Update the inbound body size with this chunk.
             if (msg instanceof HttpContent) {
                 if (state == null) {
                     state = getOrCreateCurrentState(ctx.channel());
                 }
-                state.requestBodySize += ((HttpContent) msg).content().readableBytes();
+                state.inboundBodySize += ((HttpContent) msg).content().readableBytes();
             }
 
             super.channelRead(ctx, msg);
@@ -108,9 +108,9 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         {
             State state = getOrCreateCurrentState(ctx.channel());
 
-            // Update the response body size with this chunk.
+            // Update the outbound body size with this chunk.
             if (msg instanceof HttpContent) {
-                state.responseBodySize += ((HttpContent) msg).content().readableBytes();
+                state.outboundBodySize += ((HttpContent) msg).content().readableBytes();
             }
 
             super.write(ctx, msg, promise);
@@ -119,15 +119,15 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
 
     private static class State
     {
-        long requestBodySize = 0;
-        long responseBodySize = 0;
+        long inboundBodySize = 0;
+        long outboundBodySize = 0;
     }
     
-    static class RequestBodySizeProvider implements Provider<Long>
+    static class InboundBodySizeProvider implements Provider<Long>
     {
         private final Channel channel;
 
-        public RequestBodySizeProvider(Channel channel)
+        public InboundBodySizeProvider(Channel channel)
         {
             this.channel = channel;
         }
@@ -136,15 +136,15 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         public Long get()
         {
             State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.requestBodySize;
+            return state == null ? 0 : state.inboundBodySize;
         }
     }
 
-    static class ResponseBodySizeProvider implements Provider<Long>
+    static class OutboundBodySizeProvider implements Provider<Long>
     {
         private final Channel channel;
 
-        public ResponseBodySizeProvider(Channel channel)
+        public OutboundBodySizeProvider(Channel channel)
         {
             this.channel = channel;
         }
@@ -153,7 +153,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         public Long get()
         {
             State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.responseBodySize;
+            return state == null ? 0 : state.outboundBodySize;
         }
     }
 }
