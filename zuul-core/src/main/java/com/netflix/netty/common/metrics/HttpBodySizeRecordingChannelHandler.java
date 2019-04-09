@@ -17,9 +17,14 @@
 package com.netflix.netty.common.metrics;
 
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpMessage;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.AttributeKey;
 
 import javax.inject.Provider;
@@ -71,8 +76,8 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         {
             State state = null;
             
-            // Reset the state as each new inbound message comes in.
-            if (msg instanceof HttpMessage) {
+            // Reset the state as each new inbound request comes in.
+            if (msg instanceof HttpRequest) {
                 state = createNewState(ctx.channel());
             }
             
@@ -106,10 +111,18 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
         {
-            State state = getOrCreateCurrentState(ctx.channel());
+            State state = null;
+
+            // Reset the state as each new outbound request goes out.
+            if (msg instanceof HttpRequest) {
+                state = createNewState(ctx.channel());
+            }
 
             // Update the outbound body size with this chunk.
             if (msg instanceof HttpContent) {
+                if (state == null) {
+                    state = getOrCreateCurrentState(ctx.channel());
+                }
                 state.outboundBodySize += ((HttpContent) msg).content().readableBytes();
             }
 
