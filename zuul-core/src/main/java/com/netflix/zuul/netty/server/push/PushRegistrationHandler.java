@@ -144,13 +144,16 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
             }
             else if (evt instanceof PushUserAuth) {
                 authEvent = (PushUserAuth) evt;
-                if (authEvent.isSuccess()) {
+                if ((authEvent.isSuccess()) && (pushConnection != null)) {
                     logger.debug("registering client {}", authEvent);
                     ctx.pipeline().remove(PushAuthHandler.NAME);
                     registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
                     logger.debug("Authentication complete {}", authEvent);
                 } else {
-                    pushProtocol.sendErrorAndClose(ctx,1008, "Auth failed");
+                    logger.error("Push registration failed: Auth success={}, WS handshake success={}", authEvent.isSuccess(), pushConnection != null);
+                    if (pushConnection != null) {
+                        pushProtocol.sendErrorAndClose(ctx, 1008, "Auth failed");
+                    }
                 }
             }
         }
