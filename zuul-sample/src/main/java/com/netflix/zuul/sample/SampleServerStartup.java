@@ -71,14 +71,14 @@ public class SampleServerStartup extends BaseServerStartup {
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
     @Inject
-    public SampleServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
+    public SampleServerStartup(ServerStatusManager serverStatusManager, ServerTimeout serverTimeout, FilterLoader filterLoader,
                                SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                                RequestCompleteHandler reqCompleteHandler, Registry registry,
                                DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
                                EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
                                AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry,
                                SamplePushMessageSenderInitializer pushSenderInitializer) {
-        super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
+        super(serverStatusManager, serverTimeout, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
                 directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
                 accessLogPublisher);
         this.pushConnectionRegistry = pushConnectionRegistry;
@@ -93,7 +93,7 @@ public class SampleServerStartup extends BaseServerStartup {
 
         int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
 
-        ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig();
+        ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig(serverTimeout);
         int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
         ServerSslConfig sslConfig;
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,

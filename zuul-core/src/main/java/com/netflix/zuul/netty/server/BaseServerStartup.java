@@ -52,6 +52,7 @@ public abstract class BaseServerStartup
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
+    protected final ServerTimeout serverTimeout;
     protected final Registry registry;
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
@@ -69,7 +70,7 @@ public abstract class BaseServerStartup
 
 
     @Inject
-    public BaseServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
+    public BaseServerStartup(ServerStatusManager serverStatusManager, ServerTimeout serverTimeout, FilterLoader filterLoader,
                              SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                              RequestCompleteHandler reqCompleteHandler, Registry registry,
                              DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
@@ -77,6 +78,7 @@ public abstract class BaseServerStartup
                              AccessLogPublisher accessLogPublisher)
     {
         this.serverStatusManager = serverStatusManager;
+        this.serverTimeout = serverTimeout;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
         this.eventLoopGroupMetrics = eventLoopGroupMetrics;
@@ -138,8 +140,7 @@ public abstract class BaseServerStartup
         directMemoryMonitor.init();
     }
 
-
-    public static ChannelConfig defaultChannelConfig()
+    public static ChannelConfig defaultChannelConfig(ServerTimeout serverTimeout)
     {
         ChannelConfig config = new ChannelConfig();
 
@@ -152,7 +153,7 @@ public abstract class BaseServerStartup
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.connectionExpiry,
                 new DynamicIntProperty("server.connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue()).get()));
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.idleTimeout,
-                new DynamicIntProperty("server.connection.idle.timeout", 65 * 1000).get()));
+                serverTimeout.connectionIdleTimeout()));
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.httpRequestReadTimeout,
                 new DynamicIntProperty("server.http.request.read.timeout", 5000).get()));
 
