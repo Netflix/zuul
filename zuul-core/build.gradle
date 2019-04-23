@@ -1,6 +1,13 @@
 apply plugin: "groovy"
 apply plugin: "com.google.osdetector"
 
+// Otherwise publishToMavenLocal won't produce a jar in ~/.m2/repository
+publishing.publications {
+    mavenJava(MavenPublication) {
+        from components.java
+    }
+}
+
 dependencies {
 
     compile "log4j:log4j:1.2.17"
