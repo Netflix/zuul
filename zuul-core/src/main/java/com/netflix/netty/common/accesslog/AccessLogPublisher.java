@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.accesslog;
 
+import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicStringListProperty;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -38,6 +39,8 @@ public class AccessLogPublisher
             new DynamicStringListProperty("zuul.access.log.requestheaders", "host,x-forwarded-for,x-forwarded-proto,x-forwarded-host,x-forwarded-port,user-agent").get();
     private final static List<String> LOG_RESP_HEADERS =
             new DynamicStringListProperty("zuul.access.log.responseheaders", "server,via,content-type").get();
+    private final static DynamicIntProperty URI_LENGTH_LIMIT =
+            new DynamicIntProperty("zuul.access.log.uri.length.limit", Integer.MAX_VALUE);
 
     private final Logger logger;
     private final BiFunction<Channel, HttpRequest, String> requestIdProvider;
@@ -60,6 +63,9 @@ public class AccessLogPublisher
         String port = localPort != null ? localPort.toString() : "-";
         String method = request != null ? request.method().toString().toUpperCase() : "-";
         String uri = request != null ? request.uri() : "-";
+        if (uri.length() > URI_LENGTH_LIMIT.get()) {
+            uri = uri.substring(0, URI_LENGTH_LIMIT.get());
+        }
         String status = response != null ? String.valueOf(response.status().code()) : "-";
 
         String requestId = null;
