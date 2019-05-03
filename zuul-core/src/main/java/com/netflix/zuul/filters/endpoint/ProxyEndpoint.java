@@ -374,6 +374,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         Promise<PooledConnection> promise = null;
         try {
             attemptNum += 1;
+
+            IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
+            setReadTimeoutOnContext(requestConfig, attemptNum);
+
             currentRequestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
             concurrentReqCount++;
@@ -444,7 +448,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest);
                     IClientConfig requestConfig = executionContext.getRequestConfig();
                     try {
-                        readTimeout = setReadTimeoutOnContext(requestConfig, attemptNum);
+                        readTimeout = requestConfig.get(ReadTimeout);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
 
