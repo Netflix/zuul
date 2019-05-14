@@ -15,7 +15,12 @@
  */
 package com.netflix.zuul.netty.server.push;
 
+import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
+import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
+import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
+import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
+import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
@@ -24,6 +29,8 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Susheel Aroskar
@@ -51,11 +58,18 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
 
 
     @Override
+    protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
+        pipeline.addLast(new AccessLogChannelHandler(accessLogPublisher));
+        pipeline.addLast(stripInboundProxyHeadersHandler);
+    }
+
+    @Override
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
         storeChannel(ch);
         addTcpRelatedHandlers(pipeline);
         addHttp1Handlers(pipeline);
+        addHttpRelatedHandlers(pipeline);
         addPushHandlers(pipeline);
     }
 
