@@ -117,6 +117,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
     protected final ServerStatusHeaderHandler serverStatusHeaderHandler;
+    protected final SourceAddressChannelHandler sourceAddressChannelHandler;
 
     /** A collection of all the active channels that we can use to things like graceful shutdown */
     protected final ChannelGroup channels; 
@@ -173,6 +174,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         ServerStatusManager serverStatusManager = channelDependencies.get(ZuulDependencyKeys.serverStatusManager);
         this.serverStatusHeaderHandler = new ServerStatusHeaderHandler(serverStatusManager);
+
+        this.sourceAddressChannelHandler = new SourceAddressChannelHandler();
     }
 
     protected void storeChannel(Channel ch)
@@ -187,7 +190,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
     {
-        pipeline.addLast(new SourceAddressChannelHandler());
+        pipeline.addLast(sourceAddressChannelHandler);
         pipeline.addLast("channelMetrics", channelMetrics);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
 

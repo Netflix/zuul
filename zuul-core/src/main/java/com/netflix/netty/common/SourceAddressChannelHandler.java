@@ -19,6 +19,7 @@ package com.netflix.netty.common;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
@@ -36,6 +37,7 @@ import java.net.SocketAddress;
  * Date: 4/14/16
  * Time: 4:29 PM
  */
+@ChannelHandler.Sharable
 public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
 {
     public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR = AttributeKey.newInstance("_source_inet_addr");
