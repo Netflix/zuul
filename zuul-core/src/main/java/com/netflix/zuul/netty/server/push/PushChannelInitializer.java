@@ -59,7 +59,7 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
 
     @Override
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
-        pipeline.addLast(new AccessLogChannelHandler(accessLogPublisher));
+//        pipeline.addLast(new AccessLogChannelHandler(accessLogPublisher));
         pipeline.addLast(stripInboundProxyHeadersHandler);
     }
 
