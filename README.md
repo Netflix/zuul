@@ -1,5 +1,7 @@
 # Zuul
 
+<img src="https://i.imgur.com/mRSosEp.png" width=500/>
+
 [![Build Status](https://travis-ci.org/Netflix/zuul.svg)](https://travis-ci.org/Netflix/zuul/builds)
 
 Zuul is an edge service that provides dynamic routing, monitoring, resiliency, security, and more.
