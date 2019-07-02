@@ -76,6 +76,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
         pipeline.addLast("httpLifecycle", new HttpClientLifecycleChannelHandler());
+        pipeline.addLast(new ClientTimeoutHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
     }
 

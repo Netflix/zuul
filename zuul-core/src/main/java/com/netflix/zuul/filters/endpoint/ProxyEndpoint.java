@@ -26,6 +26,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
@@ -47,6 +48,7 @@ import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.BasicRequestStat;
+import com.netflix.zuul.netty.connectionpool.ClientTimeoutHandler;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.connectionpool.RequestStat;
 import com.netflix.zuul.netty.filter.FilterRunner;
@@ -505,16 +507,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             conn.release();
         }
         else {
-            // Set the read timeout (we only do this late because this timeout can be adjusted dynamically by the niws RequestExpiryExecutionListener
-            // that is run as part of onRequestStartWithServer() above.
-            // Add a ReadTimeoutHandler to the channel before we send a request on it.
-            conn.startReadTimeoutHandler(readTimeout);
-
-            // Also update the RequestAttempt to reflect the readTimeout chosen.
+            // Update the RequestAttempt to reflect the readTimeout chosen.
             currentRequestAttempt.setReadTimeout(readTimeout);
 
             // Start sending the request to origin now.
-            writeClientRequestToOrigin(conn);
+            writeClientRequestToOrigin(conn, readTimeout);
         }
     }
 
@@ -572,9 +569,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void writeClientRequestToOrigin(final PooledConnection conn) {
+    private void writeClientRequestToOrigin(final PooledConnection conn, int readTimeout) {
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
+
+        // set read timeout on origin channel
+        ch.attr(ClientTimeoutHandler.ORIGIN_RESPONSE_READ_TIMEOUT).set(readTimeout);
 
         context.set(ORIGIN_CHANNEL, ch);
         context.set(POOLED_ORIGIN_CONNECTION_KEY, conn);
