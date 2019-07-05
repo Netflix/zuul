@@ -61,6 +61,8 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +80,7 @@ import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
 public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Channel>
 {
     public static final String HTTP_CODEC_HANDLER_NAME = "codec";
+    public static final AttributeKey<ChannelConfig> ATTR_CHANNEL_CONFIG = AttributeKey.newInstance("channel_config");
 
     protected static final LoggingHandler nettyLogger = new LoggingHandler("zuul.server.nettylog", LogLevel.INFO);
 
@@ -181,6 +184,10 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected void storeChannel(Channel ch)
     {
         this.channels.add(ch);
+
+        // Also add the ChannelConfig as an attribute on each channel. So interested filters/channel-handlers can introspect
+        // and potentially act differently based on the config.
+        ch.attr(ATTR_CHANNEL_CONFIG).set(channelConfig);
     }
 
     protected void addPassportHandler(ChannelPipeline pipeline)
