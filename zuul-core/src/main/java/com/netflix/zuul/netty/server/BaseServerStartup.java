@@ -164,7 +164,7 @@ public abstract class BaseServerStartup
         config.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
 
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.connCloseDelay,
-                new DynamicIntProperty("zuul.server.connection.close.delay", 10).get()));
+                new DynamicIntProperty("server.connection.close.delay", 10).get()));
 
         return config;
     }
