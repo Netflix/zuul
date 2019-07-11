@@ -181,7 +181,7 @@ public abstract class BaseServerStartup
         return value;
     }
 
-    protected ChannelConfig defaultChannelConfig(String portName)
+    public static ChannelConfig defaultChannelConfig(String portName)
     {
         ChannelConfig config = new ChannelConfig();
 
