@@ -50,7 +50,6 @@ public class CommonContextKeys {
     public static final String OVERRIDE_GZIP_REQUESTED = "overrideGzipRequested";
 
     /* Netty-specific keys */
-    public static final String IS_NETTY_BUILD = "_is_netty_build";
     public static final String NETTY_HTTP_REQUEST = "_netty_http_request";
     public static final String NETTY_SERVER_CHANNEL_HANDLER_CONTEXT = "_netty_server_channel_handler_context";
     public static final String REQ_BODY_DCS = "_request_body_dcs";

@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.channel.config;
 
+import com.netflix.zuul.netty.server.ServerTimeout;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
@@ -33,6 +34,7 @@ public class CommonChannelConfigKeys
     public static final ChannelConfigKey<Boolean> preferProxyProtocolForClientIp = new ChannelConfigKey<>("preferProxyProtocolForClientIp", true);
 
     public static final ChannelConfigKey<Integer> idleTimeout = new ChannelConfigKey<>("idleTimeout");
+    public static final ChannelConfigKey<ServerTimeout> serverTimeout = new ChannelConfigKey<>("serverTimeout");
     public static final ChannelConfigKey<Integer> httpRequestReadTimeout = new ChannelConfigKey<>("httpRequestReadTimeout");
     public static final ChannelConfigKey<Integer> maxConnections = new ChannelConfigKey<>("maxConnections");
     public static final ChannelConfigKey<Integer> maxRequestsPerConnection = new ChannelConfigKey<>("maxRequestsPerConnection", 4000);

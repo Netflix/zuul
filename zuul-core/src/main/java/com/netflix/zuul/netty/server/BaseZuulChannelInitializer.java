@@ -22,11 +22,7 @@ import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
-import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
-import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
-import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
-import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
-import com.netflix.netty.common.metrics.ServerChannelMetrics;
+import com.netflix.netty.common.metrics.*;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.status.ServerStatusHeaderHandler;
@@ -39,18 +35,18 @@ import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.passport.InboundPassportStampingFilter;
+import com.netflix.zuul.filters.passport.OutboundPassportStampingFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.netty.insights.PassportLoggingHandler;
-import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
-import com.netflix.zuul.netty.insights.PassportStateServerHandler;
-import com.netflix.zuul.filters.passport.InboundPassportStampingFilter;
-import com.netflix.zuul.filters.passport.OutboundPassportStampingFilter;
 import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.netty.filter.ZuulEndPointRunner;
 import com.netflix.zuul.netty.filter.ZuulFilterChainHandler;
 import com.netflix.zuul.netty.filter.ZuulFilterChainRunner;
+import com.netflix.zuul.netty.insights.PassportLoggingHandler;
+import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
+import com.netflix.zuul.netty.insights.PassportStateServerHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -61,16 +57,12 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_START;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
+import static com.netflix.zuul.passport.PassportState.*;
 
 /**
  * User: Mike Smith
