@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server.http2;
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
+import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -105,6 +106,8 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
                 ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE,
                 ElbProxyProtocolChannelHandler.ATTR_HAPROXY_VERSION,
                 SourceAddressChannelHandler.ATTR_TCP_PASSTHROUGH_INBOUND_CONN,
+
+                BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
         };
 
         for (AttributeKey key : attributesToCopy) {
