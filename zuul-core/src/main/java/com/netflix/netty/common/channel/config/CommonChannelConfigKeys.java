@@ -16,10 +16,10 @@
 
 package com.netflix.netty.common.channel.config;
 
-import com.netflix.zuul.netty.server.ServerTimeout;
-import com.netflix.zuul.netty.ssl.SslContextFactory;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
+import com.netflix.zuul.netty.server.ServerTimeout;
+import com.netflix.zuul.netty.ssl.SslContextFactory;
 
 /**
  * User: michaels@netflix.com
@@ -52,4 +52,6 @@ public class CommonChannelConfigKeys
     public static final ChannelConfigKey<Integer> connCloseDelay = new ChannelConfigKey<>("connCloseDelay");
     public static final ChannelConfigKey<Integer> maxHttp2HeaderTableSize = new ChannelConfigKey<>("maxHttp2HeaderTableSize", 4096);
     public static final ChannelConfigKey<Integer> maxHttp2HeaderListSize = new ChannelConfigKey<>("maxHttp2HeaderListSize");
+    public static final ChannelConfigKey<Boolean> http2AllowGracefulDelayed = new ChannelConfigKey<>("http2AllowGracefulDelayed", true);
+    public static final ChannelConfigKey<Boolean> http2SwallowUnknownExceptionsOnConnClose = new ChannelConfigKey<>("http2SwallowUnknownExceptionsOnConnClose", false);
 }

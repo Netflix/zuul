@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * TODO: Change this class to be an instance per-port.
+ * So that then the configuration can be different per-port, which is need for the combined FTL/Cloud clusters.
+ *
  * User: michaels@netflix.com
  * Date: 3/6/17
  * Time: 12:36 PM

@@ -92,7 +92,11 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
         addSslClientCertChecks(pipeline);
 
         Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry,"server", "http2-" + port);
-        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(channelConfig.get(CommonChannelConfigKeys.connCloseDelay), registry);
+        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(
+                channelConfig.get(CommonChannelConfigKeys.connCloseDelay),
+                channelConfig.get(CommonChannelConfigKeys.http2AllowGracefulDelayed),
+                channelConfig.get(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose),
+                registry);
         Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
 
         pipeline.addLast("http2CodecSwapper", new Http2OrHttpHandler(

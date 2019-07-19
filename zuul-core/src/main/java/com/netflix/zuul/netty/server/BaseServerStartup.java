@@ -227,6 +227,11 @@ public abstract class BaseServerStartup
         // is direct from each device rather than shared in an ELB pool.
         config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnection,
                 chooseIntChannelProperty(portName, "connection.max.requests", 4000)));
+
+        config.add(new ChannelConfigValue(CommonChannelConfigKeys.http2AllowGracefulDelayed,
+                chooseBooleanChannelProperty(portName, "connection.close.graceful.delayed.allow", true)));
+        config.add(new ChannelConfigValue(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
+                chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
     protected void logPortConfigured(int port, ServerSslConfig serverSslConfig)

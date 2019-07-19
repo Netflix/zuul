@@ -16,20 +16,10 @@
 
 package com.netflix.netty.common;
 
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.spectator.api.Registry;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.unix.Errors;
-import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,21 +35,18 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
 {
     private static final Logger LOG = LoggerFactory.getLogger(Http2ConnectionCloseHandler.class);
 
-    private static final DynamicBooleanProperty ALLOW_GRACEFUL_DELAYED = new DynamicBooleanProperty(
-            "server.connection.close.graceful.delayed.allow", true);
-
-    private static final DynamicBooleanProperty SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE = new DynamicBooleanProperty(
-            "server.connection.close.swallow.unknown.exceptions", false);
-
-    private static final SwallowHttp2ExceptionShutdownHint SWALLOW_EXCEPTION_HANDLER = new SwallowHttp2ExceptionShutdownHint();
-
     private final int gracefulCloseDelay;
+    private final boolean allowGracefulDelayed;
+    private final SwallowHttp2ExceptionShutdownHint swallowExceptionHandler;
 
     protected static Registry registry;
 
-    public Http2ConnectionCloseHandler(int gracefulCloseDelay, Registry registry)
+    public Http2ConnectionCloseHandler(int gracefulCloseDelay, boolean allowGracefulDelayed,
+                                       boolean swallowUnknownExceptionsOnConnClose, Registry registry)
     {
         this.gracefulCloseDelay = gracefulCloseDelay;
+        this.allowGracefulDelayed = allowGracefulDelayed;
+        this.swallowExceptionHandler = new SwallowHttp2ExceptionShutdownHint(swallowUnknownExceptionsOnConnClose);
         this.registry = registry;
     }
 
@@ -72,7 +59,7 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
         ChannelPipeline parentPipeline = ctx.channel().parent().pipeline();
         String handlerName = "h2_exception_swallow_handler";
         if (parentPipeline.get(handlerName) == null) {
-            parentPipeline.addLast(handlerName, SWALLOW_EXCEPTION_HANDLER);
+            parentPipeline.addLast(handlerName, swallowExceptionHandler);
         }
     }
 
@@ -149,7 +136,7 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
     protected void gracefullyWithDelay(ChannelHandlerContext ctx, Channel channel, ChannelPromise promise)
     {
         // See javadoc for explanation of why this may be disabled.
-        if (! ALLOW_GRACEFUL_DELAYED.get()) {
+        if (! allowGracefulDelayed) {
             gracefully(channel, promise);
             return;
         }
@@ -249,6 +236,13 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
     @Sharable
     static class SwallowHttp2ExceptionShutdownHint extends ChannelOutboundHandlerAdapter
     {
+        private final boolean swallowUnknownExceptionsOnConnClose;
+
+        public SwallowHttp2ExceptionShutdownHint(boolean swallowUnknownExceptionsOnConnClose)
+        {
+            this.swallowUnknownExceptionsOnConnClose = swallowUnknownExceptionsOnConnClose;
+        }
+
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
         {
@@ -269,7 +263,7 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
             }
             else {
                 LOG.debug("SwallowHttp2ExceptionShutdownHint unknown exception " + cause);
-                if (!SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE.get()) {
+                if (!swallowUnknownExceptionsOnConnClose) {
                     super.exceptionCaught(ctx, cause);
                 }
             }
