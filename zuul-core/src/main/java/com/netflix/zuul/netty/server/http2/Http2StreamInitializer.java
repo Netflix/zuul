@@ -105,7 +105,6 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
                 SslHandshakeInfoHandler.ATTR_SSL_INFO,
                 ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE,
                 ElbProxyProtocolChannelHandler.ATTR_HAPROXY_VERSION,
-                SourceAddressChannelHandler.ATTR_TCP_PASSTHROUGH_INBOUND_CONN,
 
                 BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
         };
