@@ -103,9 +103,13 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
         // Decide what to do.;
         final boolean shouldGzip = isGzippableContentType(response) && isGzipRequested && !isResponseGzipped && isRightSizeForGzip(response);
         if (shouldGzip) {
-            response.getContext().set(CommonContextKeys.GZIPPER, new Gzipper());
+            response.getContext().set(CommonContextKeys.GZIPPER, getGzipper());
         }
         return shouldGzip;
+    }
+
+    protected Gzipper getGzipper() {
+        return new Gzipper();
     }
 
     @VisibleForTesting
