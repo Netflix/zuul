@@ -215,12 +215,7 @@ public class FilterLoader
         }
 
         // Sort by filterOrder.
-        Collections.sort(list, new Comparator<ZuulFilter>() {
-            @Override
-            public int compare(ZuulFilter o1, ZuulFilter o2) {
-                return o1.filterOrder() - o2.filterOrder();
-            }
-        });
+        Collections.sort(list, Comparator.comparingInt(ZuulFilter::filterOrder));
 
         hashFiltersByType.putIfAbsent(filterType, list);
         return list;
