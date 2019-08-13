@@ -17,12 +17,22 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.netty.common.*;
+import com.netflix.netty.common.CloseOnIdleStateHandler;
+import com.netflix.netty.common.ConnectionCloseChannelAttributes;
+import com.netflix.netty.common.Http1ConnectionCloseHandler;
+import com.netflix.netty.common.Http1ConnectionExpiryHandler;
+import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
+import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
+import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
-import com.netflix.netty.common.metrics.*;
+import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
+import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
+import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
+import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
+import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.status.ServerStatusHeaderHandler;
@@ -202,7 +212,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
 
-        pipeline.addLast(new Http1ConnectionCloseHandler(connCloseDelay));
+        pipeline.addLast(new Http1ConnectionCloseHandler());
         pipeline.addLast("conn_expiry_handler",
                 new Http1ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry));
     }

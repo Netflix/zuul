@@ -38,21 +38,16 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
 {
     private static final Logger LOG = LoggerFactory.getLogger(Http1ConnectionCloseHandler.class);
 
-    private final int gracefulCloseDelay;
     private final AtomicBoolean requestInflight = new AtomicBoolean(Boolean.FALSE);
-
-    public Http1ConnectionCloseHandler(int gracefulCloseDelay)
-    {
-        this.gracefulCloseDelay = gracefulCloseDelay;
-    }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
     {
+        ChannelPromise closePromise = ctx.channel().attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).get();
+
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
-
-            if (HttpChannelFlags.CLOSE_AFTER_RESPONSE.get(ctx)) {
+            if (closePromise != null) {
                 // Add header to tell client that they should close this connection.
                 response.headers().set(HttpHeaderNames.CONNECTION, "close");
             }
@@ -63,9 +58,10 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
         // Close the connection immediately after LastContent is written, rather than
         // waiting until the graceful-delay is up if this flag is set.
         if (msg instanceof LastHttpContent) {
-            if (HttpChannelFlags.CLOSE_AFTER_RESPONSE.get(ctx)) {
+            if (closePromise != null) {
                 promise.addListener(future -> {
-                    ctx.close();
+                    ConnectionCloseType type = ConnectionCloseType.fromChannel(ctx.channel());
+                    closeChannel(ctx, type, closePromise);
                 });
             }
         }
@@ -83,16 +79,6 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
         }
 
         super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-    {
-        // Close according to the specified close type.
-        ConnectionCloseType type = ConnectionCloseType.fromChannel(ctx.channel());
-        closeChannel(ctx, type, promise);
-
-        // Don't pass this event further down the pipeline.
     }
 
     protected void closeChannel(ChannelHandlerContext ctx, ConnectionCloseType evt, ChannelPromise promise)
@@ -114,19 +100,12 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
 
     protected void gracefully(ChannelHandlerContext ctx, ChannelPromise promise)
     {
-        if (isAlreadyClosing(ctx)) {
-            promise.setSuccess();
-            return;
-        }
-
         final Channel channel = ctx.channel();
         if (channel.isActive()) {
             final String channelId = channel.id().asShortText();
 
-            // Flag this channel to be closed after any inflight request completes.
-            HttpChannelFlags.CLOSE_AFTER_RESPONSE.set(ctx);
-
             // In gracefulCloseDelay secs time, go ahead and close the connection if it hasn't already been.
+            int gracefulCloseDelay = ConnectionCloseChannelAttributes.gracefulCloseDelay(channel);
             ctx.executor().schedule(() -> {
 
                 // Check that the client hasn't already closed the connection.
@@ -142,7 +121,6 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
                         LOG.debug("gracefully: firing graceful_shutdown event to close connection. channel=" + channelId);
                         ctx.close(promise);
                     }
-
                 }
                 else {
                     LOG.debug("gracefully: connection already closed. channel=" + channelId);
@@ -150,7 +128,6 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
                 }
 
             }, gracefulCloseDelay, TimeUnit.SECONDS);
-
         }
         else {
             promise.setSuccess();
@@ -159,29 +136,11 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
 
     protected void immediately(ChannelHandlerContext ctx, ChannelPromise promise)
     {
-        if (isAlreadyClosing(ctx)) {
-            promise.setSuccess();
-            return;
-        }
-
         if (ctx.channel().isActive()) {
             ctx.close(promise);
         }
         else {
             promise.setSuccess();
-        }
-    }
-
-    protected boolean isAlreadyClosing(ChannelHandlerContext ctx)
-    {
-        // If already closing, then just return.
-        if (HttpChannelFlags.CLOSING.get(ctx)) {
-            return true;
-        }
-        else {
-            HttpChannelFlags.CLOSING.set(ctx);
-            HttpChannelFlags.CLOSE_AFTER_RESPONSE.set(ctx);
-            return false;
         }
     }
 }

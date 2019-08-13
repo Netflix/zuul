@@ -18,6 +18,7 @@ package com.netflix.netty.common;
 
 import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.util.HttpUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -66,25 +67,25 @@ public abstract class AbstrHttpConnectionExpiryHandler extends ChannelOutboundHa
             // Update the request count attribute for this channel.
             requestCount++;
 
-            if (isConnectionExpired(ctx)) {
+            if (isConnectionExpired(ctx.channel())) {
                 // Flag this channel to be closed after response is written.
-                HttpChannelFlags.CLOSE_AFTER_RESPONSE.set(ctx);
-                // with close of configured type.
-                ConnectionCloseType.setForChannel(ctx.channel(), connectionCloseType);
+                Channel channel = HttpUtils.getMainChannel(ctx);
+                ctx.channel().attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(ctx.newPromise());
+                ConnectionCloseType.setForChannel(channel, connectionCloseType);
             }
         }
 
         super.write(ctx, msg, promise);
     }
 
-    protected boolean isConnectionExpired(ChannelHandlerContext ctx)
+    protected boolean isConnectionExpired(Channel channel)
     {
-        boolean expired = requestCount >= maxRequests(ctx.channel()) ||
+        boolean expired = requestCount >= maxRequests(channel) ||
                 System.currentTimeMillis() > connectionExpiryTime;
         if (expired) {
             long lifetime = System.currentTimeMillis() - connectionStartTime;
             LOG.info("Connection is expired. requestCount={}, lifetime={}, {}",
-                    requestCount, lifetime, ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    requestCount, lifetime, ChannelUtils.channelInfoForLogging(channel));
         }
         return expired;
     }

@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
@@ -129,7 +130,7 @@ public class Server
         }
     }
 
-    /** This is just for use in unit-testing. */
+    @VisibleForTesting
     public void waitForEachEventLoop() throws InterruptedException, ExecutionException
     {
         for (EventExecutor exec : serverGroup.clientToProxyWorkerPool)
@@ -138,6 +139,12 @@ public class Server
                 // Do nothing.
             }).get();
         }
+    }
+
+    @VisibleForTesting
+    public void gracefullyShutdownConnections()
+    {
+        clientConnectionsShutdown.gracefullyShutdownClientChannels();
     }
 
     private ChannelFuture setupServerBootstrap(int port, ChannelInitializer channelInitializer)

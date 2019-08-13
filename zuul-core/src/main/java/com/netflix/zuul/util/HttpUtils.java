@@ -19,6 +19,9 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -153,6 +156,22 @@ public class HttpUtils
         return isChunked;
     }
 
+    /**
+     * If http/1 then will always want to just use ChannelHandlerContext.channel(), but for http/2
+     * will want the parent channel (as the child channel is different for each h2 stream).
+     */
+    public static Channel getMainChannel(ChannelHandlerContext ctx)
+    {
+        return getMainChannel(ctx.channel());
+    }
+
+    public static Channel getMainChannel(Channel channel)
+    {
+        if (channel instanceof Http2StreamChannel) {
+            return channel.parent();
+        }
+        return channel;
+    }
 
     public static class UnitTest {
 
