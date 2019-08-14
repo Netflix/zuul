@@ -198,18 +198,15 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler
         executor.schedule(() -> {
 
             // Check that the client hasn't already closed the connection (due to the earlier goaway we sent).
-            //gracefulConnectionShutdown(parent, promise);
-
-            // NOTE - the netty Http2ConnectionHandler specifically does not send another goaway when we call
-            // channel.close() if one has already been sent .... so when we want more than one sent, we need to do it
-            // explicitly ourselves like this.
-
-            LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel="
-                    + parent.id().asShortText());
-            Http2Exception h2e = new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
-            parent.pipeline().fireExceptionCaught(h2e);
-
             if (parent.isActive()) {
+                // NOTE - the netty Http2ConnectionHandler specifically does not send another goaway when we call
+                // channel.close() if one has already been sent .... so when we want more than one sent, we need to do it
+                // explicitly ourselves like this.
+                LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel="
+                        + parent.id().asShortText());
+                Http2Exception h2e = new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
+                parent.pipeline().fireExceptionCaught(h2e);
+
                 parent.close().addListener(future -> {
                     promise.setSuccess();
                 });
