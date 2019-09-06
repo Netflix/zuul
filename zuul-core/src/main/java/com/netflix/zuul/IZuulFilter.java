@@ -18,7 +18,7 @@ package com.netflix.zuul;
 import com.netflix.zuul.exception.ZuulException;
 
 /**
- * BAse interface for ZuulFilters
+ * Base interface for ZuulFilters
  *
  * @author Mikey Cohen
  *         Date: 10/27/11
