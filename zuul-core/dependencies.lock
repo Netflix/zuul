@@ -473,8 +473,8 @@
             "requested": "4.1.39.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.12.Final",
-            "requested": "2.0.12.Final"
+            "locked": "2.0.25.Final",
+            "requested": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.39.Final",
@@ -651,8 +651,8 @@
             "requested": "4.1.39.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.12.Final",
-            "requested": "2.0.12.Final"
+            "locked": "2.0.25.Final",
+            "requested": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.39.Final",
@@ -829,8 +829,8 @@
             "requested": "4.1.39.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.12.Final",
-            "requested": "2.0.12.Final"
+            "locked": "2.0.25.Final",
+            "requested": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.39.Final",
@@ -1367,8 +1367,8 @@
             "requested": "4.1.39.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.12.Final",
-            "requested": "2.0.12.Final"
+            "locked": "2.0.25.Final",
+            "requested": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.39.Final",
@@ -1549,8 +1549,8 @@
             "requested": "4.1.39.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.12.Final",
-            "requested": "2.0.12.Final"
+            "locked": "2.0.25.Final",
+            "requested": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.39.Final",

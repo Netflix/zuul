@@ -38,7 +38,7 @@ dependencies {
     compile "io.netty:netty-resolver:${versions_netty}"
     compile "io.netty:netty-transport:${versions_netty}"
     compile "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
-    runtime "io.netty:netty-tcnative-boringssl-static:2.0.12.Final"
+    runtime "io.netty:netty-tcnative-boringssl-static:2.0.25.Final"
 
     // To ensure that zuul-netty gets this correct later version.
     compile "com.netflix.governator:governator:1.+"

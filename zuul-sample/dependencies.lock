@@ -203,7 +203,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -482,7 +482,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -761,7 +761,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1040,7 +1040,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1319,7 +1319,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1598,7 +1598,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1877,7 +1877,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2156,7 +2156,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2435,7 +2435,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.12.Final"
+            "locked": "2.0.25.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
