@@ -108,7 +108,8 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                     }
                 }
                 stillRead = false;
-                if (hapm.refCnt() > 0) {
+                if (hapm.refCnt() > 1) {
+                    // TODO(carl-mastrangelo): test to see if this is still needed.
                     hapm.release();
                 } else {
                     logger.warn("Unexpected ref count on HAProxyMessage");
