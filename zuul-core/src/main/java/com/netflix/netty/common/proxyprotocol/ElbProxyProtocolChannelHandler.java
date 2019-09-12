@@ -74,7 +74,6 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
     {
-        boolean stillRead = true;
         if (withProxyProtocol) {
             if (msg instanceof HAProxyMessage && msg != null) {
                 HAProxyMessage hapm = (HAProxyMessage) msg;
@@ -107,12 +106,6 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                         haProxyTLV.release();
                     }
                 }
-                stillRead = false;
-                if (hapm.refCnt() > 0) {
-                    hapm.release();
-                } else {
-                    logger.warn("Unexpected ref count on HAProxyMessage");
-                }
 
                 // TODO - fire an additional event to notify interested parties that we now know the IP?
 
@@ -120,8 +113,7 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                 ctx.pipeline().remove(this);
             }
         }
-        if (stillRead) {
-            super.channelRead(ctx, msg);
-        }
+
+        super.channelRead(ctx, msg);
     }
 }
