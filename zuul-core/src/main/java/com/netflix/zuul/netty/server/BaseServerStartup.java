@@ -185,52 +185,61 @@ public abstract class BaseServerStartup
     {
         ChannelConfig config = new ChannelConfig();
 
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxConnections,
-                chooseIntChannelProperty(portName, "connection.max", 20000)));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnection,
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.maxConnections,
+                chooseIntChannelProperty(
+                        portName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
                 chooseIntChannelProperty(portName, "connection.max.requests", 20000)));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
                 chooseIntChannelProperty(portName, "connection.max.requests.brownout", CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.connectionExpiry,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connectionExpiry,
                 chooseIntChannelProperty(portName, "connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue())));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.httpRequestReadTimeout,
-                chooseIntChannelProperty(portName, "http.request.read.timeout", 5000)));
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.httpRequestReadTimeout,
+                chooseIntChannelProperty(
+                        portName,
+                        "http.request.read.timeout",
+                        CommonChannelConfigKeys.httpRequestReadTimeout.defaultValue())));
 
-        int connectionIdleTimeout = chooseIntChannelProperty(portName, "connection.idle.timeout", 65000);
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.idleTimeout, connectionIdleTimeout));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.serverTimeout, new ServerTimeout(connectionIdleTimeout)));
+        int connectionIdleTimeout = chooseIntChannelProperty(
+                portName, "connection.idle.timeout",
+                CommonChannelConfigKeys.idleTimeout.defaultValue());
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.idleTimeout, connectionIdleTimeout));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.serverTimeout, new ServerTimeout(connectionIdleTimeout)));
 
         // For security, default to NEVER allowing XFF/Proxy headers from client.
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER));
 
         config.set(CommonChannelConfigKeys.withProxyProtocol, true);
         config.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
 
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.connCloseDelay,
-                chooseIntChannelProperty(portName, "connection.close.delay", 10)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connCloseDelay,
+                chooseIntChannelProperty(
+                        portName, "connection.close.delay", CommonChannelConfigKeys.connCloseDelay.defaultValue())));
 
         return config;
     }
 
     public static void addHttp2DefaultConfig(ChannelConfig config, String portName)
     {
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxConcurrentStreams,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams,
                 chooseIntChannelProperty(portName, "http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.initialWindowSize,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize,
                 chooseIntChannelProperty(portName, "http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue())));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
                 chooseIntChannelProperty(portName, "http2.maxheadertablesize", 65536)));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderListSize,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize,
                 chooseIntChannelProperty(portName, "http2.maxheaderlistsize", 32768)));
 
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnection,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
                 chooseIntChannelProperty(portName, "connection.max.requests", 4000)));
 
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.http2AllowGracefulDelayed,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2AllowGracefulDelayed,
                 chooseBooleanChannelProperty(portName, "connection.close.graceful.delayed.allow", true)));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
                 chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
