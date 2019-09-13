@@ -17,6 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+/**
+ * Unit tests for {@link OptionalHAProxyMessageDecoder}.
+ */
 @RunWith(JUnit4.class)
 public class OptionalHAProxyMessageDecoderTest {
     @Test
