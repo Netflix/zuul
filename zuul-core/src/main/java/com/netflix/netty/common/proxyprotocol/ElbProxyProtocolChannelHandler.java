@@ -16,11 +16,8 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
