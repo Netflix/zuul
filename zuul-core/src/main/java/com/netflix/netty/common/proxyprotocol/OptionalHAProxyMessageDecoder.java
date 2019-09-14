@@ -40,9 +40,12 @@ import org.slf4j.LoggerFactory;
  */
 public class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
 {
+    // TODO(carl-mastrangelo): delete the name, as the class name is good enough.
     public static final String NAME = "OptionalHAProxyMessageDecoder";
     private static final Logger logger = LoggerFactory.getLogger("OptionalHAProxyMessageDecoder");
-    private static final CachedDynamicBooleanProperty dumpHAProxyByteBuf = new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
+    // TODO(https://github.com/Netflix/zuul/issues/623): delete this property
+    private static final CachedDynamicBooleanProperty dumpHAProxyByteBuf =
+            new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
