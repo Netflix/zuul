@@ -38,11 +38,14 @@ import org.slf4j.LoggerFactory;
  */
 public final class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
 {
+    // TODO(carl-mastrangelo): delete the name, as the class name is good enough.
     public static final String NAME = "OptionalHAProxyMessageDecoder";
     private static final Logger logger = LoggerFactory.getLogger("OptionalHAProxyMessageDecoder");
+
+    // TODO(https://github.com/Netflix/zuul/issues/623): delete this property
     private static final CachedDynamicBooleanProperty dumpHAProxyByteBuf =
             new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
-
+            
     OptionalHAProxyMessageDecoder() {}
 
     @Override

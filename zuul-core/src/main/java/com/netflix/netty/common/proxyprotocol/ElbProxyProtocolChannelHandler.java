@@ -16,10 +16,9 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
@@ -29,6 +28,8 @@ import io.netty.handler.codec.haproxy.HAProxyTLV;
 import io.netty.util.AttributeKey;
 
 import java.util.List;
+
+import io.netty.util.ReferenceCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +80,11 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                 HAProxyMessage hapm = (HAProxyMessage) msg;
                 Channel channel = ctx.channel();
                 channel.attr(ATTR_HAPROXY_MESSAGE).set(hapm);
+                ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> {
+                    if (hapm instanceof ReferenceCounted) {
+                        hapm.release();
+                    }
+                });
                 channel.attr(ATTR_HAPROXY_VERSION).set(hapm.protocolVersion());
                 // Get the real host and port that the client connected to ELB with.
                 String destinationAddress = hapm.destinationAddress();
