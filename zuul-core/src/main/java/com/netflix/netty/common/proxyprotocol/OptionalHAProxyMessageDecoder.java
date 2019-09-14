@@ -17,9 +17,7 @@
 package com.netflix.netty.common.proxyprotocol;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.config.DynamicStringProperty;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.ProtocolDetectionResult;
@@ -38,14 +36,17 @@ import org.slf4j.LoggerFactory;
  * Date: 3/24/16
  * Time: 3:13 PM
  */
-public class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
+public final class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter
 {
     // TODO(carl-mastrangelo): delete the name, as the class name is good enough.
     public static final String NAME = "OptionalHAProxyMessageDecoder";
     private static final Logger logger = LoggerFactory.getLogger("OptionalHAProxyMessageDecoder");
+
     // TODO(https://github.com/Netflix/zuul/issues/623): delete this property
     private static final CachedDynamicBooleanProperty dumpHAProxyByteBuf =
             new CachedDynamicBooleanProperty("zuul.haproxy.dump.bytebuf", false);
+            
+    OptionalHAProxyMessageDecoder() {}
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
