@@ -31,8 +31,6 @@ public class ElbProxyProtocolChannelHandlerTest {
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
-
-        // TODO(carl-mastrangelo): this test should be inverted, but ensuring existing behavior at the moment.
         assertEquals(dropped, buf);
 
         // TODO(carl-mastrangelo): the handler should remove itself, but it currently doesn't.
@@ -55,10 +53,7 @@ public class ElbProxyProtocolChannelHandlerTest {
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
-
-        // TODO(carl-mastrangelo): this test should be inverted, but ensuring existing behavior at the moment.
-        assertNotNull(dropped);
-        assertTrue(dropped.toString(), dropped instanceof HAProxyMessage);
+        assertNull(dropped);
 
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
@@ -83,10 +78,7 @@ public class ElbProxyProtocolChannelHandlerTest {
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
-
-        // TODO(carl-mastrangelo): this test should be inverted, but ensuring existing behavior at the moment.
-        assertNotNull(dropped);
-        assertTrue(dropped.toString(), dropped instanceof HAProxyMessage);
+        assertNull(dropped);
 
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
@@ -114,10 +106,7 @@ public class ElbProxyProtocolChannelHandlerTest {
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
-
-        // TODO(carl-mastrangelo): this test should be inverted, but ensuring existing behavior at the moment.
-        assertNotNull(dropped);
-        assertTrue(dropped.toString(), dropped instanceof HAProxyMessage);
+        assertNull(dropped);
 
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
