@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.stats;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.annotations.MonitorTags;
@@ -22,13 +23,8 @@ import com.netflix.servo.tag.BasicTag;
 import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
 
 /**
  * counter for per route/status code counting
@@ -37,7 +33,6 @@ import static org.junit.Assert.*;
  * Time: 3:04 PM
  */
 public class RouteStatusCodeMonitor implements NamedCount {
-
 
     @MonitorTags
     TagList tagList;
@@ -49,7 +44,8 @@ public class RouteStatusCodeMonitor implements NamedCount {
     int status_code;
 
     @Monitor(name = "count", type = DataSourceType.COUNTER)
-    private final AtomicLong count = new AtomicLong();
+    @VisibleForTesting
+    final AtomicLong count = new AtomicLong();
 
 
     public RouteStatusCodeMonitor(String route, int status_code) {
@@ -58,7 +54,6 @@ public class RouteStatusCodeMonitor implements NamedCount {
         this.status_code = status_code;
         route_code = route + "_" + status_code;
         tagList = BasicTagList.of(new BasicTag("ID", route_code));
-
     }
 
     @Override
@@ -96,35 +91,4 @@ public class RouteStatusCodeMonitor implements NamedCount {
     public void update() {
         count.incrementAndGet();
     }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Test
-        public void testUpdateStats() {
-            RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-            assertEquals(sd.route, "test");
-            sd.update();
-            assertEquals(sd.count.get(), 1);
-            sd.update();
-            assertEquals(sd.count.get(), 2);
-        }
-
-
-        @Test
-        public void testEquals() {
-            RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-            RouteStatusCodeMonitor sd1 = new RouteStatusCodeMonitor("test", 200);
-            RouteStatusCodeMonitor sd2 = new RouteStatusCodeMonitor("test1", 200);
-            RouteStatusCodeMonitor sd3 = new RouteStatusCodeMonitor("test", 201);
-
-            assertTrue(sd.equals(sd1));
-            assertTrue(sd1.equals(sd));
-            assertTrue(sd.equals(sd));
-            assertFalse(sd.equals(sd2));
-            assertFalse(sd.equals(sd3));
-            assertFalse(sd2.equals(sd3));
-        }
-    }
-
 }

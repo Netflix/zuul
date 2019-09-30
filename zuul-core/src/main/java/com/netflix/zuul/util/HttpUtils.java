@@ -23,11 +23,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.*;
 
 /**
  * User: Mike Smith
@@ -171,33 +168,5 @@ public class HttpUtils
             return channel.parent();
         }
         return channel;
-    }
-
-    public static class UnitTest {
-
-        @Test
-        public void detectsGzip() {
-            assertTrue(HttpUtils.isGzipped("gzip"));
-        }
-
-        @Test
-        public void detectsNonGzip() {
-            assertFalse(HttpUtils.isGzipped("identity"));
-        }
-
-        @Test
-        public void detectsGzipAmongOtherEncodings() {
-            assertTrue(HttpUtils.isGzipped("gzip, deflate"));
-        }
-
-        @Test
-        public void stripMaliciousHeaderChars() {
-            assertEquals("something", HttpUtils.stripMaliciousHeaderChars("some\r\nthing"));
-            assertEquals("some thing", HttpUtils.stripMaliciousHeaderChars("some thing"));
-            assertEquals("something", HttpUtils.stripMaliciousHeaderChars("\nsome\r\nthing\r"));
-            assertEquals("", HttpUtils.stripMaliciousHeaderChars("\r"));
-            assertEquals("", HttpUtils.stripMaliciousHeaderChars(""));
-            assertNull(HttpUtils.stripMaliciousHeaderChars(null));
-        }
     }
 }

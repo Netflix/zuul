@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Netflix, Inc.
+ * Copyright 2019 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
+package com.netflix.zuul.context;
 
-package com.netflix.zuul.util;
+import static org.junit.Assert.assertEquals;
 
-public class VipUtils
-{
-    public static String getVIPPrefix(String vipAddress)
-    {
-        String vipHost = vipAddress.split(":")[0];
-        return vipHost.split("\\.")[0];
-    }
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
-    public static String extractAppNameFromVIP(String vipAddress)
-    {
-        String vipPrefix = getVIPPrefix(vipAddress);
-        return vipPrefix.split("-")[0];
+@RunWith(MockitoJUnitRunner.class)
+public class SessionContextTest {
+
+    @Test
+    public void testBoolean() {
+        SessionContext context = new SessionContext();
+        assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
+        assertEquals(context.getBoolean("boolean_test", true), true);
     }
 }

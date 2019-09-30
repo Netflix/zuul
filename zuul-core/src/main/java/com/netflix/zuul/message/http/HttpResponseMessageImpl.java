@@ -23,22 +23,12 @@ import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.ServerCookieEncoder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * User: michaels
@@ -302,53 +292,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public String getInfoForLogging()
-    {
+    public String getInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? getOutboundRequest() : getInboundRequest();
         StringBuilder sb = new StringBuilder()
-                .append(req.getInfoForLogging())
-                .append(",proxy-status=").append(getStatus())
-                ;
+            .append(req.getInfoForLogging())
+            .append(",proxy-status=").append(getStatus());
         return sb.toString();
-    }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Mock
-        private HttpRequestMessage request;
-
-        private HttpResponseMessageImpl response;
-
-        @Before
-        public void setup()
-        {
-            response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
-        }
-
-        @Test
-        public void testHasSetCookieWithName()
-        {
-            response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
-            response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
-
-            assertTrue(response.hasSetCookieWithName("c1"));
-            assertTrue(response.hasSetCookieWithName("c2"));
-            assertFalse(response.hasSetCookieWithName("XX"));
-        }
-
-        @Test
-        public void testRemoveExistingSetCookie()
-        {
-            response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
-            response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
-
-            response.removeExistingSetCookie("c1");
-
-            assertEquals(1, response.getHeaders().size());
-            assertFalse(response.hasSetCookieWithName("c1"));
-            assertTrue(response.hasSetCookieWithName("c2"));
-        }
     }
 }

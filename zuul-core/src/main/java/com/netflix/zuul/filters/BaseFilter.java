@@ -22,15 +22,8 @@ import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.HttpContent;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 /**
  * Base abstract class for ZuulFilters. The base class defines abstract methods to define:
@@ -149,52 +142,5 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public void decrementConcurrency() {
         concurrentCount.decrementAndGet();
-    }
-
-    public static class TestUnit {
-        @Mock
-        private BaseFilter f1;
-        @Mock
-        private BaseFilter f2;
-        @Mock
-        private ZuulMessage req;
-
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-
-        @Test
-        public void testShouldFilter() {
-            class TestZuulFilter extends BaseSyncFilter
-            {
-                @Override
-                public int filterOrder() {
-                    return 0;
-                }
-
-                @Override
-                public FilterType filterType() {
-                    return FilterType.INBOUND;
-                }
-
-                @Override
-                public boolean shouldFilter(ZuulMessage req) {
-                    return false;
-                }
-
-                @Override
-                public ZuulMessage apply(ZuulMessage req) {
-                    return null;
-                }
-            }
-
-            TestZuulFilter tf1 = spy(new TestZuulFilter());
-            TestZuulFilter tf2 = spy(new TestZuulFilter());
-
-            when(tf1.shouldFilter(req)).thenReturn(true);
-            when(tf2.shouldFilter(req)).thenReturn(false);
-        }
     }
 }
