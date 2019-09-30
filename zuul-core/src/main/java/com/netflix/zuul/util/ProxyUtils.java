@@ -14,20 +14,13 @@
  *      limitations under the License.
  */
 
-
 package com.netflix.zuul.util;
 
-import com.netflix.client.http.HttpResponse;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -91,25 +84,6 @@ public class ProxyUtils
                     headers.set(name, latestValue);
                 }
             }
-        }
-    }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class TestUnit
-    {
-        @Mock
-        HttpResponse proxyResp;
-
-        @Mock
-        HttpRequestMessage request;
-
-        @Test
-        public void testIsValidResponseHeader()
-        {
-            Assert.assertTrue(isValidResponseHeader(HttpHeaderNames.get("test")));
-            Assert.assertFalse(isValidResponseHeader(HttpHeaderNames.get("Keep-Alive")));
-            Assert.assertFalse(isValidResponseHeader(HttpHeaderNames.get("keep-alive")));
         }
     }
 }
