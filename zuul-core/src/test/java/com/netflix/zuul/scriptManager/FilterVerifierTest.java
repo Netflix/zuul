@@ -19,15 +19,13 @@ package com.netflix.zuul.scriptManager;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThrows;
 
 import com.netflix.zuul.filters.FilterType;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.MockitoAnnotations;
 
 
 /**
@@ -36,7 +34,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class FilterVerifierTest {
 
-    String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
+    private final String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
         "import com.netflix.zuul.context.*\n" +
         "import com.netflix.zuul.message.*\n" +
         "import com.netflix.zuul.message.http.*\n" +
@@ -62,7 +60,7 @@ public class FilterVerifierTest {
         "\n" +
         "}";
 
-    String sNotZuulFilterGroovy = "import com.netflix.zuul.filters.*\n" +
+    private final String sNotZuulFilterGroovy = "import com.netflix.zuul.filters.*\n" +
         "import com.netflix.zuul.context.*\n" +
         "import com.netflix.zuul.message.*\n" +
         "import com.netflix.zuul.message.http.*\n" +
@@ -88,7 +86,7 @@ public class FilterVerifierTest {
         "\n" +
         "}";
 
-    String sCompileFailCode = "import com.netflix.zuul.filters.*\n" +
+    private final String sCompileFailCode = "import com.netflix.zuul.filters.*\n" +
         "import com.netflix.zuul.context.*\n" +
         "import com.netflix.zuul.message.*\n" +
         "import com.netflix.zuul.message.http.*\n" +
@@ -114,112 +112,43 @@ public class FilterVerifierTest {
         "\n" +
         "}";
 
-
-    @Before
-    public void before() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
     public void testCompile() {
-        Class filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
+        Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
 
-        try {
-            filterClass = FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode);
-            assertFalse(true); //we shouldn't get here
-        } catch (Exception e) {
-            assertTrue(true);
-        }
+        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
     }
 
     @Test
-    public void testZuulFilterInstance() {
-        Class filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
+    public void testZuulFilterInstance() throws Exception {
+        Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
-        try {
-            Object filter = FilterVerifier.INSTANCE.instanciateClass(filterClass);
-            try {
-                FilterVerifier.INSTANCE.checkZuulFilterInstance(filter);
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-                assertFalse(true); //we shouldn't get here
-            }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        }
+
+        Object filter1 = FilterVerifier.INSTANCE.instanciateClass(filterClass);
+        FilterVerifier.INSTANCE.checkZuulFilterInstance(filter1);
 
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
-        try {
-            Object filter = FilterVerifier.INSTANCE.instanciateClass(filterClass);
-            try {
-                FilterVerifier.INSTANCE.checkZuulFilterInstance(filter);
-                assertFalse(true); //we shouldn't get here
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-                assertTrue(true); //this
-            }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        }
+
+        Object filter2 = FilterVerifier.INSTANCE.instanciateClass(filterClass);
+        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
     }
 
-
     @Test
-    public void testVerify() {
+    public void testVerify() throws Exception {
+        FilterInfo filterInfo1 = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
+        assertNotNull(filterInfo1);
+        assertEquals(filterInfo1.getFilterID(), "null:filter:in");
+        assertEquals(filterInfo1.getFilterType(), FilterType.INBOUND);
+        assertEquals(filterInfo1.getFilterName(), "filter");
+        assertFalse(filterInfo1.isActive());
+        assertFalse(filterInfo1.isCanary());
 
-        try {
-            FilterInfo filterInfo = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
-            assertNotNull(filterInfo);
-            assertEquals(filterInfo.getFilterID(), "null:filter:in");
-            assertEquals(filterInfo.getFilterType(), FilterType.INBOUND);
-            assertEquals(filterInfo.getFilterName(), "filter");
-            assertFalse(filterInfo.isActive());
-            assertFalse(filterInfo.isCanary());
+        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
 
-
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        }
-
-        try {
-            FilterInfo filterInfo = FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy);
-            assertFalse(true);// shouldn't get here
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            assertTrue(true); //we shouldn't get here
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        }
-
-        try {
-            FilterInfo filterInfo = FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode);
-            assertFalse(true);// shouldn't get here
-        } catch (CompilationFailedException e) {
-            assertTrue(true); //we shouldn't get here
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            assertFalse(true); //we shouldn't get here
-        }
-
+        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
     }
 }
