@@ -22,10 +22,9 @@ import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2MultiplexCodec;
-import io.netty.handler.codec.http2.Http2MultiplexCodecBuilder;
+import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
+import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
@@ -44,7 +43,6 @@ import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODE
  */
 public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
-    public static final AttributeKey<Http2Connection> H2_CONN_KEY = AttributeKey.newInstance("h2_connection");
 
     private static final DynamicHttp2FrameLogger FRAME_LOGGER = new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
 
@@ -92,17 +90,16 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .headerTableSize(maxHeaderTableSize)
                 .maxHeaderListSize(maxHeaderListSize);
 
-        Http2MultiplexCodec multiplexCodec = Http2MultiplexCodecBuilder
-                .forServer(http2StreamHandler)
+        Http2FrameCodec frameCodec = Http2FrameCodecBuilder.forServer()
                 .frameLogger(FRAME_LOGGER)
                 .initialSettings(settings)
                 .validateHeaders(true)
                 .build();
-        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexCodec);
 
-        // Need to pass the connection to our handler later, so store it on channel now.
-        Http2Connection connection = multiplexCodec.connection();
-        pipeline.channel().attr(H2_CONN_KEY).set(connection);
+        Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
+
+        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexHandler);
+        pipeline.addBefore(HTTP_CODEC_HANDLER_NAME, /* name= */ null, frameCodec);
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
