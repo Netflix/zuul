@@ -98,8 +98,9 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
         Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
 
+        // The frame codec MUST be in the pipeline.
+        pipeline.addBefore("codec_placeholder", /* name= */ null, frameCodec);
         pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexHandler);
-        pipeline.addBefore(HTTP_CODEC_HANDLER_NAME, /* name= */ null, frameCodec);
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
