@@ -131,7 +131,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     }
 
     protected final O filter(final ZuulFilter<I, O> filter, final I inMesg) {
-        final long startTime = System.currentTimeMillis();
+        final long startTime = System.nanoTime();
         final ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
         FilterChainResumer resumer = null;
 
@@ -255,22 +255,23 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                                           final ZuulMessage zuulMesg, final ZuulMessage startSnapshot) {
 
         final SessionContext zuulCtx = zuulMesg.getContext();
-        final long execTime = System.currentTimeMillis() - startTime;
-        if (execTime >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
-            LOG.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTime, status.name());
+        final long execTimeNs = System.nanoTime() - startTime;
+        final long execTimeMs = execTimeNs / 1_000_000L;
+        if (execTimeMs >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
+            LOG.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTimeMs, status.name());
         }
 
         // Record the execution summary in context.
         switch (status) {
             case FAILED:
-                zuulCtx.addFilterExecutionSummary(filter.filterName(), FAILED.name(), execTime);
+                zuulCtx.addFilterExecutionSummary(filter.filterName(), FAILED.name(), execTimeMs);
                 break;
             case SUCCESS:
-                zuulCtx.addFilterExecutionSummary(filter.filterName(), SUCCESS.name(), execTime);
+                zuulCtx.addFilterExecutionSummary(filter.filterName(), SUCCESS.name(), execTimeMs);
                 if (startSnapshot != null) {
                     //debugRouting == true
                     Debug.addRoutingDebug(zuulCtx, "Filter {" + filter.filterName() + " TYPE:" + filter.filterType().toString()
-                            + " ORDER:" + filter.filterOrder() + "} Execution time = " + execTime + "ms");
+                            + " ORDER:" + filter.filterOrder() + "} Execution time = " + execTimeMs + "ms");
                     Debug.compareContextState(filter.filterName(), zuulCtx, startSnapshot.getContext());
                 }
                 break;
