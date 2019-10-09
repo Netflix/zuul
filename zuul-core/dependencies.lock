@@ -8,6 +8,10 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -182,6 +186,10 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -355,6 +363,10 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
+        },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
@@ -534,6 +546,10 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -711,6 +727,10 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
+        },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
@@ -890,6 +910,10 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -1068,6 +1092,10 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
+        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
             "requested": "4.0"
@@ -1245,6 +1273,10 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
+        },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
@@ -1427,6 +1459,10 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
+        },
+        "com.google.guava:guava": {
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.1.0",
