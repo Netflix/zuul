@@ -79,7 +79,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
 
                     CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_SSL_HANDSHAKE_COMPLETE);
 
-                    SslHandler sslhandler = (SslHandler) ctx.channel().pipeline().get("ssl");
+                    SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
                     SSLSession session = sslhandler.engine().getSession();
 
                     ClientAuth clientAuth = whichClientAuthEnum(sslhandler);
