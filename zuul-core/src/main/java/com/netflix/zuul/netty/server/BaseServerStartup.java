@@ -41,6 +41,8 @@ import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.handler.ssl.SslContext;
+import io.netty.util.DomainNameMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,11 +245,25 @@ public abstract class BaseServerStartup
                 chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
+    protected void logPortConfigured(int port)
+    {
+        logPortConfigured(port, (ServerSslConfig) null);
+    }
+
     protected void logPortConfigured(int port, ServerSslConfig serverSslConfig)
     {
         String msg = "Configured port: " + port;
         if (serverSslConfig != null) {
             msg = msg + " with SSL config: " + serverSslConfig.toString();
+        }
+        LOG.warn(msg);
+    }
+
+    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping)
+    {
+        String msg = "Configured port: " + port;
+        if (sniMapping != null) {
+            msg = msg + " with SNI config: " + sniMapping.asMap().toString();
         }
         LOG.warn(msg);
     }

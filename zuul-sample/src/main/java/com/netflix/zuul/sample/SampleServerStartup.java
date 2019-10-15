@@ -111,7 +111,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, false);
 
                 portsToChannels.put(port, new ZuulServerChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                logPortConfigured(port);
                 break;
 
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
@@ -175,11 +175,11 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
                 portsToChannels.put(port, new SampleWebSocketPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                logPortConfigured(port);
 
                 // port to accept push message from the backend, should be accessible on internal network only.
                 portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                logPortConfigured(pushPort);
 
                 break;
 
@@ -194,11 +194,11 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
                 portsToChannels.put(port, new SampleSSEPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                logPortConfigured(port);
 
                 // port to accept push message from the backend, should be accessible on internal network only.
                 portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                logPortConfigured(pushPort);
 
                 break;
         }
