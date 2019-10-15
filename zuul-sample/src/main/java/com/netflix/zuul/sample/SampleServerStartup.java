@@ -179,7 +179,7 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 // port to accept push message from the backend, should be accessible on internal network only.
                 portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                logPortConfigured(pushPort);
 
                 break;
 
@@ -198,7 +198,7 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 // port to accept push message from the backend, should be accessible on internal network only.
                 portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                logPortConfigured(pushPort);
 
                 break;
         }
