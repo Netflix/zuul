@@ -26,6 +26,7 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SniCompletionEvent;
 import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
@@ -179,6 +180,18 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
         }
         else if (evt instanceof SslCloseCompletionEvent) {
             // TODO - increment a separate metric for this event?
+        }
+        else if (evt instanceof SniCompletionEvent) {
+            LOG.debug("SNI Parsing Complete: " + evt.toString());
+
+            SniCompletionEvent sniCompletionEvent = (SniCompletionEvent) evt;
+            if (sniCompletionEvent.isSuccess()) {
+                spectatorRegistry.counter("zuul.sni.parse.success").increment();
+            }
+            else {
+                Throwable cause = sniCompletionEvent.cause();
+                spectatorRegistry.counter("zuul.sni.parse.failure", cause != null ? cause.getMessage() : "UNKNOWN").increment();
+            }
         }
 
         super.userEventTriggered(ctx, evt);
