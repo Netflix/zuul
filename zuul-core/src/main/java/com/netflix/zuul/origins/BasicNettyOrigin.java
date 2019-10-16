@@ -61,31 +61,39 @@ import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
  */
 public class BasicNettyOrigin implements NettyOrigin {
 
-    private final String name;
-    private final String vip;
-    private final Registry registry;
-    private final IClientConfig config;
-    private final ClientChannelManager clientChannelManager;
-    private final NettyRequestAttemptFactory requestAttemptFactory;
+    protected final String name;
+    protected final String vip;
+    protected final Registry registry;
 
     private final AtomicInteger concurrentRequests;
     private final Counter rejectedRequests;
     private final CachedDynamicIntProperty concurrencyMax;
     private final CachedDynamicBooleanProperty concurrencyProtectionEnabled;
 
+    protected IClientConfig config;
+    protected ClientChannelManager clientChannelManager;
+    protected NettyRequestAttemptFactory requestAttemptFactory;
+
+    /**
+     * Creators must call {@link #init()} after construction! Subclasses must ensure
+     * that config, clientChannelManager and requestAttemptFactory are initialized.
+     */
     public BasicNettyOrigin(String name, String vip, Registry registry) {
         this.name = name;
         this.vip = vip;
         this.registry = registry;
-        this.config = setupClientConfig(name);
-        this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
-        this.clientChannelManager.init();
-        this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
         this.concurrentRequests = SpectatorUtils.newGauge("zuul.origin.concurrent.requests", name, new AtomicInteger(0));
         this.rejectedRequests = SpectatorUtils.newCounter("zuul.origin.rejected.requests", name);
         this.concurrencyMax = new CachedDynamicIntProperty("zuul.origin." + name + ".concurrency.max.requests", 200);
         this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.origin." + name + ".concurrency.protect.enabled", true);
+    }
+
+    public void init() {
+        this.config = setupClientConfig(name);
+        this.clientChannelManager = createClientChannelManager(name, vip, config, registry);
+        this.clientChannelManager.init();
+        this.requestAttemptFactory = new NettyRequestAttemptFactory();
     }
 
     protected IClientConfig setupClientConfig(String name) {
@@ -94,6 +102,13 @@ public class BasicNettyOrigin implements NettyOrigin {
         niwsClientConfig.set(CommonClientConfigKey.ClientClassName, name);
         niwsClientConfig.loadProperties(name);
         return niwsClientConfig;
+    }
+
+    /**
+     * Creates a new {@link ClientChannelManager} instances. The returned instance is not initialized yet.
+     */
+    protected ClientChannelManager createClientChannelManager(String name, String vip, IClientConfig config, Registry registry) {
+        return new DefaultClientChannelManager(name, vip, config, registry);
     }
 
     @Override
@@ -120,7 +135,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     public Promise<PooledConnection> connectToOrigin(HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber,
                                                      CurrentPassport passport, AtomicReference<Server> chosenServer,
                                                      AtomicReference<String> chosenHostAddr) {
-        return clientChannelManager.acquire(eventLoop, null, zuulReq.getMethod().toUpperCase(),
+        return clientChannelManager.acquire(eventLoop, getServerKey(zuulReq), zuulReq.getMethod().toUpperCase(),
                 zuulReq.getPath(), attemptNumber, passport, chosenServer, chosenHostAddr);
     }
 
@@ -277,5 +292,14 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public void recordSuccessResponse() {
+    }
+
+    /**
+     * Gets an optional key object used by the underlying load balancer to determine the target server.
+     * @param zuulReq HTTP request
+     * @return The key or {@code null}
+     */
+    protected Object getServerKey(HttpRequestMessage zuulReq) {
+        return null;
     }
 }
