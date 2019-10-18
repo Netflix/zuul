@@ -18,6 +18,8 @@ package com.netflix.zuul.filters;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
+import io.perfmark.PerfMark;
+import io.perfmark.Tag;
 import rx.Observable;
 
 /**
@@ -98,4 +100,14 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      * @return
      */
     HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk);
+
+    /**
+     * Returns the internal profiling tag for this filter.   This method is NOT API stable, and may be removed.
+     * This method is internal.
+     * @return
+     */
+    default Tag perfmarkTag() {
+        return PerfMark.createTag();
+    }
+
 }

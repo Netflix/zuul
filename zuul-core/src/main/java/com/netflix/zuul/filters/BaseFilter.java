@@ -23,6 +23,8 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.HttpContent;
 
+import io.perfmark.PerfMark;
+import io.perfmark.Tag;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -45,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
     private final String baseName;
+    private final Tag tag;
     private final AtomicInteger concurrentCount;
     private final Counter concurrencyRejections;
 
@@ -53,9 +56,9 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     private static final CachedDynamicBooleanProperty concurrencyProtectEnabled = new CachedDynamicBooleanProperty("zuul.filter.concurrency.protect.enabled", true);
 
-
     protected BaseFilter() {
-        baseName = this.getClass().getSimpleName() + "." + filterType().toString();
+        baseName = getClass().getSimpleName() + "." + filterType();
+        tag = PerfMark.createTag(baseName);
         concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
         concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
         filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
@@ -142,5 +145,13 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public void decrementConcurrency() {
         concurrentCount.decrementAndGet();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final Tag perfmarkTag() {
+        return tag;
     }
 }

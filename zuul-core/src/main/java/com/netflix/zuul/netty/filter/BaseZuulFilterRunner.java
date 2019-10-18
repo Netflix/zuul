@@ -35,6 +35,9 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
+import io.perfmark.Link;
+import io.perfmark.PerfMark;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observer;
@@ -135,6 +138,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
         FilterChainResumer resumer = null;
 
+        PerfMark.startTask("FilterRunner.filter", filter.perfmarkTag());
         try {
             ExecutionStatus filterRunStatus = null;
             if (filter.filterType() == INBOUND && inMesg.getContext().shouldSendErrorResponse()) {
@@ -142,8 +146,13 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 filterRunStatus = SKIPPED;
             }
 
-            if (shouldSkipFilter(inMesg, filter)) {
-                filterRunStatus = SKIPPED;
+            PerfMark.startTask("FilterRunner.shouldSkipFilter", filter.perfmarkTag());
+            try {
+                if (shouldSkipFilter(inMesg, filter)) {
+                    filterRunStatus = SKIPPED;
+                }
+            } finally {
+                PerfMark.stopTask("FilterRunner.shouldSkipFilter", filter.perfmarkTag());
             }
 
             if (filter.isDisabled()) {
@@ -171,18 +180,66 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
             if (filter.getSyncType() == FilterSyncType.SYNC) {
                 final SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter) filter;
-                final O outMesg = syncFilter.apply(inMesg);
+                final O outMesg;
+                PerfMark.startTask("FilterRunner.applySync", filter.perfmarkTag());
+                try {
+                    outMesg = syncFilter.apply(inMesg);
+                } finally {
+                    PerfMark.stopTask("FilterRunner.applySync", filter.perfmarkTag());
+                }
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
             }
 
             // async filter
-            filter.incrementConcurrency();
-            resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
-            filter.applyAsync(inMesg)
-                .observeOn(Schedulers.from(getChannelHandlerContext(inMesg).executor()))
-                .doOnUnsubscribe(resumer::decrementConcurrency)
-                .subscribe(resumer);
+            PerfMark.startTask("FilterRunner.applyAsync", filter.perfmarkTag());
+            try {
+                final Link nettyToSchedulerLink = PerfMark.linkOut();
+                final AtomicReferenceArray<Link> schedulerToNettyLinks = new AtomicReferenceArray<>(3);
+                filter.incrementConcurrency();
+                resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime, schedulerToNettyLinks);
+                filter.applyAsync(inMesg)
+                        .doOnSubscribe(() -> {
+                            PerfMark.startTask("FilterRunner.onSubscribeAsync", filter.perfmarkTag());
+                            try {
+                                PerfMark.linkIn(nettyToSchedulerLink);
+                            } finally {
+                                PerfMark.stopTask("FilterRunner.onSubscribeAsync", filter.perfmarkTag());
+                            }
+                        })
+                        .doOnNext(s -> {
+                            PerfMark.startTask("FilterRunner.onNextAsync", filter.perfmarkTag());
+                            try {
+                                PerfMark.linkIn(nettyToSchedulerLink);
+                                schedulerToNettyLinks.compareAndSet(0, null, PerfMark.linkOut());
+                            } finally {
+                                PerfMark.stopTask("FilterRunner.onNextAsync", filter.perfmarkTag());
+                            }
+                        })
+                        .doOnError(t -> {
+                            PerfMark.startTask("FilterRunner.onErrorAsync", filter.perfmarkTag());
+                            try {
+                                PerfMark.linkIn(nettyToSchedulerLink);
+                                schedulerToNettyLinks.compareAndSet(1, null, PerfMark.linkOut());
+                            } finally {
+                                PerfMark.stopTask("FilterRunner.onErrorAsync", filter.perfmarkTag());
+                            }
+                        })
+                        .doOnCompleted(() -> {
+                            PerfMark.startTask("FilterRunner.onCompletedAsync", filter.perfmarkTag());
+                            try {
+                                PerfMark.linkIn(nettyToSchedulerLink);
+                                schedulerToNettyLinks.compareAndSet(2, null, PerfMark.linkOut());
+                            } finally {
+                                PerfMark.stopTask("FilterRunner.onCompletedAsync", filter.perfmarkTag());
+                            }
+                        })
+                        .observeOn(Schedulers.from(getChannelHandlerContext(inMesg).executor()))
+                        .doOnUnsubscribe(resumer::decrementConcurrency)
+                        .subscribe(resumer);
+            } finally {
+                PerfMark.stopTask("FilterRunner.applyAsync", filter.perfmarkTag());
+            }
 
             return null;  //wait for the async filter to finish
         }
@@ -194,6 +251,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             outMesg.finishBufferedBodyIfIncomplete();
             recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
             return outMesg;
+        } finally {
+            PerfMark.stopTask("FilterRunner.filter", filter.perfmarkTag());
         }
     }
 
@@ -319,15 +378,20 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     private final class FilterChainResumer implements Observer<O> {
         private final I inMesg;
         private final ZuulFilter<I, O> filter;
-        private ZuulMessage snapshot;
         private final long startTime;
+        private final AtomicReferenceArray<Link> schedulerToNettyLinks;
+        private ZuulMessage snapshot;
         private AtomicBoolean concurrencyDecremented;
 
-        public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
+
+        public FilterChainResumer(
+                I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime,
+                AtomicReferenceArray<Link> schedulerToNettyLinks) {
             this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
             this.filter = Preconditions.checkNotNull(filter, "filter");
             this.snapshot = snapshot;
             this.startTime = startTime;
+            this.schedulerToNettyLinks = schedulerToNettyLinks;
             this.concurrencyDecremented = new AtomicBoolean(false);
         }
 
@@ -339,7 +403,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         @Override
         public void onNext(O outMesg) {
+            PerfMark.startTask("FilterChainResumer.onNext", filter.perfmarkTag());
             try {
+                PerfMark.event("FilterChainResumer.resumeNext", PerfMark.createTag(inMesg.getContext().getUUID()));
+                PerfMark.linkIn(schedulerToNettyLinks.get(0));
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 if (outMesg == null) {
                     outMesg = filter.getDefaultOutput(inMesg);
@@ -349,13 +416,17 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             catch (Exception e) {
                 decrementConcurrency();
                 handleException(inMesg, filter.filterName(), e);
+            } finally {
+                PerfMark.stopTask("FilterChainResumer.onNext", filter.perfmarkTag());
             }
-
         }
 
         @Override
         public void onError(Throwable ex) {
+            PerfMark.startTask("FilterChainResumer.onError", filter.perfmarkTag());
             try {
+                PerfMark.event("FilterChainResumer.resumeError", PerfMark.createTag(inMesg.getContext().getUUID()));
+                PerfMark.linkIn(schedulerToNettyLinks.get(1));
                 decrementConcurrency();
                 recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
                 final O outMesg = handleFilterException(inMesg, filter, ex);
@@ -363,12 +434,21 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             }
             catch (Exception e) {
                 handleException(inMesg, filter.filterName(), e);
+            } finally {
+                PerfMark.stopTask("FilterChainResumer.onError", filter.perfmarkTag());
             }
         }
 
         @Override
         public void onCompleted() {
-            decrementConcurrency();
+            PerfMark.startTask("FilterChainResumer.onCompleted", filter.perfmarkTag());
+            try {
+                PerfMark.linkIn(schedulerToNettyLinks.get(2));
+                PerfMark.event("FilterChainResumer.resumeCompleted", PerfMark.createTag(inMesg.getContext().getUUID()));
+                decrementConcurrency();
+            } finally {
+                PerfMark.stopTask("FilterChainResumer.onCompleted", filter.perfmarkTag());
+            }
         }
     }
 
