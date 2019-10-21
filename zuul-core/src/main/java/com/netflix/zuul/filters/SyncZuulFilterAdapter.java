@@ -19,6 +19,8 @@ package com.netflix.zuul.filters;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
+import io.perfmark.PerfMark;
+import io.perfmark.Tag;
 import rx.Observable;
 
 import static com.netflix.zuul.filters.FilterSyncType.SYNC;
@@ -40,6 +42,16 @@ import static com.netflix.zuul.filters.FilterType.ENDPOINT;
  * Created by saroskar on 6/8/17.
  */
 public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends ZuulMessage> implements SyncZuulFilter<I, O> {
+
+    private final Tag tag = PerfMark.createTag(getClass().getSimpleName() + "." + filterType());
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final Tag perfmarkTag() {
+        return tag;
+    }
 
     @Override
     public boolean isDisabled() {

@@ -153,11 +153,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -314,6 +314,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -331,11 +335,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -496,6 +500,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -513,11 +521,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -695,11 +703,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -860,6 +868,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -877,11 +889,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1059,11 +1071,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1224,6 +1236,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -1241,11 +1257,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1427,11 +1443,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1596,6 +1612,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -1613,11 +1633,11 @@
             "requested": "3.4"
         },
         "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.63",
+            "locked": "1.64",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
