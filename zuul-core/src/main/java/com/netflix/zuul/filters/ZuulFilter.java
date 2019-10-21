@@ -107,7 +107,7 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      * @return
      */
     default Tag perfmarkTag() {
-        return PerfMark.createTag();
+        return PerfMark.createTag(filterName());
     }
 
 }

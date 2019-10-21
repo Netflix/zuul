@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
     private final String baseName;
-    private final Tag tag;
     private final AtomicInteger concurrentCount;
     private final Counter concurrencyRejections;
 
@@ -58,7 +57,6 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     protected BaseFilter() {
         baseName = getClass().getSimpleName() + "." + filterType();
-        tag = PerfMark.createTag(baseName);
         concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
         concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
         filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
@@ -67,7 +65,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     @Override
     public String filterName() {
-        return this.getClass().getName();
+        return getClass().getName();
     }
 
     @Override
@@ -145,13 +143,5 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public void decrementConcurrency() {
         concurrentCount.decrementAndGet();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Tag perfmarkTag() {
-        return tag;
     }
 }
