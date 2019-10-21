@@ -43,16 +43,6 @@ import static com.netflix.zuul.filters.FilterType.ENDPOINT;
  */
 public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends ZuulMessage> implements SyncZuulFilter<I, O> {
 
-    private final Tag tag = PerfMark.createTag(getClass().getSimpleName() + "." + filterType());
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final Tag perfmarkTag() {
-        return tag;
-    }
-
     @Override
     public boolean isDisabled() {
         return false;
