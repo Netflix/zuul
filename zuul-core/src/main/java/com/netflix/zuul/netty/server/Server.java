@@ -73,7 +73,7 @@ public class Server
 {
     /**
      * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
-     * using the {@link #forceNio} property.
+     * using the {@link #FORCE_NIO} property.
      */
     @Deprecated
     public static final DynamicBooleanProperty USE_EPOLL =
@@ -83,7 +83,7 @@ public class Server
      * If {@code true}, The Zuul server will avoid autodetecting the transport type and use the default Java NIO
      * transport.
      */
-    static final DynamicBooleanProperty forceNio =
+    static final DynamicBooleanProperty FORCE_NIO =
             new DynamicBooleanProperty("zuul.server.netty.socket.force_nio", false);
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
@@ -129,7 +129,7 @@ public class Server
 
     public void stop()
     {
-        LOG.debug("Shutting down Zuul.");
+        LOG.info("Shutting down Zuul.");
         serverGroup.stop();
 
         // remove the shutdown hook that was added when the proxy was started, since it has now been stopped
@@ -139,7 +139,7 @@ public class Server
             // This can happen if the VM is already shutting down
             LOG.debug("Failed to remove shutdown hook", e);
         }
-        LOG.debug("Completed zuul shutdown.");
+        LOG.info("Completed zuul shutdown.");
     }
 
     public void start(boolean sync)
@@ -200,7 +200,7 @@ public class Server
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
         channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
 
-        LOG.debug("Proxy listening with " + serverGroup.channelType);
+        LOG.info("Proxy listening with " + serverGroup.channelType);
         serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
@@ -215,7 +215,7 @@ public class Server
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
-        LOG.debug("Binding to : " + listenAddress);
+        LOG.info("Binding to : " + listenAddress);
 
         // Flag status as UP just before binding to the port.
         serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
@@ -278,10 +278,10 @@ public class Server
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
             Map<ChannelOption, Object> extraOptions = new HashMap<>();
-            boolean useNio = forceNio.get();
+            boolean useNio = FORCE_NIO.get();
             if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
-                extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, Integer.valueOf(-1));
+                extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
                 clientToProxyBossPool = new EpollEventLoopGroup(
                         acceptorThreads,
                         new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
@@ -378,6 +378,9 @@ public class Server
         } catch (NoClassDefFoundError e) {
             LOG.debug("Epoll is unavailable, skipping", e);
             return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("Epoll is unavailable, skipping", e);
+            return false;
         }
         if (!available) {
             LOG.debug("Epoll is unavailable, skipping", Epoll.unavailabilityCause());
@@ -391,6 +394,9 @@ public class Server
             available = KQueue.isAvailable();
         } catch (NoClassDefFoundError e) {
             LOG.debug("KQueue is unavailable, skipping", e);
+            return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("KQueue is unavailable, skipping", e);
             return false;
         }
         if (!available) {
