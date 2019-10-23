@@ -136,6 +136,14 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.netty:netty-transport-native-kqueue": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -311,6 +319,10 @@
             "requested": "4.1.42.Final"
         },
         "io.netty:netty-transport-native-epoll": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.netty:netty-transport-native-kqueue": {
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
@@ -500,6 +512,10 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.netty:netty-transport-native-kqueue": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
         "io.perfmark:perfmark-api": {
             "locked": "0.17.0",
             "requested": "0.17.0"
@@ -686,6 +702,14 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.netty:netty-transport-native-kqueue": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -865,6 +889,10 @@
             "requested": "4.1.42.Final"
         },
         "io.netty:netty-transport-native-epoll": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.netty:netty-transport-native-kqueue": {
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
@@ -1054,6 +1082,14 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.netty:netty-transport-native-kqueue": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -1233,6 +1269,10 @@
             "requested": "4.1.42.Final"
         },
         "io.netty:netty-transport-native-epoll": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.netty:netty-transport-native-kqueue": {
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
@@ -1426,6 +1466,14 @@
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
+        "io.netty:netty-transport-native-kqueue": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.perfmark:perfmark-api": {
+            "locked": "0.17.0",
+            "requested": "0.17.0"
+        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -1609,6 +1657,10 @@
             "requested": "4.1.42.Final"
         },
         "io.netty:netty-transport-native-epoll": {
+            "locked": "4.1.42.Final",
+            "requested": "4.1.42.Final"
+        },
+        "io.netty:netty-transport-native-kqueue": {
             "locked": "4.1.42.Final",
             "requested": "4.1.42.Final"
         },
