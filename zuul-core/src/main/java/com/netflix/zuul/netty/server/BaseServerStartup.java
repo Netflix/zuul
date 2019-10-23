@@ -45,7 +45,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.DomainNameMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -267,26 +269,47 @@ public abstract class BaseServerStartup
                 chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
-    protected void logPortConfigured(int port)
-    {
-        logPortConfigured(port, (ServerSslConfig) null);
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port) {
+        logAddrConfigured(new InetSocketAddress(port));
     }
 
-    protected void logPortConfigured(int port, ServerSslConfig serverSslConfig)
-    {
-        String msg = "Configured port: " + port;
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port, ServerSslConfig serverSslConfig) {
+        logAddrConfigured(new InetSocketAddress(port), serverSslConfig);
+    }
+
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress, DomainNameMapping)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping) {
+        logAddrConfigured(new InetSocketAddress(port), sniMapping);
+    }
+
+    protected final void logAddrConfigured(SocketAddress socketAddress) {
+        LOG.info("Configured address: {}", socketAddress);
+    }
+
+    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable ServerSslConfig serverSslConfig) {
+        String msg = "Configured address: " + socketAddress;
         if (serverSslConfig != null) {
-            msg = msg + " with SSL config: " + serverSslConfig.toString();
+            msg = msg + " with SSL config: " + serverSslConfig;
         }
-        LOG.warn(msg);
+        LOG.info(msg);
     }
 
-    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping)
-    {
-        String msg = "Configured port: " + port;
+    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable DomainNameMapping<?> sniMapping) {
+        String msg = "Configured address: " + socketAddress;
         if (sniMapping != null) {
-            msg = msg + " with SNI config: " + sniMapping.asMap().toString();
+            msg = msg + " with SNI config: " + sniMapping.asMap();
         }
-        LOG.warn(msg);
+        LOG.info(msg);
     }
 }
