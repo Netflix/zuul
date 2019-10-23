@@ -24,10 +24,19 @@ import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.DefaultSelectStrategyFactory;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
@@ -37,8 +46,11 @@ import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +58,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -57,67 +71,94 @@ import java.util.concurrent.TimeUnit;
  */
 public class Server
 {
-    public static final DynamicBooleanProperty USE_EPOLL = new DynamicBooleanProperty("zuul.server.netty.socket.epoll", false);
+    /**
+     * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
+     * using the {@link #FORCE_NIO} property.
+     */
+    @Deprecated
+    public static final DynamicBooleanProperty USE_EPOLL =
+            new DynamicBooleanProperty("zuul.server.netty.socket.epoll", false);
+
+    /**
+     * If {@code true}, The Zuul server will avoid autodetecting the transport type and use the default Java NIO
+     * transport.
+     */
+    private static final DynamicBooleanProperty FORCE_NIO =
+            new DynamicBooleanProperty("zuul.server.netty.socket.force_nio", false);
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
-    private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS = new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
+    private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS =
+            new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
 
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
-    private final Thread jvmShutdownHook;
+    private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
-
-    private final Map<Integer, ChannelInitializer> portsToChannelInitializers;
+    private final Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
     private final EventLoopConfig eventLoopConfig;
 
-    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
+    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
+                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
     {
-        this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics, new DefaultEventLoopConfig());
+        this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics,
+                new DefaultEventLoopConfig());
     }
 
-    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics, EventLoopConfig eventLoopConfig)
-    {
-        this.portsToChannelInitializers = portsToChannelInitializers;
-        this.serverStatusManager = serverStatusManager;
-        this.clientConnectionsShutdown = clientConnectionsShutdown;
-        this.eventLoopConfig = eventLoopConfig;
-        this.eventLoopGroupMetrics = eventLoopGroupMetrics;
-        this.jvmShutdownHook = new Thread(() -> stop(), "Zuul-JVM-shutdown-hook");
+    @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
+    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
+                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
+                  EventLoopConfig eventLoopConfig) {
+        this(serverStatusManager,
+                convertPortMap((Map<Integer, ChannelInitializer<?>>) (Map) portsToChannelInitializers),
+                clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
+    }
+
+    Server(ServerStatusManager serverStatusManager,
+           Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
+           ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
+           EventLoopConfig eventLoopConfig) {
+        this.addressesToInitializers = Collections.unmodifiableMap(new HashMap<>(addressesToInitializers));
+        this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
+        this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
+        this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
     }
 
     public void stop()
     {
-        LOG.warn("Shutting down Zuul.");
+        LOG.info("Shutting down Zuul.");
         serverGroup.stop();
 
         // remove the shutdown hook that was added when the proxy was started, since it has now been stopped
         try {
             Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
         } catch (IllegalStateException e) {
-            // ignore -- IllegalStateException means the VM is already shutting down
+            // This can happen if the VM is already shutting down
+            LOG.debug("Failed to remove shutdown hook", e);
         }
-
-        LOG.warn("Completed zuul shutdown.");
+        LOG.info("Completed zuul shutdown.");
     }
 
     public void start(boolean sync)
     {
-        serverGroup = new ServerGroup("Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
+        serverGroup = new ServerGroup(
+                "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
         try {
-            List<ChannelFuture> allBindFutures = new ArrayList<>();
+            List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
             // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<Integer, ChannelInitializer> entry : portsToChannelInitializers.entrySet())
+            for (Map.Entry<? extends SocketAddress, ? extends ChannelInitializer<?>> entry
+                    : addressesToInitializers.entrySet())
             {
                 allBindFutures.add(setupServerBootstrap(entry.getKey(), entry.getValue()));
             }
 
             // Once all server bootstraps are successfully initialized, then bind to each port.
-            for (ChannelFuture f: allBindFutures) {
+            for (ChannelFuture f : allBindFutures) {
                 // Wait until the server socket is closed.
                 ChannelFuture cf = f.channel().closeFuture();
                 if (sync) {
@@ -147,47 +188,40 @@ public class Server
         clientConnectionsShutdown.gracefullyShutdownClientChannels();
     }
 
-    private ChannelFuture setupServerBootstrap(int port, ChannelInitializer channelInitializer)
-            throws InterruptedException
-    {
-        ServerBootstrap serverBootstrap = new ServerBootstrap().group(
-                serverGroup.clientToProxyBossPool,
-                serverGroup.clientToProxyWorkerPool);
+    private ChannelFuture setupServerBootstrap(
+            SocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
+        ServerBootstrap serverBootstrap =
+                new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
         // Choose socket options.
         Map<ChannelOption, Object> channelOptions = new HashMap<>();
         channelOptions.put(ChannelOption.SO_BACKLOG, 128);
-        //channelOptions.put(ChannelOption.SO_TIMEOUT, SERVER_SOCKET_TIMEOUT.get());
         channelOptions.put(ChannelOption.SO_LINGER, -1);
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
         channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
 
-        // Choose EPoll or NIO.
-        if (USE_EPOLL.get()) {
-            LOG.warn("Proxy listening with TCP transport using EPOLL");
-            serverBootstrap = serverBootstrap.channel(EpollServerSocketChannel.class);
-            channelOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, Integer.valueOf(-1));
-        }
-        else {
-            LOG.warn("Proxy listening with TCP transport using NIO");
-            serverBootstrap = serverBootstrap.channel(NioServerSocketChannel.class);
-        }
+        LOG.info("Proxy listening with " + serverGroup.channelType);
+        serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
         for (Map.Entry<ChannelOption, Object> optionEntry : channelOptions.entrySet()) {
+            serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
+        }
+        // Apply transport specific socket options.
+        for (Map.Entry<ChannelOption, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
             serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
         }
 
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
-        LOG.info("Binding to port: " + port);
+        LOG.info("Binding to : " + listenAddress);
 
         // Flag status as UP just before binding to the port.
         serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
 
         // Bind and start to accept incoming connections.
-        return serverBootstrap.bind(port).sync();
+        return serverBootstrap.bind(listenAddress).sync();
     }
 
     /**
@@ -200,8 +234,7 @@ public class Server
 
     }
 
-
-    private class ServerGroup
+    private final class ServerGroup
     {
         /** A name for this ServerGroup to use in naming threads. */
         private final String name;
@@ -211,6 +244,8 @@ public class Server
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
+        private Class<? extends ServerChannel> channelType;
+        private Map<ChannelOption, ?> transportChannelOptions;
 
         private volatile boolean stopped = false;
 
@@ -242,7 +277,11 @@ public class Server
             ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
-            if (USE_EPOLL.get()) {
+            Map<ChannelOption, Object> extraOptions = new HashMap<>();
+            boolean useNio = FORCE_NIO.get();
+            if (!useNio && epollIsAvailable()) {
+                channelType = EpollServerSocketChannel.class;
+                extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
                 clientToProxyBossPool = new EpollEventLoopGroup(
                         acceptorThreads,
                         new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
@@ -250,22 +289,34 @@ public class Server
                         workerThreads,
                         workerExecutor,
                         chooserFactory,
-                        DefaultSelectStrategyFactory.INSTANCE
-                );
-            }
-            else {
-                clientToProxyBossPool = new NioEventLoopGroup(
+                        DefaultSelectStrategyFactory.INSTANCE);
+            } else if (!useNio && kqueueIsAvailable()) {
+                channelType = KQueueServerSocketChannel.class;
+                clientToProxyBossPool = new KQueueEventLoopGroup(
                         acceptorThreads,
                         new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new NioEventLoopGroup(
+                clientToProxyWorkerPool = new KQueueEventLoopGroup(
+                        workerThreads,
+                        workerExecutor,
+                        chooserFactory,
+                        DefaultSelectStrategyFactory.INSTANCE);
+            } else {
+                channelType = NioServerSocketChannel.class;
+                NioEventLoopGroup elg = new NioEventLoopGroup(
                         workerThreads,
                         workerExecutor,
                         chooserFactory,
                         SelectorProvider.provider(),
                         DefaultSelectStrategyFactory.INSTANCE
                 );
-                ((NioEventLoopGroup) clientToProxyWorkerPool).setIoRatio(90);
+                elg.setIoRatio(90);
+                clientToProxyBossPool = new NioEventLoopGroup(
+                        acceptorThreads,
+                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                clientToProxyWorkerPool = elg;
             }
+
+            transportChannelOptions = Collections.unmodifiableMap(extraOptions);
 
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
         }
@@ -308,5 +359,49 @@ public class Server
             stopped = true;
             LOG.warn("Done shutting down");
         }
+    }
+
+    private static Map<SocketAddress, ChannelInitializer<?>> convertPortMap(
+            Map<Integer, ChannelInitializer<?>> portsToChannelInitializers) {
+        Map<SocketAddress, ChannelInitializer<?>> addrsToInitializers =
+                new HashMap<>(portsToChannelInitializers.size());
+        for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()){
+            addrsToInitializers.put(new InetSocketAddress(portToInitializer.getKey()), portToInitializer.getValue());
+        }
+        return Collections.unmodifiableMap(addrsToInitializers);
+    }
+
+    private static boolean epollIsAvailable() {
+        boolean available;
+        try {
+            available = Epoll.isAvailable();
+        } catch (NoClassDefFoundError e) {
+            LOG.debug("Epoll is unavailable, skipping", e);
+            return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("Epoll is unavailable, skipping", e);
+            return false;
+        }
+        if (!available) {
+            LOG.debug("Epoll is unavailable, skipping", Epoll.unavailabilityCause());
+        }
+        return available;
+    }
+
+    private static boolean kqueueIsAvailable() {
+        boolean available;
+        try {
+            available = KQueue.isAvailable();
+        } catch (NoClassDefFoundError e) {
+            LOG.debug("KQueue is unavailable, skipping", e);
+            return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("KQueue is unavailable, skipping", e);
+            return false;
+        }
+        if (!available) {
+            LOG.debug("KQueue is unavailable, skipping", KQueue.unavailabilityCause());
+        }
+        return available;
     }
 }
