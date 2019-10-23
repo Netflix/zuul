@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.errorprone.annotations.ForOverride;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.config.ChainedDynamicProperty;
 import com.netflix.config.DynamicBooleanProperty;
@@ -44,6 +45,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.DomainNameMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +69,7 @@ public abstract class BaseServerStartup
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier usageNotifier;
 
-    private Map<Integer, ChannelInitializer> portsToChannelInitializers;
+    private Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
     private ClientConnectionsShutdown clientConnectionsShutdown;
     private Server server;
 
@@ -105,14 +107,34 @@ public abstract class BaseServerStartup
         clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
                 GlobalEventExecutor.INSTANCE, discoveryClient);
 
-        portsToChannelInitializers = choosePortsAndChannels(clientChannels);
+        addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
 
         directMemoryMonitor.init();
 
-        server = new Server(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics);
+        server = new Server(
+                serverStatusManager,
+                addrsToChannelInitializers,
+                clientConnectionsShutdown,
+                eventLoopGroupMetrics,
+                new DefaultEventLoopConfig());
     }
 
-    protected abstract Map<Integer, ChannelInitializer> choosePortsAndChannels(ChannelGroup clientChannels);
+    /**
+     * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
+     */
+    @Deprecated
+    protected Map<Integer, ChannelInitializer> choosePortsAndChannels(ChannelGroup clientChannels) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
+
+    @ForOverride
+    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+        @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
+        Map<Integer, ChannelInitializer<?>> portMap =
+                (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
+        return Server.convertPortMap(portMap);
+    }
+
 
     protected ChannelConfig defaultChannelDependencies(String portName)
     {

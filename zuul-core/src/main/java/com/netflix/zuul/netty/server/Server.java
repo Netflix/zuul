@@ -43,6 +43,7 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
+import java.util.LinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +101,11 @@ public class Server
     private final Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
     private final EventLoopConfig eventLoopConfig;
 
+    /**
+     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * instead.
+     */
+    @Deprecated
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
     {
@@ -107,7 +113,12 @@ public class Server
                 new DefaultEventLoopConfig());
     }
 
+    /**
+     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * instead.
+     */
     @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
+    @Deprecated
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
                   EventLoopConfig eventLoopConfig) {
@@ -116,11 +127,11 @@ public class Server
                 clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
     }
 
-    Server(ServerStatusManager serverStatusManager,
+    protected Server(ServerStatusManager serverStatusManager,
            Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
            EventLoopConfig eventLoopConfig) {
-        this.addressesToInitializers = Collections.unmodifiableMap(new HashMap<>(addressesToInitializers));
+        this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
         this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
@@ -361,10 +372,10 @@ public class Server
         }
     }
 
-    private static Map<SocketAddress, ChannelInitializer<?>> convertPortMap(
+    static Map<SocketAddress, ChannelInitializer<?>> convertPortMap(
             Map<Integer, ChannelInitializer<?>> portsToChannelInitializers) {
         Map<SocketAddress, ChannelInitializer<?>> addrsToInitializers =
-                new HashMap<>(portsToChannelInitializers.size());
+                new LinkedHashMap<>(portsToChannelInitializers.size());
         for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()){
             addrsToInitializers.put(new InetSocketAddress(portToInitializer.getKey()), portToInitializer.getValue());
         }
