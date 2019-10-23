@@ -83,7 +83,7 @@ public class Server
      * If {@code true}, The Zuul server will avoid autodetecting the transport type and use the default Java NIO
      * transport.
      */
-    static final DynamicBooleanProperty FORCE_NIO =
+    private static final DynamicBooleanProperty FORCE_NIO =
             new DynamicBooleanProperty("zuul.server.netty.socket.force_nio", false);
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
@@ -93,7 +93,7 @@ public class Server
 
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
-    private final Thread jvmShutdownHook = new Thread(() -> stop(), "Zuul-JVM-shutdown-hook");
+    private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
