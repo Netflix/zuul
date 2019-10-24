@@ -30,7 +30,6 @@ public class BaseZuulChannelInitializerTest {
 
     @Test
     public void tcpHandlersAdded() {
-        int port = 1234;
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
@@ -40,7 +39,7 @@ public class BaseZuulChannelInitializerTest {
                 ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         BaseZuulChannelInitializer init =
-                new BaseZuulChannelInitializer(port, channelConfig, channelDependencies, channelGroup) {
+                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
             @Override
             protected void initChannel(Channel ch) {}
@@ -59,7 +58,6 @@ public class BaseZuulChannelInitializerTest {
 
     @Test
     public void tcpHandlersAdded_withProxyProtocol() {
-        int port = 1234;
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, true);
         ChannelConfig channelDependencies = new ChannelConfig();
@@ -70,7 +68,7 @@ public class BaseZuulChannelInitializerTest {
                 ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         BaseZuulChannelInitializer init =
-                new BaseZuulChannelInitializer(port, channelConfig, channelDependencies, channelGroup) {
+                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
                     protected void initChannel(Channel ch) {}

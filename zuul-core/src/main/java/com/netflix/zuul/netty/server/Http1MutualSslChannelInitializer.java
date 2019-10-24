@@ -38,13 +38,24 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
 
+    /**
+     * Use {@link #Http1MutualSslChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
     public Http1MutualSslChannelInitializer(
-                                            int port,
-                                            ChannelConfig channelConfig,
-                                            ChannelConfig channelDependencies,
-                                            ChannelGroup channels)
-    {
-        super(port, channelConfig, channelDependencies, channels);
+            int port,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        this(String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
+
+    public Http1MutualSslChannelInitializer(
+            String metricSuffix,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        super(metricSuffix, channelConfig, channelDependencies, channels);
 
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
@@ -60,7 +71,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
         sslContextFactory.enableSessionTickets(sslContext);
 
         // Setup metrics tracking the OpenSSL stats.
-        sslContextFactory.configureOpenSslStatsMetrics(sslContext, Integer.toString(port));
+        sslContextFactory.configureOpenSslStatsMetrics(sslContext, metricSuffix);
     }
 
     @Override

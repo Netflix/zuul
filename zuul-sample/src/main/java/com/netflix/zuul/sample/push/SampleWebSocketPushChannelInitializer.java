@@ -32,12 +32,12 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
     private final PushConnectionRegistry pushConnectionRegistry;
     private final PushAuthHandler pushAuthHandler;
 
-    public SampleWebSocketPushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
-        super(port, channelConfig, channelDependencies, channels);
+    public SampleWebSocketPushChannelInitializer(
+            String metricSuffix, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        super(metricSuffix, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
         pushAuthHandler = new SamplePushAuthHandler(PushProtocol.WEBSOCKET.getPath());
     }
-
 
     @Override
     protected void addPushHandlers(final ChannelPipeline pipeline) {
@@ -47,6 +47,4 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
         pipeline.addLast(new PushRegistrationHandler(pushConnectionRegistry, PushProtocol.WEBSOCKET));
         pipeline.addLast(new SampleWebSocketPushClientProtocolHandler());
     }
-
-
 }
