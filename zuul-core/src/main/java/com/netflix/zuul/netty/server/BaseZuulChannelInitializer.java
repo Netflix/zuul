@@ -70,7 +70,6 @@ import io.netty.util.AttributeKey;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.netflix.zuul.passport.PassportState.*;
@@ -104,7 +103,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
      */
     @Deprecated
     protected final int port;
-    private final String metricSuffix;
     protected final ChannelConfig channelConfig;
     protected final ChannelConfig channelDependencies;
     protected final int idleTimeout;
@@ -171,7 +169,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
         this.port = port;
-        this.metricSuffix = checkNotNull(metricSuffix, "metricSuffix");
+        checkNotNull(metricSuffix, "metricSuffix");
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
