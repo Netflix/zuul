@@ -76,7 +76,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
         SslContextFactory sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
-        sslContext = Http2Configuration.configureSSL(sslContextFactory, port);
+        sslContext = Http2Configuration.configureSSL(sslContextFactory, metricSuffix);
     }
 
     @Override

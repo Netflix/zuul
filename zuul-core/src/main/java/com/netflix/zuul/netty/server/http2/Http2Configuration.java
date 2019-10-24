@@ -31,6 +31,10 @@ public class Http2Configuration {
             new DynamicBooleanProperty("zuul.server.http2.disabled", false);
 
 
+    /**
+     * Use {@link #configureSSL(SslContextFactory, String)} instead.
+     */
+    @Deprecated
     public static SslContext configureSSL(SslContextFactory sslContextFactory, int port) {
         return configureSSL(sslContextFactory, String.valueOf(port));
     }
