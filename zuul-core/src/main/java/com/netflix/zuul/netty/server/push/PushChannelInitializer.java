@@ -15,22 +15,13 @@
  */
 package com.netflix.zuul.netty.server.push;
 
-import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
-import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
-import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
-import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
-import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * Author: Susheel Aroskar
@@ -38,28 +29,34 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class PushChannelInitializer extends BaseZuulChannelInitializer {
 
+    /**
+     * Use {@link #PushChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
+    public PushChannelInitializer(
+            int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        this(String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
 
-    public PushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies,
-                                  ChannelGroup channels) {
-
-        super(port, channelConfig, channelDependencies, channels);
+    protected PushChannelInitializer(
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
     }
 
     @Override
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
-        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpServerCodec(
-                MAX_INITIAL_LINE_LENGTH.get(),
-                MAX_HEADER_SIZE.get(),
-                MAX_CHUNK_SIZE.get(),
-                false
-        ));
+        pipeline.addLast(
+                HTTP_CODEC_HANDLER_NAME,
+                new HttpServerCodec(
+                        MAX_INITIAL_LINE_LENGTH.get(),
+                        MAX_HEADER_SIZE.get(),
+                        MAX_CHUNK_SIZE.get(),
+                        false));
         pipeline.addLast(new HttpObjectAggregator(8192));
     }
 
-
     @Override
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
-//        pipeline.addLast(new AccessLogChannelHandler(accessLogPublisher));
         pipeline.addLast(stripInboundProxyHeadersHandler);
     }
 
@@ -73,7 +70,5 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
         addPushHandlers(pipeline);
     }
 
-
     protected abstract void addPushHandlers(final ChannelPipeline pipeline);
-
 }

@@ -143,11 +143,11 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
      * After calling this method, child classes should not reference {@link #port} any more.
      */
     protected BaseZuulChannelInitializer(
-            String metricSuffix,
+            String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
-        this(-1, metricSuffix, channelConfig, channelDependencies, channels);
+        this(-1, metricId, channelConfig, channelDependencies, channels);
     }
 
     /**
@@ -164,12 +164,12 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     private BaseZuulChannelInitializer(
             int port,
-            String metricSuffix,
+            String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
         this.port = port;
-        checkNotNull(metricSuffix, "metricSuffix");
+        checkNotNull(metricId, "metricId");
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
@@ -180,9 +180,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + metricSuffix);
+        this.channelMetrics = new ServerChannelMetrics("http-" + metricId);
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
-        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricSuffix);
+        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricId);
 
         EventLoopGroupMetrics eventLoopGroupMetrics = channelDependencies.get(ZuulDependencyKeys.eventLoopGroupMetrics);
         PerEventLoopMetricsChannelHandler perEventLoopMetricsHandler = new PerEventLoopMetricsChannelHandler(eventLoopGroupMetrics);

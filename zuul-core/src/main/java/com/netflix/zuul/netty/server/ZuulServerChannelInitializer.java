@@ -28,12 +28,24 @@ import com.netflix.netty.common.channel.config.ChannelConfig;
  */
 public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
 
-    public ZuulServerChannelInitializer(int port,
-                                        ChannelConfig channelConfig,
-                                        ChannelConfig channelDependencies,
-                                        ChannelGroup channels)
-    {
-        super(port, channelConfig, channelDependencies, channels);
+    public ZuulServerChannelInitializer(
+            String metricId,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
+    }
+
+    /**
+     * Use {@link #ZuulServerChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
+    public ZuulServerChannelInitializer(
+            int port,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        this(String.valueOf(port), channelConfig, channelDependencies, channels);
     }
 
     @Override
