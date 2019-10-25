@@ -56,18 +56,10 @@ public class NettyClientConnectionFactory {
     }
 
     public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
-
-        Class socketChannelClass;
-        if (Server.USE_EPOLL.get()) {
-            socketChannelClass = EpollSocketChannel.class;
-        } else {
-            socketChannelClass = NioSocketChannel.class;
-        }
-
         SocketAddress socketAddress = new InetSocketAddress(host, port);
 
         final Bootstrap bootstrap = new Bootstrap()
-                .channel(socketChannelClass)
+                .channel(Server.defaultOutboundChannelType.get())
                 .handler(channelInitializer)
                 .group(eventLoop)
                 .attr(CurrentPassport.CHANNEL_ATTR, passport)

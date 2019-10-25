@@ -24,6 +24,7 @@ import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -34,16 +35,20 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.kqueue.KQueue;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.util.LinkedHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +105,13 @@ public class Server
     private final ServerStatusManager serverStatusManager;
     private final Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
     private final EventLoopConfig eventLoopConfig;
+
+    /**
+     * This is a hack to expose the channel type to the origin channel.  It is NOT API stable and should not be
+     * referenced by non-Zuul code.
+     */
+    @Deprecated
+    public static final AtomicReference<Class<? extends Channel>> defaultOutboundChannelType = new AtomicReference<>();
 
     /**
      * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
@@ -292,6 +304,7 @@ public class Server
             boolean useNio = FORCE_NIO.get();
             if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
+                defaultOutboundChannelType.set(EpollSocketChannel.class);
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
                 clientToProxyBossPool = new EpollEventLoopGroup(
                         acceptorThreads,
@@ -303,6 +316,7 @@ public class Server
                         DefaultSelectStrategyFactory.INSTANCE);
             } else if (!useNio && kqueueIsAvailable()) {
                 channelType = KQueueServerSocketChannel.class;
+                defaultOutboundChannelType.set(KQueueSocketChannel.class);
                 clientToProxyBossPool = new KQueueEventLoopGroup(
                         acceptorThreads,
                         new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
@@ -313,6 +327,7 @@ public class Server
                         DefaultSelectStrategyFactory.INSTANCE);
             } else {
                 channelType = NioServerSocketChannel.class;
+                defaultOutboundChannelType.set(NioSocketChannel.class);
                 NioEventLoopGroup elg = new NioEventLoopGroup(
                         workerThreads,
                         workerExecutor,
