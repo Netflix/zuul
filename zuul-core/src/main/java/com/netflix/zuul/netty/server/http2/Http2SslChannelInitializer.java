@@ -49,7 +49,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
     private final SwallowSomeHttp2ExceptionsHandler swallowSomeHttp2ExceptionsHandler;
-    private final String metricSuffix;
+    private final String metricId;
 
 
     /**
@@ -63,12 +63,12 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         this(String.valueOf(port), channelConfig, channelDependencies, channels);
     }
 
-    public Http2SslChannelInitializer(String metricSuffix,
+    public Http2SslChannelInitializer(String metricId,
                                       ChannelConfig channelConfig,
                                       ChannelConfig channelDependencies,
                                       ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
-        this.metricSuffix = checkNotNull(metricSuffix, "metricSuffix");
+        super(metricId, channelConfig, channelDependencies, channels);
+        this.metricId = checkNotNull(metricId, "metricId");
 
         this.swallowSomeHttp2ExceptionsHandler = new SwallowSomeHttp2ExceptionsHandler(registry);
 
@@ -76,7 +76,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
         SslContextFactory sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
-        sslContext = Http2Configuration.configureSSL(sslContextFactory, metricSuffix);
+        sslContext = Http2Configuration.configureSSL(sslContextFactory, metricId);
     }
 
     @Override
@@ -111,7 +111,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         addSslClientCertChecks(pipeline);
 
         Http2MetricsChannelHandlers http2MetricsChannelHandlers =
-                new Http2MetricsChannelHandlers(registry,"server", "http2-" + metricSuffix);
+                new Http2MetricsChannelHandlers(registry,"server", "http2-" + metricId);
 
         Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
         Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);

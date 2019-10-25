@@ -33,8 +33,8 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
     private final PushAuthHandler pushAuthHandler;
 
     public SampleWebSocketPushChannelInitializer(
-            String metricSuffix, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
         pushAuthHandler = new SamplePushAuthHandler(PushProtocol.WEBSOCKET.getPath());
     }

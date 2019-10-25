@@ -51,11 +51,11 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     public Http1MutualSslChannelInitializer(
-            String metricSuffix,
+            String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
+        super(metricId, channelConfig, channelDependencies, channels);
 
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
@@ -71,7 +71,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
         sslContextFactory.enableSessionTickets(sslContext);
 
         // Setup metrics tracking the OpenSSL stats.
-        sslContextFactory.configureOpenSslStatsMetrics(sslContext, metricSuffix);
+        sslContextFactory.configureOpenSslStatsMetrics(sslContext, metricId);
     }
 
     @Override

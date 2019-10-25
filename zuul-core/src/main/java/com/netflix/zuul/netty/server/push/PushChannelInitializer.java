@@ -39,8 +39,8 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
     }
 
     protected PushChannelInitializer(
-            String metricSuffix, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
     }
 
     @Override

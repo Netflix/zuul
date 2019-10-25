@@ -29,11 +29,11 @@ import com.netflix.netty.common.channel.config.ChannelConfig;
 public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
 
     public ZuulServerChannelInitializer(
-            String metricSuffix,
+            String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
+        super(metricId, channelConfig, channelDependencies, channels);
     }
 
     /**

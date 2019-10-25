@@ -16,11 +16,11 @@ public class SampleSSEPushChannelInitializer extends PushChannelInitializer {
     private final PushAuthHandler pushAuthHandler;
 
     public SampleSSEPushChannelInitializer(
-            String metricSuffix,
+            String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
-        super(metricSuffix, channelConfig, channelDependencies, channels);
+        super(metricId, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
         pushAuthHandler = new SamplePushAuthHandler(PushProtocol.SSE.getPath());
     }
