@@ -85,6 +85,7 @@ public class HttpHeaderNames
     public static final HeaderName ACCESS_CONTROL_ALLOW_METHODS = HEADER_NAME_CACHE.get("Access-Control-Allow-Methods");
     public static final HeaderName ACCESS_CONTROL_REQUEST_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Request-Headers");
     public static final HeaderName ACCESS_CONTROL_EXPOSE_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Expose-Headers");
+    public static final HeaderName ACCESS_CONTROL_MAX_AGE_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Max-Age");
     public static final HeaderName STRICT_TRANSPORT_SECURITY = HEADER_NAME_CACHE.get("Strict-Transport-Security");
     public static final HeaderName LINK = HEADER_NAME_CACHE.get("Link");
 

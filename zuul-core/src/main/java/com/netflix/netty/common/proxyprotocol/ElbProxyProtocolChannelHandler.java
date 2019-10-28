@@ -16,10 +16,9 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
@@ -29,6 +28,8 @@ import io.netty.handler.codec.haproxy.HAProxyTLV;
 import io.netty.util.AttributeKey;
 
 import java.util.List;
+
+import io.netty.util.ReferenceCounted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +80,11 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                 HAProxyMessage hapm = (HAProxyMessage) msg;
                 Channel channel = ctx.channel();
                 channel.attr(ATTR_HAPROXY_MESSAGE).set(hapm);
+                ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> {
+                    if (hapm instanceof ReferenceCounted) {
+                        hapm.release();
+                    }
+                });
                 channel.attr(ATTR_HAPROXY_VERSION).set(hapm.protocolVersion());
                 // Get the real host and port that the client connected to ELB with.
                 String destinationAddress = hapm.destinationAddress();
@@ -95,22 +101,13 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).set(hapm.sourcePort());
                 }
 
-                // PPV2 passes dynamic fields in TLV format which
-                // HAProxyMessage decodes into bytebufs retaining
-                // refCounts..call release to avoid bytebuf leaks
-                List<HAProxyTLV> haProxyTLVList = hapm.tlvs();
-                if (haProxyTLVList != null) {
-                    logger.debug("Decoded PPV2 TLV list count: {}, List: {}", haProxyTLVList.size(), haProxyTLVList);
-                    for (int i = 0; i < haProxyTLVList.size(); i++) {
-                        HAProxyTLV haProxyTLV = haProxyTLVList.get(i);
-                        haProxyTLV.release();
-                    }
-                }
-
                 // TODO - fire an additional event to notify interested parties that we now know the IP?
 
                 // Remove ourselves (this handler) from the channel now, as no more work to do.
                 ctx.pipeline().remove(this);
+
+                // Do not continue propagating the message.
+                return;
             }
         }
 

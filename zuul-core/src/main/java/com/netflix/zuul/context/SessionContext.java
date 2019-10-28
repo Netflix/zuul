@@ -26,15 +26,10 @@ import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.NotSerializableException;
 import java.net.URL;
 import java.util.*;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
@@ -315,8 +310,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         return (StringBuilder) get(KEY_FILTER_EXECS);
     }
 
-
-
     public boolean shouldSendErrorResponse() {
         return this.shouldSendErrorResponse;
     }
@@ -335,6 +328,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public boolean errorResponseSent() {
         return this.errorResponseSent;
     }
+
     public void setErrorResponseSent(boolean should) {
         this.errorResponseSent = should;
     }
@@ -350,6 +344,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         return brownoutMode;
     }
+
     public void setInBrownoutMode()
     {
         this.brownoutMode = true;
@@ -362,6 +357,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public void stopFilterProcessing() {
         shouldStopFilterProcessing = true;
     }
+
     public boolean shouldStopFilterProcessing() {
         return shouldStopFilterProcessing;
     }
@@ -389,6 +385,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         put(KEY_ENDPOINT, endpoint);
     }
+
     public String getEndpoint()
     {
         return (String) get(KEY_ENDPOINT);
@@ -415,6 +412,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     {
         put("_originReportedDuration", duration);
     }
+
     public int getOriginReportedDuration()
     {
         Object value = get("_originReportedDuration");
@@ -430,18 +428,5 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     public void cancel() {
         this.cancelled = true;
-    }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Test
-        public void testBoolean()
-        {
-            SessionContext context = new SessionContext();
-            assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
-            assertEquals(context.getBoolean("boolean_test", true), true);
-
-        }
     }
 }

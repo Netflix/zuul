@@ -31,7 +31,15 @@ public class Http2Configuration {
             new DynamicBooleanProperty("zuul.server.http2.disabled", false);
 
 
+    /**
+     * Use {@link #configureSSL(SslContextFactory, String)} instead.
+     */
+    @Deprecated
     public static SslContext configureSSL(SslContextFactory sslContextFactory, int port) {
+        return configureSSL(sslContextFactory, String.valueOf(port));
+    }
+
+    public static SslContext configureSSL(SslContextFactory sslContextFactory, String metricId) {
         SslContextBuilder builder = sslContextFactory.createBuilderForServer();
 
         String[] supportedProtocol;
@@ -65,7 +73,7 @@ public class Http2Configuration {
         sslContextFactory.enableSessionTickets(sslContext);
 
         // Setup metrics tracking the OpenSSL stats.
-        sslContextFactory.configureOpenSslStatsMetrics(sslContext, Integer.toString(port));
+        sslContextFactory.configureOpenSslStatsMetrics(sslContext, metricId);
 
         return sslContext;
     }

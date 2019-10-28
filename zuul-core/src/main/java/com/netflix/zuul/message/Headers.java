@@ -15,16 +15,11 @@
  */
 package com.netflix.zuul.message;
 
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.netflix.zuul.message.http.HttpHeaderNames;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +28,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.netflix.zuul.util.HttpUtils.stripMaliciousHeaderChars;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are
@@ -277,63 +270,5 @@ public class Headers implements Cloneable
     public String toString()
     {
         return delegate.toString();
-    }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Test
-        public void testCaseInsensitiveKeys_Set()
-        {
-            Headers headers = new Headers();
-            headers.set("Content-Length", "5");
-            headers.set("content-length", "10");
-
-            assertEquals("10", headers.getFirst("Content-Length"));
-            assertEquals("10", headers.getFirst("content-length"));
-            assertEquals(1, headers.get("content-length").size());
-        }
-
-        @Test
-        public void testCaseInsensitiveKeys_Add()
-        {
-            Headers headers = new Headers();
-            headers.add("Content-Length", "5");
-            headers.add("content-length", "10");
-
-            List<String> values = headers.get("content-length");
-            assertTrue(values.contains("10"));
-            assertTrue(values.contains("5"));
-            assertEquals(2, values.size());
-        }
-
-        @Test
-        public void testCaseInsensitiveKeys_SetIfAbsent()
-        {
-            Headers headers = new Headers();
-            headers.set("Content-Length", "5");
-            headers.setIfAbsent("content-length", "10");
-
-            List<String> values = headers.get("content-length");
-            assertEquals(1, values.size());
-            assertEquals("5", values.get(0));
-        }
-
-        @Test
-        public void testCaseInsensitiveKeys_PutAll()
-        {
-            Headers headers = new Headers();
-            headers.add("Content-Length", "5");
-            headers.add("content-length", "10");
-
-            Headers headers2 = new Headers();
-            headers2.putAll(headers);
-
-            List<String> values = headers2.get("content-length");
-            assertTrue(values.contains("10"));
-            assertTrue(values.contains("5"));
-            assertEquals(2, values.size());
-        }
     }
 }

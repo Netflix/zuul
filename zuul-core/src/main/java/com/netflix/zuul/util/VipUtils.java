@@ -16,10 +16,6 @@
 
 package com.netflix.zuul.util;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
 public class VipUtils
 {
     public static String getVIPPrefix(String vipAddress)
@@ -32,29 +28,5 @@ public class VipUtils
     {
         String vipPrefix = getVIPPrefix(vipAddress);
         return vipPrefix.split("-")[0];
-    }
-
-    public static class UnitTest
-    {
-        @Test(expected = NullPointerException.class)
-        public void testGetVIPPrefix()
-        {
-            assertEquals("api-test", VipUtils.getVIPPrefix("api-test.netflix.net:7001"));
-            assertEquals("api-test", VipUtils.getVIPPrefix("api-test.netflix.net"));
-            assertEquals("api-test", VipUtils.getVIPPrefix("api-test:7001"));
-            assertEquals("api-test", VipUtils.getVIPPrefix("api-test"));
-            assertEquals("", VipUtils.getVIPPrefix(""));
-            VipUtils.getVIPPrefix(null);
-        }
-
-        @Test(expected = NullPointerException.class)
-        public void testExtractAppNameFromVIP()
-        {
-            assertEquals("api", VipUtils.extractAppNameFromVIP("api-test.netflix.net:7001"));
-            assertEquals("api", VipUtils.extractAppNameFromVIP("api-test-blah.netflix.net:7001"));
-            assertEquals("api", VipUtils.extractAppNameFromVIP("api"));
-            assertEquals("", VipUtils.extractAppNameFromVIP(""));
-            VipUtils.extractAppNameFromVIP(null);
-        }
     }
 }

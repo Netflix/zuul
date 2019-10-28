@@ -18,7 +18,6 @@ package com.netflix.zuul.netty.server;
 
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
-import com.netflix.netty.common.ConnectionCloseChannelAttributes;
 import com.netflix.netty.common.Http1ConnectionCloseHandler;
 import com.netflix.netty.common.Http1ConnectionExpiryHandler;
 import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
@@ -72,6 +71,7 @@ import io.netty.util.AttributeKey;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.netflix.zuul.passport.PassportState.*;
 
 /**
@@ -90,6 +90,18 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     public static final CachedDynamicIntProperty MAX_HEADER_SIZE = new CachedDynamicIntProperty("server.http.decoder.maxHeaderSize", 32768);
     public static final CachedDynamicIntProperty MAX_CHUNK_SIZE = new CachedDynamicIntProperty("server.http.decoder.maxChunkSize", 32768);
 
+    /**
+     * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
+     * may differ from the actual listening port.  For example:
+     *
+     * <ul>
+     *     <li>When binding the server to port `0`, the actual port will be different from the one provided here.
+     *     <li>If there is no port (such as in a LocalSocket, or DomainSocket), the port number may be `-1`.
+     * </ul>
+     *
+     * <p>Instead, subclasses should read the local address on channel initialization, and decide to take action then.
+     */
+    @Deprecated
     protected final int port;
     protected final ChannelConfig channelConfig;
     protected final ChannelConfig channelDependencies;
@@ -125,16 +137,39 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final SourceAddressChannelHandler sourceAddressChannelHandler;
 
     /** A collection of all the active channels that we can use to things like graceful shutdown */
-    protected final ChannelGroup channels; 
+    protected final ChannelGroup channels;
 
+    /**
+     * After calling this method, child classes should not reference {@link #port} any more.
+     */
+    protected BaseZuulChannelInitializer(
+            String metricSuffix,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        this(-1, metricSuffix, channelConfig, channelDependencies, channels);
+    }
 
+    /**
+     * Call {@link #BaseZuulChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
     protected BaseZuulChannelInitializer(
             int port,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
-            ChannelGroup channels)
-    {
+            ChannelGroup channels) {
+        this(port, String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
+
+    private BaseZuulChannelInitializer(
+            int port,
+            String metricSuffix,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
         this.port = port;
+        checkNotNull(metricSuffix, "metricSuffix");
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
@@ -145,9 +180,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + port);
+        this.channelMetrics = new ServerChannelMetrics("http-" + metricSuffix);
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
-        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + port);
+        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricSuffix);
 
         EventLoopGroupMetrics eventLoopGroupMetrics = channelDependencies.get(ZuulDependencyKeys.eventLoopGroupMetrics);
         PerEventLoopMetricsChannelHandler perEventLoopMetricsHandler = new PerEventLoopMetricsChannelHandler(eventLoopGroupMetrics);
@@ -331,5 +366,4 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         filters[filters.length -1] = stop;
         return filters;
     }
-
 }
