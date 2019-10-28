@@ -1,7 +1,6 @@
 language: java
 jdk:
 - openjdk8
-sudo: false
 install: "./installViaTravis.sh"
 script: "./buildViaTravis.sh"
 cache:
