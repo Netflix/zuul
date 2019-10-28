@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.server.ssl;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.passport.CurrentPassport;
@@ -23,12 +26,14 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.SniCompletionEvent;
 import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,10 +58,16 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
 
-    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary)
+    public SslHandshakeInfoHandler(@Nullable Registry spectatorRegistry, boolean isSSlFromIntermediary)
     {
-        this.spectatorRegistry = spectatorRegistry;
+        this.spectatorRegistry = checkNotNull(spectatorRegistry);
         this.isSSlFromIntermediary = isSSlFromIntermediary;
+    }
+
+    @VisibleForTesting
+    SslHandshakeInfoHandler() {
+        spectatorRegistry = null;
+        isSSlFromIntermediary = false;
     }
 
     @Override
@@ -69,7 +80,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
 
                     CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_SSL_HANDSHAKE_COMPLETE);
 
-                    SslHandler sslhandler = (SslHandler) ctx.channel().pipeline().get("ssl");
+                    SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
                     SSLSession session = sslhandler.engine().getSession();
 
                     ClientAuth clientAuth = whichClientAuthEnum(sslhandler);
@@ -119,6 +130,13 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
                                 + ", client_ip = " + String.valueOf(clientIP)
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     }
+                    else if (cause instanceof SSLException
+                            && cause.getMessage().contains("failure when writing TLS control frames")) {
+                        // This can happen if the ClientHello is sent followed  by a RST packet, before we can respond.
+                        LOG.info("Client terminated handshake early."
+                                + ", client_ip = " + clientIP
+                                + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    }
                     else {
                         String msg = "Unsuccessful SSL Handshake: " + String.valueOf(sslEvent)
                                 + ", client_ip = " + String.valueOf(clientIP)
@@ -163,6 +181,18 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
         else if (evt instanceof SslCloseCompletionEvent) {
             // TODO - increment a separate metric for this event?
         }
+        else if (evt instanceof SniCompletionEvent) {
+            LOG.debug("SNI Parsing Complete: " + evt.toString());
+
+            SniCompletionEvent sniCompletionEvent = (SniCompletionEvent) evt;
+            if (sniCompletionEvent.isSuccess()) {
+                spectatorRegistry.counter("zuul.sni.parse.success").increment();
+            }
+            else {
+                Throwable cause = sniCompletionEvent.cause();
+                spectatorRegistry.counter("zuul.sni.parse.failure", cause != null ? cause.getMessage() : "UNKNOWN").increment();
+            }
+        }
 
         super.userEventTriggered(ctx, evt);
     }
@@ -182,12 +212,17 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
         return clientAuth;
     }
 
-    private void incrementCounters(SslHandshakeCompletionEvent sslHandshakeCompletionEvent, SslHandshakeInfo handshakeInfo)
-    {
+    private void incrementCounters(
+            SslHandshakeCompletionEvent sslHandshakeCompletionEvent, SslHandshakeInfo handshakeInfo) {
+        if (spectatorRegistry == null) {
+            // May be null for testing.
+            return;
+        }
         try {
             if (sslHandshakeCompletionEvent.isSuccess()) {
                 String proto = handshakeInfo.getProtocol().length() > 0 ? handshakeInfo.getProtocol() : "unknown";
-                String ciphsuite = handshakeInfo.getCipherSuite().length() > 0 ? handshakeInfo.getCipherSuite() : "unknown";
+                String ciphsuite =
+                        handshakeInfo.getCipherSuite().length() > 0 ? handshakeInfo.getCipherSuite() : "unknown";
                 spectatorRegistry.counter("server.ssl.handshake",
                         "success", String.valueOf(sslHandshakeCompletionEvent.isSuccess()),
                         "protocol", String.valueOf(proto),
@@ -203,8 +238,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
                                          )
                         .increment();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error("Error incrememting counters for SSL handshake!", e);
         }
     }

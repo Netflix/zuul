@@ -31,7 +31,6 @@ public class HttpChannelFlags
     public static final Flag IN_BROWNOUT = new Flag("_brownout");
 
     public static final Flag CLOSING = new Flag("_connection_closing");
-    public static final Flag CLOSE_AFTER_RESPONSE = new Flag("_connection_close_after_response");
 
     public static class Flag
     {

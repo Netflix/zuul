@@ -26,6 +26,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
@@ -47,6 +48,7 @@ import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.BasicRequestStat;
+import com.netflix.zuul.netty.connectionpool.ClientTimeoutHandler;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.connectionpool.RequestStat;
 import com.netflix.zuul.netty.filter.FilterRunner;
@@ -84,7 +86,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -105,30 +109,31 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private final ChannelHandlerContext channelCtx;
     private final FilterRunner<HttpResponseMessage, ?> responseFilters;
-    private final AtomicReference<Server> chosenServer;
-    private final AtomicReference<String> chosenHostAddr;
+    protected final AtomicReference<Server> chosenServer;
+    protected final AtomicReference<String> chosenHostAddr;
 
     /* Individual request related state */
-    private final HttpRequestMessage zuulRequest;
-    private final SessionContext context;
-    private final NettyOrigin origin;
-    private final RequestAttempts requestAttempts;
-    private final CurrentPassport passport;
-    private final NettyRequestAttemptFactory requestAttemptFactory;
+    protected final HttpRequestMessage zuulRequest;
+    protected final SessionContext context;
+    protected final NettyOrigin origin;
+    protected final RequestAttempts requestAttempts;
+    protected final CurrentPassport passport;
+    protected final NettyRequestAttemptFactory requestAttemptFactory;
 
-    private MethodBinding<?> methodBinding;
-    private HttpResponseMessage zuulResponse;
-    private boolean startedSendingResponseToClient;
-    private Object originalReadTimeout;
+    protected MethodBinding<?> methodBinding;
+    protected HttpResponseMessage zuulResponse;
+    protected boolean startedSendingResponseToClient;
+    protected Object originalReadTimeout;
 
     /* Individual retry related state */
     private volatile PooledConnection originConn;
     private volatile OriginResponseReceiver originResponseReceiver;
     private volatile int concurrentReqCount;
     private volatile boolean proxiedRequestWithoutBuffering;
-    private int attemptNum;
-    private RequestAttempt currentRequestAttempt;
-    private RequestStat requestStat;
+    protected int attemptNum;
+    protected RequestAttempt currentRequestAttempt;
+    protected List<RequestStat> requestStats = new ArrayList<>();
+    protected RequestStat currentRequestStat;
     private final byte[] sslRetryBodyCache;
 
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
@@ -223,9 +228,21 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             concurrentReqCount--;
         }
 
-        if (requestStat != null) {
-            if (error) requestStat.generalError();
-            requestStat.finishIfNotAlready();
+        if (currentRequestStat != null) {
+            if (error) currentRequestStat.generalError();
+        }
+
+        // Publish each of the request stats (ie. one for each attempt).
+        if (! requestStats.isEmpty()) {
+            int indexFinal = requestStats.size() - 1;
+            for (int i = 0; i < requestStats.size(); i++) {
+                RequestStat stat = requestStats.get(i);
+
+                // Tag the final and non-final attempts.
+                stat.finalAttempt(i == indexFinal);
+
+                stat.finishIfNotAlready();
+            }
         }
 
         if ((error) && (origCh != null)) {
@@ -317,9 +334,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private void filterResponseChunk(final HttpContent chunk) {
         if (chunk instanceof LastHttpContent) {
             unlinkFromOrigin();
-            if (requestStat != null) {
-                requestStat.finishIfNotAlready();
-            }
         }
 
         if (responseFilters != null) {
@@ -347,7 +361,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         if (chosenHostAddr.get() != null) {
             attempToChosenHostMap.put(attemptNum, chosenHostAddr.get());
-            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToIpAddressMap);
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToChosenHostMap);
             context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToChosenHostMap);
         }
 
@@ -362,7 +376,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         Promise<PooledConnection> promise = null;
         try {
             attemptNum += 1;
-            requestStat = createRequestStat();
+
+            IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
+            setReadTimeoutOnContext(requestConfig, attemptNum);
+
+            currentRequestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
             concurrentReqCount++;
 
@@ -401,6 +419,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      */
     protected RequestStat createRequestStat() {
         BasicRequestStat basicRequestStat = new BasicRequestStat(origin.getName());
+        requestStats.add(basicRequestStat);
         RequestStat.putInSessionContext(basicRequestStat, context);
         return basicRequestStat;
     }
@@ -423,15 +442,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
                 // The chosen server would be null if the loadbalancer found no available servers.
                 if (server != null) {
-                    if (requestStat != null) {
-                        requestStat.server(server);
+                    if (currentRequestStat != null) {
+                        currentRequestStat.server(server);
                     }
 
                     // Invoke the ribbon execution listeners (including RequestExpiry).
                     final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest);
                     IClientConfig requestConfig = executionContext.getRequestConfig();
                     try {
-                        readTimeout = setReadTimeoutOnContext(requestConfig, attemptNum);
+                        readTimeout = requestConfig.get(ReadTimeout);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
 
@@ -488,16 +507,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             conn.release();
         }
         else {
-            // Set the read timeout (we only do this late because this timeout can be adjusted dynamically by the niws RequestExpiryExecutionListener
-            // that is run as part of onRequestStartWithServer() above.
-            // Add a ReadTimeoutHandler to the channel before we send a request on it.
-            conn.startReadTimeoutHandler(readTimeout);
-
-            // Also update the RequestAttempt to reflect the readTimeout chosen.
+            // Update the RequestAttempt to reflect the readTimeout chosen.
             currentRequestAttempt.setReadTimeout(readTimeout);
 
             // Start sending the request to origin now.
-            writeClientRequestToOrigin(conn);
+            writeClientRequestToOrigin(conn, readTimeout);
         }
     }
 
@@ -555,9 +569,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void writeClientRequestToOrigin(final PooledConnection conn) {
+    private void writeClientRequestToOrigin(final PooledConnection conn, int readTimeout) {
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
+
+        // set read timeout on origin channel
+        ch.attr(ClientTimeoutHandler.ORIGIN_RESPONSE_READ_TIMEOUT).set(readTimeout);
 
         context.set(ORIGIN_CHANNEL, ch);
         context.set(POOLED_ORIGIN_CONNECTION_KEY, conn);
@@ -650,11 +667,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
 
             // Update the NIWS stat.
-            finishRequestStatWithErrorType(err);
+            if (currentRequestStat != null) {
+                currentRequestStat.failAndSetErrorCode(err);
+            }
 
             // Update RequestAttempt info.
             if (currentRequestAttempt != null) {
-                currentRequestAttempt.complete(-1, requestStat.duration(), ex);
+                currentRequestAttempt.complete(-1, currentRequestStat.duration(), ex);
             }
 
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
@@ -690,22 +709,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     protected void postErrorProcessing(Throwable ex, SessionContext zuulCtx, ErrorType err, Server chosenServer, int attemptNum) {
         // override for custom processing
-    }
-
-    private void finishRequestStatWithErrorType(ErrorType niwsErrorType)
-    {
-        if (requestStat != null) {
-
-            if (! isBelowRetryLimit()) {
-                requestStat.nextServerRetriesExceeded();
-            } else {
-                if (niwsErrorType != null) {
-                    requestStat.failAndSetErrorCode(niwsErrorType.toString());
-                }
-            }
-
-            requestStat.finishIfNotAlready();
-        }
     }
 
     private void handleError(final Throwable cause) {
@@ -782,10 +785,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         final int respStatus = originResponse.status().code();
         long duration = 0;
-        if (requestStat != null) {
-            requestStat.updateWithHttpStatusCode(respStatus);
-            requestStat.finishIfNotAlready();
-            duration = requestStat.duration();
+        if (currentRequestStat != null) {
+            currentRequestStat.updateWithHttpStatusCode(respStatus);
+            duration = currentRequestStat.duration();
         }
         if (currentRequestAttempt != null) {
             currentRequestAttempt.complete(respStatus, duration, null);
@@ -870,25 +872,24 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 originConn.getServerStats().addToFailureCount();
                 originConn.flagShouldClose();
             }
-            if (requestStat != null) {
-                requestStat.updateWithHttpStatusCode(respStatus);
-                requestStat.serviceUnavailable();
+            if (currentRequestStat != null) {
+                currentRequestStat.updateWithHttpStatusCode(respStatus);
+                currentRequestStat.serviceUnavailable();
             }
         } else {
             statusCategory = FAILURE_ORIGIN;
             niwsErrorType = ClientException.ErrorType.GENERAL;
             obe = new OutboundException(OutboundErrorType.ERROR_STATUS_RESPONSE, requestAttempts);
-            if (requestStat != null) {
-                requestStat.updateWithHttpStatusCode(respStatus);
-                requestStat.generalError();
+            if (currentRequestStat != null) {
+                currentRequestStat.updateWithHttpStatusCode(respStatus);
+                currentRequestStat.generalError();
             }
         }
         obe.setStatusCode(respStatus);
 
         long duration = 0;
-        if (requestStat != null) {
-            requestStat.finishIfNotAlready();
-            duration = requestStat.duration();
+        if (currentRequestStat != null) {
+            duration = currentRequestStat.duration();
         }
 
         if (currentRequestAttempt != null) {

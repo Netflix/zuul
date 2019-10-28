@@ -22,13 +22,8 @@ import com.netflix.servo.tag.BasicTag;
 import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.TagList;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
 
 /**
  * Implementation of a Named counter to monitor and count error causes by route. Route is a defined zuul concept to
@@ -101,34 +96,4 @@ public class ErrorStatsData implements NamedCount
     public long  getCount() {
         return count.get();
     }
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
-
-        @Test
-        public void testUpdateStats() {
-            ErrorStatsData sd = new ErrorStatsData("route", "test");
-            assertEquals(sd.error_cause, "test");
-            sd.update();
-            assertEquals(sd.count.get(), 1);
-            sd.update();
-            assertEquals(sd.count.get(), 2);
-        }
-
-
-        @Test
-        public void testEquals() {
-            ErrorStatsData sd = new ErrorStatsData("route", "test");
-            ErrorStatsData sd1 = new ErrorStatsData("route", "test");
-            ErrorStatsData sd2 = new ErrorStatsData("route", "test1");
-            ErrorStatsData sd3 = new ErrorStatsData("route", "test");
-
-            assertTrue(sd.equals(sd1));
-            assertTrue(sd1.equals(sd));
-            assertTrue(sd.equals(sd));
-            assertFalse(sd.equals(sd2));
-            assertFalse(sd2.equals(sd3));
-        }
-    }
-
 }

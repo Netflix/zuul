@@ -21,20 +21,15 @@ import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.bootstrap.ZuulBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-
 /**
  * Created by saroskar on 3/16/16.
  */
@@ -56,18 +51,14 @@ public class NettyClientConnectionFactory {
     }
 
     public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
-
-        Class socketChannelClass;
-        if (Server.USE_EPOLL.get()) {
-            socketChannelClass = EpollSocketChannel.class;
-        } else {
-            socketChannelClass = NioSocketChannel.class;
+        InetSocketAddress socketAddress = new InetSocketAddress(host, port);
+        if (socketAddress.isUnresolved()) {
+            LOGGER.warn("NettyClientConnectionFactory got an unresolved address, host: {}, port: {}", host,  port);
+            unresolvedDiscoveryHost.increment();
         }
 
-        SocketAddress socketAddress = new InetSocketAddress(host, port);
-
         final Bootstrap bootstrap = new Bootstrap()
-                .channel(socketChannelClass)
+                .channel(Server.defaultOutboundChannelType.get())
                 .handler(channelInitializer)
                 .group(eventLoop)
                 .attr(CurrentPassport.CHANNEL_ATTR, passport)
@@ -80,12 +71,6 @@ public class NettyClientConnectionFactory {
                 .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, connPoolConfig.getNettyWriteBufferLowWaterMark())
                 .option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
                 .remoteAddress(socketAddress);
-
-        ZuulBootstrap zuulBootstrap = new ZuulBootstrap(bootstrap);
-        if (!zuulBootstrap.getResolver(eventLoop).isResolved(socketAddress)) {
-            LOGGER.warn("NettyClientConnectionFactory got an unresolved server address, host: " + host + ", port: " + port);
-            unresolvedDiscoveryHost.increment();
-        }
         return bootstrap.connect();
     }
 

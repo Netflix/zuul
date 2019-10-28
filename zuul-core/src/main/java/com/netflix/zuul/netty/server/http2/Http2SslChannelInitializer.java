@@ -16,8 +16,11 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
+import com.netflix.netty.common.SwallowSomeHttp2ExceptionsHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
@@ -38,26 +41,42 @@ import org.slf4j.LoggerFactory;
  * Date: 3/5/16
  * Time: 5:41 PM
  */
-public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
+public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
     private static final Logger LOG = LoggerFactory.getLogger(Http2SslChannelInitializer.class);
     private static final DummyChannelHandler DUMMY_HANDLER = new DummyChannelHandler();
 
     private final ServerSslConfig serverSslConfig;
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
+    private final SwallowSomeHttp2ExceptionsHandler swallowSomeHttp2ExceptionsHandler;
+    private final String metricId;
 
 
+    /**
+     * Use {@link #Http2SslChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
     public Http2SslChannelInitializer(int port,
                                       ChannelConfig channelConfig,
                                       ChannelConfig channelDependencies,
                                       ChannelGroup channels) {
-        super(port, channelConfig, channelDependencies, channels);
+        this(String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
+
+    public Http2SslChannelInitializer(String metricId,
+                                      ChannelConfig channelConfig,
+                                      ChannelConfig channelDependencies,
+                                      ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
+        this.metricId = checkNotNull(metricId, "metricId");
+
+        this.swallowSomeHttp2ExceptionsHandler = new SwallowSomeHttp2ExceptionsHandler(registry);
 
         this.serverSslConfig = channelConfig.get(CommonChannelConfigKeys.serverSslConfig);
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
         SslContextFactory sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
-        sslContext = Http2Configuration.configureSSL(sslContextFactory, port);
+        sslContext = Http2Configuration.configureSSL(sslContextFactory, metricId);
     }
 
     @Override
@@ -91,8 +110,10 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
         addSslInfoHandlers(pipeline, isSSlFromIntermediary);
         addSslClientCertChecks(pipeline);
 
-        Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry,"server", "http2-" + port);
-        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(channelConfig.get(CommonChannelConfigKeys.connCloseDelay), registry);
+        Http2MetricsChannelHandlers http2MetricsChannelHandlers =
+                new Http2MetricsChannelHandlers(registry,"server", "http2-" + metricId);
+
+        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
         Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
 
         pipeline.addLast("http2CodecSwapper", new Http2OrHttpHandler(
@@ -103,6 +124,8 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
                     http1Handlers(cp);
                 }));
         pipeline.addLast("codec_placeholder", DUMMY_HANDLER);
+
+        pipeline.addLast(swallowSomeHttp2ExceptionsHandler);
     }
 
     protected void http1Handlers(ChannelPipeline pipeline) {

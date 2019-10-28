@@ -22,8 +22,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 
 /**
  * Author: Susheel Aroskar
@@ -31,24 +29,36 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
  */
 public abstract class PushChannelInitializer extends BaseZuulChannelInitializer {
 
+    /**
+     * Use {@link #PushChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
+    public PushChannelInitializer(
+            int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        this(String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
 
-    public PushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies,
-                                  ChannelGroup channels) {
-
-        super(port, channelConfig, channelDependencies, channels);
+    protected PushChannelInitializer(
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+        super(metricId, channelConfig, channelDependencies, channels);
     }
 
     @Override
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
-        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpServerCodec(
-                MAX_INITIAL_LINE_LENGTH.get(),
-                MAX_HEADER_SIZE.get(),
-                MAX_CHUNK_SIZE.get(),
-                false
-        ));
+        pipeline.addLast(
+                HTTP_CODEC_HANDLER_NAME,
+                new HttpServerCodec(
+                        MAX_INITIAL_LINE_LENGTH.get(),
+                        MAX_HEADER_SIZE.get(),
+                        MAX_CHUNK_SIZE.get(),
+                        false));
         pipeline.addLast(new HttpObjectAggregator(8192));
     }
 
+    @Override
+    protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
+        pipeline.addLast(stripInboundProxyHeadersHandler);
+    }
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
@@ -56,10 +66,9 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
         storeChannel(ch);
         addTcpRelatedHandlers(pipeline);
         addHttp1Handlers(pipeline);
+        addHttpRelatedHandlers(pipeline);
         addPushHandlers(pipeline);
     }
 
-
     protected abstract void addPushHandlers(final ChannelPipeline pipeline);
-
 }

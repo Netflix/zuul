@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Netflix, Inc.
+ * Copyright 2019 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -13,9 +13,21 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
+package com.netflix.zuul.context;
 
-package io.netty.handler.codec.http2;
+import static org.junit.Assert.assertEquals;
 
-public interface Http2PushPromiseFrame extends Http2HeadersFrame {
-    int promisedStreamId();
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class SessionContextTest {
+
+    @Test
+    public void testBoolean() {
+        SessionContext context = new SessionContext();
+        assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
+        assertEquals(context.getBoolean("boolean_test", true), true);
+    }
 }

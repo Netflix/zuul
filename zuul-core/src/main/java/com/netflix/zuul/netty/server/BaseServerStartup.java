@@ -16,7 +16,10 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.errorprone.annotations.ForOverride;
 import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.config.ChainedDynamicProperty;
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
@@ -39,7 +42,12 @@ import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.handler.ssl.SslContext;
+import io.netty.util.DomainNameMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +60,6 @@ public abstract class BaseServerStartup
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
-    protected final ServerTimeout serverTimeout;
     protected final Registry registry;
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
@@ -64,13 +71,13 @@ public abstract class BaseServerStartup
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier usageNotifier;
 
-    private Map<Integer, ChannelInitializer> portsToChannelInitializers;
+    private Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
     private ClientConnectionsShutdown clientConnectionsShutdown;
     private Server server;
 
 
     @Inject
-    public BaseServerStartup(ServerStatusManager serverStatusManager, ServerTimeout serverTimeout, FilterLoader filterLoader,
+    public BaseServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
                              SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                              RequestCompleteHandler reqCompleteHandler, Registry registry,
                              DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
@@ -78,7 +85,6 @@ public abstract class BaseServerStartup
                              AccessLogPublisher accessLogPublisher)
     {
         this.serverStatusManager = serverStatusManager;
-        this.serverTimeout = serverTimeout;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
         this.eventLoopGroupMetrics = eventLoopGroupMetrics;
@@ -99,23 +105,47 @@ public abstract class BaseServerStartup
     @PostConstruct
     public void init() throws Exception
     {
-        ChannelConfig channelDeps = new ChannelConfig();
-        addChannelDependencies(channelDeps);
-
         ChannelGroup clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
                 GlobalEventExecutor.INSTANCE, discoveryClient);
 
-        portsToChannelInitializers = choosePortsAndChannels(clientChannels, channelDeps);
+        addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
 
-        server = new Server(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics);
+        directMemoryMonitor.init();
+
+        server = new Server(
+                serverStatusManager,
+                addrsToChannelInitializers,
+                clientConnectionsShutdown,
+                eventLoopGroupMetrics,
+                new DefaultEventLoopConfig());
     }
 
-    protected abstract Map<Integer, ChannelInitializer> choosePortsAndChannels(
-            ChannelGroup clientChannels,
-            ChannelConfig channelDependencies);
+    /**
+     * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
+     */
+    @Deprecated
+    protected Map<Integer, ChannelInitializer> choosePortsAndChannels(ChannelGroup clientChannels) {
+        throw new UnsupportedOperationException("unimplemented");
+    }
 
-    protected void addChannelDependencies(ChannelConfig channelDeps) throws Exception
+    @ForOverride
+    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+        @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
+        Map<Integer, ChannelInitializer<?>> portMap =
+                (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
+        return Server.convertPortMap(portMap);
+    }
+
+
+    protected ChannelConfig defaultChannelDependencies(String portName)
+    {
+        ChannelConfig channelDependencies = new ChannelConfig();
+        addChannelDependencies(channelDependencies, portName);
+        return channelDependencies;
+    }
+
+    protected void addChannelDependencies(ChannelConfig channelDeps, String portName)
     {
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
@@ -136,61 +166,150 @@ public abstract class BaseServerStartup
 
         channelDeps.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         channelDeps.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
-
-        directMemoryMonitor.init();
     }
 
-    public static ChannelConfig defaultChannelConfig(ServerTimeout serverTimeout)
+    /**
+     * First looks for a property specific to the named port of the form - "server.${portName}.${propertySuffix}".
+     * If none found, then looks for a server-wide property of the form - "server.${propertySuffix}".
+     * If that is also not found, then returns the specified default value.
+     *
+     * @param portName
+     * @param propertySuffix
+     * @param defaultValue
+     * @return
+     */
+    public static int chooseIntChannelProperty(String portName, String propertySuffix, int defaultValue)
+    {
+        String globalPropertyName = "server." + propertySuffix;
+        String portPropertyName = "server." + portName + "." + propertySuffix;
+        Integer value = new DynamicIntProperty(portPropertyName, -999).get();
+        if (value == -999) {
+            value = new DynamicIntProperty(globalPropertyName, -999).get();
+            if (value == -999) {
+                value = defaultValue;
+            }
+        }
+        return value;
+    }
+
+    public static boolean chooseBooleanChannelProperty(String portName, String propertySuffix, boolean defaultValue)
+    {
+        String globalPropertyName = "server." + propertySuffix;
+        String portPropertyName = "server." + portName + "." + propertySuffix;
+
+        Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(portPropertyName, null).get();
+        if (value == null) {
+            value = new DynamicBooleanProperty(globalPropertyName, defaultValue).getDynamicProperty().getBoolean();
+            if (value == null) {
+                value = defaultValue;
+            }
+        }
+        return value;
+    }
+
+    public static ChannelConfig defaultChannelConfig(String portName)
     {
         ChannelConfig config = new ChannelConfig();
 
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxConnections,
-                new DynamicIntProperty("server.connection.max", 20000).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnection,
-                new DynamicIntProperty("server.connection.max.requests", 20000).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
-                new DynamicIntProperty("server.connection.max.requests.brownout", CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue()).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.connectionExpiry,
-                new DynamicIntProperty("server.connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue()).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.idleTimeout,
-                serverTimeout.connectionIdleTimeout()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.httpRequestReadTimeout,
-                new DynamicIntProperty("server.http.request.read.timeout", 5000).get()));
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.maxConnections,
+                chooseIntChannelProperty(
+                        portName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
+                chooseIntChannelProperty(portName, "connection.max.requests", 20000)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
+                chooseIntChannelProperty(portName, "connection.max.requests.brownout", CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connectionExpiry,
+                chooseIntChannelProperty(portName, "connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue())));
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.httpRequestReadTimeout,
+                chooseIntChannelProperty(
+                        portName,
+                        "http.request.read.timeout",
+                        CommonChannelConfigKeys.httpRequestReadTimeout.defaultValue())));
+
+        int connectionIdleTimeout = chooseIntChannelProperty(
+                portName, "connection.idle.timeout",
+                CommonChannelConfigKeys.idleTimeout.defaultValue());
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.idleTimeout, connectionIdleTimeout));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.serverTimeout, new ServerTimeout(connectionIdleTimeout)));
 
         // For security, default to NEVER allowing XFF/Proxy headers from client.
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER));
 
         config.set(CommonChannelConfigKeys.withProxyProtocol, true);
         config.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
 
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.connCloseDelay,
-                new DynamicIntProperty("zuul.server.connection.close.delay", 10).get()));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connCloseDelay,
+                chooseIntChannelProperty(
+                        portName, "connection.close.delay", CommonChannelConfigKeys.connCloseDelay.defaultValue())));
 
         return config;
     }
 
-    public static void addHttp2DefaultConfig(ChannelConfig config) {
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxConcurrentStreams,
-                new DynamicIntProperty("server.http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue()).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.initialWindowSize,
-                new DynamicIntProperty("server.http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue()).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
-                new DynamicIntProperty("server.http2.maxheadertablesize", 65536).get()));
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxHttp2HeaderListSize,
-                new DynamicIntProperty("server.http2.maxheaderlistsize", 32768).get()));
+    public static void addHttp2DefaultConfig(ChannelConfig config, String portName)
+    {
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams,
+                chooseIntChannelProperty(portName, "http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize,
+                chooseIntChannelProperty(portName, "http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
+                chooseIntChannelProperty(portName, "http2.maxheadertablesize", 65536)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize,
+                chooseIntChannelProperty(portName, "http2.maxheaderlistsize", 32768)));
 
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
-        config.add(new ChannelConfigValue(CommonChannelConfigKeys.maxRequestsPerConnection,
-                new DynamicIntProperty("server.connection.max.requests", 4000).get()));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
+                chooseIntChannelProperty(portName, "connection.max.requests", 4000)));
+
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2AllowGracefulDelayed,
+                chooseBooleanChannelProperty(portName, "connection.close.graceful.delayed.allow", true)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
+                chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
-    protected void logPortConfigured(int port, ServerSslConfig serverSslConfig)
-    {
-        String msg = "Configured port: " + port;
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port) {
+        logAddrConfigured(new InetSocketAddress(port));
+    }
+
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port, ServerSslConfig serverSslConfig) {
+        logAddrConfigured(new InetSocketAddress(port), serverSslConfig);
+    }
+
+    /**
+     * Use {@link #logAddrConfigured(SocketAddress, DomainNameMapping)} instead.
+     */
+    @Deprecated
+    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping) {
+        logAddrConfigured(new InetSocketAddress(port), sniMapping);
+    }
+
+    protected final void logAddrConfigured(SocketAddress socketAddress) {
+        LOG.info("Configured address: {}", socketAddress);
+    }
+
+    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable ServerSslConfig serverSslConfig) {
+        String msg = "Configured address: " + socketAddress;
         if (serverSslConfig != null) {
-            msg = msg + " with SSL config: " + serverSslConfig.toString();
+            msg = msg + " with SSL config: " + serverSslConfig;
         }
-        LOG.warn(msg);
+        LOG.info(msg);
+    }
+
+    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable DomainNameMapping<?> sniMapping) {
+        String msg = "Configured address: " + socketAddress;
+        if (sniMapping != null) {
+            msg = msg + " with SNI config: " + sniMapping.asMap();
+        }
+        LOG.info(msg);
     }
 }

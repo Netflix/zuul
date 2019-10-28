@@ -49,13 +49,13 @@ public interface RequestStat {
 
     void serviceUnavailable();
 
-    void nextServerRetriesExceeded();
-
     void generalError();
 
-    void failAndSetErrorCode(String error);
+    void failAndSetErrorCode(ErrorType errorType);
 
     void updateWithHttpStatusCode(int httpStatusCode);
+
+    void finalAttempt(boolean finalAttempt);
 
     boolean finishIfNotAlready();
 }

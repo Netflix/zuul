@@ -16,23 +16,25 @@
 
 package com.netflix.netty.common;
 
-import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.util.HttpUtils;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.unix.Errors;
+import io.netty.channel.DelegatingChannelPromiseNotifier;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,59 +43,70 @@ import java.util.concurrent.TimeUnit;
  * Time: 2:03 PM
  */
 @ChannelHandler.Sharable
-public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
+public class Http2ConnectionCloseHandler extends ChannelDuplexHandler
 {
     private static final Logger LOG = LoggerFactory.getLogger(Http2ConnectionCloseHandler.class);
 
-    private static final DynamicBooleanProperty ALLOW_GRACEFUL_DELAYED = new DynamicBooleanProperty(
-            "server.connection.close.graceful.delayed.allow", true);
+    private final Registry registry;
+    private final Id counterBaseId;
 
-    private static final DynamicBooleanProperty SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE = new DynamicBooleanProperty(
-            "server.connection.close.swallow.unknown.exceptions", false);
-
-    private static final SwallowHttp2ExceptionShutdownHint SWALLOW_EXCEPTION_HANDLER = new SwallowHttp2ExceptionShutdownHint();
-
-    private final int gracefulCloseDelay;
-
-    protected static Registry registry;
-
-    public Http2ConnectionCloseHandler(int gracefulCloseDelay, Registry registry)
+    @Inject
+    public Http2ConnectionCloseHandler(Registry registry)
     {
-        this.gracefulCloseDelay = gracefulCloseDelay;
+        super();
         this.registry = registry;
+        this.counterBaseId = registry.createId("server.connection.close.handled");
     }
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception
+    private void incrementCounter(ConnectionCloseType closeType, int port)
     {
-        // Add a handler that just catches the Http2Exception that we fire to tell the codec to gracefully shutdown a connection.
-        // We want to catch it so that it doesn't get logged by the DefaultChannelPipeline as if it was a _real_
-        // exception.
-        ChannelPipeline parentPipeline = ctx.channel().parent().pipeline();
-        String handlerName = "h2_exception_swallow_handler";
-        if (parentPipeline.get(handlerName) == null) {
-            parentPipeline.addLast(handlerName, SWALLOW_EXCEPTION_HANDLER);
-        }
+        registry.counter(
+                counterBaseId
+                        .withTag("close_type", closeType.name())
+                        .withTag("port", Integer.toString(port))
+                        .withTag("protocol", "http2"))
+                .increment();
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
     {
-        super.write(ctx, msg, promise);
-
         // Close the connection immediately after LastContent is written, rather than
         // waiting until the graceful-delay is up if this flag is set.
         if (isEndOfRequestResponse(msg)) {
-            if (HttpChannelFlags.CLOSE_AFTER_RESPONSE.get(ctx)) {
+            final Channel parent = HttpUtils.getMainChannel(ctx);
+            final ChannelPromise closeAfterPromise = shouldCloseAfter(ctx, parent);
+            if (closeAfterPromise != null) {
+
+                // Add listener to close the channel AFTER response has been sent.
                 promise.addListener(future -> {
-                    Channel parent = parentChannel(ctx);
-                    closeChannel(ctx, parent, ConnectionCloseType.fromChannel(ctx.channel()), ctx.newPromise());
+                    // Close the parent (tcp connection) channel.
+                    closeChannel(ctx, closeAfterPromise);
                 });
             }
         }
+
+        super.write(ctx, msg, promise);
     }
 
-    protected boolean isEndOfRequestResponse(Object msg)
+    /**
+     * Look on both the stream channel, and the parent channel to see if the CLOSE_AFTER_RESPONSE flag has been set.
+     * If so, return that promise.
+     *
+     * @param ctx
+     * @param parent
+     * @return
+     */
+    private ChannelPromise shouldCloseAfter(ChannelHandlerContext ctx, Channel parent)
+    {
+        ChannelPromise closeAfterPromise = ctx.channel().attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).get();
+        if (closeAfterPromise == null) {
+            closeAfterPromise = parent.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).get();
+        }
+        return closeAfterPromise;
+    }
+
+    private boolean isEndOfRequestResponse(Object msg)
     {
         if (msg instanceof Http2HeadersFrame) {
             return ((Http2HeadersFrame) msg).isEndStream();
@@ -104,34 +117,41 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
         return false;
     }
 
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
+    private void closeChannel(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
     {
-        // Close according to the specified close type.
-        Channel parent = parentChannel(ctx);
-        ConnectionCloseType type = ConnectionCloseType.fromChannel(parent);
-        // Below commit is the right thing to do to pass the correct promise to close the paernt channel but causing some errors.
-        // So temporarily disabling this.
-       /* ChannelPromise parentPromise = parent.newPromise();
-        closeChannel(ctx, parent, type, parentPromise);*/
-        closeChannel(ctx, parent, type, promise);
-        // Don't pass this event further down the pipeline.
-    }
+        Channel child = ctx.channel();
+        Channel parent = HttpUtils.getMainChannel(ctx);
 
-    protected void closeChannel(ChannelHandlerContext ctx, Channel channel, ConnectionCloseType evt, ChannelPromise promise)
-    {
-        switch (evt) {
+        // 1. Check if already_closing flag on this stream channel. If there is, then success this promise and return.
+        //    If not, then add already_closing flag to this stream channel.
+        // 2. Check if already_closing flag on the parent channel.
+        //    If so, then just return.
+        //    If not, then set already_closing on parent channel, and then allow through.
+
+        if (isAlreadyClosing(child)) {
+            promise.setSuccess();
+            return;
+        }
+
+        if (isAlreadyClosing(parent)) {
+            return;
+        }
+
+        // Close according to the specified close type.
+        ConnectionCloseType closeType = ConnectionCloseType.fromChannel(parent);
+        Integer port = parent.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
+        port = port == null ? -1 :port;
+        incrementCounter(closeType, port);
+        switch (closeType) {
             case DELAYED_GRACEFUL:
-                gracefullyWithDelay(ctx, channel, promise);
+                gracefullyWithDelay(ctx.executor(), parent, promise);
                 break;
             case GRACEFUL:
-                gracefully(channel, promise);
-                break;
             case IMMEDIATE:
-                immediately(channel, promise);
+                immediate(parent, promise);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + String.valueOf(evt));
+                throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + closeType);
         }
     }
 
@@ -146,15 +166,16 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
      * See this code in okhttp where it drops response header frame if state is already shutdown:
      * https://github.com/square/okhttp/blob/master/okhttp/src/main/java/okhttp3/internal/http2/Http2Connection.java#L609
      */
-    protected void gracefullyWithDelay(ChannelHandlerContext ctx, Channel channel, ChannelPromise promise)
+    private void gracefullyWithDelay(EventExecutor executor, Channel parent, ChannelPromise promise)
     {
         // See javadoc for explanation of why this may be disabled.
-        if (! ALLOW_GRACEFUL_DELAYED.get()) {
-            gracefully(channel, promise);
+        boolean allowGracefulDelayed = ConnectionCloseChannelAttributes.allowGracefulDelayed(parent);
+        if (! allowGracefulDelayed) {
+            immediate(parent, promise);
             return;
         }
 
-        if (isAlreadyClosing(channel)) {
+        if (! parent.isActive()) {
             promise.setSuccess();
             return;
         }
@@ -168,53 +189,38 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
          */
         DefaultHttp2GoAwayFrame goaway = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR);
         goaway.setExtraStreamIds(Integer.MAX_VALUE);
-        channel.writeAndFlush(goaway);
-        LOG.debug("gracefullyWithDelay: flushed initial go_away frame. channel=" + channel.id().asShortText());
+        parent.writeAndFlush(goaway);
+        LOG.debug("gracefullyWithDelay: flushed initial go_away frame. channel=" + parent.id().asShortText());
 
         // In N secs time, throw an error that causes the http2 codec to send another GOAWAY frame
         // (this time with accurate lastStreamId) and then close the connection.
-        ctx.executor().schedule(() -> {
+        int gracefulCloseDelay = ConnectionCloseChannelAttributes.gracefulCloseDelay(parent);
+        executor.schedule(() -> {
 
             // Check that the client hasn't already closed the connection (due to the earlier goaway we sent).
-            gracefulConnectionShutdown(channel);
-            promise.setSuccess();
+            if (parent.isActive()) {
+                // NOTE - the netty Http2ConnectionHandler specifically does not send another goaway when we call
+                // channel.close() if one has already been sent .... so when we want more than one sent, we need to do it
+                // explicitly ourselves like this.
+                LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel="
+                        + parent.id().asShortText());
+                Http2Exception h2e = new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
+                parent.pipeline().fireExceptionCaught(h2e);
+
+                parent.close().addListener(future -> {
+                    promise.setSuccess();
+                });
+            } else {
+                promise.setSuccess();
+            }
 
         }, gracefulCloseDelay, TimeUnit.SECONDS);
     }
 
-    protected void gracefulConnectionShutdown(Channel channel)
+    private void immediate(Channel parent, ChannelPromise promise)
     {
-        if (channel.isActive()) {
-            LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel="
-                    + channel.id().asShortText());
-            Http2Exception h2e = new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
-            channel.pipeline().fireExceptionCaught(h2e);
-        }
-        else {
-            LOG.debug("gracefullyWithDelay: connection already closed, so no need to send final go_away frame. channel=" + channel.id().asShortText());
-        }
-    }
-
-    protected void gracefully(Channel channel, ChannelPromise promise)
-    {
-        if (isAlreadyClosing(channel)) {
-            promise.setSuccess();
-            return;
-        }
-
-        gracefulConnectionShutdown(channel);
-        promise.setSuccess();
-    }
-
-    protected void immediately(Channel parent, ChannelPromise promise)
-    {
-        if (isAlreadyClosing(parent)) {
-            promise.setSuccess();
-            return;
-        }
-
         if (parent.isActive()) {
-            parent.close(promise);
+            parent.close().addListener(new DelegatingChannelPromiseNotifier(promise));
         }
         else {
             promise.setSuccess();
@@ -231,49 +237,6 @@ public class Http2ConnectionCloseHandler extends ChannelOutboundHandlerAdapter
         else {
             HttpChannelFlags.CLOSING.set(parentChannel);
             return false;
-        }
-    }
-
-    protected Channel parentChannel(ChannelHandlerContext ctx) {
-        return ctx.channel().parent();
-    }
-
-
-    protected static void incrementExceptionCounter(Throwable throwable) {
-        registry.counter("server.connection.exception",
-                "handler", "Http2ConnectionCloseHandler",
-                "id", throwable.getClass().getSimpleName())
-                .increment();
-    }
-
-    @Sharable
-    static class SwallowHttp2ExceptionShutdownHint extends ChannelOutboundHandlerAdapter
-    {
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-        {
-            if (cause instanceof Http2Exception) {
-                Http2Exception h2e = (Http2Exception) cause;
-                if (h2e.error() == Http2Error.NO_ERROR
-                        && Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN.equals(h2e.shutdownHint())) {
-                    // This is the exception we threw ourselves to make the http2 codec gracefully close the connection. So just
-                    // swallow it so that it doesn't propagate and get logged.
-                }
-                else {
-                    super.exceptionCaught(ctx, cause);
-                }
-            }
-            else if (cause instanceof Errors.NativeIoException) {
-                LOG.debug("SwallowHttp2ExceptionShutdownHint, NativeIoException " + cause);
-                Http2ConnectionCloseHandler.incrementExceptionCounter(cause);
-            }
-            else {
-                LOG.debug("SwallowHttp2ExceptionShutdownHint unknown exception " + cause);
-                if (!SWALLOW_UNKNOWN_EXCEPTIONS_ON_CONN_CLOSE.get()) {
-                    super.exceptionCaught(ctx, cause);
-                }
-            }
-
         }
     }
 }

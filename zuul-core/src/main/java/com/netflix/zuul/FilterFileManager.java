@@ -18,12 +18,6 @@ package com.netflix.zuul;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.zuul.groovy.GroovyFileFilter;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +36,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
 
 /**
  * This class manages the directory polling for changes and new Groovy filters.
@@ -80,7 +71,6 @@ public class FilterFileManager {
         this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), threadFactory);
     }
 
-
     /**
      * Initialized the GroovyFileManager.
      *
@@ -105,7 +95,6 @@ public class FilterFileManager {
     public void shutdown() {
         stopPoller();
     }
-
 
     void stopPoller() {
         bRunning = false;
@@ -207,7 +196,6 @@ public class FilterFileManager {
         }
     }
 
-
     public static class FilterFileManagerConfig
     {
         private String[] directories;
@@ -238,40 +226,6 @@ public class FilterFileManager {
         }
         public FilenameFilter getFilenameFilter() {
             return filenameFilter;
-        }
-    }
-
-
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest
-    {
-        @Mock
-        private File nonGroovyFile;
-        @Mock
-        private File groovyFile;
-        @Mock
-        private File directory;
-        @Mock
-        private FilterLoader filterLoader;
-
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
-
-        @Test
-        public void testFileManagerInit() throws Exception
-        {
-            FilterFileManagerConfig config = new FilterFileManagerConfig(new String[]{"test", "test1"}, new String[]{"com.netflix.blah.SomeFilter"}, 1);
-            FilterFileManager manager = new FilterFileManager(config, filterLoader);
-
-            manager = spy(manager);
-            doNothing().when(manager).manageFiles();
-
-            manager.init();
-            verify(manager, atLeast(1)).manageFiles();
-            verify(manager, times(1)).startPoller();
-            assertNotNull(manager.poller);
         }
     }
 }

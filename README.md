@@ -1,5 +1,7 @@
 # Zuul
 
+<img src="https://i.imgur.com/mRSosEp.png" width=500/>
+
 [![Build Status](https://travis-ci.org/Netflix/zuul.svg)](https://travis-ci.org/Netflix/zuul/builds)
 
 Zuul is an edge service that provides dynamic routing, monitoring, resiliency, security, and more.
@@ -52,8 +54,6 @@ https://spring.io/guides/gs/routing-and-filtering/
 http://www.baeldung.com/spring-rest-with-zuul-proxy
 
 https://blog.heroku.com/using_netflix_zuul_to_proxy_your_microservices
-
-http://kubecloud.io/apigatewaypattern/
 
 http://blog.ippon.tech/jhipster-3-0-introducing-microservices/
 

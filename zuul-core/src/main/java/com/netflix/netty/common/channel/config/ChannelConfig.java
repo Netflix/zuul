@@ -42,7 +42,7 @@ public class ChannelConfig implements Cloneable
         this.parameters.put(param.key(), param);
     }
 
-    public <T> void set(ChannelConfigKey key, T value)
+    public <T> void set(ChannelConfigKey<T> key, T value)
     {
         this.parameters.put(key, new ChannelConfigValue<>(key, value));
     }

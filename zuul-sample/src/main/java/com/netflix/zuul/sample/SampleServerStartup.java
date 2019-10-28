@@ -42,6 +42,9 @@ import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Collections;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
@@ -71,14 +74,14 @@ public class SampleServerStartup extends BaseServerStartup {
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
     @Inject
-    public SampleServerStartup(ServerStatusManager serverStatusManager, ServerTimeout serverTimeout, FilterLoader filterLoader,
+    public SampleServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
                                SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                                RequestCompleteHandler reqCompleteHandler, Registry registry,
                                DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
                                EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
                                AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry,
                                SamplePushMessageSenderInitializer pushSenderInitializer) {
-        super(serverStatusManager, serverTimeout, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
+        super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
                 directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
                 accessLogPublisher);
         this.pushConnectionRegistry = pushConnectionRegistry;
@@ -86,16 +89,18 @@ public class SampleServerStartup extends BaseServerStartup {
     }
 
     @Override
-    protected Map<Integer, ChannelInitializer> choosePortsAndChannels(
-            ChannelGroup clientChannels,
-            ChannelConfig channelDependencies) {
-        Map<Integer, ChannelInitializer> portsToChannels = new HashMap<>();
+    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+        Map<SocketAddress, ChannelInitializer<?>> addrsToChannels = new HashMap<>();
 
+        String mainPortName = "main";
         int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
+        SocketAddress sockAddr = new InetSocketAddress(port);
 
-        ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig(serverTimeout);
+        ChannelConfig channelConfig = defaultChannelConfig(mainPortName);
         int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
         ServerSslConfig sslConfig;
+        ChannelConfig channelDependencies = defaultChannelDependencies(mainPortName);
+
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
          * or directly on the internet.
          */
@@ -109,8 +114,11 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.isSSlFromIntermediary, false);
                 channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, false);
 
-                portsToChannels.put(port, new ZuulServerChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                addrsToChannels.put(
+                        sockAddr,
+                        new ZuulServerChannelInitializer(
+                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                logAddrConfigured(sockAddr);
                 break;
 
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
@@ -128,10 +136,13 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.serverSslConfig, sslConfig);
                 channelConfig.set(CommonChannelConfigKeys.sslContextFactory, new BaseSslContextFactory(registry, sslConfig));
 
-                addHttp2DefaultConfig(channelConfig);
+                addHttp2DefaultConfig(channelConfig, mainPortName);
 
-                portsToChannels.put(port, new Http2SslChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, sslConfig);
+                addrsToChannels.put(
+                        sockAddr,
+                        new Http2SslChannelInitializer(
+                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                logAddrConfigured(sockAddr, sslConfig);
                 break;
 
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
@@ -159,8 +170,11 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.serverSslConfig, sslConfig);
                 channelConfig.set(CommonChannelConfigKeys.sslContextFactory, new BaseSslContextFactory(registry, sslConfig));
 
-                portsToChannels.put(port, new Http1MutualSslChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, sslConfig);
+                addrsToChannels.put(
+                        sockAddr,
+                        new Http1MutualSslChannelInitializer(
+                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                logAddrConfigured(sockAddr, sslConfig);
                 break;
 
             /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
@@ -173,12 +187,18 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
-                portsToChannels.put(port, new SampleWebSocketPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                addrsToChannels.put(
+                        sockAddr,
+                        new SampleWebSocketPushChannelInitializer(
+                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                logAddrConfigured(sockAddr);
 
-                // port to accept push message from the backend, should be accessible on internal network only.
-                portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                {
+                    // port to accept push message from the backend, should be accessible on internal network only.
+                    SocketAddress pushSocketAddr = new InetSocketAddress(pushPort);
+                    addrsToChannels.put(pushSocketAddr, pushSenderInitializer);
+                    logAddrConfigured(pushSocketAddr);
+                }
 
                 break;
 
@@ -192,17 +212,23 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
-                portsToChannels.put(port, new SampleSSEPushChannelInitializer(port, channelConfig, channelDependencies, clientChannels));
-                logPortConfigured(port, null);
+                addrsToChannels.put(
+                        sockAddr,
+                        new SampleSSEPushChannelInitializer(
+                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                logAddrConfigured(sockAddr);
 
-                // port to accept push message from the backend, should be accessible on internal network only.
-                portsToChannels.put(pushPort, pushSenderInitializer);
-                logPortConfigured(pushPort, null);
+                {
+                    SocketAddress pushSocketAddr = new InetSocketAddress(pushPort);
+                    // port to accept push message from the backend, should be accessible on internal network only.
+                    addrsToChannels.put(pushSocketAddr, pushSenderInitializer);
+                    logAddrConfigured(pushSocketAddr);
+                }
 
                 break;
         }
 
-        return portsToChannels;
+        return Collections.unmodifiableMap(addrsToChannels);
     }
 
     private File loadFromResources(String s) {

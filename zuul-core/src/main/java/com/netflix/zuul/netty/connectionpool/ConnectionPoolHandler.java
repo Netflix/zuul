@@ -22,6 +22,9 @@ import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +73,19 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
             // The HttpLifecycleChannelHandler instance will fire this event when either a response has finished being written, or
             // the channel is no longer active or disconnected.
             // Return the connection to pool.
-            final CompleteReason reason = ((CompleteEvent) evt).getReason();
+            CompleteEvent completeEvt = (CompleteEvent) evt;
+            final CompleteReason reason = completeEvt.getReason();
             if (reason == SESSION_COMPLETE) {
                 final PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
                 if (conn != null) {
-                    conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
-                    conn.release();
+                    if ("close".equalsIgnoreCase(getConnectionHeader(completeEvt))) {
+                        final String msg = "Origin channel for origin - " + originName + " - completed because of expired keep-alive. "
+                                + ChannelUtils.channelInfoForLogging(ctx.channel());
+                        closeConnection(ctx, msg);
+                    } else {
+                        conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
+                        conn.release();
+                    }
                 }
             } else {
                 final String msg = "Origin channel for origin - " + originName + " - completed with reason "
@@ -135,5 +145,14 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
             pooledConnection.flagShouldClose();
             pooledConnection.release();
         }
+    }
+
+    private static String getConnectionHeader(CompleteEvent completeEvt) {
+        HttpResponse response = completeEvt.getResponse();
+        if (response != null) {
+            return response.headers().get(HttpHeaderNames.CONNECTION);
+        }
+
+        return null;
     }
 }

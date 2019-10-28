@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2018 Netflix, Inc.
  *

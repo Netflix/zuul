@@ -17,7 +17,12 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.netty.common.*;
+import com.netflix.netty.common.CloseOnIdleStateHandler;
+import com.netflix.netty.common.Http1ConnectionCloseHandler;
+import com.netflix.netty.common.Http1ConnectionExpiryHandler;
+import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
+import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
+import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -39,18 +44,18 @@ import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.passport.InboundPassportStampingFilter;
+import com.netflix.zuul.filters.passport.OutboundPassportStampingFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.netty.insights.PassportLoggingHandler;
-import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
-import com.netflix.zuul.netty.insights.PassportStateServerHandler;
-import com.netflix.zuul.filters.passport.InboundPassportStampingFilter;
-import com.netflix.zuul.filters.passport.OutboundPassportStampingFilter;
 import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.netty.filter.ZuulEndPointRunner;
 import com.netflix.zuul.netty.filter.ZuulFilterChainHandler;
 import com.netflix.zuul.netty.filter.ZuulFilterChainRunner;
+import com.netflix.zuul.netty.insights.PassportLoggingHandler;
+import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
+import com.netflix.zuul.netty.insights.PassportStateServerHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -61,14 +66,13 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.AttributeKey;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_START;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.netflix.zuul.passport.PassportState.*;
 
 /**
  * User: Mike Smith
@@ -78,6 +82,7 @@ import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
 public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Channel>
 {
     public static final String HTTP_CODEC_HANDLER_NAME = "codec";
+    public static final AttributeKey<ChannelConfig> ATTR_CHANNEL_CONFIG = AttributeKey.newInstance("channel_config");
 
     protected static final LoggingHandler nettyLogger = new LoggingHandler("zuul.server.nettylog", LogLevel.INFO);
 
@@ -85,6 +90,18 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     public static final CachedDynamicIntProperty MAX_HEADER_SIZE = new CachedDynamicIntProperty("server.http.decoder.maxHeaderSize", 32768);
     public static final CachedDynamicIntProperty MAX_CHUNK_SIZE = new CachedDynamicIntProperty("server.http.decoder.maxChunkSize", 32768);
 
+    /**
+     * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
+     * may differ from the actual listening port.  For example:
+     *
+     * <ul>
+     *     <li>When binding the server to port `0`, the actual port will be different from the one provided here.
+     *     <li>If there is no port (such as in a LocalSocket, or DomainSocket), the port number may be `-1`.
+     * </ul>
+     *
+     * <p>Instead, subclasses should read the local address on channel initialization, and decide to take action then.
+     */
+    @Deprecated
     protected final int port;
     protected final ChannelConfig channelConfig;
     protected final ChannelConfig channelDependencies;
@@ -117,18 +134,42 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
     protected final ServerStatusHeaderHandler serverStatusHeaderHandler;
+    protected final SourceAddressChannelHandler sourceAddressChannelHandler;
 
     /** A collection of all the active channels that we can use to things like graceful shutdown */
-    protected final ChannelGroup channels; 
+    protected final ChannelGroup channels;
 
+    /**
+     * After calling this method, child classes should not reference {@link #port} any more.
+     */
+    protected BaseZuulChannelInitializer(
+            String metricId,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
+        this(-1, metricId, channelConfig, channelDependencies, channels);
+    }
 
+    /**
+     * Call {@link #BaseZuulChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
+     */
+    @Deprecated
     protected BaseZuulChannelInitializer(
             int port,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
-            ChannelGroup channels)
-    {
+            ChannelGroup channels) {
+        this(port, String.valueOf(port), channelConfig, channelDependencies, channels);
+    }
+
+    private BaseZuulChannelInitializer(
+            int port,
+            String metricId,
+            ChannelConfig channelConfig,
+            ChannelConfig channelDependencies,
+            ChannelGroup channels) {
         this.port = port;
+        checkNotNull(metricId, "metricId");
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
@@ -139,9 +180,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + port);
+        this.channelMetrics = new ServerChannelMetrics("http-" + metricId);
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
-        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + port);
+        this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricId);
 
         EventLoopGroupMetrics eventLoopGroupMetrics = channelDependencies.get(ZuulDependencyKeys.eventLoopGroupMetrics);
         PerEventLoopMetricsChannelHandler perEventLoopMetricsHandler = new PerEventLoopMetricsChannelHandler(eventLoopGroupMetrics);
@@ -173,11 +214,17 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         ServerStatusManager serverStatusManager = channelDependencies.get(ZuulDependencyKeys.serverStatusManager);
         this.serverStatusHeaderHandler = new ServerStatusHeaderHandler(serverStatusManager);
+
+        this.sourceAddressChannelHandler = new SourceAddressChannelHandler();
     }
 
     protected void storeChannel(Channel ch)
     {
         this.channels.add(ch);
+
+        // Also add the ChannelConfig as an attribute on each channel. So interested filters/channel-handlers can introspect
+        // and potentially act differently based on the config.
+        ch.attr(ATTR_CHANNEL_CONFIG).set(channelConfig);
     }
 
     protected void addPassportHandler(ChannelPipeline pipeline)
@@ -187,7 +234,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
     {
-        pipeline.addLast(new SourceAddressChannelHandler());
+        pipeline.addLast(sourceAddressChannelHandler);
         pipeline.addLast("channelMetrics", channelMetrics);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
 
@@ -200,7 +247,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
 
-        pipeline.addLast(new Http1ConnectionCloseHandler(connCloseDelay));
+        pipeline.addLast(new Http1ConnectionCloseHandler());
         pipeline.addLast("conn_expiry_handler",
                 new Http1ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry));
     }
@@ -319,5 +366,4 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         filters[filters.length -1] = stop;
         return filters;
     }
-
 }

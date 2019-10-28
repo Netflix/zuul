@@ -18,11 +18,10 @@ package com.netflix.zuul.netty.connectionpool;
 
 import com.google.common.base.Stopwatch;
 import com.netflix.loadbalancer.Server;
+import com.netflix.zuul.exception.ErrorType;
+import com.netflix.zuul.exception.OutboundErrorType;
 
 import java.util.concurrent.TimeUnit;
-
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
 
 
 /**
@@ -50,30 +49,22 @@ public class BasicRequestStat implements RequestStat {
 
     @Override
     public long duration() {
-        if (!isFinished) {
-            return -1;
-        }
-        long ns = stopwatch.elapsed(TimeUnit.NANOSECONDS);
-        return ns > 0 ? ns / 1000000 : 0;
+        long ms = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        return ms > 0 ? ms : 0;
     }
 
     @Override
     public void serviceUnavailable() {
-        failAndSetErrorCode(FAILURE_ORIGIN_THROTTLED.name());
-    }
-
-    @Override
-    public void nextServerRetriesExceeded() {
-        failAndSetErrorCode(FAILURE_ORIGIN_THROTTLED.name());
+        failAndSetErrorCode(OutboundErrorType.SERVICE_UNAVAILABLE);
     }
 
     @Override
     public void generalError() {
-        failAndSetErrorCode(FAILURE_ORIGIN.name());
+        failAndSetErrorCode(OutboundErrorType.OTHER);
     }
 
     @Override
-    public void failAndSetErrorCode(String error) {
+    public void failAndSetErrorCode(ErrorType error) {
         // override to implement metric tracking
     }
 
@@ -81,6 +72,9 @@ public class BasicRequestStat implements RequestStat {
     public void updateWithHttpStatusCode(int httpStatusCode) {
         // override to implement metric tracking
     }
+
+    @Override
+    public void finalAttempt(boolean finalAttempt) {}
 
     @Override
     public boolean finishIfNotAlready() {

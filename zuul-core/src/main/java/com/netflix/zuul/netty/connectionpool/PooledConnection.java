@@ -220,15 +220,13 @@ public class PooledConnection {
             this.shouldClose = true;
         }
 
-        removeReadTimeoutHandler();
-
         // reset the connectionState
         connectionState = ConnectionState.WRITE_READY;
         released = true;
         channelManager.release(this);
     }
 
-    private void removeReadTimeoutHandler()
+    public void removeReadTimeoutHandler()
     {
         // Remove (and therefore destroy) the readTimeoutHandler when we release the
         // channel back to the pool. As don't want it timing-out when it's not in use.

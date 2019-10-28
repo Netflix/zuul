@@ -16,13 +16,8 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.filters.*;
-import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import javax.inject.Inject;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +27,6 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -110,7 +100,6 @@ public class FilterLoader
     public int filterInstanceMapSize() {
         return filterRegistry.size();
     }
-
 
     /**
      * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
@@ -215,12 +204,7 @@ public class FilterLoader
         }
 
         // Sort by filterOrder.
-        Collections.sort(list, new Comparator<ZuulFilter>() {
-            @Override
-            public int compare(ZuulFilter o1, ZuulFilter o2) {
-                return o1.filterOrder() - o2.filterOrder();
-            }
-        });
+        Collections.sort(list, Comparator.comparingInt(ZuulFilter::filterOrder));
 
         hashFiltersByType.putIfAbsent(filterType, list);
         return list;
@@ -234,121 +218,4 @@ public class FilterLoader
         String nameAndType = type.toString() + ":" + name;
         return filtersByNameAndType.get(nameAndType);
     }
-
-
-    public static class TestZuulFilter extends BaseSyncFilter {
-
-        public TestZuulFilter() {
-            super();
-        }
-
-        @Override
-        public FilterType filterType() {
-            return FilterType.INBOUND;
-        }
-
-        @Override
-        public int filterOrder() {
-            return 0;
-        }
-
-        @Override
-        public boolean shouldFilter(ZuulMessage msg) {
-            return false;
-        }
-
-        @Override
-        public ZuulMessage apply(ZuulMessage msg) {
-            return null;
-        }
-    }
-
-
-    public static class UnitTest {
-
-        @Mock
-        File file;
-
-        @Mock
-        DynamicCodeCompiler compiler;
-
-        @Mock
-        FilterRegistry registry;
-
-        FilterFactory filterFactory = new DefaultFilterFactory();
-
-        FilterLoader loader;
-
-        TestZuulFilter filter = new TestZuulFilter();
-
-        @Before
-        public void before() throws Exception
-        {
-            MockitoAnnotations.initMocks(this);
-
-            loader = spy(new FilterLoader(registry, compiler, filterFactory));
-
-            doReturn(TestZuulFilter.class).when(compiler).compile(file);
-            when(file.getAbsolutePath()).thenReturn("/filters/in/SomeFilter.groovy");
-        }
-
-        @Test
-        public void testGetFilterFromFile() throws Exception {
-            assertTrue(loader.putFilter(file));
-            verify(registry).put(any(String.class), any(BaseFilter.class));
-        }
-
-        @Test
-        public void testPutFiltersForClasses() throws Exception {
-            loader.putFiltersForClasses(new String[]{TestZuulFilter.class.getName()});
-            verify(registry).put(any(String.class), any(BaseFilter.class));
-        }
-
-        @Test
-        public void testPutFiltersForClassesException() throws Exception {
-            Exception caught = null;
-            try {
-                loader.putFiltersForClasses(new String[]{"asdf"});
-            }
-            catch (ClassNotFoundException e) {
-                caught = e;
-            }
-            assertTrue(caught != null);
-            verify(registry, times(0)).put(any(String.class), any(BaseFilter.class));
-        }
-
-        @Test
-        public void testGetFiltersByType() throws Exception {
-            assertTrue(loader.putFilter(file));
-
-            verify(registry).put(any(String.class), any(ZuulFilter.class));
-
-            final List<ZuulFilter> filters = new ArrayList<ZuulFilter>();
-            filters.add(filter);
-            when(registry.getAllFilters()).thenReturn(filters);
-
-            List<ZuulFilter> list = loader.getFiltersByType(FilterType.INBOUND);
-            assertTrue(list != null);
-            assertTrue(list.size() == 1);
-            ZuulFilter filter = list.get(0);
-            assertTrue(filter != null);
-            assertTrue(filter.filterType().equals(FilterType.INBOUND));
-        }
-
-
-        @Test
-        public void testGetFilterFromString() throws Exception {
-            String string = "";
-            doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
-            ZuulFilter filter = loader.getFilter(string, string);
-
-            assertNotNull(filter);
-            assertTrue(filter.getClass() == TestZuulFilter.class);
-//            assertTrue(loader.filterInstanceMapSize() == 1);
-        }
-
-
-    }
-
-
 }
