@@ -19,7 +19,6 @@ configurations.all {
     exclude group: 'asm', module: 'asm-all'
 }
 
-
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
@@ -29,6 +28,10 @@ subprojects {
 
     repositories {
         jcenter()
+    }
+
+    license {
+        ignoreFailures = false
     }
 
     group = "com.netflix.${githubProjectName}"
