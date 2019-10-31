@@ -45,15 +45,15 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -149,7 +149,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -231,15 +231,15 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -335,7 +335,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -417,15 +417,15 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -525,7 +525,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -607,15 +607,15 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -715,7 +715,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -797,15 +797,15 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -905,7 +905,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -987,19 +987,19 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -1095,7 +1095,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -1177,19 +1177,19 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -1285,7 +1285,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -1367,19 +1367,19 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -1479,7 +1479,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
@@ -1561,19 +1561,19 @@
             "requested": "1.9.4"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.8",
+            "locked": "1.17.9",
             "requested": "1.+"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
@@ -1673,7 +1673,7 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-beta-3",
+            "locked": "4.13-rc-1",
             "requested": "latest.release"
         },
         "log4j:log4j": {
