@@ -126,6 +126,18 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
+            } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
+                String errorMsg = "Request too large. "
+                        + "clientRequest = " + clientRequest.toString()
+                        + ", uri = " + String.valueOf(clientRequest.uri())
+                        + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
+                final ZuulException ze = new ZuulException(errorMsg);
+                ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+                zuulRequest.getContext().setError(ze);
+                zuulRequest.getContext().setShouldSendErrorResponse(true);
             }
 
             //Send the request down the filter pipeline
@@ -201,16 +213,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             channel.attr(ATTR_ZUUL_RESP).set(null);
             channel.attr(ATTR_LAST_CONTENT_RECEIVED).set(null);
         }
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-    {
-        if (cause instanceof TooLongFrameException) {
-
-        }
-
-        super.exceptionCaught(ctx, cause);
     }
 
     private static void dumpDebugInfo(final List<String> debugInfo) {
