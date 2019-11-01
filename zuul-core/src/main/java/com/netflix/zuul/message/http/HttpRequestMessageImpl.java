@@ -288,8 +288,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public String getClientIp() {
         return clientIp;
     }
-    @Override
-    public void setClientIp(String clientIp)
+
+    @Deprecated
+    @VisibleForTesting
+    void setClientIp(String clientIp)
     {
         immutableCheck();
         this.clientIp = clientIp;
@@ -311,8 +313,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         return port;
     }
-    @Override
-    public void setPort(int port)
+
+    @Deprecated
+    @VisibleForTesting
+    void setPort(int port)
     {
         immutableCheck();
         this.port = port;
