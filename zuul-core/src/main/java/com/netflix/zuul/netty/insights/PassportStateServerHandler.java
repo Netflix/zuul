@@ -49,7 +49,9 @@ public final class PassportStateServerHandler {
 
     public static void setRegistry(Registry registry) {
         checkNotNull(registry, "registry");
-        checkState(PassportStateServerHandler.registry == null, "registry already set");
+        checkState(
+                PassportStateServerHandler.registry == null || PassportStateServerHandler.registry == registry,
+                "registry already set");
         PassportStateServerHandler.registry = registry;
     }
 
