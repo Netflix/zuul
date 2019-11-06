@@ -21,7 +21,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -37,19 +36,12 @@ import java.time.LocalDateTime;
  * Date: 4/14/16
  * Time: 3:51 PM
  */
-public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
-{
+public final class AccessLogChannelHandler {
     private static final AttributeKey<RequestState> ATTR_REQ_STATE = AttributeKey.newInstance("_accesslog_requeststate");
 
     private static final Logger LOG = LoggerFactory.getLogger(AccessLogChannelHandler.class);
 
-
-    public AccessLogChannelHandler(AccessLogPublisher publisher)
-    {
-        super(new AccessLogInboundChannelHandler(publisher), new AccessLogOutboundChannelHandler());
-    }
-
-    private static class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter
+    public static final class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter
     {
         private final AccessLogPublisher publisher;
 
@@ -108,7 +100,7 @@ public class AccessLogChannelHandler extends CombinedChannelDuplexHandler
         }
     }
 
-    private static class AccessLogOutboundChannelHandler extends ChannelOutboundHandlerAdapter
+    public static final class AccessLogOutboundChannelHandler extends ChannelOutboundHandlerAdapter
     {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception

@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -29,16 +30,10 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler
 {
-    private static final HttpClientLifecycleInboundChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
-    private static final HttpClientLifecycleOutboundChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
+    public static final ChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
+    public static final ChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
 
-    public HttpClientLifecycleChannelHandler()
-    {
-        super(INBOUND_CHANNEL_HANDLER, OUTBOUND_CHANNEL_HANDLER);
-    }
-
-
-    @Sharable
+    @ChannelHandler.Sharable
     private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
     {
         @Override
@@ -71,7 +66,7 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
 
     }
 
-    @Sharable
+    @ChannelHandler.Sharable
     private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
     {
         @Override

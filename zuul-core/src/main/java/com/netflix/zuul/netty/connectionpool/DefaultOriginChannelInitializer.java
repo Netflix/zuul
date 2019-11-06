@@ -58,7 +58,8 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
 
-        pipeline.addLast(new PassportStateOriginHandler());
+        pipeline.addLast(new PassportStateOriginHandler.InboundHandler());
+        pipeline.addLast(new PassportStateOriginHandler.OutboundHandler());
 
         if (connectionPoolConfig.isSecure()) {
             pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
@@ -71,12 +72,15 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
                 false,
                 false
         ));
-        pipeline.addLast(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, new PassportStateHttpClientHandler());
+        pipeline.addLast(new PassportStateHttpClientHandler.InboundHandler());
+        pipeline.addLast(new PassportStateHttpClientHandler.OutboundHandler());
         pipeline.addLast("originNettyLogger", nettyLogger);
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
-        pipeline.addLast("httpLifecycle", new HttpClientLifecycleChannelHandler());
-        pipeline.addLast(new ClientTimeoutHandler());
+        pipeline.addLast(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER);
+        pipeline.addLast(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
+        pipeline.addLast(new ClientTimeoutHandler.InboundHandler());
+        pipeline.addLast(new ClientTimeoutHandler.OutboundHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
     }
 
@@ -93,7 +97,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     /**
      * This method can be overridden to add your own MethodBinding handler for preserving thread locals or thread variables.
      *
-     * This should be a CombinedChannelDuplexHandler that binds downstream channelRead and userEventTriggered with the
+     * This should be a handler that binds downstream channelRead and userEventTriggered with the
      * MethodBinding class. It should be added using the pipeline.addLast method.
      *
      * @param pipeline the channel pipeline

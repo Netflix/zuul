@@ -30,6 +30,7 @@ import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
@@ -274,7 +275,10 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     protected void releaseHandlers(PooledConnection conn) {
         final ChannelPipeline pipeline = conn.getChannel().pipeline();
         removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
-        pipeline.addAfter(PassportStateHttpClientHandler.PASSPORT_STATE_HTTP_CLIENT_HANDLER_NAME, IDLE_STATE_HANDLER_NAME,
+        // The Outbound handler is always after the inbound handler, so look for it.
+        ChannelHandlerContext passportStateHttpClientHandlerCtx =
+                pipeline.context(PassportStateHttpClientHandler.OutboundHandler.class);
+        pipeline.addAfter(passportStateHttpClientHandlerCtx.name(), IDLE_STATE_HANDLER_NAME,
             new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 

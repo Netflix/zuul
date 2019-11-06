@@ -20,9 +20,6 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandler;
-import io.netty.channel.ChannelOutboundHandler;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.Attribute;
@@ -35,8 +32,7 @@ import org.slf4j.LoggerFactory;
  * Date: 5/24/16
  * Time: 4:09 PM
  */
-public abstract class HttpLifecycleChannelHandler extends CombinedChannelDuplexHandler
-{
+public abstract class HttpLifecycleChannelHandler {
     private static final Logger LOG = LoggerFactory.getLogger(HttpLifecycleChannelHandler.class);
 
     public static final AttributeKey<HttpRequest> ATTR_HTTP_REQ = AttributeKey.newInstance("_http_request");
@@ -47,11 +43,6 @@ public abstract class HttpLifecycleChannelHandler extends CombinedChannelDuplexH
     }
 
     private static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_httplifecycle_state");
-
-    public HttpLifecycleChannelHandler(ChannelInboundHandler inboundHandler, ChannelOutboundHandler outboundHandler)
-    {
-        super(inboundHandler, outboundHandler);
-    }
 
     protected static boolean fireStartEvent(ChannelHandlerContext ctx, HttpRequest request)
     {

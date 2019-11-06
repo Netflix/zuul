@@ -22,7 +22,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
 
 import java.net.SocketAddress;
 
@@ -31,20 +30,14 @@ import java.net.SocketAddress;
  * Date: 9/24/16
  * Time: 2:41 PM
  */
-public class PassportStateOriginHandler extends CombinedChannelDuplexHandler
-{
-    public PassportStateOriginHandler()
-    {
-        super(new InboundHandler(), new OutboundHandler());
-    }
-
+public final class PassportStateOriginHandler {
     private static CurrentPassport passport(ChannelHandlerContext ctx)
     {
         return CurrentPassport.fromChannel(ctx.channel());
     }
 
-    private static class InboundHandler extends ChannelInboundHandlerAdapter
-    {
+    public static final class InboundHandler extends ChannelInboundHandlerAdapter {
+
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception
         {
@@ -67,8 +60,8 @@ public class PassportStateOriginHandler extends CombinedChannelDuplexHandler
         }
     }
 
-    private static class OutboundHandler extends ChannelOutboundHandlerAdapter
-    {
+    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
+
         @Override
         public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
         {
