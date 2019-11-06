@@ -29,14 +29,9 @@ import io.netty.handler.codec.http.LastHttpContent;
 /**
  * @author michaels
  */
-public class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler
+public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler
 {
-    public HttpServerLifecycleChannelHandler()
-    {
-        super(new HttpServerLifecycleInboundChannelHandler(), new HttpServerLifecycleOutboundChannelHandler());
-    }
-
-    private static class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
+    public static final class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
     {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
@@ -63,7 +58,7 @@ public class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandl
 
     }
 
-    private static class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
+    public static final class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
     {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception

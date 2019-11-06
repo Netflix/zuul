@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.insights;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.spectator.api.Registry;
@@ -23,7 +26,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.channel.unix.Errors;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
@@ -35,32 +37,33 @@ import org.slf4j.LoggerFactory;
  * Date: 9/24/16
  * Time: 2:41 PM
  */
-public class PassportStateServerHandler extends CombinedChannelDuplexHandler
-{
+public final class PassportStateServerHandler {
     private static final Logger LOG = LoggerFactory.getLogger(PassportStateServerHandler.class);
 
     private static Registry registry;
-
-    public PassportStateServerHandler(Registry registry)
-    {
-        super(new InboundHandler(), new OutboundHandler());
-        this.registry = registry;
-    }
 
     private static CurrentPassport passport(ChannelHandlerContext ctx)
     {
         return CurrentPassport.fromChannel(ctx.channel());
     }
-    
+
+    public static void setRegistry(Registry registry) {
+        checkNotNull(registry, "registry");
+        checkState(
+                PassportStateServerHandler.registry == null || PassportStateServerHandler.registry == registry,
+                "registry already set");
+        PassportStateServerHandler.registry = registry;
+    }
 
     protected static void incrementExceptionCounter(Throwable throwable, String handler) {
+        checkState(PassportStateServerHandler.registry != null, "registry not set");
         registry.counter("server.connection.exception",
                 "handler", handler,
                 "id", throwable.getClass().getSimpleName())
                 .increment();
     }
 
-    private static class InboundHandler extends ChannelInboundHandlerAdapter
+    public static final class InboundHandler extends ChannelInboundHandlerAdapter
     {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception
@@ -101,7 +104,7 @@ public class PassportStateServerHandler extends CombinedChannelDuplexHandler
         }
     }
 
-    private static class OutboundHandler extends ChannelOutboundHandlerAdapter
+    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter
     {
         @Override
         public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception

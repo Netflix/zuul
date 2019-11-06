@@ -22,7 +22,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.AttributeKey;
@@ -34,15 +33,9 @@ import javax.inject.Provider;
  * Date: 4/14/16
  * Time: 3:51 PM
  */
-public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHandler
-{
+public final class HttpBodySizeRecordingChannelHandler {
     private static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_http_body_size_state");
 
-    public HttpBodySizeRecordingChannelHandler()
-    {
-        super(new InboundChannelHandler(), new OutboundChannelHandler());
-    }
-    
     public static Provider<Long> getCurrentInboundBodySize(Channel ch)
     {
         return new InboundBodySizeProvider(ch);
@@ -69,7 +62,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         return state;
     }
 
-    private static class InboundChannelHandler extends ChannelInboundHandlerAdapter
+    public static final class InboundChannelHandler extends ChannelInboundHandlerAdapter
     {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
@@ -106,7 +99,7 @@ public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHa
         }
     }
 
-    private static class OutboundChannelHandler extends ChannelOutboundHandlerAdapter
+    public static final class OutboundChannelHandler extends ChannelOutboundHandlerAdapter
     {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception

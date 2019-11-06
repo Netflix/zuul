@@ -20,7 +20,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.CombinedChannelDuplexHandler;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -32,16 +31,12 @@ import org.slf4j.LoggerFactory;
  * Author: Arthur Gonigberg
  * Date: July 01, 2019
  */
-public class ClientTimeoutHandler extends CombinedChannelDuplexHandler {
+public final class ClientTimeoutHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTimeoutHandler.class);
 
     public static final AttributeKey<Integer> ORIGIN_RESPONSE_READ_TIMEOUT = AttributeKey.newInstance("originResponseReadTimeout");
 
-    public ClientTimeoutHandler() {
-        super(new InboundHandler(), new OutboundHandler());
-    }
-
-    private static class InboundHandler extends ChannelInboundHandlerAdapter {
+    public static final class InboundHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
@@ -56,7 +51,7 @@ public class ClientTimeoutHandler extends CombinedChannelDuplexHandler {
         }
     }
 
-    private static class OutboundHandler extends ChannelOutboundHandlerAdapter {
+    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             try {

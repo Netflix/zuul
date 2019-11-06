@@ -227,9 +227,10 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         ch.attr(ATTR_CHANNEL_CONFIG).set(channelConfig);
     }
 
-    protected void addPassportHandler(ChannelPipeline pipeline)
-    {
-        pipeline.addLast(new PassportStateServerHandler(registry));
+    protected void addPassportHandler(ChannelPipeline pipeline) {
+        PassportStateServerHandler.setRegistry(registry);
+        pipeline.addLast(new PassportStateServerHandler.InboundHandler());
+        pipeline.addLast(new PassportStateServerHandler.OutboundHandler());
     }
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
@@ -264,17 +265,21 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline)
     {
-        pipeline.addLast(new PassportStateHttpServerHandler());
+        pipeline.addLast(new PassportStateHttpServerHandler.InboundHandler());
+        pipeline.addLast(new PassportStateHttpServerHandler.OutboundHandler());
         if (httpRequestReadTimeout > -1) {
             HttpRequestReadTimeoutHandler.addLast(pipeline, httpRequestReadTimeout, TimeUnit.MILLISECONDS, httpRequestReadTimeoutCounter);
         }
-        pipeline.addLast(new HttpServerLifecycleChannelHandler());
-        pipeline.addLast(new HttpBodySizeRecordingChannelHandler());
+        pipeline.addLast(new HttpServerLifecycleChannelHandler.HttpServerLifecycleInboundChannelHandler());
+        pipeline.addLast(new HttpServerLifecycleChannelHandler.HttpServerLifecycleOutboundChannelHandler());
+        pipeline.addLast(new HttpBodySizeRecordingChannelHandler.InboundChannelHandler());
+        pipeline.addLast(new HttpBodySizeRecordingChannelHandler.OutboundChannelHandler());
         pipeline.addLast(httpMetricsHandler);
         pipeline.addLast(perEventLoopRequestsMetricsHandler);
 
         if (accessLogPublisher != null) {
-            pipeline.addLast(new AccessLogChannelHandler(accessLogPublisher));
+            pipeline.addLast(new AccessLogChannelHandler.AccessLogInboundChannelHandler(accessLogPublisher));
+            pipeline.addLast(new AccessLogChannelHandler.AccessLogOutboundChannelHandler());
         }
 
         pipeline.addLast(serverStatusHeaderHandler);
