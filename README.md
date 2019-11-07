@@ -15,7 +15,11 @@ Articles from Netflix:
 
 Zuul 1: http://techblog.netflix.com/2013/06/announcing-zuul-edge-service-in-cloud.html
 
-Zuul 2: http://techblog.netflix.com/2016/09/zuul-2-netflix-journey-to-asynchronous.html
+Zuul 2:
+
+https://medium.com/netflix-techblog/open-sourcing-zuul-2-82ea476cb2b3
+
+http://techblog.netflix.com/2016/09/zuul-2-netflix-journey-to-asynchronous.html
 
 ---
 
