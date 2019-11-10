@@ -80,19 +80,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -233,7 +233,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -245,7 +245,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -377,19 +377,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -530,7 +530,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -542,7 +542,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -674,19 +674,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -827,7 +827,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -839,7 +839,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -971,19 +971,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1124,7 +1124,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1136,7 +1136,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -1268,19 +1268,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1421,7 +1421,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1433,7 +1433,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -1565,19 +1565,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1718,7 +1718,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1730,7 +1730,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -1862,19 +1862,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -2015,7 +2015,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2027,7 +2027,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -2159,19 +2159,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -2312,7 +2312,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2324,7 +2324,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
@@ -2456,19 +2456,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-archaius": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.governator:governator-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.17.8"
+            "locked": "1.17.9"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -2609,7 +2609,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.17.0"
+            "locked": "0.20.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2621,7 +2621,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.13-beta-3"
+            "locked": "4.13-rc-1"
         },
         "log4j:log4j": {
             "firstLevelTransitive": [
