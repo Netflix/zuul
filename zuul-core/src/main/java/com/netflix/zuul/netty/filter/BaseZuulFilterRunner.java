@@ -120,22 +120,60 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final void invokeNextStage(final O zuulMesg, final HttpContent chunk) {
         if (nextStage != null) {
-            nextStage.filter(zuulMesg, chunk);
-        }
-        else {
+            PerfMark.startTask(getClass().getName(), "invokeNextStageChunk");
+            try {
+                addPerfMarkTags(zuulMesg);
+                nextStage.filter(zuulMesg, chunk);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "invokeNextStageChunk");
+            }
+        } else {
             //Next stage is Netty channel handler
-            getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
+            PerfMark.startTask(getClass().getName(), "fireChannelReadChunk");
+            try {
+                addPerfMarkTags(zuulMesg);
+                getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "fireChannelReadChunk");
+            }
         }
     }
 
     protected final void invokeNextStage(final O zuulMesg) {
         if (nextStage != null) {
-            nextStage.filter(zuulMesg);
-        }
-        else {
+            PerfMark.startTask(getClass().getName(), "invokeNextStage");
+            try {
+                addPerfMarkTags(zuulMesg);
+                nextStage.filter(zuulMesg);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "invokeNextStage");
+            }
+        } else {
             //Next stage is Netty channel handler
-            getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
+            PerfMark.startTask(getClass().getName(), "fireChannelRead");
+            try {
+                addPerfMarkTags(zuulMesg);
+                getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "fireChannelRead");
+            }
         }
+    }
+
+    protected final void addPerfMarkTags(ZuulMessage inMesg) {
+        HttpRequestInfo req = null;
+        if (inMesg instanceof HttpRequestInfo) {
+            req = (HttpRequestInfo) inMesg;
+        }
+        if (inMesg instanceof HttpResponseMessage) {
+            req = ((HttpResponseMessage) inMesg).getOutboundRequest();
+            PerfMark.attachTag("statuscode", ((HttpResponseMessage) inMesg).getStatus());
+        }
+        if (req != null) {
+            PerfMark.attachTag("path", req.getPath());
+            PerfMark.attachTag("originalhost", req.getOriginalHost());
+        }
+        PerfMark.attachTag("uuid", inMesg.getContext().getUUID());
     }
 
     protected final O filter(final ZuulFilter<I, O> filter, final I inMesg) {
@@ -143,21 +181,22 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
         FilterChainResumer resumer = null;
 
-        PerfMark.startTask("FilterRunner.filter", filter.perfmarkTag());
+        PerfMark.startTask(filter.filterName(), "filter");
         try {
+            addPerfMarkTags(inMesg);
             ExecutionStatus filterRunStatus = null;
             if (filter.filterType() == INBOUND && inMesg.getContext().shouldSendErrorResponse()) {
                 // Pass request down the pipeline, all the way to error endpoint if error response needs to be generated
                 filterRunStatus = SKIPPED;
             }
 
-            PerfMark.startTask("FilterRunner.shouldSkipFilter", filter.perfmarkTag());
+            PerfMark.startTask(filter.filterName(), "shouldSkipFilter");
             try {
                 if (shouldSkipFilter(inMesg, filter)) {
                     filterRunStatus = SKIPPED;
                 }
             } finally {
-                PerfMark.stopTask("FilterRunner.shouldSkipFilter", filter.perfmarkTag());
+              PerfMark.stopTask(filter.filterName(), "shouldSkipFilter");
             }
 
             if (filter.isDisabled()) {
@@ -186,29 +225,30 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             if (filter.getSyncType() == FilterSyncType.SYNC) {
                 final SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter) filter;
                 final O outMesg;
-                PerfMark.startTask("FilterRunner.applySync", filter.perfmarkTag());
+                PerfMark.startTask(filter.filterName(), "apply");
                 try {
+                    addPerfMarkTags(inMesg);
                     outMesg = syncFilter.apply(inMesg);
                 } finally {
-                    PerfMark.stopTask("FilterRunner.applySync", filter.perfmarkTag());
+                  PerfMark.stopTask(filter.filterName(), "apply");
                 }
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
             }
 
             // async filter
-            PerfMark.startTask("FilterRunner.applyAsync", filter.perfmarkTag());
+            PerfMark.startTask(filter.filterName(), "applyAsync");
             try {
                 final Link nettyToSchedulerLink = PerfMark.linkOut();
                 filter.incrementConcurrency();
                 resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
                 filter.applyAsync(inMesg)
                         .doOnSubscribe(() -> {
-                            PerfMark.startTask("FilterRunner.onSubscribeAsync", filter.perfmarkTag());
+                            PerfMark.startTask(filter.filterName(), "onSubscribeAsync");
                             try {
                                 PerfMark.linkIn(nettyToSchedulerLink);
                             } finally {
-                                PerfMark.stopTask("FilterRunner.onSubscribeAsync", filter.perfmarkTag());
+                              PerfMark.stopTask(filter.filterName(), "onSubscribeAsync");
                             }
                         })
                         .doOnNext(resumer.onNextStarted(nettyToSchedulerLink))
@@ -218,7 +258,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                         .doOnUnsubscribe(resumer::decrementConcurrency)
                         .subscribe(resumer);
             } finally {
-                PerfMark.stopTask("FilterRunner.applyAsync", filter.perfmarkTag());
+              PerfMark.stopTask(filter.filterName(), "applyAsync");
             }
 
             return null;  //wait for the async filter to finish
@@ -232,7 +272,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
             return outMesg;
         } finally {
-            PerfMark.stopTask("FilterRunner.filter", filter.perfmarkTag());
+          PerfMark.stopTask(filter.filterName(), "filter");
         }
     }
 
@@ -383,29 +423,33 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         @Override
         public void onNext(O outMesg) {
-            PerfMark.startTask("FilterChainResumer.onNext", filter.perfmarkTag());
+            boolean stopped = false;
+            PerfMark.startTask(filter.filterName(), "onNextAsync");
             try {
-                PerfMark.event("FilterChainResumer.resumeNext", PerfMark.createTag(inMesg.getContext().getUUID()));
                 PerfMark.linkIn(onNextLinkOut.get());
+                addPerfMarkTags(inMesg);
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 if (outMesg == null) {
                     outMesg = filter.getDefaultOutput(inMesg);
                 }
+                stopped = true;
+                PerfMark.stopTask(filter.filterName(), "onNextAsync");
                 resumeInBindingContext(outMesg, filter.filterName());
             }
             catch (Exception e) {
                 decrementConcurrency();
                 handleException(inMesg, filter.filterName(), e);
             } finally {
-                PerfMark.stopTask("FilterChainResumer.onNext", filter.perfmarkTag());
+                if (!stopped) {
+                    PerfMark.stopTask(filter.filterName(), "onNextAsync");
+                }
             }
         }
 
         @Override
         public void onError(Throwable ex) {
-            PerfMark.startTask("FilterChainResumer.onError", filter.perfmarkTag());
+            PerfMark.startTask(filter.filterName(), "onErrorAsync");
             try {
-                PerfMark.event("FilterChainResumer.resumeError", PerfMark.createTag(inMesg.getContext().getUUID()));
                 PerfMark.linkIn(onErrorLinkOut.get());
                 decrementConcurrency();
                 recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
@@ -415,55 +459,50 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             catch (Exception e) {
                 handleException(inMesg, filter.filterName(), e);
             } finally {
-                PerfMark.stopTask("FilterChainResumer.onError", filter.perfmarkTag());
-            }
+              PerfMark.stopTask(filter.filterName(), "onErrorAsync");            }
         }
 
         @Override
         public void onCompleted() {
-            PerfMark.startTask("FilterChainResumer.onCompleted", filter.perfmarkTag());
+            PerfMark.startTask(filter.filterName(), "onCompletedAsync");
             try {
                 PerfMark.linkIn(onCompletedLinkOut.get( ));
-                PerfMark.event("FilterChainResumer.resumeCompleted", PerfMark.createTag(inMesg.getContext().getUUID()));
                 decrementConcurrency();
             } finally {
-                PerfMark.stopTask("FilterChainResumer.onCompleted", filter.perfmarkTag());
+              PerfMark.stopTask(filter.filterName(), "onCompletedAsync");
             }
         }
 
         private Action1<O> onNextStarted(Link onNextLinkIn) {
             return o -> {
-                PerfMark.startTask("FilterRunner.onNextAsync", filter.perfmarkTag());
+                PerfMark.startTask(filter.filterName(), "onNext");
                 try {
                     PerfMark.linkIn(onNextLinkIn);
                     onNextLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask("FilterRunner.onNextAsync", filter.perfmarkTag());
-                }
+                    PerfMark.stopTask(filter.filterName(), "onNext");                }
             };
         }
 
         private Action1<Throwable> onErrorStarted(Link onErrorLinkIn) {
             return t -> {
-                PerfMark.startTask("FilterRunner.onErrorAsync", filter.perfmarkTag());
+                PerfMark.startTask(filter.filterName(), "onError");
                 try {
                     PerfMark.linkIn(onErrorLinkIn);
                     onErrorLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask("FilterRunner.onErrorAsync", filter.perfmarkTag());
-                }
+                    PerfMark.stopTask(filter.filterName(), "onError");                }
             };
         }
 
         private Action0 onCompletedStarted(Link onCompletedLinkIn) {
             return () -> {
-                PerfMark.startTask("FilterRunner.onCompletedAsync", filter.perfmarkTag());
+                PerfMark.startTask(filter.filterName(), "onCompleted");
                 try {
                     PerfMark.linkIn(onCompletedLinkIn);
                     onCompletedLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask("FilterRunner.onCompletedAsync", filter.perfmarkTag());
-                }
+                    PerfMark.stopTask(filter.filterName(), "onCompleted");                }
             };
         }
     }
