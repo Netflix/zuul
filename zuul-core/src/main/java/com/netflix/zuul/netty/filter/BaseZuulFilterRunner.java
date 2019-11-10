@@ -120,30 +120,60 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final void invokeNextStage(final O zuulMesg, final HttpContent chunk) {
         if (nextStage != null) {
-            nextStage.filter(zuulMesg, chunk);
-        }
-        else {
+            PerfMark.startTask(getClass().getName(), "invokeNextStageChunk");
+            try {
+                addPerfMarkTags(zuulMesg);
+                nextStage.filter(zuulMesg, chunk);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "invokeNextStageChunk");
+            }
+        } else {
             //Next stage is Netty channel handler
-            getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
+            PerfMark.startTask(getClass().getName(), "fireChannelReadChunk");
+            try {
+                addPerfMarkTags(zuulMesg);
+                getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "fireChannelReadChunk");
+            }
         }
     }
 
     protected final void invokeNextStage(final O zuulMesg) {
         if (nextStage != null) {
-            nextStage.filter(zuulMesg);
-        }
-        else {
+            PerfMark.startTask(getClass().getName(), "invokeNextStage");
+            try {
+                addPerfMarkTags(zuulMesg);
+                nextStage.filter(zuulMesg);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "invokeNextStage");
+            }
+        } else {
             //Next stage is Netty channel handler
-            getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
+            PerfMark.startTask(getClass().getName(), "fireChannelRead");
+            try {
+                addPerfMarkTags(zuulMesg);
+                getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
+            } finally {
+                PerfMark.stopTask(getClass().getName(), "fireChannelRead");
+            }
         }
     }
 
-    protected final void addPerfMarkTags(I inMesg) {
-      if (inMesg instanceof HttpRequestInfo) {
-        PerfMark.attachTag("path", ((HttpRequestInfo) inMesg).getPath());
-        PerfMark.attachTag("path", ((HttpRequestInfo) inMesg).getPath());
-      }
-      PerfMark.attachTag("uuid", inMesg.getContext().getUUID());
+    protected final void addPerfMarkTags(ZuulMessage inMesg) {
+        HttpRequestInfo req = null;
+        if (inMesg instanceof HttpRequestInfo) {
+            req = (HttpRequestInfo) inMesg;
+        }
+        if (inMesg instanceof HttpResponseMessage) {
+            req = ((HttpResponseMessage) inMesg).getOutboundRequest();
+            PerfMark.attachTag("statuscode", ((HttpResponseMessage) inMesg).getStatus());
+        }
+        if (req != null) {
+            PerfMark.attachTag("path", req.getPath());
+            PerfMark.attachTag("originalhost", req.getOriginalHost());
+        }
+        PerfMark.attachTag("uuid", inMesg.getContext().getUUID());
     }
 
     protected final O filter(final ZuulFilter<I, O> filter, final I inMesg) {

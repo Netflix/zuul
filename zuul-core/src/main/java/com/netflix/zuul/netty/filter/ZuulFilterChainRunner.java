@@ -26,6 +26,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.handler.codec.http.HttpContent;
 
+import io.perfmark.PerfMark;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,14 +50,25 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
     @Override
     public void filter(final T inMesg) {
-        runFilters(inMesg, initRunningFilterIndex(inMesg));
+        PerfMark.startTask(getClass().getSimpleName(), "filter");
+        try {
+            addPerfMarkTags(inMesg);
+            runFilters(inMesg, initRunningFilterIndex(inMesg));
+        } finally {
+            PerfMark.stopTask(getClass().getSimpleName(), "filter");
+        }
     }
 
     @Override
     protected void resume(final T inMesg) {
-        final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
-        runningFilterIdx.incrementAndGet();
-        runFilters(inMesg, runningFilterIdx);
+        PerfMark.startTask(getClass().getSimpleName(), "resume");
+        try {
+            final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
+            runningFilterIdx.incrementAndGet();
+            runFilters(inMesg, runningFilterIdx);
+        } finally {
+            PerfMark.stopTask(getClass().getSimpleName(), "resume");
+        }
     }
 
     private final void runFilters(final T mesg, final AtomicInteger runningFilterIdx) {
@@ -88,7 +100,9 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     @Override
     public void filter(T inMesg, HttpContent chunk) {
         String filterName = "-";
+        PerfMark.startTask(getClass().getName(), "filterChunk");
         try {
+            addPerfMarkTags(inMesg);
             Preconditions.checkNotNull(inMesg, "input message");
 
             final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
@@ -145,6 +159,8 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         }
         catch (Exception ex) {
             handleException(inMesg, filterName, ex);
+        } finally {
+            PerfMark.stopTask(getClass().getName(), "filterChunk");
         }
     }
 
