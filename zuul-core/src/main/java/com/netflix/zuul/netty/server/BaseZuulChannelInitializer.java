@@ -401,7 +401,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (msg instanceof ByteBuf && handshakeBuf.readableBytes() < 1024) {
+            if (msg instanceof ByteBuf && handshakeBuf.readableBytes() < 256) {
                 ByteBuf buf = (ByteBuf) msg;
                 handshakeBuf.addComponent(buf.retainedSlice());
             }
