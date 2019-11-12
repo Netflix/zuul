@@ -80,7 +80,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
     static String getHostAddress(InetSocketAddress socketAddress) {
         InetAddress address = socketAddress.getAddress();
         if (address instanceof Inet6Address) {
-            // Strip the scope from the address since some other classes choke on in.
+            // Strip the scope from the address since some other classes choke on it.
             // TODO(carl-mastrangelo): Consider adding this back in once issues like
             // https://github.com/google/guava/issues/2587 are fixed.
             try {
