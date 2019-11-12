@@ -56,19 +56,28 @@ import com.netflix.zuul.netty.insights.PassportLoggingHandler;
 import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
 import com.netflix.zuul.netty.insights.PassportStateServerHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.netflix.zuul.passport.PassportState.*;
@@ -305,6 +314,12 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         }
     }
 
+    protected final void addLastSslHandler(ChannelPipeline pipeline, String name, SslHandler handler) {
+        pipeline.addLast(new PreSslDebugHandler());
+        pipeline.addLast(name, handler);
+        pipeline.addLast(new PostSslDebugHandler());
+    }
+
     protected void addZuulHandlers(final ChannelPipeline pipeline)
     {
         pipeline.addLast("logger", nettyLogger);
@@ -363,5 +378,59 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         }
         filters[filters.length -1] = stop;
         return filters;
+    }
+
+    private static final class PreSslDebugHandler extends ChannelInboundHandlerAdapter {
+        private static final Logger logger = LoggerFactory.getLogger(PreSslDebugHandler.class);
+
+        private CompositeByteBuf handshakeBuf;
+
+        @Override
+        public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+            handshakeBuf = ctx.alloc().compositeBuffer();
+            super.handlerAdded(ctx);
+        }
+
+        @Override
+        public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+            ByteBuf buf = handshakeBuf;
+            handshakeBuf = null;
+            buf.release();
+            super.handlerRemoved(ctx);
+        }
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            if (msg instanceof ByteBuf && handshakeBuf.readableBytes() < 1024) {
+                ByteBuf buf = (ByteBuf) msg;
+                handshakeBuf.addComponent(buf.retainedSlice());
+            }
+            super.channelRead(ctx, msg);
+        }
+
+        void logHandshake() {
+            logger.warn(ByteBufUtil.prettyHexDump(handshakeBuf));
+        }
+    }
+
+    private static final class PostSslDebugHandler extends ChannelInboundHandlerAdapter {
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt instanceof SslHandshakeCompletionEvent) {
+                SslHandshakeCompletionEvent completion = (SslHandshakeCompletionEvent) evt;
+                ChannelHandlerContext preSslDebugHandlerCtx = ctx.pipeline().context(PreSslDebugHandler.class);
+                try {
+                    if (!completion.isSuccess() && preSslDebugHandlerCtx != null) {
+                        ((PreSslDebugHandler) preSslDebugHandlerCtx.handler()).logHandshake();
+                    }
+                } finally {
+                    if (preSslDebugHandlerCtx != null) {
+                        ctx.pipeline().remove(preSslDebugHandlerCtx.name());
+                    }
+                    ctx.pipeline().remove(this);
+                }
+            }
+            super.userEventTriggered(ctx, evt);
+        }
     }
 }

@@ -106,7 +106,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         addPassportHandler(pipeline);
         addTcpRelatedHandlers(pipeline);
         pipeline.addLast(new Http2FrameLoggingPerClientIpHandler());
-        pipeline.addLast("ssl", sslHandler);
+        addLastSslHandler(pipeline, "ssl", sslHandler);
         addSslInfoHandlers(pipeline, isSSlFromIntermediary);
         addSslClientCertChecks(pipeline);
 

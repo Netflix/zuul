@@ -17,7 +17,12 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.zuul.netty.ssl.SslContextFactory;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.SslContext;
@@ -25,7 +30,10 @@ import io.netty.handler.ssl.SslHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import javax.net.ssl.SSLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -87,7 +95,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
         addTimeoutHandlers(pipeline);
         addPassportHandler(pipeline);
         addTcpRelatedHandlers(pipeline);
-        pipeline.addLast("ssl", sslHandler);
+        addLastSslHandler(pipeline, "ssl", sslHandler);
         addSslInfoHandlers(pipeline, isSSlFromIntermediary);
         addSslClientCertChecks(pipeline);
         addHttp1Handlers(pipeline);
