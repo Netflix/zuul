@@ -31,11 +31,7 @@ public interface HttpRequestMessage extends HttpRequestInfo
 
     void setPath(String path);
 
-    void setClientIp(String clientIp);
-
     void setScheme(String scheme);
-
-    void setPort(int port);
 
     void setServerName(String serverName);
 
