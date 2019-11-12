@@ -34,7 +34,6 @@ import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
 import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
-import com.netflix.netty.common.status.ServerStatusHeaderHandler;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.servo.monitor.BasicCounter;
@@ -133,7 +132,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final BasicCounter httpRequestReadTimeoutCounter;
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
-    protected final ServerStatusHeaderHandler serverStatusHeaderHandler;
     protected final SourceAddressChannelHandler sourceAddressChannelHandler;
 
     /** A collection of all the active channels that we can use to things like graceful shutdown */
@@ -212,9 +210,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.filterLoader = channelDependencies.get(ZuulDependencyKeys.filterLoader);
         this.filterUsageNotifier = channelDependencies.get(ZuulDependencyKeys.filterUsageNotifier);
 
-        ServerStatusManager serverStatusManager = channelDependencies.get(ZuulDependencyKeys.serverStatusManager);
-        this.serverStatusHeaderHandler = new ServerStatusHeaderHandler(serverStatusManager);
-
         this.sourceAddressChannelHandler = new SourceAddressChannelHandler();
     }
 
@@ -282,8 +277,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             pipeline.addLast(new AccessLogChannelHandler.AccessLogOutboundChannelHandler());
         }
 
-        pipeline.addLast(serverStatusHeaderHandler);
-        //pipeline.addLast(requestThrottleHandler);
         pipeline.addLast(stripInboundProxyHeadersHandler);
 
         if (rateLimitingChannelHandler != null) {
