@@ -16,14 +16,20 @@
 
 package com.netflix.netty.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
+import javax.annotation.Nullable;
 
 /**
  * Stores the source IP address as an attribute of the channel. This has the advantage of allowing
@@ -35,7 +41,7 @@ import java.net.SocketAddress;
  * Time: 4:29 PM
  */
 @ChannelHandler.Sharable
-public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
+public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
 {
     public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR = AttributeKey.newInstance("_source_inet_addr");
     public static final AttributeKey<String> ATTR_SOURCE_ADDRESS = AttributeKey.newInstance("_source_address");
@@ -51,12 +57,12 @@ public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
     {
         InetSocketAddress sourceAddress = sourceAddress(ctx.channel());
         ctx.channel().attr(ATTR_SOURCE_INET_ADDR).setIfAbsent(sourceAddress);
-        ctx.channel().attr(ATTR_SOURCE_ADDRESS).setIfAbsent(sourceAddress.getAddress().getHostAddress());
+        ctx.channel().attr(ATTR_SOURCE_ADDRESS).setIfAbsent(getHostAddress(sourceAddress));
         ctx.channel().attr(ATTR_SOURCE_PORT).setIfAbsent(sourceAddress.getPort());
 
         InetSocketAddress localAddress = localAddress(ctx.channel());
         ctx.channel().attr(ATTR_LOCAL_INET_ADDR).setIfAbsent(localAddress);
-        ctx.channel().attr(ATTR_LOCAL_ADDRESS).setIfAbsent(localAddress.getAddress().getHostAddress());
+        ctx.channel().attr(ATTR_LOCAL_ADDRESS).setIfAbsent(getHostAddress(localAddress));
         ctx.channel().attr(ATTR_LOCAL_PORT).setIfAbsent(localAddress.getPort());
         // ATTR_LOCAL_ADDRESS and ATTR_LOCAL_PORT get overwritten with what is received in
         // Proxy Protocol (via the LB), so set local server's address, port explicitly
@@ -64,6 +70,30 @@ public class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
         ctx.channel().attr(ATTR_SERVER_LOCAL_PORT).setIfAbsent(localAddress.getPort());
 
         super.channelActive(ctx);
+    }
+
+    /**
+     * Returns the String form of a socket address, or {@code null} if there isn't one.
+     */
+    @VisibleForTesting
+    @Nullable
+    static String getHostAddress(InetSocketAddress socketAddress) {
+        InetAddress address = socketAddress.getAddress();
+        if (address instanceof Inet6Address) {
+            // Strip the scope from the address since some other classes choke on in.
+            // TODO(carl-mastrangelo): Consider adding this back in once issues like
+            // https://github.com/google/guava/issues/2587 are fixed.
+            try {
+                return InetAddress.getByAddress(address.getAddress()).getHostAddress();
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (address instanceof Inet4Address) {
+            return address.getHostAddress();
+        } else {
+            assert address == null;
+            return null;
+        }
     }
 
     private InetSocketAddress sourceAddress(Channel channel)
