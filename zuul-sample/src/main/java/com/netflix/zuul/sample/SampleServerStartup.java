@@ -91,14 +91,30 @@ public class SampleServerStartup extends BaseServerStartup {
     @Override
     protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
         Map<SocketAddress, ChannelInitializer<?>> addrsToChannels = new HashMap<>();
+        SocketAddress sockAddr;
+        String metricId;
+        {
+            @Deprecated
+            int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
+            sockAddr = new SocketAddressProperty("zuul.server.addr.main", "=" + port).getValue();
+            if (sockAddr instanceof InetSocketAddress) {
+                metricId = String.valueOf(((InetSocketAddress) sockAddr).getPort());
+            } else {
+                // Just pick something.   This would likely be a UDS addr or a LocalChannel addr.
+                metricId = sockAddr.toString();
+            }
+        }
+
+        SocketAddress pushSockAddr;
+        {
+            int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
+            pushSockAddr = new SocketAddressProperty(
+                    "zuul.server.addr.http.push", "="  + pushPort).getValue();
+        }
 
         String mainPortName = "main";
-        int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
-        SocketAddress sockAddr = new InetSocketAddress(port);
-
-        ChannelConfig channelConfig = defaultChannelConfig(mainPortName);
-        int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
         ServerSslConfig sslConfig;
+        ChannelConfig channelConfig = defaultChannelConfig(mainPortName);
         ChannelConfig channelDependencies = defaultChannelDependencies(mainPortName);
 
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
@@ -117,7 +133,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         sockAddr,
                         new ZuulServerChannelInitializer(
-                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
                 break;
 
@@ -141,7 +157,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         sockAddr,
                         new Http2SslChannelInitializer(
-                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
                 break;
 
@@ -173,7 +189,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         sockAddr,
                         new Http1MutualSslChannelInitializer(
-                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
                 break;
 
@@ -190,16 +206,12 @@ public class SampleServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         sockAddr,
                         new SampleWebSocketPushChannelInitializer(
-                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
 
-                {
-                    // port to accept push message from the backend, should be accessible on internal network only.
-                    SocketAddress pushSocketAddr = new InetSocketAddress(pushPort);
-                    addrsToChannels.put(pushSocketAddr, pushSenderInitializer);
-                    logAddrConfigured(pushSocketAddr);
-                }
-
+                // port to accept push message from the backend, should be accessible on internal network only.
+                addrsToChannels.put(pushSockAddr, pushSenderInitializer);
+                logAddrConfigured(pushSockAddr);
                 break;
 
             /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
@@ -215,16 +227,11 @@ public class SampleServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         sockAddr,
                         new SampleSSEPushChannelInitializer(
-                                String.valueOf(port), channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
-
-                {
-                    SocketAddress pushSocketAddr = new InetSocketAddress(pushPort);
-                    // port to accept push message from the backend, should be accessible on internal network only.
-                    addrsToChannels.put(pushSocketAddr, pushSenderInitializer);
-                    logAddrConfigured(pushSocketAddr);
-                }
-
+                // port to accept push message from the backend, should be accessible on internal network only.
+                addrsToChannels.put(pushSockAddr, pushSenderInitializer);
+                logAddrConfigured(pushSockAddr);
                 break;
         }
 
