@@ -1511,8 +1511,12 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.29",
             "requested": "1.7.25"
+        },
+        "org.slf4j:slf4j-simple": {
+            "locked": "1.7.29",
+            "requested": "1.7.29"
         }
     },
     "testRuntimeClasspath": {
@@ -1705,8 +1709,12 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.29",
             "requested": "1.7.25"
+        },
+        "org.slf4j:slf4j-simple": {
+            "locked": "1.7.29",
+            "requested": "1.7.29"
         }
     }
 }
