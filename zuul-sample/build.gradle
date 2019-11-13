@@ -1,0 +1,33 @@
+apply plugin: 'groovy'
+apply plugin: 'application'
+
+dependencies {
+    compile project(":zuul-core")
+
+    compile 'com.netflix.blitz4j:blitz4j:1.37.2'
+}
+
+jar {
+    from sourceSets.main.allGroovy
+}
+
+/*
+ * Run regular:   ./gradlew run
+ * Run benchmark: ./gradlew run -Pbench
+ */
+run {
+    mainClassName = "com.netflix.zuul.sample.Bootstrap"
+
+    applicationDefaultJvmArgs = ["-DTZ=GMT",
+                                 "-Darchaius.deployment.environment=test",
+                                 "-Dcom.sun.management.jmxremote",
+                                 "-Dcom.sun.management.jmxremote.local.only=false",
+                                 "-Deureka.validateInstanceId=false",
+                                 "-Deureka.mt.num_retries=1"]
+
+    if (project.hasProperty('bench')) {
+        println 'Running benchmark configuration...'
+        jvmArgs "-Darchaius.deployment.environment=benchmark"
+    }
+}
+

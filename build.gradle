@@ -1,0 +1,93 @@
+
+plugins {
+    id 'nebula.netflixoss' version '8.0.0'
+    id 'nebula.dependency-lock' version '8.0.0'
+    id "com.google.osdetector" version "1.6.2"
+}
+
+ext.githubProjectName = rootProject.name
+
+
+idea {
+    project {
+        languageLevel = '1.8'
+    }
+}
+
+configurations.all {
+    exclude group: 'asm', module: 'asm'
+    exclude group: 'asm', module: 'asm-all'
+}
+
+subprojects {
+    apply plugin: 'nebula.netflixoss'
+    apply plugin: 'java'
+    apply plugin: 'groovy'
+    apply plugin: 'nebula.javadoc-jar'
+    apply plugin: 'nebula.dependency-lock'
+
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+
+    license {
+        ignoreFailures = false
+    }
+
+    group = "com.netflix.${githubProjectName}"
+
+    sourceCompatibility = '1.8'
+
+    sourceSets {
+        test {
+            java {
+                srcDirs  = ['src/main/java', 'src/test/java']
+                include '**/*.java'
+            }
+            groovy {
+                srcDirs  = ['filters', 'src/main/groovy']
+                include '**/*.groovy'
+            }
+        }
+    }
+
+    javadoc {
+        options {
+            doclet = "org.benjchristensen.doclet.DocletExclude"
+            docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
+            stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
+            windowTitle = "Zuul Javadoc ${project.version}"
+        }
+    }
+
+    eclipse {
+        classpath {
+            downloadSources = true
+            downloadJavadoc = true
+        }
+    }
+
+    tasks.withType(Javadoc).each {
+        it.classpath = sourceSets.main.compileClasspath
+    }
+
+    dependencies {
+        ext.versions_guice = "4.0"
+
+        // Use guice-4 while debugging a startup error that is hidden by guice-3's lack of java8 lambda support.
+        compile(group: 'com.google.inject', name: 'guice', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-multibindings', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-grapher', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-assistedinject', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-servlet', version: "${versions_guice}")
+        compile(group: 'com.google.inject.extensions', name: 'guice-throwingproviders', version: "${versions_guice}")
+    }
+
+
+    test {
+        testLogging {
+            showStandardStreams = true
+        }
+    }
+}
