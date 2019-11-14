@@ -52,15 +52,6 @@ subprojects {
         }
     }
 
-    javadoc {
-        options {
-            doclet = "org.benjchristensen.doclet.DocletExclude"
-            docletpath = [rootProject.file('./gradle/doclet-exclude.jar')]
-            stylesheetFile = rootProject.file('./gradle/javadocStyleSheet.css')
-            windowTitle = "Zuul Javadoc ${project.version}"
-        }
-    }
-
     eclipse {
         classpath {
             downloadSources = true
