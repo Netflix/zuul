@@ -25,23 +25,21 @@ import java.util.*;
  */
 public class JsonUtility {
 
-
     private static final Logger logger = LoggerFactory.getLogger(JsonUtility.class);
-
 
     /**
      * Pass in a Map and this method will return a JSON string.
-     * <p/>
-     * The map can contain Objects, int[], Object[] and Collections and they will be converted into string representations.
-     * <p/>
-     * Nested maps can be included as values and the JSON will have nested object notation.
-     * <p/>
-     * Arrays/Collections can have Maps in them as well.
-     * <p/>
-     * See the unit tests for examples.
+     *
+     * <p>The map can contain Objects, int[], Object[] and Collections and they will be converted
+     * into string representations.
+     *
+     * <p>Nested maps can be included as values and the JSON will have nested object notation.
+     *
+     * <p>Arrays/Collections can have Maps in them as well.
+     *
+     * <p>See the unit tests for examples.
      *
      * @param jsonData
-     * @return
      */
     public static String jsonFromMap(Map<String, Object> jsonData) {
         try {

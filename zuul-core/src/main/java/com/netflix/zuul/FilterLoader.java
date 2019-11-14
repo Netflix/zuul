@@ -184,9 +184,6 @@ public class FilterLoader
 
     /**
      * Returns a list of filters by the filterType specified
-     *
-     * @param filterType
-     * @return a List<ZuulFilter>
      */
     public List<ZuulFilter> getFiltersByType(FilterType filterType) {
 
