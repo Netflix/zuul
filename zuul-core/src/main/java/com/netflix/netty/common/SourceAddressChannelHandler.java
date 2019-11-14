@@ -41,11 +41,35 @@ import javax.annotation.Nullable;
  * Time: 4:29 PM
  */
 @ChannelHandler.Sharable
-public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter
-{
+public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdapter {
+    /**
+     * Indicates the actual source (remote) address of the channel.  This can be different than the
+     * one {@link Channel} returns if the connection is being proxied.  (e.g. over HAProxy)
+     */
+    public static final AttributeKey<SocketAddress> ATTR_REMOTE_ADDR = AttributeKey.newInstance("_remote_addr");
+
+    /** Use {@link #ATTR_REMOTE_ADDR} instead. */
+    @Deprecated
     public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR = AttributeKey.newInstance("_source_inet_addr");
+
+    /**
+     * The host address of the source.   This is derived from {@link #ATTR_REMOTE_ADDR}.   If the
+     * address is an IPv6 address, the scope identifier is absent.
+     */
     public static final AttributeKey<String> ATTR_SOURCE_ADDRESS = AttributeKey.newInstance("_source_address");
+
+    /**
+     * Indicates the actual source (remote) port of the channel, if present.  This can be different
+     * than the one {@link Channel} returns if the connection is being proxies.  (e.g. over
+     * HAProxy).
+     * @deprecated use {@link #ATTR_REMOTE_ADDR} instead, and check if it is an {@code
+     *      InetSocketAddress}.
+     */
+    @Deprecated
     public static final AttributeKey<Integer> ATTR_SOURCE_PORT = AttributeKey.newInstance("_source_port");
+
+    /** Use {@code channel.localAddress()} instead. */
+    @Deprecated
     public static final AttributeKey<InetSocketAddress> ATTR_LOCAL_INET_ADDR = AttributeKey.newInstance("_local_inet_addr");
     public static final AttributeKey<String> ATTR_LOCAL_ADDRESS = AttributeKey.newInstance("_local_address");
     public static final AttributeKey<Integer> ATTR_LOCAL_PORT = AttributeKey.newInstance("_local_port");
