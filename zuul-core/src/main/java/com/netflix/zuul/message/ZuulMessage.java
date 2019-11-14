@@ -100,13 +100,12 @@ public interface ZuulMessage extends Cloneable {
     /**
      * Sets the message body to be complete if it was not already so.
      *
-     * @return {@true} if the body was not yet complete, or else false.
+     * @return {@code true} if the body was not yet complete, or else false.
      */
     boolean finishBufferedBodyIfIncomplete();
 
     /**
      * Indicates that the message contains a content chunk the implements {@link LastHttpContent}.
-     * @return
      */
     boolean hasCompleteBody();
 

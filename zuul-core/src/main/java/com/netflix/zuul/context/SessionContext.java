@@ -373,10 +373,7 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * sets routeVIP; that is the Eureka "vip" of registered instances
-     *
-     * @return
      */
-
     public void setRouteVIP(String sVip) {
         set(KEY_VIP, sVip);
     }

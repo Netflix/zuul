@@ -32,12 +32,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * filterType() - to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
  * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
  * We also support a "static" type for static responses see  StaticResponseFilter.
- * <p/>
+ * <p>
  * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
  * important for a filter. filterOrders do not need to be sequential.
- * <p/>
+ * <p>
  * ZuulFilters may be disabled using Archaius Properties.
- * <p/>
+ * <p>
  * By default ZuulFilters are static; they don't carry state. This may be overridden by overriding the isStaticFilter() property to false
  *
  * @author Mikey Cohen

@@ -32,14 +32,14 @@ import java.util.Set;
  * entries. Sample configuration:
  *
  * <pre>
- *  &lt;appender name="console" class="org.apache.log4j.ConsoleAppender">
- *      &lt;layout class="it.openutils.log4j.FilteredPatternLayout">
- *          &lt;param name="ConversionPattern" value="%-5p  %c %F(%M:%L) %d{dd.MM.yyyy HH:mm:ss}  %m%n" />
- *          &lt;param name="Filter" value="org.apache.catalina" />
- *          &lt;param name="Filter" value="sun.reflect" />
- *          &lt;param name="Filter" value="javax.servlet.http" />
- *      &lt;/layout>
- *  &lt;/appender>
+ *  &lt;appender name="console" class="org.apache.log4j.ConsoleAppender"&gt;
+ *      &lt;layout class="it.openutils.log4j.FilteredPatternLayout"&gt;
+ *          &lt;param name="ConversionPattern" value="%-5p  %c %F(%M:%L) %d{dd.MM.yyyy HH:mm:ss}  %m%n" /&gt;
+ *          &lt;param name="Filter" value="org.apache.catalina" /&gt;
+ *          &lt;param name="Filter" value="sun.reflect" /&gt;
+ *          &lt;param name="Filter" value="javax.servlet.http" /&gt;
+ *      &lt;/layout&gt;
+ *  &lt;/appender&gt;
  * </pre>
  *
  * @author Fabrizio Giustina

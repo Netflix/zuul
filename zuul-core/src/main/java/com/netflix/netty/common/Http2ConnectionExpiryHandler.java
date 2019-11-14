@@ -20,7 +20,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
 /**
- * This needs to be inserted in the pipeline after the Http2 Codex, but before any h2->h1 conversion.
+ * This needs to be inserted in the pipeline after the Http2 Codex, but before any h2-&gt;h1 conversion.
  *
  * User: michaels@netflix.com
  * Date: 2/8/17
