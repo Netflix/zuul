@@ -50,7 +50,7 @@ dependencies {
     compile "junit:junit:latest.release"
     compile "org.mockito:mockito-core:1.9.+"
 
-    compile 'io.perfmark:perfmark-api:0.20.0'
+    compile 'io.perfmark:perfmark-api:0.20.1'
 
     testCompile "com.netflix.governator:governator-test-junit:1.+"
     testCompile 'junit:junit:4.13-rc-1'
