@@ -20,6 +20,8 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.monitor.LongGauge;
 import com.netflix.servo.monitor.MonitorConfig;
+import io.netty.util.internal.PlatformDependent;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,36 +39,82 @@ import java.util.concurrent.atomic.AtomicLong;
  * Time: 10:23 AM
  */
 @Singleton
-public class DirectMemoryMonitor
+public final class DirectMemoryMonitor
 {
     private static final Logger LOG = LoggerFactory.getLogger(DirectMemoryMonitor.class);
     private static final String PROP_PREFIX = "zuul.directmemory";
     private static final DynamicIntProperty TASK_DELAY_PROP = new DynamicIntProperty(PROP_PREFIX + ".task.delay", 10);
 
-    private final LongGauge reservedMemoryGauge = new LongGauge(MonitorConfig.builder(PROP_PREFIX + ".reserved").build());
+    private static final Supplier<Long> directMemoryLimitGetter;
+    private static final Supplier<Long> reservedMemoryGetter;
+
+    static {
+        Supplier<Long> directMemoryLimit;
+        Supplier<Long> reservedMemory;
+        try {
+            Class<?> c = Class.forName("io.netty.util.internal.PlatformDependent");
+            Field directMemoryLimitField = c.getDeclaredField("DIRECT_MEMORY_LIMIT");
+            directMemoryLimitField.setAccessible(true);
+            directMemoryLimit = () -> {
+                try {
+                    return (long) directMemoryLimitField.get(null);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            // Check that the call works
+            directMemoryLimit.get();
+            Field reservedMemoryField = c.getDeclaredField("DIRECT_MEMORY_COUNTER");
+            reservedMemoryField.setAccessible(true);
+            reservedMemory = () -> {
+                try {
+                    AtomicLong value = (AtomicLong) reservedMemoryField.get(null);
+                    // Matches behavior in PlatformDependent.usedDirectMemory.
+                    return value == null ? -1 : value.get();
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            if (reservedMemory.get() == -1) {
+                // This can occur when using JDK 11, which can prevent some of the reflective operations
+                // PlatformDependent depends on.
+                LOG.debug("Unable to get direct memory");
+            }
+        } catch (Throwable t) {
+            LOG.warn("Unable to query direct memory, disabling monitor", t);
+            directMemoryLimit = null;
+            reservedMemory = null;
+        }
+        directMemoryLimitGetter = directMemoryLimit;
+        reservedMemoryGetter = reservedMemory;
+    }
+
+    private final LongGauge reservedMemoryGauge =
+            new LongGauge(MonitorConfig.builder(PROP_PREFIX + ".reserved").build());
     private final LongGauge maxMemoryGauge = new LongGauge(MonitorConfig.builder(PROP_PREFIX + ".max").build());
 
+    // TODO(carl-mastrangelo): this should be passed in as a dependency, so it can be shutdown and waited on for
+    //    termination.
     private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
-    public DirectMemoryMonitor()
-    {
+    public DirectMemoryMonitor() {
         DefaultMonitorRegistry.getInstance().register(reservedMemoryGauge);
         DefaultMonitorRegistry.getInstance().register(maxMemoryGauge);
     }
 
     @PostConstruct
-    public void init()
-    {
+    public void init() {
+        if (directMemoryLimitGetter == null || reservedMemoryGetter == null) {
+            return;
+        }
         service.scheduleWithFixedDelay(new Task(), TASK_DELAY_PROP.get(), TASK_DELAY_PROP.get(), TimeUnit.SECONDS);
     }
 
-    public void stop()
-    {
+    public void stop() {
         service.shutdown();
     }
 
-    class Task implements Runnable
-    {
+    final class Task implements Runnable {
         @Override
         public void run()
         {
@@ -74,7 +122,6 @@ public class DirectMemoryMonitor
                 Current current = measure();
                 if (current != null) {
                     LOG.debug("reservedMemory={}, maxMemory={}", current.reservedMemory, current.maxMemory);
-
                     reservedMemoryGauge.set(current.reservedMemory);
                     maxMemoryGauge.set(current.maxMemory);
                 }
@@ -84,19 +131,11 @@ public class DirectMemoryMonitor
             }
         }
 
-        public Current measure()
-        {
+        private Current measure() {
             try {
-                Class c = Class.forName("io.netty.util.internal.PlatformDependent");
-                Field maxMemory = c.getDeclaredField("DIRECT_MEMORY_LIMIT");
-                maxMemory.setAccessible(true);
-                Field reservedMemory = c.getDeclaredField("DIRECT_MEMORY_COUNTER");
-                reservedMemory.setAccessible(true);
                 Current current = new Current();
-                synchronized (c) {
-                    current.maxMemory = getMemoryValue(maxMemory);
-                    current.reservedMemory = getMemoryValue(reservedMemory);
-                }
+                current.maxMemory = directMemoryLimitGetter.get();
+                current.reservedMemory = reservedMemoryGetter.get();
                 return current;
             }
             catch (Exception e) {
@@ -105,22 +144,10 @@ public class DirectMemoryMonitor
             }
         }
 
-        private Long getMemoryValue(Field field) throws IllegalAccessException
-        {
-            Object value = field.get(null);
-            if (value instanceof Long) {
-                return (Long) value;
-            } else if (value instanceof AtomicLong) {
-                return ((AtomicLong) value).get();
-            } else {
-                return null;
-            }
-        }
     }
 
-    class Current
-    {
-        Long maxMemory;
-        Long reservedMemory;
+    private static final class Current {
+        long maxMemory;
+        long reservedMemory;
     }
 }
