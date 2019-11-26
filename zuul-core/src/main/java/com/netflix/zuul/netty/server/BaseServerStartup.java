@@ -121,6 +121,7 @@ public abstract class BaseServerStartup
                 new DefaultEventLoopConfig());
     }
 
+    // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
      * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
      */
@@ -138,15 +139,15 @@ public abstract class BaseServerStartup
     }
 
 
-    protected ChannelConfig defaultChannelDependencies(String portName)
-    {
+    protected ChannelConfig defaultChannelDependencies(String listenAddressName) {
         ChannelConfig channelDependencies = new ChannelConfig();
-        addChannelDependencies(channelDependencies, portName);
+        addChannelDependencies(channelDependencies, listenAddressName);
         return channelDependencies;
     }
 
-    protected void addChannelDependencies(ChannelConfig channelDeps, String portName)
-    {
+    protected void addChannelDependencies(
+            ChannelConfig channelDeps,
+            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
@@ -169,20 +170,19 @@ public abstract class BaseServerStartup
     }
 
     /**
-     * First looks for a property specific to the named port of the form - "server.${portName}.${propertySuffix}".
-     * If none found, then looks for a server-wide property of the form - "server.${propertySuffix}".
-     * If that is also not found, then returns the specified default value.
+     * First looks for a property specific to the named listen address of the form -
+     * "server.${addrName}.${propertySuffix}". If none found, then looks for a server-wide property of the form -
+     * "server.${propertySuffix}".  If that is also not found, then returns the specified default value.
      *
-     * @param portName
+     * @param listenAddressName
      * @param propertySuffix
      * @param defaultValue
      * @return
      */
-    public static int chooseIntChannelProperty(String portName, String propertySuffix, int defaultValue)
-    {
+    public static int chooseIntChannelProperty(String listenAddressName, String propertySuffix, int defaultValue) {
         String globalPropertyName = "server." + propertySuffix;
-        String portPropertyName = "server." + portName + "." + propertySuffix;
-        Integer value = new DynamicIntProperty(portPropertyName, -999).get();
+        String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
+        Integer value = new DynamicIntProperty(listenAddressPropertyName, -999).get();
         if (value == -999) {
             value = new DynamicIntProperty(globalPropertyName, -999).get();
             if (value == -999) {
@@ -192,12 +192,13 @@ public abstract class BaseServerStartup
         return value;
     }
 
-    public static boolean chooseBooleanChannelProperty(String portName, String propertySuffix, boolean defaultValue)
-    {
+    public static boolean chooseBooleanChannelProperty(
+            String listenAddressName, String propertySuffix, boolean defaultValue) {
         String globalPropertyName = "server." + propertySuffix;
-        String portPropertyName = "server." + portName + "." + propertySuffix;
+        String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
 
-        Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(portPropertyName, null).get();
+        Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(
+                listenAddressPropertyName, null).get();
         if (value == null) {
             value = new DynamicBooleanProperty(globalPropertyName, defaultValue).getDynamicProperty().getBoolean();
             if (value == null) {
@@ -207,29 +208,34 @@ public abstract class BaseServerStartup
         return value;
     }
 
-    public static ChannelConfig defaultChannelConfig(String portName)
-    {
+    public static ChannelConfig defaultChannelConfig(String listenAddressName) {
         ChannelConfig config = new ChannelConfig();
 
         config.add(new ChannelConfigValue<>(
                 CommonChannelConfigKeys.maxConnections,
                 chooseIntChannelProperty(
-                        portName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
+                        listenAddressName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
-                chooseIntChannelProperty(portName, "connection.max.requests", 20000)));
+                chooseIntChannelProperty(listenAddressName, "connection.max.requests", 20000)));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
-                chooseIntChannelProperty(portName, "connection.max.requests.brownout", CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "connection.max.requests.brownout",
+                        CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connectionExpiry,
-                chooseIntChannelProperty(portName, "connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue())));
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "connection.expiry",
+                        CommonChannelConfigKeys.connectionExpiry.defaultValue())));
         config.add(new ChannelConfigValue<>(
                 CommonChannelConfigKeys.httpRequestReadTimeout,
                 chooseIntChannelProperty(
-                        portName,
+                        listenAddressName,
                         "http.request.read.timeout",
                         CommonChannelConfigKeys.httpRequestReadTimeout.defaultValue())));
 
         int connectionIdleTimeout = chooseIntChannelProperty(
-                portName, "connection.idle.timeout",
+                listenAddressName, "connection.idle.timeout",
                 CommonChannelConfigKeys.idleTimeout.defaultValue());
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.idleTimeout, connectionIdleTimeout));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.serverTimeout, new ServerTimeout(connectionIdleTimeout)));
@@ -242,33 +248,41 @@ public abstract class BaseServerStartup
 
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connCloseDelay,
                 chooseIntChannelProperty(
-                        portName, "connection.close.delay", CommonChannelConfigKeys.connCloseDelay.defaultValue())));
+                        listenAddressName,
+                        "connection.close.delay",
+                        CommonChannelConfigKeys.connCloseDelay.defaultValue())));
 
         return config;
     }
 
-    public static void addHttp2DefaultConfig(ChannelConfig config, String portName)
-    {
+    public static void addHttp2DefaultConfig(ChannelConfig config, String listenAddressName) {
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams,
-                chooseIntChannelProperty(portName, "http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "http2.max.concurrent.streams",
+                        CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize,
-                chooseIntChannelProperty(portName, "http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue())));
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "http2.initialwindowsize",
+                        CommonChannelConfigKeys.initialWindowSize.defaultValue())));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
-                chooseIntChannelProperty(portName, "http2.maxheadertablesize", 65536)));
+                chooseIntChannelProperty(listenAddressName, "http2.maxheadertablesize", 65536)));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize,
-                chooseIntChannelProperty(portName, "http2.maxheaderlistsize", 32768)));
+                chooseIntChannelProperty(listenAddressName, "http2.maxheaderlistsize", 32768)));
 
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
-                chooseIntChannelProperty(portName, "connection.max.requests", 4000)));
+                chooseIntChannelProperty(listenAddressName, "connection.max.requests", 4000)));
 
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2AllowGracefulDelayed,
-                chooseBooleanChannelProperty(portName, "connection.close.graceful.delayed.allow", true)));
+                chooseBooleanChannelProperty(listenAddressName, "connection.close.graceful.delayed.allow", true)));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
-                chooseBooleanChannelProperty(portName, "connection.close.swallow.unknown.exceptions", false)));
+                chooseBooleanChannelProperty(listenAddressName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
+    // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
      * Use {@link #logAddrConfigured(SocketAddress)} instead.
      */
@@ -277,6 +291,7 @@ public abstract class BaseServerStartup
         logAddrConfigured(new InetSocketAddress(port));
     }
 
+    // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
      * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
      */
@@ -285,6 +300,7 @@ public abstract class BaseServerStartup
         logAddrConfigured(new InetSocketAddress(port), serverSslConfig);
     }
 
+    // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
      * Use {@link #logAddrConfigured(SocketAddress, DomainNameMapping)} instead.
      */
