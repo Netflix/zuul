@@ -64,7 +64,7 @@ subprojects {
     }
 
     dependencies {
-        ext.versions_guice = "4.0"
+        ext.versions_guice = "4.2.2"
 
         // Use guice-4 while debugging a startup error that is hidden by guice-3's lack of java8 lambda support.
         compile(group: 'com.google.inject', name: 'guice', version: "${versions_guice}")

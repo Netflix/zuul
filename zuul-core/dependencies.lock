@@ -13,28 +13,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -199,28 +199,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -385,28 +385,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -575,28 +575,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -765,28 +765,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -955,28 +955,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1145,28 +1145,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -1335,28 +1335,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1533,28 +1533,28 @@
             "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.google.inject:guice": {
-            "locked": "4.1.0",
-            "requested": "4.0"
+            "locked": "4.2.2",
+            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
