@@ -112,10 +112,10 @@ public class SampleServerStartup extends BaseServerStartup {
                     "zuul.server.addr.http.push", "="  + pushPort).getValue();
         }
 
-        String mainPortName = "main";
+        String mainListenAddressName = "main";
         ServerSslConfig sslConfig;
-        ChannelConfig channelConfig = defaultChannelConfig(mainPortName);
-        ChannelConfig channelDependencies = defaultChannelDependencies(mainPortName);
+        ChannelConfig channelConfig = defaultChannelConfig(mainListenAddressName);
+        ChannelConfig channelDependencies = defaultChannelDependencies(mainListenAddressName);
 
         /* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
          * or directly on the internet.
@@ -152,7 +152,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.serverSslConfig, sslConfig);
                 channelConfig.set(CommonChannelConfigKeys.sslContextFactory, new BaseSslContextFactory(registry, sslConfig));
 
-                addHttp2DefaultConfig(channelConfig, mainPortName);
+                addHttp2DefaultConfig(channelConfig, mainListenAddressName);
 
                 addrsToChannels.put(
                         sockAddr,
