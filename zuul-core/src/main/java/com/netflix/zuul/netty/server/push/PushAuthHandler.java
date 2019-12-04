@@ -19,6 +19,7 @@ import com.google.common.base.Strings;
 import com.netflix.zuul.message.http.Cookies;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +103,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         final Cookies cookies = new Cookies();
         final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
+            Set<io.netty.handler.codec.http.cookie.Cookie> res = ServerCookieDecoder.LAX.decode(cookieStr);
             final Set<Cookie> decoded = CookieDecoder.decode(cookieStr, false);
             decoded.forEach(cookie -> cookies.add(cookie));
         }

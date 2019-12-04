@@ -55,6 +55,8 @@ dependencies {
     testCompile "com.netflix.governator:governator-test-junit:1.+"
     testCompile 'junit:junit:4.13-rc-1'
     testRuntime 'org.slf4j:slf4j-simple:1.7.29'
+
+    testImplementation 'com.google.truth:truth:1.0'
 }
 
 jar {
