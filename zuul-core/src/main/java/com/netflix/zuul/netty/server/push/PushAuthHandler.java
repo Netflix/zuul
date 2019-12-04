@@ -103,9 +103,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         final Cookies cookies = new Cookies();
         final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
-            Set<io.netty.handler.codec.http.cookie.Cookie> res = ServerCookieDecoder.LAX.decode(cookieStr);
-            final Set<Cookie> decoded = CookieDecoder.decode(cookieStr, false);
-            decoded.forEach(cookie -> cookies.add(cookie));
+            Set<io.netty.handler.codec.http.cookie.Cookie> decoded = ServerCookieDecoder.LAX.decode(cookieStr);
+            decoded.forEach(cookies::add);
         }
         return cookies;
     }
