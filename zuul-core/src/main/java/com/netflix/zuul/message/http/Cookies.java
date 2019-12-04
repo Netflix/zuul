@@ -19,6 +19,7 @@ package com.netflix.zuul.message.http;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.handler.codec.http.Cookie;
 
 import io.netty.handler.codec.http.DefaultCookie;
@@ -28,13 +29,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nullable;
 
 /**
- * User: Mike Smith
- * Date: 6/18/15
- * Time: 12:04 AM
+ * A container for cookies.
  */
 public final class Cookies {
     private final Map<String, List<io.netty.handler.codec.http.cookie.Cookie>> map = new LinkedHashMap<>();
@@ -117,26 +115,28 @@ public final class Cookies {
         return null;
     }
 
+    @Nullable
     public String getFirstValue(String name) {
-        Cookie c = getFirst(name);
-        String value;
-        if (c != null) {
-            value = c.getValue();
-        } else {
-            value = null;
+        io.netty.handler.codec.http.cookie.Cookie cookie = getFirstCookie(name);
+        if (cookie != null) {
+            return cookie.value();
         }
-        return value;
+        return null;
     }
 
+    @VisibleForTesting
     @SuppressWarnings("deprecation")
-    private static final Cookie convert(io.netty.handler.codec.http.cookie.Cookie cookie) {
+    static final Cookie convert(io.netty.handler.codec.http.cookie.Cookie cookie) {
         if (cookie instanceof Cookie) {
             return (Cookie) cookie;
         }
+        // Best effort, just try to convert it to something close.  This is mostly a no-op for client->zuul cookies,
+        // but I'm not confident enough that it isn't necessary.
         Cookie c = new DefaultCookie(cookie.name(), cookie.value());
         c.setHttpOnly(cookie.isHttpOnly());
         c.setDomain(cookie.domain());
+        c.setPath(cookie.path());
+        c.setSecure(cookie.isSecure());
         return c;
-
     }
 }
