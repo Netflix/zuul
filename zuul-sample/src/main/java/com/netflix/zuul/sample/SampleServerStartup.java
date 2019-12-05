@@ -68,7 +68,7 @@ public class SampleServerStartup extends BaseServerStartup {
         SSE
     }
 
-    private static final String[] WWW_PROTOCOLS = new String[]{"TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
+    private static final String[] WWW_PROTOCOLS = new String[]{"TLSv1.3", "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
     private static final ServerType SERVER_TYPE = ServerType.HTTP;
     private final PushConnectionRegistry pushConnectionRegistry;
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
