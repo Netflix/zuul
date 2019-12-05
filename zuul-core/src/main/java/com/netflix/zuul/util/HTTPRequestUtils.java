@@ -133,15 +133,28 @@ public class HTTPRequestUtils {
         if(headerNames != null) {
             while (headerNames.hasMoreElements()) {
                 String name = headerNames.nextElement();
-                String value = request.getHeader(name);
+                if (name != null && !name.isEmpty()){
+                    Enumeration values = request.getHeaders(name);
+                    if (values != null){
+                        if (headers.get(name) != null){
+                            while (values.hasMoreElements()){
+                                Object value = values.nextElement();
+                                if (value != null){
+                                    headers.get(name).add(String.valueOf(value));
+                                }
+                            }
+                        }else{
+                            List<String> list = new ArrayList<>();
+                            while (values.hasMoreElements()){
+                                Object value = values.nextElement();
+                                if (value != null){
+                                    list.add(String.valueOf(value));
+                                }
 
-                if(name != null && !name.isEmpty() && value != null) {
-                    List<String> valueList = new ArrayList<String>();
-                    if(headers.containsKey(name)) {
-                        headers.get(name).add(value);
+                            }
+                            headers.put(name, list);
+                        }
                     }
-                    valueList.add(value);
-                    headers.put(name, valueList);
                 }
             }
         }
@@ -279,6 +292,21 @@ public class HTTPRequestUtils {
         @Test
         public void detectsGzipAmongOtherEncodings() {
             assertTrue(HTTPRequestUtils.getInstance().isGzipped("gzip, deflate"));
+        }
+
+        @Test
+        public void testgetRequestHeaderMap(){
+            when(request.getHeaderNames()).thenReturn(new StringTokenizer("accept;language",";"));
+            when(request.getHeaders("accept")).thenReturn(new StringTokenizer("1;2;3;4",";"));
+            when(request.getHeaders("language")).thenReturn(new StringTokenizer("zh;ch;ab;de;japan",";"));
+            Map<String, List<String>> headerMap = HTTPRequestUtils.getInstance().getRequestHeaderMap();
+            assertEquals(headerMap.get("accept").size(),4);
+            assertEquals(headerMap.get("accept").get(0),"1");
+            assertEquals(headerMap.get("accept").get(1),"2");
+            assertEquals(headerMap.get("accept").get(2),"3");
+            assertEquals(headerMap.get("accept").get(3),"4");
+
+            assertEquals(headerMap.get("language").size(),5);
         }
 
         @Test
