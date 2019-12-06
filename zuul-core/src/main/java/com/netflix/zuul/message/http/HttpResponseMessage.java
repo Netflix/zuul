@@ -30,9 +30,33 @@ public interface HttpResponseMessage extends HttpResponseInfo
     @Override
     int getMaxBodySize();
 
-    void addSetCookie(Cookie cookie);
+    /**
+     * Adds a set-cookie header.  Use{@link #addSetCookie(io.netty.handler.codec.http.cookie.Cookie)} instead.
+     */
+    @Deprecated
+    default void addSetCookie(Cookie cookie) {
+        // TODO(carl-mastrangelo): remove this in 2.1.8
+        throw new UnsupportedOperationException();
+    }
 
-    void setSetCookie(Cookie cookie);
+    /**
+     * Adds a set-cookie header, clearing any existing set-cookie headers.
+     */
+    @Deprecated
+    default void setSetCookie(Cookie cookie) {
+        // TODO(carl-mastrangelo): remove this in 2.1.8
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Adds a set-cookie header to the response.
+     *
+     * @since 2.1.7
+     */
+    default void addSetCookie(io.netty.handler.codec.http.cookie.Cookie cookie) {
+        throw new UnsupportedOperationException();
+    }
+
 
     boolean removeExistingSetCookie(String cookieName);
 
