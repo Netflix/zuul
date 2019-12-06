@@ -139,7 +139,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     public static SslProvider chooseSslProvider() {
         // Use openssl only if available and has ALPN support (ie. version > 1.0.2).
         SslProvider sslProvider;
-        if (ALLOW_USE_OPENSSL.get() && OpenSsl.isAvailable() && OpenSsl.isAlpnSupported()) {
+        if (ALLOW_USE_OPENSSL.get() && OpenSsl.isAvailable() && SslProvider.isAlpnSupported(SslProvider.OPENSSL)) {
             sslProvider = SslProvider.OPENSSL;
         }
         else {

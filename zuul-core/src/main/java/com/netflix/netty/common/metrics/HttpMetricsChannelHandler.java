@@ -102,7 +102,7 @@ public class HttpMetricsChannelHandler extends ChannelInboundHandlerAdapter
 
     private void decrementCurrentRequestsIfOneInflight(ChannelHandlerContext ctx)
     {
-        if (ctx.channel().attr(ATTR_REQ_INFLIGHT).getAndRemove() != null) {
+        if (ctx.channel().attr(ATTR_REQ_INFLIGHT).getAndSet(null) != null) {
             currentRequestsGauge.set(currentRequests.decrementAndGet());
         }
     }

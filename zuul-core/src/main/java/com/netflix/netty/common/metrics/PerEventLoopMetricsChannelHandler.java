@@ -86,7 +86,7 @@ public class PerEventLoopMetricsChannelHandler
 
         private void decrementCurrentRequestsIfOneInflight(ChannelHandlerContext ctx)
         {
-            if (ctx.channel().attr(ATTR_REQ_INFLIGHT).getAndRemove() != null) {
+            if (ctx.channel().attr(ATTR_REQ_INFLIGHT).getAndSet(null) != null) {
                 groupMetrics.getForCurrentEventLoop().decrementCurrentRequests();
             }
         }

@@ -29,6 +29,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.PromiseCombiner;
 import org.slf4j.Logger;
@@ -112,18 +114,19 @@ public class ClientConnectionsShutdown
 
             // Mark all active connections to be closed after next response sent.
             LOG.warn("Flagging CLOSE_AFTER_RESPONSE on " + channels.size() + " client channels.");
-            PromiseCombiner closeAfterPromises = new PromiseCombiner();
+            // Pick some arbitrary executor.
+            PromiseCombiner closeAfterPromises = new PromiseCombiner(ImmediateEventExecutor.INSTANCE);
             for (Channel channel : channels)
             {
                 ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
 
                 ChannelPromise closePromise = channel.pipeline().newPromise();
                 channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
-                closeAfterPromises.add(closePromise);
+                closeAfterPromises.add((Future<Void>) closePromise);
             }
 
             // Wait for all of the attempts to close connections gracefully, or max of 30 secs each.
-            Promise combinedCloseAfterPromise = executor.newPromise();
+            Promise<Void> combinedCloseAfterPromise = executor.newPromise();
             closeAfterPromises.finish(combinedCloseAfterPromise);
             combinedCloseAfterPromise.await(30, TimeUnit.SECONDS);
 
@@ -138,9 +141,9 @@ public class ClientConnectionsShutdown
             });
 
             LOG.warn("Waiting for " + forceCloseFutures.size() + " client channels to be closed.");
-            PromiseCombiner closePromisesCombiner = new PromiseCombiner();
+            PromiseCombiner closePromisesCombiner = new PromiseCombiner(ImmediateEventExecutor.INSTANCE);
             closePromisesCombiner.addAll(forceCloseFutures.toArray(new ChannelFuture[0]));
-            Promise combinedClosePromise = executor.newPromise();
+            Promise<Void> combinedClosePromise = executor.newPromise();
             closePromisesCombiner.finish(combinedClosePromise);
             combinedClosePromise.await(5, TimeUnit.SECONDS);
             LOG.warn(forceCloseFutures.size() + " client channels closed.");
