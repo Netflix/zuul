@@ -32,6 +32,9 @@ public enum PushProtocol {
 
     WEBSOCKET {
         @Override
+        // The alternative object for HANDSHAKE_COMPLETE is not publicly visible, so disable deprecation warnings.  In
+        // the future, it may be possible to not fire this even and remove the suppression.
+        @SuppressWarnings("deprecation")
         public Object getHandshakeCompleteEvent() {
             return WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE;
         }

@@ -61,13 +61,6 @@ public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T>
         resetReportedLeaks();
     }
 
-    @Override
-    protected void reportInstancesLeak(String resourceType) {
-        super.reportInstancesLeak(resourceType);
-        instancesLeakCounter.incrementAndGet();
-        resetReportedLeaks();
-    }
-
     /**
      * This private field in the superclass needs to be reset so that we can continue reporting leaks even
      * if they're duplicates. This is ugly but ideally should not be called frequently (or at all).

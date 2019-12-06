@@ -821,7 +821,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         // Store this original response info for future reference (ie. for metrics and access logging purposes).
         zuulResponse.storeInboundResponse();
-        channelCtx.attr(ATTR_ZUUL_RESP).set(zuulResponse);
+        channelCtx.channel().attr(ATTR_ZUUL_RESP).set(zuulResponse);
 
         if (httpResponse instanceof DefaultFullHttpResponse) {
             final ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
