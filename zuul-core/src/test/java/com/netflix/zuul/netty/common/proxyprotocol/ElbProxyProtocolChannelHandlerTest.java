@@ -16,19 +16,20 @@
 
 package com.netflix.zuul.netty.common.proxyprotocol;
 
+import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
+import java.net.InetSocketAddress;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.nio.charset.StandardCharsets;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -53,9 +54,12 @@ public class ElbProxyProtocolChannelHandlerTest {
         assertNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_VERSION).get());
         assertNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
+
     }
 
     @Test
@@ -78,9 +82,15 @@ public class ElbProxyProtocolChannelHandlerTest {
         // in later versions of netty.
         assertNotNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertEquals("124.123.111.111", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("124.123.111.111"), 443),
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertEquals(Integer.valueOf(443), channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get());
         assertEquals("192.168.0.1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertEquals(Integer.valueOf(10008), channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008),
+                channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
     }
 
     @Test
@@ -103,9 +113,15 @@ public class ElbProxyProtocolChannelHandlerTest {
         // in later versions of netty.
         assertNotNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertEquals("::2", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("::2"), 443),
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertEquals(Integer.valueOf(443), channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get());
         assertEquals("::1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertEquals(Integer.valueOf(10008), channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("::1"), 10008),
+                channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
     }
 
     @Test
@@ -131,8 +147,14 @@ public class ElbProxyProtocolChannelHandlerTest {
         // in later versions of netty.
         assertNotNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertEquals("124.123.111.111", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("124.123.111.111"), 443),
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertEquals(Integer.valueOf(443), channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get());
         assertEquals("192.168.0.1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertEquals(Integer.valueOf(10008), channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008),
+                channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
     }
 }

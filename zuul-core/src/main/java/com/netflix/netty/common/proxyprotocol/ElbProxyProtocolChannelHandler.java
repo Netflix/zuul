@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -24,10 +25,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
-import io.netty.handler.codec.haproxy.HAProxyTLV;
 import io.netty.util.AttributeKey;
 
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import io.netty.util.ReferenceCounted;
 import org.slf4j.Logger;
@@ -91,6 +92,26 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                 if (destinationAddress != null) {
                     channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).set(destinationAddress);
                     channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(hapm.destinationPort());
+
+                    SocketAddress addr;
+                    out: {
+                        switch (hapm.proxiedProtocol()) {
+                            case UNKNOWN:
+                                throw new IllegalArgumentException("unknown proxy protocl" + destinationAddress);
+                            case TCP4:
+                            case TCP6:
+                                addr = new InetSocketAddress(
+                                        InetAddresses.forString(destinationAddress), hapm.destinationPort());
+                                break out;
+                            case UNIX_STREAM: // TODO: implement
+                            case UDP4:
+                            case UDP6:
+                            case UNIX_DGRAM:
+                                throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
+                        }
+                        throw new AssertionError(hapm.proxiedProtocol());
+                    }
+                    channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(addr);
                 }
 
                 // Get the real client IP from the ProxyProtocol message sent by the ELB, and overwrite the SourceAddress
@@ -99,6 +120,26 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                 if (sourceAddress != null) {
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).set(sourceAddress);
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).set(hapm.sourcePort());
+
+                    SocketAddress addr;
+                    out: {
+                        switch (hapm.proxiedProtocol()) {
+                            case UNKNOWN:
+                                throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);
+                            case TCP4:
+                            case TCP6:
+                                addr = new InetSocketAddress(
+                                        InetAddresses.forString(sourceAddress), hapm.sourcePort());
+                                break out;
+                            case UNIX_STREAM: // TODO: implement
+                            case UDP4:
+                            case UDP6:
+                            case UNIX_DGRAM:
+                                throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
+                        }
+                        throw new AssertionError(hapm.proxiedProtocol());
+                    }
+                    channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).set(addr);
                 }
 
                 // TODO - fire an additional event to notify interested parties that we now know the IP?
