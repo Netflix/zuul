@@ -23,10 +23,10 @@ import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
+import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
-import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.handler.codec.http.ServerCookieEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,22 +178,28 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public Cookies parseSetCookieHeader(String setCookieValue) {
+    public Cookies parseSetCookieHeader(String setCookieValue)
+    {
         Cookies cookies = new Cookies();
-        Cookie cookie = ClientCookieDecoder.STRICT.decode(setCookieValue);
-        cookies.add(cookie);
+        for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
+            cookies.add(cookie);
+        }
         return cookies;
     }
 
     @Override
-    public boolean hasSetCookieWithName(String cookieName) {
+    public boolean hasSetCookieWithName(String cookieName)
+    {
+        boolean has = false;
         for (String setCookieValue : getHeaders().get(HttpHeaderNames.SET_COOKIE)) {
-            Cookie cookie = ClientCookieDecoder.STRICT.decode(setCookieValue);
-            if (cookie.name().equalsIgnoreCase(cookieName)) {
-                return true;
+            for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
+                if (cookie.getName().equalsIgnoreCase(cookieName)) {
+                    has = true;
+                    break;
+                }
             }
         }
-        return false;
+        return has;
     }
 
     @Override
@@ -229,21 +235,15 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    @Deprecated
-    public void addSetCookie(io.netty.handler.codec.http.Cookie cookie) {
-        addSetCookie((Cookie) cookie);
-    }
-
-    @Override
-    @Deprecated
-    public void setSetCookie(io.netty.handler.codec.http.Cookie cookie)
+    public void addSetCookie(Cookie cookie)
     {
-        getHeaders().set(HttpHeaderNames.SET_COOKIE, io.netty.handler.codec.http.ServerCookieEncoder.encode(cookie));
+        getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
-    public void addSetCookie(Cookie cookie) {
-        getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+    public void setSetCookie(Cookie cookie)
+    {
+        getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override

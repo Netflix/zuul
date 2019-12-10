@@ -16,127 +16,62 @@
 
 package com.netflix.zuul.message.http;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
-
-import com.google.common.annotations.VisibleForTesting;
 import io.netty.handler.codec.http.Cookie;
 
-import io.netty.handler.codec.http.DefaultCookie;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import javax.annotation.Nullable;
 
 /**
- * A container for cookies.
+ * User: Mike Smith
+ * Date: 6/18/15
+ * Time: 12:04 AM
  */
-public final class Cookies {
-    private final Map<String, List<io.netty.handler.codec.http.cookie.Cookie>> map = new LinkedHashMap<>();
-    private final List<io.netty.handler.codec.http.cookie.Cookie> all = new ArrayList<>();
+public class Cookies
+{
+    private Map<String, List<Cookie>> map = new HashMap<>();
+    private List<Cookie> all = new ArrayList<>();
 
-    public void add(io.netty.handler.codec.http.cookie.Cookie cookie) {
-        Objects.requireNonNull(cookie, "cookie");
-        String name = Objects.requireNonNull(cookie.name(), "name");
-        map.computeIfAbsent(name, key -> new ArrayList<>()).add(cookie);
+    public void add(Cookie cookie)
+    {
+        List<Cookie> existing = map.get(cookie.getName());
+        if (existing == null) {
+            existing = new ArrayList<>();
+            map.put(cookie.getName(), existing);
+        }
+        existing.add(cookie);
         all.add(cookie);
     }
 
-    /**
-     * Use {@link #add(io.netty.handler.codec.http.cookie.Cookie)} instead.
-     */
-    @Deprecated
-    public void add(Cookie cookie) {
-        add((io.netty.handler.codec.http.cookie.Cookie) cookie);
+    public List<Cookie> getAll()
+    {
+        return all;
     }
 
-    /**
-     * Use {@link #getAllCookies()} instead.
-     */
-    @Deprecated
-    public List<Cookie> getAll() {
-        return unmodifiableList(getAllCookies().stream().map(Cookies::convert).collect(toList()));
+    public List<Cookie> get(String name)
+    {
+        return map.get(name);
     }
 
-    /**
-     * Returns all cookies.
-     */
-    public List<io.netty.handler.codec.http.cookie.Cookie> getAllCookies() {
-        return unmodifiableList(new ArrayList<>(all));
-    }
-
-    /**
-     * Returns all cookies for a given name, or an empty list if there are none..
-     */
-    public List<io.netty.handler.codec.http.cookie.Cookie> getCookies(String name) {
-        Objects.requireNonNull(name, "name");
-        return unmodifiableList(new ArrayList<>(map.computeIfAbsent(name, key -> Collections.emptyList())));
-    }
-
-    /**
-     * Returns all cookies for the given name, or {@code null} if absent.  Use {@link #getCookies(String)} instead.
-     */
-    @Deprecated
-    @Nullable
-    public List<Cookie> get(String name) {
-        List<io.netty.handler.codec.http.cookie.Cookie> cookies = getCookies(name);
-        if (!cookies.isEmpty()) {
-            return unmodifiableList(cookies.stream().map(Cookies::convert).collect(toList()));
-        }
-        return null;
-    }
-
-    /**
-     * Returns the first cookie value set for the given name, or {@code null} if absent.
-     */
-    @Nullable
-    public io.netty.handler.codec.http.cookie.Cookie getFirstCookie(String name) {
-        Objects.requireNonNull(name, "name");
-        List<io.netty.handler.codec.http.cookie.Cookie> cookies = map.get(name);
-        if (cookies == null || cookies.isEmpty()) {
+    public Cookie getFirst(String name)
+    {
+        List<Cookie> found = map.get(name);
+        if (found == null || found.size() == 0) {
             return null;
         }
-        return cookies.get(0);
+        return found.get(0);
     }
 
-    /**
-     * Use {@link #getFirstCookie(String)} instead.
-     */
-    @Deprecated
-    @Nullable
-    public Cookie getFirst(String name) {
-        io.netty.handler.codec.http.cookie.Cookie cookie = getFirstCookie(name);
-        if (cookie != null) {
-            return convert(cookie);
+    public String getFirstValue(String name)
+    {
+        Cookie c = getFirst(name);
+        String value;
+        if (c != null) {
+            value = c.getValue();
+        } else {
+            value = null;
         }
-        return null;
-    }
-
-    @Nullable
-    public String getFirstValue(String name) {
-        io.netty.handler.codec.http.cookie.Cookie cookie = getFirstCookie(name);
-        if (cookie != null) {
-            return cookie.value();
-        }
-        return null;
-    }
-
-    @VisibleForTesting
-    @SuppressWarnings("deprecation")
-    static final Cookie convert(io.netty.handler.codec.http.cookie.Cookie cookie) {
-        if (cookie instanceof Cookie) {
-            return (Cookie) cookie;
-        }
-        // Best effort, just try to convert it to something close.  This is mostly a no-op for client->zuul cookies,
-        // but I'm not confident enough that it isn't necessary.
-        Cookie c = new DefaultCookie(cookie.name(), cookie.value());
-        c.setHttpOnly(cookie.isHttpOnly());
-        c.setDomain(cookie.domain());
-        c.setPath(cookie.path());
-        c.setSecure(cookie.isSecure());
-        return c;
+        return value;
     }
 }
