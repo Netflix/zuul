@@ -48,6 +48,8 @@ import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +141,7 @@ public class Server
                 clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
     }
 
-    protected Server(ServerStatusManager serverStatusManager,
+    public Server(ServerStatusManager serverStatusManager,
            Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
            EventLoopConfig eventLoopConfig) {
@@ -175,9 +177,10 @@ public class Server
 
             // Setup each of the channel initializers on requested ports.
             for (Map.Entry<? extends SocketAddress, ? extends ChannelInitializer<?>> entry
-                    : addressesToInitializers.entrySet())
-            {
-                allBindFutures.add(setupServerBootstrap(entry.getKey(), entry.getValue()));
+                    : addressesToInitializers.entrySet()) {
+                ChannelFuture nettyServerFuture = setupServerBootstrap(entry.getKey(), entry.getValue());
+                serverGroup.addListeningServer(nettyServerFuture.channel());
+                allBindFutures.add(nettyServerFuture);
             }
 
             // Once all server bootstraps are successfully initialized, then bind to each port.
@@ -192,6 +195,13 @@ public class Server
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    public final List<SocketAddress> getListeningAddresses() {
+        if (serverGroup == null) {
+            throw new IllegalStateException("Server has not been started");
+        }
+        return serverGroup.getListeningAddresses();
     }
 
     @VisibleForTesting
@@ -264,6 +274,7 @@ public class Server
         private final int acceptorThreads;
         private final int workerThreads;
         private final EventLoopGroupMetrics eventLoopGroupMetrics;
+        private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-ServerGroup-JVM-shutdown-hook");
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
@@ -271,6 +282,12 @@ public class Server
         private Map<ChannelOption, ?> transportChannelOptions;
 
         private volatile boolean stopped = false;
+
+        private final Set<Channel> nettyServers = new LinkedHashSet<>();
+
+        void addListeningServer(Channel channel) {
+            nettyServers.add(channel);
+        }
 
         private ServerGroup(String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
             this.name = name;
@@ -284,7 +301,18 @@ public class Server
                 }
             });
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> stop(), "Zuul-ServerGroup-JVM-shutdown-hook"));
+            Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
+        }
+
+        synchronized List<SocketAddress> getListeningAddresses() {
+            if (stopped) {
+                return Collections.emptyList();
+            }
+            List<SocketAddress> listeningAddresses = new ArrayList<>(nettyServers.size());
+            for (Channel nettyServer : nettyServers) {
+                listeningAddresses.add(nettyServer.localAddress());
+            }
+            return Collections.unmodifiableList(listeningAddresses);
         }
 
         private void initializeTransport()
@@ -349,11 +377,14 @@ public class Server
 
         synchronized private void stop()
         {
-            LOG.warn("Shutting down");
+            LOG.info("Shutting down");
             if (stopped) {
-                LOG.warn("Already stopped");
+                LOG.info("Already stopped");
                 return;
             }
+
+            // TODO(carl-mastrangelo): shutdown the netty servers accepting new connections.
+            nettyServers.clear();
 
             // Flag status as down.
             // TODO - is this _only_ changing the local status? And therefore should we also implement a HealthCheckHandler
@@ -366,7 +397,7 @@ public class Server
             // call to gracefullyShutdownClientChannels(), which will be a noop.
             clientConnectionsShutdown.gracefullyShutdownClientChannels();
 
-            LOG.warn("Shutting down event loops");
+            LOG.info("Shutting down event loops");
             List<EventLoopGroup> allEventLoopGroups = new ArrayList<>();
             allEventLoopGroups.add(clientToProxyBossPool);
             allEventLoopGroups.add(clientToProxyWorkerPool);
@@ -381,9 +412,15 @@ public class Server
                     LOG.warn("Interrupted while shutting down event loop");
                 }
             }
+            try {
+                Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
+            } catch (IllegalStateException e) {
+                // This can happen if the VM is already shutting down
+                LOG.debug("Failed to remove shutdown hook", e);
+            }
 
             stopped = true;
-            LOG.warn("Done shutting down");
+            LOG.info("Done shutting down");
         }
     }
 
