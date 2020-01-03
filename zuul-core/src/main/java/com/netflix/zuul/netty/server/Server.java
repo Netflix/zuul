@@ -48,6 +48,8 @@ import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,6 +274,7 @@ public class Server
         private final int acceptorThreads;
         private final int workerThreads;
         private final EventLoopGroupMetrics eventLoopGroupMetrics;
+        private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-ServerGroup-JVM-shutdown-hook");
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
@@ -280,7 +283,7 @@ public class Server
 
         private volatile boolean stopped = false;
 
-        private final List<Channel> nettyServers = new ArrayList<>();
+        private final Set<Channel> nettyServers = new LinkedHashSet<>();
 
         void addListeningServer(Channel channel) {
             nettyServers.add(channel);
@@ -298,7 +301,7 @@ public class Server
                 }
             });
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> stop(), "Zuul-ServerGroup-JVM-shutdown-hook"));
+            Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
         synchronized List<SocketAddress> getListeningAddresses() {
@@ -374,9 +377,9 @@ public class Server
 
         synchronized private void stop()
         {
-            LOG.warn("Shutting down");
+            LOG.info("Shutting down");
             if (stopped) {
-                LOG.warn("Already stopped");
+                LOG.info("Already stopped");
                 return;
             }
 
@@ -394,7 +397,7 @@ public class Server
             // call to gracefullyShutdownClientChannels(), which will be a noop.
             clientConnectionsShutdown.gracefullyShutdownClientChannels();
 
-            LOG.warn("Shutting down event loops");
+            LOG.info("Shutting down event loops");
             List<EventLoopGroup> allEventLoopGroups = new ArrayList<>();
             allEventLoopGroups.add(clientToProxyBossPool);
             allEventLoopGroups.add(clientToProxyWorkerPool);
@@ -409,9 +412,15 @@ public class Server
                     LOG.warn("Interrupted while shutting down event loop");
                 }
             }
+            try {
+                Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
+            } catch (IllegalStateException e) {
+                // This can happen if the VM is already shutting down
+                LOG.debug("Failed to remove shutdown hook", e);
+            }
 
             stopped = true;
-            LOG.warn("Done shutting down");
+            LOG.info("Done shutting down");
         }
     }
 

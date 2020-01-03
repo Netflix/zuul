@@ -27,11 +27,13 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -43,15 +45,17 @@ import org.junit.runners.JUnit4;
 public class ServerTest {
 
     @Test
-    public void getListeningSockets() {
+    public void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
         Map<SocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
-        initializers.put(
-                new InetSocketAddress(0),
-                new ChannelInitializer<Channel>() {
-                    @Override
-                    protected void initChannel(Channel ch) {}
-        });
+        ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
+            @Override
+            protected void initChannel(Channel ch) {}
+        };
+        initializers.put(new InetSocketAddress(0), init);
+        // Pick an InetAddress likely different than the above.  The port to channel map has a unique Key; this
+        // prevents the key being a duplicate.
+        initializers.put(new InetSocketAddress(InetAddress.getLocalHost(), 0), init);
         ClientConnectionsShutdown ccs =
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
@@ -73,9 +77,11 @@ public class ServerTest {
         s.start(/* sync= */ false);
 
         List<SocketAddress> addrs = s.getListeningAddresses();
-        assertEquals(1, addrs.size());
+        assertEquals(2, addrs.size());
         assertTrue(addrs.get(0) instanceof InetSocketAddress);
         assertNotEquals(((InetSocketAddress) addrs.get(0)).getPort(), 0);
+        assertTrue(addrs.get(1) instanceof InetSocketAddress);
+        assertNotEquals(((InetSocketAddress) addrs.get(1)).getPort(), 0);
 
         s.stop();
     }
