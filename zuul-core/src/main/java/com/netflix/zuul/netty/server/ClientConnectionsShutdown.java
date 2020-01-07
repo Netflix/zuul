@@ -122,7 +122,8 @@ public class ClientConnectionsShutdown
 
                 ChannelPromise closePromise = channel.pipeline().newPromise();
                 channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
-                closeAfterPromises.add((Future<Void>) closePromise);
+                // TODO(carl-mastrangelo): remove closePromise, since I don't think it's needed.  Need to verify.
+                closeAfterPromises.add(channel.closeFuture());
             }
 
             // Wait for all of the attempts to close connections gracefully, or max of 30 secs each.
