@@ -16,12 +16,15 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -100,4 +103,35 @@ public class ClientRequestReceiverTest {
         assertTrue(result.getContext().shouldSendErrorResponse());
         channel.close();
     }
+
+    @Test
+    public void shouldPickDestPortSetUsingProxyProtocolOverride() {
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(receiver);
+
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7006);
+        channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(443);
+
+        int maxSize;
+        // Figure out the max size, since it isn't public.
+        {
+            ByteBuf buf = Unpooled.buffer(1).writeByte('a');
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
+            HttpRequestMessageImpl res = channel.readInbound();
+            maxSize = res.getMaxBodySize();
+            res.disposeBufferedBody();
+        }
+
+        HttpRequestMessageImpl result;
+        {
+            ByteBuf buf = Unpooled.buffer(maxSize + 1);
+            buf.writerIndex(maxSize + 1);
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertEquals(result.getPort(), 443);
+    }
+
 }
