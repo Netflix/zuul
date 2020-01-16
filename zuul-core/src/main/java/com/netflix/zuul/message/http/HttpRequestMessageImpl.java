@@ -32,15 +32,15 @@ import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels
@@ -533,11 +533,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public int getClientDestinationPort() {
+    public Optional<Integer> getClientDestinationPort() {
         if (clientRemoteAddress instanceof InetSocketAddress) {
-            return ((InetSocketAddress) clientRemoteAddress).getPort();
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) this.clientRemoteAddress;
+            return Optional.of(inetSocketAddress.getPort());
         } else {
-            return getOriginalPort();
+            return Optional.empty();
         }
     }
 
