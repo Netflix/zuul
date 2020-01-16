@@ -95,7 +95,20 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private String pathAndQuery = null;
     private String infoForLogging = null;
 
+    private static final SocketAddress UNDEFINED_CLIENT_DEST_ADDRESS = new SocketAddress() {
+        @Override
+        public String toString() {
+            return "Undefined destination address.";
+        }
+    };
 
+    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
+                                  HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
+                                  int port, String serverName)
+    {
+        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
+                UNDEFINED_CLIENT_DEST_ADDRESS, false);
+    }
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName, SocketAddress clientRemoteAddress)
