@@ -18,6 +18,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
+import java.util.Optional;
 
 /**
  * User: Mike Smith
@@ -57,6 +58,15 @@ public interface HttpRequestInfo extends ZuulMessage
     String getOriginalProtocol();
 
     int getOriginalPort();
+
+    /**
+     * Reflects the actual destination port that the client intended to communicate with,
+     * in preference to the port Zuul was listening on. In the case where proxy protocol is
+     * enabled, this should reflect the destination IP encoded in the TCP payload by the load balancer.
+     */
+    default Optional<Integer> getClientDestinationPort() {
+        throw new UnsupportedOperationException();
+    }
 
     String reconstructURI();
 

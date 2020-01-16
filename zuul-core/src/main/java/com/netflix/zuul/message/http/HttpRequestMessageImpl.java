@@ -30,15 +30,17 @@ import com.netflix.zuul.util.HttpUtils;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels
@@ -83,6 +85,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private String scheme;
     private int port;
     private String serverName;
+    private SocketAddress clientRemoteAddress;
 
     private HttpRequestInfo inboundRequest = null;
     private Cookies parsedCookies = null;
@@ -95,14 +98,14 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName)
+                                  int port, String serverName, SocketAddress clientRemoteAddress)
     {
-        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName, false);
+        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName, clientRemoteAddress, false);
     }
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName,
+                                  int port, String serverName, SocketAddress clientRemoteAddress,
                                   boolean immutable)
     {
         this.immutable = immutable;
@@ -123,6 +126,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.scheme = scheme;
         this.port = port;
         this.serverName = serverName;
+        this.clientRemoteAddress = clientRemoteAddress;
     }
 
     private void immutableCheck()
@@ -392,7 +396,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
                 queryParams.clone(), message.getHeaders().clone(), clientIp, scheme,
-                port, serverName);
+                port, serverName, clientRemoteAddress);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
         }
@@ -405,7 +409,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(),
                 protocol, method, path,
                 queryParams.immutableCopy(), message.getHeaders().immutableCopy(), clientIp, scheme,
-                port, serverName, true);
+                port, serverName, clientRemoteAddress, true);
         req.setHasBody(hasBody());
         return req;
     }
@@ -526,6 +530,16 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             port = Integer.parseInt(portStr);
         }
         return port;
+    }
+
+    @Override
+    public Optional<Integer> getClientDestinationPort() {
+        if (clientRemoteAddress instanceof InetSocketAddress) {
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) this.clientRemoteAddress;
+            return Optional.of(inetSocketAddress.getPort());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**

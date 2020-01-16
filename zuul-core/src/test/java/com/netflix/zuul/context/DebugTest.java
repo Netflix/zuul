@@ -26,13 +26,13 @@ import static com.netflix.zuul.context.Debug.setDebugRouting;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import java.net.SocketAddress;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class DebugTest {
         params.add("k1", "v1");
 
         request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
-            params, headers, "9.9.9.9", "https", 80, "localhost");
+                params, headers, "9.9.9.9", "https", 80, "localhost", new SocketAddress() {});
         request.setBodyAsText("some text");
         request.storeInboundRequest();
 
