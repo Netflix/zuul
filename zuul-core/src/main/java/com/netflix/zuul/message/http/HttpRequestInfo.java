@@ -58,6 +58,10 @@ public interface HttpRequestInfo extends ZuulMessage
 
     int getOriginalPort();
 
+    default int getClientDestinationPort() {
+        return getOriginalPort();
+    }
+
     String reconstructURI();
 
     /** Parse and lazily cache the request cookies. */

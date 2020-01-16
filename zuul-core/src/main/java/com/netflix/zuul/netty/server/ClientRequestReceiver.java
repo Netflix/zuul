@@ -48,6 +48,7 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
+import java.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -254,6 +255,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // This is the only way I found to get the port of the request with netty...
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
+        final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
 
         // Store info about the SSL handshake if applicable, and choose the http scheme.
         String scheme = SCHEME_HTTP;
@@ -287,7 +289,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 clientIp,
                 scheme,
                 port,
-                serverName
+                serverName,
+                clientDestinationAddress
         );
 
         // Try to decide if this request has a body or not based on the headers (as we won't yet have

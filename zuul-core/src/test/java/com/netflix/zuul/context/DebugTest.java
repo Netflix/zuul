@@ -33,6 +33,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import java.net.InetSocketAddress;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class DebugTest {
         params.add("k1", "v1");
 
         request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
-            params, headers, "9.9.9.9", "https", 80, "localhost");
+            params, headers, "9.9.9.9", "https", 80, "localhost",new InetSocketAddress("api.netflix.com", 443));
         request.setBodyAsText("some text");
         request.storeInboundRequest();
 
