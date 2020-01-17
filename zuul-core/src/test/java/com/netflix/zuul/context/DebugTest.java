@@ -59,7 +59,7 @@ public class DebugTest {
         params.add("k1", "v1");
 
         request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
-                params, headers, "9.9.9.9", "https", 80, "localhost", new SocketAddress() {});
+                params, headers, "9.9.9.9", "https", 80, "localhost");
         request.setBodyAsText("some text");
         request.storeInboundRequest();
 

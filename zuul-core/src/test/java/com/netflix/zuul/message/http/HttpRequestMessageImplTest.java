@@ -28,6 +28,7 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import io.netty.channel.local.LocalAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class HttpRequestMessageImplTest {
         headers.add("Host", "blah.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), false);
 
         request.storeInboundRequest();
         HttpRequestInfo originalRequest = request.getInboundRequest();
@@ -77,7 +78,7 @@ public class HttpRequestMessageImplTest {
         headers.add("Host", "blah.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
 
         queryParams = new HttpQueryParams();
@@ -86,7 +87,7 @@ public class HttpRequestMessageImplTest {
         headers.add("X-Forwarded-Port", "80");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "http", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "http", 7002, "localhost");
         Assert.assertEquals("http://place.netflix.com/some/where", request.reconstructURI());
 
         queryParams = new HttpQueryParams();
@@ -96,14 +97,14 @@ public class HttpRequestMessageImplTest {
         headers.add("X-Forwarded-Port", "443");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "http", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "http", 7002, "localhost");
         Assert.assertEquals("https://place.netflix.com/some/where", request.reconstructURI());
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "http", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "http", 7002, "localhost");
         Assert.assertEquals("http://localhost:7002/some/where", request.reconstructURI());
 
         queryParams = new HttpQueryParams();
@@ -112,7 +113,7 @@ public class HttpRequestMessageImplTest {
         headers = new Headers();
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some%20where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI());
     }
 
@@ -124,7 +125,7 @@ public class HttpRequestMessageImplTest {
         headers.add("Host", "blah.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), true);
+                "192.168.0.2", "https", 7002, "localhost", new SocketAddress() {}, true);
 
         // Check it's the same value 2nd time.
         Assert.assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
@@ -133,7 +134,7 @@ public class HttpRequestMessageImplTest {
         // Check that cached on 1st usage.
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), true);
+                "192.168.0.2", "https", 7002, "localhost",new SocketAddress() {}, true);
         request = spy(request);
         when(request._reconstructURI()).thenReturn("http://testhost/blah");
         verify(request, times(1))._reconstructURI();
@@ -155,7 +156,7 @@ public class HttpRequestMessageImplTest {
         queryParams.add("flag", "5");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 new Headers(),
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
 
         // Check that value changes.
         Assert.assertEquals("/some/where?flag=5", request.getPathAndQuery());
@@ -171,7 +172,7 @@ public class HttpRequestMessageImplTest {
         queryParams.add("flag", "5");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 new Headers(),
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), true);
+                "192.168.0.2", "https", 7002, "localhost", new SocketAddress() {}, true);
 
         // Check it's the same value 2nd time.
         Assert.assertEquals("/some/where?flag=5", request.getPathAndQuery());
@@ -180,7 +181,7 @@ public class HttpRequestMessageImplTest {
         // Check that cached on 1st usage.
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 new Headers(),
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), true);
+                "192.168.0.2", "https", 7002, "localhost", new SocketAddress() {}, true);
         request = spy(request);
         when(request.generatePathAndQuery()).thenReturn("/blah");
         verify(request, times(1)).generatePathAndQuery();
@@ -195,7 +196,7 @@ public class HttpRequestMessageImplTest {
         headers.add("Host", "blah.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("blah.netflix.com", request.getOriginalHost());
 
         headers = new Headers();
@@ -203,21 +204,21 @@ public class HttpRequestMessageImplTest {
         headers.add("X-Forwarded-Host", "foo.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("foo.netflix.com", request.getOriginalHost());
 
         headers = new Headers();
         headers.add("X-Forwarded-Host", "foo.netflix.com");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("foo.netflix.com", request.getOriginalHost());
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com:8080");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("blah.netflix.com", request.getOriginalHost());
     }
 
@@ -227,7 +228,7 @@ public class HttpRequestMessageImplTest {
         Headers headers = new Headers();
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals(7002, request.getOriginalPort());
 
         headers = new Headers();
@@ -235,14 +236,14 @@ public class HttpRequestMessageImplTest {
         headers.add("X-Forwarded-Port", "443");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals(443, request.getOriginalPort());
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com:443");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals(443, request.getOriginalPort());
 
         headers = new Headers();
@@ -250,7 +251,7 @@ public class HttpRequestMessageImplTest {
         headers.add("X-Forwarded-Port", "7005");
         request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
                 headers,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"));
+                "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals(7005, request.getOriginalPort());
     }
 
@@ -269,7 +270,7 @@ public class HttpRequestMessageImplTest {
     public void shouldPreferClientDestPortWhenInitialized() {
         HttpRequestMessageImpl message = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST",
                 "/some/where", new HttpQueryParams(), new Headers(),
-                "192.168.0.2", "https", 7002, "localhost", new InetSocketAddress("api.netflix.com", 443));
+                "192.168.0.2", "https", 7002, "localhost", new InetSocketAddress("api.netflix.com", 443), true);
 
         assertEquals(message.getClientDestinationPort(), Optional.of(443));
     }

@@ -109,12 +109,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
                 UNDEFINED_CLIENT_DEST_ADDRESS, false);
     }
-    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
-                                  HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName, SocketAddress clientRemoteAddress)
-    {
-        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName, clientRemoteAddress, false);
-    }
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
@@ -409,7 +403,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
                 queryParams.clone(), message.getHeaders().clone(), clientIp, scheme,
-                port, serverName, clientRemoteAddress);
+                port, serverName, clientRemoteAddress, immutable);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
         }
