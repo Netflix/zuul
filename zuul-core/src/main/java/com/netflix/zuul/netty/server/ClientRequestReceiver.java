@@ -290,7 +290,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 scheme,
                 port,
                 serverName,
-                clientDestinationAddress
+                clientDestinationAddress,
+                false
         );
 
         // Try to decide if this request has a body or not based on the headers (as we won't yet have
