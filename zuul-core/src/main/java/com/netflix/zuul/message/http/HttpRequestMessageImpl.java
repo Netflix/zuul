@@ -29,6 +29,7 @@ import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.util.HttpUtils;
 import io.netty.handler.codec.http.Cookie;
 import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.HttpContent;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -39,6 +40,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -364,9 +368,12 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
                 if (CLEAN_COOKIES.get()) {
                     aCookieHeader = cleanCookieHeader(aCookieHeader);
                 }
-
-                Set<Cookie> decoded = CookieDecoder.decode(aCookieHeader, false);
-                for (Cookie cookie : decoded) {
+                List<io.netty.handler.codec.http.cookie.Cookie> decodedCookies = ServerCookieDecoder.LAX.decodeAll(aCookieHeader);
+                // Temporarily map to the deprecated objects until Zuul moves to the new interfaces.
+                Set<Cookie> mappedCookies = decodedCookies.stream()
+                        .map(cookie -> new DefaultCookie(cookie.name(), cookie.value()))
+                        .collect(Collectors.toSet());
+                for (Cookie cookie : mappedCookies) {
                     cookies.add(cookie);
                 }
             }
