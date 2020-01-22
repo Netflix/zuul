@@ -19,7 +19,6 @@ package com.netflix.zuul.message.http;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.config.DynamicStringProperty;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -27,22 +26,13 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.util.HttpUtils;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
-import io.netty.handler.codec.http.DefaultCookie;
 import io.netty.handler.codec.http.HttpContent;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,17 +51,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private static final CachedDynamicBooleanProperty CLEAN_COOKIES = new CachedDynamicBooleanProperty(
             "zuul.HttpRequestMessage.cookies.clean", false
     );
-
-    /** ":::"-delimited list of regexes to strip out of the cookie headers. */
-    private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
-            new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
-    private static final List<Pattern> RE_STRIP;
-    static {
-        RE_STRIP = new ArrayList<>();
-        for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::")) {
-            RE_STRIP.add(Pattern.compile(ptn));
-        }
-    }
 
     private static final Pattern PTN_COLON = Pattern.compile(":");
     private static final String URI_SCHEME_SEP = "://";
@@ -361,42 +340,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public Cookies reParseCookies()
     {
-        Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE))
-        {
-            try {
-                if (CLEAN_COOKIES.get()) {
-                    aCookieHeader = cleanCookieHeader(aCookieHeader);
-                }
-                List<io.netty.handler.codec.http.cookie.Cookie> decodedCookies = ServerCookieDecoder.LAX.decodeAll(aCookieHeader);
-                // Temporarily map to the deprecated objects until Zuul moves to the new interfaces.
-                Set<Cookie> mappedCookies = decodedCookies.stream()
-                        .map(cookie -> new DefaultCookie(cookie.name(), cookie.value()))
-                        .collect(Collectors.toSet());
-                for (Cookie cookie : mappedCookies) {
-                    cookies.add(cookie);
-                }
-            }
-            catch (Exception e) {
-                LOG.error(String.format("Error parsing request Cookie header. cookie=%s, request-info=%s",
-                        aCookieHeader, getInfoForLogging()));
-            }
-
-        }
-        parsedCookies = cookies;
-        return cookies;
-    }
-
-    @VisibleForTesting
-    static String cleanCookieHeader(String cookie)
-    {
-        for (Pattern stripPtn : RE_STRIP) {
-            Matcher matcher = stripPtn.matcher(cookie);
-            if (matcher.find()) {
-                cookie = matcher.replaceAll("");
-            }
-        }
-        return cookie;
+        parsedCookies = Cookies.fromHeaders(getHeaders());
+        return parsedCookies;
     }
 
     @Override

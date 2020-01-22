@@ -256,17 +256,6 @@ public class HttpRequestMessageImplTest {
     }
 
     @Test
-    public void testCleanCookieHeaders() {
-        assertEquals("BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; Secure, something=67890;"));
-        assertEquals("BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; something=67890;"));
-        assertEquals(" BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader(" Secure, BlahId=12345; Secure, something=67890;"));
-        assertEquals("", HttpRequestMessageImpl.cleanCookieHeader(""));
-    }
-
-    @Test
     public void shouldPreferClientDestPortWhenInitialized() {
         HttpRequestMessageImpl message = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST",
                 "/some/where", new HttpQueryParams(), new Headers(),
