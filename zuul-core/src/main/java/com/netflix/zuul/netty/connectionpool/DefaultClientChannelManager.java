@@ -16,10 +16,17 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
+
+import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.*;
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
+import com.netflix.loadbalancer.LoadBalancerStats;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerStats;
+import com.netflix.loadbalancer.ZoneAwareLoadBalancer;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
@@ -36,9 +43,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,8 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -59,7 +64,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     public static final String METRIC_PREFIX = "connectionpool";
 
-    private final DynamicServerListLoadBalancer loadBalancer;
+    private final DynamicServerListLoadBalancer<?> loadBalancer;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
     private final Registry spectatorRegistry;
@@ -102,7 +107,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.perServerPools = new ConcurrentHashMap<>(200);
 
         // Setup a listener for Discovery serverlist changes.
-        this.loadBalancer.addServerListChangeListener((oldList, newList) -> removeMissingServerConnectionPools(oldList, newList));
+        this.loadBalancer.addServerListChangeListener(this::removeMissingServerConnectionPools);
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
@@ -141,27 +146,21 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return new NettyClientConnectionFactory(connPoolConfig, clientConnInitializer);
     }
 
-    protected DynamicServerListLoadBalancer createLoadBalancer(IClientConfig clientConfig) {
+    protected DynamicServerListLoadBalancer<?> createLoadBalancer(IClientConfig clientConfig) {
         // Create and configure a loadbalancer for this vip.
-        String defaultLoadBalancerClassName = getLoadBalancerClass().getName();
-        String loadBalancerClassName = clientConfig.get(NFLoadBalancerClassName, defaultLoadBalancerClassName);
+        String loadBalancerClassName = clientConfig.get(NFLoadBalancerClassName, ZoneAwareLoadBalancer.class.getName());
 
-        DynamicServerListLoadBalancer lb;
+        DynamicServerListLoadBalancer<?> lb;
         try {
-            Class clazz = Class.forName(loadBalancerClassName);
-            lb = (DynamicServerListLoadBalancer) clazz.newInstance();
+            Class<?> clazz = Class.forName(loadBalancerClassName);
+            lb = clazz.asSubclass(DynamicServerListLoadBalancer.class).getConstructor().newInstance();
             lb.initWithNiwsConfig(clientConfig);
-        }
-        catch (Exception e) {
-            throw new IllegalStateException("Could not instantiate requested class for LoadBalancer! " +
-                    "loadBalancerClassNam=" + String.valueOf(loadBalancerClassName), e);
+        } catch (Exception e) {
+            Throwables.throwIfUnchecked(e);
+            throw new IllegalStateException("Could not instantiate LoadBalancer " + loadBalancerClassName, e);
         }
 
         return lb;
-    }
-
-    protected Class<? extends DynamicServerListLoadBalancer> getLoadBalancerClass() {
-        return ZoneAwareLoadBalancer.class;
     }
 
     protected void removeMissingServerConnectionPools(List<Server> oldList, List<Server> newList) {
@@ -415,7 +414,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     // This is just used for information in the RestClient 'bridge'.
-    public DynamicServerListLoadBalancer getLoadBalancer() {
+    public DynamicServerListLoadBalancer<?> getLoadBalancer() {
         return this.loadBalancer;
     }
 
