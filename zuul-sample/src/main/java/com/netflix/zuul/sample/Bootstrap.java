@@ -17,7 +17,6 @@
 package com.netflix.zuul.sample;
 
 import com.google.inject.Injector;
-import com.netflix.config.ConfigurationManager;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.Server;
@@ -42,7 +41,6 @@ public class Bootstrap {
         Server server = null;
 
         try {
-            ConfigurationManager.loadCascadedPropertiesFromResources("application");
             Injector injector = InjectorBuilder.fromModule(new ZuulSampleModule()).createInjector();
             BaseServerStartup serverStartup = injector.getInstance(BaseServerStartup.class);
             server = serverStartup.server();
