@@ -17,6 +17,7 @@
 package com.netflix.zuul.sample;
 
 import com.google.inject.AbstractModule;
+import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
@@ -35,6 +36,7 @@ import com.netflix.zuul.origins.BasicNettyOriginManager;
 import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
+import org.apache.commons.configuration.AbstractConfiguration;
 
 /**
  * Zuul Sample Module
@@ -45,6 +47,14 @@ import com.netflix.zuul.stats.RequestMetricsPublisher;
 public class ZuulSampleModule extends AbstractModule {
     @Override
     protected void configure() {
+        try {
+          ConfigurationManager.loadCascadedPropertiesFromResources("application");
+        } catch (Exception ex) {
+          throw new RuntimeException("Error loading configuration: " + ex.getMessage(), ex);
+        }
+
+        bind(AbstractConfiguration.class).toInstance(ConfigurationManager.getConfigInstance());
+
         // sample specific bindings
         bind(BaseServerStartup.class).to(SampleServerStartup.class);
 

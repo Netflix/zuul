@@ -30,7 +30,7 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(GovernatorJunit4ClassRunner.class)
-@ModulesForTesting({ZuulFiltersModule.class})
+@ModulesForTesting({InitTestModule.class, ZuulFiltersModule.class})
 public class ZuulFiltersModuleIntegTest {
     @Inject
     FilterFileManagerConfig filterFileManagerConfig;

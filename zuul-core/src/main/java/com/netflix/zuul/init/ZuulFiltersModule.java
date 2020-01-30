@@ -19,7 +19,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.reflect.ClassPath;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.BasicFilterUsageNotifier;
 import com.netflix.zuul.DynamicCodeCompiler;
 import com.netflix.zuul.FilterFactory;
@@ -60,10 +59,8 @@ public class ZuulFiltersModule extends AbstractModule {
     }
 
     @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig() {
+    FilterFileManagerConfig provideFilterFileManagerConfig(AbstractConfiguration config) {
         // Get filter directories.
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-
         String[] filterLocations = findFilterLocations(config);
         String[] filterClassNames = findClassNames(config);
 
