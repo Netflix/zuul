@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfigKey;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
@@ -48,8 +46,6 @@ public class ZuulDependencyKeys {
     public static final ChannelConfigKey<BasicCounter> httpRequestReadTimeoutCounter = new ChannelConfigKey<>("httpRequestReadTimeoutCounter");
     public static final ChannelConfigKey<FilterLoader> filterLoader = new ChannelConfigKey<>("filterLoader");
     public static final ChannelConfigKey<FilterUsageNotifier> filterUsageNotifier = new ChannelConfigKey<>("filterUsageNotifier");
-    public static final ChannelConfigKey<EurekaClient> discoveryClient = new ChannelConfigKey<>("discoveryClient");
-    public static final ChannelConfigKey<ApplicationInfoManager> applicationInfoManager = new ChannelConfigKey<>("applicationInfoManager");
     public static final ChannelConfigKey<ServerStatusManager> serverStatusManager = new ChannelConfigKey<>("serverStatusManager");
     public static final ChannelConfigKey<Boolean> SSL_CLIENT_CERT_CHECK_REQUIRED = new ChannelConfigKey<>("requiresSslClientCertCheck", false);
 

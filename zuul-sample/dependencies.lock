@@ -20,42 +20,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -72,7 +78,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -108,7 +114,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -137,6 +143,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -317,42 +329,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -369,7 +387,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -405,7 +423,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -434,6 +452,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -614,42 +638,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -666,7 +696,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -702,7 +732,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -731,6 +761,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -911,42 +947,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -963,7 +1005,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -999,7 +1041,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -1028,6 +1070,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -1208,42 +1256,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -1260,7 +1314,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -1296,7 +1350,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -1325,6 +1379,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -1505,42 +1565,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -1557,7 +1623,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -1593,7 +1659,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -1622,6 +1688,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -1802,42 +1874,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -1854,7 +1932,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -1890,7 +1968,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -1919,6 +1997,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -2099,42 +2183,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -2151,7 +2241,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -2187,7 +2277,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -2216,6 +2306,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {
@@ -2396,42 +2492,48 @@
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-grapher": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-multibindings": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-servlet": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject.extensions:guice-throwingproviders": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-core",
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -2448,7 +2550,7 @@
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "1.9.4"
         },
@@ -2484,7 +2586,7 @@
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
+                "com.netflix.zuul:zuul-eureka"
             ],
             "locked": "2.2.4"
         },
@@ -2513,6 +2615,12 @@
             "locked": "0.59.0"
         },
         "com.netflix.zuul:zuul-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-eureka"
+            ],
+            "project": true
+        },
+        "com.netflix.zuul:zuul-eureka": {
             "project": true
         },
         "commons-collections:commons-collections": {

@@ -23,7 +23,6 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
@@ -123,8 +122,8 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         if (conn != null) {
             if (LOG.isDebugEnabled()) {
                 msg = msg + " Closing the PooledConnection and releasing."
-                        + " ASG: " + String.valueOf(conn.getServerKey().getASGName()
-                        + ", host=" + String.valueOf(conn.getServerKey().getHostName()));
+                        + " ASG: " + conn.getServer().getMetaInfo().getServerGroup()
+                        + ", host=" + conn.getServer().getHost();
                 LOG.debug(msg);
             }
             flagCloseAndReleaseConnection(conn);

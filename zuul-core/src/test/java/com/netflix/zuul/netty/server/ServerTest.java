@@ -59,8 +59,7 @@ public class ServerTest {
         ClientConnectionsShutdown ccs =
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
-                        GlobalEventExecutor.INSTANCE,
-                        /* discoveryClient= */ null);
+                        GlobalEventExecutor.INSTANCE);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
             @Override

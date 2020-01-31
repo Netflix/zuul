@@ -16,24 +16,7 @@
 
 package com.netflix.zuul.sample;
 
-import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.config.DynamicIntProperty;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.spectator.api.Registry;
-import com.netflix.zuul.FilterLoader;
-import com.netflix.zuul.FilterUsageNotifier;
-import com.netflix.zuul.RequestCompleteHandler;
-import com.netflix.zuul.context.SessionContextDecorator;
-import com.netflix.zuul.netty.server.*;
-import com.netflix.zuul.netty.server.http2.Http2SslChannelInitializer;
-import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
-import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
-import com.netflix.zuul.sample.push.SampleSSEPushChannelInitializer;
-import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
-import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.handler.ssl.ClientAuth;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
@@ -41,13 +24,33 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.FilterLoader;
+import com.netflix.zuul.FilterUsageNotifier;
+import com.netflix.zuul.RequestCompleteHandler;
+import com.netflix.zuul.context.SessionContextDecorator;
+import com.netflix.zuul.netty.server.BaseServerStartup;
+import com.netflix.zuul.netty.server.DirectMemoryMonitor;
+import com.netflix.zuul.netty.server.Http1MutualSslChannelInitializer;
+import com.netflix.zuul.netty.server.SocketAddressProperty;
+import com.netflix.zuul.netty.server.ZuulDependencyKeys;
+import com.netflix.zuul.netty.server.ZuulServerChannelInitializer;
+import com.netflix.zuul.netty.server.http2.Http2SslChannelInitializer;
+import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
+import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
+import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
+import com.netflix.zuul.sample.push.SampleSSEPushChannelInitializer;
+import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.ssl.ClientAuth;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Collections;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,12 +81,10 @@ public class SampleServerStartup extends BaseServerStartup {
                                SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                                RequestCompleteHandler reqCompleteHandler, Registry registry,
                                DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
-                               EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
                                AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry,
                                SamplePushMessageSenderInitializer pushSenderInitializer) {
         super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
-                directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
-                accessLogPublisher);
+                directMemoryMonitor, eventLoopGroupMetrics, accessLogPublisher);
         this.pushConnectionRegistry = pushConnectionRegistry;
         this.pushSenderInitializer = pushSenderInitializer;
     }

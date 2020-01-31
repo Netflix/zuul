@@ -17,11 +17,11 @@
 package com.netflix.zuul.netty.server;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
+import com.netflix.netty.common.status.ServerStatus;
 import com.netflix.netty.common.status.ServerStatusManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -47,10 +47,6 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,12 +56,16 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -251,7 +251,7 @@ public class Server
         LOG.info("Binding to : " + listenAddress);
 
         // Flag status as UP just before binding to the port.
-        serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
+        serverStatusManager.localStatus(ServerStatus.UP);
 
         // Bind and start to accept incoming connections.
         ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
@@ -396,7 +396,7 @@ public class Server
             // Flag status as down.
             // TODO - is this _only_ changing the local status? And therefore should we also implement a HealthCheckHandler
             // that we can flag to return DOWN here (would that then update Discovery? or still be a delay?)
-            serverStatusManager.localStatus(InstanceInfo.InstanceStatus.DOWN);
+            serverStatusManager.localStatus(ServerStatus.DOWN);
 
             // Shutdown each of the client connections (blocks until complete).
             // NOTE: ClientConnectionsShutdown can also be configured to gracefully close connections when the

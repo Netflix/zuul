@@ -16,19 +16,22 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.exception.OutboundErrorType;
+import com.netflix.zuul.origins.ServerIpAddrExtractor;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Deque;
@@ -38,10 +41,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -57,7 +56,6 @@ public class PerServerConnectionPool implements IConnectionPool
 
     private final Server server;
     private final ServerStats stats;
-    private final InstanceInfo instanceInfo;
     private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
     private final PooledConnectionFactory pooledConnectionFactory;
@@ -75,6 +73,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final Timer connEstablishTimer;
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
+    private final ServerIpAddrExtractor serverIpAddrExtractor;
 
     /** 
      * This is the count of connections currently in progress of being established. 
@@ -83,26 +82,22 @@ public class PerServerConnectionPool implements IConnectionPool
     private final AtomicInteger connCreationsInProgress;
 
     public PerServerConnectionPool(
-            Server server,
-            ServerStats stats,
-            InstanceInfo instanceInfo,
-            SocketAddress serverAddr,
-            NettyClientConnectionFactory connectionFactory,
-            PooledConnectionFactory pooledConnectionFactory,
-            ConnectionPoolConfig config,
-            IClientConfig niwsClientConfig,
-            Counter createNewConnCounter,
-            Counter createConnSucceededCounter,
-            Counter createConnFailedCounter,
-            Counter requestConnCounter, Counter reuseConnCounter,
-            Counter connTakenFromPoolIsNotOpen,
-            Counter maxConnsPerHostExceededCounter,
-            Timer connEstablishTimer,
-            AtomicInteger connsInPool,
-            AtomicInteger connsInUse) {
+            Server server, ServerStats stats,
+            SocketAddress serverAddr,            NettyClientConnectionFactory connectionFactory,
+                                   PooledConnectionFactory pooledConnectionFactory,
+                                   ConnectionPoolConfig config,
+                                   IClientConfig niwsClientConfig,
+                                   Counter createNewConnCounter,
+                                   Counter createConnSucceededCounter,
+                                   Counter createConnFailedCounter,
+                                   Counter requestConnCounter, Counter reuseConnCounter,
+                                   Counter connTakenFromPoolIsNotOpen,
+                                   Counter maxConnsPerHostExceededCounter,
+                                   Timer connEstablishTimer,
+                                   AtomicInteger connsInPool, AtomicInteger connsInUse,
+                                   ServerIpAddrExtractor serverIpAddrExtractor) {
         this.server = server;
         this.stats = stats;
-        this.instanceInfo = instanceInfo;
         // Note: child classes can sometimes connect to different addresses than
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
         this.connectionFactory = connectionFactory;
@@ -119,7 +114,8 @@ public class PerServerConnectionPool implements IConnectionPool
         this.connEstablishTimer = connEstablishTimer;
         this.connsInPool = connsInPool;
         this.connsInUse = connsInUse;
-        
+        this.serverIpAddrExtractor = serverIpAddrExtractor;
+
         this.connCreationsInProgress = new AtomicInteger(0);
     }
 
@@ -241,7 +237,7 @@ public class PerServerConnectionPool implements IConnectionPool
             LOG.warn("Unable to create new connection because at MaxConnectionsPerHost! "
                             + "maxConnectionsPerHost=" + maxConnectionsPerHost
                             + ", connectionsPerHost=" + openAndOpeningConnectionCount
-                            + ", host=" + instanceInfo.getId()
+                            + ", host=" + server.getMetaInfo().getInstanceId()
                             + "origin=" + config.getOriginName()
                     );
             return;
@@ -273,7 +269,7 @@ public class PerServerConnectionPool implements IConnectionPool
                         }
                         LOG.warn("Error creating new connection! "
                                         + "origin=" + config.getOriginName()
-                                        + ", host=" + instanceInfo.getId()
+                                        + ", host=" + server.getMetaInfo().getInstanceId()
                                 );
                     }
                 });

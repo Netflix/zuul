@@ -23,7 +23,6 @@ import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -43,7 +42,6 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,6 +61,7 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     private final String name;
     private final String vip;
+    private final ServerIpAddrExtractor serverIpAddrExtractor;
     private final Registry registry;
     private final IClientConfig config;
     private final ClientChannelManager clientChannelManager;
@@ -74,11 +73,18 @@ public class BasicNettyOrigin implements NettyOrigin {
     private final CachedDynamicBooleanProperty concurrencyProtectionEnabled;
 
     public BasicNettyOrigin(String name, String vip, Registry registry) {
+        this(name, vip, server -> null, registry);
+    }
+
+    public BasicNettyOrigin(String name, String vip,
+                            ServerIpAddrExtractor serverIpAddrExtractor,
+                            Registry registry) {
         this.name = name;
         this.vip = vip;
+        this.serverIpAddrExtractor = serverIpAddrExtractor;
         this.registry = registry;
         this.config = setupClientConfig(name);
-        this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
+        this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, serverIpAddrExtractor, registry);
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
@@ -140,16 +146,7 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public String getIpAddrFromServer(Server server) {
-        if (server instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) server;
-            if (discoveryServer.getInstanceInfo() != null) {
-                String ip = discoveryServer.getInstanceInfo().getIPAddr();
-                if (StringUtils.isNotBlank(ip)) {
-                    return ip;
-                }
-            }
-        }
-        return null;
+        return serverIpAddrExtractor.getIpAddrFromServer(server);
     }
 
     @Override

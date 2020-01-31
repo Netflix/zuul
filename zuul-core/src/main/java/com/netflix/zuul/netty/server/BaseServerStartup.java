@@ -17,11 +17,9 @@
 package com.netflix.zuul.netty.server;
 
 import com.google.errorprone.annotations.ForOverride;
-import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.config.ChainedDynamicProperty;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.ChannelConfigValue;
@@ -45,14 +43,14 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.DomainNameMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 
 public abstract class BaseServerStartup
@@ -63,8 +61,6 @@ public abstract class BaseServerStartup
     protected final Registry registry;
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
-    protected final EurekaClient discoveryClient;
-    protected final ApplicationInfoManager applicationInfoManager;
     protected final AccessLogPublisher accessLogPublisher;
     protected final SessionContextDecorator sessionCtxDecorator;
     protected final RequestCompleteHandler reqCompleteHandler;
@@ -81,15 +77,12 @@ public abstract class BaseServerStartup
                              SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
                              RequestCompleteHandler reqCompleteHandler, Registry registry,
                              DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
-                             EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
                              AccessLogPublisher accessLogPublisher)
     {
         this.serverStatusManager = serverStatusManager;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
         this.eventLoopGroupMetrics = eventLoopGroupMetrics;
-        this.discoveryClient = discoveryClient;
-        this.applicationInfoManager = applicationInfoManager;
         this.accessLogPublisher = accessLogPublisher;
         this.sessionCtxDecorator = sessionCtxDecorator;
         this.reqCompleteHandler = reqCompleteHandler;
@@ -107,7 +100,7 @@ public abstract class BaseServerStartup
     {
         ChannelGroup clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
-                GlobalEventExecutor.INSTANCE, discoveryClient);
+                GlobalEventExecutor.INSTANCE);
 
         addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
 
@@ -150,7 +143,6 @@ public abstract class BaseServerStartup
             @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
-        channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
         channelDeps.set(ZuulDependencyKeys.serverStatusManager, serverStatusManager);
 
         channelDeps.set(ZuulDependencyKeys.accessLogPublisher, accessLogPublisher);

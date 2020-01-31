@@ -20,12 +20,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Throwables;
-import com.netflix.appinfo.AmazonInfo;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.loadbalancer.Server;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
@@ -59,46 +56,6 @@ public class RequestAttempt
     private int connectTimeout;
     private int maxRetries;
 
-    public RequestAttempt(int attemptNumber, InstanceInfo server, String targetVip, String chosenWarmupLB, int status, String error, String exceptionType,
-                          int readTimeout, int connectTimeout, int maxRetries)
-    {
-        if (attemptNumber < 1) {
-            throw new IllegalArgumentException("Attempt number must be greater than 0! - " + attemptNumber);
-        }
-        this.attempt = attemptNumber;
-        this.vip = targetVip;
-
-        if (server != null) {
-            this.app = server.getAppName().toLowerCase();
-            this.asg = server.getASGName();
-            this.instanceId = server.getInstanceId();
-            this.host = server.getHostName();
-            this.port = server.getPort();
-
-            // If targetVip is null, then try to use the actual server's vip.
-            if (targetVip == null) {
-                this.vip = server.getVIPAddress();
-            }
-
-            if (server.getDataCenterInfo() instanceof AmazonInfo) {
-                this.availabilityZone = ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
-
-                // HACK - get region by just removing the last char from zone.
-                String az = getAvailabilityZone();
-                if (az != null && az.length() > 0) {
-                    this.region = az.substring(0, az.length() - 1);
-                }
-            }
-        }
-        
-        this.status = status;
-        this.error = error;
-        this.exceptionType = exceptionType;
-        this.readTimeout = readTimeout;
-        this.connectTimeout = connectTimeout;
-        this.maxRetries = maxRetries;
-    }
-
     public RequestAttempt(final Server server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
         this.status = -1;
         this.attempt = attemptNumber;
@@ -109,31 +66,11 @@ public class RequestAttempt
             this.port = server.getPort();
             this.availabilityZone = server.getZone();
 
-            if (server instanceof DiscoveryEnabledServer) {
-                InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
-                this.app = instanceInfo.getAppName().toLowerCase();
-                this.asg = instanceInfo.getASGName();
-                this.instanceId = instanceInfo.getInstanceId();
-                this.host = instanceInfo.getHostName();
-                this.port = instanceInfo.getPort();
-
-                if (server.getPort() == instanceInfo.getSecurePort()) {
-                    this.vip = instanceInfo.getSecureVipAddress();
-                }
-                else {
-                    this.vip = instanceInfo.getVIPAddress();
-                }
-                if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
-                    this.availabilityZone = ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
-                }
-            }
-            else {
-                final Server.MetaInfo metaInfo = server.getMetaInfo();
-                if (metaInfo != null) {
-                    this.asg = metaInfo.getServerGroup();
-                    this.vip = metaInfo.getServiceIdForDiscovery();
-                    this.instanceId = metaInfo.getInstanceId();
-                }
+            final Server.MetaInfo metaInfo = server.getMetaInfo();
+            if (metaInfo != null) {
+                this.asg = metaInfo.getServerGroup();
+                this.vip = metaInfo.getServiceIdForDiscovery();
+                this.instanceId = metaInfo.getInstanceId();
             }
             // HACK - get region by just removing the last char from zone.
             if (availabilityZone != null && availabilityZone.length() > 0) {

@@ -16,20 +16,13 @@
 
 package com.netflix.zuul.netty.server;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.config.DynamicIntProperty;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.StatusChangeEvent;
 import com.netflix.netty.common.ConnectionCloseChannelAttributes;
 import com.netflix.netty.common.ConnectionCloseType;
-import com.netflix.netty.common.HttpChannelFlags;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.PromiseCombiner;
@@ -51,23 +44,14 @@ import java.util.concurrent.TimeUnit;
 public class ClientConnectionsShutdown
 {
     private static final Logger LOG = LoggerFactory.getLogger(ClientConnectionsShutdown.class);
-    private static final DynamicBooleanProperty ENABLED = new DynamicBooleanProperty("server.outofservice.connections.shutdown", false);
-    private static final DynamicIntProperty DELAY_AFTER_OUT_OF_SERVICE_MS =
-            new DynamicIntProperty("server.outofservice.connections.delay", 2000);
 
     private final ChannelGroup channels;
     private final EventExecutor executor;
-    private final EurekaClient discoveryClient;
 
-    public ClientConnectionsShutdown(ChannelGroup channels, EventExecutor executor, EurekaClient discoveryClient)
+    public ClientConnectionsShutdown(ChannelGroup channels, EventExecutor executor)
     {
         this.channels = channels;
         this.executor = executor;
-        this.discoveryClient = discoveryClient;
-
-        if (discoveryClient != null) {
-            initDiscoveryListener();
-        }
 
         // Only uncomment this for local testing!
         // Allow a fast property to invoke connection shutdown for testing purposes.
@@ -77,30 +61,6 @@ public class ClientConnectionsShutdown
 //                gracefullyShutdownClientChannels();
 //            }
 //        });
-    }
-
-    private void initDiscoveryListener()
-    {
-        this.discoveryClient.registerEventListener(event -> {
-            if (event instanceof StatusChangeEvent) {
-                StatusChangeEvent sce = (StatusChangeEvent) event;
-
-                LOG.info("Received " + sce.toString());
-
-                if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP
-                    && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN))
-                {
-                    // TODO - Also should stop accepting any new client connections now too?
-
-                    // Schedule to gracefully close all the client connections.
-                    if (ENABLED.get()) {
-                        executor.schedule(() -> {
-                            gracefullyShutdownClientChannels();
-                        }, DELAY_AFTER_OUT_OF_SERVICE_MS.get(), TimeUnit.MILLISECONDS);
-                    }
-                }
-            }
-        });
     }
 
     /**

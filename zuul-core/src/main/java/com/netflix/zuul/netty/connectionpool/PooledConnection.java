@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
@@ -42,7 +41,6 @@ public class PooledConnection {
     private final Server server;
     private final Channel channel;
     private final ClientChannelManager channelManager;
-    private final InstanceInfo serverKey;
     private final ServerStats serverStats;
     private final long creationTS;
     private final Counter closeConnCounter;
@@ -73,15 +71,13 @@ public class PooledConnection {
     private boolean released = false;
 
     public PooledConnection(final Channel channel, final Server server, final ClientChannelManager channelManager,
-                     final InstanceInfo serverKey,
-                     final ServerStats serverStats, 
+                     final ServerStats serverStats,
                      final Counter closeConnCounter, 
                      final Counter closeWrtBusyConnCounter)
     {
         this.channel = channel;
         this.server = server;
         this.channelManager = channelManager;
-        this.serverKey = serverKey;
         this.serverStats = serverStats;
         this.creationTS = System.currentTimeMillis();
         this.closeConnCounter = closeConnCounter;
@@ -120,10 +116,6 @@ public class PooledConnection {
 
     public Channel getChannel() {
         return channel;
-    }
-
-    public InstanceInfo getServerKey() {
-        return serverKey;
     }
 
     public long getUsageCount()
@@ -252,7 +244,6 @@ public class PooledConnection {
     {
         return "PooledConnection{" +
                 "channel=" + channel +
-                ", serverKey=" + serverKey +
                 ", usageCount=" + usageCount +
                 '}';
     }
