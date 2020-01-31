@@ -15,16 +15,15 @@
  */
 package com.netflix.zuul.message.http;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import com.netflix.zuul.message.Headers;
 import io.netty.handler.codec.http.Cookie;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.List;
-
-import static com.netflix.zuul.message.http.Cookies.cleanCookieHeader;
-import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CookiesTest {
@@ -120,18 +119,6 @@ public class CookiesTest {
         assertTrue("Decoded cookies have a=2 cookie", hasCookie(decodedCookies, "a", "2"));
         assertTrue("Decoded cookies have b= cookie", hasCookie(decodedCookies, "b", ""));
         assertTrue("Decoded cookies have c=3 cookie", hasCookie(decodedCookies, "c", "3"));
-    }
-
-
-    @Test
-    public void testCleanCookieHeaders() {
-        assertEquals("BlahId=12345; something=67890;",
-                cleanCookieHeader("BlahId=12345; Secure, something=67890;"));
-        assertEquals("BlahId=12345; something=67890;",
-                cleanCookieHeader("BlahId=12345; something=67890;"));
-        assertEquals(" BlahId=12345; something=67890;",
-                cleanCookieHeader(" Secure, BlahId=12345; Secure, something=67890;"));
-        assertEquals("", cleanCookieHeader(""));
     }
 
     private boolean hasCookie(List<Cookie> cookies, String name, String value) {
