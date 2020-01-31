@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  * Performs a simple cleanup of the cookie headers by removing values which shouldn't be part of a cookie header.
  * Note: It's a temporary hack put in place to clean cookie headers which will removed in future releases.
  */
+@Deprecated
 class CookiesSanitizer {
     private static final CachedDynamicBooleanProperty CLEAN_COOKIES = new CachedDynamicBooleanProperty(
             "zuul.HttpRequestMessage.cookies.clean", false);
