@@ -116,7 +116,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             if (clientRequest.decoderResult().isFailure()) {
                 String errorMsg = "Invalid http request. "
                         + "clientRequest = " + clientRequest.toString()
-                        + ", uri = " + String.valueOf(clientRequest.uri())
+                        + ", uri = " + clientRequest.uri()
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 String causeMsg = String.valueOf(clientRequest.decoderResult().cause());
                 final ZuulException ze = new ZuulException(errorMsg, causeMsg, true);
@@ -235,7 +235,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     // Build a ZuulMessage from the netty request.
-    private HttpRequestMessage buildZuulHttpRequest(final HttpRequest nativeRequest, final ChannelHandlerContext clientCtx) {
+    private HttpRequestMessage buildZuulHttpRequest(
+            final HttpRequest nativeRequest, final ChannelHandlerContext clientCtx) {
         // Setup the context for this request.
         final SessionContext context;
         if (decorator != null) { // Optionally decorate the context.

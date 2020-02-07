@@ -26,6 +26,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
+import java.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ import java.net.InetSocketAddress;
 /**
  * Created by saroskar on 3/16/16.
  */
-public class NettyClientConnectionFactory {
+public final class NettyClientConnectionFactory {
 
     private final ConnectionPoolConfig connPoolConfig;
     private final ChannelInitializer<? extends Channel> channelInitializer;
@@ -50,11 +51,15 @@ public class NettyClientConnectionFactory {
                 connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
     }
 
-    public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
-        InetSocketAddress socketAddress = new InetSocketAddress(host, port);
-        if (socketAddress.isUnresolved()) {
-            LOGGER.warn("NettyClientConnectionFactory got an unresolved address, host: {}, port: {}", host,  port);
-            unresolvedDiscoveryHost.increment();
+    public ChannelFuture connect(final EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport) {
+        if (socketAddress instanceof InetSocketAddress) {
+            InetSocketAddress inetSocketAddress = (InetSocketAddress) socketAddress;
+            // TODO(cmastrangelo): Make this throw an exception after checking the counter isn't implemented, and do
+            //  the name resolution at a higher level.
+            if (inetSocketAddress.isUnresolved()) {
+                LOGGER.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", inetSocketAddress);
+                unresolvedDiscoveryHost.increment();
+            }
         }
 
         final Bootstrap bootstrap = new Bootstrap()

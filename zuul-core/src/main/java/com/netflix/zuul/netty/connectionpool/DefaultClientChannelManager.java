@@ -43,7 +43,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
-import java.lang.reflect.InvocationTargetException;
+import java.net.SocketAddress;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -312,20 +313,16 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public Promise<PooledConnection> acquire(final EventLoop eventLoop) {
-        return acquire(eventLoop, null, null, null, 1, CurrentPassport.create(),
-                new AtomicReference<>(), new AtomicReference<>());
+        return acquire(eventLoop, null, CurrentPassport.create(), new AtomicReference<>(), new AtomicReference<>());
     }
 
     @Override
-    public Promise<PooledConnection> acquire(final EventLoop eventLoop, final Object key, final String httpMethod,
-                                             final String uri, final int attemptNum, final CurrentPassport passport,
-                                             final AtomicReference<Server> selectedServer,
-                                             final AtomicReference<String> selectedHostAdddr)
-    {
-
-        if (attemptNum < 1) {
-            throw new IllegalArgumentException("attemptNum must be greater than zero");
-        }
+    public Promise<PooledConnection> acquire(
+            EventLoop eventLoop,
+            @Nullable Object key,
+            CurrentPassport passport,
+            AtomicReference<Server> selectedServer,
+            AtomicReference<String> selectedHostAddr) {
 
         if (shuttingDown) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
@@ -341,12 +338,40 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             return promise;
         }
 
-        final InstanceInfo instanceInfo = chosenServer instanceof DiscoveryEnabledServer ?
-                ((DiscoveryEnabledServer) chosenServer).getInstanceInfo() :
-                // create mock instance info for non-discovery instances
-                new InstanceInfo(chosenServer.getId(), null, null, chosenServer.getHost(), chosenServer.getId(),
-                        null, null, null, null, null, null, null, null, 0, null, null, null, null, null, null, null, null, null, null, null, null);
-
+        SocketAddress serverAddr;
+        InstanceInfo instanceInfo;
+        if (chosenServer instanceof DiscoveryEnabledServer) {
+            instanceInfo = ((DiscoveryEnabledServer) chosenServer).getInstanceInfo();
+        } else {
+            // create mock instance info for non-discovery instances
+            instanceInfo = new InstanceInfo(
+                    chosenServer.getId(),
+                    null,
+                    null,
+                    chosenServer.getHost(),
+                    chosenServer.getId(),
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    0,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+        }
 
         selectedServer.set(chosenServer);
 
@@ -366,7 +391,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     connEstablishTimer, connsInPool, connsInUse);
         });
 
-        return pool.acquire(eventLoop, null, httpMethod, uri, attemptNum, passport, selectedHostAdddr);
+        return pool.acquire(eventLoop, null, passport, selectedHostAddr);
     }
 
     protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, InstanceInfo instanceInfo, ServerStats stats, ClientChannelManager clientChannelMgr,

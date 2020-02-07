@@ -31,6 +31,7 @@ import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.SocketAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class PerServerConnectionPool implements IConnectionPool
 {
-    private ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
+            new ConcurrentHashMap<>();
 
     private final Server server;
     private final ServerStats stats;
@@ -57,7 +59,6 @@ public class PerServerConnectionPool implements IConnectionPool
     private final PooledConnectionFactory pooledConnectionFactory;
     private final ConnectionPoolConfig config;
     private final IClientConfig niwsClientConfig;
-
 
     private final Counter createNewConnCounter;
     private final Counter createConnSucceededCounter;
@@ -126,21 +127,14 @@ public class PerServerConnectionPool implements IConnectionPool
         return niwsClientConfig;
     }
 
-    public Server getServer()
-    {
-        return server;
-    }
-
     @Override
     public boolean isAvailable()
     {
         return true;
     }
 
-
     /** function to run when a connection is acquired before returning it to caller. */
-    private void onAcquire(final PooledConnection conn, String httpMethod, String uriStr, 
-                           int attemptNum, CurrentPassport passport)
+    private void onAcquire(final PooledConnection conn, CurrentPassport passport)
     {
         passport.setOnChannel(conn.getChannel());
         removeIdleStateHandler(conn);
@@ -154,10 +148,8 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
-                                             int attemptNum, CurrentPassport passport,
-                                             AtomicReference<String> selectedHostAddr)
-    {
+    public Promise<PooledConnection> acquire(
+            EventLoop eventLoop, Object key, CurrentPassport passport, AtomicReference<String> selectedHostAddr) {
         requestConnCounter.increment();
         stats.incrementActiveRequestsCount();
         
@@ -170,13 +162,13 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.startRequestTimer();
             conn.incrementUsageCount();
             conn.getChannel().read();
-            onAcquire(conn, httpMethod, uri, attemptNum, passport);
+            onAcquire(conn, passport);
             initPooledConnection(conn, promise);
             selectedHostAddr.set(getHostFromServer(conn.getServer()));
         }
         else {
             // connection pool empty, create new connection using client connection factory.
-            tryMakingNewConnection(eventLoop, promise, httpMethod, uri, attemptNum, passport, selectedHostAddr);
+            tryMakingNewConnection(eventLoop, promise, passport, selectedHostAddr);
         }
 
         return promise;
@@ -228,10 +220,9 @@ public class PerServerConnectionPool implements IConnectionPool
         return pool;
     }
 
-    protected void tryMakingNewConnection(final EventLoop eventLoop, final Promise<PooledConnection> promise,
-                                        final String httpMethod, final String uri, final int attemptNum,
-                                        final CurrentPassport passport, final AtomicReference<String> selectedHostAddr)
-    {
+    protected void tryMakingNewConnection(
+            EventLoop eventLoop, Promise<PooledConnection> promise, CurrentPassport passport,
+            AtomicReference<String> selectedHostAddr) {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
         int openAndOpeningConnectionCount = stats.getOpenConnectionsCount() + connCreationsInProgress.get(); 
@@ -263,13 +254,13 @@ public class PerServerConnectionPool implements IConnectionPool
 
             if (cf.isDone()) {
                 endConnEstablishTimer(timing);
-                handleConnectCompletion(cf, promise, httpMethod, uri, attemptNum, passport);
+                handleConnectCompletion(cf, promise, passport);
             }
             else {
                 cf.addListener(future -> {
                     try {
                         endConnEstablishTimer(timing);
-                        handleConnectCompletion((ChannelFuture) future, promise, httpMethod, uri, attemptNum, passport);
+                        handleConnectCompletion((ChannelFuture) future, promise, passport);
                     }
                     catch (Throwable e) {
                         if (! promise.isDone()) {
@@ -289,8 +280,8 @@ public class PerServerConnectionPool implements IConnectionPool
         }
     }
 
-    protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, String host) {
-        return connectionFactory.connect(eventLoop, host, server.getPort(), passport);
+    protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, SocketAddress serverAddr) {
+        return connectionFactory.connect(eventLoop, serverAddr, passport);
     }
 
     private Timing startConnEstablishTimer()
@@ -309,14 +300,14 @@ public class PerServerConnectionPool implements IConnectionPool
     protected String getHostFromServer(Server server)
     {
         String host = server.getHost();
-        if (! config.useIPAddrForServer()) {
+        if (!config.useIPAddrForServer()) {
             return host;
         }
         if (server instanceof DiscoveryEnabledServer) {
             DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) server;
             if (discoveryServer.getInstanceInfo() != null) {
                 String ip = discoveryServer.getInstanceInfo().getIPAddr();
-                if (! Strings.isNullOrEmpty(ip)) {
+                if (!Strings.isNullOrEmpty(ip)) {
                     host = ip;
                 }
             }
@@ -324,13 +315,8 @@ public class PerServerConnectionPool implements IConnectionPool
         return host;
     }
 
-    protected void handleConnectCompletion(final ChannelFuture cf,
-                                           final Promise<PooledConnection> callerPromise,
-                                           final String httpMethod,
-                                           final String uri,
-                                           final int attemptNum,
-                                           final CurrentPassport passport)
-    {
+    protected void handleConnectCompletion(
+            ChannelFuture cf, Promise<PooledConnection> callerPromise, CurrentPassport passport) {
         connCreationsInProgress.decrementAndGet();
         
         if (cf.isSuccess()) {
@@ -341,7 +327,7 @@ public class PerServerConnectionPool implements IConnectionPool
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
 
-            createConnection(cf, callerPromise, httpMethod, uri, attemptNum, passport);
+            createConnection(cf, callerPromise, passport);
         }
         else {
             stats.incrementSuccessiveConnectionFailureCount();
@@ -352,14 +338,14 @@ public class PerServerConnectionPool implements IConnectionPool
         }
     }
 
-    protected void createConnection(ChannelFuture cf, Promise<PooledConnection> callerPromise, String httpMethod, String uri,
-                                    int attemptNum, CurrentPassport passport) {
+    protected void createConnection(
+            ChannelFuture cf, Promise<PooledConnection> callerPromise, CurrentPassport passport) {
         final PooledConnection conn = pooledConnectionFactory.create(cf.channel());
 
         conn.incrementUsageCount();
         conn.startRequestTimer();
         conn.getChannel().read();
-        onAcquire(conn, httpMethod, uri, attemptNum, passport);
+        onAcquire(conn, passport);
         callerPromise.setSuccess(conn);
     }
 

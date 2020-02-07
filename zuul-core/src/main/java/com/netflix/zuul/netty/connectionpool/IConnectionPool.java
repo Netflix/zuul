@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface IConnectionPool
 {
-    Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
-                                      int retryNum, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
+    Promise<PooledConnection> acquire(
+            EventLoop eventLoop, Object key, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
     boolean release(PooledConnection conn);
     boolean remove(PooledConnection conn);
     void shutdown();
