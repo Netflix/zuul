@@ -16,12 +16,10 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.google.common.base.Strings;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.exception.OutboundErrorType;
@@ -32,15 +30,15 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 import java.net.SocketAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Deque;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -55,6 +53,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final Server server;
     private final ServerStats stats;
     private final InstanceInfo instanceInfo;
+    private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
     private final PooledConnectionFactory pooledConnectionFactory;
     private final ConnectionPoolConfig config;
@@ -80,24 +79,28 @@ public class PerServerConnectionPool implements IConnectionPool
 
     private static final Logger LOG = LoggerFactory.getLogger(PerServerConnectionPool.class);
 
-
-    public PerServerConnectionPool(Server server, ServerStats stats, InstanceInfo instanceInfo,
-                                   NettyClientConnectionFactory connectionFactory,
-                                   PooledConnectionFactory pooledConnectionFactory,
-                                   ConnectionPoolConfig config,
-                                   IClientConfig niwsClientConfig,
-                                   Counter createNewConnCounter, 
-                                   Counter createConnSucceededCounter, 
-                                   Counter createConnFailedCounter,
-                                   Counter requestConnCounter, Counter reuseConnCounter, 
-                                   Counter connTakenFromPoolIsNotOpen,
-                                   Counter maxConnsPerHostExceededCounter,
-                                   Timer connEstablishTimer,
-                                   AtomicInteger connsInPool, AtomicInteger connsInUse)
-    {
+    public PerServerConnectionPool(
+            Server server,
+            ServerStats stats,
+            InstanceInfo instanceInfo,
+            SocketAddress serverAddr,
+            NettyClientConnectionFactory connectionFactory,
+            PooledConnectionFactory pooledConnectionFactory,
+            ConnectionPoolConfig config,
+            IClientConfig niwsClientConfig,
+            Counter createNewConnCounter,
+            Counter createConnSucceededCounter,
+            Counter createConnFailedCounter,
+            Counter requestConnCounter, Counter reuseConnCounter,
+            Counter connTakenFromPoolIsNotOpen,
+            Counter maxConnsPerHostExceededCounter,
+            Timer connEstablishTimer,
+            AtomicInteger connsInPool,
+            AtomicInteger connsInUse) {
         this.server = server;
         this.stats = stats;
         this.instanceInfo = instanceInfo;
+        this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
         this.connectionFactory = connectionFactory;
         this.pooledConnectionFactory = pooledConnectionFactory;
         this.config = config;
@@ -149,7 +152,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     @Override
     public Promise<PooledConnection> acquire(
-            EventLoop eventLoop, Object key, CurrentPassport passport, AtomicReference<String> selectedHostAddr) {
+            EventLoop eventLoop, CurrentPassport passport, AtomicReference<String> selectedHostAddr) {
         requestConnCounter.increment();
         stats.incrementActiveRequestsCount();
         
@@ -164,7 +167,9 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.getChannel().read();
             onAcquire(conn, passport);
             initPooledConnection(conn, promise);
-            selectedHostAddr.set(getHostFromServer(conn.getServer()));
+            // TODO(carl-mastrangelo): it is unclear what the use of this.   I am recording the port now too, not sure
+            //  if this is incorrect.
+            selectedHostAddr.set(serverAddr.toString());
         }
         else {
             // connection pool empty, create new connection using client connection factory.
@@ -245,12 +250,10 @@ public class PerServerConnectionPool implements IConnectionPool
             createNewConnCounter.increment();
             connCreationsInProgress.incrementAndGet();
             passport.add(PassportState.ORIGIN_CH_CONNECTING);
+
+            selectedHostAddr.set(serverAddr.toString());
             
-            // Choose to use either IP or hostname.
-            String host = getHostFromServer(server);
-            selectedHostAddr.set(host);
-            
-            final ChannelFuture cf = connectToServer(eventLoop, passport, host);
+            final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
                 endConnEstablishTimer(timing);
@@ -295,24 +298,6 @@ public class PerServerConnectionPool implements IConnectionPool
     {
         timing.end();
         connEstablishTimer.record(timing.getDuration(), TimeUnit.NANOSECONDS);
-    }
-
-    protected String getHostFromServer(Server server)
-    {
-        String host = server.getHost();
-        if (!config.useIPAddrForServer()) {
-            return host;
-        }
-        if (server instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) server;
-            if (discoveryServer.getInstanceInfo() != null) {
-                String ip = discoveryServer.getInstanceInfo().getIPAddr();
-                if (!Strings.isNullOrEmpty(ip)) {
-                    host = ip;
-                }
-            }
-        }
-        return host;
     }
 
     protected void handleConnectCompletion(

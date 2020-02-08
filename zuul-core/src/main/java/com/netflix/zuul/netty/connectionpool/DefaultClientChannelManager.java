@@ -20,6 +20,7 @@ import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClas
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
@@ -43,6 +44,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashSet;
 import java.util.List;
@@ -338,12 +341,21 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             return promise;
         }
 
-        SocketAddress serverAddr;
+        String rawHost;
+        int port;
         InstanceInfo instanceInfo;
         if (chosenServer instanceof DiscoveryEnabledServer) {
-            instanceInfo = ((DiscoveryEnabledServer) chosenServer).getInstanceInfo();
+            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
+            // Configuration for whether to use IP address or host has already been applied in the
+            // DiscoveryEnabledServer constructor.
+            rawHost = discoveryServer.getHost();
+            port = discoveryServer.getPort();
+            instanceInfo = discoveryServer.getInstanceInfo();
+            // TODO(carl-mastrangelo): pull the IPv6 addr from the instance info, if present.
         } else {
             // create mock instance info for non-discovery instances
+            rawHost = chosenServer.getHost();
+            port = chosenServer.getPort();
             instanceInfo = new InstanceInfo(
                     chosenServer.getId(),
                     null,
@@ -373,6 +385,25 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     null);
         }
 
+        InetSocketAddress serverAddr;
+        try {
+            InetAddress ipAddr = InetAddresses.forString(rawHost);
+            serverAddr = new InetSocketAddress(ipAddr, port);
+        } catch (IllegalArgumentException e1) {
+            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
+            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
+                    "unresolvedDiscoveryHost",
+                    connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
+            unresolvedDiscoveryHost.increment();
+            try {
+                serverAddr = new InetSocketAddress(rawHost, port);
+            } catch (RuntimeException e2) {
+                e1.addSuppressed(e2);
+                throw e1;
+            }
+        }
+        final InetSocketAddress finalServerAddr = serverAddr;
+
         selectedServer.set(chosenServer);
 
         // Now get the connection-pool for this server.
@@ -385,13 +416,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, instanceInfo, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
 
             // Create a new pool for this server.
-            return createConnectionPool(chosenServer, stats, instanceInfo, clientConnFactory, pcf, connPoolConfig,
+            return createConnectionPool(chosenServer, stats, instanceInfo, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
                     clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
                     requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, maxConnsPerHostExceededCounter,
                     connEstablishTimer, connsInPool, connsInUse);
         });
 
-        return pool.acquire(eventLoop, null, passport, selectedHostAddr);
+        return pool.acquire(eventLoop, passport, selectedHostAddr);
     }
 
     protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, InstanceInfo instanceInfo, ServerStats stats, ClientChannelManager clientChannelMgr,
@@ -399,18 +430,18 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, instanceInfo, stats, closeConnCounter, closeWrtBusyConnCounter);
     }
 
-    protected IConnectionPool createConnectionPool(Server chosenServer, ServerStats stats, InstanceInfo instanceInfo,
-                                                   NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
-                                                   ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig,
-                                                   Counter createNewConnCounter, Counter createConnSucceededCounter,
-                                                   Counter createConnFailedCounter, Counter requestConnCounter,
-                                                   Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen,
-                                                   Counter maxConnsPerHostExceededCounter, PercentileTimer connEstablishTimer,
-                                                   AtomicInteger connsInPool, AtomicInteger connsInUse) {
+    protected IConnectionPool createConnectionPool(
+            Server chosenServer, ServerStats stats, InstanceInfo instanceInfo, SocketAddress serverAddr,
+            NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
+            ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig, Counter createNewConnCounter,
+            Counter createConnSucceededCounter, Counter createConnFailedCounter, Counter requestConnCounter,
+            Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen, Counter maxConnsPerHostExceededCounter,
+            PercentileTimer connEstablishTimer, AtomicInteger connsInPool, AtomicInteger connsInUse) {
         return new PerServerConnectionPool(
                 chosenServer,
                 stats,
                 instanceInfo,
+                serverAddr,
                 clientConnFactory,
                 pcf,
                 connPoolConfig,

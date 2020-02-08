@@ -117,11 +117,10 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public Promise<PooledConnection> connectToOrigin(HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber,
+    public Promise<PooledConnection> connectToOrigin(HttpRequestMessage zuulReq, EventLoop eventLoop,
                                                      CurrentPassport passport, AtomicReference<Server> chosenServer,
                                                      AtomicReference<String> chosenHostAddr) {
-        return clientChannelManager.acquire(eventLoop, null, zuulReq.getMethod().toUpperCase(),
-                zuulReq.getPath(), attemptNumber, passport, chosenServer, chosenHostAddr);
+        return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
     @Override

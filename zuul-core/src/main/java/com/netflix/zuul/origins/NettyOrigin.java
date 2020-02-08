@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface NettyOrigin extends InstrumentedOrigin {
 
     Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
-                                              int attemptNumber, CurrentPassport passport,
+                                              CurrentPassport passport,
                                               AtomicReference<Server> chosenServer,
                                               AtomicReference<String> chosenHostAddr);
 

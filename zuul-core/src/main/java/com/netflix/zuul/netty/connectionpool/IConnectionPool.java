@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface IConnectionPool
 {
     Promise<PooledConnection> acquire(
-            EventLoop eventLoop, Object key, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
+            EventLoop eventLoop, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
     boolean release(PooledConnection conn);
     boolean remove(PooledConnection conn);
     void shutdown();
