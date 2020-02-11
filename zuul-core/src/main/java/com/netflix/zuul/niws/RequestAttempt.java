@@ -41,6 +41,7 @@ public class RequestAttempt
     private int attempt;
     private int status;
     private long duration;
+    private String cause;
     private String error;
     private String exceptionType;
     private String app;
@@ -325,6 +326,9 @@ public class RequestAttempt
                 error = t.getMessage();
                 exceptionType = t.getClass().getSimpleName();
             }
+            if (t.getCause() != null) {
+                cause = t.getCause().toString();
+            }
         }
     }
 
@@ -352,6 +356,7 @@ public class RequestAttempt
         root.put("attempt", attempt);
 
         putNullableAttribute(root, "error", error);
+        putNullableAttribute(root, "cause", cause);
         putNullableAttribute(root, "exceptionType", exceptionType);
         putNullableAttribute(root, "region", region);
         putNullableAttribute(root, "asg", asg);
