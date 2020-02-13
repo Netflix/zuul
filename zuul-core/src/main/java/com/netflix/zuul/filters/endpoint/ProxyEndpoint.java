@@ -388,7 +388,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             updateOriginRpsTrackers(origin, attemptNum);
 
             // We pass this AtomicReference<Server> here and the origin impl will assign the chosen server to it.
-            promise = origin.connectToOrigin(zuulRequest, channelCtx.channel().eventLoop(), passport, chosenServer, chosenHostAddr);
+            promise = origin.connectToOrigin(
+                    zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer, chosenHostAddr);
 
             storeAndLogOriginRequestInfo();
             currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
