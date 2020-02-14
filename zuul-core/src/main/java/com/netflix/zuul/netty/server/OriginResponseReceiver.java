@@ -194,6 +194,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                         // Set the specific SSL handshake error if the handlers have already caught them
                         ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(null);
                         fireWriteError("request headers", cause, ctx);
+                        LOG.debug("SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ", future.cause());
                     } else {
                         fireWriteError("request headers", future.cause(), ctx);
                     }
