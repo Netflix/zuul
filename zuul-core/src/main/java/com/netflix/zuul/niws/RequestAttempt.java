@@ -19,6 +19,7 @@ package com.netflix.zuul.niws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Throwables;
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
@@ -28,6 +29,8 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
+
+import javax.net.ssl.SSLHandshakeException;
 
 /**
  * User: michaels@netflix.com
@@ -41,6 +44,7 @@ public class RequestAttempt
     private int attempt;
     private int status;
     private long duration;
+    private String cause;
     private String error;
     private String exceptionType;
     private String app;
@@ -321,9 +325,15 @@ public class RequestAttempt
                 error = obe.getOutboundErrorType().toString();
                 exceptionType = OutboundException.class.getSimpleName();
             }
+            else if (t instanceof SSLHandshakeException) {
+                error = t.getMessage();
+                exceptionType = t.getClass().getSimpleName();
+                cause = t.getCause().getMessage();
+            }
             else {
                 error = t.getMessage();
                 exceptionType = t.getClass().getSimpleName();
+                cause = Throwables.getStackTraceAsString(t);
             }
         }
     }
@@ -352,6 +362,7 @@ public class RequestAttempt
         root.put("attempt", attempt);
 
         putNullableAttribute(root, "error", error);
+        putNullableAttribute(root, "cause", cause);
         putNullableAttribute(root, "exceptionType", exceptionType);
         putNullableAttribute(root, "region", region);
         putNullableAttribute(root, "asg", asg);
