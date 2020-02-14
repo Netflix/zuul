@@ -37,6 +37,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +49,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PerServerConnectionPool implements IConnectionPool
 {
+    private static final Logger LOG = LoggerFactory.getLogger(PerServerConnectionPool.class);
+
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
 
@@ -77,13 +81,15 @@ public class PerServerConnectionPool implements IConnectionPool
      */
     private final AtomicInteger connCreationsInProgress;
 
-    private static final Logger LOG = LoggerFactory.getLogger(PerServerConnectionPool.class);
+    @Nullable
+    private final Function<? super SocketAddress,? extends SocketAddress> serverAddrOverride;
 
     public PerServerConnectionPool(
             Server server,
             ServerStats stats,
             InstanceInfo instanceInfo,
             SocketAddress serverAddr,
+            @Nullable Function<? super SocketAddress, ? extends SocketAddress> serverAddrOverride,
             NettyClientConnectionFactory connectionFactory,
             PooledConnectionFactory pooledConnectionFactory,
             ConnectionPoolConfig config,
@@ -101,6 +107,7 @@ public class PerServerConnectionPool implements IConnectionPool
         this.stats = stats;
         this.instanceInfo = instanceInfo;
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
+        this.serverAddrOverride = serverAddrOverride;
         this.connectionFactory = connectionFactory;
         this.pooledConnectionFactory = pooledConnectionFactory;
         this.config = config;
@@ -253,7 +260,17 @@ public class PerServerConnectionPool implements IConnectionPool
 
             selectedHostAddr.set(serverAddr.toString());
             
-            final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
+            // Due to some overrides of PerServerConnectionPool, the server address listed in selectedHostAddr
+            // can be different than the one that actually gets connected.  This is likely a bug, or at the least
+            // confusing, but the behavior is preserved here for existing subclasses.
+            SocketAddress actualServerAddress;
+            if (serverAddrOverride != null) {
+                actualServerAddress = serverAddrOverride.apply(serverAddr);
+            } else {
+                actualServerAddress = serverAddr;
+            }
+            
+            final ChannelFuture cf = connectToServer(eventLoop, passport, actualServerAddress);
 
             if (cf.isDone()) {
                 endConnEstablishTimer(timing);
