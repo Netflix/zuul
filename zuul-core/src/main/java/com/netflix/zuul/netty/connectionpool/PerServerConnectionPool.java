@@ -81,15 +81,11 @@ public class PerServerConnectionPool implements IConnectionPool
      */
     private final AtomicInteger connCreationsInProgress;
 
-    @Nullable
-    private final Function<? super SocketAddress,? extends SocketAddress> serverAddrOverride;
-
     public PerServerConnectionPool(
             Server server,
             ServerStats stats,
             InstanceInfo instanceInfo,
             SocketAddress serverAddr,
-            @Nullable Function<? super SocketAddress, ? extends SocketAddress> serverAddrOverride,
             NettyClientConnectionFactory connectionFactory,
             PooledConnectionFactory pooledConnectionFactory,
             ConnectionPoolConfig config,
@@ -106,8 +102,8 @@ public class PerServerConnectionPool implements IConnectionPool
         this.server = server;
         this.stats = stats;
         this.instanceInfo = instanceInfo;
+        // Note: child classes can sometimes connect to different addresses than
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
-        this.serverAddrOverride = serverAddrOverride;
         this.connectionFactory = connectionFactory;
         this.pooledConnectionFactory = pooledConnectionFactory;
         this.config = config;
@@ -260,17 +256,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
             selectedHostAddr.set(serverAddr.toString());
 
-            // Due to some overrides of PerServerConnectionPool, the server address listed in selectedHostAddr
-            // can be different than the one that actually gets connected.  This is likely a bug, or at the least
-            // confusing, but the behavior is preserved here for existing subclasses.
-            SocketAddress actualServerAddress;
-            if (serverAddrOverride != null) {
-                actualServerAddress = serverAddrOverride.apply(serverAddr);
-            } else {
-                actualServerAddress = serverAddr;
-            }
-            
-            final ChannelFuture cf = connectToServer(eventLoop, passport, actualServerAddress);
+            final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
                 endConnEstablishTimer(timing);

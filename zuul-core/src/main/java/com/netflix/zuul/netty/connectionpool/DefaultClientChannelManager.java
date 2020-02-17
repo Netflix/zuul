@@ -442,7 +442,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 stats,
                 instanceInfo,
                 serverAddr,
-                /* serverAddrOverride= */ null,
                 clientConnFactory,
                 pcf,
                 connPoolConfig,
