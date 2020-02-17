@@ -259,7 +259,7 @@ public class PerServerConnectionPool implements IConnectionPool
             passport.add(PassportState.ORIGIN_CH_CONNECTING);
 
             selectedHostAddr.set(serverAddr.toString());
-            
+
             // Due to some overrides of PerServerConnectionPool, the server address listed in selectedHostAddr
             // can be different than the one that actually gets connected.  This is likely a bug, or at the least
             // confusing, but the behavior is preserved here for existing subclasses.

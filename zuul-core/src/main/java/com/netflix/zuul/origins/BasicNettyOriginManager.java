@@ -52,4 +52,3 @@ public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> 
         return new BasicNettyOrigin(name, vip, registry);
     }
 }
-class foo {}
