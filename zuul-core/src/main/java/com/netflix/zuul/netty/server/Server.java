@@ -47,6 +47,7 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -68,6 +69,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static sun.java2d.opengl.OGLRenderQueue.sync;
 
 /**
  *
@@ -254,7 +256,14 @@ public class Server
         serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
 
         // Bind and start to accept incoming connections.
-        return serverBootstrap.bind(listenAddress).sync();
+        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
+        try {
+            return bindFuture.sync();
+        } catch (Exception e) {
+            // sync() sneakily throws a checked Exception, but doesn't declare it. This can happen if there is a bind
+            // failure, which is typically an IOException.  Just chain it and rethrow.
+            throw new RuntimeException("Failed to bind on addr " + listenAddress, e);
+        }
     }
 
     /**
