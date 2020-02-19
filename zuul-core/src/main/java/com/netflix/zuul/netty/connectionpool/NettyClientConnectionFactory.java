@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.spectator.api.Counter;
-import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.bootstrap.Bootstrap;
@@ -26,37 +24,29 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Objects;
 /**
  * Created by saroskar on 3/16/16.
  */
-public class NettyClientConnectionFactory {
+public final class NettyClientConnectionFactory {
 
     private final ConnectionPoolConfig connPoolConfig;
     private final ChannelInitializer<? extends Channel> channelInitializer;
-    private final Counter unresolvedDiscoveryHost;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyClientConnectionFactory.class);
-
 
     NettyClientConnectionFactory(final ConnectionPoolConfig connPoolConfig,
                                  final ChannelInitializer<? extends Channel> channelInitializer) {
         this.connPoolConfig = connPoolConfig;
         this.channelInitializer = channelInitializer;
-        this.unresolvedDiscoveryHost = SpectatorUtils.newCounter("unresolvedDiscoveryHost",
-                connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
     }
 
-    public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
-        InetSocketAddress socketAddress = new InetSocketAddress(host, port);
-        if (socketAddress.isUnresolved()) {
-            LOGGER.warn("NettyClientConnectionFactory got an unresolved address, host: {}, port: {}", host,  port);
-            unresolvedDiscoveryHost.increment();
+    public ChannelFuture connect(final EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport) {
+        Objects.requireNonNull(socketAddress, "socketAddress");
+        if (socketAddress instanceof InetSocketAddress) {
+            // This should be checked by the ClientConnectionManager
+            assert !((InetSocketAddress) socketAddress).isUnresolved() : socketAddress;
         }
-
         final Bootstrap bootstrap = new Bootstrap()
                 .channel(Server.defaultOutboundChannelType.get())
                 .handler(channelInitializer)
@@ -73,5 +63,4 @@ public class NettyClientConnectionFactory {
                 .remoteAddress(socketAddress);
         return bootstrap.connect();
     }
-
 }
