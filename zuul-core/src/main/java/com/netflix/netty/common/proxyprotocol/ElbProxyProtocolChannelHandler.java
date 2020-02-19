@@ -18,12 +18,15 @@ package com.netflix.netty.common.proxyprotocol;
 
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.ProtocolDetectionState;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
+import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.util.AttributeKey;
 
@@ -35,27 +38,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass
- * it any further along the pipeline.
- *
+ * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass it any further along the pipeline.
+ * <p>
  * Use in conjunction with OptionalHAProxyMessageDecoder if ProxyProtocol is enabled on the ELB.
- *
- * User: michaels@netflix.com
- * Date: 3/24/16
- * Time: 11:59 AM
+ * <p>
+ * User: michaels@netflix.com Date: 3/24/16 Time: 11:59 AM
  */
-public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
-{
+public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter {
+
     public static final String NAME = "ElbProxyProtocolChannelHandler";
-    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey.newInstance("_haproxy_message");
-    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION = AttributeKey.newInstance("_haproxy_version");
+    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey
+            .newInstance("_haproxy_message");
+    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION = AttributeKey
+            .newInstance("_haproxy_version");
 
     private static final Logger logger = LoggerFactory.getLogger("ElbProxyProtocolChannelHandler");
 
     private final boolean withProxyProtocol;
 
-    public ElbProxyProtocolChannelHandler(boolean withProxyProtocol)
-    {
+    public ElbProxyProtocolChannelHandler(boolean withProxyProtocol) {
         this.withProxyProtocol = withProxyProtocol;
     }
 
@@ -64,19 +65,15 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
      *
      * @param pipeline
      */
-    public void addProxyProtocol(ChannelPipeline pipeline)
-    {
+    public void addProxyProtocol(ChannelPipeline pipeline) {
         pipeline.addLast(NAME, this);
-
-        if (withProxyProtocol) {
-            pipeline.addBefore(NAME, OptionalHAProxyMessageDecoder.NAME, new OptionalHAProxyMessageDecoder());
-        }
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
-        if (withProxyProtocol) {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (withProxyProtocol && isHAPMDetected(msg)) {
+            // Optionally decode the message if the bytes indicate proxy protocol was applied
+            ctx.pipeline().addBefore(NAME, null, new HAProxyMessageDecoder());
             if (msg instanceof HAProxyMessage && msg != null) {
                 HAProxyMessage hapm = (HAProxyMessage) msg;
                 Channel channel = ctx.channel();
@@ -94,7 +91,8 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                     channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(hapm.destinationPort());
 
                     SocketAddress addr;
-                    out: {
+                    out:
+                    {
                         switch (hapm.proxiedProtocol()) {
                             case UNKNOWN:
                                 throw new IllegalArgumentException("unknown proxy protocl" + destinationAddress);
@@ -122,7 +120,8 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
                     channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).set(hapm.sourcePort());
 
                     SocketAddress addr;
-                    out: {
+                    out:
+                    {
                         switch (hapm.proxiedProtocol()) {
                             case UNKNOWN:
                                 throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);
@@ -153,5 +152,9 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
         }
 
         super.channelRead(ctx, msg);
+    }
+
+    private boolean isHAPMDetected(Object msg) {
+        return HAProxyMessageDecoder.detectProtocol((ByteBuf) msg).state() == ProtocolDetectionState.DETECTED;
     }
 }

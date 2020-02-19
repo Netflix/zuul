@@ -22,7 +22,6 @@ import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
 import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
-import com.netflix.netty.common.proxyprotocol.OptionalHAProxyMessageDecoder;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
@@ -68,7 +67,6 @@ public class BaseZuulChannelInitializerTest {
         assertNotNull(channel.pipeline().context(ServerChannelMetrics.class));
         assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
         assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
-        assertNull(channel.pipeline().context(OptionalHAProxyMessageDecoder.NAME));
         assertNotNull(channel.pipeline().context(MaxInboundConnectionsHandler.class));
     }
 
@@ -97,7 +95,6 @@ public class BaseZuulChannelInitializerTest {
         assertNotNull(channel.pipeline().context(ServerChannelMetrics.class));
         assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
         assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
-        assertNotNull(channel.pipeline().context(OptionalHAProxyMessageDecoder.NAME));
         assertNotNull(channel.pipeline().context(MaxInboundConnectionsHandler.class));
     }
 }

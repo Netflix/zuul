@@ -63,6 +63,31 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
+    public void passThrough_ProxyProtocolEnabled_nonProxyBytes() {
+        ElbProxyProtocolChannelHandler handler = new ElbProxyProtocolChannelHandler(/* withProxyProtocol= */ true                   );
+        EmbeddedChannel channel = new EmbeddedChannel();
+        handler.addProxyProtocol(channel.pipeline());
+        ByteBuf buf = Unpooled.wrappedBuffer(
+                "TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf);
+
+        Object dropped = channel.readInbound();
+        assertEquals(dropped, buf);
+
+        // TODO(carl-mastrangelo): the handler should remove itself, but it currently doesn't.
+        assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
+        assertNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_VERSION).get());
+        assertNull(channel.attr(ElbProxyProtocolChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).get());
+        assertNull(channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
+
+    }
+
+    @Test
     public void negotiateProxy_ppv1_ipv4() {
         ElbProxyProtocolChannelHandler handler = new ElbProxyProtocolChannelHandler(/* withProxyProtocol= */ true);
         EmbeddedChannel channel = new EmbeddedChannel();
