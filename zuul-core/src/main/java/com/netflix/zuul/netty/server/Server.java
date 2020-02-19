@@ -254,7 +254,14 @@ public class Server
         serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
 
         // Bind and start to accept incoming connections.
-        return serverBootstrap.bind(listenAddress).sync();
+        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
+        try {
+            return bindFuture.sync();
+        } catch (Exception e) {
+            // sync() sneakily throws a checked Exception, but doesn't declare it. This can happen if there is a bind
+            // failure, which is typically an IOException.  Just chain it and rethrow.
+            throw new RuntimeException("Failed to bind on addr " + listenAddress, e);
+        }
     }
 
     /**
