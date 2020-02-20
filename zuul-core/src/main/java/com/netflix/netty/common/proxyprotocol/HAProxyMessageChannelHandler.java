@@ -32,25 +32,23 @@ import java.net.SocketAddress;
 /**
  * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass it any further along the pipeline.
  * Use in conjunction with HAProxyMessageDecoder if proxy protocol is enabled on the ELB.
- * User: michaels@netflix.com Date: 3/24/16 Time: 11:59 AM
  */
 
-public class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
-    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey.newInstance("_haproxy_message");
-    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION = AttributeKey.newInstance("_haproxy_version");
+public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
+
+    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey
+            .newInstance("_haproxy_message");
+    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION = AttributeKey
+            .newInstance("_haproxy_version");
 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HAProxyMessage && msg != null) {
+        if (msg instanceof HAProxyMessage) {
             HAProxyMessage hapm = (HAProxyMessage) msg;
             Channel channel = ctx.channel();
             channel.attr(ATTR_HAPROXY_MESSAGE).set(hapm);
-            ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> {
-                if (hapm instanceof ReferenceCounted) {
-                    hapm.release();
-                }
-            });
+            ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> hapm.release());
             channel.attr(ATTR_HAPROXY_VERSION).set(hapm.protocolVersion());
             // Get the real host and port that the client connected to ELB with.
             String destinationAddress = hapm.destinationAddress();
@@ -59,7 +57,8 @@ public class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(hapm.destinationPort());
 
                 SocketAddress addr;
-                out: {
+                out:
+                {
                     switch (hapm.proxiedProtocol()) {
                         case UNKNOWN:
                             throw new IllegalArgumentException("unknown proxy protocl" + destinationAddress);
@@ -87,7 +86,8 @@ public class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
                 channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_PORT).set(hapm.sourcePort());
 
                 SocketAddress addr;
-                out: {
+                out:
+                {
                     switch (hapm.proxiedProtocol()) {
                         case UNKNOWN:
                             throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);

@@ -26,11 +26,10 @@ import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
 /**
  * Decides if we need to decode a HAProxyMessage. If so, adds the decoder followed by the handler.
  * Else, removes itself from the pipeline.
- * User: arghac@netflix.com Date: 02/19/2020
  */
-public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter {
+public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter {
 
-    public static final String NAME = "ElbProxyProtocolChannelHandler";
+    public static final String NAME = ElbProxyProtocolChannelHandler.class.getSimpleName();
     private final boolean withProxyProtocol;
 
     public ElbProxyProtocolChannelHandler(boolean withProxyProtocol) {
