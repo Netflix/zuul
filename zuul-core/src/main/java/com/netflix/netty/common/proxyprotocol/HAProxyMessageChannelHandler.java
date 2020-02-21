@@ -36,10 +36,10 @@ import java.net.SocketAddress;
 
 public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
 
-    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE = AttributeKey
-            .newInstance("_haproxy_message");
-    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION = AttributeKey
-            .newInstance("_haproxy_version");
+    public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE =
+            AttributeKey.newInstance("_haproxy_message");
+    public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION =
+            AttributeKey.newInstance("_haproxy_version");
 
 
     @Override
