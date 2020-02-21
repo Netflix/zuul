@@ -160,7 +160,7 @@ public final class RejectionUtils {
         }
     }
 
-    private static void reject(
+    public static void reject(
             ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason,
             HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode,
             String rejectedBody) {
@@ -179,16 +179,12 @@ public final class RejectionUtils {
         throw new AssertionError("Bad rejection type: " + rejectionType);
     }
 
-
-
     private static void notifyHandlers(
             ChannelHandlerContext ctx, StatusCategory nfStatus, HttpResponseStatus status, String reason,
             HttpRequest request) {
         RequestRejectedEvent event = new RequestRejectedEvent(request, nfStatus, status, reason);
         ctx.fireUserEventTriggered(event);
     }
-
-
 
     private static boolean closeConnectionAfterReject(Channel channel) {
         if (channel.hasAttr(ATTR_HAPROXY_VERSION)) {
