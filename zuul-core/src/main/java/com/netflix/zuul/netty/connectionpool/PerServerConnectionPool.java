@@ -29,6 +29,7 @@ import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Deque;
 import java.util.Objects;
@@ -170,9 +171,7 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.getChannel().read();
             onAcquire(conn, passport);
             initPooledConnection(conn, promise);
-            // TODO(carl-mastrangelo): it is unclear what the use of this.   I am recording the port now too, not sure
-            //  if this is incorrect.
-            selectedHostAddr.set(serverAddr.toString());
+            selectedHostAddr.set(getSelectedHostString(serverAddr));
         }
         else {
             // connection pool empty, create new connection using client connection factory.
@@ -254,7 +253,7 @@ public class PerServerConnectionPool implements IConnectionPool
             connCreationsInProgress.incrementAndGet();
             passport.add(PassportState.ORIGIN_CH_CONNECTING);
 
-            selectedHostAddr.set(serverAddr.toString());
+            selectedHostAddr.set(getSelectedHostString(serverAddr));
 
             final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
@@ -418,6 +417,17 @@ public class PerServerConnectionPool implements IConnectionPool
     @Override
     public int getConnsInUse() {
         return connsInUse.get();
+    }
+
+    private static String getSelectedHostString(SocketAddress addr) {
+        if (addr instanceof InetSocketAddress) {
+            // This is used for logging mainly.  TODO(carl-mastrangelo): consider passing the whole address back
+            // rather than the string form.
+            return ((InetSocketAddress) addr).getAddress().getHostAddress();
+        } else {
+            // If it's some other kind of address, just set it to the string form as a best effort guess.
+            return addr.toString();
+        }
     }
 
 }
