@@ -29,6 +29,7 @@ import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Deque;
 import java.util.Objects;
@@ -170,9 +171,14 @@ public class PerServerConnectionPool implements IConnectionPool
             conn.getChannel().read();
             onAcquire(conn, passport);
             initPooledConnection(conn, promise);
-            // TODO(carl-mastrangelo): it is unclear what the use of this.   I am recording the port now too, not sure
-            //  if this is incorrect.
-            selectedHostAddr.set(serverAddr.toString());
+            if (serverAddr instanceof InetSocketAddress) {
+                // This is used for logging mainly.  TODO(carl-mastrangelo): consider passing the whole address back
+                // rather than the string form.
+                selectedHostAddr.set(((InetSocketAddress) serverAddr).getAddress().getHostAddress());
+            } else {
+                // If it's some other kind of address, just set it to the string form as a best effort guess.
+                selectedHostAddr.set(serverAddr.toString());
+            }
         }
         else {
             // connection pool empty, create new connection using client connection factory.
