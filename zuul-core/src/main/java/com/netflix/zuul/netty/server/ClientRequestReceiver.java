@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.netty.common.throttle.RejectionUtils;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.context.SessionContextDecorator;
@@ -98,7 +99,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
-
         // Flag that we have now received the LastContent for this request from the client.
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
@@ -110,23 +110,22 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             clientRequest = (HttpRequest) msg;
 
             zuulRequest = buildZuulHttpRequest(clientRequest, ctx);
-            handleExpect100Continue(ctx, clientRequest);
 
             // Handle invalid HTTP requests.
             if (clientRequest.decoderResult().isFailure()) {
-                String errorMsg = "Invalid http request. "
-                        + "clientRequest = " + clientRequest.toString()
-                        + ", uri = " + clientRequest.uri()
-                        + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
-                String causeMsg = String.valueOf(clientRequest.decoderResult().cause());
-                final ZuulException ze = new ZuulException(errorMsg, causeMsg, true);
-                ze.setStatusCode(400);
-
-                StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(),
-                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-
-                zuulRequest.getContext().setError(ze);
-                zuulRequest.getContext().setShouldSendErrorResponse(true);
+                LOG.warn(
+                        "Invalid http request. clientRequest = {} , uri = {}, info = {}",
+                        clientRequest.toString(),
+                        clientRequest.uri(),
+                        ChannelUtils.channelInfoForLogging(ctx.channel()),
+                        clientRequest.decoderResult().cause());
+                RejectionUtils.rejectByClosingConnection(
+                        ctx,
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "decodefailure",
+                        clientRequest,
+                        /* injectedLatencyMillis= */ null);
+                return;
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
                         + "clientRequest = " + clientRequest.toString()
@@ -140,6 +139,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             }
+
+            handleExpect100Continue(ctx, clientRequest);
+
 
             //Send the request down the filter pipeline
             ctx.fireChannelRead(zuulRequest);
@@ -208,7 +210,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         super.userEventTriggered(ctx, evt);
 
-        if (evt instanceof  CompleteEvent) {
+        if (evt instanceof CompleteEvent) {
             final Channel channel = ctx.channel();
             channel.attr(ATTR_ZUUL_REQ).set(null);
             channel.attr(ATTR_ZUUL_RESP).set(null);
@@ -225,7 +227,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             final ChannelFuture f = ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
             f.addListener((s) -> {
                 if (! s.isSuccess()) {
-                    throw new ZuulException( s.cause(), "Failed while writing 100-continue response", true);
+                    throw new ZuulException(s.cause(), "Failed while writing 100-continue response", true);
                 }
             });
             // Remove the Expect: 100-Continue header from request as we don't want to proxy it downstream.

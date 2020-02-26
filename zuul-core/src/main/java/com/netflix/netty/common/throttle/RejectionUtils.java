@@ -49,7 +49,7 @@ public final class RejectionUtils {
 
     // TODO(carl-mastrangelo): add tests for this.
 
-    private static final HttpResponseStatus REJECT_CLOSING_STATUS = new HttpResponseStatus(999, "Closing(Rejection)");
+    public static final HttpResponseStatus REJECT_CLOSING_STATUS = new HttpResponseStatus(999, "Closing(Rejection)");
 
     /**
      * Closes the connection without sending a response, and fires a {@link RequestRejectedEvent} back up the pipeline.
@@ -198,7 +198,8 @@ public final class RejectionUtils {
             ChannelHandlerContext ctx, StatusCategory nfStatus, HttpResponseStatus status, String reason,
             HttpRequest request) {
         RequestRejectedEvent event = new RequestRejectedEvent(request, nfStatus, status, reason);
-        ctx.fireUserEventTriggered(event);
+        // Send this from the beginning of the pipeline, as it may be sent from the ClientRequestReceiver.
+        ctx.pipeline().fireUserEventTriggered(event);
     }
 
     private static boolean closeConnectionAfterReject(Channel channel) {
