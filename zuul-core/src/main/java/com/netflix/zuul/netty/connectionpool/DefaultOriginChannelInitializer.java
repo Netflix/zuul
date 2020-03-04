@@ -29,6 +29,8 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
+
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
@@ -54,6 +56,10 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         this.sslContext = getClientSslContext(spectatorRegistry);
     }
 
+    public ConnectionPoolConfig getConnectionPoolConfig() {
+        return connectionPoolConfig;
+    }
+
     @Override
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
@@ -61,8 +67,8 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         pipeline.addLast(new PassportStateOriginHandler.InboundHandler());
         pipeline.addLast(new PassportStateOriginHandler.OutboundHandler());
 
-        if (connectionPoolConfig.isSecure()) {
-            pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
+        if (this.getConnectionPoolConfig().isSecure()) {
+            pipeline.addLast("ssl", getSslHandler(sslContext, ch));
         }
 
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
@@ -75,13 +81,17 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         pipeline.addLast(new PassportStateHttpClientHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpClientHandler.OutboundHandler());
         pipeline.addLast("originNettyLogger", nettyLogger);
-        pipeline.addLast(httpMetricsHandler);
+        pipeline.addLast(this.getHttpMetricsHandler());
         addMethodBindingHandler(pipeline);
         pipeline.addLast(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER);
         pipeline.addLast(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
         pipeline.addLast(new ClientTimeoutHandler.InboundHandler());
         pipeline.addLast(new ClientTimeoutHandler.OutboundHandler());
         pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
+    }
+
+    protected SslHandler getSslHandler(SslContext sslContext, Channel ch) {
+        return sslContext.newHandler(ch.alloc());
     }
 
     /**

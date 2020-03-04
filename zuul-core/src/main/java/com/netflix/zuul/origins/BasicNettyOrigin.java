@@ -78,7 +78,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.vip = vip;
         this.registry = registry;
         this.config = setupClientConfig(name);
-        this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
+        this.clientChannelManager = createClientChannelManager(name, vip, registry);
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
@@ -86,6 +86,10 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.rejectedRequests = SpectatorUtils.newCounter("zuul.origin.rejected.requests", name);
         this.concurrencyMax = new CachedDynamicIntProperty("zuul.origin." + name + ".concurrency.max.requests", 200);
         this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.origin." + name + ".concurrency.protect.enabled", true);
+    }
+
+    protected ClientChannelManager createClientChannelManager(String name, String vip, Registry registry) {
+        return new DefaultClientChannelManager(name, vip, getClientConfig(), registry);
     }
 
     protected IClientConfig setupClientConfig(String name) {
@@ -106,21 +110,25 @@ public class BasicNettyOrigin implements NettyOrigin {
         return vip;
     }
 
+    public ClientChannelManager getClientChannelManager() {
+        return clientChannelManager;
+    }
+
     @Override
     public boolean isAvailable() {
-        return clientChannelManager.isAvailable();
+        return getClientChannelManager().isAvailable();
     }
 
     @Override
     public boolean isCold() {
-        return clientChannelManager.isCold();
+        return getClientChannelManager().isCold();
     }
 
     @Override
     public Promise<PooledConnection> connectToOrigin(
-            HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<Server> chosenServer, AtomicReference<String> chosenHostAddr) {
-        return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
+      HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
+      AtomicReference<Server> chosenServer, AtomicReference<String> chosenHostAddr) {
+        return getClientChannelManager().acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
     @Override
@@ -130,12 +138,12 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public int getMaxRetriesForRequest(SessionContext context) {
-        return config.get(CommonClientConfigKey.MaxAutoRetriesNextServer, 0);
+        return getClientConfig().get(CommonClientConfigKey.MaxAutoRetriesNextServer, 0);
     }
 
     @Override
     public RequestAttempt newRequestAttempt(Server server, SessionContext zuulCtx, int attemptNum) {
-        return new RequestAttempt(server, config, attemptNum, config.get(CommonClientConfigKey.ReadTimeout));
+        return new RequestAttempt(server, getClientConfig(), attemptNum, getClientConfig().get(CommonClientConfigKey.ReadTimeout));
     }
 
     @Override
