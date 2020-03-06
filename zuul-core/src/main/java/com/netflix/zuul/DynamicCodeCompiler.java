@@ -26,7 +26,7 @@ import java.io.File;
  * Time: 11:35 AM
  */
 public interface DynamicCodeCompiler {
-    Class compile(String sCode, String sName) throws Exception;
+    Class<?> compile(String sCode, String sName) throws Exception;
 
-    Class compile(File file) throws Exception;
+    Class<?> compile(File file) throws Exception;
 }

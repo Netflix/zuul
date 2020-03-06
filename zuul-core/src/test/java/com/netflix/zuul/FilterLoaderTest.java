@@ -100,11 +100,11 @@ public class FilterLoaderTest {
 
         verify(registry).put(any(String.class), any(ZuulFilter.class));
 
-        final List<ZuulFilter> filters = new ArrayList<ZuulFilter>();
+        final List<ZuulFilter<?, ?>> filters = new ArrayList<>();
         filters.add(filter);
         when(registry.getAllFilters()).thenReturn(filters);
 
-        List<ZuulFilter> list = loader.getFiltersByType(FilterType.INBOUND);
+        List<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
         assertTrue(list != null);
         assertTrue(list.size() == 1);
         ZuulFilter filter = list.get(0);

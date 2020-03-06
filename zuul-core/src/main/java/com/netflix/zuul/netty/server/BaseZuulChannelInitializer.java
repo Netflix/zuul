@@ -354,12 +354,14 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterRunner);
     }
 
-    public <T extends ZuulMessage> ZuulFilter<T, T> [] getFilters(final ZuulFilter start, final ZuulFilter stop) {
-        final List<ZuulFilter> zuulFilters = filterLoader.getFiltersByType(start.filterType());
-        final ZuulFilter[] filters = new ZuulFilter[zuulFilters.size() + 2];
+    @SuppressWarnings("unchecked") // For the conversion from getFiltersByType.  It's not safe, sorry.
+    public <T extends ZuulMessage> ZuulFilter<T, T> [] getFilters(ZuulFilter<T, T> start, ZuulFilter<T, T> stop) {
+        final List<ZuulFilter<?, ?>> zuulFilters = filterLoader.getFiltersByType(start.filterType());
+        final ZuulFilter<T, T>[] filters = new ZuulFilter[zuulFilters.size() + 2];
         filters[0] = start;
         for (int i=1, j=0; i < filters.length && j < zuulFilters.size(); i++,j++) {
-            filters[i] = zuulFilters.get(j);
+            // TODO(carl-mastrangelo): find some way to make this cast not needed.
+            filters[i] = (ZuulFilter<T, T>) zuulFilters.get(j);
         }
         filters[filters.length -1] = stop;
         return filters;
