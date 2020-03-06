@@ -29,5 +29,5 @@ public interface FilterFactory {
      * @return an instance of ZuulFilter
      * @throws Exception if an error occurs
      */
-    public ZuulFilter newInstance(Class clazz) throws Exception;
+    ZuulFilter<?, ?> newInstance(Class<?> clazz) throws Exception;
 }

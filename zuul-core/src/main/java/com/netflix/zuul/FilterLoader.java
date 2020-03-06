@@ -15,18 +15,21 @@
  */
 package com.netflix.zuul;
 
-import com.netflix.zuul.filters.*;
+import com.netflix.zuul.filters.FilterRegistry;
+import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.groovy.GroovyCompiler;
+import java.io.File;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -41,11 +44,11 @@ public class FilterLoader
 {
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
-    private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
-    private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
-    private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
-    private final ConcurrentHashMap<FilterType, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ZuulFilter> filtersByNameAndType = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<FilterType, List<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private final FilterRegistry filterRegistry;
 
@@ -71,11 +74,8 @@ public class FilterLoader
      * @param sCode source code
      * @param sName name of the filter
      * @return the IZuulFilter
-     * @throws IllegalAccessException
-     * @throws InstantiationException
      */
-    public ZuulFilter getFilter(String sCode, String sName) throws Exception {
-
+    public ZuulFilter<?, ?> getFilter(String sCode, String sName) throws Exception {
         if (filterCheck.get(sName) == null) {
             filterCheck.putIfAbsent(sName, sName);
             if (!sCode.equals(filterClassCode.get(sName))) {
@@ -83,9 +83,9 @@ public class FilterLoader
                 filterRegistry.remove(sName);
             }
         }
-        ZuulFilter filter = filterRegistry.get(sName);
+        ZuulFilter<?, ?> filter = filterRegistry.get(sName);
         if (filter == null) {
-            Class clazz = compiler.compile(sCode, sName);
+            Class<?> clazz = compiler.compile(sCode, sName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = filterFactory.newInstance(clazz);
             }
@@ -105,41 +105,36 @@ public class FilterLoader
      * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
      * a true response means that it was successful.
      *
-     * @param file
+     * @param file the file to load
      * @return true if the filter in file successfully read, compiled, verified and added to Zuul
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws IOException
      */
-    public boolean putFilter(File file) throws Exception
-    {
+    public boolean putFilter(File file) {
         try {
             String sName = file.getAbsolutePath();
-            if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
+            if (filterClassLastModified.get(sName) != null
+                    && (file.lastModified() != filterClassLastModified.get(sName))) {
                 LOG.debug("reloading filter " + sName);
                 filterRegistry.remove(sName);
             }
-            ZuulFilter filter = filterRegistry.get(sName);
+            ZuulFilter<?, ?> filter = filterRegistry.get(sName);
             if (filter == null) {
-                Class clazz = compiler.compile(file);
+                Class<?> clazz = compiler.compile(file);
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
                     filter = filterFactory.newInstance(clazz);
                     putFilter(sName, filter, file.lastModified());
                     return true;
                 }
             }
-        }
-        catch (Exception e) {
-            LOG.error("Error loading filter! Continuing. file=" + String.valueOf(file), e);
+        } catch (Exception e) {
+            LOG.error("Error loading filter! Continuing. file=" + file, e);
             return false;
         }
 
         return false;
     }
 
-    void putFilter(String sName, ZuulFilter filter, long lastModified)
-    {
-        List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
+    private void putFilter(String sName, ZuulFilter<?, ?> filter, long lastModified) {
+        List<ZuulFilter<?, ?>> list = hashFiltersByType.get(filter.filterType());
         if (list != null) {
             hashFiltersByType.remove(filter.filterType()); //rebuild this list
         }
@@ -159,24 +154,20 @@ public class FilterLoader
      * @throws Exception If any specified filter fails to load, this will abort. This is a safety mechanism so we can
      * prevent running in a partially loaded state.
      */
-    public List<ZuulFilter> putFiltersForClasses(String[] classNames) throws Exception
-    {
-        List<ZuulFilter> newFilters = new ArrayList<>();
-        for (String className : classNames)
-        {
+    public List<ZuulFilter<?, ?>> putFiltersForClasses(String[] classNames) throws Exception {
+        List<ZuulFilter<?, ?>> newFilters = new ArrayList<>();
+        for (String className : classNames) {
             newFilters.add(putFilterForClassName(className));
         }
-        return newFilters;
+        return Collections.unmodifiableList(newFilters);
     }
 
-    public ZuulFilter putFilterForClassName(String className) throws Exception
-    {
-        Class clazz = Class.forName(className);
-        if (! ZuulFilter.class.isAssignableFrom(clazz)) {
+    public ZuulFilter<?, ?> putFilterForClassName(String className) throws Exception {
+        Class<?> clazz = Class.forName(className);
+        if (!ZuulFilter.class.isAssignableFrom(clazz)) {
             throw new IllegalArgumentException("Specified filter class does not implement ZuulFilter interface!");
-        }
-        else {
-            ZuulFilter filter = filterFactory.newInstance(clazz);
+        } else {
+            ZuulFilter<?, ?> filter = filterFactory.newInstance(clazz);
             putFilter(className, filter, System.currentTimeMillis());
             return filter;
         }
@@ -185,29 +176,26 @@ public class FilterLoader
     /**
      * Returns a list of filters by the filterType specified
      */
-    public List<ZuulFilter> getFiltersByType(FilterType filterType) {
-
-        List<ZuulFilter> list = hashFiltersByType.get(filterType);
+    public List<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType) {
+        List<ZuulFilter<?, ?>> list = hashFiltersByType.get(filterType);
         if (list != null) return list;
 
-        list = new ArrayList<ZuulFilter>();
+        list = new ArrayList<>();
 
-        Collection<ZuulFilter> filters = filterRegistry.getAllFilters();
-        for (Iterator<ZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
-            ZuulFilter filter = iterator.next();
+        for (ZuulFilter<?, ?> filter : filterRegistry.getAllFilters()) {
             if (filter.filterType().equals(filterType)) {
                 list.add(filter);
             }
         }
 
         // Sort by filterOrder.
-        Collections.sort(list, Comparator.comparingInt(ZuulFilter::filterOrder));
+        list.sort(Comparator.comparingInt(ZuulFilter::filterOrder));
 
         hashFiltersByType.putIfAbsent(filterType, list);
-        return list;
+        return Collections.unmodifiableList(list);
     }
 
-    public ZuulFilter getFilterByNameAndType(String name, FilterType type)
+    public ZuulFilter<?, ?> getFilterByNameAndType(String name, FilterType type)
     {
         if (name == null || type == null)
             return null;

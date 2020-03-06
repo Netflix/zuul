@@ -33,7 +33,7 @@ public class GuiceFilterFactory implements FilterFactory {
     }
 
     @Override
-    public ZuulFilter newInstance(Class clazz) throws Exception {
-        return (ZuulFilter) injector.getInstance(clazz);
+    public ZuulFilter<?, ?> newInstance(Class<?> clazz) throws Exception {
+        return injector.getInstance(clazz.asSubclass(ZuulFilter.class));
     }
 }
