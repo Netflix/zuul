@@ -125,7 +125,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
                                 + ", client_ip = " + String.valueOf(clientIP)
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     }
-                    else if (cause instanceof SSLException && "handshake timed out".equals(cause.getMessage())) {
+                    else if (cause instanceof SSLException && cause.getMessage().contains("handshake timed out")) {
                         LOG.info("Client timed-out doing the ssl handshake. "
                                 + ", client_ip = " + String.valueOf(clientIP)
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
