@@ -1,4 +1,5 @@
 rootProject.name='zuul'
 
 include 'zuul-core'
+include 'zuul-processor'
 include 'zuul-sample'

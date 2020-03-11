@@ -4,9 +4,10 @@ apply plugin: 'application'
 dependencies {
     compile project(":zuul-core")
 
-    annotationProcessor project(":zuul-core")
+    annotationProcessor project(":zuul-processor")
 
     compile 'com.netflix.blitz4j:blitz4j:1.37.2'
+
 }
 
 jar {
