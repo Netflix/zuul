@@ -68,7 +68,6 @@ public final class FilterProcessor extends AbstractProcessor {
         return true;
     }
 
-
     private static void writeFiles(Filer filer, Map<String, Set<Element>> packageToElements) throws Exception {
         for (Entry<String, Set<Element>> entry : packageToElements.entrySet()) {
             String pkg = entry.getKey();
@@ -77,15 +76,16 @@ public final class FilterProcessor extends AbstractProcessor {
             try (Writer w = source.openWriter()) {
                 w.write("package " + pkg + ";\n");
                 w.write("\n");
-                w.write("@javax.annotation.Generated(\"by " + FilterProcessor.class.getName() + "\")\n");
+                w.write("@javax.annotation.Generated(\"by: \\\"" + FilterProcessor.class.getName() + "\\\"\")\n");
                 w.write("public final class AllFilters {\n");
                 w.write("\n");
                 w.write("    private AllFilters () {}\n");
                 w.write("\n");
-                w.write("    java.util.List<? extends Class<? extends com.netflix.zuul.filters.ZuulFilter<?, ?>>>");
-                w.write("        allFilters = java.util.Collections.unmodifiableList(java.util.Arrays.asList(\n");
+                w.write("    public static final java.util.List<? extends java.lang.Class<\n");
+                w.write("            ? extends com.netflix.zuul.filters.ZuulFilter<?, ?>>> FILTERS =\n");
+                w.write("        java.util.Collections.unmodifiableList(java.util.Arrays.asList(\n");
                 for (int i = 0; i < elements.size(); i++) {
-                    w.write("            " + elements.get(i) + ".class");
+                    w.write("                " + elements.get(i) + ".class");
                     if (i != elements.size() - 1) {
                         w.write(',');
                     }
