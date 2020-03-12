@@ -1,5 +1,9 @@
 dependencies {
+    implementation("com.google.guava:guava:28.2-jre")
+
     implementation project(":zuul-core")
+
+    testCompile 'junit:junit:4.13-rc-1'
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.

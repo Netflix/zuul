@@ -19,21 +19,33 @@ package com.netflix.zuul;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.ZuulFilter;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.annotation.Nullable;
 
+/**
+ * Identifies a {@link ZuulFilter}.
+ */
 @Target({TYPE})
 @Retention(RUNTIME)
 @Documented
 public @interface Filter {
 
     /**
-     * The order in which to be loaded.
+     * The order in which to run.   See {@link ZuulFilter#filterOrder()}.
      */
-    int value();
+    int order();
 
+    /**
+     * Indicates the type of this filter.
+     */
     FilterType type() default FilterType.INBOUND;
+
+    /**
+     * Indicates if this is a synchronous filter.
+     */
+    FilterSyncType sync() default FilterSyncType.SYNC;
 }
