@@ -40,19 +40,6 @@ subprojects {
 
     sourceCompatibility = '1.8'
 
-    sourceSets {
-        test {
-            java {
-                srcDirs  = ['src/main/java', 'src/test/java']
-                include '**/*.java'
-            }
-            groovy {
-                srcDirs  = ['filters', 'src/main/groovy']
-                include '**/*.groovy'
-            }
-        }
-    }
-
     eclipse {
         classpath {
             downloadSources = true
