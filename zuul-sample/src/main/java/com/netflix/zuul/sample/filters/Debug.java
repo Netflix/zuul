@@ -14,10 +14,11 @@
  *      limitations under the License.
  */
 
-package com.netflix.zuul.sample.filters.inbound
+package com.netflix.zuul.sample.filters;
 
-import com.netflix.zuul.filters.http.HttpInboundSyncFilter
-import com.netflix.zuul.message.http.HttpRequestMessage
+import com.netflix.zuul.Filter;
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 
 /**
  * Determine if requests need to be debugged.
@@ -27,23 +28,23 @@ import com.netflix.zuul.message.http.HttpRequestMessage
  * Author: Arthur Gonigberg
  * Date: December 22, 2017
  */
-class Debug extends HttpInboundSyncFilter {
+@Filter(20)
+public class Debug extends HttpInboundSyncFilter {
     @Override
-    int filterOrder() {
-        return 20
+    public int filterOrder() {
+        return 20;
     }
 
     @Override
-    boolean shouldFilter(HttpRequestMessage request) {
-        return "true".equalsIgnoreCase(request.getQueryParams().getFirst("debugRequest"))
+    public boolean shouldFilter(HttpRequestMessage request) {
+        return "true".equalsIgnoreCase(request.getQueryParams().getFirst("debugRequest"));
     }
 
     @Override
-    HttpRequestMessage apply(HttpRequestMessage request) {
-        request.getContext().setDebugRequest(true)
-        request.getContext().setDebugRouting(true)
+    public HttpRequestMessage apply(HttpRequestMessage request) {
+        request.getContext().setDebugRequest(true);
+        request.getContext().setDebugRouting(true);
 
-        return request
+        return request;
     }
-
 }

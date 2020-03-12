@@ -1,0 +1,10 @@
+dependencies {
+    implementation project(":zuul-core")
+}
+
+// Silences log statements during tests.   This still allows normal failures to be printed.
+test {
+    testLogging {
+        showStandardStreams = false
+    }
+}
