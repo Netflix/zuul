@@ -4,6 +4,9 @@ dependencies {
     implementation project(":zuul-core")
 
     testCompile 'junit:junit:4.13-rc-1'
+    testCompile 'com.google.truth:truth:1.0.1'
+
+    testAnnotationProcessor project(":zuul-processor")
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.

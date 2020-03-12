@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
@@ -48,14 +49,16 @@ import javax.tools.JavaFileObject;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class FilterProcessor extends AbstractProcessor {
 
-    private final Map<String, Set<Element>> packageToElements = new TreeMap<>();
+    private final Map<String, Set<Element>> packageToElements = new TreeMap<>(String::compareTo);
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(Filter.class);
         Elements elementUtils = processingEnv.getElementUtils();
         for (Element el : annotated) {
-            el.getModifiers().contains(Modifier.ABSTRACT);
+            if (el.getModifiers().contains(Modifier.ABSTRACT)) {
+                continue;
+            }
             packageToElements.computeIfAbsent(
                     String.valueOf(elementUtils.getPackageOf(el).getQualifiedName()), k -> new LinkedHashSet<>())
                     .add(el);
@@ -109,7 +112,6 @@ public final class FilterProcessor extends AbstractProcessor {
         for (Entry<String, Set<Element>> entry : packageToElements.entrySet()) {
             String pkg = entry.getKey();
             List<Element> elements = new ArrayList<>(entry.getValue());
-            System.err.println(elements.get(0).getEnclosingElement());
             String className = deriveGeneratedClassName(pkg);
             JavaFileObject source = filer.createSourceFile(pkg + "." +  className, elements.toArray(new Element[0]));
             try (Writer writer = source.openWriter()) {

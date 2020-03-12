@@ -18,6 +18,11 @@ package com.netflix.zuul.filters.processor;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.truth.Truth;
+import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.processor.subpackage.ProcessorSubpackageFilters;
+import com.netflix.zuul.filters.processor.subpackage.SubpackageFilter;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,6 +32,19 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class FilterProcessorTest {
+
+    @Test
+    public void allFilterClassedRecorded() {
+        List<? extends Class<? extends ZuulFilter<?, ?>>> filters = FiltersProcessorFilters.getFilters();
+        List<? extends Class<? extends ZuulFilter<?, ?>>> subpackage = ProcessorSubpackageFilters.getFilters();
+
+        Truth.assertThat(filters).containsExactly(
+                OuterClassFilter.class,
+                TopLevelFilter.class,
+                TopLevelFilter.StaticSubclassFilter.class,
+                TopLevelFilter.SubclassFilter.class);
+        Truth.assertThat(subpackage).containsExactly(SubpackageFilter.class);
+    }
 
     @Test
     public void deriveGeneratedClassName_emptyPackage() {
