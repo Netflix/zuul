@@ -28,7 +28,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  * Author: Arthur Gonigberg
  * Date: December 22, 2017
  */
-@Filter(20)
+@Filter(order = 20)
 public class Debug extends HttpInboundSyncFilter {
     @Override
     public int filterOrder() {
