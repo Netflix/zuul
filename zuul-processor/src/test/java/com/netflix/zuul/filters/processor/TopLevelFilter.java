@@ -32,6 +32,7 @@ final class TopLevelFilter extends TestFilter {
     @Filter(order = 22, type = FilterType.INBOUND)
     static abstract class AbstractSubclassFilter extends TestFilter {}
 
+    @SuppressWarnings("InnerClassMayBeStatic") // The purpose of this test
     @Filter(order = 23, type = FilterType.INBOUND)
     final class SubclassFilter extends TestFilter {}
 

@@ -17,9 +17,11 @@ package com.netflix.zuul.filters.common;
 
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.constants.ZuulConstants;
 import com.netflix.zuul.constants.ZuulHeaders;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -32,6 +34,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  * Date: 6/27/12
  * Time: 12:54 PM
  */
+@Filter(order = 99, type = FilterType.INBOUND)
 public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
     /**

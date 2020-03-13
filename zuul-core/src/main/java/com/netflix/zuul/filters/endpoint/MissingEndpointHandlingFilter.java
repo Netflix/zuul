@@ -16,8 +16,10 @@
 
 package com.netflix.zuul.filters.endpoint;
 
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by saroskar on 2/13/17.
  */
+@Filter(order = 0, type = FilterType.ENDPOINT)
 public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> {
     private final String name;
 
@@ -56,5 +59,4 @@ public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<H
     public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
         return HttpResponseMessageImpl.defaultErrorResponse(input);
     }
-
 }

@@ -20,7 +20,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringSetProperty;
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -41,6 +43,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  *
  * @author Mike Smith
  */
+@Filter(order = 101, type = FilterType.OUTBOUND)
 public class GZipResponseFilter extends HttpOutboundSyncFilter
 {
     private static DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty("zuul.gzip.contenttypes",
