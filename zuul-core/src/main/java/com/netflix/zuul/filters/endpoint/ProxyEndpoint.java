@@ -28,6 +28,7 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Counter;
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
@@ -35,6 +36,7 @@ import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
@@ -105,6 +107,7 @@ import static com.netflix.zuul.stats.status.ZuulStatusCategory.*;
  * attempt/retry. All the retry attempts for a given HTTP/1.1 request proxied share the same EdgeProxyEndpoint instance
  * Created by saroskar on 5/31/17.
  */
+@Filter(order = 0, type = FilterType.ENDPOINT)
 public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> implements GenericFutureListener<Future<PooledConnection>> {
 
     private final ChannelHandlerContext channelCtx;
