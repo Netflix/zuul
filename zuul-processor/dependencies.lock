@@ -157,7 +157,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -451,7 +451,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -610,7 +610,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.30"
         }
     },
     "runtime": {
@@ -771,7 +771,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -930,7 +930,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.30"
         }
     },
     "testAnnotationProcessor": {
@@ -1065,7 +1065,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -1230,7 +1230,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.30"
         }
     },
     "testCompile": {
@@ -1403,7 +1403,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1736,7 +1736,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.59.0"
+            "locked": "0.103.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1896,7 +1896,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.30"
         }
     }
 }
