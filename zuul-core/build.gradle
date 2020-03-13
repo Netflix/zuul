@@ -20,7 +20,7 @@ dependencies {
 
     compile "com.netflix.archaius:archaius-core:0.7.5"
     compile "com.netflix.servo:servo-core:0.7.2"
-    compile "com.netflix.spectator:spectator-api:0.59.0"
+    compile "com.netflix.spectator:spectator-api:0.103.0"
     compile "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
     compile "com.netflix.ribbon:ribbon-core:${versions_ribbon}"

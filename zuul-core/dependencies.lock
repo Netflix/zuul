@@ -81,8 +81,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -181,7 +181,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         }
     },
@@ -267,8 +267,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -453,8 +453,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -557,7 +557,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         }
     },
@@ -643,8 +643,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -747,7 +747,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         }
     },
@@ -833,8 +833,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -937,7 +937,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         }
     },
@@ -1027,8 +1027,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -1127,7 +1127,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         }
     },
@@ -1217,8 +1217,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -1407,8 +1407,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -1511,7 +1511,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.29",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         },
         "org.slf4j:slf4j-simple": {
@@ -1605,8 +1605,8 @@
             "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.59.0",
-            "requested": "0.59.0"
+            "locked": "0.103.0",
+            "requested": "0.103.0"
         },
         "commons-collections:commons-collections": {
             "locked": "3.2.2",
@@ -1709,7 +1709,7 @@
             "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.29",
+            "locked": "1.7.30",
             "requested": "1.7.25"
         },
         "org.slf4j:slf4j-simple": {
