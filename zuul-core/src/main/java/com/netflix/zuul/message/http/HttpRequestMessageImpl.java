@@ -32,6 +32,8 @@ import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +71,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     }
 
-    private static final Pattern PTN_COLON = Pattern.compile(":");
     private static final String URI_SCHEME_SEP = "://";
     private static final String URI_SCHEME_HTTP = "http";
     private static final String URI_SCHEME_HTTPS = "https";
@@ -475,21 +476,29 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      * @return
      */
     @Override
-    public String getOriginalHost()
-    {
-        String host = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_HOST);
-        if (host == null) {
-            host = getHeaders().getFirst(HttpHeaderNames.HOST);
-            if (host != null) {
-                // Host header may have a trailing port. Strip that out if it does.
-                host = PTN_COLON.split(host)[0];
-            }
-
-            if (host == null) {
-                host = getServerName();
-            }
+    public String getOriginalHost() {
+        try {
+            return getOriginalHost(getHeaders(), getServerName());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
         }
-        return host;
+    }
+
+    @VisibleForTesting
+    static String getOriginalHost(Headers headers, String serverName) throws URISyntaxException {
+        String xForwardedHost = headers.getFirst(HttpHeaderNames.X_FORWARDED_HOST);
+        if (xForwardedHost != null) {
+            return xForwardedHost;
+        }
+        String host = headers.getFirst(HttpHeaderNames.HOST);
+        if (host != null) {
+            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
+            if (uri.getHost() == null) {
+                throw new URISyntaxException(host, "Bad host name");
+            }
+            return uri.getHost();
+        }
+        return serverName;
     }
 
     @Override
@@ -513,30 +522,29 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public int getOriginalPort()
-    {
-        int port;
-        String portStr = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PORT);
-        if (portStr == null) {
-            // Check if port was specified on a Host header.
-            String hostHeader = getHeaders().getFirst(HttpHeaderNames.HOST);
-            if (hostHeader != null) {
-                String[] hostParts = PTN_COLON.split(hostHeader);
-                if (hostParts.length == 2) {
-                    port = Integer.parseInt(hostParts[1]);
-                }
-                else {
-                    port = getPort();
-                }
-            }
-            else {
-                port = getPort();
+    public int getOriginalPort() {
+        try {
+            return getOriginalPort(getHeaders(), getPort());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @VisibleForTesting
+    static int getOriginalPort(Headers headers, int serverPort) throws URISyntaxException {
+        String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
+        if (portStr != null) {
+            return Integer.parseInt(portStr);
+        }
+        // Check if port was specified on a Host header.
+        String host = headers.getFirst(HttpHeaderNames.HOST);
+        if (host != null) {
+            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
+            if (uri.getPort() != -1) {
+                return uri.getPort();
             }
         }
-        else {
-            port = Integer.parseInt(portStr);
-        }
-        return port;
+        return serverPort;
     }
 
     @Override
