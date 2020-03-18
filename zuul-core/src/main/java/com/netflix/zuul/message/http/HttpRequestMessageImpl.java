@@ -492,13 +492,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
         String host = headers.getFirst(HttpHeaderNames.HOST);
         if (host != null) {
-            try {
-                URI uri1 = new URI(/* scheme= */ null, host, /* path= */ null, /* fragment= */ null);
-                return uri1.getHost();
-            } catch (URISyntaxException e) {
-
-            }
             URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
+            if (uri.getHost() == null) {
+                throw new URISyntaxException(host, "Bad host name");
+            }
             return uri.getHost();
         }
         return serverName;
