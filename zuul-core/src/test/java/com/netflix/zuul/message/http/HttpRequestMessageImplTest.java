@@ -199,6 +199,46 @@ public class HttpRequestMessageImplTest {
                 "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals("blah.netflix.com", request.getOriginalHost());
 
+        queryParams = new HttpQueryParams();
+        headers = new Headers();
+        headers.add("Host", "0.0.0.1");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("0.0.0.1", request.getOriginalHost());
+
+        queryParams = new HttpQueryParams();
+        headers = new Headers();
+        headers.add("Host", "0.0.0.1:2");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("0.0.0.1", request.getOriginalHost());
+
+        queryParams = new HttpQueryParams();
+        headers = new Headers();
+        headers.add("Host", "ae::2");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("[::2]", request.getOriginalHost());
+
+        queryParams = new HttpQueryParams();
+        headers = new Headers();
+        headers.add("Host", "[::2]");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("[::2]", request.getOriginalHost());
+
+        queryParams = new HttpQueryParams();
+        headers = new Headers();
+        headers.add("Host", "[::2]:3");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("[::2]", request.getOriginalHost());
+
         headers = new Headers();
         headers.add("Host", "blah.netflix.com");
         headers.add("X-Forwarded-Host", "foo.netflix.com");
