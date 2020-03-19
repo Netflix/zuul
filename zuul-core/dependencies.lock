@@ -141,8 +141,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -327,8 +327,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -501,8 +501,8 @@
             "requested": "4.1.46.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.29.Final",
-            "requested": "2.0.29.Final"
+            "locked": "2.0.30.Final",
+            "requested": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.46.Final",
@@ -517,8 +517,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -691,8 +691,8 @@
             "requested": "4.1.46.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.29.Final",
-            "requested": "2.0.29.Final"
+            "locked": "2.0.30.Final",
+            "requested": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.46.Final",
@@ -707,8 +707,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -881,8 +881,8 @@
             "requested": "4.1.46.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.29.Final",
-            "requested": "2.0.29.Final"
+            "locked": "2.0.30.Final",
+            "requested": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.46.Final",
@@ -897,8 +897,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1087,8 +1087,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1277,8 +1277,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1455,8 +1455,8 @@
             "requested": "4.1.46.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.29.Final",
-            "requested": "2.0.29.Final"
+            "locked": "2.0.30.Final",
+            "requested": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.46.Final",
@@ -1471,8 +1471,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -1653,8 +1653,8 @@
             "requested": "4.1.46.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.29.Final",
-            "requested": "2.0.29.Final"
+            "locked": "2.0.30.Final",
+            "requested": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.46.Final",
@@ -1669,8 +1669,8 @@
             "requested": "4.1.46.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.20.1",
-            "requested": "0.20.1"
+            "locked": "0.21.0",
+            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",

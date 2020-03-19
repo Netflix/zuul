@@ -212,7 +212,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -236,7 +236,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -509,7 +509,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -533,7 +533,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -806,7 +806,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -830,7 +830,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1103,7 +1103,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1127,7 +1127,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1400,7 +1400,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1424,7 +1424,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1697,7 +1697,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1721,7 +1721,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1994,7 +1994,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2018,7 +2018,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2291,7 +2291,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2315,7 +2315,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2588,7 +2588,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2612,7 +2612,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -2885,7 +2885,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.29.Final"
+            "locked": "2.0.30.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -2909,7 +2909,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.20.1"
+            "locked": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
