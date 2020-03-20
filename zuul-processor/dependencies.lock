@@ -270,12 +270,6 @@
             ],
             "locked": "4.13"
         },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -563,12 +557,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "4.13"
-        },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
@@ -884,12 +872,6 @@
             ],
             "locked": "4.13"
         },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1183,12 +1165,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "4.13"
-        },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
@@ -1517,12 +1493,6 @@
             "locked": "4.13",
             "requested": "4.13-rc-1"
         },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1849,12 +1819,6 @@
             ],
             "locked": "4.13",
             "requested": "4.13-rc-1"
-        },
-        "log4j:log4j": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [

@@ -152,10 +152,6 @@
             "locked": "4.13",
             "requested": "latest.release"
         },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -337,10 +333,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "latest.release"
-        },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -528,10 +520,6 @@
             "locked": "4.13",
             "requested": "latest.release"
         },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -717,10 +705,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "latest.release"
-        },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -908,10 +892,6 @@
             "locked": "4.13",
             "requested": "latest.release"
         },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -1098,10 +1078,6 @@
             "locked": "4.13",
             "requested": "latest.release"
         },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -1287,10 +1263,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "latest.release"
-        },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1481,10 +1453,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "latest.release"
-        },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1679,10 +1647,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "latest.release"
-        },
-        "log4j:log4j": {
-            "locked": "1.2.17",
-            "requested": "1.2.17"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
