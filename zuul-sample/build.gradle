@@ -6,7 +6,8 @@ dependencies {
 
     annotationProcessor project(":zuul-processor")
 
-    compile 'com.netflix.blitz4j:blitz4j:1.37.2'
+    runtime 'org.apache.logging.log4j:log4j-core:2.13.1'
+    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
 
 }
 
