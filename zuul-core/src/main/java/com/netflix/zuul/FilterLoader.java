@@ -17,6 +17,7 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.MutableFilterRegistry;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.groovy.GroovyCompiler;
 import java.io.File;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -44,11 +46,11 @@ public class FilterLoader
 {
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
-    private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<FilterType, List<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> filterClassCode = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, String> filterCheck = new ConcurrentHashMap<>();
+    private final ConcurrentMap<FilterType, List<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private final FilterRegistry filterRegistry;
 
@@ -57,41 +59,49 @@ public class FilterLoader
     private final FilterFactory filterFactory;
 
     public FilterLoader() {
-        this(new FilterRegistry(), new GroovyCompiler(), new DefaultFilterFactory());
+        this(new MutableFilterRegistry(), new GroovyCompiler(), new DefaultFilterFactory());
     }
 
     @Inject
-    public FilterLoader(FilterRegistry filterRegistry, DynamicCodeCompiler compiler, FilterFactory filterFactory) {
+    public FilterLoader(
+            FilterRegistry filterRegistry,
+            DynamicCodeCompiler compiler,
+            FilterFactory filterFactory) {
         this.filterRegistry = filterRegistry;
         this.compiler = compiler;
         this.filterFactory = filterFactory;
     }
 
     /**
-     * Given source and name will compile and store the filter if it detects that the filter code has changed or
-     * the filter doesn't exist. Otherwise it will return an instance of the requested ZuulFilter
+     * Given source and name will compile and store the filter if it detects that the filter code
+     * has changed or the filter doesn't exist. Otherwise it will return an instance of the
+     * requested ZuulFilter.
      *
-     * @param sCode source code
-     * @param sName name of the filter
-     * @return the IZuulFilter
+     * @deprecated it is unclear to me why this method is needed.   Nothing seems to use it, and the
+     *             swapping of code seems to happen elsewhere.   This will be removed in a later
+     *             Zuul release.
      */
-    public ZuulFilter<?, ?> getFilter(String sCode, String sName) throws Exception {
-        if (filterCheck.get(sName) == null) {
-            filterCheck.putIfAbsent(sName, sName);
-            if (!sCode.equals(filterClassCode.get(sName))) {
-                LOG.info("reloading code " + sName);
-                filterRegistry.remove(sName);
+    @Deprecated
+    public ZuulFilter<?, ?> getFilter(String sourceCode, String filterName) throws Exception {
+        if (filterCheck.get(filterName) == null) {
+            filterCheck.putIfAbsent(filterName, filterName);
+            if (!sourceCode.equals(filterClassCode.get(filterName))) {
+                if (filterRegistry.isMutable()) {
+                    LOG.info("reloading code {}", filterName);
+                    filterRegistry.remove(filterName);
+                } else {
+                    LOG.warn("Filter registry is not mutable, discarding {}", filterName);
+                }
             }
         }
-        ZuulFilter<?, ?> filter = filterRegistry.get(sName);
+        ZuulFilter<?, ?> filter = filterRegistry.get(filterName);
         if (filter == null) {
-            Class<?> clazz = compiler.compile(sCode, sName);
+            Class<?> clazz = compiler.compile(sourceCode, filterName);
             if (!Modifier.isAbstract(clazz.getModifiers())) {
                 filter = filterFactory.newInstance(clazz);
             }
         }
         return filter;
-
     }
 
     /**
@@ -109,6 +119,9 @@ public class FilterLoader
      * @return true if the filter in file successfully read, compiled, verified and added to Zuul
      */
     public boolean putFilter(File file) {
+        if (!filterRegistry.isMutable()) {
+            return false;
+        }
         try {
             String sName = file.getAbsolutePath();
             if (filterClassLastModified.get(sName) != null
@@ -133,7 +146,11 @@ public class FilterLoader
         return false;
     }
 
-    private void putFilter(String sName, ZuulFilter<?, ?> filter, long lastModified) {
+    private void putFilter(String filterName, ZuulFilter<?, ?> filter, long lastModified) {
+        if (!filterRegistry.isMutable()) {
+            LOG.warn("Filter registry is not mutable, discarding {}", filterName);
+            return;
+        }
         List<ZuulFilter<?, ?>> list = hashFiltersByType.get(filter.filterType());
         if (list != null) {
             hashFiltersByType.remove(filter.filterType()); //rebuild this list
@@ -142,8 +159,8 @@ public class FilterLoader
         String nameAndType = filter.filterType() + ":" + filter.filterName();
         filtersByNameAndType.put(nameAndType, filter);
 
-        filterRegistry.put(sName, filter);
-        filterClassLastModified.put(sName, lastModified);
+        filterRegistry.put(filterName, filter);
+        filterClassLastModified.put(filterName, lastModified);
     }
 
     /**

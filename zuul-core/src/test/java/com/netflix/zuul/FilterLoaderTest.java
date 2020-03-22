@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -28,10 +29,12 @@ import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.MutableFilterRegistry;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,19 +47,18 @@ import org.mockito.MockitoAnnotations;
 public class FilterLoaderTest {
 
     @Mock
-    File file;
+    private File file;
 
     @Mock
-    DynamicCodeCompiler compiler;
+    private DynamicCodeCompiler compiler;
 
-    @Mock
-    FilterRegistry registry;
+    private final FilterRegistry registry = new MutableFilterRegistry();
 
-    FilterFactory filterFactory = new DefaultFilterFactory();
+    private final FilterFactory filterFactory = new DefaultFilterFactory();
 
-    FilterLoader loader;
+    private FilterLoader loader;
 
-    TestZuulFilter filter = new TestZuulFilter();
+    private final TestZuulFilter filter = new TestZuulFilter();
 
     @Before
     public void before() throws Exception
@@ -72,13 +74,17 @@ public class FilterLoaderTest {
     @Test
     public void testGetFilterFromFile() throws Exception {
         assertTrue(loader.putFilter(file));
-        verify(registry).put(any(String.class), any(BaseFilter.class));
+
+        Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
+        assertEquals(1, filters.size());
     }
 
     @Test
     public void testPutFiltersForClasses() throws Exception {
         loader.putFiltersForClasses(new String[]{TestZuulFilter.class.getName()});
-        verify(registry).put(any(String.class), any(BaseFilter.class));
+
+        Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
+        assertEquals(1, filters.size());
     }
 
     @Test
@@ -91,23 +97,21 @@ public class FilterLoaderTest {
             caught = e;
         }
         assertTrue(caught != null);
-        verify(registry, times(0)).put(any(String.class), any(BaseFilter.class));
+        Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
+        assertEquals(0, filters.size());
     }
 
     @Test
     public void testGetFiltersByType() throws Exception {
         assertTrue(loader.putFilter(file));
 
-        verify(registry).put(any(String.class), any(ZuulFilter.class));
-
-        final List<ZuulFilter<?, ?>> filters = new ArrayList<>();
-        filters.add(filter);
-        when(registry.getAllFilters()).thenReturn(filters);
+        Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
+        assertEquals(1, filters.size());
 
         List<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
         assertTrue(list != null);
         assertTrue(list.size() == 1);
-        ZuulFilter filter = list.get(0);
+        ZuulFilter<?, ?> filter = list.get(0);
         assertTrue(filter != null);
         assertTrue(filter.filterType().equals(FilterType.INBOUND));
     }
