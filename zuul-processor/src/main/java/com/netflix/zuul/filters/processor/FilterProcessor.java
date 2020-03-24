@@ -21,10 +21,12 @@ import com.google.common.base.CaseFormat;
 import com.google.common.base.Converter;
 import com.google.common.base.Splitter;
 import com.netflix.zuul.Filter;
+import com.netflix.zuul.Filter.FilterPackageName;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,21 +42,35 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.tools.JavaFileObject;
 
-@SupportedAnnotationTypes("com.netflix.zuul.Filter")
+
+@SupportedAnnotationTypes({FilterProcessor.FILTER_TYPE, FilterProcessor.FILTER_PACKAGE_TYPE})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class FilterProcessor extends AbstractProcessor {
 
+    static final String FILTER_TYPE = "com.netflix.zuul.Filter";
+    static final String FILTER_PACKAGE_TYPE = "com.netflix.zuul.Filter.FilterPackageName";
+
     private final Map<String, Set<Element>> packageToElements = new TreeMap<>(String::compareTo);
+    private final Map<String, String> packageNameOverride = new HashMap<>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        Set<? extends Element> packageAnnotated = roundEnv.getElementsAnnotatedWith(FilterPackageName.class);
         Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(Filter.class);
         Elements elementUtils = processingEnv.getElementUtils();
+        for (Element pkg : packageAnnotated) {
+            assert pkg.getKind() == ElementKind.PACKAGE : pkg;
+            String name = String.valueOf(elementUtils.getPackageOf(pkg).getQualifiedName());
+            String override = pkg.getAnnotation(FilterPackageName.class).value();
+            packageNameOverride.put(name, override);
+        }
+
         for (Element el : annotated) {
             if (el.getModifiers().contains(Modifier.ABSTRACT)) {
                 continue;
@@ -64,15 +80,16 @@ public final class FilterProcessor extends AbstractProcessor {
                     .add(el);
         }
 
-        if (!annotated.isEmpty()) {
+        // We can't check if processing is over, because we can't use the filer after that.
+        if (!packageToElements.isEmpty()) {
             try {
-                writeFiles(processingEnv.getFiler(), packageToElements);
+                writeFiles(processingEnv.getFiler(), packageToElements, packageNameOverride);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
                 packageToElements.clear();
+                packageNameOverride.clear();
             }
-            return true;
         }
 
         return true;
@@ -108,11 +125,19 @@ public final class FilterProcessor extends AbstractProcessor {
         writer.write("}\n");
     }
 
-    private static void writeFiles(Filer filer, Map<String, Set<Element>> packageToElements) throws Exception {
+    private static void writeFiles(
+            Filer filer,
+            Map<String, Set<Element>> packageToElements,
+            Map<String, String> packageNameOverride) throws Exception {
         for (Entry<String, Set<Element>> entry : packageToElements.entrySet()) {
             String pkg = entry.getKey();
             List<Element> elements = new ArrayList<>(entry.getValue());
-            String className = deriveGeneratedClassName(pkg);
+            String className;
+            if (packageNameOverride.containsKey(pkg)) {
+                className = packageNameOverride.get(pkg);
+            } else {
+                className = deriveGeneratedClassName(pkg);
+            }
             JavaFileObject source = filer.createSourceFile(pkg + "." +  className, elements.toArray(new Element[0]));
             try (Writer writer = source.openWriter()) {
                 writeFile(writer, pkg, className, elements);

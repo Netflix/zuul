@@ -14,12 +14,5 @@
  *      limitations under the License.
  */
 
-package com.netflix.zuul.filters.processor.subpackage;
-
-import com.netflix.zuul.Filter;
-import com.netflix.zuul.filters.FilterType;
-import com.netflix.zuul.filters.processor.TestFilter;
-
-@Filter(order = 30, type = FilterType.INBOUND)
-public final class SubpackageFilter extends TestFilter {
-}
+@com.netflix.zuul.Filter.FilterPackageName("MySubpackage")
+package com.netflix.zuul.filters.processor.override;
