@@ -20,8 +20,10 @@ import static org.junit.Assert.assertEquals;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.processor.override.MySubpackage;
+import com.netflix.zuul.filters.processor.override.SubpackageFilter;
+import com.netflix.zuul.filters.processor.subpackage.OverrideFilter;
 import com.netflix.zuul.filters.processor.subpackage.ProcessorSubpackageFilters;
-import com.netflix.zuul.filters.processor.subpackage.SubpackageFilter;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,13 +39,15 @@ public class FilterProcessorTest {
     public void allFilterClassedRecorded() {
         List<? extends Class<? extends ZuulFilter<?, ?>>> filters = FiltersProcessorFilters.getFilters();
         List<? extends Class<? extends ZuulFilter<?, ?>>> subpackage = ProcessorSubpackageFilters.getFilters();
+        List<? extends Class<? extends ZuulFilter<?, ?>>> override = MySubpackage.getFilters();
 
         Truth.assertThat(filters).containsExactly(
                 OuterClassFilter.class,
                 TopLevelFilter.class,
                 TopLevelFilter.StaticSubclassFilter.class,
                 TopLevelFilter.SubclassFilter.class);
-        Truth.assertThat(subpackage).containsExactly(SubpackageFilter.class);
+        Truth.assertThat(subpackage).containsExactly(OverrideFilter.class);
+        Truth.assertThat(override).containsExactly(SubpackageFilter.class);
     }
 
     @Test

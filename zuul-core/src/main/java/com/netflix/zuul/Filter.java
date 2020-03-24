@@ -16,7 +16,9 @@
 
 package com.netflix.zuul;
 
+import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.CLASS;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import com.netflix.zuul.filters.FilterSyncType;
@@ -48,4 +50,11 @@ public @interface Filter {
      * Indicates if this is a synchronous filter.
      */
     FilterSyncType sync() default FilterSyncType.SYNC;
+
+    @Target({PACKAGE})
+    @Retention(CLASS)
+    @Documented
+    @interface FilterPackageName {
+        String value();
+    }
 }
