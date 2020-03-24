@@ -18,14 +18,9 @@ package com.netflix.zuul;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
@@ -33,7 +28,6 @@ import com.netflix.zuul.filters.MutableFilterRegistry;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.junit.Before;
@@ -44,7 +38,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
-public class FilterLoaderTest {
+public class DynamicFilterLoaderTest {
 
     @Mock
     private File file;
@@ -56,7 +50,7 @@ public class FilterLoaderTest {
 
     private final FilterFactory filterFactory = new DefaultFilterFactory();
 
-    private FilterLoader loader;
+    private DynamicFilterLoader loader;
 
     private final TestZuulFilter filter = new TestZuulFilter();
 
@@ -65,7 +59,7 @@ public class FilterLoaderTest {
     {
         MockitoAnnotations.initMocks(this);
 
-        loader = spy(new FilterLoader(registry, compiler, filterFactory));
+        loader = new DynamicFilterLoader(registry, compiler, filterFactory);
 
         doReturn(TestZuulFilter.class).when(compiler).compile(file);
         when(file.getAbsolutePath()).thenReturn("/filters/in/SomeFilter.groovy");
