@@ -403,7 +403,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
-                queryParams.clone(), message.getHeaders().clone(), clientIp, scheme,
+                queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme,
                 port, serverName, clientRemoteAddress, immutable);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();

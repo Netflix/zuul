@@ -251,7 +251,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     {
         // TODO - not sure if should be cloning the outbound request object here or not....
         HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
-                getHeaders().clone(),
+                Headers.copyOf(getHeaders()),
                 getOutboundRequest(), getStatus());
         if (getInboundResponse() != null) {
             clone.inboundResponse = (HttpResponseInfo) getInboundResponse().clone();

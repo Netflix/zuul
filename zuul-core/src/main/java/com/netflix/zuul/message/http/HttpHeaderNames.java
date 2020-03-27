@@ -30,7 +30,7 @@ import com.netflix.zuul.message.HeaderName;
  * Date: 8/5/15
  * Time: 12:33 PM
  */
-public class HttpHeaderNames
+public final class HttpHeaderNames
 {
     private static final DynamicIntProperty MAX_CACHE_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.message.http.HttpHeaderNames.maxCacheSize", 30);

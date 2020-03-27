@@ -15,19 +15,19 @@
  */
 package com.netflix.zuul.message;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.ListMultimap;
 import com.netflix.zuul.message.http.HttpHeaderNames;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import static com.netflix.zuul.util.HttpUtils.stripMaliciousHeaderChars;
+import static java.util.Objects.requireNonNull;
 
 /**
  * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are
@@ -40,30 +40,30 @@ import static com.netflix.zuul.util.HttpUtils.stripMaliciousHeaderChars;
  * Date: 2/20/15
  * Time: 3:13 PM
  */
-public class Headers implements Cloneable
-{
-    private final ListMultimap<HeaderName, String> delegate;
-    private final boolean immutable;
+public final class Headers {
+    private final List<HeaderName> names;
+    private final List<String> values;
 
-    public Headers()
-    {
-        delegate = ArrayListMultimap.create();
-        immutable = false;
+    public static Headers copyOf(Headers original) {
+        return new Headers(requireNonNull(original, "original"));
     }
 
-    private Headers(ListMultimap<HeaderName, String> delegate)
-    {
-        this.delegate = delegate;
-        immutable = ImmutableListMultimap.class.isAssignableFrom(delegate.getClass());
+    public Headers() {
+        names = new ArrayList<>();
+        values = new ArrayList<>();
     }
 
-    protected HeaderName getHeaderName(String name)
-    {
+    private Headers(Headers original) {
+        names = new ArrayList<>(original.names);
+        values = new ArrayList<>(original.values);
+    }
+
+    private HeaderName getHeaderName(String name) {
         return HttpHeaderNames.get(name);
     }
 
-    private boolean delegatePut(HeaderName hn, String value) {
-        return delegate.put(hn, stripMaliciousHeaderChars(value));
+    private boolean set(HeaderName name, String value) {
+        return entries.put(hn, stripMaliciousHeaderChars(value));
     }
 
     private void delegatePutAll(Headers headers) {
@@ -74,21 +74,19 @@ public class Headers implements Cloneable
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return null.
-     *
-     * @param name
-     * @return
      */
-    public String getFirst(String name)
-    {
-        HeaderName hn = getHeaderName(name);
+    @Nullable
+    public String getFirst(String name) {
+        HeaderName hn = getHeaderName(requireNonNull(name, "name"));
         return getFirst(hn);
     }
-    public String getFirst(HeaderName hn)
-    {
-        List<String> values = delegate.get(hn);
-        if (values != null) {
-            if (values.size() > 0) {
-                return values.get(0);
+
+    @Nullable
+    public String getFirst(HeaderName headerName) {
+        requireNonNull(headerName, "headerName");
+        for (int i = 0; i < names.size(); i++) {
+            if (names.get(i).equals(headerName)) {
+                return values.get(i);
             }
         }
         return null;
@@ -97,44 +95,52 @@ public class Headers implements Cloneable
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return the specified defaultValue.
-     *
-     * @param name
-     * @return
      */
-    public String getFirst(String name, String defaultValue)
-    {
+    public String getFirst(String name, String defaultValue) {
+        requireNonNull(defaultValue);
         String value = getFirst(name);
-        if (value == null) {
-            value = defaultValue;
+        if (value != null) {
+            return value;
         }
-        return value;
-    }
-    public String getFirst(HeaderName hn, String defaultValue)
-    {
-        String value = getFirst(hn);
-        if (value == null) {
-            value = defaultValue;
-        }
-        return value;
+        return defaultValue;
     }
 
-    public List<String> get(String name)
-    {
-        HeaderName hn = getHeaderName(name);
-        return get(hn);
+    public String getFirst(HeaderName name, String defaultValue) {
+        requireNonNull(defaultValue);
+        String value = getFirst(hn);
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
     }
-    public List<String> get(HeaderName hn)
-    {
-        return delegate.get(hn);
+
+    public List<String> getAll(String name) {
+        HeaderName hn = getHeaderName(requireNonNull(name, "name"));
+        return getAll(hn);
+    }
+
+    public List<String> getAll(HeaderName name) {
+        requireNonNull(name, "name");
+        List<String> results = null;
+        for (int i = 0; i < names.size(); i++) {
+            if (names.get(i).equals(name)) {
+                if (results == null) {
+                    results = new ArrayList<>(1);
+                }
+                results.add(values.get(i));
+            }
+        }
+        if (results == null) {
+            return Collections.emptyList();
+        } else {
+            return Collections.unmodifiableList(results);
+        }
     }
 
     /**
      * Replace any/all entries with this key, with this single entry.
      *
      * If value is null, then not added, but any existing header of same name is removed.
-     *
-     * @param name
-     * @param value
      */
     public void set(String name, String value)
     {
@@ -169,9 +175,13 @@ public class Headers implements Cloneable
         HeaderName hn = getHeaderName(name);
         add(hn, value);
     }
-    public void add(HeaderName hn, String value)
-    {
-        delegatePut(hn, value);
+
+
+    public void add(HeaderName name, String value) {
+        requireNonNull(name, "name");
+        requireNonNull(value, "value");
+        names.add(name);
+        values.add(value);
     }
 
     public void putAll(Headers headers)
@@ -230,22 +240,14 @@ public class Headers implements Cloneable
         return delegate.size();
     }
 
-    @Override
-    public Headers clone()
-    {
-        Headers copy = new Headers();
-        copy.delegatePutAll(this);
-        return copy;
-    }
-
     public Headers immutableCopy()
     {
         return new Headers(ImmutableListMultimap.copyOf(delegate));
     }
 
-    public boolean isImmutable()
-    {
-        return immutable;
+    @Deprecated // To be removed in a later Zuul Release.
+    public boolean isImmutable() {
+        return false;
     }
 
     @Override
