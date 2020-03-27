@@ -41,8 +41,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -227,8 +227,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -413,8 +413,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -603,8 +603,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -793,8 +793,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -983,8 +983,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -1173,8 +1173,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -1363,8 +1363,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
@@ -1561,8 +1561,8 @@
             "requested": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.4",
-            "requested": "1.9.4"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "locked": "1.17.10",
