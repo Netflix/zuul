@@ -29,11 +29,9 @@ import org.mockito.MockitoAnnotations;
 /**
  * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing
  * class named BaseFilterTest.
- *
- * TODO(carl-mastrangelo): refactor {@link BaseFilterTest} to not conflict with this class.
  */
 @RunWith(JUnit4.class)
-public class BaseFilter2Test {
+public class BaseFilterTest {
 
     @Mock
     private BaseFilter f1;
