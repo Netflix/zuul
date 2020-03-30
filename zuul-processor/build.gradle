@@ -1,3 +1,5 @@
+apply plugin: "java"
+
 dependencies {
     implementation("com.google.guava:guava:28.2-jre")
     implementation project(":zuul-core")

@@ -22,7 +22,6 @@ configurations.all {
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
-    apply plugin: 'groovy'
     apply plugin: 'nebula.javadoc-jar'
     apply plugin: 'nebula.dependency-lock'
 
