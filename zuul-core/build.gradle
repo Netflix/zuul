@@ -1,5 +1,5 @@
-apply plugin: "groovy"
 apply plugin: "com.google.osdetector"
+apply plugin: "java-library"
 
 dependencies {
     compile "commons-io:commons-io:2.4"
@@ -51,10 +51,6 @@ dependencies {
     testCompile "com.netflix.governator:governator-test-junit:1.+"
     testCompile 'junit:junit:4.13-rc-1'
     testRuntime 'org.slf4j:slf4j-simple:1.7.29'
-}
-
-jar {
-    from sourceSets.main.allGroovy
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.
