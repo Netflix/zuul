@@ -22,13 +22,7 @@ package com.netflix.zuul.monitoring;
 public class MonitoringHelper {
 
     public static final void initMocks() {
-        CounterFactory.initialize(new CounterFactoryImpl());
         TracerFactory.initialize(new TracerFactoryImpl());
-    }
-
-    private static final class CounterFactoryImpl extends CounterFactory {
-        @Override
-        public void increment(String name) {}
     }
 
     private static final class TracerFactoryImpl extends TracerFactory {
