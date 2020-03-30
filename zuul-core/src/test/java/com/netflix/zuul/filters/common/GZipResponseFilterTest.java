@@ -19,9 +19,12 @@ package com.netflix.zuul.filters.common;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
-import com.netflix.zuul.filters.BaseFilterTest;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.buffer.Unpooled;
@@ -34,21 +37,32 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GZipResponseFilterTest extends BaseFilterTest {
+public class GZipResponseFilterTest {
+    private final SessionContext context = new SessionContext();
+    private final Headers originalRequestHeaders = new Headers();
+
+    @Mock
+    private HttpRequestMessage request;
+    @Mock
+    private HttpRequestMessage originalRequest;
 
     GZipResponseFilter filter;
     HttpResponseMessage response;
 
     @Before
     public void setup() {
-        super.setup();
+        when(request.getContext()).thenReturn(context);
+        when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
+
         filter = Mockito.spy(new GZipResponseFilter());
         response = new HttpResponseMessageImpl(context, request, 99);
         response.getHeaders().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
+        when(response.getInboundRequest()).thenReturn(originalRequest);
     }
 
     @Test
