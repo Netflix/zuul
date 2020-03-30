@@ -270,12 +270,6 @@
             ],
             "locked": "1.2.1"
         },
-        "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -305,12 +299,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -564,12 +552,6 @@
             ],
             "locked": "1.2.1"
         },
-        "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -599,12 +581,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -884,12 +860,6 @@
             ],
             "locked": "1.2.1"
         },
-        "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -919,12 +889,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1184,12 +1148,6 @@
             ],
             "locked": "1.2.1"
         },
-        "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13"
-        },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1219,12 +1177,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1517,10 +1469,7 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13",
+            "locked": "4.13-rc-1",
             "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
@@ -1552,12 +1501,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1850,10 +1793,7 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.13",
+            "locked": "4.13-rc-1",
             "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
@@ -1885,12 +1825,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.9.5"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
