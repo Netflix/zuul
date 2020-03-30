@@ -152,10 +152,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -175,10 +171,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -338,10 +330,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -361,10 +349,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -528,10 +512,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -551,10 +531,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -718,10 +694,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -741,10 +713,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -908,10 +876,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
-        },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
             "requested": "3.4"
@@ -931,10 +895,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -1099,8 +1059,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
+            "locked": "4.13-rc-1",
+            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1121,10 +1081,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -1289,8 +1245,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
+            "locked": "4.13-rc-1",
+            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1311,10 +1267,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -1483,8 +1435,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
+            "locked": "4.13-rc-1",
+            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1505,10 +1457,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -1681,8 +1629,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "latest.release"
+            "locked": "4.13-rc-1",
+            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1703,10 +1651,6 @@
         "org.json:json": {
             "locked": "20090211",
             "requested": "20090211"
-        },
-        "org.mockito:mockito-core": {
-            "locked": "1.9.5",
-            "requested": "1.9.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
