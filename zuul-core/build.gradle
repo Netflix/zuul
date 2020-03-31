@@ -2,7 +2,6 @@ apply plugin: "com.google.osdetector"
 apply plugin: "java-library"
 
 dependencies {
-    compile 'commons-collections:commons-collections:3.2.2'
     compile 'commons-configuration:commons-configuration:1.8'
     compile "org.apache.commons:commons-lang3:3.4"
     implementation libraries.guava

@@ -39,11 +39,8 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "28.2-jre",
-            "requested": "28.2-jre"
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -162,12 +159,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -276,8 +267,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.2-jre",
-            "requested": "28.2-jre"
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -395,12 +386,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -560,8 +545,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.2-jre",
-            "requested": "28.2-jre"
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -679,12 +664,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -819,7 +798,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-processor"
             ],
-            "locked": "28.2-jre"
+            "locked": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -943,12 +922,6 @@
         },
         "com.netflix.zuul:zuul-processor": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -1089,14 +1062,6 @@
         "com.google.inject:guice": {
             "locked": "4.2.2",
             "requested": "4.2.2"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
-        },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
         }
     },
     "testCompileClasspath": {
@@ -1113,11 +1078,8 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "28.2-jre",
-            "requested": "28.2-jre"
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -1240,12 +1202,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1307,8 +1263,8 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [
@@ -1365,14 +1321,6 @@
         "com.google.inject:guice": {
             "locked": "4.2.2",
             "requested": "4.2.2"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
-        },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
         }
     },
     "testRuntimeClasspath": {
@@ -1392,8 +1340,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.2-jre",
-            "requested": "28.2-jre"
+            "locked": "28.1-jre",
+            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -1516,12 +1464,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1607,8 +1549,8 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.apache.commons:commons-lang3": {
             "firstLevelTransitive": [

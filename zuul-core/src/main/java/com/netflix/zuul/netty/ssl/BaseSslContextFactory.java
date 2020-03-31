@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.ssl;
 
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
-
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.spectator.api.Id;
@@ -87,7 +85,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                     .sessionTimeout(serverSslConfig.getSessionTimeout())
                     .sslProvider(sslProvider);
 
-            if (serverSslConfig.getClientAuth() != null && isNotEmpty(trustedCerts)) {
+            if (serverSslConfig.getClientAuth() != null && trustedCerts != null && !trustedCerts.isEmpty()) {
                 builder = builder
                         .trustManager(trustedCerts.toArray(new X509Certificate[0]))
                         .clientAuth(serverSslConfig.getClientAuth());

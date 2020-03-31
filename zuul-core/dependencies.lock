@@ -8,10 +8,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -83,10 +79,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
@@ -197,10 +189,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
@@ -360,10 +348,6 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
@@ -450,10 +434,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -525,10 +505,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
@@ -640,10 +616,6 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
@@ -730,10 +702,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -809,10 +777,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
@@ -928,10 +892,6 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
@@ -1018,10 +978,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -1097,10 +1053,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
@@ -1215,10 +1167,6 @@
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
-        },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",

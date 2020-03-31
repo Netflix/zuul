@@ -17,7 +17,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-processor"
             ],
-            "locked": "28.2-jre"
+            "locked": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
@@ -141,12 +141,6 @@
         },
         "com.netflix.zuul:zuul-processor": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -399,12 +393,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -533,12 +521,6 @@
             ],
             "locked": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -655,12 +637,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -888,12 +864,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -1154,12 +1124,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1418,12 +1382,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -1684,12 +1642,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true
         },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1818,12 +1770,6 @@
             ],
             "locked": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1940,12 +1886,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -2173,12 +2113,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -2438,12 +2372,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-collections:commons-collections": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "3.2.2"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
