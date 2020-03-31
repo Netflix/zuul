@@ -5,7 +5,7 @@ dependencies {
     compile 'commons-collections:commons-collections:3.2.2'
     compile 'commons-configuration:commons-configuration:1.8'
     compile "org.apache.commons:commons-lang3:3.4"
-    compile "com.google.guava:guava:28.1-jre"
+    implementation libraries.guava
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
