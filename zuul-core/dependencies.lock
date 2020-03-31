@@ -48,10 +48,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -171,10 +167,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -345,10 +337,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -526,10 +514,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -649,10 +633,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -830,10 +810,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -957,10 +933,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -1142,10 +1114,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -1269,10 +1237,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
