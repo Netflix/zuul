@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.util;
 
+import com.google.common.base.Strings;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpHeaderNames;
@@ -22,7 +23,7 @@ import com.netflix.zuul.message.http.HttpRequestInfo;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2StreamChannel;
-import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,10 +103,15 @@ public class HttpUtils
      * @param input - decoded header string
      * @return - clean header string
      */
-    public static String stripMaliciousHeaderChars(String input) 
-    {
+    public static String stripMaliciousHeaderChars(@Nullable String input) {
+        if (input == null) {
+            return null;
+        }
+        // TODO(carl-mastrangelo): implement this more efficiently.
         for (char c : MALICIOUS_HEADER_CHARS) {
-            input = StringUtils.remove(input, c);
+            if (input.indexOf(c) != -1) {
+                input = input.replace(Character.toString(c), "");
+            }
         }
         return input;
     }
@@ -120,13 +126,13 @@ public class HttpUtils
     public static Integer getContentLengthIfPresent(ZuulMessage msg)
     {
         final String contentLengthValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
-        if (StringUtils.isNotEmpty(contentLengthValue) && StringUtils.isNumeric(contentLengthValue)) {
+        if (!Strings.isNullOrEmpty(contentLengthValue)) {
             try {
                 return Integer.valueOf(contentLengthValue);
             }
             catch (NumberFormatException e) {
                 LOG.info("Invalid Content-Length header value on request. " +
-                        "value = " + String.valueOf(contentLengthValue));
+                        "value = {}", contentLengthValue, e);
             }
         }
         return null;
@@ -147,7 +153,7 @@ public class HttpUtils
     {
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
-        if (StringUtils.isNotEmpty(teValue)) {
+        if (!Strings.isNullOrEmpty(teValue)) {
             isChunked = "chunked".equals(teValue.toLowerCase());
         }
         return isChunked;

@@ -16,6 +16,19 @@
 
 package com.netflix.zuul.filters.endpoint;
 
+import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
+import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
+import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
+import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
+import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_FAILED;
+import static com.netflix.zuul.passport.PassportState.ORIGIN_RETRY_START;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_NOT_FOUND;
+
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.netflix.client.ClientException;
@@ -26,7 +39,6 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
-import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -81,26 +93,19 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
-import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static com.netflix.zuul.passport.PassportState.*;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.*;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -536,7 +541,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private Integer parseReadTimeout(Object p) {
-        if (p instanceof String && StringUtils.isNotBlank((String)p)) {
+        if (p instanceof String && !Strings.isNullOrEmpty((String) p)) {
             return Integer.valueOf((String)p);
         }
         else if (p instanceof Integer) {
@@ -1039,7 +1044,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         String primaryRoute = context.getRouteVIP();
-        if (StringUtils.isEmpty(primaryRoute)) {
+        if (Strings.isNullOrEmpty(primaryRoute)) {
             // If no vip selected, leave origin null, then later the handleNoOriginSelected() method will be invoked.
             return null;
         }
@@ -1056,10 +1061,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         // Use the custom vip instead if one has been provided.
-        Pair<String, String> customVip = injectCustomVip(request);
+        VipPair customVip = injectCustomVip(request);
         if (customVip != null) {
-            restClientVIP = customVip.getLeft();
-            restClientName = customVip.getRight();
+            restClientVIP = customVip.restClientVip;
+            restClientName = customVip.restClientName;
             origin = getOrCreateOrigin(originManager, restClientName, restClientVIP, request.reconstructURI(), useFullName, context);
         }
 
@@ -1079,13 +1084,21 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      *
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
-     *
-     * @param request
-     * @return
      */
-    protected Pair<String, String> injectCustomVip(HttpRequestMessage request) {
+    @Nullable
+    protected VipPair injectCustomVip(HttpRequestMessage request) {
         // override for custom vip injection
         return null;
+    }
+
+    protected static final class VipPair {
+        final String restClientVip;
+        final String restClientName;
+
+        public VipPair(String restClientVip, String restClientName) {
+            this.restClientVip = Objects.requireNonNull(restClientVip, "restClientVip");
+            this.restClientName = Objects.requireNonNull(restClientName, "restClientName");
+        }
     }
 
     private NettyOrigin getOrCreateOrigin(OriginManager<NettyOrigin> originManager, String name, String vip, String uri, boolean useFullVipName, SessionContext ctx) {

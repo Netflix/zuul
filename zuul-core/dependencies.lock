@@ -88,18 +88,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
@@ -218,10 +206,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-transport": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
@@ -241,14 +225,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -376,10 +352,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.30.Final",
             "requested": "2.0.30.Final"
@@ -403,14 +375,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -513,18 +477,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
@@ -644,10 +596,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.30.Final",
             "requested": "2.0.30.Final"
@@ -671,14 +619,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -785,18 +725,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
@@ -920,10 +848,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-transport": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
@@ -947,14 +871,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "4.13"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -1061,18 +977,6 @@
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
@@ -1196,10 +1100,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.30.Final",
             "requested": "2.0.30.Final"
@@ -1227,14 +1127,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "4.13"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",

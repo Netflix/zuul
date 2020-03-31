@@ -15,16 +15,9 @@
  */
 package com.netflix.zuul;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.zuul.groovy.GroovyFileFilter;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -35,7 +28,14 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class manages the directory polling for changes and new Groovy filters.
@@ -64,11 +64,9 @@ public class FilterFileManager {
     public FilterFileManager(FilterFileManagerConfig config, FilterLoader filterLoader) {
         this.config = config;
         this.filterLoader = filterLoader;
-
-        BasicThreadFactory threadFactory = new BasicThreadFactory.Builder()
-                .namingPattern("FilterFileManager_ProcessFiles-%d")
-                .build();
-        this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), threadFactory);
+        ThreadFactory tf =
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FilterFileManager_ProcessFiles-%d").build();
+        this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), tf);
     }
 
     /**

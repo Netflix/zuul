@@ -3,7 +3,6 @@ apply plugin: "java-library"
 
 dependencies {
     compile 'commons-configuration:commons-configuration:1.8'
-    compile "org.apache.commons:commons-lang3:3.4"
     implementation libraries.guava
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
