@@ -16,11 +16,18 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
+
+import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.context.SessionContextDecorator;
-import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
@@ -31,7 +38,6 @@ import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
-import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import com.netflix.zuul.util.HttpUtils;
@@ -42,24 +48,25 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.unix.Errors;
-import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
-import com.netflix.netty.common.SourceAddressChannelHandler;
-import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import java.net.SocketAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Map;
-
-import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**

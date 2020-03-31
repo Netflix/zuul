@@ -25,7 +25,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCounted;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 

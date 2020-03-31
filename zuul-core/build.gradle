@@ -8,8 +8,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
-    compile 'org.bouncycastle:bcpg-jdk15on:1.+'
-    compile 'org.bouncycastle:bcprov-jdk15on:1.+'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
     compile 'com.fasterxml.jackson.core:jackson-core:2.9.8'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 
@@ -31,11 +30,10 @@ dependencies {
     api "io.netty:netty-buffer:${versions_netty}"
     api "io.netty:netty-codec-http:${versions_netty}"
     api "io.netty:netty-codec-http2:${versions_netty}"
-    api "io.netty:netty-codec-haproxy:${versions_netty}"
     api "io.netty:netty-handler:${versions_netty}"
-    api "io.netty:netty-resolver:${versions_netty}"
     api "io.netty:netty-transport:${versions_netty}"
 
+    implementation "io.netty:netty-codec-haproxy:${versions_netty}"
     implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
     runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
