@@ -9,8 +9,8 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.google.guava:guava:28.1-jre"
     compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
-    compile "org.slf4j:slf4j-api:1.7.25"
-    compile "org.json:json:20090211"
+    // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
+    api libraries.slf4j
     compile 'org.bouncycastle:bcpg-jdk15on:1.+'
     compile 'org.bouncycastle:bcprov-jdk15on:1.+'
     compile 'com.fasterxml.jackson.core:jackson-core:2.9.8'
@@ -29,28 +29,30 @@ dependencies {
     compile "com.netflix.eureka:eureka-client:1.9.18"
     compile "io.reactivex:rxjava:1.2.1"
 
-    compile "io.netty:netty-common:${versions_netty}"
-    compile "io.netty:netty-buffer:${versions_netty}"
-    compile "io.netty:netty-codec-http:${versions_netty}"
-    compile "io.netty:netty-codec-http2:${versions_netty}"
-    compile "io.netty:netty-codec-haproxy:${versions_netty}"
-    compile "io.netty:netty-handler:${versions_netty}"
-    compile "io.netty:netty-resolver:${versions_netty}"
-    compile "io.netty:netty-transport:${versions_netty}"
-    compile "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
-    compile "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
-    runtime "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
+    // TODO(carl-mastrangelo): some of these could probably be implementation.   Do a deeper check.
+    api "io.netty:netty-common:${versions_netty}"
+    api "io.netty:netty-buffer:${versions_netty}"
+    api "io.netty:netty-codec-http:${versions_netty}"
+    api "io.netty:netty-codec-http2:${versions_netty}"
+    api "io.netty:netty-codec-haproxy:${versions_netty}"
+    api "io.netty:netty-handler:${versions_netty}"
+    api "io.netty:netty-resolver:${versions_netty}"
+    api "io.netty:netty-transport:${versions_netty}"
+
+    implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
+    implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
+    runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
 
     // To ensure that zuul-netty gets this correct later version.
     compile "com.netflix.governator:governator:1.+"
     compile "com.netflix.governator:governator-archaius:1.+"
     compile "com.netflix.governator:governator-core:1.+"
 
-    compile 'io.perfmark:perfmark-api:0.21.0'
+    implementation 'io.perfmark:perfmark-api:0.21.0'
 
     testCompile "com.netflix.governator:governator-test-junit:1.+"
-    testCompile 'junit:junit:4.13-rc-1'
-    testRuntime 'org.slf4j:slf4j-simple:1.7.29'
+    testImplementation libraries.junit
+    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.29'
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.

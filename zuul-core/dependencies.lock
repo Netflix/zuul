@@ -104,50 +104,6 @@
             "locked": "2.4",
             "requested": "2.4"
         },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
-        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -167,14 +123,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "compileClasspath": {
@@ -345,10 +293,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -528,10 +472,6 @@
             "locked": "2.4.4",
             "requested": "2.4.4"
         },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "requested": "1.7.25"
@@ -642,54 +582,6 @@
             "locked": "2.4",
             "requested": "2.4"
         },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
-        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
@@ -709,14 +601,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "runtimeClasspath": {
@@ -892,10 +776,6 @@
             "locked": "2.4.4",
             "requested": "2.4.4"
         },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "requested": "1.7.25"
@@ -1010,57 +890,9 @@
             "locked": "2.4",
             "requested": "2.4"
         },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
-        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1077,14 +909,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "testCompileClasspath": {
@@ -1245,8 +1069,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1263,10 +1087,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -1382,61 +1202,9 @@
             "locked": "2.4",
             "requested": "2.4"
         },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
-        },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
-        },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1453,18 +1221,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
-        },
-        "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29",
-            "requested": "1.7.29"
         }
     },
     "testRuntimeClasspath": {
@@ -1629,8 +1385,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.apache.commons:commons-lang3": {
             "locked": "3.4",
@@ -1647,10 +1403,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
