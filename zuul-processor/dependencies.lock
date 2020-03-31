@@ -174,18 +174,6 @@
             ],
             "locked": "1.8"
         },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
-        },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -419,18 +407,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -716,18 +692,6 @@
             ],
             "locked": "1.8"
         },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
-        },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -991,18 +955,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -1300,18 +1252,6 @@
             ],
             "locked": "1.8"
         },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
-        },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1587,18 +1527,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.3"
-        },
-        "commons-io:commons-io": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
