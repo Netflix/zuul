@@ -17,9 +17,9 @@
 package com.netflix.zuul.sample.filters.inbound
 
 import com.netflix.zuul.context.SessionContext
+import com.netflix.zuul.filters.endpoint.ProxyEndpoint
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter
 import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.netty.filter.ZuulEndPointRunner
 import com.netflix.zuul.sample.filters.endpoint.Healthcheck
 
 /**
@@ -51,7 +51,7 @@ class Routes extends HttpInboundSyncFilter {
             context.setEndpoint(Healthcheck.class.getCanonicalName())
         }
         else {
-            context.setEndpoint(ZuulEndPointRunner.PROXY_ENDPOINT_FILTER_NAME);
+            context.setEndpoint(ProxyEndpoint.class.getCanonicalName());
             context.setRouteVIP("api")
         }
 
