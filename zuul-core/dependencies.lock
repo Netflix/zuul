@@ -8,10 +8,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
-        },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
             "requested": "4.2.2"
@@ -45,10 +41,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -88,93 +80,17 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
-        },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "compileClasspath": {
@@ -226,10 +142,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -266,21 +178,9 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.48.Final",
@@ -306,10 +206,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-transport": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
@@ -330,14 +226,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
             "requested": "1.+"
@@ -345,10 +233,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -404,10 +288,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -444,21 +324,9 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.48.Final",
@@ -481,10 +349,6 @@
             "requested": "4.1.48.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
@@ -512,14 +376,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
             "requested": "1.+"
@@ -527,10 +383,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -545,10 +397,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
@@ -586,10 +434,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -626,97 +470,17 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
-        },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "runtimeClasspath": {
@@ -768,10 +532,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -808,21 +568,9 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.48.Final",
@@ -845,10 +593,6 @@
             "requested": "4.1.48.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
@@ -876,14 +620,6 @@
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
             "requested": "1.+"
@@ -891,10 +627,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
@@ -909,10 +641,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
@@ -947,10 +675,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -994,97 +718,17 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
-        },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
         }
     },
     "testCompileClasspath": {
@@ -1136,10 +780,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -1180,21 +820,9 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.48.Final",
@@ -1220,10 +848,6 @@
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
         "io.netty:netty-transport": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
@@ -1245,16 +869,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -1263,10 +879,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -1281,10 +893,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
         },
         "com.google.inject.extensions:guice-assistedinject": {
             "locked": "4.2.2",
@@ -1319,10 +927,6 @@
             "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
-        "com.netflix.governator:governator-archaius": {
             "locked": "1.17.10",
             "requested": "1.+"
         },
@@ -1366,105 +970,17 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
-        },
-        "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
-        },
-        "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
             "requested": "1.2.1"
         },
-        "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
-        },
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
-        },
-        "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
-        },
-        "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29",
-            "requested": "1.7.29"
         }
     },
     "testRuntimeClasspath": {
@@ -1516,10 +1032,6 @@
             "locked": "1.17.10",
             "requested": "1.+"
         },
-        "com.netflix.governator:governator-archaius": {
-            "locked": "1.17.10",
-            "requested": "1.+"
-        },
         "com.netflix.governator:governator-core": {
             "locked": "1.17.10",
             "requested": "1.+"
@@ -1560,21 +1072,9 @@
             "locked": "0.103.0",
             "requested": "0.103.0"
         },
-        "commons-collections:commons-collections": {
-            "locked": "3.2.2",
-            "requested": "3.2.2"
-        },
         "commons-configuration:commons-configuration": {
             "locked": "1.8",
             "requested": "1.8"
-        },
-        "commons-fileupload:commons-fileupload": {
-            "locked": "1.3",
-            "requested": "1.3"
-        },
-        "commons-io:commons-io": {
-            "locked": "2.4",
-            "requested": "2.4"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.48.Final",
@@ -1597,10 +1097,6 @@
             "requested": "4.1.48.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
-        },
-        "io.netty:netty-resolver": {
             "locked": "4.1.48.Final",
             "requested": "4.1.48.Final"
         },
@@ -1629,16 +1125,8 @@
             "requested": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13-rc-1",
-            "requested": "4.13-rc-1"
-        },
-        "org.apache.commons:commons-lang3": {
-            "locked": "3.4",
-            "requested": "3.4"
-        },
-        "org.bouncycastle:bcpg-jdk15on": {
-            "locked": "1.64",
-            "requested": "1.+"
+            "locked": "4.13",
+            "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.64",
@@ -1647,10 +1135,6 @@
         "org.codehaus.groovy:groovy-all": {
             "locked": "2.4.4",
             "requested": "2.4.4"
-        },
-        "org.json:json": {
-            "locked": "20090211",
-            "requested": "20090211"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",

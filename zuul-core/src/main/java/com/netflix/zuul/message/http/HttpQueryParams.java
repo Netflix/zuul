@@ -15,16 +15,20 @@
  */
 package com.netflix.zuul.message.http;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * User: michaels
@@ -78,7 +82,7 @@ public class HttpQueryParams implements Cloneable
                 queryParams.add(name, value);
 
                 // respect trailing equals for key-only params
-                if (s.endsWith("=") && StringUtils.isBlank(value)) {
+                if (s.endsWith("=") && value.isEmpty()) {
                     queryParams.setTrailingEquals(name, true);
                 }
             }
@@ -175,7 +179,7 @@ public class HttpQueryParams implements Cloneable
         try {
             for (Map.Entry<String, String> entry : entries()) {
                 sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                if (StringUtils.isNotEmpty(entry.getValue())) {
+                if (!Strings.isNullOrEmpty(entry.getValue())) {
                     sb.append('=');
                     sb.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 }
@@ -203,7 +207,7 @@ public class HttpQueryParams implements Cloneable
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : entries()) {
             sb.append(entry.getKey());
-            if (StringUtils.isNotEmpty(entry.getValue())) {
+            if (!Strings.isNullOrEmpty(entry.getValue())) {
                 sb.append('=');
                 sb.append(entry.getValue());
             }

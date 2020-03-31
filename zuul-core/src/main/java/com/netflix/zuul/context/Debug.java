@@ -16,21 +16,15 @@
 package com.netflix.zuul.context;
 
 import com.netflix.zuul.message.Header;
-import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.*;
-import com.netflix.zuul.util.HttpUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rx.Observable;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import com.netflix.zuul.message.http.HttpRequestInfo;
+import com.netflix.zuul.message.http.HttpResponseInfo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.
@@ -209,20 +203,5 @@ public class Debug {
             obs = Observable.just(Boolean.FALSE);
 
         return obs;
-    }
-
-    public static String bodyToText(byte[] bodyBytes, Headers headers)
-    {
-        try {
-            if (HttpUtils.isGzipped(headers)) {
-                GZIPInputStream gzIn = new GZIPInputStream(new ByteArrayInputStream(bodyBytes));
-                bodyBytes = IOUtils.toByteArray(gzIn);
-            }
-            return IOUtils.toString(bodyBytes, "UTF-8");
-        }
-        catch (IOException e) {
-            LOG.error("Error reading message body for debugging.", e);
-            return "ERROR READING MESSAGE BODY!";
-        }
     }
 }

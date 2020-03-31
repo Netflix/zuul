@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.ssl;
 
 import com.netflix.config.DynamicBooleanProperty;
+import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import io.netty.handler.ssl.CipherSuiteFilter;
@@ -28,14 +29,10 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
-import com.netflix.netty.common.ssl.ServerSslConfig;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -46,8 +43,8 @@ import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.ToDoubleFunction;
-
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -88,7 +85,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                     .sessionTimeout(serverSslConfig.getSessionTimeout())
                     .sslProvider(sslProvider);
 
-            if (serverSslConfig.getClientAuth() != null && isNotEmpty(trustedCerts)) {
+            if (serverSslConfig.getClientAuth() != null && trustedCerts != null && !trustedCerts.isEmpty()) {
                 builder = builder
                         .trustManager(trustedCerts.toArray(new X509Certificate[0]))
                         .clientAuth(serverSslConfig.getClientAuth());
@@ -176,7 +173,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                 trustStorePwdBytes = Base64.getDecoder().decode(serverSslConfig.getClientAuthTrustStorePassword());
             }
             else if (serverSslConfig.getClientAuthTrustStorePasswordFile() != null) {
-                trustStorePwdBytes = FileUtils.readFileToByteArray(serverSslConfig.getClientAuthTrustStorePasswordFile());
+                trustStorePwdBytes = Files.readAllBytes(serverSslConfig.getClientAuthTrustStorePasswordFile().toPath());
             }
             else {
                 throw new IllegalArgumentException("Must specify either ClientAuthTrustStorePassword or ClientAuthTrustStorePasswordFile!");

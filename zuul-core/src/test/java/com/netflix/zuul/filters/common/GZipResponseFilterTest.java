@@ -32,8 +32,8 @@ import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.zip.GZIPInputStream;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,9 +84,17 @@ public class GZipResponseFilterTest {
         hc1.content().readBytes(body, 0, hc1Len);
         hc2.content().readBytes(body, hc1Len, hc2Len);
 
+        String bodyStr;
         // Check body is a gzipped version of the origin body.
-        byte[] unzippedBytes = IOUtils.toByteArray(new GZIPInputStream(new ByteArrayInputStream(body)));
-        String bodyStr = new String(unzippedBytes, "UTF-8");
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(body);
+                GZIPInputStream gzis = new GZIPInputStream(bais);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            int b;
+            while ((b = gzis.read()) != -1) {
+                baos.write(b);
+            }
+            bodyStr = baos.toString("UTF-8");
+        }
         assertEquals("blah", bodyStr);
         assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"));
 

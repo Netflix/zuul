@@ -16,11 +16,8 @@
 
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
-import io.perfmark.PerfMark;
-import io.perfmark.Tag;
 import rx.Observable;
 
 import static com.netflix.zuul.filters.FilterSyncType.SYNC;

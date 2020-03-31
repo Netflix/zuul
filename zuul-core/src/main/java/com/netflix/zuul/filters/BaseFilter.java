@@ -23,8 +23,6 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.HttpContent;
 
-import io.perfmark.PerfMark;
-import io.perfmark.Tag;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.origins;
 
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
+
+import com.google.common.base.Strings;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -43,14 +48,8 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
 
 /**
  * Netty Origin basic implementation that can be used for most apps, with the more complex methods having no-op
@@ -144,7 +143,7 @@ public class BasicNettyOrigin implements NettyOrigin {
             DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) server;
             if (discoveryServer.getInstanceInfo() != null) {
                 String ip = discoveryServer.getInstanceInfo().getIPAddr();
-                if (StringUtils.isNotBlank(ip)) {
+                if (!Strings.isNullOrEmpty(ip)) {
                     return ip;
                 }
             }
