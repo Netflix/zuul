@@ -25,8 +25,9 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -41,7 +42,7 @@ public final class DynamicFilterLoader implements FilterLoader {
     private final ConcurrentMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, String> filterClassCode = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, String> filterCheck = new ConcurrentHashMap<>();
-    private final ConcurrentMap<FilterType, List<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
+    private final ConcurrentMap<FilterType, SortedSet<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private final FilterRegistry filterRegistry;
@@ -148,8 +149,8 @@ public final class DynamicFilterLoader implements FilterLoader {
             LOG.warn("Filter registry is not mutable, discarding {}", filterName);
             return;
         }
-        List<ZuulFilter<?, ?>> list = hashFiltersByType.get(filter.filterType());
-        if (list != null) {
+        SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filter.filterType());
+        if (set != null) {
             hashFiltersByType.remove(filter.filterType()); //rebuild this list
         }
 
@@ -193,23 +194,20 @@ public final class DynamicFilterLoader implements FilterLoader {
      * Returns a list of filters by the filterType specified
      */
     @Override
-    public List<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType) {
-        List<ZuulFilter<?, ?>> list = hashFiltersByType.get(filterType);
-        if (list != null) return list;
+    public SortedSet<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType) {
+        SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filterType);
+        if (set != null) return set;
 
-        list = new ArrayList<>();
+        set = new TreeSet<>(FILTER_COMPARATOR);
 
         for (ZuulFilter<?, ?> filter : filterRegistry.getAllFilters()) {
             if (filter.filterType().equals(filterType)) {
-                list.add(filter);
+                set.add(filter);
             }
         }
 
-        // Sort by filterOrder.
-        list.sort(Comparator.comparingInt(ZuulFilter::filterOrder));
-
-        hashFiltersByType.putIfAbsent(filterType, list);
-        return Collections.unmodifiableList(list);
+        hashFiltersByType.putIfAbsent(filterType, set);
+        return Collections.unmodifiableSortedSet(set);
     }
 
     @Override
