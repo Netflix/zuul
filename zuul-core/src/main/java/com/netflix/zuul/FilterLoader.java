@@ -18,7 +18,9 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import java.io.File;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
 
 /**
  * This class is one of the core classes in Zuul. It compiles, loads from a File, and checks if source code changed.
@@ -48,9 +50,12 @@ public interface FilterLoader {
     ZuulFilter<?, ?> putFilterForClassName(String className) throws Exception;
 
     /**
-     * Returns a list of filters by the filterType specified.
+     * Returns a sorted set of filters by the filterType specified.
      */
-    List<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType);
+    SortedSet<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType);
 
     ZuulFilter<?, ?> getFilterByNameAndType(String name, FilterType type);
+
+    Comparator<ZuulFilter<?, ?>> FILTER_COMPARATOR =
+            Comparator.<ZuulFilter<?, ?>>comparingInt(ZuulFilter::filterOrder).thenComparing(ZuulFilter::filterName);
 }

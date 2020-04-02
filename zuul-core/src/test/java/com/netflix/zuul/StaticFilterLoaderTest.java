@@ -16,14 +16,15 @@
 
 package com.netflix.zuul;
 
-import static org.junit.Assert.assertEquals;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.truth.Truth;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,30 +32,31 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class StaticFilterLoaderTest {
 
-
     private static final FilterFactory factory = new DefaultFilterFactory();
 
     @Test
     public void getFiltersByType() {
-
         StaticFilterLoader filterLoader =
-                new StaticFilterLoader(factory, Arrays.asList(DummyFilter2.class, DummyFilter1.class));
+                new StaticFilterLoader(factory,
+                        ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
 
-        List<ZuulFilter<?, ?>> filters = filterLoader.getFiltersByType(FilterType.INBOUND);
-        assertEquals(2, filters.size());
-        // Filters are sorted by order
-        assertEquals(DummyFilter1.class, filters.get(0).getClass());
-        assertEquals(DummyFilter2.class, filters.get(1).getClass());
+        SortedSet<ZuulFilter<?, ?>> filters = filterLoader.getFiltersByType(FilterType.INBOUND);
+        Truth.assertThat(filters).hasSize(3);
+        List<ZuulFilter<?, ?>> filterList = new ArrayList<>(filters);
+
+        Truth.assertThat(filterList.get(0)).isInstanceOf(DummyFilter1.class);
+        Truth.assertThat(filterList.get(1)).isInstanceOf(DummyFilter2.class);
+        Truth.assertThat(filterList.get(2)).isInstanceOf(DummyFilter22.class);
     }
 
     @Test
     public void getFilterByNameAndType() {
         StaticFilterLoader filterLoader =
-                new StaticFilterLoader(factory, Arrays.asList(DummyFilter2.class, DummyFilter1.class));
+                new StaticFilterLoader(factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class));
 
         ZuulFilter<?, ?> filter = filterLoader.getFilterByNameAndType("Robin", FilterType.INBOUND);
 
-        assertEquals(DummyFilter2.class, filter.getClass());
+        Truth.assertThat(filter).isInstanceOf(DummyFilter2.class);
     }
 
     @Filter(order = 0, type = FilterType.INBOUND)
@@ -87,6 +89,30 @@ public class StaticFilterLoaderTest {
         @Override
         public String filterName() {
             return "Robin";
+        }
+
+        @Override
+        public int filterOrder() {
+            return 1;
+        }
+
+        @Override
+        public boolean shouldFilter(HttpRequestMessage msg) {
+            return true;
+        }
+
+        @Override
+        public HttpRequestMessage apply(HttpRequestMessage input) {
+            return input;
+        }
+    }
+
+    @Filter(order = 1, type = FilterType.INBOUND)
+    static class DummyFilter22 extends HttpInboundSyncFilter {
+
+        @Override
+        public String filterName() {
+            return "Williams";
         }
 
         @Override

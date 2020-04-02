@@ -68,6 +68,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 
 import java.util.List;
+import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -356,12 +357,13 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     @SuppressWarnings("unchecked") // For the conversion from getFiltersByType.  It's not safe, sorry.
     public <T extends ZuulMessage> ZuulFilter<T, T> [] getFilters(ZuulFilter<T, T> start, ZuulFilter<T, T> stop) {
-        final List<ZuulFilter<?, ?>> zuulFilters = filterLoader.getFiltersByType(start.filterType());
+        final SortedSet<ZuulFilter<?, ?>> zuulFilters = filterLoader.getFiltersByType(start.filterType());
         final ZuulFilter<T, T>[] filters = new ZuulFilter[zuulFilters.size() + 2];
         filters[0] = start;
-        for (int i=1, j=0; i < filters.length && j < zuulFilters.size(); i++,j++) {
+        int i = 1;
+        for (ZuulFilter<?, ?> filter : zuulFilters) {
             // TODO(carl-mastrangelo): find some way to make this cast not needed.
-            filters[i] = (ZuulFilter<T, T>) zuulFilters.get(j);
+            filters[i++] = (ZuulFilter<T, T>) filter;
         }
         filters[filters.length -1] = stop;
         return filters;

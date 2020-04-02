@@ -768,6 +768,10 @@
             "locked": "4.2.2",
             "requested": "4.2.2"
         },
+        "com.google.truth:truth": {
+            "locked": "1.0.1",
+            "requested": "1.0.1"
+        },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
             "requested": "0.7.5"
@@ -1019,6 +1023,10 @@
         "com.google.inject:guice": {
             "locked": "4.2.2",
             "requested": "4.2.2"
+        },
+        "com.google.truth:truth": {
+            "locked": "1.0.1",
+            "requested": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",

@@ -102,10 +102,10 @@ public class DynamicFilterLoaderTest {
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
         assertEquals(1, filters.size());
 
-        List<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
+        Collection<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
         assertTrue(list != null);
         assertTrue(list.size() == 1);
-        ZuulFilter<?, ?> filter = list.get(0);
+        ZuulFilter<?, ?> filter = list.iterator().next();
         assertTrue(filter != null);
         assertTrue(filter.filterType().equals(FilterType.INBOUND));
     }
