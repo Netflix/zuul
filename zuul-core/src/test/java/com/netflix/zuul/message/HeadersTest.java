@@ -22,12 +22,12 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.runners.JUnit4;
 
 /**
  * Tests for {@link Headers}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnit4.class)
 public class HeadersTest {
 
     @Test
@@ -38,7 +38,7 @@ public class HeadersTest {
 
         assertEquals("10", headers.getFirst("Content-Length"));
         assertEquals("10", headers.getFirst("content-length"));
-        assertEquals(1, headers.get("content-length").size());
+        assertEquals(1, headers.getAll("content-length").size());
     }
 
     @Test
@@ -47,7 +47,7 @@ public class HeadersTest {
         headers.add("Content-Length", "5");
         headers.add("content-length", "10");
 
-        List<String> values = headers.get("content-length");
+        List<String> values = headers.getAll("content-length");
         assertTrue(values.contains("10"));
         assertTrue(values.contains("5"));
         assertEquals(2, values.size());
@@ -59,7 +59,7 @@ public class HeadersTest {
         headers.set("Content-Length", "5");
         headers.setIfAbsent("content-length", "10");
 
-        List<String> values = headers.get("content-length");
+        List<String> values = headers.getAll("content-length");
         assertEquals(1, values.size());
         assertEquals("5", values.get(0));
     }
@@ -73,7 +73,7 @@ public class HeadersTest {
         Headers headers2 = new Headers();
         headers2.putAll(headers);
 
-        List<String> values = headers2.get("content-length");
+        List<String> values = headers2.getAll("content-length");
         assertTrue(values.contains("10"));
         assertTrue(values.contains("5"));
         assertEquals(2, values.size());

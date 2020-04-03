@@ -191,7 +191,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public boolean hasSetCookieWithName(String cookieName)
     {
         boolean has = false;
-        for (String setCookieValue : getHeaders().get(HttpHeaderNames.SET_COOKIE)) {
+        for (String setCookieValue : getHeaders().getAll(HttpHeaderNames.SET_COOKIE)) {
             for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
                 if (cookie.getName().equalsIgnoreCase(cookieName)) {
                     has = true;
@@ -261,10 +261,12 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
 
     protected HttpResponseInfo copyResponseInfo()
     {
-        // Unlike clone(), we create immutable copies of the Headers here.
-        HttpResponseMessageImpl response = new HttpResponseMessageImpl(getContext(),
-                getHeaders().immutableCopy(),
-               getOutboundRequest(), getStatus());
+        HttpResponseMessageImpl response =
+                new HttpResponseMessageImpl(
+                        getContext(),
+                        Headers.copyOf(getHeaders()),
+                        getOutboundRequest(),
+                        getStatus());
         response.setHasBody(hasBody());
         return response;
     }

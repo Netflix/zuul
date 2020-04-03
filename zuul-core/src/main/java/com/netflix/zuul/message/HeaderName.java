@@ -35,16 +35,29 @@ public final class HeaderName {
             throw new NullPointerException("HeaderName cannot be null!");
         }
         this.name = name;
-        this.normalised = name.toLowerCase(Locale.ROOT);
+        this.normalised = normalize(name);
         this.hashCode = this.normalised.hashCode();
     }
 
+    HeaderName(String name, String normalised) {
+        this.name = name;
+        this.normalised = normalised;
+        this.hashCode = normalised.hashCode();
+    }
+
+    /**
+     * Gets the original, non-normalized name for this header.
+     */
     public String getName() {
         return name;
     }
 
     public String getNormalised() {
         return normalised;
+    }
+
+    static String normalize(String s) {
+        return s.toLowerCase(Locale.ROOT);
     }
 
     @Override
