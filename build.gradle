@@ -3,6 +3,7 @@ plugins {
     id 'nebula.netflixoss' version '8.0.0'
     id 'nebula.dependency-lock' version '8.0.0'
     id "com.google.osdetector" version "1.6.2"
+    id "me.champeau.gradle.jmh" version "0.5.0"
 }
 
 ext.githubProjectName = rootProject.name
@@ -19,16 +20,18 @@ configurations.all {
     exclude group: 'asm', module: 'asm-all'
 }
 
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
 subprojects {
     apply plugin: 'nebula.netflixoss'
     apply plugin: 'java'
     apply plugin: 'nebula.javadoc-jar'
     apply plugin: 'nebula.dependency-lock'
-
-    repositories {
-        jcenter()
-        mavenLocal()
-    }
+    apply plugin: 'me.champeau.gradle.jmh'
 
     license {
         ignoreFailures = false
