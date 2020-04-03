@@ -33,16 +33,11 @@ public class HeadersBenchmark {
 
     @State(Scope.Thread)
     public static class AddHeaders {
-        private Headers headers = new Headers();
-
         @Param({"0", "1", "5", "10", "30"})
         public int count;
 
         @Param({"10"})
         public int nameLength;
-
-        @Param({"true"})
-        public boolean commonNames;
 
         private String[] stringNames;
         private HeaderName[] names;
@@ -68,6 +63,7 @@ public class HeadersBenchmark {
         @BenchmarkMode(Mode.AverageTime)
         @OutputTimeUnit(TimeUnit.NANOSECONDS)
         public Headers addHeaders_string() {
+            Headers headers = new Headers();
             for (int i = 0; i < count; i++) {
                 headers.add(stringNames[i], values[i]);
             }
@@ -78,6 +74,7 @@ public class HeadersBenchmark {
         @BenchmarkMode(Mode.AverageTime)
         @OutputTimeUnit(TimeUnit.NANOSECONDS)
         public Headers addHeaders_headerName() {
+            Headers headers = new Headers();
             for (int i = 0; i < count; i++) {
                 headers.add(names[i], values[i]);
             }
