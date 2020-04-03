@@ -134,14 +134,14 @@ public class HeadersBenchmark {
         @BenchmarkMode(Mode.AverageTime)
         @OutputTimeUnit(TimeUnit.NANOSECONDS)
         public List<String> getHeader_first() {
-            return headers.get(names[0]);
+            return headers.getAll(names[0]);
         }
 
         @Benchmark
         @BenchmarkMode(Mode.AverageTime)
         @OutputTimeUnit(TimeUnit.NANOSECONDS)
         public List<String> getHeader_last() {
-            return headers.get(names[count - 1]);
+            return headers.getAll(names[count - 1]);
         }
 
         @Benchmark
