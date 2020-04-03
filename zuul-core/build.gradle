@@ -55,3 +55,13 @@ test {
         showStandardStreams = false
     }
 }
+
+// ./gradlew --no-daemon clean :zuul-core:jmh --stacktrace
+jmh {
+    timeOnIteration = "1s"
+    warmup = "1s"
+    fork = 1
+    warmupIterations = 10
+    // Not sure why duplicate classes are aon the path.  Something Nebula related I think.
+    duplicateClassesStrategy = 'EXCLUDE'
+}
