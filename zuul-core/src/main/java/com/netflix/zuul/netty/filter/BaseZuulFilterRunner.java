@@ -70,7 +70,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     private final String RUNNING_FILTER_IDX_SESSION_CTX_KEY;
     private final String AWAITING_BODY_FLAG_SESSION_CTX_KEY;
-    private static final Logger LOG = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
 
     private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME = new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
 
@@ -207,7 +207,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
             if (!isMessageBodyReadyForFilter(filter, inMesg)) {
                 setFilterAwaitingBody(inMesg, true);
-                LOG.debug("Filter {} waiting for body, UUID {}", filter.filterName(), inMesg.getContext().getUUID());
+                logger.debug("Filter {} waiting for body, UUID {}", filter.filterName(), inMesg.getContext().getUUID());
                 return null;  //wait for whole body to be buffered
             }
             setFilterAwaitingBody(inMesg, false);
@@ -312,10 +312,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final String errorMsg = "Filter Exception: filter=" + filter.filterName() +
                 ", request-info=" + inMesg.getInfoForLogging() + ", msg=" + String.valueOf(t.getMessage());
         if (t instanceof ZuulException && !((ZuulException) t).shouldLogAsError()) {
-            LOG.warn(errorMsg);
+            logger.warn(errorMsg);
         }
         else {
-            LOG.error(errorMsg, t);
+            logger.error(errorMsg, t);
         }
 
         // Store this filter error for possible future use. But we still continue with next filter in the chain.
@@ -334,16 +334,20 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final long execTimeNs = System.nanoTime() - startTime;
         final long execTimeMs = execTimeNs / 1_000_000L;
         if (execTimeMs >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
-            LOG.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTimeMs, status.name());
+            logger.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTimeMs, status.name());
         }
 
         // Record the execution summary in context.
         switch (status) {
             case FAILED:
-                zuulCtx.addFilterExecutionSummary(filter.filterName(), FAILED.name(), execTimeMs);
+                if (logger.isDebugEnabled()) {
+                    zuulCtx.addFilterExecutionSummary(filter.filterName(), FAILED.name(), execTimeMs);
+                }
                 break;
             case SUCCESS:
-                zuulCtx.addFilterExecutionSummary(filter.filterName(), SUCCESS.name(), execTimeMs);
+                if (logger.isDebugEnabled()) {
+                    zuulCtx.addFilterExecutionSummary(filter.filterName(), SUCCESS.name(), execTimeMs);
+                }
                 if (startSnapshot != null) {
                     //debugRouting == true
                     Debug.addRoutingDebug(zuulCtx, "Filter {" + filter.filterName() + " TYPE:" + filter.filterType().toString()
@@ -355,7 +359,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 break;
         }
 
-        LOG.debug("Filter {} completed with status {}, UUID {}", filter.filterName(), status.name(),
+        logger.debug("Filter {} completed with status {}, UUID {}", filter.filterName(), status.name(),
                 zuulMesg.getContext().getUUID());
         // Notify configured listener.
         usageNotifier.notify(filter, status);
@@ -373,7 +377,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final String path = (zuulReq != null) ? zuulReq.getPathAndQuery() : "-";
         final String method = (zuulReq != null) ? zuulReq.getMethod() : "-";
         final String errMesg = "Error with filter: " + filterName + ", path: " + path + ", method: " + method;
-        LOG.error(errMesg, ex);
+        logger.error(errMesg, ex);
         getChannelHandlerContext(zuulMesg).fireExceptionCaught(ex);
     }
 
