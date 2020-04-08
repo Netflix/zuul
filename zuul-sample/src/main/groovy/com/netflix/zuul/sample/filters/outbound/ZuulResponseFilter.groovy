@@ -39,7 +39,7 @@ import static com.netflix.zuul.constants.ZuulHeaders.*
  * Date: December 21, 2017
  */
 class ZuulResponseFilter extends HttpOutboundSyncFilter {
-    private static final Logger log = LoggerFactory.getLogger(ZuulResponseFilter.class)
+    private static final Logger logger = LoggerFactory.getLogger(ZuulResponseFilter.class)
 
     private static final DynamicBooleanProperty SEND_RESPONSE_HEADERS =
             new DynamicBooleanProperty("zuul.responseFilter.send.headers", true)
@@ -76,7 +76,6 @@ class ZuulResponseFilter extends HttpOutboundSyncFilter {
             headers.set(X_ZUUL, "zuul")
             headers.set(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") ?: "unknown")
             headers.set(CONNECTION, KEEP_ALIVE)
-            headers.set(X_ZUUL_FILTER_EXECUTION_STATUS, context.getFilterExecutionSummary().toString())
             headers.set(X_ORIGINATING_URL, response.getInboundRequest().reconstructURI())
 
             if (response.getStatus() >= 400 && context.getError() != null) {
@@ -86,13 +85,17 @@ class ZuulResponseFilter extends HttpOutboundSyncFilter {
             }
 
             if (response.getStatus() >= 500) {
-                log.info("Passport: {}", CurrentPassport.fromSessionContext(context))
+                logger.info("Passport: {}", CurrentPassport.fromSessionContext(context))
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Filter execution summary :: {}", context.getFilterExecutionSummary())
             }
         }
 
         if (context.debugRequest()) {
-            Debug.getRequestDebug(context).forEach({ s -> log.info("REQ_DEBUG: " + s) })
-            Debug.getRoutingDebug(context).forEach({ s -> log.info("ZUUL_DEBUG: " + s) })
+            Debug.getRequestDebug(context).forEach({ s -> logger.info("REQ_DEBUG: " + s) })
+            Debug.getRoutingDebug(context).forEach({ s -> logger.info("ZUUL_DEBUG: " + s) })
         }
 
         return response
