@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul;
 
+import static java.util.Objects.requireNonNull;
+
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import java.io.File;
@@ -58,4 +60,9 @@ public interface FilterLoader {
 
     Comparator<ZuulFilter<?, ?>> FILTER_COMPARATOR =
             Comparator.<ZuulFilter<?, ?>>comparingInt(ZuulFilter::filterOrder).thenComparing(ZuulFilter::filterName);
+
+    Comparator<Class<? extends ZuulFilter<?, ?>>> FILTER_CLASS_COMPARATOR =
+            Comparator.<Class<? extends ZuulFilter<?, ?>>>comparingInt(
+                    c ->  requireNonNull(c.getAnnotation(Filter.class), () -> "missing annotation: " + c).order())
+                    .thenComparing(Class::getName);
 }
