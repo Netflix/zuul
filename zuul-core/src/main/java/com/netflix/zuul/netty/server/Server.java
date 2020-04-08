@@ -99,6 +99,9 @@ public class Server
     private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS =
             new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
 
+    private static final DynamicBooleanProperty MANUAL_DISCOVERY_STATUS =
+            new DynamicBooleanProperty("zuul.server.netty.manual.discovery.status", true);
+
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
     private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
@@ -250,8 +253,10 @@ public class Server
 
         LOG.info("Binding to : " + listenAddress);
 
-        // Flag status as UP just before binding to the port.
-        serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
+        if (MANUAL_DISCOVERY_STATUS.get()) {
+            // Flag status as UP just before binding to the port.
+            serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
+        }
 
         // Bind and start to accept incoming connections.
         ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
@@ -393,10 +398,11 @@ public class Server
             // TODO(carl-mastrangelo): shutdown the netty servers accepting new connections.
             nettyServers.clear();
 
-            // Flag status as down.
-            // TODO - is this _only_ changing the local status? And therefore should we also implement a HealthCheckHandler
-            // that we can flag to return DOWN here (would that then update Discovery? or still be a delay?)
-            serverStatusManager.localStatus(InstanceInfo.InstanceStatus.DOWN);
+            if (MANUAL_DISCOVERY_STATUS.get()) {
+                // Flag status as down.
+                // that we can flag to return DOWN here (would that then update Discovery? or still be a delay?)
+                serverStatusManager.localStatus(InstanceInfo.InstanceStatus.DOWN);
+            }
 
             // Shutdown each of the client connections (blocks until complete).
             // NOTE: ClientConnectionsShutdown can also be configured to gracefully close connections when the
