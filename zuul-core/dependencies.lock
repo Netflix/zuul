@@ -8,30 +8,6 @@
             "locked": "2.9.8",
             "requested": "2.9.8"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
             "requested": "0.7.5"
@@ -106,29 +82,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -227,7 +183,7 @@
             "requested": "1.2.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -252,29 +208,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -377,7 +313,7 @@
             "requested": "1.2.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -410,29 +346,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -531,7 +447,7 @@
             "requested": "1.2.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -564,29 +480,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -701,7 +597,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -738,29 +634,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -875,7 +751,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -907,30 +783,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1006,29 +858,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1131,7 +963,7 @@
             "requested": "1.2.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1151,30 +983,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1254,29 +1062,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -1387,7 +1175,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {
@@ -1407,30 +1195,6 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
             "requested": "2.9.8"
-        },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -1510,29 +1274,9 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3",
+            "requested": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -1647,7 +1391,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.64",
+            "locked": "1.65",
             "requested": "1.+"
         },
         "org.codehaus.groovy:groovy-all": {

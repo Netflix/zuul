@@ -16,13 +16,13 @@
 
 package com.netflix.zuul;
 
-import com.google.inject.Inject;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * User: michaels@netflix.com
@@ -31,7 +31,8 @@ import javax.annotation.Nullable;
  */
 public class BasicRequestCompleteHandler implements RequestCompleteHandler
 {
-    @Inject @Nullable
+    @Inject
+    @Nullable
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override

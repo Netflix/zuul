@@ -15,11 +15,11 @@
  */
 package com.netflix.zuul.sample.push;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.netty.server.push.PushMessageSender;
 import com.netflix.zuul.netty.server.push.PushMessageSenderInitializer;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Author: Susheel Aroskar
