@@ -217,7 +217,7 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public ZuulMessage clone() {
-        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), headers.clone());
+        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), Headers.copyOf(headers));
         this.bodyChunks.forEach(chunk -> {
             chunk.retain();
             copy.bufferBodyContents(chunk);

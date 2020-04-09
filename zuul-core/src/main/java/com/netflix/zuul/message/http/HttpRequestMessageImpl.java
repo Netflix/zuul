@@ -359,7 +359,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public Cookies reParseCookies()
     {
         Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().get(HttpHeaderNames.COOKIE))
+        for (String aCookieHeader : getHeaders().getAll(HttpHeaderNames.COOKIE))
         {
             try {
                 if (CLEAN_COOKIES.get()) {
@@ -403,7 +403,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     {
         HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
-                queryParams.clone(), message.getHeaders().clone(), clientIp, scheme,
+                queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme,
                 port, serverName, clientRemoteAddress, immutable);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
@@ -413,10 +413,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     protected HttpRequestInfo copyRequestInfo()
     {
-        // Unlike clone(), we create immutable copies of the Headers and HttpQueryParams here.
+
         HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(),
                 protocol, method, path,
-                queryParams.immutableCopy(), message.getHeaders().immutableCopy(), clientIp, scheme,
+                queryParams.immutableCopy(),  Headers.copyOf(message.getHeaders()), clientIp, scheme,
                 port, serverName, clientRemoteAddress, true);
         req.setHasBody(hasBody());
         return req;

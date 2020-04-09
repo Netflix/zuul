@@ -17,12 +17,9 @@
 package com.netflix.zuul.message;
 
 /**
- * User: Mike Smith
- * Date: 7/29/15
- * Time: 1:06 PM
+ * Represents a single header from a {@link Headers} object.
  */
-public class Header implements Cloneable
-{
+public final class Header {
     private final HeaderName name;
     private final String value;
 
@@ -33,45 +30,44 @@ public class Header implements Cloneable
         this.value = value;
     }
 
-    public String getKey()
-    {
+    public String getKey() {
         return name.getName();
     }
 
-    public HeaderName getName()
-    {
+    public HeaderName getName() {
         return name;
     }
 
-    public String getValue()
-    {
+    public String getValue() {
         return value;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Header header = (Header) o;
 
-        if (!name.equals(header.name)) return false;
+        if (!name.equals(header.name)) {
+            return false;
+        }
         return !(value != null ? !value.equals(header.value) : header.value != null);
-
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = name.hashCode();
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format("%s: %s", name, value);
     }
 }
