@@ -42,6 +42,8 @@ public class HeadersTest {
         headers2.add("Via", "duct");
 
         Truth.assertThat(headers.getAll("Via")).isEmpty();
+        Truth.assertThat(headers2.size()).isEqualTo(2);
+        Truth.assertThat(headers2.getAll("Content-Length")).containsExactly("5");
     }
 
     @Test
