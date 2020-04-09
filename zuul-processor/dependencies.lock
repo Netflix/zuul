@@ -1,30 +1,4 @@
 {
-    "compile": {
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        }
-    },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -42,47 +16,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -240,47 +178,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -439,7 +341,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -479,47 +381,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -685,47 +551,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -892,7 +722,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -935,47 +765,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -1142,7 +936,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -1165,32 +959,6 @@
             "locked": "1.7.30"
         }
     },
-    "runtime": {
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        }
-    },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -1211,47 +979,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -1410,7 +1142,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -1445,47 +1177,11 @@
             ],
             "locked": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
-            ],
-            "locked": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
-            ],
-            "locked": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
-            ],
-            "locked": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
-            ],
-            "locked": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
-            ],
-            "locked": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-processor"
+                "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -1650,7 +1346,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -1663,32 +1359,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.7.30"
-        }
-    },
-    "testCompile": {
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
         }
     },
     "testCompileClasspath": {
@@ -1708,47 +1378,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -1894,32 +1528,6 @@
             "locked": "1.7.25"
         }
     },
-    "testRuntime": {
-        "com.google.inject.extensions:guice-assistedinject": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject:guice": {
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        }
-    },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -1940,47 +1548,11 @@
             "locked": "28.1-jre",
             "requested": "28.1-jre"
         },
-        "com.google.inject.extensions:guice-assistedinject": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-grapher": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-multibindings": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-servlet": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
-        "com.google.inject.extensions:guice-throwingproviders": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
-        },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.2.2",
-            "requested": "4.2.2"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -2147,7 +1719,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.64"
+            "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [

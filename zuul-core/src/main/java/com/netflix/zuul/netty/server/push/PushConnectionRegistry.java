@@ -15,13 +15,13 @@
  */
 package com.netflix.zuul.netty.server.push;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * Maintains client identity to web socket or SSE channel mapping.

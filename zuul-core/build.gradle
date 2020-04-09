@@ -37,6 +37,8 @@ dependencies {
     implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
     runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
 
+    api(group: 'com.google.inject', name: 'guice', version: "4.2.3")
+
     // To ensure that zuul-netty gets this correct later version.
     compile "com.netflix.governator:governator:1.+"
     compile "com.netflix.governator:governator-core:1.+"
