@@ -43,7 +43,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  *
  * @author Mike Smith
  */
-@Filter(order = 101, type = FilterType.OUTBOUND)
+@Filter(order = 110, type = FilterType.OUTBOUND)
 public class GZipResponseFilter extends HttpOutboundSyncFilter
 {
     private static DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty("zuul.gzip.contenttypes",
