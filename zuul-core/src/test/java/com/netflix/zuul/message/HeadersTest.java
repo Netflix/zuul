@@ -22,7 +22,12 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.truth.Truth;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,6 +109,21 @@ public class HeadersTest {
         headers.add("Cookie", "frizzle=frazzle");
 
         Truth.assertThat(headers.getFirst(new HeaderName("Date"), "tuesday")).isEqualTo("tuesday");
+    }
+
+    @Test
+    public void forEachNormalised() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Cookie", "frizzle=Frazzle");
+        Map<String, List<String>> result = new LinkedHashMap<>();
+
+        headers.forEachNormalised((k, v) -> result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
+
+        Truth.assertThat(result).containsExactly(
+                "via", Collections.singletonList("duct"),
+                "cookie", Arrays.asList("this=that", "frizzle=Frazzle")).inOrder();
     }
 
     @Test

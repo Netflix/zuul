@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -146,6 +147,17 @@ public final class Headers {
             return Collections.emptyList();
         } else {
             return Collections.unmodifiableList(results);
+        }
+    }
+
+    /**
+     * Iterates over the header entries with the given consumer.  The first argument will be the normalised header
+     * name as returned by {@link HeaderName#getNormalised()}.  The second argument will be the value.  Do not modify
+     * the headers during iteration.
+     */
+    public void forEachNormalised(BiConsumer<? super String, ? super String> entryConsumer) {
+        for (int i = 0; i < size(); i++) {
+            entryConsumer.accept(name(i), value(i));
         }
     }
 
@@ -433,7 +445,7 @@ public final class Headers {
     private Map<String, List<String>> asMap() {
         Map<String, List<String>> map = new LinkedHashMap<>(size());
         for (int i = 0; i < size(); i++) {
-            map.computeIfAbsent(name(i), k -> new ArrayList<>()).add(value(i));
+            map.computeIfAbsent(name(i), k -> new ArrayList<>(1)).add(value(i));
         }
         // Return an unwrapped collection since it should not ever be returned on the API.
         return map;
