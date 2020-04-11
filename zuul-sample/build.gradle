@@ -3,12 +3,14 @@ apply plugin: "java"
 apply plugin: 'application'
 
 dependencies {
-    compile project(":zuul-core")
+    implementation project(":zuul-core")
+    implementation "com.netflix.eureka:eureka-client:1.9.18"
+    implementation 'commons-configuration:commons-configuration:1.8'
 
     annotationProcessor project(":zuul-processor")
 
-    runtime 'org.apache.logging.log4j:log4j-core:2.13.1'
-    runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.13.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
 
 }
 

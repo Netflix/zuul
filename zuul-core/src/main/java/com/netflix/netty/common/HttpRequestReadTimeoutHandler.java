@@ -56,9 +56,6 @@ public class HttpRequestReadTimeoutHandler extends ChannelInboundHandlerAdapter
     /**
      * Factory which ensures that this handler is added to the pipeline using the
      * correct name.
-     *
-     * @param timeout
-     * @param unit
      */
     public static void addLast(ChannelPipeline pipeline, long timeout, TimeUnit unit, BasicCounter httpRequestReadTimeoutCounter)
     {

@@ -51,6 +51,8 @@ subprojects {
 
     tasks.withType(Javadoc).each {
         it.classpath = sourceSets.main.compileClasspath
+        // Ignore Javadoc warnings for now, re-enable after Zuul 3.
+        it.options.addStringOption('Xdoclint:none', '-quiet')
     }
 
     ext {
