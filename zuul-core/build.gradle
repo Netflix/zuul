@@ -2,27 +2,28 @@ apply plugin: "com.google.osdetector"
 apply plugin: "java-library"
 
 dependencies {
-    compile 'commons-configuration:commons-configuration:1.8'
+    implementation 'commons-configuration:commons-configuration:1.8'
     implementation libraries.guava
-    compile "org.codehaus.groovy:groovy-all:${versions_groovy}"
+    api "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
-    compile 'com.fasterxml.jackson.core:jackson-core:2.9.8'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 
-    compile "com.netflix.archaius:archaius-core:0.7.5"
-    compile "com.netflix.servo:servo-core:0.7.2"
-    compile "com.netflix.spectator:spectator-api:0.103.0"
-    compile "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
+    api "com.netflix.archaius:archaius-core:0.7.5"
+    api "com.netflix.servo:servo-core:0.7.2"
+    api "com.netflix.spectator:spectator-api:0.103.0"
+    api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
-    compile "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
-    compile "com.netflix.ribbon:ribbon-httpclient:${versions_ribbon}"
-    compile "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
-    compile "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
-    compile "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
-    compile "com.netflix.eureka:eureka-client:1.9.18"
-    compile "io.reactivex:rxjava:1.2.1"
+    api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
+    api "com.netflix.ribbon:ribbon-httpclient:${versions_ribbon}"
+    api "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
+    api "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
+    api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
+    // TODO(carl-mastrangelo): this is not actually needed, but it is pulling in API deps.  Remove it.
+    api "com.netflix.eureka:eureka-client:1.9.18"
+    api "io.reactivex:rxjava:1.2.1"
 
     // TODO(carl-mastrangelo): some of these could probably be implementation.   Do a deeper check.
     api "io.netty:netty-common:${versions_netty}"
@@ -40,12 +41,12 @@ dependencies {
     api(group: 'com.google.inject', name: 'guice', version: "4.2.3")
 
     // To ensure that zuul-netty gets this correct later version.
-    compile "com.netflix.governator:governator:1.+"
-    compile "com.netflix.governator:governator-core:1.+"
+    api "com.netflix.governator:governator:1.+"
+    api "com.netflix.governator:governator-core:1.+"
 
     implementation 'io.perfmark:perfmark-api:0.21.0'
 
-    testCompile "com.netflix.governator:governator-test-junit:1.+"
+    testImplementation "com.netflix.governator:governator-test-junit:1.+"
     testImplementation libraries.junit,
             libraries.truth
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.29'

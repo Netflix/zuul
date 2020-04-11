@@ -204,12 +204,6 @@
         }
     },
     "compileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -232,7 +226,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -298,10 +293,8 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -367,12 +360,6 @@
         }
     },
     "jmhCompileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -395,7 +382,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -461,10 +449,8 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -564,7 +550,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -633,7 +620,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -777,7 +765,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -846,7 +835,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -948,12 +938,6 @@
         }
     },
     "testCompileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -976,7 +960,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1042,10 +1027,8 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -1137,7 +1120,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.9.18"
+            "locked": "1.9.18",
+            "requested": "1.9.18"
         },
         "com.netflix.governator:governator": {
             "firstLevelTransitive": [
@@ -1206,7 +1190,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.8"
+            "locked": "1.8",
+            "requested": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [

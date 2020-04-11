@@ -1,11 +1,5 @@
 {
     "compileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -96,12 +90,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -167,12 +155,6 @@
         }
     },
     "jmhCompileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -263,12 +245,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -950,12 +926,6 @@
         }
     },
     "testCompileClasspath": {
-        "com.fasterxml.jackson.core:jackson-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.9.8"
-        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1050,12 +1020,6 @@
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
-        },
-        "commons-configuration:commons-configuration": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
