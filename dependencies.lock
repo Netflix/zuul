@@ -17,16 +17,6 @@
             "requested": "1.21"
         }
     },
-    "jmhRuntime": {
-        "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
-        },
-        "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
-        }
-    },
     "jmhRuntimeClasspath": {
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
