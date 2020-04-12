@@ -32,6 +32,7 @@ public class ChannelConfig implements Cloneable
         parameters = new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     public ChannelConfig(HashMap<ChannelConfigKey, ChannelConfigValue> parameters)
     {
         this.parameters = (HashMap<ChannelConfigKey, ChannelConfigValue>) parameters.clone();
@@ -47,6 +48,7 @@ public class ChannelConfig implements Cloneable
         this.parameters.put(key, new ChannelConfigValue<>(key, value));
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T get(ChannelConfigKey<T> key)
     {
         ChannelConfigValue<T> ccv = parameters.get(key);
@@ -59,6 +61,7 @@ public class ChannelConfig implements Cloneable
         return value;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> ChannelConfigValue<T> getConfig(ChannelConfigKey<T> key)
     {
         return (ChannelConfigValue<T>) parameters.get(key);

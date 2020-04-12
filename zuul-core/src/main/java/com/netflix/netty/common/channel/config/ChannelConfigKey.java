@@ -16,6 +16,8 @@
 
 package com.netflix.netty.common.channel.config;
 
+import java.util.Objects;
+
 /**
  * User: michaels@netflix.com
  * Date: 2/8/17
@@ -59,5 +61,26 @@ public class ChannelConfigKey<T>
                 "key='" + key + '\'' +
                 ", defaultValue=" + defaultValue +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof ChannelConfigKey))
+        {
+            return false;
+        }
+        ChannelConfigKey<?> that = (ChannelConfigKey<?>) o;
+        return key.equals(that.key);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(key);
     }
 }
