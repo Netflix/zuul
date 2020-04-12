@@ -2,7 +2,7 @@ apply plugin: "com.google.osdetector"
 apply plugin: "java-library"
 
 dependencies {
-    implementation 'commons-configuration:commons-configuration:1.8'
+
     implementation libraries.guava
     api "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
@@ -38,16 +38,11 @@ dependencies {
     implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
     runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
 
-    api(group: 'com.google.inject', name: 'guice', version: "4.2.3")
-
-    // To ensure that zuul-netty gets this correct later version.
-    api "com.netflix.governator:governator:1.+"
-    api "com.netflix.governator:governator-core:1.+"
-
     implementation 'io.perfmark:perfmark-api:0.21.0'
+    implementation 'javax.inject:javax.inject:1'
 
-    testImplementation "com.netflix.governator:governator-test-junit:1.+"
     testImplementation libraries.junit,
+            libraries.mockito,
             libraries.truth
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.29'
 }
