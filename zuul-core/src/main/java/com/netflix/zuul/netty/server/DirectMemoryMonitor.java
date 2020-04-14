@@ -20,18 +20,16 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.servo.DefaultMonitorRegistry;
 import com.netflix.servo.monitor.LongGauge;
 import com.netflix.servo.monitor.MonitorConfig;
-import io.netty.util.internal.PlatformDependent;
-import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
 import java.lang.reflect.Field;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -102,7 +100,7 @@ public final class DirectMemoryMonitor
         DefaultMonitorRegistry.getInstance().register(maxMemoryGauge);
     }
 
-    @PostConstruct
+    @Inject
     public void init() {
         if (directMemoryLimitGetter == null || reservedMemoryGetter == null) {
             return;
