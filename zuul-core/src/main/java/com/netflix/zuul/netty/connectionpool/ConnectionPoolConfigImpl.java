@@ -139,4 +139,8 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.UseIPAddrForServer, true);
     }
 
+    @Override
+    public <T> T getProperty(IClientConfigKey<T> key, T defaultValue) {
+        return clientConfig.get(key, defaultValue);
+    }
 }

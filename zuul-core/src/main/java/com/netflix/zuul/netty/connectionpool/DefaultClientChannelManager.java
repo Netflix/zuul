@@ -113,7 +113,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         // Setup a listener for Discovery serverlist changes.
         this.loadBalancer.addServerListChangeListener(this::removeMissingServerConnectionPools);
 
-        this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
+        this.connPoolConfig = createConnectionPoolConfig(originName);
 
         this.createNewConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create", originName);
         this.createConnSucceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_success", originName);
@@ -132,17 +132,99 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", originName, new AtomicInteger());
     }
 
+    public ConnectionPoolConfig getConnPoolConfig() {
+        return connPoolConfig;
+    }
+
+
+
+    public Registry getSpectatorRegistry() {
+        return spectatorRegistry;
+    }
+
+    public String getVip() {
+        return vip;
+    }
+
+    public static Throwable getShuttingDownErr() {
+        return SHUTTING_DOWN_ERR;
+    }
+
+    public boolean isShuttingDown() {
+        return shuttingDown;
+    }
+
+    public Counter getCreateNewConnCounter() {
+        return createNewConnCounter;
+    }
+
+    public Counter getCreateConnSucceededCounter() {
+        return createConnSucceededCounter;
+    }
+
+    public Counter getCreateConnFailedCounter() {
+        return createConnFailedCounter;
+    }
+
+    public Counter getCloseConnCounter() {
+        return closeConnCounter;
+    }
+
+    public Counter getRequestConnCounter() {
+        return requestConnCounter;
+    }
+
+    public Counter getReuseConnCounter() {
+        return reuseConnCounter;
+    }
+
+    public Counter getReleaseConnCounter() {
+        return releaseConnCounter;
+    }
+
+    public Counter getAlreadyClosedCounter() {
+        return alreadyClosedCounter;
+    }
+
+    public Counter getConnTakenFromPoolIsNotOpen() {
+        return connTakenFromPoolIsNotOpen;
+    }
+
+    public Counter getMaxConnsPerHostExceededCounter() {
+        return maxConnsPerHostExceededCounter;
+    }
+
+    public Counter getCloseWrtBusyConnCounter() {
+        return closeWrtBusyConnCounter;
+    }
+
+    public PercentileTimer getConnEstablishTimer() {
+        return connEstablishTimer;
+    }
+
+    public NettyClientConnectionFactory getClientConnFactory() {
+        return clientConnFactory;
+    }
+
+    public OriginChannelInitializer getChannelInitializer() {
+        return channelInitializer;
+    }
+
     @Override
     public void init()
     {
         // Load channel initializer and conn factory.
         // We don't do this within the constructor because some subclass may not be initialized until post-construct.
-        this.channelInitializer = createChannelInitializer(clientConfig, connPoolConfig, spectatorRegistry);
-        this.clientConnFactory = createNettyClientConnectionFactory(connPoolConfig, channelInitializer);
+        this.channelInitializer = createChannelInitializer(getClientConfig(), getConnPoolConfig(), getSpectatorRegistry());
+        this.clientConnFactory = createNettyClientConnectionFactory(getConnPoolConfig(), getChannelInitializer());
     }
 
     protected OriginChannelInitializer createChannelInitializer(IClientConfig clientConfig, ConnectionPoolConfig connPoolConfig, Registry registry) {
         return new DefaultOriginChannelInitializer(connPoolConfig, registry);
+    }
+
+    protected ConnectionPoolConfig createConnectionPoolConfig(String originName) {
+        return new ConnectionPoolConfigImpl(originName, getClientConfig());
     }
 
     protected NettyClientConnectionFactory createNettyClientConnectionFactory(ConnectionPoolConfig connPoolConfig,
@@ -173,11 +255,11 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         Set<Server> removedSet = Sets.difference(oldSet, newSet);
 
         if (!removedSet.isEmpty()) {
-            LOG.debug("Removing connection pools for missing servers. vip = " + this.vip
+            LOG.debug("Removing connection pools for missing servers. vip = " + getVip()
                     + ". " + removedSet.size() + " servers gone.");
 
             for (Server s : removedSet) {
-                IConnectionPool pool = perServerPools.remove(s);
+                IConnectionPool pool = getPerServerPools().remove(s);
                 if (pool != null) {
                     pool.shutdown();
                 }
@@ -192,7 +274,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public boolean isAvailable() {
-        return !loadBalancer.getReachableServers().isEmpty();
+        return !this.getLoadBalancer().getReachableServers().isEmpty();
     }
 
     @Override
@@ -202,16 +284,16 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public int getInflightRequestsCount() {
-        return this.channelInitializer.getHttpMetricsHandler().getInflightRequestsCount();
+        return this.getChannelInitializer().getHttpMetricsHandler().getInflightRequestsCount();
     }
 
     @Override
     public void shutdown() {
         this.shuttingDown = true;
 
-        loadBalancer.shutdown();
+        this.getLoadBalancer().shutdown();
 
-        for (IConnectionPool pool : perServerPools.values()) {
+        for (IConnectionPool pool : this.getPerServerPools().values()) {
             pool.shutdown();
         }
     }
@@ -220,14 +302,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public boolean release(final PooledConnection conn) {
 
         conn.stopRequestTimer();
-        releaseConnCounter.increment();
+        this.getReleaseConnCounter().increment();
         connsInUse.decrementAndGet();
 
         final ServerStats stats = conn.getServerStats();
         stats.decrementActiveRequestsCount();
         stats.incrementNumRequests();
 
-        if (shuttingDown) {
+        if (this.isShuttingDown()) {
             return false;
         }
 
@@ -235,7 +317,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         if (conn.isShouldClose() ||
                 // if the connection has been around too long (i.e. too many requests), then close it
-                conn.getUsageCount() > connPoolConfig.getMaxRequestsPerConnection()) {
+                conn.getUsageCount() > this.getConnPoolConfig().getMaxRequestsPerConnection()) {
 
             // Close and discard the connection, as it has been flagged (possibly due to receiving a non-channel error like a 503).
             conn.setInPool(false);
@@ -248,7 +330,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
         else if (!conn.isActive()) {
             // Connection is already closed, so discard.
-            alreadyClosedCounter.increment();
+            getAlreadyClosedCounter().increment();
             // make sure to decrement OpenConnectionCounts
             conn.updateServerStats();
             conn.setInPool(false);
@@ -257,7 +339,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             releaseHandlers(conn);
 
             // Attempt to return connection to the pool.
-            IConnectionPool pool = perServerPools.get(conn.getServer());
+            IConnectionPool pool = getPerServerPools().get(conn.getServer());
             if (pool != null) {
                 released = pool.release(conn);
             }
@@ -282,7 +364,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         ChannelHandlerContext passportStateHttpClientHandlerCtx =
                 pipeline.context(PassportStateHttpClientHandler.OutboundHandler.class);
         pipeline.addAfter(passportStateHttpClientHandlerCtx.name(), IDLE_STATE_HANDLER_NAME,
-            new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
+            new IdleStateHandler(0, 0, this.getConnPoolConfig().getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
     public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
@@ -301,7 +383,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         // Attempt to remove the connection from the pool.
-        IConnectionPool pool = perServerPools.get(conn.getServer());
+        IConnectionPool pool = this.getPerServerPools().get(conn.getServer());
         if (pool != null) {
             return pool.remove(conn);
         }
@@ -327,14 +409,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             AtomicReference<Server> selectedServer,
             AtomicReference<String> selectedHostAddr) {
 
-        if (shuttingDown) {
+        if (isShuttingDown()) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(SHUTTING_DOWN_ERR);
             return promise;
         }
 
         // Choose the next load-balanced server.
-        final Server chosenServer = loadBalancer.chooseServer(key);
+        final Server chosenServer = this.getLoadBalancer().chooseServer(key);
         if (chosenServer == null) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(new OriginConnectException("No servers available", OutboundErrorType.NO_AVAILABLE_SERVERS));
@@ -391,9 +473,10 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             serverAddr = new InetSocketAddress(ipAddr, port);
         } catch (IllegalArgumentException e1) {
             LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
+            String originName = this.getConnPoolConfig().getOriginName();
             Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
                     "unresolvedDiscoveryHost",
-                    connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
+                    originName == null ? "unknownOrigin" : originName);
             unresolvedDiscoveryHost.increment();
             try {
                 serverAddr = new InetSocketAddress(rawHost, port);
@@ -407,19 +490,19 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         selectedServer.set(chosenServer);
 
         // Now get the connection-pool for this server.
-        IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
+        IConnectionPool pool = getPerServerPools().computeIfAbsent(chosenServer, s -> {
             // Get the stats from LB for this server.
-            LoadBalancerStats lbStats = loadBalancer.getLoadBalancerStats();
+            LoadBalancerStats lbStats = getLoadBalancer().getLoadBalancerStats();
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
 
             final ClientChannelManager clientChannelMgr = this;
-            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, instanceInfo, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
+            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, instanceInfo, stats, clientChannelMgr, this.getCloseConnCounter(), this.getCloseWrtBusyConnCounter());
 
             // Create a new pool for this server.
-            return createConnectionPool(chosenServer, stats, instanceInfo, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
-                    clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
-                    requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, maxConnsPerHostExceededCounter,
-                    connEstablishTimer, connsInPool, connsInUse);
+            return createConnectionPool(chosenServer, stats, instanceInfo, finalServerAddr, this.getClientConnFactory(), pcf, this.getConnPoolConfig(),
+                    this.getClientConfig(), this.getCreateNewConnCounter(), this.getCreateConnSucceededCounter(), this.getCreateConnFailedCounter(),
+                    this.getRequestConnCounter(), this.getReuseConnCounter(), this.getConnTakenFromPoolIsNotOpen(), this.getMaxConnsPerHostExceededCounter(),
+                    this.getConnEstablishTimer(), connsInPool, connsInUse);
         });
 
         return pool.acquire(eventLoop, passport, selectedHostAddr);

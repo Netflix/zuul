@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.client.config.IClientConfigKey;
+
 /**
  * Created by saroskar on 3/24/16.
  */
@@ -55,4 +57,6 @@ public interface ConnectionPoolConfig {
     boolean isSecure();
 
     boolean useIPAddrForServer();
+
+    <T> T getProperty(IClientConfigKey<T> key, T defaultValue);
 }
