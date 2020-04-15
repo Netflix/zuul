@@ -75,7 +75,10 @@ public class BaseSslContextFactory implements SslContextFactory {
             ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
 
-            LOG.warn("Using SslProvider of type - " + sslProvider.name() + " for certChainFile - " + serverSslConfig.getCertChainFile());
+            LOG.debug(
+                    "Using SslProvider of type {} for certChainFile  {}",
+                    sslProvider.name(),
+                    serverSslConfig.getCertChainFile());
 
             InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile());
             InputStream keyInput = getKeyInputStream();
