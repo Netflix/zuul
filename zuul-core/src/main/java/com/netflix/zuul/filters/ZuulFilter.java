@@ -17,7 +17,9 @@ package com.netflix.zuul.filters;
 
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.netty.filter.BaseZuulFilterRunner;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.util.concurrent.Promise;
 import rx.Observable;
 
 /**
@@ -66,8 +68,23 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
 
     /**
      * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+     *
+     * @deprecated implement {@link #filterAsync(Promise, ZuulMessage)} instead.
      */
-    Observable<O> applyAsync(I input);
+    @Deprecated
+    default Observable<O> applyAsync(I input) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * This is the main filter function.  Override this method to implement the filter logic.
+     * The passed in {@code promise} should be set with either success or failure to continue the
+     * filter chain.  Callers should invoke {@link Promise#trySuccess(Object)} and
+     * {@link Promise#tryFailure(Throwable)}, as the promise may be cancelled out of band.
+     */
+    default void filterAsync(Promise<? super O> promise, I input) {
+        FilterHelper.observerToPromise(promise, applyAsync(input));
+    }
 
     /**
      * Called by zuul filter after request is processed by this filter.
