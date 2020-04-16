@@ -134,6 +134,8 @@ public class PerServerConnectionPool implements IConnectionPool
         return niwsClientConfig;
     }
 
+    public SocketAddress getServerAddr() { return this.serverAddr; }
+
     @Override
     public boolean isAvailable()
     {

@@ -407,7 +407,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         selectedServer.set(chosenServer);
 
         // Now get the connection-pool for this server.
-        IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
+        IConnectionPool pool = getPerServerPoolsByAddress(chosenServer, finalServerAddr).computeIfAbsent(chosenServer, s -> {
             // Get the stats from LB for this server.
             LoadBalancerStats lbStats = loadBalancer.getLoadBalancerStats();
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
@@ -478,7 +478,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return this.loadBalancer.getClientConfig();
     }
 
-    protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() {
+    protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() { return perServerPools; }
+
+    protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPoolsByAddress(Server chosenServer, SocketAddress finalServerAddr) {
+        IConnectionPool currentServerPool = perServerPools.get(chosenServer);
+        if(finalServerAddr != null && currentServerPool != null && !currentServerPool.getServerAddr().equals(finalServerAddr)){
+            perServerPools.remove(chosenServer);
+        }
         return perServerPools;
     }
 }
