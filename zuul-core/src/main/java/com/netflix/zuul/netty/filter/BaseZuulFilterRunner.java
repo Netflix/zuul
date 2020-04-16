@@ -47,6 +47,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.Link;
@@ -244,6 +245,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 PerfMark.stopTask(filter.filterName(), "filterAsync");
             }
 
+            // This is an optimization.  Some filters are async some of the time, but mostly sync (such as filters that
+            // return cached results.
             if (promise.isSuccess()) {
                 // we haven't added any listener yet, so it's safe to assume the filter methods.  We only handle
                 // success here, and punt failures to the listener to simplify the implementation.
@@ -392,10 +395,11 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         }
     }
 
-    private final class FilterChainResumer implements GenericFutureListener<Future<O>> {
+    private final class FilterChainResumer implements FutureListener<O> {
         private final I inMsg;
         private final ZuulFilter<I, O> filter;
-        private @Nullable ZuulMessage snapshot;
+        @Nullable
+        private ZuulMessage snapshot;
         private final long startTime;
 
         FilterChainResumer(I inMsg, ZuulFilter<I, O> filter, @Nullable ZuulMessage snapshot, long startTime) {
