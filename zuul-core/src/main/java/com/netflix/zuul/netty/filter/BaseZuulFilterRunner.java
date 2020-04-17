@@ -54,6 +54,7 @@ import io.perfmark.Link;
 import io.perfmark.PerfMark;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import org.slf4j.Logger;
@@ -74,13 +75,26 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     private static final Logger logger = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
 
     private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME = new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
+    private final Consumer<? super I> asyncDetach;
+    private final Consumer<? super O> asyncAttach;
 
-
+    /**
+     * Use {@link #BaseZuulFilterRunner(FilterType, FilterUsageNotifier, FilterRunner, Consumer, Consumer)} instead.
+     */
+    @Deprecated
     protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage) {
+        this(filterType, usageNotifier, nextStage, in -> {}, out -> {});
+    }
+
+    protected BaseZuulFilterRunner(
+            FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage,
+            Consumer<? super I> asyncDetach, Consumer<? super O> asyncAttach) {
         this.usageNotifier = Preconditions.checkNotNull(usageNotifier, "filter usage notifier");
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
         this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";
+        this.asyncDetach = Objects.requireNonNull(asyncDetach, "asyncDetach");
+        this.asyncAttach = Objects.requireNonNull(asyncAttach, "asyncAttach");
     }
 
     public static final ChannelHandlerContext getChannelHandlerContext(final ZuulMessage mesg) {
@@ -256,7 +270,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
             }
-
+            asyncDetach.accept(inMesg);
             promise.addListener(new FilterChainResumer(inMesg, filter, snapshot, startTime));
 
             return null;  //wait for the async filter to finish
@@ -425,6 +439,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 if (outMsg == null) {
                     outMsg = filter.getDefaultOutput(inMsg);
                 }
+                asyncAttach.accept(outMsg);
                 resumeInBindingContext(outMsg, filter.filterName());
             } catch (RuntimeException e) {
                 handleException(inMsg, filter.filterName(), e);
@@ -435,8 +450,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private void handleFailure(Throwable t) {
             try {
                 recordFilterCompletion(FAILED, filter, startTime, inMsg, snapshot);
-                final O outMesg = handleFilterException(inMsg, filter, t);
-                resumeInBindingContext(outMesg, filter.filterName());
+                final O outMsg = handleFilterException(inMsg, filter, t);
+                asyncAttach.accept(outMsg);
+                resumeInBindingContext(outMsg, filter.filterName());
             } catch (RuntimeException e) {
                 handleException(inMsg, filter.filterName(), e);
             }
