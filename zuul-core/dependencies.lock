@@ -9,8 +9,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -131,8 +131,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.5",
@@ -253,8 +253,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -395,8 +395,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6",
@@ -513,8 +513,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -639,8 +639,8 @@
             "requested": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
