@@ -35,7 +35,9 @@ subprojects {
 
     license {
         ignoreFailures = false
-        exclude "META-INF/services/*"
+        excludes([
+                "**/src/main/resources/META-INF/services/*",
+                "**/src/main/resources/ssl/*"])
     }
 
     group = "com.netflix.${githubProjectName}"
