@@ -30,9 +30,6 @@ public abstract class BaseSyncFilter<I extends ZuulMessage, O extends ZuulMessag
      * in an Observable.
      *
      * A subclass filter should override this method if doing any IO.
-     *
-     * @param input
-     * @return
      */
     @Override
     public Observable<O> applyAsync(I input)

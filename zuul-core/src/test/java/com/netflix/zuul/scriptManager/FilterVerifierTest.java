@@ -127,13 +127,13 @@ public class FilterVerifierTest {
         Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
 
-        Object filter1 = FilterVerifier.INSTANCE.instanciateClass(filterClass);
+        Object filter1 = FilterVerifier.INSTANCE.instantiateClass(filterClass);
         FilterVerifier.INSTANCE.checkZuulFilterInstance(filter1);
 
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
 
-        Object filter2 = FilterVerifier.INSTANCE.instanciateClass(filterClass);
+        Object filter2 = FilterVerifier.INSTANCE.instantiateClass(filterClass);
         assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
     }
 

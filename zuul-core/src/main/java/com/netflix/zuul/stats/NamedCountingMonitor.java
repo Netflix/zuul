@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author mhawthorne
  */
-public class NamedCountingMonitor implements NamedCount{
+public class NamedCountingMonitor implements NamedCount {
 
 
     private final String name;
@@ -47,8 +47,7 @@ public class NamedCountingMonitor implements NamedCount{
     }
 
     /**
-     * reguisters this objects
-     * @return
+     * registers this objects
      */
     public NamedCountingMonitor register() {
         MonitorRegistry.getInstance().registerObject(this);
@@ -57,7 +56,6 @@ public class NamedCountingMonitor implements NamedCount{
 
     /**
      * increments the counter
-     * @return
      */
     public long increment() {
         return this.count.incrementAndGet();
@@ -69,7 +67,6 @@ public class NamedCountingMonitor implements NamedCount{
     }
 
     /**
-     *
      * @return the current count
      */
     public long getCount() {

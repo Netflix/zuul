@@ -171,11 +171,6 @@ public abstract class BaseServerStartup
      * First looks for a property specific to the named listen address of the form -
      * "server.${addrName}.${propertySuffix}". If none found, then looks for a server-wide property of the form -
      * "server.${propertySuffix}".  If that is also not found, then returns the specified default value.
-     *
-     * @param listenAddressName
-     * @param propertySuffix
-     * @param defaultValue
-     * @return
      */
     public static int chooseIntChannelProperty(String listenAddressName, String propertySuffix, int defaultValue) {
         String globalPropertyName = "server." + propertySuffix;

@@ -19,9 +19,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.ZuulApplicationInfo;
 import com.netflix.zuul.filters.BaseFilter;
 import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.control.CompilationFailedException;
 
 /**
- * verifies that the given source code is compilable in Groovy, can be instanciated, and is a ZuulFilter type
+ * verifies that the given source code is compilable in Groovy, can be instantiated, and is a ZuulFilter type
  *
  * @author Mikey Cohen
  *         Date: 6/12/12
@@ -41,16 +42,12 @@ public class FilterVerifier {
     /**
      * verifies compilation, instanciation and that it is a ZuulFilter
      *
-     * @param sFilterCode
      * @return a FilterInfo object representing that code
-     * @throws org.codehaus.groovy.control.CompilationFailedException
-     *
-     * @throws IllegalAccessException
-     * @throws InstantiationException
      */
-    public FilterInfo verifyFilter(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException, IllegalAccessException, InstantiationException {
-        Class groovyClass = compileGroovy(sFilterCode);
-        Object instance = instanciateClass(groovyClass);
+    public FilterInfo verifyFilter(String sFilterCode)
+            throws CompilationFailedException, IllegalAccessException, InstantiationException {
+        Class<?> groovyClass = compileGroovy(sFilterCode);
+        Object instance = instantiateClass(groovyClass);
         checkZuulFilterInstance(instance);
         BaseFilter filter = (BaseFilter) instance;
 
@@ -60,7 +57,7 @@ public class FilterVerifier {
         return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" + filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
     }
 
-    Object instanciateClass(Class groovyClass) throws InstantiationException, IllegalAccessException {
+    Object instantiateClass(Class<?> groovyClass) throws InstantiationException, IllegalAccessException {
         return groovyClass.newInstance();
     }
 
@@ -73,12 +70,9 @@ public class FilterVerifier {
     /**
      * compiles the Groovy source code
      *
-     * @param sFilterCode
-     * @return
-     * @throws org.codehaus.groovy.control.CompilationFailedException
-     *
      */
-    public Class compileGroovy(String sFilterCode) throws org.codehaus.groovy.control.CompilationFailedException {
+    public Class<?> compileGroovy(String sFilterCode)
+            throws CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);
     }
