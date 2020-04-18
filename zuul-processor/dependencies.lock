@@ -7,8 +7,8 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -144,8 +144,8 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -290,8 +290,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -486,8 +486,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -667,7 +667,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-processor"
             ],
-            "locked": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -843,8 +843,8 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -989,8 +989,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
