@@ -365,8 +365,8 @@
             "requested": "2.4.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.3.3",
+            "requested": "3.+"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
@@ -621,8 +621,8 @@
             "requested": "2.4.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.3.3",
+            "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
@@ -751,8 +751,8 @@
             "requested": "2.4.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.3.3",
+            "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
