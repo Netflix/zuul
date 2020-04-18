@@ -40,7 +40,6 @@ public abstract class PushMessageFactory {
 
     /**
      * Message server sends to the client just before it force closes connection from its side
-     * @return
      */
     protected abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
 

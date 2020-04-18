@@ -60,7 +60,6 @@ public class RequestAttempts extends ArrayList<RequestAttempt>
 
     /**
      * This is only intended for use when running on a blocking server (ie. tomcat).
-     * @return
      */
     public static RequestAttempts getThreadLocalInstance()
     {

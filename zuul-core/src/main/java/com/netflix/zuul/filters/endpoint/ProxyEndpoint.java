@@ -422,9 +422,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     /**
-     * Override to track your own request stats
-     *
-     * @return
+     * Override to track your own request stats.
      */
     protected RequestStat createRequestStat() {
         BasicRequestStat basicRequestStat = new BasicRequestStat(origin.getName());
@@ -1026,9 +1024,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      *
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
-     *
-     * @param request
-     * @return
      */
     protected NettyOrigin getOrigin(HttpRequestMessage request) {
         SessionContext context = request.getContext();

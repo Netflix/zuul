@@ -42,9 +42,6 @@ public class SamplePushAuthHandler extends PushAuthHandler {
 
     /**
      * We support only cookie based auth in this sample
-     * @param req
-     * @param ctx
-     * @return
      */
     @Override
     protected boolean isDelayedAuth(FullHttpRequest req, ChannelHandlerContext ctx) {

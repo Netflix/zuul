@@ -472,8 +472,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      *
      * The Host header may contain port, but in this method we strip it out for consistency - use the
      * getOriginalPort method for that.
-     *
-     * @return
      */
     @Override
     public String getOriginalHost() {

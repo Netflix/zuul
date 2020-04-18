@@ -198,7 +198,7 @@ public class ZuulMessageImpl implements ZuulMessage
     }
 
     @Override
-    public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
+    public void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter) {
         //Loop optimized for the common case: Most filters' processContentChunk() return
         // original chunk passed in as is without any processing
         for (int i=0; i < bodyChunks.size(); i++) {
@@ -227,12 +227,9 @@ public class ZuulMessageImpl implements ZuulMessage
 
     /**
      * Override this in more specific subclasses to add request/response info for logging purposes.
-     *
-     * @return
      */
     @Override
-    public String getInfoForLogging()
-    {
+    public String getInfoForLogging() {
         return "ZuulMessage";
     }
 }

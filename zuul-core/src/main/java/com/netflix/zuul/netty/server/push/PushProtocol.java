@@ -134,7 +134,6 @@ public enum PushProtocol {
     public abstract Object goAwayMessage();
     /**
      * Message server sends to the client just before it force closes connection from its side
-     * @return
      */
     public abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
 

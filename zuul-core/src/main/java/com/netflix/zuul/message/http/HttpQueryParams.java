@@ -107,9 +107,6 @@ public class HttpQueryParams implements Cloneable
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return null.
-     *
-     * @param name
-     * @return
      */
     public String getFirst(String name)
     {
@@ -139,9 +136,6 @@ public class HttpQueryParams implements Cloneable
 
     /**
      * Replace any/all entries with this key, with this single entry.
-     *
-     * @param name
-     * @param value
      */
     public void set(String name, String value)
     {

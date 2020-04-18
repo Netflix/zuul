@@ -93,8 +93,6 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     boolean needsBodyBuffered(I input);
 
     /**
-     * Optionally transform HTTP content chunk received
-     * @param chunk
-     * @return
+     * Optionally transform HTTP content chunk received.
      */
     HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk);}

@@ -207,8 +207,6 @@ public class BaseSslContextFactory implements SslContextFactory {
     /**
      * Can be overridden to implement your own decryption scheme.
      *
-     * @param trustStorePwdBytes
-     * @return
      */
     protected String getTruststorePassword(byte[] trustStorePwdBytes) {
         return new String(trustStorePwdBytes).trim();
@@ -216,9 +214,6 @@ public class BaseSslContextFactory implements SslContextFactory {
 
     /**
      * Can be overridden to implement your own decryption scheme.
-     *
-     * @return
-     * @throws IOException
      */
     protected InputStream getKeyInputStream() throws IOException {
         return new FileInputStream(serverSslConfig.getKeyFile());
