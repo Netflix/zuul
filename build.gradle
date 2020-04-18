@@ -35,7 +35,13 @@ subprojects {
 
     license {
         ignoreFailures = false
-        exclude "META-INF/services/*"
+        excludes([
+                "**/META-INF/services/javax.annotation.processing.Processor",
+                "**/META-INF/gradle/incremental.annotation.processors",
+                "**/*.cert",
+                "**/*.jks",
+                "**/*.key",
+        ])
     }
 
     group = "com.netflix.${githubProjectName}"
