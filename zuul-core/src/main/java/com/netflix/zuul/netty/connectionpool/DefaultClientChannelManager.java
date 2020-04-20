@@ -18,6 +18,7 @@ package com.netflix.zuul.netty.connectionpool;
 
 import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.net.InetAddresses;
@@ -341,68 +342,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             return promise;
         }
 
-        String rawHost;
-        int port;
-        InstanceInfo instanceInfo;
-        if (chosenServer instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
-            // Configuration for whether to use IP address or host has already been applied in the
-            // DiscoveryEnabledServer constructor.
-            rawHost = discoveryServer.getHost();
-            port = discoveryServer.getPort();
-            instanceInfo = discoveryServer.getInstanceInfo();
-            // TODO(carl-mastrangelo): pull the IPv6 addr from the instance info, if present.
-        } else {
-            // create mock instance info for non-discovery instances
-            rawHost = chosenServer.getHost();
-            port = chosenServer.getPort();
-            instanceInfo = new InstanceInfo(
-                    chosenServer.getId(),
-                    null,
-                    null,
-                    chosenServer.getHost(),
-                    chosenServer.getId(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
-        }
-
-        InetSocketAddress serverAddr;
-        try {
-            InetAddress ipAddr = InetAddresses.forString(rawHost);
-            serverAddr = new InetSocketAddress(ipAddr, port);
-        } catch (IllegalArgumentException e1) {
-            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
-            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
-                    "unresolvedDiscoveryHost",
-                    connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
-            unresolvedDiscoveryHost.increment();
-            try {
-                serverAddr = new InetSocketAddress(rawHost, port);
-            } catch (RuntimeException e2) {
-                e1.addSuppressed(e2);
-                throw e1;
-            }
-        }
-        final InetSocketAddress finalServerAddr = serverAddr;
+        SocketAddress finalServerAddr = pickAddress(chosenServer);
+        InstanceInfo instanceInfo = deriveInstanceInfo(chosenServer);
 
         selectedServer.set(chosenServer);
 
@@ -480,5 +421,89 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() {
         return perServerPools;
+    }
+
+    protected InstanceInfo deriveInstanceInfo(Server chosenServer) {
+        return deriveInstanceInfoInternal(chosenServer);
+    }
+
+    @VisibleForTesting
+    static InstanceInfo deriveInstanceInfoInternal(Server chosenServer) {
+        if (chosenServer instanceof DiscoveryEnabledServer) {
+            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
+            return discoveryServer.getInstanceInfo();
+        } else {
+            return new InstanceInfo(
+                    /* instanceId= */ chosenServer.getId(),
+                    /* appName= */ null,
+                    /* appGroupName= */ null,
+                    /* ipAddr= */ chosenServer.getHost(),
+                    /* sid= */ chosenServer.getId(),
+                    /* port= */ null,
+                    /* securePort= */ null,
+                    /* homePageUrl= */ null,
+                    /* statusPageUrl= */ null,
+                    /* healthCheckUrl= */ null,
+                    /* secureHealthCheckUrl= */ null,
+                    /* vipAddress= */ null,
+                    /* secureVipAddress= */ null,
+                    /* countryId= */ 0,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+        }
+    }
+
+    @VisibleForTesting
+    static SocketAddress pickAddressInternal(Server chosenServer, @Nullable String connPoolConfigOriginName) {
+        String rawHost;
+        int port;
+        if (chosenServer instanceof DiscoveryEnabledServer) {
+            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
+            // Configuration for whether to use IP address or host has already been applied in the
+            // DiscoveryEnabledServer constructor.
+            rawHost = discoveryServer.getHost();
+            port = discoveryServer.getPort();
+        } else {
+            // create mock instance info for non-discovery instances
+            rawHost = chosenServer.getHost();
+            port = chosenServer.getPort();
+        }
+
+        InetSocketAddress serverAddr;
+        try {
+            InetAddress ipAddr = InetAddresses.forString(rawHost);
+            serverAddr = new InetSocketAddress(ipAddr, port);
+        } catch (IllegalArgumentException e1) {
+            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
+            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
+                    "unresolvedDiscoveryHost",
+                    connPoolConfigOriginName == null ? "unknownOrigin" : connPoolConfigOriginName);
+            unresolvedDiscoveryHost.increment();
+            try {
+                serverAddr = new InetSocketAddress(rawHost, port);
+            } catch (RuntimeException e2) {
+                e1.addSuppressed(e2);
+                throw e1;
+            }
+        }
+
+        return serverAddr;
+    }
+
+    /**
+     * Given a server chosen from the load balancer, pick the appropriate address to connect to.
+     */
+    protected SocketAddress pickAddress(Server chosenServer) {
+        return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
     }
 }
