@@ -16,15 +16,12 @@
 
 package com.netflix.zuul.filters.processor;
 
-import static org.junit.Assert.assertEquals;
-
 import com.google.common.truth.Truth;
+import com.netflix.zuul.StaticFilterLoader;
 import com.netflix.zuul.filters.ZuulFilter;
-import com.netflix.zuul.filters.processor.override.MySubpackage;
 import com.netflix.zuul.filters.processor.override.SubpackageFilter;
 import com.netflix.zuul.filters.processor.subpackage.OverrideFilter;
-import com.netflix.zuul.filters.processor.subpackage.ProcessorSubpackageFilters;
-import java.util.List;
+import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,52 +33,16 @@ import org.junit.runners.JUnit4;
 public class FilterProcessorTest {
 
     @Test
-    public void allFilterClassedRecorded() {
-        List<? extends Class<? extends ZuulFilter<?, ?>>> filters = FiltersProcessorFilters.getFilters();
-        List<? extends Class<? extends ZuulFilter<?, ?>>> subpackage = ProcessorSubpackageFilters.getFilters();
-        List<? extends Class<? extends ZuulFilter<?, ?>>> override = MySubpackage.getFilters();
+    public void allFilterClassedRecorded() throws Exception {
+        Collection<Class<ZuulFilter<?, ?>>> filters =
+                StaticFilterLoader.loadFilterTypesFromResources(getClass().getClassLoader());
 
         Truth.assertThat(filters).containsExactly(
                 OuterClassFilter.class,
                 TopLevelFilter.class,
                 TopLevelFilter.StaticSubclassFilter.class,
-                TopLevelFilter.SubclassFilter.class);
-        Truth.assertThat(subpackage).containsExactly(OverrideFilter.class);
-        Truth.assertThat(override).containsExactly(SubpackageFilter.class);
-    }
-
-    @Test
-    public void deriveGeneratedClassName_emptyPackage() {
-        String className = FilterProcessor.deriveGeneratedClassName("");
-
-        assertEquals("Filters", className);
-    }
-
-    @Test
-    public void deriveGeneratedClassName_shortPackage() {
-        String className = FilterProcessor.deriveGeneratedClassName("somepackage");
-
-        assertEquals("SomepackageFilters", className);
-    }
-
-    @Test
-    public void deriveGeneratedClassName_twoPartPackage() {
-        String className = FilterProcessor.deriveGeneratedClassName("two.part");
-
-        assertEquals("TwoPartFilters", className);
-    }
-
-    @Test
-    public void deriveGeneratedClassName_threePartPackage() {
-        String className = FilterProcessor.deriveGeneratedClassName("packed.three.part");
-
-        assertEquals("ThreePartFilters", className);
-    }
-
-    @Test
-    public void deriveGeneratedClassName_underscorePackage() {
-        String className = FilterProcessor.deriveGeneratedClassName("packed.three_under.part");
-
-        assertEquals("ThreeUnderPartFilters", className);
+                TopLevelFilter.SubclassFilter.class,
+                OverrideFilter.class,
+                SubpackageFilter.class);
     }
 }
