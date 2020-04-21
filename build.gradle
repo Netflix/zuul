@@ -46,6 +46,8 @@ subprojects {
 
     group = "com.netflix.${githubProjectName}"
 
+    version = "0.1.8-SNAPSHOT"
+
     sourceCompatibility = '1.8'
 
     eclipse {
