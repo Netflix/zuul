@@ -17,24 +17,25 @@
 package com.netflix.zuul.filters.processor;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.CaseFormat;
-import com.google.common.base.Converter;
-import com.google.common.base.Splitter;
-import com.netflix.zuul.Filter;
-import com.netflix.zuul.Filter.FilterPackageName;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
@@ -42,127 +43,100 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
-import javax.tools.JavaFileObject;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 
 
-@SupportedAnnotationTypes({FilterProcessor.FILTER_TYPE, FilterProcessor.FILTER_PACKAGE_TYPE})
+@SupportedAnnotationTypes(FilterProcessor.FILTER_TYPE)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class FilterProcessor extends AbstractProcessor {
 
     static final String FILTER_TYPE = "com.netflix.zuul.Filter";
-    static final String FILTER_PACKAGE_TYPE = "com.netflix.zuul.Filter.FilterPackageName";
 
-    private final Map<String, Set<Element>> packageToElements = new TreeMap<>(String::compareTo);
-    private final Map<String, String> packageNameOverride = new HashMap<>();
+    private final Set<String> annotatedElements = new HashSet<>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<? extends Element> packageAnnotated = roundEnv.getElementsAnnotatedWith(FilterPackageName.class);
-        Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(Filter.class);
-        Elements elementUtils = processingEnv.getElementUtils();
-        for (Element pkg : packageAnnotated) {
-            assert pkg.getKind() == ElementKind.PACKAGE : pkg;
-            String name = String.valueOf(elementUtils.getPackageOf(pkg).getQualifiedName());
-            String override = pkg.getAnnotation(FilterPackageName.class).value();
-            packageNameOverride.put(name, override);
-        }
-
+        Set<? extends Element> annotated =
+                roundEnv.getElementsAnnotatedWith(processingEnv.getElementUtils().getTypeElement(FILTER_TYPE));
         for (Element el : annotated) {
             if (el.getModifiers().contains(Modifier.ABSTRACT)) {
                 continue;
             }
-            packageToElements.computeIfAbsent(
-                    String.valueOf(elementUtils.getPackageOf(el).getQualifiedName()), k -> new LinkedHashSet<>())
-                    .add(el);
+            annotatedElements.add(processingEnv.getElementUtils().getBinaryName((TypeElement) el).toString());
         }
 
-        // We can't check if processing is over, because we can't use the filer after that.
-        if (!packageToElements.isEmpty()) {
+        if (roundEnv.processingOver()) {
             try {
-                writeFiles(processingEnv.getFiler(), packageToElements, packageNameOverride);
-            } catch (Exception e) {
+                addNewClasses(processingEnv.getFiler(), annotatedElements);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             } finally {
-                packageToElements.clear();
-                packageNameOverride.clear();
+                annotatedElements.clear();
             }
         }
-
         return true;
     }
 
-    @VisibleForTesting
-    static void writeFile(Writer writer, String packageName, String className, Collection<? extends Element> elements)
-            throws IOException {
-        writer.write("package " + packageName + ";\n");
-        writer.write("\n");
-        writer.write("@javax.annotation.Generated(\"by: \\\"" + FilterProcessor.class.getName() + "\\\"\")\n");
-        writer.write("public final class " + className + " {\n");
-        writer.write("\n");
-        writer.write("    private " + className + "() {}\n");
-        writer.write("\n");
-        writer.write("    public static java.util.List<? extends java.lang.Class<\n");
-        writer.write("            ? extends com.netflix.zuul.filters.ZuulFilter<?, ?>>> getFilters() {\n");
-        writer.write("        return FILTERS;\n");
-        writer.write("    }\n");
-        writer.write("\n");
-        writer.write("    private static final java.util.List<? extends java.lang.Class<\n");
-        writer.write("            ? extends com.netflix.zuul.filters.ZuulFilter<?, ?>>> FILTERS =\n");
-        writer.write("        java.util.Collections.unmodifiableList(java.util.Arrays.asList(\n");
-        int i = 0;
-        for (Element element : elements) {
-            writer.write("                " + element + ".class");
-            if (++i < elements.size()) {
-                writer.write(',');
+    static void addNewClasses(Filer filer, Collection<String> elements) throws IOException {
+        String resourceName = "META-INF/zuul/allfilters";
+        List<String> existing = Collections.emptyList();
+        try {
+            FileObject existingFilters = filer.getResource(StandardLocation.CLASS_OUTPUT, "", resourceName);
+            try (InputStream is = existingFilters.openInputStream();
+                    InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                existing = readResourceFile(reader);
             }
-            writer.write('\n');
+        } catch (FileNotFoundException | NoSuchFileException e) {
+            // Perhaps log this.
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        writer.write("    ));\n");
-        writer.write("}\n");
-    }
 
-    private static void writeFiles(
-            Filer filer,
-            Map<String, Set<Element>> packageToElements,
-            Map<String, String> packageNameOverride) throws Exception {
-        for (Entry<String, Set<Element>> entry : packageToElements.entrySet()) {
-            String pkg = entry.getKey();
-            List<Element> elements = new ArrayList<>(entry.getValue());
-            String className;
-            if (packageNameOverride.containsKey(pkg)) {
-                className = packageNameOverride.get(pkg);
-            } else {
-                className = deriveGeneratedClassName(pkg);
+        int sizeBefore = existing.size();
+        Set<String> existingSet = new LinkedHashSet<>(existing);
+        List<String> newElements = new ArrayList<>(existingSet);
+        for (String element : elements) {
+            if (existingSet.add(element)) {
+                newElements.add(element);
             }
-            JavaFileObject source = filer.createSourceFile(pkg + "." +  className, elements.toArray(new Element[0]));
-            try (Writer writer = source.openWriter()) {
-                writeFile(writer, pkg, className, elements);
-            }
+        }
+        if (newElements.size() == sizeBefore) {
+            // nothing to do.
+            return;
+        }
+        newElements.sort(String::compareTo);
+
+        FileObject dest = filer.createResource(StandardLocation.CLASS_OUTPUT, "", resourceName);
+        try (OutputStream os = dest.openOutputStream();
+                OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+            writeResourceFile(osw, newElements);
         }
     }
 
     @VisibleForTesting
-    static String deriveGeneratedClassName(String packageName) {
-        Objects.requireNonNull(packageName, "packageName");
-        List<String> parts = Splitter.on('.').splitToList(packageName);
-        Converter<String, String> converter = CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.UPPER_CAMEL);
-        String baseName = "";
-        switch (parts.size()) {
-            default:
-                // fallthrough
-            case 2:
-                baseName += converter.convert(parts.get(parts.size() - 2));
-                // fallthrough
-            case 1:
-                baseName += converter.convert(parts.get(parts.size() - 1));
-                // fallthrough
-            case 0:
-                baseName += "Filters";
+    static List<String> readResourceFile(Reader reader) throws IOException {
+        BufferedReader br = new BufferedReader(reader);
+        String line;
+        List<String> lines = new ArrayList<>();
+        while ((line = br.readLine()) != null) {
+            if (line.trim().isEmpty()) {
+                continue;
+            }
+            lines.add(line);
         }
-        return baseName;
+        return Collections.unmodifiableList(lines);
+    }
+
+    @VisibleForTesting
+    static void writeResourceFile(Writer writer, Collection<?> elements) throws IOException {
+        BufferedWriter bw = new BufferedWriter(writer);
+        for (Object element : elements) {
+            bw.write(String.valueOf(element));
+            bw.newLine();
+        }
+        bw.flush();
     }
 }
