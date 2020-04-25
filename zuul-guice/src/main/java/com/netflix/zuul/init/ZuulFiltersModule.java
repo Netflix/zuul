@@ -20,13 +20,12 @@ import com.google.common.reflect.ClassPath;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.netflix.zuul.BasicFilterUsageNotifier;
-import com.netflix.zuul.DynamicCodeCompiler;
 import com.netflix.zuul.FilterFactory;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
-import com.netflix.zuul.groovy.GroovyCompiler;
 import com.netflix.zuul.guice.GuiceFilterFactory;
+import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,6 @@ public class ZuulFiltersModule extends AbstractModule {
     protected void configure() {
         LOG.info("Starting Groovy Filter file manager");
 
-        bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
         bind(FilterFactory.class).to(GuiceFilterFactory.class);
 
         bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
@@ -59,13 +57,15 @@ public class ZuulFiltersModule extends AbstractModule {
     }
 
     @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig(AbstractConfiguration config) {
+    FilterFileManagerConfig provideFilterFileManagerConfig(
+        AbstractConfiguration config, FilenameFilter filenameFilter) {
         // Get filter directories.
         String[] filterLocations = findFilterLocations(config);
         String[] filterClassNames = findClassNames(config);
 
         // Init the FilterStore.
-        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5);
+        FilterFileManagerConfig filterConfig =
+            new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
         return filterConfig;
     }
 

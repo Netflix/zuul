@@ -4,7 +4,6 @@ apply plugin: "java-library"
 dependencies {
 
     implementation libraries.guava
-    api "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk15on:1.+'

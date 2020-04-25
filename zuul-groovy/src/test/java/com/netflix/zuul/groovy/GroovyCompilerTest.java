@@ -24,6 +24,7 @@ import static org.mockito.Mockito.spy;
 import groovy.lang.GroovyObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
@@ -35,7 +36,7 @@ public class GroovyCompilerTest {
     @Test
     public void testLoadGroovyFromString() {
 
-        GroovyCompiler compiler = spy(new GroovyCompiler());
+        GroovyCompiler compiler = Mockito.spy(new GroovyCompiler());
 
         try {
 

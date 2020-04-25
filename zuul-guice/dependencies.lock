@@ -119,12 +119,6 @@
             ],
             "locked": "1.2.1"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
-        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -259,12 +253,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.2.1"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
@@ -467,12 +455,6 @@
             ],
             "locked": "1.65"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
-        },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
             "requested": "3.+"
@@ -666,12 +648,6 @@
             ],
             "locked": "1.65"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
-        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -810,12 +786,6 @@
         "junit:junit": {
             "locked": "4.13",
             "requested": "4.13"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
@@ -1013,12 +983,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "1.65"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "2.4.19"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
