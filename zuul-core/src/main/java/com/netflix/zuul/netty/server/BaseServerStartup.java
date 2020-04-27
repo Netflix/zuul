@@ -59,6 +59,7 @@ public abstract class BaseServerStartup
 
     protected final ServerStatusManager serverStatusManager;
     protected final Registry registry;
+    @SuppressWarnings("unused") // force initialization
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
     protected final EurekaClient discoveryClient;
@@ -108,8 +109,6 @@ public abstract class BaseServerStartup
                 GlobalEventExecutor.INSTANCE, discoveryClient);
 
         addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
-
-        directMemoryMonitor.init();
 
         server = new Server(
                 serverStatusManager,
