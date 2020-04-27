@@ -17,7 +17,6 @@ package com.netflix.zuul;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.config.DynamicIntProperty;
-import com.netflix.zuul.groovy.GroovyFileFilter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -207,10 +206,6 @@ public class FilterFileManager {
             this.classNames = classNames;
             this.pollingIntervalSeconds = pollingIntervalSeconds;
             this.filenameFilter = filenameFilter;
-        }
-
-        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds) {
-            this(directories, classNames, pollingIntervalSeconds, new GroovyFileFilter());
         }
 
         public String[] getDirectories() {

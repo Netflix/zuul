@@ -104,10 +104,6 @@
             "locked": "1.65",
             "requested": "1.+"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
-        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25",
             "requested": "1.7.25"
@@ -225,10 +221,6 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.65",
             "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
@@ -360,10 +352,6 @@
             "locked": "1.65",
             "requested": "1.+"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
-        },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
             "requested": "3.+"
@@ -494,10 +482,6 @@
             "locked": "1.65",
             "requested": "1.+"
         },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
-        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "requested": "1.7.25"
@@ -615,10 +599,6 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.65",
             "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
@@ -745,10 +725,6 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.65",
             "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",

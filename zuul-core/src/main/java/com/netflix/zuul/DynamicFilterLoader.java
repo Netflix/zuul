@@ -18,9 +18,7 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
-import com.netflix.zuul.filters.MutableFilterRegistry;
 import com.netflix.zuul.filters.ZuulFilter;
-import com.netflix.zuul.groovy.GroovyCompiler;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -50,14 +48,6 @@ public final class DynamicFilterLoader implements FilterLoader {
     private final DynamicCodeCompiler compiler;
 
     private final FilterFactory filterFactory;
-
-    /**
-     * TODO(carl-mastrangelo): remove this ctor as it creates an unwanted dependency on Groovy.
-     */
-    @Deprecated
-    public DynamicFilterLoader() {
-        this(new MutableFilterRegistry(), new GroovyCompiler(), new DefaultFilterFactory());
-    }
 
     @Inject
     public DynamicFilterLoader(

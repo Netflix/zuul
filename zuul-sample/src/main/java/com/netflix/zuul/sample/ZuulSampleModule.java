@@ -26,6 +26,7 @@ import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.BasicRequestCompleteHandler;
+import com.netflix.zuul.DynamicCodeCompiler;
 import com.netflix.zuul.DynamicFilterLoader;
 import com.netflix.zuul.FilterFileManager;
 import com.netflix.zuul.FilterLoader;
@@ -34,6 +35,8 @@ import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.context.ZuulSessionContextDecorator;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.MutableFilterRegistry;
+import com.netflix.zuul.groovy.GroovyCompiler;
+import com.netflix.zuul.groovy.GroovyFileFilter;
 import com.netflix.zuul.init.ZuulFiltersModule;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.ClientRequestReceiver;
@@ -41,6 +44,7 @@ import com.netflix.zuul.origins.BasicNettyOriginManager;
 import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
+import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 
 /**
@@ -59,6 +63,8 @@ public class ZuulSampleModule extends AbstractModule {
         }
 
         bind(AbstractConfiguration.class).toInstance(ConfigurationManager.getConfigInstance());
+        bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
+        bind(FilenameFilter.class).to(GroovyFileFilter.class);
 
         install(new EurekaModule());
 

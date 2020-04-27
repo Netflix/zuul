@@ -4,6 +4,7 @@ apply plugin: 'application'
 
 dependencies {
     implementation project(":zuul-core"),
+            project(":zuul-groovy"),
             project(":zuul-guice")
     implementation "com.netflix.eureka:eureka-client:1.9.18"
     implementation 'commons-configuration:commons-configuration:1.8'
