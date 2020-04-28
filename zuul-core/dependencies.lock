@@ -111,7 +111,12 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.23",
+            "requested": "1.+"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.23",
+            "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -223,8 +228,12 @@
             "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
+            "locked": "1.23",
             "requested": "1.21"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.23",
+            "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21",
@@ -357,8 +366,12 @@
             "requested": "3.+"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
+            "locked": "1.23",
             "requested": "1.21"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.23",
+            "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21",

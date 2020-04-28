@@ -44,6 +44,9 @@ dependencies {
             libraries.mockito,
             libraries.truth
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.29'
+
+    jmh 'org.openjdk.jmh:jmh-core:1.+'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.
@@ -53,7 +56,7 @@ test {
     }
 }
 
-// ./gradlew --no-daemon clean :zuul-core:jmh --stacktrace
+// ./gradlew --no-daemon clean :zuul-core:jmh
 jmh {
     profilers = ["gc"]
     timeOnIteration = "1s"
