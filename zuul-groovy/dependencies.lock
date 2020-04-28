@@ -112,8 +112,8 @@
             "locked": "1.2.1"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -243,8 +243,8 @@
             "locked": "1.2.1"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
@@ -436,8 +436,8 @@
             "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
@@ -625,8 +625,8 @@
             "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -756,8 +756,8 @@
             "requested": "4.13"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
@@ -945,8 +945,8 @@
             "locked": "1.65"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.19",
-            "requested": "2.4.19"
+            "locked": "3.0.3",
+            "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
             "locked": "3.3.3",
