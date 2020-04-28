@@ -99,14 +99,14 @@ public final class DirectMemoryMonitor {
                     .withName(PROP_PREFIX + ".reserved")
                     .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
                     .scheduleOn(service)
-                    .monitorValue(null, DirectMemoryMonitor::getReservedMemory);
+                    .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getReservedMemory);
         }
         if (directMemoryLimitGetter != null) {
             PolledMeter.using(registry)
                     .withName(PROP_PREFIX + ".max")
                     .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
                     .scheduleOn(service)
-                    .monitorValue(null, DirectMemoryMonitor::getMaxMemory);
+                    .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getMaxMemory);
         }
     }
 
