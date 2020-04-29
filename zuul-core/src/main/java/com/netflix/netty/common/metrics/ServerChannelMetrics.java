@@ -17,11 +17,9 @@
 package com.netflix.netty.common.metrics;
 
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
-import com.netflix.servo.DefaultMonitorRegistry;
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.BasicGauge;
-import com.netflix.servo.monitor.Gauge;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Gauge;
+import com.netflix.spectator.api.Registry;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,33 +44,20 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
 
     private final Gauge currentConnectionsGauge;
     private final AtomicInteger currentConnections = new AtomicInteger(0);
-    private final BasicCounter totalConnections;
-    private final BasicCounter connectionClosed;
-    private final BasicCounter connectionIdleTimeout;
-    private final BasicCounter connectionErrors;
-    private final BasicCounter connectionThrottled;
+    private final Counter totalConnections;
+    private final Counter connectionClosed;
+    private final Counter connectionIdleTimeout;
+    private final Counter connectionErrors;
+    private final Counter connectionThrottled;
 
-    public ServerChannelMetrics(String id)
-    {
-        super();
-        
+    public ServerChannelMetrics(String id, Registry registry) {
         String metricNamePrefix = "server.connections.";
-        currentConnectionsGauge = new BasicGauge<>(MonitorConfig.builder(metricNamePrefix + "current").withTag("id", id).build(),
-                () -> currentConnections.get() );
-        DefaultMonitorRegistry.getInstance().register(currentConnectionsGauge);
-
-        totalConnections = createCounter(metricNamePrefix + "connect", id);
-        connectionErrors = createCounter(metricNamePrefix + "errors", id);
-        connectionClosed = createCounter(metricNamePrefix + "close", id);
-        connectionIdleTimeout = createCounter(metricNamePrefix + "idle.timeout", id);
-        connectionThrottled = createCounter(metricNamePrefix + "throttled", id);
-    }
-    
-    private static BasicCounter createCounter(String name, String id)
-    {
-        BasicCounter counter = new BasicCounter(MonitorConfig.builder(name).withTag("id", id).build());
-        DefaultMonitorRegistry.getInstance().register(counter);
-        return counter;
+        currentConnectionsGauge = registry.gauge(metricNamePrefix + "current", "id", id);
+        totalConnections = registry.counter(metricNamePrefix + "connect", "id", id);
+        connectionErrors = registry.counter(metricNamePrefix + "errors", "id", id);
+        connectionClosed = registry.counter(metricNamePrefix + "close", "id", id);
+        connectionIdleTimeout = registry.counter(metricNamePrefix + "idle.timeout", "id", id);
+        connectionThrottled = registry.counter(metricNamePrefix + "throttled", "id", id);
     }
 
     public static int currentConnectionCountFromChannel(Channel ch)
@@ -82,9 +67,8 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
-        currentConnections.incrementAndGet();
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        currentConnectionsGauge.set(currentConnections.incrementAndGet());
         totalConnections.increment();
         ctx.channel().attr(ATTR_CURRENT_CONNS).set(currentConnections);
 
@@ -98,7 +82,7 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
             super.channelInactive(ctx);
         }
         finally {
-            currentConnections.decrementAndGet();
+            currentConnectionsGauge.set(currentConnections.decrementAndGet());
             connectionClosed.increment();
         }
     }

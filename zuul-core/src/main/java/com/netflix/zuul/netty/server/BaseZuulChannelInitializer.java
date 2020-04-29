@@ -38,6 +38,7 @@ import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.servo.monitor.BasicCounter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -179,7 +180,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + metricId);
+        this.channelMetrics = new ServerChannelMetrics("http-" + metricId, Spectator.globalRegistry());
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
         this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricId);
 
