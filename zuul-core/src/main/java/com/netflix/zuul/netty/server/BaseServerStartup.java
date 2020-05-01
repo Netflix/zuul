@@ -30,9 +30,7 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
-import com.netflix.servo.DefaultMonitorRegistry;
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -154,8 +152,7 @@ public abstract class BaseServerStartup
 
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
-        final BasicCounter httpRequestReadTimeoutCounter =  new BasicCounter(MonitorConfig.builder("server.http.request.read.timeout").build());
-        DefaultMonitorRegistry.getInstance().register(httpRequestReadTimeoutCounter);
+        final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
         channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
