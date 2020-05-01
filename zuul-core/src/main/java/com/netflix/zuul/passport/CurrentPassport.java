@@ -20,9 +20,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Sets;
 import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.servo.DefaultMonitorRegistry;
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import io.netty.channel.Channel;
@@ -395,23 +394,21 @@ public class CurrentPassport
 
 class CountingCurrentPassport extends CurrentPassport
 {
-    private final static BasicCounter IN_REQ_HEADERS_RECEIVED_CNT = createCounter("in_req_hdrs_rec");
-    private final static BasicCounter IN_REQ_LAST_CONTENT_RECEIVED_CNT = createCounter("in_req_last_cont_rec");
+    private final static Counter IN_REQ_HEADERS_RECEIVED_CNT = createCounter("in_req_hdrs_rec");
+    private final static Counter IN_REQ_LAST_CONTENT_RECEIVED_CNT = createCounter("in_req_last_cont_rec");
 
-    private final static BasicCounter IN_RESP_HEADERS_RECEIVED_CNT = createCounter("in_resp_hdrs_rec");
-    private final static BasicCounter IN_RESP_LAST_CONTENT_RECEIVED_CNT = createCounter("in_resp_last_cont_rec");
+    private final static Counter IN_RESP_HEADERS_RECEIVED_CNT = createCounter("in_resp_hdrs_rec");
+    private final static Counter IN_RESP_LAST_CONTENT_RECEIVED_CNT = createCounter("in_resp_last_cont_rec");
 
-    private final static BasicCounter OUT_REQ_HEADERS_SENT_CNT = createCounter("out_req_hdrs_sent");
-    private final static BasicCounter OUT_REQ_LAST_CONTENT_SENT_CNT = createCounter("out_req_last_cont_sent");
+    private final static Counter OUT_REQ_HEADERS_SENT_CNT = createCounter("out_req_hdrs_sent");
+    private final static Counter OUT_REQ_LAST_CONTENT_SENT_CNT = createCounter("out_req_last_cont_sent");
 
-    private final static BasicCounter OUT_RESP_HEADERS_SENT_CNT = createCounter("out_resp_hdrs_sent");
-    private final static BasicCounter OUT_RESP_LAST_CONTENT_SENT_CNT = createCounter("out_resp_last_cont_sent");
+    private final static Counter OUT_RESP_HEADERS_SENT_CNT = createCounter("out_resp_hdrs_sent");
+    private final static Counter OUT_RESP_LAST_CONTENT_SENT_CNT = createCounter("out_resp_last_cont_sent");
 
-    private static BasicCounter createCounter(String name)
+    private static Counter createCounter(String name)
     {
-        BasicCounter counter = new BasicCounter(MonitorConfig.builder("zuul.passport." + name).build());
-        DefaultMonitorRegistry.getInstance().register(counter);
-        return counter;
+        return Spectator.globalRegistry().counter("zuul.passport." + name);
     }
 
     public CountingCurrentPassport()

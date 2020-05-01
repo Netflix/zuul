@@ -16,7 +16,7 @@
 
 package com.netflix.netty.common;
 
-import com.netflix.servo.monitor.BasicCounter;
+import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,9 +44,9 @@ public class HttpRequestReadTimeoutHandler extends ChannelInboundHandlerAdapter
 
     private final long timeout;
     private final TimeUnit unit;
-    private final BasicCounter httpRequestReadTimeoutCounter;
+    private final Counter httpRequestReadTimeoutCounter;
 
-    protected HttpRequestReadTimeoutHandler(long timeout, TimeUnit unit, BasicCounter httpRequestReadTimeoutCounter)
+    protected HttpRequestReadTimeoutHandler(long timeout, TimeUnit unit, Counter httpRequestReadTimeoutCounter)
     {
         this.timeout = timeout;
         this.unit = unit;
@@ -57,7 +57,7 @@ public class HttpRequestReadTimeoutHandler extends ChannelInboundHandlerAdapter
      * Factory which ensures that this handler is added to the pipeline using the
      * correct name.
      */
-    public static void addLast(ChannelPipeline pipeline, long timeout, TimeUnit unit, BasicCounter httpRequestReadTimeoutCounter)
+    public static void addLast(ChannelPipeline pipeline, long timeout, TimeUnit unit, Counter httpRequestReadTimeoutCounter)
     {
         HttpRequestReadTimeoutHandler handler = new HttpRequestReadTimeoutHandler(timeout, unit, httpRequestReadTimeoutCounter);
         pipeline.addLast(HANDLER_NAME, handler);
