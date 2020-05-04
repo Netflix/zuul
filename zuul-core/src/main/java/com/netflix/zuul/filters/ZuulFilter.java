@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.filters;
 
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
@@ -34,12 +35,18 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     String filterName();
 
     /**
-     * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
+     * filterOrder() must also be defined for a filter. Filters may have the same filterOrder if precedence is not
      * important for a filter. filterOrders do not need to be sequential.
      *
      * @return the int order of a filter
      */
-    int filterOrder();
+    default int filterOrder() {
+        Filter f = getClass().getAnnotation(Filter.class);
+        if (f != null) {
+            return f.order();
+        }
+        throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * to classify a filter by type. Standard types in Zuul are "in" for pre-routing filtering,
@@ -47,7 +54,13 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      *
      * @return FilterType
      */
-    FilterType filterType();
+    default FilterType filterType() {
+        Filter f = getClass().getAnnotation(Filter.class);
+        if (f != null) {
+            return f.type();
+        }
+        throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * Whether this filter's shouldFilter() method should be checked, and apply() called, even
@@ -75,7 +88,13 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
      */
     void decrementConcurrency();
 
-    FilterSyncType getSyncType();
+    default FilterSyncType getSyncType() {
+        Filter f = getClass().getAnnotation(Filter.class);
+        if (f != null) {
+            return f.sync();
+        }
+        throw new UnsupportedOperationException("not implemented");
+    }
 
     /**
      * Choose a default message to use if the applyAsync() method throws an exception.

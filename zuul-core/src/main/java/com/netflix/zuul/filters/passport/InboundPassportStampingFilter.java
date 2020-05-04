@@ -16,12 +16,11 @@
 
 package com.netflix.zuul.filters.passport;
 
+import static com.netflix.zuul.filters.FilterType.INBOUND;
+
 import com.netflix.zuul.Filter;
-import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.passport.PassportState;
-
-import static com.netflix.zuul.filters.FilterType.INBOUND;
 
 /**
  * Created by saroskar on 3/14/17.
@@ -32,10 +31,4 @@ public final class InboundPassportStampingFilter extends PassportStampingFilter<
     public InboundPassportStampingFilter(PassportState stamp) {
         super(stamp);
     }
-
-    @Override
-    public FilterType filterType() {
-        return INBOUND;
-    }
-
 }
