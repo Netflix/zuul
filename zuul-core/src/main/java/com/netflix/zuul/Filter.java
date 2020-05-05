@@ -57,4 +57,18 @@ public @interface Filter {
     @interface FilterPackageName {
         String value();
     }
+
+    /**
+     * Indicates that the annotated filter should run after another filter in the chain, if the other filter is present.
+     * In the case of inbound filters, this implies that the annotated filter should have an order greater than the
+     * filters listed.  For outbound filters, the order of this filter should be less than the ones listed.  Usage of
+     * this annotation should be used on homogeneous filter types.  Additionally, this should not be applied to endpoint
+     * filters.
+     */
+    @Target({TYPE})
+    @Retention(RUNTIME)
+    @Documented
+    @interface ApplyAfter {
+        Class<? extends ZuulFilter<?, ?>>[] value();
+    }
 }

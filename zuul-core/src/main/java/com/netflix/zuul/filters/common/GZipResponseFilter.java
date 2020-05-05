@@ -37,9 +37,10 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 
 /**
- * General-purpose filter for gzipping/ungzipping response bodies if requested/needed.
+ * General-purpose filter for gzipping/ungzipping response bodies if requested/needed.  This should be run as late as
+ * possible to ensure final encoded body length is considered
  *
- * You can just subclass this in your project, and use as-is.
+ * <p>You can just subclass this in your project, and use as-is.
  *
  * @author Mike Smith
  */
@@ -58,14 +59,6 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
 
     private static final CachedDynamicBooleanProperty ENABLED =
             new CachedDynamicBooleanProperty("zuul.response.gzip.filter.enabled", true);
-
-    @Override
-    public int filterOrder() {
-
-        // run as late as possible to ensure the
-        // final encoded body length is considered
-        return 110;
-    }
 
     @Override
     public boolean shouldFilter(HttpResponseMessage response) {
