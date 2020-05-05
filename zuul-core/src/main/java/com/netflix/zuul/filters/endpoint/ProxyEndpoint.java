@@ -693,6 +693,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             if ((isBelowRetryLimit()) && (isRetryable(err))) {
                 //retry request with different origin
                 passport.add(ORIGIN_RETRY_START);
+                origin.adjustRetryPolicyIfNeeded(zuulRequest);
                 proxyRequestToOrigin();
             } else {
                 // Record the exception in context. An error filter should later run which can translate this into an
@@ -915,6 +916,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             unlinkFromOrigin();
             //retry request with different origin
             passport.add(ORIGIN_RETRY_START);
+            origin.adjustRetryPolicyIfNeeded(zuulRequest);
             proxyRequestToOrigin();
         } else {
             SessionContext zuulCtx = context;
