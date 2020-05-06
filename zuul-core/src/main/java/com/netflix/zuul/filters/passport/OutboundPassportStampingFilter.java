@@ -32,4 +32,10 @@ public final class OutboundPassportStampingFilter extends PassportStampingFilter
     public OutboundPassportStampingFilter(PassportState stamp) {
         super(stamp);
     }
+
+    @Override
+    public FilterType filterType() {
+        return OUTBOUND;
+    }
+
 }
