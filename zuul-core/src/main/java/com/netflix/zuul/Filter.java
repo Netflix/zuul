@@ -71,4 +71,23 @@ public @interface Filter {
     @interface ApplyAfter {
         Class<? extends ZuulFilter<?, ?>>[] value();
     }
+
+    /**
+     * Indicates that the annotated filter should run before another filter in the chain, if the other filter is present.
+     * In the case of inbound filters, this implies that the annotated filter should have an order less than the
+     * filters listed.  For outbound filters, the order of this filter should be greater than the ones listed.  Usage of
+     * this annotation should be used on homogeneous filter types.  Additionally, this should not be applied to endpoint
+     * filters.
+     *
+     * <p>Prefer to use this {@link ApplyAfter} instead.  This annotation is meant in case where it may be infeasible
+     * to use {@linkplain ApplyAfter}.  (such as due to dependency cycles)
+     *
+     * @see ApplyAfter
+     */
+    @Target({TYPE})
+    @Retention(RUNTIME)
+    @Documented
+    @interface ApplyBefore {
+        Class<? extends ZuulFilter<?, ?>>[] value();
+    }
 }
