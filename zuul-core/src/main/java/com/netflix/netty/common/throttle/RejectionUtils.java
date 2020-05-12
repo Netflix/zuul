@@ -179,6 +179,19 @@ public final class RejectionUtils {
     }
 
 
+    /**
+     * Switches on the rejection type to decide how to reject the request and or close the conn.
+     *
+     * @param ctx the channel handler processing the request
+     * @param rejectionType the type of rejection
+     * @param nfStatus the status to use for metric reporting
+     * @param reason the reason for rejecting the request.  This is not sent back to the client.
+     * @param request the request that is being rejected.
+     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
+     *                              sent up the pipeline.
+     * @param rejectedCode the HTTP code to send back to the client.
+     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     */
     public static void reject(
             ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason,
             HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode,
@@ -186,6 +199,7 @@ public final class RejectionUtils {
         reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
                 Collections.emptyMap());
     }
+
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
      *
