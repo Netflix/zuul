@@ -91,6 +91,7 @@ public final class RejectionUtils {
      *                              sent up the pipeline.
      * @param rejectedCode the HTTP code to send back to the client.
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
     public static void sendRejectionResponse(
             ChannelHandlerContext ctx, StatusCategory nfStatus, String reason, HttpRequest request,
@@ -131,11 +132,22 @@ public final class RejectionUtils {
     /**
      * Throttle either by sending rejection response message, or by closing the connection now, or just drop the
      * message. Only call this if ThrottleResult.shouldThrottle() returned {@code true}.
+     *
+     * @param ctx the channel handler processing the request
+     * @param msg the request that is being rejected.
+     * @param rejectionType the type of rejection
+     * @param nfStatus the status to use for metric reporting
+     * @param reason the reason for rejecting the request.  This is not sent back to the client.
+     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
+     *                              sent up the pipeline.
+     * @param rejectedCode the HTTP code to send back to the client.
+     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
     public static void handleRejection(
             ChannelHandlerContext ctx, Object msg, RejectionType rejectionType, StatusCategory nfStatus, String reason,
             @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody,
-            Map<String, String> rejectedHeaders)
+            Map<String, String> rejectionHeaders)
             throws Exception {
 
         boolean shouldDropMessage = false;
@@ -156,7 +168,7 @@ public final class RejectionUtils {
             // Send a rejection response.
             HttpRequest request = msg instanceof HttpRequest ? (HttpRequest) msg : null;
             reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
-                    rejectedHeaders);
+                    rejectionHeaders);
         }
 
         if (shouldDropMessage) {
@@ -186,17 +198,17 @@ public final class RejectionUtils {
      *                              sent up the pipeline.
      * @param rejectedCode the HTTP code to send back to the client.
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
-     * @param rejectedHeaders additional HTTP headers to add to the rejection response
+     * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
     public static void reject(
             ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason,
             HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode,
-            String rejectedBody, Map<String, String> rejectedHeaders) {
+            String rejectedBody, Map<String, String> rejectionHeaders) {
         switch (rejectionType) {
             case REJECT:
                 sendRejectionResponse(
                         ctx, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
-                        rejectedHeaders);
+                        rejectionHeaders);
                 return;
             case CLOSE:
                 rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
