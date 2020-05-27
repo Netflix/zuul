@@ -17,8 +17,8 @@
 package com.netflix.netty.common.proxyprotocol;
 
 import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -28,6 +28,7 @@ import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler.
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
@@ -53,7 +54,6 @@ public class StripUntrustedProxyHeadersHandlerTest {
     private ChannelHandlerContext channelHandlerContext;
     @Mock
     private HttpRequest msg;
-    @Mock
     private HttpHeaders headers;
     @Mock
     private Channel channel;
@@ -69,8 +69,9 @@ public class StripUntrustedProxyHeadersHandlerTest {
         attributeMap.attr(ATTR_SSL_INFO).set(sslHandshakeInfo);
         when(channel.attr(any())).thenAnswer(arg -> attributeMap.attr((AttributeKey) arg.getArguments()[0]));
 
+        headers = new DefaultHttpHeaders();
         when(msg.headers()).thenReturn(headers);
-        when(headers.get(eq(HttpHeaderNames.HOST))).thenReturn("netflix.com");
+        headers.add(HttpHeaderNames.HOST, "netflix.com");
     }
 
     @Test
@@ -113,7 +114,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void blacklist_noMatch() throws Exception {
+    public void blacklist_noMatch() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.net"));
@@ -122,12 +123,22 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void blacklist_match() throws Exception {
+    public void blacklist_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.com"));
 
         verify(stripHandler).stripXFFHeaders(any());
+    }
+
+    @Test
+    public void strip_match() {
+        StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
+
+        headers.add("x-forwarded-for", "abcd");
+        stripHandler.stripXFFHeaders(msg);
+
+        assertFalse(headers.contains("x-forwarded-for"));
     }
 
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
