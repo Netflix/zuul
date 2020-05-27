@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
 package com.netflix.netty.common.proxyprotocol;
 
 import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
@@ -10,14 +26,12 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler.AllowWhen;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
-import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
-import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.DefaultAttributeMap;
 import org.junit.Before;
