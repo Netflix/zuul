@@ -132,6 +132,15 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
+    public void blacklist_match_casing() {
+        StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
+
+        stripHandler.checkBlacklist(msg, ImmutableList.of("NeTfLiX.cOm"));
+
+        verify(stripHandler).stripXFFHeaders(any());
+    }
+
+    @Test
     public void strip_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
