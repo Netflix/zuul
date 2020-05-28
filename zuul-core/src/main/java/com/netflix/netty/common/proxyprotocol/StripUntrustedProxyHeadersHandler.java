@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Netflix, Inc.
+ * Copyright 2020 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -16,19 +16,23 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import com.netflix.config.DynamicStringListProperty;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AsciiString;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Strip out any X-Forwarded-* headers from inbound http requests if connection is not trusted.
@@ -36,6 +40,9 @@ import java.util.Collection;
 @ChannelHandler.Sharable
 public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdapter
 {
+    private static final DynamicStringListProperty XFF_BLACKLIST =
+            new DynamicStringListProperty("zuul.proxy.headers.host.blacklist", "");
+
     public enum AllowWhen {
         ALWAYS,
         MUTUAL_SSL_AUTH,
@@ -70,10 +77,12 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
                 case MUTUAL_SSL_AUTH:
                     if (! connectionIsUsingMutualSSLWithAuthEnforced(ctx.channel())) {
                         stripXFFHeaders(req);
+                    } else {
+                        checkBlacklist(req, XFF_BLACKLIST.get());
                     }
                     break;
                 case ALWAYS:
-                    // Do nothing.
+                    checkBlacklist(req, XFF_BLACKLIST.get());
                     break;
                 default:
                     // default to not allow.
@@ -84,7 +93,8 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
         super.channelRead(ctx, msg);
     }
 
-    private boolean connectionIsUsingMutualSSLWithAuthEnforced(Channel ch)
+    @VisibleForTesting
+    boolean connectionIsUsingMutualSSLWithAuthEnforced(Channel ch)
     {
         boolean is = false;
         SslHandshakeInfo sslHandshakeInfo = ch.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
@@ -96,11 +106,20 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
         return is;
     }
 
-    private void stripXFFHeaders(HttpRequest req)
+    @VisibleForTesting
+    void stripXFFHeaders(HttpRequest req)
     {
         HttpHeaders headers = req.headers();
         for (AsciiString headerName : HEADERS_TO_STRIP) {
             headers.remove(headerName);
+        }
+    }
+
+    @VisibleForTesting
+    void checkBlacklist(HttpRequest req, List<String> blacklist) {
+        // blacklist headers from
+        if (blacklist.stream().anyMatch(h -> h.equalsIgnoreCase(req.headers().get(HttpHeaderNames.HOST)))) {
+            stripXFFHeaders(req);
         }
     }
 }
