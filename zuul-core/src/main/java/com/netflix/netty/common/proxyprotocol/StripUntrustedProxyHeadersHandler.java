@@ -118,7 +118,7 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
     @VisibleForTesting
     void checkBlacklist(HttpRequest req, List<String> blacklist) {
         // blacklist headers from
-        if (blacklist.contains(req.headers().get(HttpHeaderNames.HOST).toLowerCase())) {
+        if (blacklist.stream().anyMatch(h -> h.equalsIgnoreCase(req.headers().get(HttpHeaderNames.HOST)))) {
             stripXFFHeaders(req);
         }
     }
