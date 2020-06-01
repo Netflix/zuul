@@ -33,7 +33,7 @@ public class DefaultEventLoopConfig implements EventLoopConfig
 
     public DefaultEventLoopConfig()
     {
-        eventLoopCount = WORKER_THREADS.get() > 0 ? WORKER_THREADS.get() : PROCESSOR_COUNT;
+        eventLoopCount = WORKER_THREADS.get() > 0 ? WORKER_THREADS.get() : Math.max(8, PROCESSOR_COUNT*2);
         acceptorCount = ACCEPTOR_THREADS.get();
     }
 
