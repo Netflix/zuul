@@ -20,9 +20,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Registry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -31,18 +35,30 @@ import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ElbProxyProtocolChannelHandlerTest {
+    
+    @Mock
+    private Registry registry;
+    @Mock
+    private Counter counter;
+
+    @Before
+    public void setup() {
+        when(registry.counter("zuul.hapm.failure")).thenReturn(counter);
+    }
 
     @Test
     public void noProxy() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(false));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, false));
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -66,7 +82,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void extraDataForwarded() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\nPOTATO".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -82,7 +98,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void passThrough_ProxyProtocolEnabled_nonProxyBytes() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         //Note that the bytes aren't prefixed by PROXY, as required by the spec
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
@@ -104,11 +120,27 @@ public class ElbProxyProtocolChannelHandlerTest {
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
     }
 
+    @Test
+    public void incrementCounterWhenPPEnabledButNonHAPMMessage() {
+        EmbeddedChannel channel = new EmbeddedChannel();
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
+        //Note that the bytes aren't prefixed by PROXY, as required by the spec
+        ByteBuf buf = Unpooled.wrappedBuffer(
+                "TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf);
+
+        Object dropped = channel.readInbound();
+        assertEquals(dropped, buf);
+        buf.release();
+
+        verify(counter, times(1)).increment();
+    }
+
     @Ignore
     @Test
     public void detectsSplitPpv1Message() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf1 = Unpooled.wrappedBuffer(
                 "PROXY TCP4".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf1);
@@ -129,7 +161,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv1_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "PROXY TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -159,7 +191,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv1_ipv6() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "PROXY TCP6 ::1 ::2 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -189,7 +221,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv2_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(true));
+        channel.pipeline().addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
                 new byte[]{0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A, 0x21, 0x11, 0x00,
                         0x0C, (byte) 0xC0, (byte) 0xA8, 0x00, 0x01, 0x7C, 0x7B, 0x6F, 0x6F, 0x27, 0x18, 0x01,
