@@ -235,7 +235,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast("channelMetrics", channelMetrics);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
 
-        new ElbProxyProtocolChannelHandler(withProxyProtocol).addProxyProtocol(pipeline);
+        new ElbProxyProtocolChannelHandler(registry, withProxyProtocol).addProxyProtocol(pipeline);
 
         pipeline.addLast(maxConnectionsHandler);
     }
