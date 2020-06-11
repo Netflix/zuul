@@ -41,7 +41,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
-import io.netty.util.DomainNameMapping;
+import io.netty.util.AsyncMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -291,10 +291,10 @@ public abstract class BaseServerStartup
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
-     * Use {@link #logAddrConfigured(SocketAddress, DomainNameMapping)} instead.
+     * Use {@link #logAddrConfigured(SocketAddress, AsyncMapping)} instead.
      */
     @Deprecated
-    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping) {
+    protected void logPortConfigured(int port, AsyncMapping<String, SslContext> sniMapping) {
         logAddrConfigured(new InetSocketAddress(port), sniMapping);
     }
 
@@ -310,10 +310,11 @@ public abstract class BaseServerStartup
         LOG.info(msg);
     }
 
-    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable DomainNameMapping<?> sniMapping) {
+    protected final void logAddrConfigured(
+            SocketAddress socketAddress, @Nullable AsyncMapping<String, SslContext> sniMapping) {
         String msg = "Configured address: " + socketAddress;
         if (sniMapping != null) {
-            msg = msg + " with SNI config: " + sniMapping.asMap();
+            msg = msg + " with SNI config: " + sniMapping;
         }
         LOG.info(msg);
     }
