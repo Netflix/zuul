@@ -20,6 +20,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import io.netty.handler.ssl.CipherSuiteFilter;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.ToDoubleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +56,8 @@ import org.slf4j.LoggerFactory;
 public class BaseSslContextFactory implements SslContextFactory {
     private static final Logger LOG = LoggerFactory.getLogger(BaseSslContextFactory.class);
 
-    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL = new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
+    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL =
+            new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
 
     static {
         // Install BouncyCastle provider.
@@ -65,8 +68,8 @@ public class BaseSslContextFactory implements SslContextFactory {
     protected final ServerSslConfig serverSslConfig;
 
     public BaseSslContextFactory(Registry spectatorRegistry, ServerSslConfig serverSslConfig) {
-        this.spectatorRegistry = spectatorRegistry;
-        this.serverSslConfig = serverSslConfig;
+        this.spectatorRegistry = Objects.requireNonNull(spectatorRegistry);
+        this.serverSslConfig = Objects.requireNonNull(serverSslConfig);
     }
 
     @Override
@@ -76,7 +79,7 @@ public class BaseSslContextFactory implements SslContextFactory {
             SslProvider sslProvider = chooseSslProvider();
 
             LOG.debug(
-                    "Using SslProvider of type {} for certChainFile  {}",
+                    "Using SslProvider of type {} for certChainFile {}",
                     sslProvider.name(),
                     serverSslConfig.getCertChainFile());
 
@@ -130,9 +133,11 @@ public class BaseSslContextFactory implements SslContextFactory {
         }
     }
 
-    private void openSslStatGauge(OpenSslSessionStats stats, String sslContextId, String statName, ToDoubleFunction<OpenSslSessionStats> value) {
+    private void openSslStatGauge(
+            OpenSslSessionStats stats, String sslContextId, String statName,
+            ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
-        spectatorRegistry.gauge(id, stats, value);
+        PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
         LOG.debug("Registered spectator gauge - " + id.name());
     }
 
