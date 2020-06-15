@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import com.google.errorprone.annotations.ForOverride;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.spectator.api.Id;
@@ -31,6 +32,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -78,15 +80,9 @@ public class BaseSslContextFactory implements SslContextFactory {
             ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
 
-            LOG.debug(
-                    "Using SslProvider of type {} for certChainFile {}",
-                    sslProvider.name(),
-                    serverSslConfig.getCertChainFile());
+            LOG.debug("Using SslProvider of type {}", sslProvider.name());
 
-            InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile());
-            InputStream keyInput = getKeyInputStream();
-
-            SslContextBuilder builder = SslContextBuilder.forServer(certChainInput, keyInput)
+            SslContextBuilder builder = newBuilderForServer()
                     .ciphers(getCiphers(), getCiphersFilter())
                     .sessionTimeout(serverSslConfig.getSessionTimeout())
                     .sslProvider(sslProvider);
@@ -101,6 +97,19 @@ public class BaseSslContextFactory implements SslContextFactory {
         }
         catch (Exception e) {
             throw new RuntimeException("Error configuring SslContext!", e);
+        }
+    }
+
+    /**
+     * This function is meant to call the correct overload of {@code SslContextBuilder.forServer()}.  It should not
+     * apply any other customization.
+     */
+    @ForOverride
+    protected SslContextBuilder newBuilderForServer() throws IOException {
+        LOG.debug("Using certChainFile {}", serverSslConfig.getCertChainFile());
+        try (InputStream keyInput = getKeyInputStream();
+                InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile())) {
+            return SslContextBuilder.forServer(certChainInput, keyInput);
         }
     }
 
@@ -173,7 +182,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     protected ArrayList<X509Certificate> getTrustedX509Certificates() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
 
-        // Add the certifcates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
+        // Add the certificates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
         if (serverSslConfig.getClientAuth() == ClientAuth.REQUIRE || serverSslConfig.getClientAuth() == ClientAuth.OPTIONAL) {
             // Get the encrypted bytes of the truststore password.
             byte[] trustStorePwdBytes;
