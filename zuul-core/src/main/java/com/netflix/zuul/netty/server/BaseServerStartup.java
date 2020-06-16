@@ -318,4 +318,8 @@ public abstract class BaseServerStartup
         }
         LOG.info(msg);
     }
+
+    protected final void logSecureAddrConfigured(SocketAddress socketAddress, @Nullable Object securityConfig) {
+        LOG.info("Configured address: {} with security config {}", socketAddress, securityConfig);
+    }
 }

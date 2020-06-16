@@ -173,7 +173,6 @@ public class SampleServerStartup extends BaseServerStartup {
                         ServerSslConfig.getDefaultCiphers(),
                         loadFromResources("server.cert"),
                         loadFromResources("server.key"),
-                        null,
                         ClientAuth.REQUIRE,
                         loadFromResources("truststore.jks"),
                         loadFromResources("truststore.key"),
