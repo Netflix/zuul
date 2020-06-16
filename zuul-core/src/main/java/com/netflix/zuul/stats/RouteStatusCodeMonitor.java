@@ -16,15 +16,13 @@
 package com.netflix.zuul.stats;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.servo.annotations.DataSourceType;
-import com.netflix.servo.annotations.Monitor;
-import com.netflix.servo.annotations.MonitorTags;
-import com.netflix.servo.tag.BasicTag;
-import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.TagList;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nullable;
 
 /**
  * counter for per route/status code counting
@@ -33,27 +31,24 @@ import java.util.concurrent.atomic.AtomicLong;
  * Time: 3:04 PM
  */
 public class RouteStatusCodeMonitor implements NamedCount {
-
-    @MonitorTags
-    TagList tagList;
-
-
-    String route_code;
-
-    String route;
-    int status_code;
-
-    @Monitor(name = "count", type = DataSourceType.COUNTER)
+    private final String routeCode;
     @VisibleForTesting
-    final AtomicLong count = new AtomicLong();
+    final String route;
+    private final int statusCode;
 
+    private final AtomicLong count = new AtomicLong();
 
-    public RouteStatusCodeMonitor(String route, int status_code) {
-        if(route == null) route = "";
+    public RouteStatusCodeMonitor(@Nullable String route, int statusCode) {
+        if (route == null) {
+            route = "";
+        }
         this.route = route;
-        this.status_code = status_code;
-        route_code = route + "_" + status_code;
-        tagList = BasicTagList.of(new BasicTag("ID", route_code));
+        this.statusCode = statusCode;
+        this.routeCode = route + "_" + statusCode;
+        Registry registry = Spectator.globalRegistry();
+        PolledMeter.using(registry)
+                .withId(registry.createId("zuul.RouteStatusCodeMonitor", "ID", routeCode))
+                .monitorValue(this, RouteStatusCodeMonitor::getCount);
     }
 
     @Override
@@ -63,8 +58,12 @@ public class RouteStatusCodeMonitor implements NamedCount {
 
         RouteStatusCodeMonitor statsData = (RouteStatusCodeMonitor) o;
 
-        if (status_code != statsData.status_code) return false;
-        if (route != null ? !route.equals(statsData.route) : statsData.route != null) return false;
+        if (statusCode != statsData.statusCode) {
+            return false;
+        }
+        if (!Objects.equals(route, statsData.route)) {
+            return false;
+        }
 
         return true;
     }
@@ -72,13 +71,13 @@ public class RouteStatusCodeMonitor implements NamedCount {
     @Override
     public int hashCode() {
         int result = route != null ? route.hashCode() : 0;
-        result = 31 * result + status_code;
+        result = 31 * result + statusCode;
         return result;
     }
 
     @Override
     public String getName() {
-        return route_code;
+        return routeCode;
     }
 
     public long getCount() {
