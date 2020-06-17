@@ -44,10 +44,6 @@
             "locked": "2.7.17",
             "requested": "2.7.17"
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
@@ -101,7 +97,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.slf4j:slf4j-api": {
@@ -167,10 +163,6 @@
             "locked": "2.7.17",
             "requested": "2.7.17"
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
@@ -224,7 +216,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -293,10 +285,6 @@
             "locked": "2.7.17",
             "requested": "2.7.17"
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
@@ -358,7 +346,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {
@@ -431,10 +419,6 @@
             "locked": "2.7.17",
             "requested": "2.7.17"
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
@@ -492,7 +476,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.slf4j:slf4j-api": {
@@ -548,10 +532,6 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.7.17",
             "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
@@ -610,7 +590,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {
@@ -671,10 +651,6 @@
             "locked": "2.7.17",
             "requested": "2.7.17"
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.103.0",
             "requested": "0.103.0"
@@ -736,7 +712,7 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
+            "locked": "1.65.01",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {

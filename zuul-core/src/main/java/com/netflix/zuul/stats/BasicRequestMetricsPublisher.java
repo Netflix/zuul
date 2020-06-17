@@ -16,9 +16,9 @@
 
 package com.netflix.zuul.stats;
 
-import com.netflix.servo.monitor.DynamicTimer;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.SessionContext;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: michaels@netflix.com
@@ -58,7 +58,7 @@ public class BasicRequestMetricsPublisher implements RequestMetricsPublisher
     {
         long timeMs = timeNs / 1000000;
         if(timeMs > -1) {
-            DynamicTimer.record(MonitorConfig.builder(name).build(), timeMs);
+            Spectator.globalRegistry().timer(name).record(timeMs, TimeUnit.MILLISECONDS);
         }
     }
 }

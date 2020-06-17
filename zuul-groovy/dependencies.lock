@@ -6,6 +6,10 @@
             ],
             "locked": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
+        },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -53,12 +57,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -137,6 +135,10 @@
             ],
             "locked": "2.9.8"
         },
+        "com.google.guava:guava": {
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
+        },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -184,12 +186,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -278,7 +274,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -331,12 +328,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.12.21"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -433,7 +424,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65"
+            "locked": "1.65.01"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",
@@ -475,7 +466,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -524,12 +516,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.12.21"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -622,7 +608,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65"
+            "locked": "1.65.01"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",
@@ -641,6 +627,10 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.9.8"
+        },
+        "com.google.guava:guava": {
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -693,12 +683,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.7.2"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -787,7 +771,8 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre"
+            "locked": "29.0-jre",
+            "requested": "29.0-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1",
@@ -840,12 +825,6 @@
                 "com.netflix.zuul:zuul-core"
             ],
             "locked": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "firstLevelTransitive": [
-                "com.netflix.zuul:zuul-core"
-            ],
-            "locked": "0.12.21"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -942,7 +921,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65"
+            "locked": "1.65.01"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",

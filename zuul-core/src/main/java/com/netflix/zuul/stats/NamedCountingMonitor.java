@@ -15,11 +15,9 @@
  */
 package com.netflix.zuul.stats;
 
-import com.netflix.servo.annotations.DataSourceType;
-import com.netflix.servo.annotations.Monitor;
-import com.netflix.servo.annotations.MonitorTags;
-import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.TagList;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import com.netflix.zuul.stats.monitoring.NamedCount;
 
@@ -35,15 +33,14 @@ public class NamedCountingMonitor implements NamedCount {
 
     private final String name;
 
-    @MonitorTags
-    TagList tagList;
-
-    @Monitor(name = "count", type = DataSourceType.COUNTER)
     private final AtomicLong count = new AtomicLong();
 
     public NamedCountingMonitor(String name) {
         this.name = name;
-        tagList = BasicTagList.of("ID", name);
+        Registry registry = Spectator.globalRegistry();
+        PolledMeter.using(registry)
+                .withId(registry.createId("zuul.ErrorStatsData", "ID", name))
+                .monitorValue(this, NamedCountingMonitor::getCount);
     }
 
     /**

@@ -16,10 +16,10 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.filters.FilterType;
-import net.jcip.annotations.ThreadSafe;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
