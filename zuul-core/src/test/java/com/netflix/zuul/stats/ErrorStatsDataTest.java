@@ -33,7 +33,6 @@ public class ErrorStatsDataTest {
     @Test
     public void testUpdateStats() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
-        assertEquals(sd.getName(), "route_test");
         sd.update();
         assertEquals(sd.getCount(), 1);
         sd.update();
