@@ -15,15 +15,10 @@
  */
 package com.netflix.zuul.plugins;
 
-import com.netflix.servo.monitor.DynamicTimer;
-import com.netflix.servo.monitor.MonitorConfig;
-import com.netflix.servo.monitor.Stopwatch;
-import com.netflix.servo.tag.InjectableTag;
-import com.netflix.servo.tag.Tag;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.monitoring.TracerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,37 +30,47 @@ import java.util.concurrent.TimeUnit;
  */
 public class Tracer extends TracerFactory {
 
-    static List<Tag> tags = new ArrayList<Tag>(2);
-
-    static {
-        tags.add(InjectableTag.HOSTNAME);
-        tags.add(InjectableTag.IP);
-    }
-
     @Override
 
     public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
-        return new ServoTracer(name);
+        return new SpectatorTracer(name);
     }
 
-    class ServoTracer implements com.netflix.zuul.monitoring.Tracer {
+    class SpectatorTracer implements com.netflix.zuul.monitoring.Tracer {
 
-        final MonitorConfig config;
-        final Stopwatch stopwatch;
+        private String name;
+        private final long start;
 
-        private ServoTracer(String name) {
-            config = MonitorConfig.builder(name).withTags(tags).build();
-            stopwatch = DynamicTimer.start(config, TimeUnit.MICROSECONDS);
+        private SpectatorTracer(String name) {
+            this.name = name;
+            start = System.nanoTime();
         }
 
         @Override
         public void stopAndLog() {
-            DynamicTimer.record(config, stopwatch.getDuration());
+            Spectator.globalRegistry().timer(name, "hostname", getHostName(), "ip", getIp())
+                    .record(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         }
 
         @Override
         public void setName(String name) {
+            this.name = name;
+        }
+    }
 
+    private static String getHostName() {
+        return (loadAddress() != null) ? loadAddress().getHostName() : "unkownHost";
+    }
+
+    private static String getIp() {
+        return (loadAddress() != null) ? loadAddress().getHostAddress() : "unknownHost";
+    }
+
+    private static InetAddress loadAddress() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            return null;
         }
     }
 }
