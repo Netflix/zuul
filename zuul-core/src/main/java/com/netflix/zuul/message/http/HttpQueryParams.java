@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -127,6 +128,14 @@ public class HttpQueryParams implements Cloneable
     public boolean contains(String name)
     {
         return delegate.containsKey(name);
+    }
+
+    /**
+     * Per https://tools.ietf.org/html/rfc3986#page-11, query params are to be treated as case sensitive.
+     * However, as an utility, this exists to allow us to do a case insensitive match on demand.
+     */
+    public boolean containsIgnoreCase(String name) {
+        return delegate.containsKey(name) || delegate.containsKey(name.toLowerCase(Locale.ROOT));
     }
 
     public boolean contains(String name, String value)

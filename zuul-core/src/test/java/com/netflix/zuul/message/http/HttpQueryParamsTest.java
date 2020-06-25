@@ -17,8 +17,12 @@
 package com.netflix.zuul.message.http;
 
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.truth.Truth;
+import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,7 +76,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testParseKeysWithoutValues() {
+    public void parseKeysWithoutValues() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
         expected.add("k2", "v2");
@@ -86,7 +90,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testParseKeyWithoutValueEquals() {
+    public void parseKeyWithoutValueEquals() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
 
@@ -98,7 +102,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testParseKeyWithoutValue() {
+    public void parseKeyWithoutValue() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
 
@@ -110,7 +114,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testParseKeyWithoutValueShort() {
+    public void parseKeyWithoutValueShort() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("=", "");
 
@@ -122,7 +126,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testParseKeysWithoutValuesMixedTrailers() {
+    public void parseKeysWithoutValuesMixedTrailers() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
         expected.add("k2", "v2");
@@ -134,5 +138,15 @@ public class HttpQueryParamsTest {
         assertEquals(expected, actual);
 
         assertEquals("k1=&k2=v2&k3&k4=v4", actual.toEncodedString());
+    }
+
+    @Test
+    public void parseKeysIgnoreCase() {
+        String camelCaseKey = "keyName";
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("foo", "bar");
+        queryParams.add(camelCaseKey.toLowerCase(Locale.ROOT), "value");
+
+        assertTrue(queryParams.containsIgnoreCase(camelCaseKey));
     }
 }
