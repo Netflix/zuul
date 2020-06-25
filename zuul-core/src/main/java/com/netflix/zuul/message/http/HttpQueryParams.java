@@ -131,7 +131,7 @@ public class HttpQueryParams implements Cloneable
     }
 
     /**
-     * Per https://tools.ietf.org/html/rfc3986#page-11, query params are to be treated as case sensitive.
+     * Per https://tools.ietf.org/html/rfc7230#page-19, query params are to be treated as case sensitive.
      * However, as an utility, this exists to allow us to do a case insensitive match on demand.
      */
     public boolean containsIgnoreCase(String name) {
