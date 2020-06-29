@@ -126,6 +126,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
                 RejectionUtils.rejectByClosingConnection(
                         ctx,
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
