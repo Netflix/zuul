@@ -35,12 +35,14 @@ public class DefaultEventLoopConfig implements EventLoopConfig
     {
         eventLoopCount = WORKER_THREADS.get() > 0 ? WORKER_THREADS.get() : PROCESSOR_COUNT;
         acceptorCount = ACCEPTOR_THREADS.get();
+        setArenasMatchingEventLoopCount();
     }
 
     public DefaultEventLoopConfig(int eventLoopCount, int acceptorCount)
     {
         this.eventLoopCount = eventLoopCount;
         this.acceptorCount = acceptorCount;
+        setArenasMatchingEventLoopCount();
     }
 
     @Override
@@ -53,5 +55,18 @@ public class DefaultEventLoopConfig implements EventLoopConfig
     public int acceptorCount()
     {
         return acceptorCount;
+    }
+
+    /**
+     * With an event loop per thread, not setting these mean the default values do not guarantee
+     * allocating an arena per worker thread. This might lead to higher contention.
+     */
+    private void setArenasMatchingEventLoopCount() {
+        if (System.getProperty("io.netty.allocator.numDirectArenas") == null) {
+            System.setProperty("io.netty.allocator.numDirectArenas", String.valueOf(eventLoopCount));
+        }
+        if (System.getProperty("io.netty.allocator.numHeapArenas") == null) {
+            System.setProperty("io.netty.allocator.numHeapArenas", String.valueOf(eventLoopCount));
+        }
     }
 }
