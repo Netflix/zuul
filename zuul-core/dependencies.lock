@@ -1,8 +1,8 @@
 {
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -45,8 +45,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
@@ -120,8 +120,8 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -164,8 +164,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
@@ -238,8 +238,8 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -286,8 +286,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
@@ -376,8 +376,8 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -420,8 +420,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
@@ -486,8 +486,8 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -534,8 +534,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
@@ -604,8 +604,8 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.11.0",
+            "requested": "2.11.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.9.8",
@@ -652,8 +652,8 @@
             "requested": "2.7.17"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.110.0",
+            "requested": "0.110.0"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.50.Final",
