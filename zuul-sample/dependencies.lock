@@ -146,7 +146,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.21.0"
+            "locked": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -638,7 +638,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.21.0"
+            "locked": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -856,7 +856,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.21.0"
+            "locked": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1206,7 +1206,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.21.0"
+            "locked": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
