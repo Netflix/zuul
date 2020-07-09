@@ -482,7 +482,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                     PerfMark.linkIn(onNextLinkIn);
                     onNextLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask();                }
+                    PerfMark.stopTask();
+                }
             };
         }
 
@@ -493,7 +494,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                     PerfMark.linkIn(onErrorLinkIn);
                     onErrorLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask();                }
+                    PerfMark.stopTask();
+                }
             };
         }
 
@@ -504,7 +506,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                     PerfMark.linkIn(onCompletedLinkIn);
                     onCompletedLinkOut.compareAndSet(null, PerfMark.linkOut());
                 } finally {
-                    PerfMark.stopTask();                }
+                    PerfMark.stopTask();
+                }
             };
         }
     }
