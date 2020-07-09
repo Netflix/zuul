@@ -84,7 +84,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
 
         final String endpointName = getEndPointName(zuulReq.getContext());
-        PerfMark.startTask(getClass().getName(), "filter");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".filter");
         try {
             Preconditions.checkNotNull(zuulReq, "input message");
             addPerfMarkTags(zuulReq);
@@ -103,20 +103,20 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         catch (Exception ex) {
             handleException(zuulReq, endpointName, ex);
         } finally {
-            PerfMark.stopTask(getClass().getName(), "filter");
+            PerfMark.stopTask();
         }
     }
 
     @Override
     protected void resume(final HttpResponseMessage zuulMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "resume");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".resume");
         try {
             if (zuulMesg.getContext().isCancelled()) {
                 return;
             }
             invokeNextStage(zuulMesg);
         } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "resume");
+            PerfMark.stopTask();
         }
     }
 
@@ -128,7 +128,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
 
         String endpointName = "-";
-        PerfMark.startTask(getClass().getName(), "filterChunk");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".filterChunk");
         try {
             addPerfMarkTags(zuulReq);
             ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint = Preconditions.checkNotNull(
@@ -154,7 +154,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         catch (Exception ex) {
             handleException(zuulReq, endpointName, ex);
         } finally {
-            PerfMark.stopTask(getClass().getName(), "filterChunk");
+            PerfMark.stopTask();
         }
     }
 
