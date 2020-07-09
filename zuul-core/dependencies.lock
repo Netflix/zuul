@@ -85,8 +85,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -204,8 +204,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -330,8 +330,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -464,8 +464,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -574,8 +574,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
@@ -696,8 +696,8 @@
             "requested": "4.1.50.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.22.0",
+            "requested": "0.22.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1",
