@@ -50,24 +50,24 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
     @Override
     public void filter(final T inMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "filter");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".filter");
         try {
             addPerfMarkTags(inMesg);
             runFilters(inMesg, initRunningFilterIndex(inMesg));
         } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "filter");
+            PerfMark.stopTask();
         }
     }
 
     @Override
     protected void resume(final T inMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "resume");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".resume");
         try {
             final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
             runningFilterIdx.incrementAndGet();
             runFilters(inMesg, runningFilterIdx);
         } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "resume");
+            PerfMark.stopTask();
         }
     }
 
@@ -100,7 +100,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     @Override
     public void filter(T inMesg, HttpContent chunk) {
         String filterName = "-";
-        PerfMark.startTask(getClass().getName(), "filterChunk");
+        PerfMark.startTask(this, s -> s.getClass().getSimpleName() + ".filterChunk");
         try {
             addPerfMarkTags(inMesg);
             Preconditions.checkNotNull(inMesg, "input message");
@@ -160,7 +160,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         catch (Exception ex) {
             handleException(inMesg, filterName, ex);
         } finally {
-            PerfMark.stopTask(getClass().getName(), "filterChunk");
+            PerfMark.stopTask();
         }
     }
 
