@@ -370,7 +370,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -416,7 +416,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21",
@@ -550,7 +550,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -592,7 +592,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -724,7 +724,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -766,7 +766,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1021,7 +1021,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -1067,7 +1067,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [

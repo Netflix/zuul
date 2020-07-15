@@ -378,7 +378,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -424,14 +424,14 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",
             "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -566,7 +566,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -608,7 +608,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",
@@ -744,7 +744,7 @@
             "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {
@@ -875,7 +875,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.30.Final"
+            "locked": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -921,14 +921,14 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.65.01"
+            "locked": "1.66"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.3",
             "requested": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {

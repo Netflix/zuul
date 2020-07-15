@@ -97,7 +97,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.slf4j:slf4j-api": {
@@ -216,7 +216,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -314,8 +314,8 @@
             "requested": "4.1.51.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.31.Final",
+            "requested": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.51.Final",
@@ -346,11 +346,11 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -448,8 +448,8 @@
             "requested": "4.1.51.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.31.Final",
+            "requested": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.51.Final",
@@ -476,7 +476,7 @@
             "requested": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.slf4j:slf4j-api": {
@@ -590,11 +590,11 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {
@@ -680,8 +680,8 @@
             "requested": "4.1.51.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.31.Final",
+            "requested": "2.0.31.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.51.Final",
@@ -712,11 +712,11 @@
             "requested": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65.01",
+            "locked": "1.66",
             "requested": "1.+"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "3.4.0",
             "requested": "3.+"
         },
         "org.slf4j:slf4j-api": {
