@@ -503,7 +503,7 @@ public final class Headers {
     private String sanitizeField(String value) {
         if (value != null) {
             int l = value.length();
-            StringBuilder clean = new StringBuilder();
+            StringBuilder clean = new StringBuilder(l);
             for (int i = 0; i < l; i++) {
                 char c = value.charAt(i);
                 // ASCII non-control characters, per RFC 7230
