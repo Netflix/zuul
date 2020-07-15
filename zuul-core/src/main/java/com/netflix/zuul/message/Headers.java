@@ -511,7 +511,7 @@ public final class Headers {
                 if (c < 31 || c >= 127) {
                     Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
                     throw new ZuulException("Invalid header field: char " + (int) c + " in string " + value
-                            + " does not comply with RFC 7230", true);
+                            + " does not comply with RFC 7230");
                 }
             }
         }
