@@ -18,6 +18,7 @@ package com.netflix.zuul.message;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.zuul.exception.ZuulException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -464,7 +465,7 @@ public final class Headers {
     }
 
     private void originalName(int i, String originalName) {
-        originalNames.set(i, sanitizeField(originalName));
+        originalNames.set(i, validateField(originalName));
     }
 
     private String name(int i) {
@@ -472,7 +473,7 @@ public final class Headers {
     }
 
     private void name(int i, String name) {
-        names.set(i, sanitizeField(name));
+        names.set(i, validateField(name));
     }
 
     private String value(int i) {
@@ -480,13 +481,13 @@ public final class Headers {
     }
 
     private void value(int i, String val) {
-        values.set(i, sanitizeField(val));
+        values.set(i, validateField(val));
     }
 
     private void addNormal(String originalName, String normalName, String value) {
-        originalNames.add(sanitizeField(originalName));
-        names.add(sanitizeField(normalName));
-        values.add(sanitizeField(value));
+        originalNames.add(validateField(originalName));
+        names.add(validateField(normalName));
+        values.add(validateField(value));
     }
 
     /**
@@ -500,18 +501,17 @@ public final class Headers {
         }
     }
 
-    private String sanitizeField(String value) {
+    private String validateField(String value) {
         if (value != null) {
             int l = value.length();
-            StringBuilder clean = new StringBuilder(l);
             for (int i = 0; i < l; i++) {
                 char c = value.charAt(i);
                 // ASCII non-control characters, per RFC 7230
-                if (c > 31 && c < 127) {
-                    clean.append(c);
+                if (c < 31 || c >= 127) {
+                    throw new ZuulException("Invalid header field: char " + (int) c + " in string " + value
+                            + " does not comply with RFC 7230", true);
                 }
             }
-            return clean.toString();
         }
         return value;
     }
