@@ -464,7 +464,7 @@ public final class Headers {
     }
 
     private void originalName(int i, String originalName) {
-        originalNames.set(i, originalName);
+        originalNames.set(i, sanitizeField(originalName));
     }
 
     private String name(int i) {
@@ -472,7 +472,7 @@ public final class Headers {
     }
 
     private void name(int i, String name) {
-        names.set(i, name);
+        names.set(i, sanitizeField(name));
     }
 
     private String value(int i) {
@@ -480,13 +480,13 @@ public final class Headers {
     }
 
     private void value(int i, String val) {
-        values.set(i, val);
+        values.set(i, sanitizeField(val));
     }
 
     private void addNormal(String originalName, String normalName, String value) {
-        originalNames.add(originalName);
-        names.add(normalName);
-        values.add(value);
+        originalNames.add(sanitizeField(originalName));
+        names.add(sanitizeField(normalName));
+        values.add(sanitizeField(value));
     }
 
     /**
@@ -498,5 +498,21 @@ public final class Headers {
             names.remove(k);
             values.remove(k);
         }
+    }
+
+    private String sanitizeField(String value) {
+        if (value != null) {
+            int l = value.length();
+            StringBuilder clean = new StringBuilder();
+            for (int i = 0; i < l; i++) {
+                char c = value.charAt(i);
+                // ASCII non-control characters, per RFC 7230
+                if (c > 31 && c < 127) {
+                    clean.append(c);
+                }
+            }
+            return clean.toString();
+        }
+        return value;
     }
 }

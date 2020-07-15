@@ -487,4 +487,44 @@ public class HeadersTest {
         assertTrue(values.contains("5"));
         assertEquals(2, values.size());
     }
+
+    @Test
+    public void testSanitizeValues_CRLF() {
+        Headers headers = new Headers();
+        headers.add("x-test-break1", "a\r\nb\r\nc");
+        headers.set("x-test-break2", "a\r\nb\r\nc");
+
+        assertEquals(headers.getFirst("x-test-break1"), "abc");
+        assertEquals(headers.getFirst("x-test-break2"), "abc");
+    }
+
+    @Test
+    public void testSanitizeValues_LF() {
+        Headers headers = new Headers();
+        headers.add("x-test-break1", "a\nb\nc");
+        headers.set("x-test-break2", "a\nb\nc");
+
+        assertEquals(headers.getFirst("x-test-break1"), "abc");
+        assertEquals(headers.getFirst("x-test-break2"), "abc");
+    }
+
+    @Test
+    public void testSanitizeValues_addSetHeaderName() {
+        Headers headers = new Headers();
+        headers.set(new HeaderName("x-test-break1"), "a\nb\nc");
+        headers.add(new HeaderName("x-test-break2"), "a\r\nb\r\nc");
+
+        assertEquals(headers.getFirst("x-test-break1"), "abc");
+        assertEquals(headers.getFirst("x-test-break2"), "abc");
+    }
+
+    @Test
+    public void testSanitizeValues_nameCRLF() {
+        Headers headers = new Headers();
+        headers.add("x-test-br\r\neak1", "a\r\nb\r\nc");
+        headers.set("x-test-br\r\neak2", "a\r\nb\r\nc");
+
+        assertEquals(headers.getFirst("x-test-break1"), "abc");
+        assertEquals(headers.getFirst("x-test-break2"), "abc");
+    }
 }
