@@ -18,6 +18,8 @@ package com.netflix.zuul.message;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.zuul.exception.ZuulException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -464,7 +466,7 @@ public final class Headers {
     }
 
     private void originalName(int i, String originalName) {
-        originalNames.set(i, originalName);
+        originalNames.set(i, validateField(originalName));
     }
 
     private String name(int i) {
@@ -472,7 +474,7 @@ public final class Headers {
     }
 
     private void name(int i, String name) {
-        names.set(i, name);
+        names.set(i, validateField(name));
     }
 
     private String value(int i) {
@@ -480,13 +482,13 @@ public final class Headers {
     }
 
     private void value(int i, String val) {
-        values.set(i, val);
+        values.set(i, validateField(val));
     }
 
     private void addNormal(String originalName, String normalName, String value) {
-        originalNames.add(originalName);
-        names.add(normalName);
-        values.add(value);
+        originalNames.add(validateField(originalName));
+        names.add(validateField(normalName));
+        values.add(validateField(value));
     }
 
     /**
@@ -498,5 +500,21 @@ public final class Headers {
             names.remove(k);
             values.remove(k);
         }
+    }
+
+    private String validateField(String value) {
+        if (value != null) {
+            int l = value.length();
+            for (int i = 0; i < l; i++) {
+                char c = value.charAt(i);
+                // ASCII non-control characters, per RFC 7230 but slightly more lenient
+                if (c < 31 || c >= 127) {
+                    Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+                    throw new ZuulException("Invalid header field: char " + (int) c + " in string " + value
+                            + " does not comply with RFC 7230", true);
+                }
+            }
+        }
+        return value;
     }
 }
