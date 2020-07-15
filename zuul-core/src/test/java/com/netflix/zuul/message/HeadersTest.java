@@ -493,31 +493,31 @@ public class HeadersTest {
     public void testSanitizeValues_CRLF() {
         Headers headers = new Headers();
 
-        assertThrows(ZuulException.class, () -> headers.add("x-test-break1", "a\r\nb\r\nc"));
-        assertThrows(ZuulException.class, () -> headers.set("x-test-break1", "a\r\nb\r\nc"));
+        assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\r\nb\r\nc"));
+        assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-break1", "a\r\nb\r\nc"));
     }
 
     @Test
     public void testSanitizeValues_LF() {
         Headers headers = new Headers();
 
-        assertThrows(ZuulException.class, () -> headers.add("x-test-break1", "a\nb\nc"));
-        assertThrows(ZuulException.class, () -> headers.set("x-test-break1", "a\nb\nc"));
+        assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\nb\nc"));
+        assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-break1", "a\nb\nc"));
     }
 
     @Test
     public void testSanitizeValues_addSetHeaderName() {
         Headers headers = new Headers();
 
-        assertThrows(ZuulException.class, () -> headers.set(new HeaderName("x-test-break1"), "a\nb\nc"));
-        assertThrows(ZuulException.class, () -> headers.add(new HeaderName("x-test-break2"), "a\r\nb\r\nc"));
+        assertThrows(ZuulException.class, () -> headers.setAndValidate(new HeaderName("x-test-break1"), "a\nb\nc"));
+        assertThrows(ZuulException.class, () -> headers.addAndValidate(new HeaderName("x-test-break2"), "a\r\nb\r\nc"));
     }
 
     @Test
     public void testSanitizeValues_nameCRLF() {
         Headers headers = new Headers();
 
-        assertThrows(ZuulException.class, () -> headers.add("x-test-br\r\neak1", "a\r\nb\r\nc"));
-        assertThrows(ZuulException.class, () -> headers.set("x-test-br\r\neak2", "a\r\nb\r\nc"));
+        assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-br\r\neak1", "a\r\nb\r\nc"));
+        assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-br\r\neak2", "a\r\nb\r\nc"));
     }
 }

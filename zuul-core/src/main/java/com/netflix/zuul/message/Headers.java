@@ -183,6 +183,26 @@ public final class Headers {
         setNormal(headerName.getName(), normalName, value);
     }
 
+    /**
+     * Replace any/all entries with this key, with this single entry and validate.
+     *
+     * If value is {@code null}, then not added, but any existing header of same name is removed.
+     */
+    public void setAndValidate(String headerName, @Nullable String value) {
+        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        setNormal(validateField(headerName), validateField(normalName), validateField(value));
+    }
+
+    /**
+     * Replace any/all entries with this key, with this single entry and validate.
+     *
+     * If value is {@code null}, then not added, but any existing header of same name is removed.
+     */
+    public void setAndValidate(HeaderName headerName, String value) {
+        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        setNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
+    }
+
     private void setNormal(String originalName, String normalName, @Nullable String value) {
         int i = findNormal(normalName);
         if (i == ABSENT) {
@@ -281,6 +301,24 @@ public final class Headers {
         String normalName = requireNonNull(headerName, "headerName").getNormalised();
         requireNonNull(value, "value");
         addNormal(headerName.getName(), normalName, value);
+    }
+
+    /**
+     * Adds the name and value to the headers and validate.
+     */
+    public void addAndValidate(String headerName, String value) {
+        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        requireNonNull(value, "value");
+        addNormal(validateField(headerName), validateField(normalName), validateField(value));
+    }
+
+    /**
+     * Adds the name and value to the headers and validate
+     */
+    public void addAndValidate(HeaderName headerName, String value) {
+        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        requireNonNull(value, "value");
+        addNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
     }
 
     /**
@@ -466,7 +504,7 @@ public final class Headers {
     }
 
     private void originalName(int i, String originalName) {
-        originalNames.set(i, validateField(originalName));
+        originalNames.set(i, originalName);
     }
 
     private String name(int i) {
@@ -474,7 +512,7 @@ public final class Headers {
     }
 
     private void name(int i, String name) {
-        names.set(i, validateField(name));
+        names.set(i, name);
     }
 
     private String value(int i) {
@@ -482,13 +520,13 @@ public final class Headers {
     }
 
     private void value(int i, String val) {
-        values.set(i, validateField(val));
+        values.set(i, val);
     }
 
     private void addNormal(String originalName, String normalName, String value) {
-        originalNames.add(validateField(originalName));
-        names.add(validateField(normalName));
-        values.add(validateField(value));
+        originalNames.add(originalName);
+        names.add(normalName);
+        values.add(value);
     }
 
     /**
