@@ -187,6 +187,8 @@ public final class Headers {
      * Replace any/all entries with this key, with this single entry and validate.
      *
      * If value is {@code null}, then not added, but any existing header of same name is removed.
+     *
+     * @throws ZuulException on invalid name or value
      */
     public void setAndValidate(String headerName, @Nullable String value) {
         String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
@@ -197,6 +199,8 @@ public final class Headers {
      * Replace any/all entries with this key, with this single entry and validate.
      *
      * If value is {@code null}, then not added, but any existing header of same name is removed.
+     *
+     * @throws ZuulException on invalid name or value
      */
     public void setAndValidate(HeaderName headerName, String value) {
         String normalName = requireNonNull(headerName, "headerName").getNormalised();
@@ -305,6 +309,8 @@ public final class Headers {
 
     /**
      * Adds the name and value to the headers and validate.
+     *
+     * @throws ZuulException on invalid name or value
      */
     public void addAndValidate(String headerName, String value) {
         String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
@@ -314,6 +320,8 @@ public final class Headers {
 
     /**
      * Adds the name and value to the headers and validate
+     *
+     * @throws ZuulException on invalid name or value
      */
     public void addAndValidate(HeaderName headerName, String value) {
         String normalName = requireNonNull(headerName, "headerName").getNormalised();
