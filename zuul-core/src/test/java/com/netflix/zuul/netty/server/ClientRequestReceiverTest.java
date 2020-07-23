@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -34,9 +35,12 @@ import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Spectator;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.netty.insights.PassportLoggingHandler;
 import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
+import com.netflix.zuul.stats.status.StatusCategoryUtils;
+import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -162,6 +166,9 @@ public class ClientRequestReceiverTest {
         channel.writeInbound(byteBuf);
         channel.readInbound();
         channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        assertEquals(StatusCategoryUtils.getStatusCategory(request.getContext()), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
     }
 }
 
