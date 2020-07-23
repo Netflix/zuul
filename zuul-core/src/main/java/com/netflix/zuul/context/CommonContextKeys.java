@@ -24,7 +24,7 @@ package com.netflix.zuul.context;
  */
 public class CommonContextKeys {
 
-    public static final String STATUS_CATGEORY = "status_category";
+    public static final String STATUS_CATEGORY = "status_category";
     public static final String ORIGIN_STATUS_CATEGORY = "origin_status_category";
     public static final String ORIGIN_STATUS = "origin_status";
     public static final String REQUEST_ATTEMPTS = "request_attempts";
