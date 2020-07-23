@@ -134,7 +134,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void testLargeHttpHeaderDecodeResult(){
+    public void maxHeaderSizeExceeded_setBadRequestStatus(){
 
         int maxInitialLineLength = BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get();
         int maxHeaderSize = 10;
