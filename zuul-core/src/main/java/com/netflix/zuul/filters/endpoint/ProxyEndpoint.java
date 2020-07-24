@@ -852,7 +852,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         origin.recordFinalResponse(zuulResponse);
         origin.recordFinalError(zuulRequest, ex);
         origin.getProxyTiming(zuulRequest).end();
-        zuulCtx.set(CommonContextKeys.STATUS_CATEGORY, statusCategory);
+        zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
         zuulCtx.setError(ex);
         zuulCtx.put("origin_http_status", Integer.toString(respStatus));
 
@@ -1111,7 +1111,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private void verifyOrigin(SessionContext context, HttpRequestMessage request, String restClientName, Origin primaryOrigin) {
         if (primaryOrigin == null) {
             // If no origin found then add specific error-cause metric tag, and throw an exception with 404 status.
-            context.set(CommonContextKeys.STATUS_CATEGORY, SUCCESS_LOCAL_NO_ROUTE);
+            context.set(CommonContextKeys.STATUS_CATGEORY, SUCCESS_LOCAL_NO_ROUTE);
             String causeName = "RESTCLIENT_NOTFOUND";
             originNotFound(context, causeName);
             ZuulException ze = new ZuulException("No origin found for request. name=" + restClientName
