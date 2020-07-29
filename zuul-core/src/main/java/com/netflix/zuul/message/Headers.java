@@ -554,7 +554,7 @@ public final class Headers {
             for (int i = 0; i < l; i++) {
                 char c = value.charAt(i);
                 // ASCII non-control characters, per RFC 7230 but slightly more lenient
-                if (c < 31 || c >= 127) {
+                if (c < 31 || c == 127) {
                     Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
                     throw new ZuulException("Invalid header field: char " + (int) c + " in string " + value
                             + " does not comply with RFC 7230");
