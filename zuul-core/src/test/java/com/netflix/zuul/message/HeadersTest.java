@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.exception.ZuulException;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -503,6 +505,39 @@ public class HeadersTest {
 
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\nb\nc"));
         assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-break1", "a\nb\nc"));
+    }
+
+    @Test
+    public void testSanitizeValues_ISO88591Value() {
+        Headers headers = new Headers();
+
+        headers.addAndValidate("x-test-ISO-8859-1", "P Venkmän");
+        Truth.assertThat(headers.getAll("x-test-ISO-8859-1")).containsExactly("P Venkmän");
+        Truth.assertThat(headers.size()).isEqualTo(1);
+
+        headers.setAndValidate("x-test-ISO-8859-1", "Venkmän");
+        Truth.assertThat(headers.getAll("x-test-ISO-8859-1")).containsExactly("Venkmän");
+        Truth.assertThat(headers.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testSanitizeValues_UTF8Value() {
+        // Ideally Unicode characters should not appear in the Header values.
+        Headers headers = new Headers();
+
+        String rawHeaderValue = "\u017d" + "\u0172" + "\u016e" + "\u013F"; //ŽŲŮĽ
+        byte[] bytes = rawHeaderValue.getBytes(StandardCharsets.UTF_8);
+        String utf8HeaderValue = new String(bytes, StandardCharsets.UTF_8);
+        headers.addAndValidate("x-test-UTF8", utf8HeaderValue);
+        Truth.assertThat(headers.getAll("x-test-UTF8")).containsExactly(utf8HeaderValue);
+        Truth.assertThat(headers.size()).isEqualTo(1);
+
+        rawHeaderValue = "\u017d" + "\u0172" + "uuu" + "\u016e" + "\u013F"; //ŽŲuuuŮĽ
+        bytes = rawHeaderValue.getBytes(StandardCharsets.UTF_8);
+        utf8HeaderValue = new String(bytes, StandardCharsets.UTF_8);
+        headers.setAndValidate("x-test-UTF8", utf8HeaderValue);
+        Truth.assertThat(headers.getAll("x-test-UTF8")).containsExactly(utf8HeaderValue);
+        Truth.assertThat(headers.size()).isEqualTo(1);
     }
 
     @Test
