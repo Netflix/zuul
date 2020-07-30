@@ -33,7 +33,6 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
 
-    public SslHandshakeInfoHandler(@Nullable Registry spectatorRegistry, boolean isSSlFromIntermediary)
+    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary)
     {
         this.spectatorRegistry = checkNotNull(spectatorRegistry);
         this.isSSlFromIntermediary = isSSlFromIntermediary;

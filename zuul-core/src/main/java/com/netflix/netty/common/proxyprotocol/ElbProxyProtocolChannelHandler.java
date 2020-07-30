@@ -25,7 +25,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ProtocolDetectionState;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
-import javax.annotation.Nullable;
 
 /**
  * Decides if we need to decode a HAProxyMessage. If so, adds the decoder followed by the handler.
@@ -38,7 +37,7 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
     private final Registry spectatorRegistry;
     private final Counter hapmDecodeFailure;
 
-    public ElbProxyProtocolChannelHandler(@Nullable Registry registry, boolean withProxyProtocol) {
+    public ElbProxyProtocolChannelHandler(Registry registry, boolean withProxyProtocol) {
         this.withProxyProtocol = withProxyProtocol;
         this.spectatorRegistry = checkNotNull(registry);
         this.hapmDecodeFailure = spectatorRegistry.counter("zuul.hapm.failure");
