@@ -522,14 +522,17 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public int getOriginalPort() {
         try {
-            return getOriginalPort(getHeaders(), getPort());
+            return getOriginalPort(getContext(), getHeaders(), getPort());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @VisibleForTesting
-    static int getOriginalPort(Headers headers, int serverPort) throws URISyntaxException {
+    static int getOriginalPort(SessionContext context, Headers headers, int serverPort) throws URISyntaxException {
+        if (context.containsKey(CommonContextKeys.REMOTE_PORT)) {
+            return (int) context.get(CommonContextKeys.REMOTE_PORT);
+        }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
         if (portStr != null) {
             return Integer.parseInt(portStr);

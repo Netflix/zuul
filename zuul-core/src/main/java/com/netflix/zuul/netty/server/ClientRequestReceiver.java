@@ -62,6 +62,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -267,6 +269,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         // This is the only way I found to get the port of the request with netty...
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
+        final SocketAddress remoteAddress = channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get();
+        if (remoteAddress instanceof InetSocketAddress) {
+            context.set(CommonContextKeys.REMOTE_PORT, ((InetSocketAddress) remoteAddress).getPort());
+        }
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
         final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
 
