@@ -48,7 +48,7 @@ public class CommonContextKeys {
      * The original client port reported to Zuul by a proxy running Proxy Protocol.
      * Will only be set if both Zuul and the connected proxy are both using set to use Proxy Protocol.
      */
-    public static final String PROXY_PROTOCOL_PORT = "proxy_protocol";
+    public static final String PROXY_PROTOCOL_PORT = "proxy_protocol_port";
 
     public static final String SSL_HANDSHAKE_INFO = "ssl_handshake_info";
 
