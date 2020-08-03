@@ -341,7 +341,7 @@ public class HttpRequestMessageImplTest {
     @Test
     public void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
         SessionContext context = new SessionContext();
-        context.set(CommonContextKeys.REMOTE_PORT, 443);
+        context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, 443);
         Headers headers = new Headers();
         headers.add("X-Forwarded-Port", "6000");
         assertEquals(443, HttpRequestMessageImpl.getOriginalPort(context, headers, 9999));

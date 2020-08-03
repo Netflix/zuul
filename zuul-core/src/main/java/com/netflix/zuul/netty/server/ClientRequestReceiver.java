@@ -22,6 +22,7 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReaso
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -63,7 +64,6 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -269,9 +269,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         // This is the only way I found to get the port of the request with netty...
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
-        final SocketAddress remoteAddress = channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get();
-        if (remoteAddress instanceof InetSocketAddress) {
-            context.set(CommonContextKeys.REMOTE_PORT, ((InetSocketAddress) remoteAddress).getPort());
+        final HAProxyMessage haProxyMessage = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+        if (haProxyMessage != null) {
+            context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, haProxyMessage.sourcePort());
         }
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
         final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();

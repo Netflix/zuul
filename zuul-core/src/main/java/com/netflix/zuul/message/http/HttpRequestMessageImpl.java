@@ -530,8 +530,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @VisibleForTesting
     static int getOriginalPort(SessionContext context, Headers headers, int serverPort) throws URISyntaxException {
-        if (context.containsKey(CommonContextKeys.REMOTE_PORT)) {
-            return (int) context.get(CommonContextKeys.REMOTE_PORT);
+        if (context.containsKey(CommonContextKeys.PROXY_PROTOCOL_PORT)) {
+            return (int) context.get(CommonContextKeys.PROXY_PROTOCOL_PORT);
         }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
         if (portStr != null) {
