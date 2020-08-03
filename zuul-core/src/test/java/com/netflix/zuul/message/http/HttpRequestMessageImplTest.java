@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import io.netty.channel.local.LocalAddress;
@@ -334,7 +335,16 @@ public class HttpRequestMessageImplTest {
         Headers headers = new Headers();
         headers.add("Host", "ba::33");
 
-        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(headers, 9999));
+        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+    }
+
+    @Test
+    public void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
+        SessionContext context = new SessionContext();
+        context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, 443);
+        Headers headers = new Headers();
+        headers.add("X-Forwarded-Port", "6000");
+        assertEquals(443, HttpRequestMessageImpl.getOriginalPort(context, headers, 9999));
     }
 
     @Test
