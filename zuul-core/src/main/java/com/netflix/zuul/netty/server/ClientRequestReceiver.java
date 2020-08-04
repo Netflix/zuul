@@ -271,7 +271,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
         final HAProxyMessage haProxyMessage = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
         if (haProxyMessage != null) {
-            context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, haProxyMessage.sourcePort());
+            context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, haProxyMessage.destinationPort());
         }
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
         final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
