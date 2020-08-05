@@ -54,7 +54,6 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
             if (destinationAddress != null) {
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).set(destinationAddress);
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(hapm.destinationPort());
-
                 SocketAddress addr;
                 out:
                 {
@@ -63,8 +62,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             throw new IllegalArgumentException("unknown proxy protocl" + destinationAddress);
                         case TCP4:
                         case TCP6:
-                            addr = new InetSocketAddress(
+                            InetSocketAddress inetAddr = new InetSocketAddress(
                                     InetAddresses.forString(destinationAddress), hapm.destinationPort());
+                            addr = inetAddr;
+                            channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(inetAddr);
                             break out;
                         case UNIX_STREAM: // TODO: implement
                         case UDP4:
