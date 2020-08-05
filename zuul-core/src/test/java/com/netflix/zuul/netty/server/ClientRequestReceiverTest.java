@@ -51,7 +51,7 @@ public class ClientRequestReceiverTest {
                 HAProxyProtocolVersion.V2,
                 HAProxyCommand.PROXY,
                 HAProxyProxiedProtocol.TCP4,
-                "1.1.1.1", "2.2.2.2", 444, 9000);
+                "1.1.1.1", "2.2.2.2", 9000, 444);
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(receiver);
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
