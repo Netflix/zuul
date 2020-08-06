@@ -25,10 +25,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.net.InetAddresses;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import io.netty.channel.local.LocalAddress;
+
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URISyntaxException;
@@ -341,7 +344,8 @@ public class HttpRequestMessageImplTest {
     @Test
     public void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
         SessionContext context = new SessionContext();
-        context.set(CommonContextKeys.PROXY_PROTOCOL_PORT, 443);
+        context.set(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS,
+                new InetSocketAddress(InetAddresses.forString("1.1.1.1"), 443));
         Headers headers = new Headers();
         headers.add("X-Forwarded-Port", "6000");
         assertEquals(443, HttpRequestMessageImpl.getOriginalPort(context, headers, 9999));

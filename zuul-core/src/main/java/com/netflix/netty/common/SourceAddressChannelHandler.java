@@ -48,6 +48,12 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
      */
     public static final AttributeKey<SocketAddress> ATTR_REMOTE_ADDR = AttributeKey.newInstance("_remote_addr");
 
+    /**
+     * Indicates the destination address received from Proxy Protocol. Not set otherwise
+     */
+    public static final AttributeKey<InetSocketAddress> ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS =
+            AttributeKey.newInstance("_proxy_protocol_destination_address");
+
     /** Use {@link #ATTR_REMOTE_ADDR} instead. */
     @Deprecated
     public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR =
