@@ -65,6 +65,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             InetSocketAddress inetAddr = new InetSocketAddress(
                                     InetAddresses.forString(destinationAddress), hapm.destinationPort());
                             addr = inetAddr;
+                            // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_LOCAL_ADDR could be PPv2 or not
                             channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(inetAddr);
                             break out;
                         case UNIX_STREAM: // TODO: implement

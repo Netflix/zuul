@@ -28,10 +28,6 @@ import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.haproxy.HAProxyCommand;
-import io.netty.handler.codec.haproxy.HAProxyMessage;
-import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
-import io.netty.handler.codec.haproxy.HAProxyProxiedProtocol;
 import io.netty.handler.codec.http.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,24 +44,19 @@ import static org.junit.Assert.*;
 public class ClientRequestReceiverTest {
 
     @Test
-    public void proxyProtocol_portSetInContextAndInHttpRequestMessage() {
-        HAProxyMessage hapm = new HAProxyMessage(
-                HAProxyProtocolVersion.V2,
-                HAProxyCommand.PROXY,
-                HAProxyProxiedProtocol.TCP4,
-                "1.1.1.1", "2.2.2.2", 9000, 444);
-        InetSocketAddress hapmDestinationAddress = new InetSocketAddress(InetAddresses.forString("2.2.2.2"), 444);
+    public void proxyProtocol_portSetInSessionContextAndInHttpRequestMessageImpl() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        InetSocketAddress hapmDestinationAddress = new InetSocketAddress(InetAddresses.forString("2.2.2.2"), 444);
         channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(hapmDestinationAddress);
+        channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(hapmDestinationAddress);
         HttpRequestMessageImpl result;
         {
             channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-        // not sure how to wire this next assertion up, SourceAddressChannelHandler is needed in the channel pipeline
-//        assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
+        assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
         int destinationPort = ((InetSocketAddress) result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
         assertEquals(destinationPort, 444);
         assertEquals(result.getOriginalPort(), 444);

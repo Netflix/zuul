@@ -256,7 +256,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // This is the only way I found to get the port of the request with netty...
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
-        final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get();
+        final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
         final InetSocketAddress proxyProtocolDestinationAddress =
                 channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
         if (proxyProtocolDestinationAddress != null) {
