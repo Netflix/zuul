@@ -49,7 +49,14 @@ public class HAProxyMessageChannelHandlerTest {
 
         InetSocketAddress destAddress = channel
                 .attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
+
+        InetSocketAddress srcAddress = (InetSocketAddress) channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR)
+                .get();
+
         assertEquals("124.123.111.111", destAddress.getHostString());
         assertEquals(443, destAddress.getPort());
+
+        assertEquals("192.168.0.1", srcAddress.getHostString());
+        assertEquals(10008, srcAddress.getPort());
     }
 }
