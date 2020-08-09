@@ -203,6 +203,30 @@ public class HeadersTest {
     }
 
     @Test
+    public void setIfValid() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Cookie", "frizzle=frazzle");
+        headers.add("X-Valid-K1", "abc-xyz");
+        headers.add("X-Valid-K2", "def-xyz");
+        headers.add("X-Valid-K3", "xyz-xyz");
+
+        headers.setIfValid(new HeaderName("cookIe"), null);
+        headers.setIfValid(new HeaderName("X-Valid-K1"), "abc\r\n-xy\r\nz");
+        headers.setIfValid("X-Valid-K2", "abc\r-xy\rz");
+        headers.setIfValid("X-Valid-K3", "abc\n-xy\nz");
+        headers.setIfValid("X-Valid-K4", "abc-abc");
+
+        Truth.assertThat(headers.getAll("CookiE")).isEmpty();
+        Truth.assertThat(headers.getAll("X-Valid-K1")).containsExactly("abc-xyz");
+        Truth.assertThat(headers.getAll("X-Valid-K2")).containsExactly("def-xyz");
+        Truth.assertThat(headers.getAll("X-Valid-K3")).containsExactly("xyz-xyz");
+        Truth.assertThat(headers.getAll("X-Valid-K4")).containsExactly("abc-abc");
+        Truth.assertThat(headers.size()).isEqualTo(5);
+    }
+
+    @Test
     public void setIfAbsentKeepsExisting() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
@@ -271,6 +295,26 @@ public class HeadersTest {
     }
 
     @Test
+    public void setIfAbsentAndValid() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Cookie", "frizzle=frazzle");
+
+        headers.setIfAbsentAndValid("X-Netflix-Awesome", "true");
+        headers.setIfAbsentAndValid("X-Netflix-Awesome", "True");
+        headers.setIfAbsentAndValid("X-Invalid-K1", "abc\r\nxy\r\nz");
+        headers.setIfAbsentAndValid("X-Invalid-K2", "abc\rxy\rz");
+        headers.setIfAbsentAndValid("X-Invalid-K3", "abc\nxy\nz");
+
+        Truth.assertThat(headers.getAll("X-netflix-Awesome")).containsExactly("true");
+        Truth.assertThat(headers.getAll("X-Invalid-K1")).isEmpty();
+        Truth.assertThat(headers.getAll("X-Invalid-K2")).isEmpty();
+        Truth.assertThat(headers.getAll("X-Invalid-K3")).isEmpty();
+        Truth.assertThat(headers.size()).isEqualTo(4);
+    }
+
+    @Test
     public void add() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
@@ -292,6 +336,24 @@ public class HeadersTest {
         headers.add(new HeaderName("via"), "con Dios");
 
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct", "con Dios").inOrder();
+    }
+
+    @Test
+    public void addIfValid() {
+        Headers headers = new Headers();
+        headers.addIfValid("Via", "duct");
+        headers.addIfValid("Cookie", "abc=def");
+        headers.addIfValid(new HeaderName("cookie"), "uvw=xyz");
+        headers.addIfValid("X-Invalid-K1", "abc\r\nxy\r\nz");
+        headers.addIfValid("X-Invalid-K2", "abc\rxy\rz");
+        headers.addIfValid("X-Invalid-K3", "abc\nxy\nz");
+
+        Truth.assertThat(headers.getAll("Via")).containsExactly("duct");
+        Truth.assertThat(headers.getAll("Cookie")).containsExactly("abc=def", "uvw=xyz").inOrder();
+        Truth.assertThat(headers.getAll("X-Invalid-K1")).isEmpty();
+        Truth.assertThat(headers.getAll("X-Invalid-K2")).isEmpty();
+        Truth.assertThat(headers.getAll("X-Invalid-K3")).isEmpty();
+        Truth.assertThat(headers.size()).isEqualTo(3);
     }
 
     @Test

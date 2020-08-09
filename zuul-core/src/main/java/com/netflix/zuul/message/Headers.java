@@ -196,6 +196,30 @@ public final class Headers {
     }
 
     /**
+     * Replace any/all entries with this key, with this single entry if the key and entry are valid.
+     *
+     * If value is {@code null}, then not added, but any existing header of same name is removed.
+     */
+    public void setIfValid(HeaderName headerName, String value) {
+        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        if (isValid(headerName.getName()) && isValid(normalName) && isValid(value)) {
+            setNormal(headerName.getName(), normalName, value);
+        }
+    }
+
+    /**
+     * Replace any/all entries with this key, with this single entry if the key and entry are valid.
+     *
+     * If value is {@code null}, then not added, but any existing header of same name is removed.
+     */
+    public void setIfValid(String headerName, @Nullable String value) {
+        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        if (isValid(headerName) && isValid(normalName) && isValid(value)) {
+            setNormal(headerName, normalName, value);
+        }
+    }
+
+    /**
      * Replace any/all entries with this key, with this single entry and validate.
      *
      * If value is {@code null}, then not added, but any existing header of same name is removed.
@@ -290,6 +314,36 @@ public final class Headers {
     }
 
     /**
+     * Validates and adds the name and value to the headers, except if the name is already present.  Unlike
+     * {@link #set(String, String)}, this method does not accept a {@code null} value.
+     *
+     * @return if the value was successfully added.
+     */
+    public boolean setIfAbsentAndValid(String headerName, String value) {
+        requireNonNull(value, "value");
+        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        if (isValid(headerName) && isValid(normalName) && isValid((value))) {
+            return setIfAbsentNormal(headerName, normalName, value);
+        }
+        return false;
+    }
+
+    /**
+     * Validates and adds the name and value to the headers, except if the name is already present.  Unlike
+     * {@link #set(HeaderName, String)}, this method does not accept a {@code null} value.
+     *
+     * @return if the value was successfully added.
+     */
+    public boolean setIfAbsentAndValid(HeaderName headerName, String value) {
+        requireNonNull(value, "value");
+        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        if (isValid(headerName.getName()) && isValid(normalName) && isValid((value))) {
+            return setIfAbsentNormal(headerName.getName(), normalName, value);
+        }
+        return false;
+    }
+
+    /**
      * Adds the name and value to the headers.
      */
     public void add(String headerName, String value) {
@@ -327,6 +381,28 @@ public final class Headers {
         String normalName = requireNonNull(headerName, "headerName").getNormalised();
         requireNonNull(value, "value");
         addNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
+    }
+
+    /**
+     * Adds the name and value to the headers if valid
+     */
+    public void addIfValid(String headerName, String value) {
+        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        requireNonNull(value, "value");
+        if (isValid(headerName) && isValid(normalName) && isValid(value)) {
+            addNormal(validateField(headerName), validateField(normalName), validateField(value));
+        }
+    }
+
+    /**
+     * Adds the name and value to the headers if valid
+     */
+    public void addIfValid(HeaderName headerName, String value) {
+        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        requireNonNull(value, "value");
+        if (isValid(headerName.getName()) && isValid(normalName) && isValid(value)) {
+            addNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
+        }
     }
 
     /**
@@ -548,19 +624,53 @@ public final class Headers {
         }
     }
 
+    /**
+     * Checks if the given value is compliant with our RFC 7230 based check
+     */
+    private boolean isValid(String value) {
+        if (value != null) {
+            int pos = findInvalid(value);
+            if (pos != ABSENT) {
+                Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the input value is compliant with our RFC 7230 based check
+     * Returns input value if valid, raises ZuulException otherwise
+     */
     private String validateField(String value) {
+        if (value != null) {
+            int pos = findInvalid(value);
+            if (pos != ABSENT) {
+                Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+                throw new ZuulException("Invalid header field: char " + (int) value.charAt(pos) + " in string " + value
+                        + " does not comply with RFC 7230");
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Validated the input value based on RFC 7230 but more lenient.
+     * Currently, only ASCII control characters are considered invalid.
+     *
+     * Returns the index of first invalid character. Returns {@link #ABSENT} if absent.
+     */
+    private int findInvalid(String value) {
         if (value != null) {
             int l = value.length();
             for (int i = 0; i < l; i++) {
                 char c = value.charAt(i);
                 // ASCII non-control characters, per RFC 7230 but slightly more lenient
                 if (c < 31 || c == 127) {
-                    Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
-                    throw new ZuulException("Invalid header field: char " + (int) c + " in string " + value
-                            + " does not comply with RFC 7230");
+                    return i;
                 }
             }
         }
-        return value;
+        return -1;
     }
 }
