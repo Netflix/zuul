@@ -636,7 +636,7 @@ public final class Headers {
     /**
      * Checks if the given value is compliant with our RFC 7230 based check
      */
-    private static boolean isValid(String value) {
+    private static boolean isValid(@Nullable String value) {
         if (value == null || findInvalid(value) == ABSENT) {
             return true;
         }
@@ -648,7 +648,7 @@ public final class Headers {
      * Checks if the input value is compliant with our RFC 7230 based check
      * Returns input value if valid, raises ZuulException otherwise
      */
-    private static String validateField(String value) {
+    private static String validateField(@Nullable String value) {
         if (value != null) {
             int pos = findInvalid(value);
             if (pos != ABSENT) {
