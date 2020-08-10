@@ -628,14 +628,11 @@ public final class Headers {
      * Checks if the given value is compliant with our RFC 7230 based check
      */
     private boolean isValid(String value) {
-        if (value != null) {
-            int pos = findInvalid(value);
-            if (pos != ABSENT) {
-                Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
-                return false;
-            }
+        if (value == null || findInvalid(value) == ABSENT) {
+            return true;
         }
-        return true;
+        Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+        return false;
     }
 
     /**
@@ -671,6 +668,6 @@ public final class Headers {
                 }
             }
         }
-        return -1;
+        return ABSENT;
     }
 }
