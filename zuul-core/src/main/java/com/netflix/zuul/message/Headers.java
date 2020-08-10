@@ -667,8 +667,7 @@ public final class Headers {
      * Returns the index of first invalid character. Returns {@link #ABSENT} if absent.
      */
     private static int findInvalid(String value) {
-        int l = value.length();
-        for (int i = 0; i < l; i++) {
+        for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             // ASCII non-control characters, per RFC 7230 but slightly more lenient
             if (c < 31 || c == 127) {
