@@ -18,6 +18,7 @@ package com.netflix.zuul.message;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.exception.ZuulException;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -46,6 +47,8 @@ public final class Headers {
     private final List<String> originalNames;
     private final List<String> names;
     private final List<String> values;
+
+    private static final Counter invalidHeaderCounter = Spectator.globalRegistry().counter("zuul.header.invalid.char");
 
     public static Headers copyOf(Headers original) {
         return new Headers(requireNonNull(original, "original"));
@@ -201,8 +204,9 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void setIfValid(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
-        if (isValid(headerName.getName()) && isValid(normalName) && isValid(value)) {
+        requireNonNull(headerName, "headerName");
+        if (isValid(headerName.getName()) && isValid(value)) {
+            String normalName = headerName.getNormalised();
             setNormal(headerName.getName(), normalName, value);
         }
     }
@@ -213,8 +217,9 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void setIfValid(String headerName, @Nullable String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
-        if (isValid(headerName) && isValid(normalName) && isValid(value)) {
+        requireNonNull(headerName, "headerName");
+        if (isValid(headerName) && isValid(value)) {
+            String normalName = HeaderName.normalize(headerName);
             setNormal(headerName, normalName, value);
         }
     }
@@ -321,8 +326,9 @@ public final class Headers {
      */
     public boolean setIfAbsentAndValid(String headerName, String value) {
         requireNonNull(value, "value");
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
-        if (isValid(headerName) && isValid(normalName) && isValid((value))) {
+        requireNonNull(headerName, "headerName");
+        if (isValid(headerName) && isValid(value)) {
+            String normalName = HeaderName.normalize(headerName);
             return setIfAbsentNormal(headerName, normalName, value);
         }
         return false;
@@ -336,8 +342,9 @@ public final class Headers {
      */
     public boolean setIfAbsentAndValid(HeaderName headerName, String value) {
         requireNonNull(value, "value");
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
-        if (isValid(headerName.getName()) && isValid(normalName) && isValid((value))) {
+        requireNonNull(headerName, "headerName");
+        if (isValid(headerName.getName()) && isValid((value))) {
+            String normalName = headerName.getNormalised();
             return setIfAbsentNormal(headerName.getName(), normalName, value);
         }
         return false;
@@ -387,10 +394,11 @@ public final class Headers {
      * Adds the name and value to the headers if valid
      */
     public void addIfValid(String headerName, String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        requireNonNull(headerName, "headerName");
         requireNonNull(value, "value");
-        if (isValid(headerName) && isValid(normalName) && isValid(value)) {
-            addNormal(validateField(headerName), validateField(normalName), validateField(value));
+        if (isValid(headerName) && isValid(value)) {
+            String normalName = HeaderName.normalize(headerName);
+            addNormal(headerName, normalName, value);
         }
     }
 
@@ -398,10 +406,11 @@ public final class Headers {
      * Adds the name and value to the headers if valid
      */
     public void addIfValid(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        requireNonNull(headerName, "headerName");
         requireNonNull(value, "value");
-        if (isValid(headerName.getName()) && isValid(normalName) && isValid(value)) {
-            addNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
+        if (isValid(headerName.getName()) && isValid(value)) {
+            String normalName = headerName.getNormalised();
+            addNormal(headerName.getName(), normalName, value);
         }
     }
 
@@ -627,11 +636,11 @@ public final class Headers {
     /**
      * Checks if the given value is compliant with our RFC 7230 based check
      */
-    private boolean isValid(String value) {
+    private static boolean isValid(String value) {
         if (value == null || findInvalid(value) == ABSENT) {
             return true;
         }
-        Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+        invalidHeaderCounter.increment();
         return false;
     }
 
@@ -639,11 +648,11 @@ public final class Headers {
      * Checks if the input value is compliant with our RFC 7230 based check
      * Returns input value if valid, raises ZuulException otherwise
      */
-    private String validateField(String value) {
+    private static String validateField(String value) {
         if (value != null) {
             int pos = findInvalid(value);
             if (pos != ABSENT) {
-                Spectator.globalRegistry().counter("zuul.header.invalid.char").increment();
+                invalidHeaderCounter.increment();
                 throw new ZuulException("Invalid header field: char " + (int) value.charAt(pos) + " in string " + value
                         + " does not comply with RFC 7230");
             }
@@ -657,15 +666,13 @@ public final class Headers {
      *
      * Returns the index of first invalid character. Returns {@link #ABSENT} if absent.
      */
-    private int findInvalid(String value) {
-        if (value != null) {
-            int l = value.length();
-            for (int i = 0; i < l; i++) {
-                char c = value.charAt(i);
-                // ASCII non-control characters, per RFC 7230 but slightly more lenient
-                if (c < 31 || c == 127) {
-                    return i;
-                }
+    private static int findInvalid(String value) {
+        int l = value.length();
+        for (int i = 0; i < l; i++) {
+            char c = value.charAt(i);
+            // ASCII non-control characters, per RFC 7230 but slightly more lenient
+            if (c < 31 || c == 127) {
+                return i;
             }
         }
         return ABSENT;
