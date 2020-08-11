@@ -39,9 +39,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
 {
     public static final String CONNECTION_THROTTLED_EVENT = "connection_throttled";
+    public static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
-    private static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private final static AtomicInteger connections = new AtomicInteger(0);
     private final int maxConnections;
