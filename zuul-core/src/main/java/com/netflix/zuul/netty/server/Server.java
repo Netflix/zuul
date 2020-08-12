@@ -26,6 +26,9 @@ import com.netflix.netty.common.status.ServerStatusManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler.Sharable;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultSelectStrategyFactory;
@@ -43,12 +46,14 @@ import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
@@ -155,8 +160,7 @@ public class Server
         this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
     }
 
-    public void stop()
-    {
+    public void stop() {
         LOG.info("Shutting down Zuul.");
         serverGroup.stop();
 
@@ -248,6 +252,7 @@ public class Server
             serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
         }
 
+        serverBootstrap.handler(new NewConnHandler());
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
@@ -434,6 +439,22 @@ public class Server
 
             stopped = true;
             LOG.info("Done shutting down");
+        }
+    }
+
+    public static final AttributeKey<Map<String, Long>> CONN_TIMING = AttributeKey.newInstance("zuulconntiming");
+    public static final String CONN_ACCEPT = "ACCEPT";
+
+    private static final class NewConnHandler extends ChannelInboundHandlerAdapter {
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            Long now = System.nanoTime();
+            Map<String, Long> timings = new LinkedHashMap<>();
+            timings.put(CONN_ACCEPT, now);
+            final Channel child = (Channel) msg;
+            child.attr(CONN_TIMING).set(timings);
+            super.channelRead(ctx, msg);
         }
     }
 
