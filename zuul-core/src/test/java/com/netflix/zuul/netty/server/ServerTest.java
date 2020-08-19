@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -73,7 +74,7 @@ public class ServerTest {
                 return 1;
             }
         };
-        Server s = new Server(ssm, initializers, ccs, elgm, elc);
+        Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
         s.start(/* sync= */ false);
 
         List<SocketAddress> addrs = s.getListeningAddresses();
