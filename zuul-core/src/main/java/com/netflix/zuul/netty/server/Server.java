@@ -23,6 +23,10 @@ import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.zuul.Attrs;
+import com.netflix.zuul.monitoring.ConnTimer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -110,6 +114,7 @@ public class Server
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
     private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
+    private final Registry registry;
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
@@ -124,7 +129,8 @@ public class Server
     public static final AtomicReference<Class<? extends Channel>> defaultOutboundChannelType = new AtomicReference<>();
 
     /**
-     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)}
      * instead.
      */
     @Deprecated
@@ -136,7 +142,8 @@ public class Server
     }
 
     /**
-     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)}
      * instead.
      */
     @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
@@ -144,15 +151,16 @@ public class Server
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
                   EventLoopConfig eventLoopConfig) {
-        this(serverStatusManager,
+        this(Spectator.globalRegistry(), serverStatusManager,
                 convertPortMap((Map<Integer, ChannelInitializer<?>>) (Map) portsToChannelInitializers),
                 clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
     }
 
-    public Server(ServerStatusManager serverStatusManager,
+    public Server(Registry registry, ServerStatusManager serverStatusManager,
            Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
            EventLoopConfig eventLoopConfig) {
+        this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
         this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
@@ -442,18 +450,20 @@ public class Server
         }
     }
 
-    public static final AttributeKey<Map<String, Long>> CONN_TIMING = AttributeKey.newInstance("zuulconntiming");
-    public static final String CONN_ACCEPT = "ACCEPT";
+    /**
+     * Keys should be a short string usable in metrics.
+     */
+    public static final AttributeKey<Attrs> CONN_DIMENSIONS = AttributeKey.newInstance("zuulconndimensions");
 
-    private static final class NewConnHandler extends ChannelInboundHandlerAdapter {
+    private final class NewConnHandler extends ChannelInboundHandlerAdapter {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             Long now = System.nanoTime();
-            Map<String, Long> timings = new LinkedHashMap<>();
-            timings.put(CONN_ACCEPT, now);
             final Channel child = (Channel) msg;
-            child.attr(CONN_TIMING).set(timings);
+            child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
+            ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
+            timer.record(now, "ACCEPT");
             super.channelRead(ctx, msg);
         }
     }

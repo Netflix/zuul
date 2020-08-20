@@ -109,6 +109,7 @@ public abstract class BaseServerStartup
         addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
 
         server = new Server(
+                registry,
                 serverStatusManager,
                 addrsToChannelInitializers,
                 clientConnectionsShutdown,
