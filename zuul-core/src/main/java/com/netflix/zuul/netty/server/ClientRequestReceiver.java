@@ -189,7 +189,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 }
             }
 
-            if (reason == CompleteReason.INACTIVE) {
+            if (reason == CompleteReason.INACTIVE && zuulRequest != null) {
                 // Client closed connection prematurely.
                 StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
             }
