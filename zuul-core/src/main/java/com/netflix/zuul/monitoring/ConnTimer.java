@@ -39,7 +39,7 @@ public final class ConnTimer {
 
     private static final AttributeKey<ConnTimer> CONN_TIMER = AttributeKey.newInstance("zuul.conntimer");
 
-    private static final Duration MIN_CONN_TIMING = Duration.ofNanos(512);
+    private static final Duration MIN_CONN_TIMING = Duration.ofNanos(1024);
     private static final Duration MAX_CONN_TIMING = Duration.ofDays(366);
 
     private final Registry registry;
