@@ -23,6 +23,8 @@ import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NA
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
@@ -202,7 +204,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up state. But
                         // thats ok, so don't log in that case.
                         if (! "HTTP/2".equals(zuulRequest.getProtocol())) {
-                            LOG.info("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
+                            LOG.debug("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
                                     zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
                         }
                     }
@@ -212,6 +214,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                     dumpDebugInfo(Debug.getRequestDebug(zuulCtx));
                     dumpDebugInfo(Debug.getRoutingDebug(zuulCtx));
                 }
+            }
+
+            if (zuulRequest == null) {
+                Spectator.globalRegistry().counter("zuul.client.complete.null", "reason", String.valueOf(reason));
             }
 
             clientRequest = null;
