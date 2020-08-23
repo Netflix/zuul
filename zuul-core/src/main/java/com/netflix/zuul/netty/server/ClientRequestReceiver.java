@@ -217,7 +217,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
 
             if (zuulRequest == null) {
-                Spectator.globalRegistry().counter("zuul.client.complete.null", "reason", reason.name());
+                Spectator.globalRegistry().counter("zuul.client.complete.null", "reason", String.valueOf(reason));
             }
 
             clientRequest = null;
