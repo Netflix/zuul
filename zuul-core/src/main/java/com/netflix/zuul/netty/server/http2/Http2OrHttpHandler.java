@@ -22,10 +22,13 @@ import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController;
+import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.codec.http2.UniformStreamByteDistributor;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
@@ -95,6 +98,10 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .initialSettings(settings)
                 .validateHeaders(true)
                 .build();
+        Http2Connection conn = frameCodec.connection();
+        // Use the uniform byte distributor until https://github.com/netty/netty/issues/10525 is fixed.
+        conn.remote().flowController(
+                new DefaultHttp2RemoteFlowController(conn, new UniformStreamByteDistributor(conn)));
 
         Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
 
