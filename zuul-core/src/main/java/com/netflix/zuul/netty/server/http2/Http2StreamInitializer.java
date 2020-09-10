@@ -98,6 +98,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
                 SourceAddressChannelHandler.ATTR_SOURCE_PORT,
                 SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
                 SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
+                SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
 
                 PROTOCOL_NAME,
                 SslHandshakeInfoHandler.ATTR_SSL_INFO,
