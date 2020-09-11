@@ -39,10 +39,10 @@ public class VipUtilsTest {
 
     @Test(expected = NullPointerException.class)
     public void testExtractAppNameFromVIP() {
-        assertEquals("api", VipUtils.extractAppNameFromVIP("api-test.netflix.net:7001"));
-        assertEquals("api", VipUtils.extractAppNameFromVIP("api-test-blah.netflix.net:7001"));
-        assertEquals("api", VipUtils.extractAppNameFromVIP("api"));
-        assertEquals("", VipUtils.extractAppNameFromVIP(""));
-        VipUtils.extractAppNameFromVIP(null);
+        assertEquals("api", VipUtils.extractUntrustedAppNameFromVIP("api-test.netflix.net:7001"));
+        assertEquals("api", VipUtils.extractUntrustedAppNameFromVIP("api-test-blah.netflix.net:7001"));
+        assertEquals("api", VipUtils.extractUntrustedAppNameFromVIP("api"));
+        assertEquals("", VipUtils.extractUntrustedAppNameFromVIP(""));
+        VipUtils.extractUntrustedAppNameFromVIP(null);
     }
 }
