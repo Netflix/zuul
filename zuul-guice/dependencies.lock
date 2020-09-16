@@ -7,8 +7,7 @@
             "locked": "2.9.8"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -68,8 +67,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -136,8 +134,7 @@
             "locked": "2.9.8"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -197,8 +194,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -243,12 +239,10 @@
             "locked": "1.2.1"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -277,12 +271,10 @@
             "locked": "29.0-jre"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -297,8 +289,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10",
-            "requested": "1.+"
+            "locked": "1.17.10"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -346,8 +337,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -428,8 +418,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
@@ -438,16 +427,13 @@
             "locked": "1.66"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10",
-            "requested": "3.+"
+            "locked": "3.5.10"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -476,8 +462,7 @@
             "locked": "29.0-jre"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -537,8 +522,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -639,12 +623,10 @@
             "locked": "2.9.8"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -659,8 +641,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10",
-            "requested": "1.+"
+            "locked": "1.17.10"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -708,8 +689,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -754,12 +734,10 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10",
-            "requested": "3.+"
+            "locked": "3.5.10"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -788,12 +766,10 @@
             "locked": "29.0-jre"
         },
         "com.google.inject:guice": {
-            "locked": "4.2.3",
-            "requested": "4.2.3"
+            "locked": "4.2.3"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -808,8 +784,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10",
-            "requested": "1.+"
+            "locked": "1.17.10"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -857,8 +832,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8",
-            "requested": "1.8"
+            "locked": "1.8"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
@@ -939,8 +913,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
@@ -949,8 +922,7 @@
             "locked": "1.66"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10",
-            "requested": "3.+"
+            "locked": "3.5.10"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
