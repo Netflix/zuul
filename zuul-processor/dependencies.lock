@@ -7,8 +7,7 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -132,8 +131,7 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -235,12 +233,10 @@
             "locked": "1.2.1"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -266,12 +262,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -409,8 +403,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
@@ -419,12 +412,10 @@
             "locked": "1.66"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -450,8 +441,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -783,12 +773,10 @@
             "locked": "2.9.8"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -890,8 +878,7 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -917,12 +904,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "29.0-jre",
-            "requested": "29.0-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -1060,8 +1045,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
