@@ -20,6 +20,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
+import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -37,5 +38,6 @@ public interface IConnectionPool
     boolean isAvailable();
     int getConnsInUse();
     int getConnsInPool();
+    SocketAddress getServerAddr();
     ConnectionPoolConfig getConfig();
 }
