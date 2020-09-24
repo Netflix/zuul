@@ -29,6 +29,7 @@ import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Deque;
@@ -156,7 +157,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     @Override
     public Promise<PooledConnection> acquire(
-            EventLoop eventLoop, CurrentPassport passport, AtomicReference<String> selectedHostAddr) {
+            EventLoop eventLoop, CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr) {
         requestConnCounter.increment();
         stats.incrementActiveRequestsCount();
         
@@ -229,7 +230,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     protected void tryMakingNewConnection(
             EventLoop eventLoop, Promise<PooledConnection> promise, CurrentPassport passport,
-            AtomicReference<String> selectedHostAddr) {
+            AtomicReference<? super InetAddress> selectedHostAddr) {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
         int openAndOpeningConnectionCount = stats.getOpenConnectionsCount() + connCreationsInProgress.get(); 
@@ -419,14 +420,13 @@ public class PerServerConnectionPool implements IConnectionPool
         return connsInUse.get();
     }
 
-    private static String getSelectedHostString(SocketAddress addr) {
+    @Nullable
+    private static InetAddress getSelectedHostString(SocketAddress addr) {
         if (addr instanceof InetSocketAddress) {
-            // This is used for logging mainly.  TODO(carl-mastrangelo): consider passing the whole address back
-            // rather than the string form.
-            return ((InetSocketAddress) addr).getAddress().getHostAddress();
+            return ((InetSocketAddress) addr).getAddress();
         } else {
-            // If it's some other kind of address, just set it to the string form as a best effort guess.
-            return addr.toString();
+            // If it's some other kind of address, just set it to empty
+            return null;
         }
     }
 

@@ -94,6 +94,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -118,7 +119,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private final ChannelHandlerContext channelCtx;
     private final FilterRunner<HttpResponseMessage, ?> responseFilters;
     protected final AtomicReference<Server> chosenServer;
-    protected final AtomicReference<String> chosenHostAddr;
+    protected final AtomicReference<InetAddress> chosenHostAddr;
 
     /* Individual request related state */
     protected final HttpRequestMessage zuulRequest;
@@ -353,24 +354,30 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private void storeAndLogOriginRequestInfo() {
         final Map<String, Object> eventProps = context.getEventProperties();
-        Map<Integer, String> attempToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
-        Map<Integer, String> attempToChosenHostMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY);
-        if (attempToIpAddressMap == null) {
-            attempToIpAddressMap = new HashMap<>();
+        // These two maps appear to be almost the same but are slightly different.   Also, the types in the map don't
+        // match exactly what needs to happen, so this is more of a To-Do.  ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY is
+        // supposed to be the mapping of IP addresses of the server.  This is (AFAICT) only used for logging.   It is
+        // an IP address semantically, but a String here.   The two should be swapped.
+        // ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY is almost always an IP address, but may some times be a hostname in
+        // case the discovery info is not an IP. 
+        Map<Integer, String> attemptToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
+        Map<Integer, InetAddress> attemptToChosenHostMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY);
+        if (attemptToIpAddressMap == null) {
+            attemptToIpAddressMap = new HashMap<>();
         }
-        if (attempToChosenHostMap == null) {
-            attempToChosenHostMap = new HashMap<>();
+        if (attemptToChosenHostMap == null) {
+            attemptToChosenHostMap = new HashMap<>();
         }
         String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
         if (ipAddr != null) {
-            attempToIpAddressMap.put(attemptNum, ipAddr);
-            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
-            context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attempToIpAddressMap);
+            attemptToIpAddressMap.put(attemptNum, ipAddr);
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
+            context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
         }
         if (chosenHostAddr.get() != null) {
-            attempToChosenHostMap.put(attemptNum, chosenHostAddr.get());
-            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToChosenHostMap);
-            context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attempToChosenHostMap);
+            attemptToChosenHostMap.put(attemptNum, chosenHostAddr.get());
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
+            context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
         }
 
         eventProps.put(CommonContextKeys.ZUUL_ORIGIN_REQUEST_URI, zuulRequest.getPathAndQuery());

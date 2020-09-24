@@ -30,6 +30,7 @@ import com.netflix.zuul.stats.Timing;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
+import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -43,7 +44,7 @@ public interface NettyOrigin extends InstrumentedOrigin {
     Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
                                               int attemptNumber, CurrentPassport passport,
                                               AtomicReference<Server> chosenServer,
-                                              AtomicReference<String> chosenHostAddr);
+                                              AtomicReference<? super InetAddress> chosenHostAddr);
 
     Timing getProxyTiming(HttpRequestMessage zuulReq);
 
