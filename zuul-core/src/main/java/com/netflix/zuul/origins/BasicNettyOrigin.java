@@ -48,6 +48,7 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -118,7 +119,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public Promise<PooledConnection> connectToOrigin(
             HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<Server> chosenServer, AtomicReference<String> chosenHostAddr) {
+            AtomicReference<Server> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 

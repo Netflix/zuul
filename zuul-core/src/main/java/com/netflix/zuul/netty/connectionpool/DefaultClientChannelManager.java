@@ -326,7 +326,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             @Nullable Object key,
             CurrentPassport passport,
             AtomicReference<Server> selectedServer,
-            AtomicReference<String> selectedHostAddr) {
+            AtomicReference<? super InetAddress> selectedHostAddr) {
 
         if (shuttingDown) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
