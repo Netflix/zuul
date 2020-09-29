@@ -31,31 +31,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -158,31 +158,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -295,31 +295,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -421,7 +421,7 @@
             "locked": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10"
+            "locked": "3.5.13"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21"
@@ -477,31 +477,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -641,31 +641,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -725,7 +725,7 @@
             "locked": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10"
+            "locked": "3.5.13"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -778,31 +778,31 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
@@ -904,7 +904,7 @@
             "locked": "3.0.3"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.5.10"
+            "locked": "3.5.13"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
