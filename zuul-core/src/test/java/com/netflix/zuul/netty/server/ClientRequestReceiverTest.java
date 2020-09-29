@@ -63,6 +63,24 @@ public class ClientRequestReceiverTest {
         channel.close();
     }
 
+    @Test
+    public void parseQueryParamsWithEncodedCharsInURI() {
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertEquals("foo", result.getQueryParams().getFirst("param1"));
+        assertEquals("bar", result.getQueryParams().getFirst("param2"));
+        assertEquals("baz", result.getQueryParams().getFirst("param3"));
+
+        channel.close();
+    }
 
     @Test
     public void largeResponse_atLimit() {
