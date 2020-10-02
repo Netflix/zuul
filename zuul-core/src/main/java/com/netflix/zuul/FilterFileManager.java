@@ -172,7 +172,7 @@ public class FilterFileManager {
                 try {
                     return filterLoader.putFilter(file);
                 } catch (Exception e) {
-                    LOG.error("Error loading groovy filter from disk! file = " + String.valueOf(file), e);
+                    LOG.error("Error loading groovy filter from disk! file = " + file, e);
                     return false;
                 }
             });
