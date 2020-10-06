@@ -47,7 +47,7 @@ public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<H
         final String errMesg = "Missing Endpoint filter, name = " + name;
         zuulCtx.setError(new ZuulException(errMesg, true));
         LOG.error(errMesg);
-        return new HttpResponseMessageImpl(zuulCtx, request, 500);
+        return new HttpResponseMessageImpl(zuulCtx, request.getAttrs(), request, 500);
     }
 
     @Override

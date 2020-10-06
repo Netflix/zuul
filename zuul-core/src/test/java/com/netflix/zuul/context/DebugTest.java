@@ -28,6 +28,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.truth.Truth;
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -64,7 +65,7 @@ public class DebugTest {
         request.setBodyAsText("some text");
         request.storeInboundRequest();
 
-        response = new HttpResponseMessageImpl(ctx, headers, request, 200);
+        response = new HttpResponseMessageImpl(ctx, Attrs.newInstance(), headers, request, 200);
         response.setBodyAsText("response text");
     }
 

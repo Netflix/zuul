@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -37,6 +38,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -76,7 +78,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     private static final String URI_SCHEME_HTTPS = "https";
 
     private final boolean immutable;
-    private ZuulMessage message;
+    private final ZuulMessage message;
     private String protocol;
     private String method;
     private String path;
@@ -103,21 +105,46 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     };
 
+    /**
+     * Use {@link #HttpRequestMessageImpl(SessionContext, Attrs, String, String, String, HttpQueryParams, Headers,
+     * String, String, int, String)} instead.
+     */
+    @Deprecated
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName)
+                                  int port, String serverName) {
+        this(context, Attrs.newInstance(), protocol, method, path, queryParams, headers, clientIp, scheme, port,
+                serverName);
+    }
+
+    public HttpRequestMessageImpl(SessionContext context, Attrs attrs, String protocol, String method, String path,
+            HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
+            int port, String serverName)
     {
-        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
+        this(context, attrs, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
                 UNDEFINED_CLIENT_DEST_ADDRESS, false);
     }
 
+    /**
+     * Use {@link #HttpRequestMessageImpl(SessionContext, Attrs, String, String, String, HttpQueryParams, Headers,
+     * String, String, int, String, SocketAddress, boolean)} instead.
+     */
+    @Deprecated
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
+            HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
+            int port, String serverName, SocketAddress clientRemoteAddress,
+            boolean immutable) {
+        this(context, Attrs.newInstance(), protocol, method, path, queryParams, headers, clientIp, scheme, port,
+                serverName, clientRemoteAddress, immutable);
+    }
+
+    public HttpRequestMessageImpl(SessionContext context, Attrs attrs, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName, SocketAddress clientRemoteAddress,
                                   boolean immutable)
     {
         this.immutable = immutable;
-        this.message = new ZuulMessageImpl(context, headers);
+        this.message = new ZuulMessageImpl(context, headers, attrs);
         this.protocol = protocol;
         this.method = method;
         this.path = path;
@@ -142,6 +169,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         if (immutable) {
             throw new IllegalStateException("This HttpRequestMessageImpl is immutable. No mutating operations allowed!");
         }
+    }
+
+    @Override
+    public final Attrs getAttrs() {
+        return message.getAttrs();
     }
 
     @Override
@@ -401,10 +433,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public ZuulMessage clone()
     {
-        HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
-                protocol, method, path,
-                queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme,
-                port, serverName, clientRemoteAddress, immutable);
+        HttpRequestMessageImpl clone = new HttpRequestMessageImpl(
+                message.getContext().clone(), Attrs.copyOf(message.getAttrs()), protocol, method, path,
+                queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme, port, serverName,
+                clientRemoteAddress, immutable);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
         }

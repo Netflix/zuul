@@ -40,6 +40,7 @@ import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Counter;
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
@@ -124,6 +125,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* Individual request related state */
     protected final HttpRequestMessage zuulRequest;
     protected final SessionContext context;
+    private final Attrs attrs;
     protected final NettyOrigin origin;
     protected final RequestAttempts requestAttempts;
     protected final CurrentPassport passport;
@@ -172,6 +174,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         responseFilters = filters;
         zuulRequest = transformRequest(inMesg);
         context = zuulRequest.getContext();
+        attrs = zuulRequest.getAttrs();
         origin = getOrigin(zuulRequest);
         requestAttempts = RequestAttempts.getFromSessionContext(context);
         passport = CurrentPassport.fromSessionContext(context);
@@ -359,7 +362,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // supposed to be the mapping of IP addresses of the server.  This is (AFAICT) only used for logging.   It is
         // an IP address semantically, but a String here.   The two should be swapped.
         // ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY is almost always an IP address, but may some times be a hostname in
-        // case the discovery info is not an IP. 
+        // case the discovery info is not an IP.
         Map<Integer, String> attemptToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
         Map<Integer, InetAddress> attemptToChosenHostMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY);
         if (attemptToIpAddressMap == null) {
@@ -732,7 +735,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         LOG.debug("Proxy endpoint failed.", cause);
         if (! startedSendingResponseToClient) {
             startedSendingResponseToClient = true;
-            zuulResponse = new HttpResponseMessageImpl(context, zuulRequest, ze.getStatusCode());
+            zuulResponse = new HttpResponseMessageImpl(context, attrs, zuulRequest, ze.getStatusCode());
             zuulResponse.getHeaders().add("Connection", "close");   // TODO - why close the connection? maybe don't always want this to happen ...
             zuulResponse.finishBufferedBodyIfIncomplete();
             invokeNext(zuulResponse);
@@ -744,7 +747,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private void handleNoOriginSelected() {
         StatusCategoryUtils.setStatusCategory(context, SUCCESS_LOCAL_NO_ROUTE);
         startedSendingResponseToClient = true;
-        zuulResponse = new HttpResponseMessageImpl(context, zuulRequest, 404);
+        zuulResponse = new HttpResponseMessageImpl(context, attrs, zuulRequest, 404);
         zuulResponse.finishBufferedBodyIfIncomplete();
         invokeNext(zuulResponse);
     }
@@ -819,7 +822,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Translate the netty HttpResponse into a zuul HttpResponseMessage.
         final SessionContext zuulCtx = context;
         final int respStatus = httpResponse.status().code();
-        final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus);
+        final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, attrs, zuulRequest, respStatus);
 
         final Headers respHeaders = zuulResponse.getHeaders();
         for (Map.Entry<String, String> entry : httpResponse.headers()) {

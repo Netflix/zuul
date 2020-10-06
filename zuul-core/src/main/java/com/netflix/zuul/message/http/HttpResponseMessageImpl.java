@@ -17,6 +17,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.Header;
@@ -46,14 +47,14 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     private int status;
     private HttpResponseInfo inboundResponse = null;
 
-    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status)
+    public HttpResponseMessageImpl(SessionContext context, Attrs attrs, HttpRequestMessage request, int status)
     {
-        this(context, new Headers(), request, status);
+        this(context, attrs, new Headers(), request, status);
     }
 
-    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
-    {
-        this.message = new ZuulMessageImpl(context, headers);
+    public HttpResponseMessageImpl(
+            SessionContext context, Attrs attrs, Headers headers, HttpRequestMessage request, int status) {
+        this.message = new ZuulMessageImpl(context, headers, attrs);
         this.outboundRequest = request;
         if (this.outboundRequest.getInboundRequest() == null) {
             LOG.warn("HttpResponseMessage created with a request that does not have a stored inboundRequest! " +
@@ -65,7 +66,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
     {
-        final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
+        HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request.getAttrs(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }
@@ -74,6 +75,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public Headers getHeaders()
     {
         return message.getHeaders();
+    }
+
+    @Override
+    public Attrs getAttrs() {
+        return message.getAttrs();
     }
 
     @Override
@@ -250,9 +256,9 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public ZuulMessage clone()
     {
         // TODO - not sure if should be cloning the outbound request object here or not....
-        HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
-                Headers.copyOf(getHeaders()),
-                getOutboundRequest(), getStatus());
+        HttpResponseMessageImpl clone = new HttpResponseMessageImpl(
+                getContext().clone(), Attrs.copyOf(getAttrs()), Headers.copyOf(getHeaders()), getOutboundRequest(),
+                getStatus());
         if (getInboundResponse() != null) {
             clone.inboundResponse = (HttpResponseInfo) getInboundResponse().clone();
         }
@@ -264,6 +270,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         HttpResponseMessageImpl response =
                 new HttpResponseMessageImpl(
                         getContext(),
+                        Attrs.copyOf(getAttrs()),
                         Headers.copyOf(getHeaders()),
                         getOutboundRequest(),
                         getStatus());

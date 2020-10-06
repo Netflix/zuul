@@ -19,6 +19,7 @@ package com.netflix.zuul.message;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
@@ -33,11 +34,12 @@ public class ZuulMessageImplTest {
     @Test
     public void testClone() {
         SessionContext ctx1 = new SessionContext();
+        Attrs attrs = Attrs.newInstance();
         ctx1.set("k1", "v1");
         Headers headers1 = new Headers();
         headers1.set("k1", "v1");
 
-        ZuulMessage msg1 = new ZuulMessageImpl(ctx1, headers1);
+        ZuulMessage msg1 = new ZuulMessageImpl(ctx1, headers1, attrs);
         ZuulMessage msg2 = msg1.clone();
 
         assertEquals(msg1.getBodyAsText(), msg2.getBodyAsText());
@@ -54,7 +56,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testBufferBody2GetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
         msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
         final String body = new String(msg.getBody());
@@ -65,7 +67,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testBufferBody3GetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
         msg.bufferBodyContents(new DefaultLastHttpContent());
@@ -77,7 +79,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testBufferBody3GetBodyAsText() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
         msg.bufferBodyContents(new DefaultLastHttpContent());
@@ -89,7 +91,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testSetBodyGetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.setBody("Hello World!".getBytes());
         final String body = new String(msg.getBody());
         assertEquals("Hello World!", body);
@@ -97,7 +99,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testSetBodyAsTextGetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.setBodyAsText("Hello World!");
         final String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
@@ -107,7 +109,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testSetBodyAsTextGetBodyAsText() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.setBodyAsText("Hello World!");
         final String body = msg.getBodyAsText();
         assertTrue(msg.hasBody());
@@ -117,7 +119,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testMultiSetBodyAsTextGetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.setBodyAsText("Hello World!");
         String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
@@ -132,7 +134,7 @@ public class ZuulMessageImplTest {
 
     @Test
     public void testMultiSetBodyGetBody() {
-        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers(), Attrs.newInstance());
         msg.setBody("Hello World!".getBytes());
         String body = new String(msg.getBody());
         assertTrue(msg.hasBody());

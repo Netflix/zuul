@@ -19,6 +19,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.http.HttpHeaderNames;
@@ -31,6 +32,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import org.w3c.dom.Attr;
 
 /**
  * User: michaels@netflix.com
@@ -49,16 +52,18 @@ public class ZuulMessageImpl implements ZuulMessage
     private boolean hasBody;
     private boolean bodyBufferedCompletely;
     private List<HttpContent> bodyChunks;
+    private final Attrs attrs;
 
 
-    public ZuulMessageImpl(SessionContext context) {
-        this(context, new Headers());
+    public ZuulMessageImpl(SessionContext context, Attrs attrs) {
+        this(context, new Headers(), attrs);
     }
 
-    public ZuulMessageImpl(SessionContext context, Headers headers) {
+    public ZuulMessageImpl(SessionContext context, Headers headers, Attrs attrs) {
         this.context = context == null ? new SessionContext() : context;
         this.headers = headers == null ? new Headers() : headers;
         this.bodyChunks = new ArrayList<>(16);
+        this.attrs = Objects.requireNonNull(attrs);
     }
 
     @Override
@@ -217,7 +222,7 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public ZuulMessage clone() {
-        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), Headers.copyOf(headers));
+        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), Headers.copyOf(headers), Attrs.copyOf(attrs));
         this.bodyChunks.forEach(chunk -> {
             chunk.retain();
             copy.bufferBodyContents(chunk);
