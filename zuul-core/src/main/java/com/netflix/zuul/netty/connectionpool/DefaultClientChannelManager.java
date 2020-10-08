@@ -343,7 +343,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         SocketAddress finalServerAddr = pickAddress(chosenServer);
-        InstanceInfo instanceInfo = deriveInstanceInfo(chosenServer);
+        InstanceInfo instanceInfo = deriveInstanceInfoInternal(chosenServer);
 
         selectedServer.set(chosenServer);
 
@@ -354,7 +354,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
 
             final ClientChannelManager clientChannelMgr = this;
-            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, instanceInfo, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
+            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
 
             // Create a new pool for this server.
             return createConnectionPool(chosenServer, stats, instanceInfo, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
@@ -366,9 +366,9 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return pool.acquire(eventLoop, passport, selectedHostAddr);
     }
 
-    protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, InstanceInfo instanceInfo, ServerStats stats, ClientChannelManager clientChannelMgr,
+    protected PooledConnectionFactory createPooledConnectionFactory(Server chosenServer, ServerStats stats, ClientChannelManager clientChannelMgr,
                                                                     Counter closeConnCounter, Counter closeWrtBusyConnCounter) {
-        return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, instanceInfo, stats, closeConnCounter, closeWrtBusyConnCounter);
+        return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, stats, closeConnCounter, closeWrtBusyConnCounter);
     }
 
     protected IConnectionPool createConnectionPool(
@@ -421,10 +421,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() {
         return perServerPools;
-    }
-
-    protected InstanceInfo deriveInstanceInfo(Server chosenServer) {
-        return deriveInstanceInfoInternal(chosenServer);
     }
 
     @VisibleForTesting

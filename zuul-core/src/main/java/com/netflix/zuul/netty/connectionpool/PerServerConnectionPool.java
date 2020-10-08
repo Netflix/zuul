@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +55,6 @@ public class PerServerConnectionPool implements IConnectionPool
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
 
-    private final Server server;
     private final ServerStats stats;
     private final InstanceInfo instanceInfo;
     private final SocketAddress serverAddr;
@@ -101,7 +99,6 @@ public class PerServerConnectionPool implements IConnectionPool
             Timer connEstablishTimer,
             AtomicInteger connsInPool,
             AtomicInteger connsInUse) {
-        this.server = server;
         this.stats = stats;
         this.instanceInfo = instanceInfo;
         // Note: child classes can sometimes connect to different addresses than
