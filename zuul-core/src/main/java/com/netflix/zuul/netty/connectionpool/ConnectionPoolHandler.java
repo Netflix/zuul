@@ -122,10 +122,8 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
         if (conn != null) {
             if (LOG.isDebugEnabled()) {
-                msg = msg + " Closing the PooledConnection and releasing."
-                        + " ASG: " + String.valueOf(conn.getServerKey().getASGName()
-                        + ", host=" + String.valueOf(conn.getServerKey().getHostName()));
-                LOG.debug(msg);
+                msg = msg + " Closing the PooledConnection and releasing. conn={}";
+                LOG.debug(msg, conn);
             }
             flagCloseAndReleaseConnection(conn);
         }
