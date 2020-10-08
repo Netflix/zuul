@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;

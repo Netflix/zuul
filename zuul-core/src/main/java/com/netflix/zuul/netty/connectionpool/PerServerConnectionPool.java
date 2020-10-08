@@ -18,7 +18,6 @@ package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
@@ -82,7 +81,6 @@ public class PerServerConnectionPool implements IConnectionPool
     private final AtomicInteger connCreationsInProgress;
 
     public PerServerConnectionPool(
-            Server server,
             ServerStats stats,
             InstanceInfo instanceInfo,
             SocketAddress serverAddr,
