@@ -20,10 +20,10 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
-import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
@@ -392,7 +392,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         if (cause instanceof java.nio.channels.ClosedChannelException ||
                 cause instanceof Errors.NativeIoException) {
-            LOG.info(errMesg + " - client connection is closed.");
+            LOG.debug(errMesg + " - client connection is closed.");
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
