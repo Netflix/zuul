@@ -24,7 +24,6 @@ package com.netflix.zuul.context;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.stats.Timings;
 import com.netflix.zuul.util.DeepCopy;
 
 import java.io.NotSerializableException;
@@ -50,9 +49,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private boolean debugRequest = false;
     private boolean debugRequestHeadersOnly = false;
     private boolean cancelled = false;
-
-    private Timings timings = new Timings();
-
 
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
@@ -141,7 +137,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
         copy.debugRouting = debugRouting;
         copy.debugRequest = debugRequest;
         copy.debugRequestHeadersOnly = debugRequestHeadersOnly;
-        copy.timings = timings;
 
         Iterator<String> it = keySet().iterator();
         String key = it.next();
@@ -376,11 +371,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     public List<FilterError> getFilterErrors() {
         return (List<FilterError>) get(KEY_FILTER_ERRORS);
-    }
-
-    public Timings getTimings()
-    {
-        return timings;
     }
 
     public void setOriginReportedDuration(int duration)
