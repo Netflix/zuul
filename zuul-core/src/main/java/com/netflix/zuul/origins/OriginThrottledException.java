@@ -18,23 +18,23 @@ package com.netflix.zuul.origins;
 
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.stats.status.StatusCategory;
+import java.util.Objects;
 
 public abstract class OriginThrottledException extends ZuulException
 {
-    private final String originName;
+    private final OriginName originName;
     private final StatusCategory statusCategory;
 
-    public OriginThrottledException(String originName, String msg, StatusCategory statusCategory)
+    public OriginThrottledException(OriginName originName, String msg, StatusCategory statusCategory)
     {
         // Ensure this exception does not fill its stacktrace as causes too much load.
         super(msg + ", origin=" + originName, true);
-        this.originName = originName;
+        this.originName = Objects.requireNonNull(originName, "originName");
         this.statusCategory = statusCategory;
         this.setStatusCode(503);
     }
 
-    public String getOriginName()
-    {
+    public OriginName getOriginName() {
         return originName;
     }
 

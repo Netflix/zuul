@@ -179,7 +179,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         chosenHostAddr = new AtomicReference<>();
 
         this.sslRetryBodyCache = preCacheBodyForRetryingSslRequests();
-        this.populatedSslRetryBody = SpectatorUtils.newCounter("zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getVip());
+        this.populatedSslRetryBody = SpectatorUtils.newCounter(
+                "zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getName().getTarget());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;

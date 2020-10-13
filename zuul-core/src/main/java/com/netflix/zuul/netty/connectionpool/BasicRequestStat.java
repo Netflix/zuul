@@ -32,7 +32,7 @@ public class BasicRequestStat implements RequestStat {
     private volatile boolean isFinished;
     private volatile Stopwatch stopwatch;
 
-    public BasicRequestStat(String clientName) {
+    public BasicRequestStat() {
         this.isFinished = false;
         this.stopwatch = Stopwatch.createStarted();
     }
