@@ -26,6 +26,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import com.netflix.zuul.origins.OriginName;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import org.junit.Test;
@@ -70,7 +71,7 @@ public class DefaultClientChannelManagerTest {
                 Builder.newBuilder().setAppName("app").setHostName("192.168.0.1").setPort(443).build();
         Server s = new DiscoveryEnabledServer(instanceInfo, true);
 
-        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, "originname");
+        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
@@ -84,7 +85,7 @@ public class DefaultClientChannelManagerTest {
                 Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
         Server s = new DiscoveryEnabledServer(instanceInfo, true);
 
-        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, "originname");
+        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
@@ -97,7 +98,7 @@ public class DefaultClientChannelManagerTest {
     public void pickAddressInternal_nonDiscovery() {
         Server s = new Server("192.168.0.1", 443);
 
-        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, "originname");
+        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
@@ -109,7 +110,7 @@ public class DefaultClientChannelManagerTest {
     public void pickAddressInternal_nonDiscovery_unresolved() {
         Server s = new Server("localhost", 443);
 
-        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, "originname");
+        SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
