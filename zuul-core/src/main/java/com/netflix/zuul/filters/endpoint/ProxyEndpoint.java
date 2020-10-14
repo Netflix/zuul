@@ -276,8 +276,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 return null;
             }
 
-            origin.getProxyTiming(zuulRequest).start();
-
             // To act the same as Ribbon, we must do this before starting execution (as well as before each attempt).
             IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
             originalReadTimeout = requestConfig.getProperty(ReadTimeout, null);
@@ -709,7 +707,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 zuulCtx.setShouldSendErrorResponse(true);
 
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, err.getStatusCategory());
-                origin.getProxyTiming(zuulRequest).end();
                 origin.recordFinalError(zuulRequest, ex);
                 origin.onRequestExecutionFailed(zuulRequest, chosenServer.get(), attemptNum - 1, niwsEx);
 
@@ -858,7 +855,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Collect some info about the received response.
         origin.recordFinalResponse(zuulResponse);
         origin.recordFinalError(zuulRequest, ex);
-        origin.getProxyTiming(zuulRequest).end();
         zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
         zuulCtx.setError(ex);
         zuulCtx.put("origin_http_status", Integer.toString(respStatus));

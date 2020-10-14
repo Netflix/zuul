@@ -43,7 +43,6 @@ import com.netflix.zuul.netty.connectionpool.DefaultClientChannelManager;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.passport.CurrentPassport;
-import com.netflix.zuul.stats.Timing;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
@@ -121,11 +120,6 @@ public class BasicNettyOrigin implements NettyOrigin {
             HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
             AtomicReference<Server> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
-    }
-
-    @Override
-    public Timing getProxyTiming(HttpRequestMessage zuulReq) {
-        return new Timing(name);
     }
 
     @Override
