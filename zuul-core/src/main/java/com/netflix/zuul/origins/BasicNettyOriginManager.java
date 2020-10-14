@@ -44,12 +44,12 @@ public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> 
 
     @Override
     public BasicNettyOrigin getOrigin(OriginName originName, String uri, SessionContext ctx) {
-        return originMappings.computeIfAbsent(originName, n -> createOrigin(originName, uri, false, ctx));
+        return originMappings.computeIfAbsent(originName, n -> createOrigin(originName, uri, ctx));
     }
 
     @Override
     public BasicNettyOrigin createOrigin(
-            OriginName originName, String uri, boolean useFullVipName, SessionContext ctx) {
+            OriginName originName, String uri, SessionContext ctx) {
         return new BasicNettyOrigin(originName, registry);
     }
 }

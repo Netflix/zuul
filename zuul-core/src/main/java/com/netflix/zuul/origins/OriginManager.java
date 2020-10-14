@@ -26,5 +26,5 @@ public interface OriginManager<T extends Origin> {
 
     T getOrigin(OriginName originName, String uri, SessionContext ctx);
 
-    T createOrigin(OriginName originName, String uri, boolean useFullVipName, SessionContext ctx);
+    T createOrigin(OriginName originName, String uri, SessionContext ctx);
 }

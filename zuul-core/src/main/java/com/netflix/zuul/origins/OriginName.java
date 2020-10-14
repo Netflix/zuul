@@ -17,6 +17,7 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.util.VipUtils;
+import java.util.Locale;
 import java.util.Objects;
 
 public final class OriginName {
@@ -25,6 +26,12 @@ public final class OriginName {
      * {@link com.netflix.client.config.IClientConfig} objects.
      */
     private final String niwsClientName;
+
+    /**
+     * This should not be used in {@link #equals} or {@link #hashCode} as it is already covered by
+     * {@link #niwsClientName}.
+     */
+    private final String metricId;
 
     /**
      * The target to connect to, used for name resolution.  This is typically the VIP.
@@ -41,11 +48,16 @@ public final class OriginName {
     private final boolean authorityTrusted;
 
     public static OriginName fromVip(String vip) {
-        return new OriginName(vip, vip, VipUtils.extractUntrustedAppNameFromVIP(vip), false);
+        return fromVip(vip, vip);
+    }
+
+    public static OriginName fromVip(String vip, String niwsClientName) {
+        return new OriginName(niwsClientName, vip, VipUtils.extractUntrustedAppNameFromVIP(vip), false);
     }
 
     private OriginName(String niwsClientName, String target, String authority, boolean authorityTrusted) {
         this.niwsClientName = Objects.requireNonNull(niwsClientName, "niwsClientName");
+        this.metricId = niwsClientName.toLowerCase(Locale.ROOT);
         this.target = Objects.requireNonNull(target, "target");
         this.authority = Objects.requireNonNull(authority, "authority");
         this.authorityTrusted = authorityTrusted;
@@ -58,8 +70,20 @@ public final class OriginName {
         return target;
     }
 
+    /**
+     * Returns the niwsClientName.   This is normally used for interaction with NIWS, and should be used without prior
+     * knowledge that the value will be used in NIWS libraries.
+     */
     public String getNiwsClientName() {
         return niwsClientName;
+    }
+
+    /**
+     * Returns the identifier for this this metric name.  This may be different than any of the other
+     * fields; currently it is equivalent to the lowercased {@link #getNiwsClientName()}.
+     */
+    public String getMetricId() {
+        return metricId;
     }
 
     @Override

@@ -46,17 +46,19 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
 
     public static final String METRIC_PREFIX = "connectionpool";
     
-    private final String originName;
+    private final OriginName originName;
     private final Counter idleCounter;
     private final Counter inactiveCounter;
     private final Counter errorCounter;
 
     public ConnectionPoolHandler(OriginName originName) {
-        if (originName == null) throw new IllegalArgumentException("Null originName passed to constructor!");
+        if (originName == null) {
+            throw new IllegalArgumentException("Null originName passed to constructor!");
+        }
         this.originName = originName;
-        this.idleCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_idle", originName);
-        this.inactiveCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_inactive", originName);
-        this.errorCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_error", originName);
+        this.idleCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_idle", originName.getMetricId());
+        this.inactiveCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_inactive", originName.getMetricId());
+        this.errorCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_error", originName.getMetricId());
     }
 
     @Override
