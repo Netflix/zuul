@@ -26,7 +26,6 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.passport.CurrentPassport;
-import com.netflix.zuul.stats.Timing;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
@@ -45,8 +44,6 @@ public interface NettyOrigin extends InstrumentedOrigin {
                                               int attemptNumber, CurrentPassport passport,
                                               AtomicReference<Server> chosenServer,
                                               AtomicReference<? super InetAddress> chosenHostAddr);
-
-    Timing getProxyTiming(HttpRequestMessage zuulReq);
 
     int getMaxRetriesForRequest(SessionContext context);
 

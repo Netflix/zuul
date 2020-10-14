@@ -24,7 +24,6 @@ import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
-import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
@@ -243,7 +242,6 @@ public class PerServerConnectionPool implements IConnectionPool
             return;
         }
 
-        Timing timing = startConnEstablishTimer();
         try {
             createNewConnCounter.increment();
             connCreationsInProgress.incrementAndGet();
@@ -254,13 +252,11 @@ public class PerServerConnectionPool implements IConnectionPool
             final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
-                endConnEstablishTimer(timing);
                 handleConnectCompletion(cf, promise, passport);
             }
             else {
                 cf.addListener(future -> {
                     try {
-                        endConnEstablishTimer(timing);
                         handleConnectCompletion((ChannelFuture) future, promise, passport);
                     }
                     catch (Throwable e) {
@@ -276,26 +272,12 @@ public class PerServerConnectionPool implements IConnectionPool
             }
         }
         catch (Throwable e) {
-            endConnEstablishTimer(timing);
             promise.setFailure(e);
         }
     }
 
     protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, SocketAddress serverAddr) {
         return connectionFactory.connect(eventLoop, serverAddr, passport);
-    }
-
-    private Timing startConnEstablishTimer()
-    {
-        Timing timing = new Timing("connection_establish");
-        timing.start();
-        return timing;
-    }
-
-    private void endConnEstablishTimer(Timing timing)
-    {
-        timing.end();
-        connEstablishTimer.record(timing.getDuration(), TimeUnit.NANOSECONDS);
     }
 
     protected void handleConnectCompletion(
