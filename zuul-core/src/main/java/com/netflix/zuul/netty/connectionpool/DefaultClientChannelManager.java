@@ -108,7 +108,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.originName = Objects.requireNonNull(originName, "originName");
         this.loadBalancer = createLoadBalancer(clientConfig);
 
-        String metricId = originName.getNiwsClientName();
+        String metricId = originName.getMetricId();
 
         this.clientConfig = clientConfig;
         this.spectatorRegistry = spectatorRegistry;
