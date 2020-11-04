@@ -342,13 +342,12 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             return promise;
         }
 
-        SocketAddress finalServerAddr = pickAddress(chosenServer);
-        InstanceInfo instanceInfo = deriveInstanceInfoInternal(chosenServer);
-
         selectedServer.set(chosenServer);
 
         // Now get the connection-pool for this server.
         IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
+            SocketAddress finalServerAddr = pickAddress(chosenServer);
+            InstanceInfo instanceInfo = deriveInstanceInfoInternal(chosenServer);
             // Get the stats from LB for this server.
             LoadBalancerStats lbStats = loadBalancer.getLoadBalancerStats();
             ServerStats stats = lbStats.getSingleServerStat(chosenServer);
