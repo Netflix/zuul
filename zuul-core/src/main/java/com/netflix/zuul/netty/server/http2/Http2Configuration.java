@@ -81,7 +81,7 @@ public class Http2Configuration {
     /**
      * This is meant to be use in cases where the server wishes not to advertise h2 as part of ALPN.
      */
-    private SslContext configureSSLWithH2Disabled(SslContextFactory sslContextFactory, String host) {
+    public static SslContext configureSSLWithH2Disabled(SslContextFactory sslContextFactory, String host) {
 
         ApplicationProtocolConfig apn = new ApplicationProtocolConfig(
                 ApplicationProtocolConfig.Protocol.ALPN,
