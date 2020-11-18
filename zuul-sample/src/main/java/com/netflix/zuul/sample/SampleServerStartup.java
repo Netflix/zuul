@@ -132,8 +132,7 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 addrsToChannels.put(
                         sockAddr,
-                        new ZuulServerChannelInitializer(
-                                metricId, channelConfig, channelDependencies, clientChannels));
+                        new Http2SslChannelInitializer(metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
                 break;
 
@@ -156,8 +155,7 @@ public class SampleServerStartup extends BaseServerStartup {
 
                 addrsToChannels.put(
                         sockAddr,
-                        new Http2SslChannelInitializer(
-                                metricId, channelConfig, channelDependencies, clientChannels));
+                        new Http2SslChannelInitializer(metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
                 break;
 
