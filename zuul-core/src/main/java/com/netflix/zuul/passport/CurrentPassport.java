@@ -79,7 +79,7 @@ public class CurrentPassport
 
     private Unlocker lock() {
         boolean locked = false;
-        if (historyLock.isHeldByCurrentThread() || historyLock.isLocked() || !(locked = historyLock.tryLock())) {
+        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !(locked = historyLock.tryLock())) {
             logger.warn(
                     "CurrentPassport already locked!, lock={}, self={}",
                     historyLock, Thread.currentThread(), new ConcurrentModificationException());
