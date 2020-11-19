@@ -28,6 +28,7 @@ import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,7 +68,7 @@ public class CurrentPassport
     private final HashSet<PassportState> statesAdded;
     private final long creationTimeSinceEpochMs;
 
-    private final ReentrantLock historyLock = new ReentrantLock();
+    private final IntrospectiveReentrantLock historyLock = new IntrospectiveReentrantLock();
     private final Unlocker unlocker = new Unlocker();
     private final class Unlocker implements AutoCloseable {
 
@@ -76,13 +77,22 @@ public class CurrentPassport
             historyLock.unlock();
         }
     }
+    private final static class IntrospectiveReentrantLock extends ReentrantLock {
+
+        @Override
+        protected Thread getOwner() {
+            return super.getOwner();
+        }
+    }
 
     private Unlocker lock() {
         boolean locked = false;
-        if (historyLock.isHeldByCurrentThread() || historyLock.isLocked() || !(locked = historyLock.tryLock())) {
+        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !(locked = historyLock.tryLock())) {
             logger.warn(
-                    "CurrentPassport already locked!, lock={}, self={}",
-                    historyLock, Thread.currentThread(), new ConcurrentModificationException());
+                    "CurrentPassport already locked!, other={}, self={}",
+                    Arrays.asList(historyLock.getOwner().getStackTrace()),
+                    Thread.currentThread(),
+                    new ConcurrentModificationException());
         }
         if (!locked) {
             historyLock.lock();
