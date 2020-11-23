@@ -15,26 +15,25 @@
  */
 package com.netflix.zuul.context;
 
-/**
- * User: Mike Smith
- * Date: 4/28/15
- * Time: 6:45 PM
- */
 
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.util.DeepCopy;
-
-import java.io.NotSerializableException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
  * between them. But we're currently still only modelling single request/response pair per session.
  *
  * NOTE: Not threadsafe, and not intended to be used concurrently.
+ *
+ * User: Mike Smith
+ * Date: 4/28/15
+ * Time: 6:45 PM
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
@@ -120,45 +119,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     public void set(String key, Object value) {
         if (value != null) put(key, value);
         else remove(key);
-    }
-
-    /**
-     * Makes a copy of the SessionContext. This is used for debugging.
-     *
-     */
-    public SessionContext copy()
-    {
-        SessionContext copy = new SessionContext();
-        copy.brownoutMode = brownoutMode;
-        copy.cancelled = cancelled;
-        copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
-        copy.shouldSendErrorResponse = shouldSendErrorResponse;
-        copy.errorResponseSent = errorResponseSent;
-        copy.debugRouting = debugRouting;
-        copy.debugRequest = debugRequest;
-        copy.debugRequestHeadersOnly = debugRequestHeadersOnly;
-
-        Iterator<String> it = keySet().iterator();
-        String key = it.next();
-        while (key != null) {
-            Object orig = get(key);
-            try {
-                Object copyValue = DeepCopy.copy(orig);
-                if (copyValue != null) {
-                    copy.set(key, copyValue);
-                } else {
-                    copy.set(key, orig);
-                }
-            } catch (NotSerializableException e) {
-                copy.set(key, orig);
-            }
-            if (it.hasNext()) {
-                key = it.next();
-            } else {
-                key = null;
-            }
-        }
-        return copy;
     }
 
     public String getUUID()
