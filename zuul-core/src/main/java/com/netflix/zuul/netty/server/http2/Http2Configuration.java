@@ -16,29 +16,15 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-
 import javax.net.ssl.SSLException;
 
 public class Http2Configuration {
-
-    private static final DynamicBooleanProperty HTTP2_DISABLED =
-            new DynamicBooleanProperty("zuul.server.http2.disabled", false);
-
-
-    /**
-     * Use {@link #configureSSL(SslContextFactory, String)} instead.
-     */
-    @Deprecated
-    public static SslContext configureSSL(SslContextFactory sslContextFactory, int port) {
-        return configureSSL(sslContextFactory, String.valueOf(port));
-    }
-
+    
     public static SslContext configureSSL(SslContextFactory sslContextFactory, String metricId) {
         SslContextBuilder builder = sslContextFactory.createBuilderForServer();
 
