@@ -31,6 +31,7 @@ import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_NOT_FOUND
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
@@ -73,6 +74,7 @@ import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.NettyOrigin;
 import com.netflix.zuul.origins.Origin;
 import com.netflix.zuul.origins.OriginManager;
+import com.netflix.zuul.origins.OriginName;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.zuul.stats.status.StatusCategory;
@@ -179,7 +181,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         chosenHostAddr = new AtomicReference<>();
 
         this.sslRetryBodyCache = preCacheBodyForRetryingSslRequests();
-        this.populatedSslRetryBody = SpectatorUtils.newCounter("zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getVip());
+        this.populatedSslRetryBody = SpectatorUtils.newCounter(
+                "zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getName().getTarget());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -430,7 +433,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      * Override to track your own request stats.
      */
     protected RequestStat createRequestStat() {
-        BasicRequestStat basicRequestStat = new BasicRequestStat(origin.getName());
+        BasicRequestStat basicRequestStat = new BasicRequestStat();
         requestStats.add(basicRequestStat);
         RequestStat.putInSessionContext(basicRequestStat, context);
         return basicRequestStat;
@@ -1054,18 +1057,18 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         boolean useFullName = context.getBoolean(CommonContextKeys.USE_FULL_VIP_NAME);
         String restClientName = useFullName ? restClientVIP : VipUtils.getVIPPrefix(restClientVIP);
 
+
         NettyOrigin origin = null;
         if (restClientName != null) {
+            OriginName originName = OriginName.fromVip(restClientVIP, restClientName);
             // This is the normal flow - that a RoutingFilter has assigned a route
-            origin = getOrCreateOrigin(originManager, restClientName, restClientVIP, request.reconstructURI(), useFullName, context);
+            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
         }
 
         // Use the custom vip instead if one has been provided.
-        VipPair customVip = injectCustomVip(request);
-        if (customVip != null) {
-            restClientVIP = customVip.restClientVip;
-            restClientName = customVip.restClientName;
-            origin = getOrCreateOrigin(originManager, restClientName, restClientVIP, request.reconstructURI(), useFullName, context);
+        OriginName overrideOriginName = injectCustomOriginName(request);
+        if (overrideOriginName != null) {
+            origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
         }
 
         verifyOrigin(context, request, restClientName, origin);
@@ -1084,29 +1087,24 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      *
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
+     *
+     * @return {@code null} if unused.
      */
     @Nullable
-    protected VipPair injectCustomVip(HttpRequestMessage request) {
+    protected OriginName injectCustomOriginName(HttpRequestMessage request) {
         // override for custom vip injection
         return null;
     }
 
-    protected static final class VipPair {
-        final String restClientVip;
-        final String restClientName;
-
-        public VipPair(String restClientVip, String restClientName) {
-            this.restClientVip = Objects.requireNonNull(restClientVip, "restClientVip");
-            this.restClientName = Objects.requireNonNull(restClientName, "restClientName");
-        }
-    }
-
-    private NettyOrigin getOrCreateOrigin(OriginManager<NettyOrigin> originManager, String name, String vip, String uri, boolean useFullVipName, SessionContext ctx) {
-        NettyOrigin origin = originManager.getOrigin(name, vip, uri, ctx);
+    private NettyOrigin getOrCreateOrigin(
+            OriginManager<NettyOrigin> originManager, OriginName originName, String uri, SessionContext ctx) {
+        NettyOrigin origin = originManager.getOrigin(originName, uri, ctx);
         if (origin == null) {
-            // If no pre-registered and configured RestClient found for this VIP, then register one using default NIWS properties.
-            LOG.warn("Attempting to register RestClient for client that has not been configured. restClientName={}, vip={}, uri={}", name, vip, uri);
-            origin = originManager.createOrigin(name, vip, uri, useFullVipName, ctx);
+            // If no pre-registered and configured RestClient found for this VIP, then register one using default NIWS
+            // properties.
+            LOG.warn("Attempting to register RestClient for client that has not been configured. originName={}, uri={}",
+                    originName, uri);
+            origin = originManager.createOrigin(originName, uri, ctx);
         }
         return origin;
     }
@@ -1124,6 +1122,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
+    @ForOverride
     protected void originNotFound(SessionContext context, String causeName) {
         // override for metrics or custom processing
     }

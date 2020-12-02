@@ -28,7 +28,6 @@ import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.LoadBalancerStats;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
-import com.netflix.loadbalancer.ZoneAwareLoadBalancer;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
@@ -37,6 +36,7 @@ import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
+import com.netflix.zuul.origins.OriginName;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,6 +50,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -74,8 +75,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     private final IClientConfig clientConfig;
     private final Registry spectatorRegistry;
 
-    /* DeploymentContextBasedVIP for which to maintain this connection pool */
-    private final String vip;
+    private final OriginName originName;
 
     private static final Throwable SHUTTING_DOWN_ERR = new IllegalStateException("ConnectionPool is shutting down now.");
     private volatile boolean shuttingDown = false;
@@ -103,10 +103,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
 
-    public DefaultClientChannelManager(String originName, String vip, IClientConfig clientConfig, Registry spectatorRegistry) {
+    public DefaultClientChannelManager(
+            OriginName originName, IClientConfig clientConfig, Registry spectatorRegistry) {
+        this.originName = Objects.requireNonNull(originName, "originName");
         this.loadBalancer = createLoadBalancer(clientConfig);
 
-        this.vip = vip;
+        String metricId = originName.getMetricId();
+
         this.clientConfig = clientConfig;
         this.spectatorRegistry = spectatorRegistry;
         this.perServerPools = new ConcurrentHashMap<>(200);
@@ -116,21 +119,21 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        this.createNewConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create", originName);
-        this.createConnSucceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_success", originName);
-        this.createConnFailedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_fail", originName);
+        this.createNewConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create", metricId);
+        this.createConnSucceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_success", metricId);
+        this.createConnFailedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_fail", metricId);
 
-        this.closeConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_close", originName);
-        this.requestConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_request", originName);
-        this.reuseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_reuse", originName);
-        this.releaseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_release", originName);
-        this.alreadyClosedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_alreadyClosed", originName);
-        this.connTakenFromPoolIsNotOpen = SpectatorUtils.newCounter(METRIC_PREFIX + "_fromPoolIsClosed", originName);
-        this.maxConnsPerHostExceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_maxConnsPerHostExceeded", originName);
-        this.closeWrtBusyConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeWrtBusyConnCounter", originName);
-        this.connEstablishTimer = PercentileTimer.get(spectatorRegistry, spectatorRegistry.createId(METRIC_PREFIX + "_createTiming", "id", originName));
-        this.connsInPool = SpectatorUtils.newGauge(METRIC_PREFIX + "_inPool", originName, new AtomicInteger());
-        this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", originName, new AtomicInteger());
+        this.closeConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_close", metricId);
+        this.requestConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_request", metricId);
+        this.reuseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_reuse", metricId);
+        this.releaseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_release", metricId);
+        this.alreadyClosedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_alreadyClosed", metricId);
+        this.connTakenFromPoolIsNotOpen = SpectatorUtils.newCounter(METRIC_PREFIX + "_fromPoolIsClosed", metricId);
+        this.maxConnsPerHostExceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_maxConnsPerHostExceeded", metricId);
+        this.closeWrtBusyConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeWrtBusyConnCounter", metricId);
+        this.connEstablishTimer = PercentileTimer.get(spectatorRegistry, spectatorRegistry.createId(METRIC_PREFIX + "_createTiming", "id", metricId));
+        this.connsInPool = SpectatorUtils.newGauge(METRIC_PREFIX + "_inPool", metricId, new AtomicInteger());
+        this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", metricId, new AtomicInteger());
     }
 
     @Override
@@ -152,8 +155,10 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     protected DynamicServerListLoadBalancer<?> createLoadBalancer(IClientConfig clientConfig) {
-        // Create and configure a loadbalancer for this vip.
-        String loadBalancerClassName = clientConfig.get(NFLoadBalancerClassName, ZoneAwareLoadBalancer.class.getName());
+        // Create and configure a loadbalancer for this vip.  Use a hard coded string for the LB default name to avoid
+        // a dependency on Ribbon classes.
+        String loadBalancerClassName =
+                clientConfig.get(NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
 
         DynamicServerListLoadBalancer<?> lb;
         try {
@@ -174,7 +179,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         Set<Server> removedSet = Sets.difference(oldSet, newSet);
 
         if (!removedSet.isEmpty()) {
-            LOG.debug("Removing connection pools for missing servers. vip = " + this.vip
+            LOG.debug("Removing connection pools for missing servers. name = " + originName
                     + ". " + removedSet.size() + " servers gone.");
 
             for (Server s : removedSet) {
@@ -459,7 +464,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @VisibleForTesting
-    static SocketAddress pickAddressInternal(Server chosenServer, @Nullable String connPoolConfigOriginName) {
+    static SocketAddress pickAddressInternal(Server chosenServer, @Nullable OriginName originName) {
         String rawHost;
         int port;
         if (chosenServer instanceof DiscoveryEnabledServer) {
@@ -482,7 +487,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
             Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
                     "unresolvedDiscoveryHost",
-                    connPoolConfigOriginName == null ? "unknownOrigin" : connPoolConfigOriginName);
+                    originName == null ? "unknownOrigin" : originName.getTarget());
             unresolvedDiscoveryHost.increment();
             try {
                 serverAddr = new InetSocketAddress(rawHost, port);

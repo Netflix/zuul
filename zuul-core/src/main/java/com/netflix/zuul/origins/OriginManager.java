@@ -24,7 +24,7 @@ import com.netflix.zuul.context.SessionContext;
  */
 public interface OriginManager<T extends Origin> {
 
-    T getOrigin(String name, String vip, String uri, SessionContext ctx);
+    T getOrigin(OriginName originName, String uri, SessionContext ctx);
 
-    T createOrigin(String name, String vip, String uri, boolean useFullVipName, SessionContext ctx);
+    T createOrigin(OriginName originName, String uri, SessionContext ctx);
 }
