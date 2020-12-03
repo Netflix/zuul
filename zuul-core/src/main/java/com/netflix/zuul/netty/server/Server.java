@@ -279,10 +279,10 @@ public class Server
         ByteBufAllocator alloc = bindFuture.channel().alloc();
         if (alloc instanceof ByteBufAllocatorMetricProvider) {
             ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
-            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffers.live", "type", "heap"))
-                    .monitorValue(metrics, m -> metrics.usedHeapMemory());
-            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffers.live", "type", "direct"))
-                    .monitorValue(metrics, m -> metrics.usedDirectMemory());
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
         }
 
         try {
