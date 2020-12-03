@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
@@ -25,12 +27,15 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.monitoring.ConnTimer;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufAllocatorMetric;
+import io.netty.buffer.ByteBufAllocatorMetricProvider;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
@@ -55,28 +60,25 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -273,6 +275,16 @@ public class Server
 
         // Bind and start to accept incoming connections.
         ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
+
+        ByteBufAllocator alloc = bindFuture.channel().alloc();
+        if (alloc instanceof ByteBufAllocatorMetricProvider) {
+            ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
+        }
+
         try {
             return bindFuture.sync();
         } catch (Exception e) {
