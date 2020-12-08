@@ -33,6 +33,7 @@ dependencies {
 
     implementation "io.netty:netty-codec-haproxy:${versions_netty}"
     implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
+    implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-aarch_64"
     implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
     runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.35.Final"
 
