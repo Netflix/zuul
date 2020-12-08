@@ -342,6 +342,15 @@ public class HttpRequestMessageImplTest {
     }
 
     @Test
+    public void getOriginalPort_EmptyXFFPort() throws URISyntaxException {
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.X_FORWARDED_PORT, "");
+
+        // Default to using server port
+        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+    }
+
+    @Test
     public void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
         SessionContext context = new SessionContext();
         context.set(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS,

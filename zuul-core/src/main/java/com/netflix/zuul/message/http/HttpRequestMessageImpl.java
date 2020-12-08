@@ -534,7 +534,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             return ((InetSocketAddress) context.get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
         }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
-        if (portStr != null) {
+        if (portStr != null && !portStr.isEmpty()) {
             return Integer.parseInt(portStr);
         }
         // Check if port was specified on a Host header.
