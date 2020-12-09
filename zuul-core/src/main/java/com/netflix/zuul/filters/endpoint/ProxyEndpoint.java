@@ -145,11 +145,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected RequestAttempt currentRequestAttempt;
     protected List<RequestStat> requestStats = new ArrayList<>();
     protected RequestStat currentRequestStat;
-    private final byte[] sslRetryBodyCache;
+    private final byte[] retryBodyCache;
 
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
-    private static final DynamicBooleanProperty ENABLE_CACHING_SSL_BODIES = new DynamicBooleanProperty("zuul.cache.ssl.bodies", true);
+    private static final DynamicBooleanProperty ENABLE_CACHING_BODIES = new DynamicBooleanProperty("zuul.cache.bodies", true);
 
     private static final CachedDynamicIntProperty MAX_OUTBOUND_READ_TIMEOUT = new CachedDynamicIntProperty("zuul.origin.readtimeout.max", 90 * 1000);
 
@@ -159,7 +159,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
-    private final Counter populatedSslRetryBody;
+    private final Counter populatedRetryBody;
 
 
     public ProxyEndpoint(final HttpRequestMessage inMesg, final ChannelHandlerContext ctx,
@@ -180,9 +180,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         chosenServer = new AtomicReference<>();
         chosenHostAddr = new AtomicReference<>();
 
-        this.sslRetryBodyCache = preCacheBodyForRetryingSslRequests();
-        this.populatedSslRetryBody = SpectatorUtils.newCounter(
-                "zuul.populated.ssl.retry.body", origin == null ? "null" : origin.getName().getTarget());
+        this.retryBodyCache = preCacheBodyForRetryingRequests();
+        this.populatedRetryBody = SpectatorUtils.newCounter(
+                "zuul.populated.retry.body", origin == null ? "null" : origin.getName().getTarget());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -565,22 +565,24 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private byte[] preCacheBodyForRetryingSslRequests() {
+    private byte[] preCacheBodyForRetryingRequests() {
         // Netty SSL handler clears body ByteBufs, so we need to cache the body if we want to retry POSTs
-        if (ENABLE_CACHING_SSL_BODIES.get() && origin != null &&
-                // only cache requests if already buffered
-                origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure, false) && zuulRequest.hasCompleteBody()) {
+        // Followup: We expect most origin connections to be secure, so it's okay to unconditionally cache here.
+        // Additionally, it's risky to assume the plaintext handlers won't clear the body (they do), so just pay the
+        // cost caching regardless.
+        if (ENABLE_CACHING_BODIES.get() && origin != null && zuulRequest.hasCompleteBody()) {
+            // only cache requests if already buffered
             return zuulRequest.getBody();
         }
         return null;
     }
 
     private void repopulateRetryBody() {
-        // if SSL origin request body is cached and has been cleared by Netty SslHandler, set it from cache
         // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
-        if (sslRetryBodyCache != null && attemptNum > 1 && zuulRequest.getBody() != null && zuulRequest.getBody().length == 0) {
-            zuulRequest.setBody(sslRetryBodyCache);
-            populatedSslRetryBody.increment();
+        if (retryBodyCache != null && attemptNum > 1
+                && zuulRequest.getBodyLength() == 0 && zuulRequest.getBody() != null) {
+            zuulRequest.setBody(retryBodyCache);
+            populatedRetryBody.increment();
         }
     }
 
