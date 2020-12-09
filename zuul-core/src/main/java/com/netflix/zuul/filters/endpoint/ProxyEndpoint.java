@@ -579,7 +579,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private void repopulateRetryBody() {
         // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
-        if (retryBodyCache != null && attemptNum > 1 && zuulRequest.getBody() != null && zuulRequest.getBody().length == 0) {
+        if (retryBodyCache != null && attemptNum > 1
+                && zuulRequest.getBodyLength() == 0 && zuulRequest.getBody() != null) {
             zuulRequest.setBody(retryBodyCache);
             populatedRetryBody.increment();
         }
