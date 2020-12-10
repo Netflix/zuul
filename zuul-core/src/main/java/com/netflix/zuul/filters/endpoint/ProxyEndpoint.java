@@ -35,6 +35,7 @@ import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
+import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
@@ -102,7 +103,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -150,6 +150,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
     private static final DynamicBooleanProperty ENABLE_CACHING_BODIES = new DynamicBooleanProperty("zuul.cache.bodies", true);
+    private static final DynamicBooleanProperty ENABLE_CACHING_PLAINTEXT_BODIES =
+            new DynamicBooleanProperty("zuul.cache.bodies.plaintext", false);
 
     private static final CachedDynamicIntProperty MAX_OUTBOUND_READ_TIMEOUT = new CachedDynamicIntProperty("zuul.origin.readtimeout.max", 90 * 1000);
 
@@ -571,8 +573,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Additionally, it's risky to assume the plaintext handlers won't clear the body (they do), so just pay the
         // cost caching regardless.
         if (ENABLE_CACHING_BODIES.get() && origin != null && zuulRequest.hasCompleteBody()) {
-            // only cache requests if already buffered
-            return zuulRequest.getBody();
+            // This second check to see if the origin is secure is a kludge to avoid spending too much CPU on
+            // plaintext requests.  Unfortunately, the cost of cahcing the body is non trivial, and as of the
+            // current implementation, it's only technically required for SSL.  See comment above.
+            if (origin.getClientConfig().get(Keys.IsSecure, false) || ENABLE_CACHING_PLAINTEXT_BODIES.get()) {
+                // only cache requests if already buffered
+                return zuulRequest.getBody();
+            }
         }
         return null;
     }
