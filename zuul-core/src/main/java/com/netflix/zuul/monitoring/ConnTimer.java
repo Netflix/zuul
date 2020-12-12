@@ -61,7 +61,7 @@ public final class ConnTimer {
         this.chan = Objects.requireNonNull(chan);
         this.metricBase = Objects.requireNonNull(metricBase);
         if (PRECISE_TIMING.get()) {
-            preciseMetricBase = registry.createId(this.metricBase.name() + ".pct");
+            preciseMetricBase = registry.createId(metricBase.name() + ".pct").withTags(metricBase.tags());
         } else {
             preciseMetricBase = null;
         }
