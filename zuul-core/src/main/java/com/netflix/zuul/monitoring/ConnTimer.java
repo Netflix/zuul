@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.monitoring;
 
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
@@ -31,11 +32,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * A timer for connection stats.  Not thread-safe.
  */
 public final class ConnTimer {
+
+    private static final DynamicBooleanProperty PRECISE_TIMING =
+            new DynamicBooleanProperty("zuul.conn.precise_timing", false);
 
     private static final AttributeKey<ConnTimer> CONN_TIMER = AttributeKey.newInstance("zuul.conntimer");
 
@@ -46,6 +51,8 @@ public final class ConnTimer {
     private final Channel chan;
     // TODO(carl-mastrangelo): make this changable.
     private final Id metricBase;
+    @Nullable
+    private final Id preciseMetricBase;
 
     private final Map<String, Long> timings = new LinkedHashMap<>();
 
@@ -53,6 +60,11 @@ public final class ConnTimer {
         this.registry = Objects.requireNonNull(registry);
         this.chan = Objects.requireNonNull(chan);
         this.metricBase = Objects.requireNonNull(metricBase);
+        if (PRECISE_TIMING.get()) {
+            preciseMetricBase = registry.createId(metricBase.name() + ".pct").withTags(metricBase.tags());
+        } else {
+            preciseMetricBase = null;
+        }
     }
 
     public static ConnTimer install(Channel chan, Registry registry, Id metricBase) {
@@ -85,6 +97,7 @@ public final class ConnTimer {
         for (Key<?> key : dims.keySet()) {
             dimTags.put(key.name(), String.valueOf(key.get(dims)));
         }
+        dimTags.put("to", event);
 
         // Note: this is effectively O(n^2) because it will be called for each event in the connection
         // setup.  It should be bounded to at most 10 or so.
@@ -95,11 +108,15 @@ public final class ConnTimer {
                 // it.
                 return;
             }
-            PercentileTimer.builder(registry)
-                    .withId(metricBase.withTags(dimTags).withTags("from", k, "to", event))
-                    .withRange(MIN_CONN_TIMING, MAX_CONN_TIMING)
-                    .build()
+            registry.timer(metricBase.withTags(dimTags).withTags("from", k))
                     .record(durationNanos, TimeUnit.NANOSECONDS);
+            if (preciseMetricBase != null) {
+                PercentileTimer.builder(registry)
+                        .withId(preciseMetricBase.withTags(dimTags).withTags("from", k))
+                        .withRange(MIN_CONN_TIMING, MAX_CONN_TIMING)
+                        .build()
+                        .record(durationNanos, TimeUnit.NANOSECONDS);
+            }
         });
         timings.put(event, now);
     }
