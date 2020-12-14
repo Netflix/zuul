@@ -1066,18 +1066,16 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         boolean useFullName = context.getBoolean(CommonContextKeys.USE_FULL_VIP_NAME);
         String restClientName = useFullName ? restClientVIP : VipUtils.getVIPPrefix(restClientVIP);
 
-
         NettyOrigin origin = null;
-        if (restClientName != null) {
-            OriginName originName = OriginName.fromVip(restClientVIP, restClientName);
-            // This is the normal flow - that a RoutingFilter has assigned a route
-            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
-        }
-
-        // Use the custom vip instead if one has been provided.
+        // allow implementors to override the origin with custom injection logic
         OriginName overrideOriginName = injectCustomOriginName(request);
         if (overrideOriginName != null) {
+            // Use the custom vip instead if one has been provided.
             origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
+        } else if (restClientName != null) {
+            // This is the normal flow - that a RoutingFilter has assigned a route
+            OriginName originName = OriginName.fromVip(restClientVIP, restClientName);
+            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
         }
 
         verifyOrigin(context, request, restClientName, origin);
