@@ -25,13 +25,9 @@ import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +91,10 @@ public final class ConnCounter {
         lastCountKey = event;
         Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);
         Gauge gauge = registry.gauge(id);
-        gauge.set(gauge.value() + 1);
+        synchronized (gauge) {
+            double current = gauge.value();
+            gauge.set(Double.isNaN(current) ? 1 : current + 1);
+        }
         counts.put(event, gauge);
     }
 
@@ -107,6 +106,9 @@ public final class ConnCounter {
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
-        gauge.set(gauge.value() - 1);
+        synchronized (gauge) {
+            assert !Double.isNaN(gauge.value());
+            gauge.set(gauge.value() - 1);
+        }
     }
 }
