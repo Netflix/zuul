@@ -29,6 +29,7 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.Attrs;
+import com.netflix.zuul.monitoring.ConnCounter;
 import com.netflix.zuul.monitoring.ConnTimer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
@@ -476,6 +477,7 @@ public class Server
             child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
             ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
             timer.record(now, "ACCEPT");
+            ConnCounter.install(child, registry, registry.createId("zuul.conn.client.active"));
             super.channelRead(ctx, msg);
         }
     }
