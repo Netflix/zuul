@@ -51,7 +51,7 @@ public final class ConnCounter {
     private static final Object[] locks = new Object[LOCK_COUNT];
 
     static {
-        assert (LOCK_COUNT ^ LOCK_MASK) != 0;
+        assert (LOCK_COUNT & LOCK_MASK) == 0;
         for (int i = 0; i < locks.length; i++) {
             locks[i] = new Object();
         }
