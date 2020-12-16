@@ -16,8 +16,11 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.zuul.Attrs;
+import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -40,6 +43,8 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
     public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION =
             AttributeKey.newInstance("_haproxy_version");
 
+    @VisibleForTesting
+    static final Attrs.Key<Integer> HAPM_DEST_PORT = Attrs.newKey("hapm_port");
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -66,6 +71,8 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             addr = inetAddr;
                             // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_LOCAL_ADDR could be PPv2 or not
                             channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(inetAddr);
+                            Attrs attrs = ctx.channel().attr(Server.CONN_DIMENSIONS).get();
+                            HAPM_DEST_PORT.put(attrs, hapm.destinationPort());
                             break out;
                         case UNIX_STREAM: // TODO: implement
                         case UDP4:

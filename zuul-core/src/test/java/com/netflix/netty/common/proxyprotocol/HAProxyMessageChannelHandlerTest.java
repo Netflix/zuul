@@ -19,6 +19,8 @@ package com.netflix.netty.common.proxyprotocol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.zuul.Attrs;
+import com.netflix.zuul.netty.server.Server;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -35,6 +37,8 @@ public class HAProxyMessageChannelHandlerTest {
     @Test
     public void setClientDestPortForHAPM() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         // This is to emulate `ElbProxyProtocolChannelHandler`
         channel.pipeline()
                 .addLast(HAProxyMessageDecoder.class.getSimpleName(), new HAProxyMessageDecoder())
@@ -58,5 +62,9 @@ public class HAProxyMessageChannelHandlerTest {
 
         assertEquals("192.168.0.1", srcAddress.getHostString());
         assertEquals(10008, srcAddress.getPort());
+
+        Attrs attrs = channel.attr(Server.CONN_DIMENSIONS).get();
+        Integer port = HAProxyMessageChannelHandler.HAPM_DEST_PORT.get(attrs);
+        assertEquals(443, port.intValue());
     }
 }
