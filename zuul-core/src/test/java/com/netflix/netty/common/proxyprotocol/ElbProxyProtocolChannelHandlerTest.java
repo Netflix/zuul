@@ -27,6 +27,8 @@ import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.Attrs;
+import com.netflix.zuul.netty.server.Server;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
@@ -58,6 +60,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void noProxy() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, false));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -81,6 +85,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void extraDataForwarded() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -98,6 +104,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void passThrough_ProxyProtocolEnabled_nonProxyBytes() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         //Note that the bytes aren't prefixed by PROXY, as required by the spec
@@ -122,6 +130,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void incrementCounterWhenPPEnabledButNonHAPMMessage() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         //Note that the bytes aren't prefixed by PROXY, as required by the spec
@@ -140,6 +150,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void detectsSplitPpv1Message() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf1 = Unpooled.wrappedBuffer(
@@ -162,6 +174,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv1_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -189,6 +203,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv1_ipv6() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -218,6 +234,8 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Test
     public void negotiateProxy_ppv2_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
