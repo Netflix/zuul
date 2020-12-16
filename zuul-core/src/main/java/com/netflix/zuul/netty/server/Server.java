@@ -477,7 +477,7 @@ public class Server
             child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
             ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
             timer.record(now, "ACCEPT");
-            ConnCounter.install(child, registry, registry.createId("zuul.conn.client.active"));
+            ConnCounter.install(child, registry, registry.createId("zuul.conn.client.current"));
             super.channelRead(ctx, msg);
         }
     }
