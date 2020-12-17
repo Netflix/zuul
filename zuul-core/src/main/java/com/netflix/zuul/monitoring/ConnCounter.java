@@ -40,6 +40,23 @@ public final class ConnCounter {
 
     private static final AttributeKey<ConnCounter> CONN_COUNTER = AttributeKey.newInstance("zuul.conncounter");
 
+    private static final int LOCK_COUNT = 256;
+    private static final int LOCK_MASK = LOCK_COUNT - 1;
+
+    /**
+     * An array of locks to guard the gauges.   This is the same as Guava's Striped, but avoids the dep.
+     *
+     * This can be removed after https://github.com/Netflix/spectator/issues/862 is fixed.
+     */
+    private static final Object[] locks = new Object[LOCK_COUNT];
+
+    static {
+        assert (LOCK_COUNT & LOCK_MASK) == 0;
+        for (int i = 0; i < locks.length; i++) {
+            locks[i] = new Object();
+        }
+    }
+
     private final Registry registry;
     private final Channel chan;
     private final Id metricBase;
@@ -91,7 +108,8 @@ public final class ConnCounter {
         lastCountKey = event;
         Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);
         Gauge gauge = registry.gauge(id);
-        synchronized (gauge) {
+
+        synchronized (getLock(id)) {
             double current = gauge.value();
             gauge.set(Double.isNaN(current) ? 1 : current + 1);
         }
@@ -106,9 +124,16 @@ public final class ConnCounter {
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
-        synchronized (gauge) {
+        synchronized (getLock(gauge.id())) {
             assert !Double.isNaN(gauge.value());
             gauge.set(gauge.value() - 1);
         }
+    }
+
+    // This is here to pick the correct lock stripe.   This avoids multiple threads synchronizing on the
+    // same lock in the common case.   This can go away once there is an atomic gauge update implemented
+    // in spectator.
+    private static Object getLock(Id id) {
+        return locks[id.hashCode() & LOCK_MASK];
     }
 }
