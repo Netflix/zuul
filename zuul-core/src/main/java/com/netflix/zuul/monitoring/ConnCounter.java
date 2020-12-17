@@ -109,7 +109,7 @@ public final class ConnCounter {
         Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);
         Gauge gauge = registry.gauge(id);
 
-        synchronized (locks[id.hashCode() & LOCK_MASK]) {
+        synchronized (getLock(id)) {
             double current = gauge.value();
             gauge.set(Double.isNaN(current) ? 1 : current + 1);
         }
@@ -124,9 +124,16 @@ public final class ConnCounter {
             logger.warn("Missing conn counter increment {}", event);
             return;
         }
-        synchronized (locks[gauge.id().hashCode() & LOCK_MASK]) {
+        synchronized (getLock(gauge.id())) {
             assert !Double.isNaN(gauge.value());
             gauge.set(gauge.value() - 1);
         }
+    }
+
+    // This is here to pick the correct lock stripe.   This avoids multiple threads synchronizing on the
+    // same lock in the common case.   This can go away once there is an atomic gauge update implemented
+    // in spectator.
+    private static Object getLock(Id id) {
+        return locks[id.hashCode() & LOCK_MASK];
     }
 }
