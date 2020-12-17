@@ -19,6 +19,7 @@ package com.netflix.zuul.monitoring;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Tag;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.Attrs.Key;
@@ -97,27 +98,30 @@ public final class ConnTimer {
         for (Key<?> key : dims.keySet()) {
             dimTags.put(key.name(), String.valueOf(key.get(dims)));
         }
-        dimTags.put("to", event);
 
         // Note: this is effectively O(n^2) because it will be called for each event in the connection
         // setup.  It should be bounded to at most 10 or so.
-        timings.forEach((k, v) -> {
-            long durationNanos = now - v;
+        timings.forEach((from, stamp) -> {
+            long durationNanos = now - stamp;
             if (durationNanos == 0) {
                 // This may happen if an event is double listed, or if the timer is not accurate enough to record
                 // it.
                 return;
             }
-            registry.timer(metricBase.withTags(dimTags).withTags("from", k))
+            registry.timer(buildId(metricBase, from, event, dimTags))
                     .record(durationNanos, TimeUnit.NANOSECONDS);
             if (preciseMetricBase != null) {
                 PercentileTimer.builder(registry)
-                        .withId(preciseMetricBase.withTags(dimTags).withTags("from", k))
+                        .withId(buildId(preciseMetricBase, from, event, dimTags))
                         .withRange(MIN_CONN_TIMING, MAX_CONN_TIMING)
                         .build()
                         .record(durationNanos, TimeUnit.NANOSECONDS);
             }
         });
         timings.put(event, now);
+    }
+
+    private Id buildId(Id base, String from, String to, Map<String, String> tags) {
+        return registry.createId(metricBase.name() + '.' + from + '-' + to).withTags(base.tags()).withTags(tags);
     }
 }
