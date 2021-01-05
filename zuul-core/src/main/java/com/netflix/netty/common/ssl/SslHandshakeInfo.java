@@ -18,7 +18,7 @@ package com.netflix.netty.common.ssl;
 
 import io.netty.handler.ssl.ClientAuth;
 
-import javax.security.cert.X509Certificate;
+import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 
 /**
