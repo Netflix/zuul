@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
-import javax.security.cert.X509Certificate;
+import java.security.cert.X509Certificate;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 
@@ -84,9 +84,9 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                     X509Certificate peerCert = null;
 
                     if ((clientAuth == ClientAuth.REQUIRE || clientAuth == ClientAuth.OPTIONAL)
-                            && session.getPeerCertificateChain() != null
-                            && session.getPeerCertificateChain().length > 0) {
-                        peerCert = session.getPeerCertificateChain()[0];
+                            && session.getPeerCertificates() != null
+                            && session.getPeerCertificates().length > 0) {
+                        peerCert = (X509Certificate) session.getPeerCertificates()[0];
                     }
                     if (session.getLocalCertificates() != null && session.getLocalCertificates().length > 0) {
                         serverCert = session.getLocalCertificates()[0];
