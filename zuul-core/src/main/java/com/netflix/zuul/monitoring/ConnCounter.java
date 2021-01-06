@@ -20,14 +20,12 @@ import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Attrs;
-import com.netflix.zuul.Attrs.Key;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +40,8 @@ public final class ConnCounter {
 
     private static final int LOCK_COUNT = 256;
     private static final int LOCK_MASK = LOCK_COUNT - 1;
+
+    private static final Attrs EMPTY = Attrs.newInstance();
 
     /**
      * An array of locks to guard the gauges.   This is the same as Guava's Striped, but avoids the dep.
@@ -92,18 +92,23 @@ public final class ConnCounter {
     }
 
     public void increment(String event) {
+        increment(event, EMPTY);
+    }
+
+    public void increment(String event, Attrs extraDimensions) {
         Objects.requireNonNull(event);
+        Objects.requireNonNull(extraDimensions);
         if (counts.containsKey(event)) {
             // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
             logger.warn("Duplicate conn counter increment {}", event);
             return;
         }
-        Attrs dims = chan.attr(Server.CONN_DIMENSIONS).get();
-        Set<Key<?>> dimKeys = dims.keySet();
-        Map<String, String> dimTags = new HashMap<>(dimKeys.size());
-        for (Key<?> key : dims.keySet()) {
-            dimTags.put(key.name(), String.valueOf(key.get(dims)));
-        }
+        Attrs connDims = chan.attr(Server.CONN_DIMENSIONS).get();
+        Map<String, String> dimTags = new HashMap<>(connDims.size() + extraDimensions.size());
+
+        connDims.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
+        extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
+
         dimTags.put("from", lastCountKey != null ? lastCountKey : "nascent");
         lastCountKey = event;
         Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);

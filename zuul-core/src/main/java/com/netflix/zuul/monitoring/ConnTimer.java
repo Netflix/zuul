@@ -19,10 +19,8 @@ package com.netflix.zuul.monitoring;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Tag;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.Attrs;
-import com.netflix.zuul.Attrs.Key;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
@@ -31,7 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -47,6 +44,8 @@ public final class ConnTimer {
 
     private static final Duration MIN_CONN_TIMING = Duration.ofNanos(1024);
     private static final Duration MAX_CONN_TIMING = Duration.ofDays(366);
+
+    private static final Attrs EMPTY = Attrs.newInstance();
 
     private final Registry registry;
     private final Channel chan;
@@ -89,15 +88,22 @@ public final class ConnTimer {
     }
 
     public void record(Long now, String event) {
+        record(now, event, EMPTY);
+    }
+
+    public void record(Long now, String event, Attrs extraDimensions) {
         if (timings.containsKey(event)) {
             return;
         }
-        Attrs dims = chan.attr(Server.CONN_DIMENSIONS).get();
-        Set<Key<?>> dimKeys = dims.keySet();
-        Map<String, String> dimTags = new HashMap<>(dimKeys.size());
-        for (Key<?> key : dims.keySet()) {
-            dimTags.put(key.name(), String.valueOf(key.get(dims)));
-        }
+        Objects.requireNonNull(now);
+        Objects.requireNonNull(event);
+        Objects.requireNonNull(extraDimensions);
+
+        Attrs connDims = chan.attr(Server.CONN_DIMENSIONS).get();
+        Map<String, String> dimTags = new HashMap<>(connDims.size() + extraDimensions.size());
+
+        connDims.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
+        extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
 
         // Note: this is effectively O(n^2) because it will be called for each event in the connection
         // setup.  It should be bounded to at most 10 or so.
