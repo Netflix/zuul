@@ -23,10 +23,16 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /**
  * A heterogeneous map of attributes.
+ *
+ * <p>Implementation Note: this class is not a proper Map or Collection, in order to encourage callers
+ * to refer to the keys by their literal name.   In the past, finding where a Key was used was difficult,
+ * so this class is somewhat of an experiment to try to make tracking down usage easier.  If it becomes
+ * too onerous to use this, consider making this class extend AbstractMap.
  */
 public final class Attrs {
 
@@ -93,6 +99,14 @@ public final class Attrs {
 
     public Set<Key<?>> keySet() {
         return Collections.unmodifiableSet(new LinkedHashSet<>(storage.keySet()));
+    }
+
+    public void forEach(BiConsumer<? super Key<?>, Object> consumer) {
+        storage.forEach(consumer);
+    }
+
+    public int size() {
+        return storage.size();
     }
 
     @Override
