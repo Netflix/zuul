@@ -7,8 +7,8 @@ dependencies {
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.0'
-    api 'com.fasterxml.jackson.core:jackson-databind:2.12.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.1'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
 
     api "com.netflix.archaius:archaius-core:0.7.5"
     api "com.netflix.spectator:spectator-api:0.110.0"
