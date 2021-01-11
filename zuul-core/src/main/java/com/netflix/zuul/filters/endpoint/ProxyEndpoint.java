@@ -36,7 +36,7 @@ import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.client.config.IClientConfigKey.Keys;
-import com.netflix.config.CachedDynamicIntProperty;
+import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.Server;
@@ -99,6 +99,7 @@ import io.netty.util.concurrent.Promise;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -153,7 +154,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final DynamicBooleanProperty ENABLE_CACHING_PLAINTEXT_BODIES =
             new DynamicBooleanProperty("zuul.cache.bodies.plaintext", false);
 
-    private static final CachedDynamicIntProperty MAX_OUTBOUND_READ_TIMEOUT = new CachedDynamicIntProperty("zuul.origin.readtimeout.max", 90 * 1000);
+    private static final CachedDynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
+            new CachedDynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
 
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     private static final Set<HeaderName> RESPONSE_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
@@ -441,11 +443,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return basicRequestStat;
     }
 
-    private Integer setReadTimeoutOnContext(IClientConfig requestConfig, int attempt)
-    {
-        Integer readTimeout = getReadTimeout(requestConfig, attempt);
-        requestConfig.set(ReadTimeout, readTimeout);
-        return readTimeout;
+    private void setReadTimeoutOnContext(IClientConfig requestConfig, int attempt) {
+        Duration readTimeout = getReadTimeout(requestConfig, attempt);
+        requestConfig.set(ReadTimeout, Math.toIntExact(readTimeout.toMillis()));
     }
 
     @Override
@@ -532,30 +532,46 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    protected Integer getReadTimeout(IClientConfig requestConfig, int attemptNum) {
-        Integer originTimeout = parseReadTimeout(origin.getClientConfig().getProperty(IClientConfigKey.Keys.ReadTimeout, null));
-        Integer requestTimeout = parseReadTimeout(requestConfig.getProperty(IClientConfigKey.Keys.ReadTimeout, null));
+    /**
+     * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin
+     * timeout or the request timeout.
+     *
+     * @param requestConfig the config for the request.
+     * @param attemptNum the attempt number, starting at 1.
+     */
+    protected Duration getReadTimeout(IClientConfig requestConfig, int attemptNum) {
+        Long noTimeout = null;
+        // TODO(carl-mastrangelo): getProperty is deprecated, and suggests using the typed overload `get`.   However,
+        //  the value is parsed using parseReadTimeoutMs, which supports String, implying not all timeouts are Integer.
+        //  Figure out where a string ReadTimeout is coming from and replace it.
+        Long originTimeout =
+                parseReadTimeoutMs(origin.getClientConfig().getProperty(IClientConfigKey.Keys.ReadTimeout, noTimeout));
+        Long requestTimeout =
+                parseReadTimeoutMs(requestConfig.getProperty(IClientConfigKey.Keys.ReadTimeout, noTimeout));
 
         if (originTimeout == null && requestTimeout == null) {
-            return MAX_OUTBOUND_READ_TIMEOUT.get();
-        }
-        else if (originTimeout == null || requestTimeout == null) {
-            return originTimeout == null ? requestTimeout : originTimeout;
-        }
-        else {
+            return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
+        } else if (originTimeout == null || requestTimeout == null) {
+            return Duration.ofMillis(originTimeout == null ? requestTimeout : originTimeout);
+        } else {
             // return the greater of two timeouts
-            return originTimeout > requestTimeout ? originTimeout : requestTimeout;
+            return Duration.ofMillis(originTimeout > requestTimeout ? originTimeout : requestTimeout);
         }
     }
 
-    private Integer parseReadTimeout(Object p) {
+    /**
+     * An Integer is expected as an input, but supports parsing Long and String.  Returns {@code null} if no type is
+     * acceptable.
+     */
+    @Nullable
+    private Long parseReadTimeoutMs(Object p) {
         if (p instanceof String && !Strings.isNullOrEmpty((String) p)) {
-            return Integer.valueOf((String)p);
-        }
-        else if (p instanceof Integer) {
-            return (Integer) p;
-        }
-        else {
+            return Long.valueOf((String)p);
+        } else if (p instanceof Long) {
+            return (Long) p;
+        } else if (p instanceof Integer) {
+            return Long.valueOf((Integer) p);
+        } else {
             return null;
         }
     }
