@@ -34,7 +34,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
@@ -125,7 +125,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
@@ -217,7 +217,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
@@ -318,7 +318,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
@@ -404,7 +404,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
@@ -493,7 +493,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.110.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
             "locked": "4.1.55.Final"
