@@ -238,7 +238,7 @@
             "locked": "4.1.55.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.55.Final"
@@ -339,7 +339,7 @@
             "locked": "4.1.55.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.55.Final"
@@ -514,7 +514,7 @@
             "locked": "4.1.55.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "locked": "4.1.55.Final"
