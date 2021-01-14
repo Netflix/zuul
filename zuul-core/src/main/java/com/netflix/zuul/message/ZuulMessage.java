@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.message;
 
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
@@ -32,6 +33,14 @@ public interface ZuulMessage extends Cloneable {
      * Returns the session context of this message.
      */
     SessionContext getContext();
+
+    /**
+     * Returns the attributes associated with the message.  This is an <strong>experimental</strong>
+     * API and is not considered stable.
+     */
+    default Attrs getAttrs() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Returns the headers for this message.  They may be request or response headers, depending on the underlying type

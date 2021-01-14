@@ -28,6 +28,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AttrsTest {
+
     @Test
     public void keysAreUnique() {
         Attrs attrs = Attrs.newInstance();
@@ -37,6 +38,20 @@ public class AttrsTest {
         key2.put(attrs, "baz");
 
         Truth.assertThat(attrs.keySet()).containsExactly(key1, key2);
+    }
+
+    @Test
+    public void copyOf() {
+        Attrs attrs1 = Attrs.newInstance();
+        Key<String> key1 = Attrs.newKey("foo");
+        key1.put(attrs1, "bar");
+
+        Attrs attrs2 = Attrs.copyOf(attrs1);
+        Key<String> key2 = Attrs.newKey("foo");
+        key2.put(attrs2, "baz");
+
+        Truth.assertThat(attrs1.keySet()).containsExactly(key1);
+        Truth.assertThat(attrs2.keySet()).containsExactly(key1, key2);
     }
 
     @Test

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
@@ -60,7 +61,7 @@ public class GZipResponseFilterTest {
         when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
 
         filter = Mockito.spy(new GZipResponseFilter());
-        response = new HttpResponseMessageImpl(context, request, 99);
+        response = new HttpResponseMessageImpl(context, Attrs.newInstance(), request, 99);
         response.getHeaders().set(HttpHeaderNames.CONTENT_TYPE, "text/html");
         when(response.getInboundRequest()).thenReturn(originalRequest);
     }

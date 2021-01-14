@@ -36,10 +36,14 @@ import javax.annotation.Nullable;
  */
 public final class Attrs {
 
-    final Map<Key<?>, Object> storage = new IdentityHashMap<>();
+    final Map<Key<?>, Object> storage;
 
     public static <T> Key<T> newKey(String keyName) {
         return new Key<>(keyName);
+    }
+
+    public static Attrs copyOf(Attrs base) {
+        return new Attrs(new IdentityHashMap<>(base.storage));
     }
 
     public static final class Key<T> {
@@ -91,10 +95,12 @@ public final class Attrs {
         }
     }
 
-    private Attrs() {}
+    private Attrs(Map<Key<?>, Object> storage) {
+        this.storage = Objects.requireNonNull(storage);
+    }
 
     public static Attrs newInstance() {
-        return new Attrs();
+        return new Attrs(new IdentityHashMap<>());
     }
 
     public Set<Key<?>> keySet() {

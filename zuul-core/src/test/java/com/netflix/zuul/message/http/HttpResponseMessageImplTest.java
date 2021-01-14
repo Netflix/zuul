@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.netflix.zuul.Attrs;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import org.junit.Before;
@@ -41,7 +42,8 @@ public class HttpResponseMessageImplTest {
 
     @Before
     public void setup() {
-        response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
+        response = new HttpResponseMessageImpl(
+                new SessionContext(), Attrs.newInstance(), new Headers(), request, 200);
     }
 
     @Test

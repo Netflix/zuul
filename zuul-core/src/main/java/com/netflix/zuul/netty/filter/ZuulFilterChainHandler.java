@@ -122,7 +122,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         else {
             final SessionContext zuulCtx = zuulRequest.getContext();
             StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, statusCategory);
-            final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, status);
+            final HttpResponseMessage zuulResponse =
+                    new HttpResponseMessageImpl(zuulCtx, zuulRequest.getAttrs(), zuulRequest, status);
             final Headers headers = zuulResponse.getHeaders();
             headers.add("Connection", "close");
             headers.add("Content-Length", "0");
