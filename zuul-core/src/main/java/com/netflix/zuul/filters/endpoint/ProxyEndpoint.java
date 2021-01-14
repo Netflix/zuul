@@ -164,7 +164,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      * to decide to cache request bodies.
      */
     private static final CachedDynamicLongProperty THROTTLE_MEMORY_SECONDS =
-            new CachedDynamicLongProperty("zuul.proxy.throtle_memory_seconds", Duration.ofMinutes(5).getSeconds());
+            new CachedDynamicLongProperty("zuul.proxy.throttle_memory_seconds", Duration.ofMinutes(5).getSeconds());
 
 
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
