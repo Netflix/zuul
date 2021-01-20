@@ -121,6 +121,10 @@ public class Debug {
      */
     public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
         // TODO - only comparing Attributes. Need to compare the messages too.
+
+        // Ensure that the routingDebug property already exists, otherwise we'll have a ConcurrentModificationException below
+        getRoutingDebug(context);
+
         Iterator<String> it = context.keySet().iterator();
         String key = it.next();
         while (key != null) {
