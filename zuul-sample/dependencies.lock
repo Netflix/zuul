@@ -122,7 +122,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -199,7 +199,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -344,7 +344,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -500,7 +500,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -603,7 +603,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -711,7 +711,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -814,7 +814,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -903,7 +903,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1053,7 +1053,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-core": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -1156,7 +1156,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [

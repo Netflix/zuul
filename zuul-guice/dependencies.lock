@@ -289,7 +289,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -379,7 +379,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -418,7 +418,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
@@ -427,7 +427,7 @@
             "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.6.28"
+            "locked": "3.7.7"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21"
@@ -564,7 +564,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -641,7 +641,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -734,10 +734,10 @@
             "locked": "1.2.1"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.6.28"
+            "locked": "3.7.7"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -784,7 +784,7 @@
             "locked": "1.9.18"
         },
         "com.netflix.governator:governator-test-junit": {
-            "locked": "1.17.10"
+            "locked": "1.17.11"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "firstLevelTransitive": [
@@ -874,7 +874,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.35.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
@@ -913,7 +913,7 @@
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
@@ -922,7 +922,7 @@
             "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.6.28"
+            "locked": "3.7.7"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
