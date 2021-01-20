@@ -38,6 +38,17 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
 
     private long seenContentLength;
 
+    /**
+     * This checks that the content length does what it says, preventing a client from causing Zuul to misinterpret the
+     * request.  Because this class is meant to work in an HTTP/2 setting, the content length and transfer encoding
+     * checks are more semantics.  In particular, this checks:
+     * <ul>
+     *     <li>No duplicate Content length</li>
+     *     <li>Content Length (if present) must always be greater than or equal to how much content has been seen</li>
+     *     <li>Content Length (if present) must always be equal to how much content has been seen by the end</li>
+     *     <li>Content Length cannot be present along with chunked transfer encoding.</li>
+     * </ul>
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
