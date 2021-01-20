@@ -37,31 +37,31 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -128,31 +128,31 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -220,34 +220,34 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -321,34 +321,34 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -407,31 +407,31 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -496,34 +496,34 @@
             "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
