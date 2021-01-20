@@ -65,7 +65,7 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
                     return;
                 }
             }
-            if (expectedContentLength != UNSET_CONTENT_LENGTH && HttpUtil.isTransferEncodingChunked(req)) {
+            if (hasContentLength() && HttpUtil.isTransferEncodingChunked(req)) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 return;
@@ -73,20 +73,28 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
         }
         if (msg instanceof HttpContent) {
             ByteBuf content = ((HttpContent) msg).content();
-            seenContentLength = Math.addExact(seenContentLength, content.readableBytes());
-            if (expectedContentLength != UNSET_CONTENT_LENGTH && seenContentLength > expectedContentLength) {
+            incrementSeenContent(content.readableBytes());
+            if (hasContentLength() && seenContentLength > expectedContentLength) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 return;
             }
         }
         if (msg instanceof LastHttpContent) {
-            if (expectedContentLength != UNSET_CONTENT_LENGTH && seenContentLength != expectedContentLength) {
+            if (hasContentLength() && seenContentLength != expectedContentLength) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 return;
             }
         }
         super.channelRead(ctx, msg);
+    }
+
+    private boolean hasContentLength() {
+        return expectedContentLength != UNSET_CONTENT_LENGTH;
+    }
+
+    private void incrementSeenContent(int length) {
+        seenContentLength = Math.addExact(seenContentLength, length);
     }
 }
