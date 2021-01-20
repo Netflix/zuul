@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
+
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
@@ -33,10 +35,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AttributeKey;
-
 import java.util.function.Consumer;
-
-import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
 /**
  * Http2 Or Http Handler
