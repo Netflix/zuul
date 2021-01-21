@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * Time: 5:41 PM
  */
 public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
-    private static final Logger LOG = LoggerFactory.getLogger(Http2SslChannelInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Http2SslChannelInitializer.class);
     private static final DummyChannelHandler DUMMY_HANDLER = new DummyChannelHandler();
 
     private final ServerSslConfig serverSslConfig;
@@ -50,18 +50,6 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     private final boolean isSSlFromIntermediary;
     private final SwallowSomeHttp2ExceptionsHandler swallowSomeHttp2ExceptionsHandler;
     private final String metricId;
-
-
-    /**
-     * Use {@link #Http2SslChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
-     */
-    @Deprecated
-    public Http2SslChannelInitializer(int port,
-                                      ChannelConfig channelConfig,
-                                      ChannelConfig channelDependencies,
-                                      ChannelGroup channels) {
-        this(String.valueOf(port), channelConfig, channelDependencies, channels);
-    }
 
     public Http2SslChannelInitializer(String metricId,
                                       ChannelConfig channelConfig,
@@ -80,22 +68,16 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception {
+    protected void initChannel(Channel ch) {
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 
-//        SSLParameters sslParameters = new SSLParameters();
-//        AlgorithmConstraints algoConstraints = new AlgorithmConstraints();
-//        sslParameters.setAlgorithmConstraints(algoConstraints);
-//        sslParameters.setUseCipherSuitesOrder(true);
-//        sslHandler.engine().setSSLParameters(sslParameters);
+        if (logger.isDebugEnabled()) {
+            logger.debug("ssl protocols supported: {}", String.join(", ", sslHandler.engine().getSupportedProtocols()));
+            logger.debug("ssl protocols enabled: {}", String.join(", ", sslHandler.engine().getEnabledProtocols()));
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("ssl protocols supported: {}", String.join(", ", sslHandler.engine().getSupportedProtocols()));
-            LOG.debug("ssl protocols enabled: {}", String.join(", ", sslHandler.engine().getEnabledProtocols()));
-
-            LOG.debug("ssl ciphers supported: {}", String.join(", ", sslHandler.engine().getSupportedCipherSuites()));
-            LOG.debug("ssl ciphers enabled: {}", String.join(", ", sslHandler.engine().getEnabledCipherSuites()));
+            logger.debug("ssl ciphers supported: {}", String.join(", ", sslHandler.engine().getSupportedCipherSuites()));
+            logger.debug("ssl ciphers enabled: {}", String.join(", ", sslHandler.engine().getEnabledCipherSuites()));
         }
 
         // Configure our pipeline of ChannelHandlerS.
@@ -129,6 +111,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     protected void http1Handlers(ChannelPipeline pipeline) {
+        addHttp1Handlers(pipeline);
         addHttpRelatedHandlers(pipeline);
         addZuulHandlers(pipeline);
     }
