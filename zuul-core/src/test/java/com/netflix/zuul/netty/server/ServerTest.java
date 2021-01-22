@@ -48,15 +48,15 @@ public class ServerTest {
     @Test
     public void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
-        Map<SocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
+        Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {}
         };
-        initializers.put(new InetSocketAddress(0), init);
+        initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // Pick an InetAddress likely different than the above.  The port to channel map has a unique Key; this
         // prevents the key being a duplicate.
-        initializers.put(new InetSocketAddress(InetAddress.getLocalHost(), 0), init);
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(InetAddress.getLocalHost(), 0)), init);
         ClientConnectionsShutdown ccs =
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),

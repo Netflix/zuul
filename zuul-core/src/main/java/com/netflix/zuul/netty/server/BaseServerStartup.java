@@ -68,7 +68,7 @@ public abstract class BaseServerStartup
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier usageNotifier;
 
-    private Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
+    private Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
     private ClientConnectionsShutdown clientConnectionsShutdown;
     private Server server;
 
@@ -127,7 +127,7 @@ public abstract class BaseServerStartup
     }
 
     @ForOverride
-    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+    protected Map<NamedSocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
         @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
         Map<Integer, ChannelInitializer<?>> portMap =
                 (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
