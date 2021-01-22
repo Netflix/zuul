@@ -49,7 +49,7 @@ public class Bootstrap {
             System.out.println("Zuul Sample: finished startup. Duration = " + startupDuration + " ms");
 
             server.start();
-            server.waitForShutdown();
+            server.awaitTermination();
         }
         catch (Throwable t) {
             t.printStackTrace();

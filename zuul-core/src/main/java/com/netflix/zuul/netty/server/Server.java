@@ -209,7 +209,7 @@ public class Server
         }
     }
 
-    public final void waitForShutdown() throws InterruptedException {
+    public final void awaitTermination() throws InterruptedException {
         for (Channel chan : addressesToChannels.values()) {
             chan.closeFuture().sync();
         }
