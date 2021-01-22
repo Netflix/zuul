@@ -75,14 +75,14 @@ public class ServerTest {
             }
         };
         Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
-        s.start(/* sync= */ false);
+        s.start();
 
-        List<SocketAddress> addrs = s.getListeningAddresses();
+        List<NamedSocketAddress> addrs = s.getListeningAddresses();
         assertEquals(2, addrs.size());
-        assertTrue(addrs.get(0) instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(0)).getPort(), 0);
-        assertTrue(addrs.get(1) instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(1)).getPort(), 0);
+        assertTrue(addrs.get(0).unwrap() instanceof InetSocketAddress);
+        assertNotEquals(((InetSocketAddress) addrs.get(0).unwrap()).getPort(), 0);
+        assertTrue(addrs.get(1).unwrap() instanceof InetSocketAddress);
+        assertNotEquals(((InetSocketAddress) addrs.get(1).unwrap()).getPort(), 0);
 
         s.stop();
     }

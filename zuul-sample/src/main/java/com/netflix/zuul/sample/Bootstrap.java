@@ -48,7 +48,8 @@ public class Bootstrap {
             long startupDuration = System.currentTimeMillis() - startTime;
             System.out.println("Zuul Sample: finished startup. Duration = " + startupDuration + " ms");
 
-            server.start(true);
+            server.start();
+            server.awaitTermination();
         }
         catch (Throwable t) {
             t.printStackTrace();

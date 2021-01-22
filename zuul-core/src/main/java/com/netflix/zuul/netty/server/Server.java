@@ -62,17 +62,14 @@ import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
@@ -122,6 +119,10 @@ public class Server
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
     private final Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
+    /**
+     * Unlike the above, the socket addresses in this map are the *bound* addresses, rather than the requested ones.
+     */
+    private final Map<NamedSocketAddress, Channel> addressesToChannels = new LinkedHashMap<>();
     private final EventLoopConfig eventLoopConfig;
 
     /**
@@ -185,7 +186,7 @@ public class Server
         LOG.info("Completed zuul shutdown.");
     }
 
-    public void start(boolean sync)
+    public void start()
     {
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
@@ -196,18 +197,11 @@ public class Server
             // Setup each of the channel initializers on requested ports.
             for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry
                     : addressesToInitializers.entrySet()) {
-                ChannelFuture nettyServerFuture = setupServerBootstrap(entry.getKey(), entry.getValue());
-                serverGroup.addListeningServer(nettyServerFuture.channel());
+                NamedSocketAddress requestedNamedAddr = entry.getKey();
+                ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
+                Channel chan = nettyServerFuture.channel();
+                addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
                 allBindFutures.add(nettyServerFuture);
-            }
-
-            // Once all server bootstraps are successfully initialized, then bind to each port.
-            for (ChannelFuture f : allBindFutures) {
-                // Wait until the server socket is closed.
-                ChannelFuture cf = f.channel().closeFuture();
-                if (sync) {
-                    cf.sync();
-                }
             }
         }
         catch (InterruptedException e) {
@@ -215,11 +209,17 @@ public class Server
         }
     }
 
-    public final List<SocketAddress> getListeningAddresses() {
+    public final void awaitTermination() throws InterruptedException {
+        for (Channel chan : addressesToChannels.values()) {
+            chan.closeFuture().sync();
+        }
+    }
+
+    public final List<NamedSocketAddress> getListeningAddresses() {
         if (serverGroup == null) {
             throw new IllegalStateException("Server has not been started");
         }
-        return serverGroup.getListeningAddresses();
+        return Collections.unmodifiableList(new ArrayList<>(addressesToChannels.keySet()));
     }
 
     @VisibleForTesting
@@ -245,7 +245,7 @@ public class Server
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
         // Choose socket options.
-        Map<ChannelOption, Object> channelOptions = new HashMap<>();
+        Map<ChannelOption<?>, Object> channelOptions = new HashMap<>();
         channelOptions.put(ChannelOption.SO_BACKLOG, 128);
         channelOptions.put(ChannelOption.SO_LINGER, -1);
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
@@ -255,12 +255,12 @@ public class Server
         serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
-        for (Map.Entry<ChannelOption, Object> optionEntry : channelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
+        for (Map.Entry<ChannelOption<?>, ?> optionEntry : channelOptions.entrySet()) {
+            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
         }
         // Apply transport specific socket options.
-        for (Map.Entry<ChannelOption, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
+        for (Map.Entry<ChannelOption<?>, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
+            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
         }
 
         serverBootstrap.handler(new NewConnHandler());
@@ -317,15 +317,9 @@ public class Server
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
         private Class<? extends ServerChannel> channelType;
-        private Map<ChannelOption, ?> transportChannelOptions;
+        private Map<ChannelOption<?>, ?> transportChannelOptions;
 
         private volatile boolean stopped = false;
-
-        private final Set<Channel> nettyServers = new LinkedHashSet<>();
-
-        void addListeningServer(Channel channel) {
-            nettyServers.add(channel);
-        }
 
         private ServerGroup(String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
             this.name = name;
@@ -342,17 +336,6 @@ public class Server
             Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
-        synchronized List<SocketAddress> getListeningAddresses() {
-            if (stopped) {
-                return Collections.emptyList();
-            }
-            List<SocketAddress> listeningAddresses = new ArrayList<>(nettyServers.size());
-            for (Channel nettyServer : nettyServers) {
-                listeningAddresses.add(nettyServer.localAddress());
-            }
-            return Collections.unmodifiableList(listeningAddresses);
-        }
-
         private void initializeTransport()
         {
             // TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
@@ -366,7 +349,7 @@ public class Server
             ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
-            Map<ChannelOption, Object> extraOptions = new HashMap<>();
+            Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
             boolean useNio = FORCE_NIO.get();
             if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
@@ -420,9 +403,6 @@ public class Server
                 LOG.info("Already stopped");
                 return;
             }
-
-            // TODO(carl-mastrangelo): shutdown the netty servers accepting new connections.
-            nettyServers.clear();
 
             if (MANUAL_DISCOVERY_STATUS.get()) {
                 // Flag status as down.
