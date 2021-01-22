@@ -18,6 +18,7 @@ package com.netflix.zuul.netty.server;
 
 import java.net.SocketAddress;
 import java.util.Objects;
+import javax.annotation.CheckReturnValue;
 
 public final class NamedSocketAddress extends SocketAddress {
 
@@ -35,6 +36,11 @@ public final class NamedSocketAddress extends SocketAddress {
 
     public SocketAddress unwrap() {
         return delegate;
+    }
+
+    @CheckReturnValue
+    public NamedSocketAddress withNewSocket(SocketAddress delegate) {
+        return new NamedSocketAddress(this.name, delegate);
     }
 
     @Override
