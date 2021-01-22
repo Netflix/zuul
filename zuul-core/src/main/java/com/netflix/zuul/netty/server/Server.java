@@ -121,7 +121,7 @@ public class Server
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
-    private final Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
+    private final Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
     private final EventLoopConfig eventLoopConfig;
 
     /**
@@ -160,7 +160,7 @@ public class Server
     }
 
     public Server(Registry registry, ServerStatusManager serverStatusManager,
-           Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
+           Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
            EventLoopConfig eventLoopConfig) {
         this.registry = Objects.requireNonNull(registry);
@@ -194,7 +194,7 @@ public class Server
             List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
             // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<? extends SocketAddress, ? extends ChannelInitializer<?>> entry
+            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry
                     : addressesToInitializers.entrySet()) {
                 ChannelFuture nettyServerFuture = setupServerBootstrap(entry.getKey(), entry.getValue());
                 serverGroup.addListeningServer(nettyServerFuture.channel());
@@ -240,7 +240,7 @@ public class Server
     }
 
     private ChannelFuture setupServerBootstrap(
-            SocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
+            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
@@ -275,7 +275,7 @@ public class Server
         }
 
         // Bind and start to accept incoming connections.
-        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
+        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress.unwrap());
 
         ByteBufAllocator alloc = bindFuture.channel().alloc();
         if (alloc instanceof ByteBufAllocatorMetricProvider) {
@@ -482,12 +482,15 @@ public class Server
         }
     }
 
-    static Map<SocketAddress, ChannelInitializer<?>> convertPortMap(
+    static Map<NamedSocketAddress, ChannelInitializer<?>> convertPortMap(
             Map<Integer, ChannelInitializer<?>> portsToChannelInitializers) {
-        Map<SocketAddress, ChannelInitializer<?>> addrsToInitializers =
+        Map<NamedSocketAddress, ChannelInitializer<?>> addrsToInitializers =
                 new LinkedHashMap<>(portsToChannelInitializers.size());
-        for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()){
-            addrsToInitializers.put(new InetSocketAddress(portToInitializer.getKey()), portToInitializer.getValue());
+        for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()) {
+            int portNumber = portToInitializer.getKey();
+            addrsToInitializers.put(
+                    new NamedSocketAddress("port" + portNumber, new InetSocketAddress(portNumber)),
+                    portToInitializer.getValue());
         }
         return Collections.unmodifiableMap(addrsToInitializers);
     }

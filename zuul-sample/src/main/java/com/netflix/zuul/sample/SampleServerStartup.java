@@ -89,8 +89,8 @@ public class SampleServerStartup extends BaseServerStartup {
     }
 
     @Override
-    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
-        Map<SocketAddress, ChannelInitializer<?>> addrsToChannels = new HashMap<>();
+    protected Map<NamedSocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+        Map<NamedSocketAddress, ChannelInitializer<?>> addrsToChannels = new HashMap<>();
         SocketAddress sockAddr;
         String metricId;
         {
@@ -131,7 +131,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, false);
 
                 addrsToChannels.put(
-                        sockAddr,
+                        new NamedSocketAddress("http", sockAddr),
                         new ZuulServerChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
@@ -155,7 +155,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 addHttp2DefaultConfig(channelConfig, mainListenAddressName);
 
                 addrsToChannels.put(
-                        sockAddr,
+                        new NamedSocketAddress("http2", sockAddr),
                         new Http2SslChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
@@ -186,7 +186,7 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelConfig.set(CommonChannelConfigKeys.sslContextFactory, new BaseSslContextFactory(registry, sslConfig));
 
                 addrsToChannels.put(
-                        sockAddr,
+                        new NamedSocketAddress("http_mtls", sockAddr),
                         new Http1MutualSslChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
@@ -203,13 +203,13 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
                 addrsToChannels.put(
-                        sockAddr,
+                        new NamedSocketAddress("websocket", sockAddr),
                         new SampleWebSocketPushChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
 
                 // port to accept push message from the backend, should be accessible on internal network only.
-                addrsToChannels.put(pushSockAddr, pushSenderInitializer);
+                addrsToChannels.put(new NamedSocketAddress("http.push", pushSockAddr), pushSenderInitializer);
                 logAddrConfigured(pushSockAddr);
                 break;
 
@@ -224,12 +224,12 @@ public class SampleServerStartup extends BaseServerStartup {
                 channelDependencies.set(ZuulDependencyKeys.pushConnectionRegistry, pushConnectionRegistry);
 
                 addrsToChannels.put(
-                        sockAddr,
+                        new NamedSocketAddress("sse", sockAddr),
                         new SampleSSEPushChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
                 // port to accept push message from the backend, should be accessible on internal network only.
-                addrsToChannels.put(pushSockAddr, pushSenderInitializer);
+                addrsToChannels.put(new NamedSocketAddress("http.push", pushSockAddr), pushSenderInitializer);
                 logAddrConfigured(pushSockAddr);
                 break;
         }
