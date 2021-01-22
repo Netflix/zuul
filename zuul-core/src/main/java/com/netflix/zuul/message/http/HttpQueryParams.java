@@ -16,7 +16,7 @@
 package com.netflix.zuul.message.http;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
@@ -44,7 +44,7 @@ public class HttpQueryParams implements Cloneable
 
     public HttpQueryParams()
     {
-        delegate = ArrayListMultimap.create();
+        delegate = LinkedListMultimap.create();
         immutable = false;
         trailingEquals = new HashMap<>();
     }
