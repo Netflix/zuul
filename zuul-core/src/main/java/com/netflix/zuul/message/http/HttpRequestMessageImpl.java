@@ -585,7 +585,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
             String scheme = getOriginalScheme().toLowerCase();
             uri.append(scheme);
-            uri.append(URI_SCHEME_SEP).append(getOriginalHost());
+            uri.append(URI_SCHEME_SEP).append(getOriginalHost(getHeaders(), getServerName()));
 
             int port = getOriginalPort();
             if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port)
@@ -598,6 +598,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             uri.append(getPathAndQuery());
 
             return uri.toString();
+        }
+        catch (URISyntaxException e) {
+            // This is not really so bad, just debug log it and move on.
+            LOG.debug("Error reconstructing request URI!", e);
+            return "";
         }
         catch (Exception e) {
             LOG.error("Error reconstructing request URI!", e);
