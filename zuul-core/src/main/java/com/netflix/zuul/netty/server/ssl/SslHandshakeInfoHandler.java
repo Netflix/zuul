@@ -99,12 +99,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                     // Metrics.
                     incrementCounters(sslEvent, info);
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Successful SSL Handshake: " + info);
-                    } else if (logger.isInfoEnabled()) {
-                        logger.info("Successful SSL Handshake: protocol={}, ciphersuite={}, has_client_cert={}",
-                                info.getProtocol(), info.getCipherSuite(), info.getClientCertificate() != null);
-                    }
+                    logger.debug("Successful SSL Handshake: {}", info);
                 } else {
                     String clientIP = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
                     Throwable cause = sslEvent.cause();
@@ -118,17 +113,17 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then closing terminal
                         // without sending anything.
                         // So don't treat these as SSL handshake failures.
-                        logger.info("Client closed connection or it idle timed-out without doing an ssl handshake. "
+                        logger.debug("Client closed connection or it idle timed-out without doing an ssl handshake. "
                                 + ", client_ip = " + clientIP
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else if (cause instanceof SSLException && cause.getMessage().contains("handshake timed out")) {
-                        logger.info("Client timed-out doing the ssl handshake. "
+                        logger.debug("Client timed-out doing the ssl handshake. "
                                 + ", client_ip = " + clientIP
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else if (cause instanceof SSLException
                             && cause.getMessage().contains("failure when writing TLS control frames")) {
                         // This can happen if the ClientHello is sent followed  by a RST packet, before we can respond.
-                        logger.info("Client terminated handshake early."
+                        logger.debug("Client terminated handshake early."
                                 + ", client_ip = " + clientIP
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else {
@@ -137,9 +132,9 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                                 + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel())
                                 + ", error = " + cause;
                         if (cause instanceof ClosedChannelException) {
-                            logger.warn(msg);
+                            logger.debug(msg);
                         } else {
-                            logger.warn(msg, cause);
+                            logger.debug(msg, cause);
                         }
                         incrementCounters(sslEvent, null);
                     }
@@ -153,7 +148,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
         } else if (evt instanceof SslCloseCompletionEvent) {
             // TODO - increment a separate metric for this event?
         } else if (evt instanceof SniCompletionEvent) {
-            logger.debug("SNI Parsing Complete: " + evt.toString());
+            logger.debug("SNI Parsing Complete: {}", evt);
 
             SniCompletionEvent sniCompletionEvent = (SniCompletionEvent) evt;
             if (sniCompletionEvent.isSuccess()) {
