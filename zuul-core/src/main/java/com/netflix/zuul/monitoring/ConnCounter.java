@@ -130,7 +130,8 @@ public final class ConnCounter {
             return;
         }
         synchronized (getLock(gauge.id())) {
-            assert !Double.isNaN(gauge.value());
+            // When being passed in a Noop gua
+            //assert !Double.isNaN(gauge.value());
             gauge.set(gauge.value() - 1);
         }
     }
