@@ -44,6 +44,12 @@ public class CommonContextKeys {
     public static final String ACTUAL_VIP = "origin_vip_actual";
     public static final String ORIGIN_VIP_SECURE = "origin_vip_secure";
 
+    /**
+     * The original client destination address Zuul by a proxy running Proxy Protocol.
+     * Will only be set if both Zuul and the connected proxy are both using set to use Proxy Protocol.
+     */
+    public static final String PROXY_PROTOCOL_DESTINATION_ADDRESS = "proxy_protocol_destination_address";
+
     public static final String SSL_HANDSHAKE_INFO = "ssl_handshake_info";
 
     public static final String GZIPPER = "gzipper";

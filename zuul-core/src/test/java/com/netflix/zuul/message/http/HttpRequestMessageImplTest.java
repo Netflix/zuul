@@ -25,9 +25,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.net.InetAddresses;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import io.netty.channel.local.LocalAddress;
+
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URISyntaxException;
@@ -35,7 +39,7 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpRequestMessageImplTest {
@@ -334,7 +338,26 @@ public class HttpRequestMessageImplTest {
         Headers headers = new Headers();
         headers.add("Host", "ba::33");
 
-        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(headers, 9999));
+        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+    }
+
+    @Test
+    public void getOriginalPort_EmptyXFFPort() throws URISyntaxException {
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.X_FORWARDED_PORT, "");
+
+        // Default to using server port
+        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+    }
+
+    @Test
+    public void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
+        SessionContext context = new SessionContext();
+        context.set(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS,
+                new InetSocketAddress(InetAddresses.forString("1.1.1.1"), 443));
+        Headers headers = new Headers();
+        headers.add("X-Forwarded-Port", "6000");
+        assertEquals(443, HttpRequestMessageImpl.getOriginalPort(context, headers, 9999));
     }
 
     @Test

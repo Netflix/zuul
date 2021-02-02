@@ -15,12 +15,9 @@
  */
 package com.netflix.zuul.stats;
 
-import com.netflix.servo.annotations.DataSourceType;
-import com.netflix.servo.annotations.Monitor;
-import com.netflix.servo.annotations.MonitorTags;
-import com.netflix.servo.tag.BasicTag;
-import com.netflix.servo.tag.BasicTagList;
-import com.netflix.servo.tag.TagList;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.NamedCount;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,19 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * Date: 2/23/12
  * Time: 4:16 PM
  */
-public class ErrorStatsData implements NamedCount
-{
+public class ErrorStatsData implements NamedCount {
+    private final String id;
 
-
-    String id;
-
-    @MonitorTags
-    TagList tagList;
-
-    String error_cause;
-
-    @Monitor(name = "count", type = DataSourceType.COUNTER)
-    AtomicLong count = new AtomicLong();
+    private final String errorCause;
+    private final AtomicLong count = new AtomicLong();
 
     /**
      * create a counter by route and cause of error
@@ -57,11 +46,11 @@ public class ErrorStatsData implements NamedCount
         }
         id = route + "_" + cause;
 
-        this.error_cause = cause;
-        tagList = BasicTagList.of(new BasicTag("ID", id));
-
-
-
+        this.errorCause = cause;
+        Registry registry = Spectator.globalRegistry();
+        PolledMeter.using(registry)
+                .withId(registry.createId("zuul.ErrorStatsData", "ID", id))
+                .monitorValue(this, ErrorStatsData::getCount);
     }
 
     @Override
@@ -71,13 +60,13 @@ public class ErrorStatsData implements NamedCount
 
         ErrorStatsData that = (ErrorStatsData) o;
 
-        return !(error_cause != null ? !error_cause.equals(that.error_cause) : that.error_cause != null);
+        return !(errorCause != null ? !errorCause.equals(that.errorCause) : that.errorCause != null);
 
     }
 
     @Override
     public int hashCode() {
-        return error_cause != null ? error_cause.hashCode() : 0;
+        return errorCause != null ? errorCause.hashCode() : 0;
     }
 
     /**
@@ -93,7 +82,7 @@ public class ErrorStatsData implements NamedCount
     }
 
     @Override
-    public long  getCount() {
+    public long getCount() {
         return count.get();
     }
 }

@@ -112,7 +112,7 @@ public interface ZuulMessage extends Cloneable {
     /**
      * Passes the body content chunks through the given filter, and sets them back into this message.
      */
-    void runBufferedBodyContentThroughFilter(ZuulFilter filter);
+    void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter);
 
     /**
      * Clears the content chunks of this body, calling {@code release()} in the process.  Users SHOULD call this method

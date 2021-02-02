@@ -16,14 +16,14 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.config.DynamicIntProperty;
-import com.netflix.servo.DefaultMonitorRegistry;
-import com.netflix.servo.monitor.LongGauge;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import java.lang.reflect.Field;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import javax.inject.Inject;
@@ -37,8 +37,7 @@ import org.slf4j.LoggerFactory;
  * Time: 10:23 AM
  */
 @Singleton
-public final class DirectMemoryMonitor
-{
+public final class DirectMemoryMonitor {
     private static final Logger LOG = LoggerFactory.getLogger(DirectMemoryMonitor.class);
     private static final String PROP_PREFIX = "zuul.directmemory";
     private static final DynamicIntProperty TASK_DELAY_PROP = new DynamicIntProperty(PROP_PREFIX + ".task.delay", 10);
@@ -87,65 +86,45 @@ public final class DirectMemoryMonitor
         reservedMemoryGetter = reservedMemory;
     }
 
-    private final LongGauge reservedMemoryGauge =
-            new LongGauge(MonitorConfig.builder(PROP_PREFIX + ".reserved").build());
-    private final LongGauge maxMemoryGauge = new LongGauge(MonitorConfig.builder(PROP_PREFIX + ".max").build());
-
     // TODO(carl-mastrangelo): this should be passed in as a dependency, so it can be shutdown and waited on for
     //    termination.
-    private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
-
-    public DirectMemoryMonitor() {
-        DefaultMonitorRegistry.getInstance().register(reservedMemoryGauge);
-        DefaultMonitorRegistry.getInstance().register(maxMemoryGauge);
-    }
+    private final ScheduledExecutorService service =
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder().setDaemon(true).setNameFormat("dmm-%d").build());
 
     @Inject
-    public void init() {
-        if (directMemoryLimitGetter == null || reservedMemoryGetter == null) {
-            return;
+    public DirectMemoryMonitor(Registry registry) {
+        if (reservedMemoryGetter != null) {
+            PolledMeter.using(registry)
+                    .withName(PROP_PREFIX + ".reserved")
+                    .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
+                    .scheduleOn(service)
+                    .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getReservedMemory);
         }
-        service.scheduleWithFixedDelay(new Task(), TASK_DELAY_PROP.get(), TASK_DELAY_PROP.get(), TimeUnit.SECONDS);
+        if (directMemoryLimitGetter != null) {
+            PolledMeter.using(registry)
+                    .withName(PROP_PREFIX + ".max")
+                    .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
+                    .scheduleOn(service)
+                    .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getMaxMemory);
+        }
     }
 
-    public void stop() {
-        service.shutdown();
+    private static double getReservedMemory(Object discard) {
+        try {
+            return reservedMemoryGetter.get();
+        } catch (RuntimeException | Error e) {
+            LOG.warn("Error in DirectMemoryMonitor task.", e);
+        }
+        return -1;
     }
 
-    final class Task implements Runnable {
-        @Override
-        public void run()
-        {
-            try {
-                Current current = measure();
-                if (current != null) {
-                    LOG.debug("reservedMemory={}, maxMemory={}", current.reservedMemory, current.maxMemory);
-                    reservedMemoryGauge.set(current.reservedMemory);
-                    maxMemoryGauge.set(current.maxMemory);
-                }
-            }
-            catch (Throwable t) {
-                LOG.warn("Error in DirectMemoryMonitor task.", t);
-            }
+    private static double getMaxMemory(Object discard) {
+        try {
+            return directMemoryLimitGetter.get();
+        } catch (RuntimeException | Error e) {
+            LOG.warn("Error in DirectMemoryMonitor task.", e);
         }
-
-        private Current measure() {
-            try {
-                Current current = new Current();
-                current.maxMemory = directMemoryLimitGetter.get();
-                current.reservedMemory = reservedMemoryGetter.get();
-                return current;
-            }
-            catch (Exception e) {
-                LOG.warn("Error measuring direct memory.", e);
-                return null;
-            }
-        }
-
-    }
-
-    private static final class Current {
-        long maxMemory;
-        long reservedMemory;
+        return -1;
     }
 }

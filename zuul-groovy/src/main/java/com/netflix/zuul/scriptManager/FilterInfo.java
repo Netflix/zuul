@@ -16,10 +16,10 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.filters.FilterType;
-import net.jcip.annotations.ThreadSafe;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
@@ -42,15 +42,15 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     /**
      * Constructor
-     * @param filter_id
-     * @param filter_code
-     * @param filter_type
-     * @param filter_name
-     * @param disablePropertyName
-     * @param filter_order
-     * @param application_name
      */
-    public FilterInfo(String filter_id, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
+    public FilterInfo(
+            String filter_id,
+            String filter_code,
+            FilterType filter_type,
+            String filter_name,
+            String disablePropertyName,
+            String filter_order,
+            String application_name) {
         this.filter_id = filter_id;
         this.filter_code = filter_code;
         this.filter_type = filter_type;
@@ -80,7 +80,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
 
     /**
-     *
      * @return the name of the property to disable the filter.
      */
     public String getFilterDisablePropertyName() {
@@ -88,7 +87,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return the filter_type
      */
     public FilterType getFilterType() {
@@ -111,28 +109,25 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     * the application name context of the filter. This is for if Zuul is applied to different applications in the same datastor
-     * @return
+     * the application name context of the filter. This is for if Zuul is applied to different applications in the same
+     * datastore.
      */
     public String getApplication_name() {
         return application_name;
     }
 
-    /**
-     *
-     * @param filter_id
-     * @param revision
-     * @param creationDate
-     * @param isActive
-     * @param isCanary
-     * @param filter_code
-     * @param filter_type
-     * @param filter_name
-     * @param disablePropertyName
-     * @param filter_order
-     * @param application_name
-     */
-    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
+    public FilterInfo(
+            String filter_id,
+            int revision,
+            Date creationDate,
+            boolean isActive,
+            boolean isCanary,
+            String filter_code,
+            FilterType filter_type,
+            String filter_name,
+            String disablePropertyName,
+            String filter_order,
+            String application_name) {
         this.filter_id = filter_id;
         this.revision = revision;
         this.creationDate = creationDate;
@@ -199,9 +194,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     /**
      * builds the unique filter_id key
-     * @param application_name
-     * @param filter_type
-     * @param filter_name
      * @return key is application_name:filter_name:filter_type
      */
     public static String buildFilterID(String application_name, FilterType filter_type, String filter_name) {

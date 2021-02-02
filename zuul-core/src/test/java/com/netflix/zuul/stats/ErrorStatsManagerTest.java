@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link ErrorStatsManager}.
@@ -38,9 +38,9 @@ public class ErrorStatsManagerTest {
         assertNotNull(sm.routeMap.get("test"));
         ConcurrentHashMap<String, ErrorStatsData> map = sm.routeMap.get("test");
         ErrorStatsData sd = map.get("cause");
-        assertEquals(sd.count.get(), 1);
+        assertEquals(sd.getCount(), 1);
         sm.putStats("test", "cause");
-        assertEquals(sd.count.get(), 2);
+        assertEquals(sd.getCount(), 2);
     }
 
     @Test

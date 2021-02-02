@@ -15,27 +15,25 @@
  */
 package com.netflix.zuul.context;
 
-/**
- * User: Mike Smith
- * Date: 4/28/15
- * Time: 6:45 PM
- */
 
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.stats.Timings;
-import com.netflix.zuul.util.DeepCopy;
-
-import java.io.NotSerializableException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
  * between them. But we're currently still only modelling single request/response pair per session.
  *
  * NOTE: Not threadsafe, and not intended to be used concurrently.
+ *
+ * User: Mike Smith
+ * Date: 4/28/15
+ * Time: 6:45 PM
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable
 {
@@ -50,9 +48,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     private boolean debugRequest = false;
     private boolean debugRequestHeadersOnly = false;
     private boolean cancelled = false;
-
-    private Timings timings = new Timings();
-
 
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
@@ -76,8 +71,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * Makes a copy of the RequestContext. This is used for debugging.
-     *
-     * @return
      */
     @Override
     public SessionContext clone()
@@ -93,7 +86,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * Convenience method to return a boolean value for a given key
      *
-     * @param key
      * @return true or false depending what was set. default is false
      */
     public boolean getBoolean(String key) {
@@ -103,8 +95,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * Convenience method to return a boolean value for a given key
      *
-     * @param key
-     * @param defaultResponse
      * @return true or false depending what was set. default defaultResponse
      */
     public boolean getBoolean(String key, boolean defaultResponse) {
@@ -117,8 +107,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * sets a key value to Boolean.TRUE
-     *
-     * @param key
      */
     public void set(String key) {
         put(key, Boolean.TRUE);
@@ -127,53 +115,10 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * puts the key, value into the map. a null value will remove the key from the map
      *
-     * @param key
-     * @param value
      */
     public void set(String key, Object value) {
         if (value != null) put(key, value);
         else remove(key);
-    }
-
-    /**
-     * Makes a copy of the SessionContext. This is used for debugging.
-     *
-     * @return
-     */
-    public SessionContext copy()
-    {
-        SessionContext copy = new SessionContext();
-        copy.brownoutMode = brownoutMode;
-        copy.cancelled = cancelled;
-        copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
-        copy.shouldSendErrorResponse = shouldSendErrorResponse;
-        copy.errorResponseSent = errorResponseSent;
-        copy.debugRouting = debugRouting;
-        copy.debugRequest = debugRequest;
-        copy.debugRequestHeadersOnly = debugRequestHeadersOnly;
-        copy.timings = timings;
-
-        Iterator<String> it = keySet().iterator();
-        String key = it.next();
-        while (key != null) {
-            Object orig = get(key);
-            try {
-                Object copyValue = DeepCopy.copy(orig);
-                if (copyValue != null) {
-                    copy.set(key, copyValue);
-                } else {
-                    copy.set(key, orig);
-                }
-            } catch (NotSerializableException e) {
-                copy.set(key, orig);
-            }
-            if (it.hasNext()) {
-                key = it.next();
-            } else {
-                key = null;
-            }
-        }
-        return copy;
     }
 
     public String getUUID()
@@ -195,7 +140,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * Gets the throwable that will be use in the Error endpoint.
      *
-     * @return a set throwable
      */
     public Throwable getError() {
         return (Throwable) get("_error");
@@ -204,8 +148,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * Sets throwable to use for generating a response in the Error endpoint.
-     *
-     * @param th
      */
     public void setError(Throwable th) {
         put("_error", th);
@@ -221,8 +163,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * sets  debugRouting
-     *
-     * @param bDebug
      */
     public void setDebugRouting(boolean bDebug) {
         this.debugRouting = bDebug;
@@ -238,11 +178,9 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * sets "debugRequestHeadersOnly" to bHeadersOnly
      *
-     * @param bHeadersOnly
      */
     public void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
         this.debugRequestHeadersOnly = bHeadersOnly;
-
     }
 
     /**
@@ -254,8 +192,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     /**
      * sets "debugRequest"
-     *
-     * @param bDebug
      */
     public void setDebugRequest(boolean bDebug) {
         this.debugRequest = bDebug;
@@ -318,7 +254,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * Set this to true to indicate that the Error endpoint should be applied after
      * the end of the current filter processing phase.
      *
-     * @param should
      */
     public void setShouldSendErrorResponse(boolean should) {
         this.shouldSendErrorResponse = should;
@@ -338,7 +273,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
      * This can be used by filters for flagging if the server is getting overloaded, and then choose
      * to disable/sample/rate-limit some optional features.
      *
-     * @return
      */
     public boolean isInBrownoutMode()
     {
@@ -365,7 +299,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
     /**
      * returns the routeVIP; that is the Eureka "vip" of registered instances
      *
-     * @return
      */
     public String getRouteVIP() {
         return (String) get(KEY_VIP);
@@ -398,11 +331,6 @@ public class SessionContext extends HashMap<String, Object> implements Cloneable
 
     public List<FilterError> getFilterErrors() {
         return (List<FilterError>) get(KEY_FILTER_ERRORS);
-    }
-
-    public Timings getTimings()
-    {
-        return timings;
     }
 
     public void setOriginReportedDuration(int duration)

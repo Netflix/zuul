@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -47,15 +48,15 @@ public class ServerTest {
     @Test
     public void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
-        Map<SocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
+        Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {}
         };
-        initializers.put(new InetSocketAddress(0), init);
+        initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // Pick an InetAddress likely different than the above.  The port to channel map has a unique Key; this
         // prevents the key being a duplicate.
-        initializers.put(new InetSocketAddress(InetAddress.getLocalHost(), 0), init);
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(InetAddress.getLocalHost(), 0)), init);
         ClientConnectionsShutdown ccs =
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
@@ -73,15 +74,15 @@ public class ServerTest {
                 return 1;
             }
         };
-        Server s = new Server(ssm, initializers, ccs, elgm, elc);
-        s.start(/* sync= */ false);
+        Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
+        s.start();
 
-        List<SocketAddress> addrs = s.getListeningAddresses();
+        List<NamedSocketAddress> addrs = s.getListeningAddresses();
         assertEquals(2, addrs.size());
-        assertTrue(addrs.get(0) instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(0)).getPort(), 0);
-        assertTrue(addrs.get(1) instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(1)).getPort(), 0);
+        assertTrue(addrs.get(0).unwrap() instanceof InetSocketAddress);
+        assertNotEquals(((InetSocketAddress) addrs.get(0).unwrap()).getPort(), 0);
+        assertTrue(addrs.get(1).unwrap() instanceof InetSocketAddress);
+        assertNotEquals(((InetSocketAddress) addrs.get(1).unwrap()).getPort(), 0);
 
         s.stop();
     }

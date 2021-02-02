@@ -47,10 +47,10 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
     public DefaultOriginChannelInitializer(ConnectionPoolConfig connPoolConfig, Registry spectatorRegistry) {
         this.connectionPoolConfig = connPoolConfig;
-        final String originName = connectionPoolConfig.getOriginName();
-        this.connectionPoolHandler = new ConnectionPoolHandler(originName);
-        this.httpMetricsHandler = new HttpMetricsChannelHandler(spectatorRegistry, "client", originName);
-        this.nettyLogger = new LoggingHandler("zuul.origin.nettylog." + originName, LogLevel.INFO);
+        String niwsClientName = connectionPoolConfig.getOriginName().getNiwsClientName();
+        this.connectionPoolHandler = new ConnectionPoolHandler(connectionPoolConfig.getOriginName());
+        this.httpMetricsHandler = new HttpMetricsChannelHandler(spectatorRegistry, "client", niwsClientName);
+        this.nettyLogger = new LoggingHandler("zuul.origin.nettylog." + niwsClientName, LogLevel.INFO);
         this.sslContext = getClientSslContext(spectatorRegistry);
     }
 

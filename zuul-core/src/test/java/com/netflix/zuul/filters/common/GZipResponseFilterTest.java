@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GZipResponseFilterTest {
@@ -56,7 +56,7 @@ public class GZipResponseFilterTest {
 
     @Before
     public void setup() {
-        when(request.getContext()).thenReturn(context);
+        //when(request.getContext()).thenReturn(context);
         when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
 
         filter = Mockito.spy(new GZipResponseFilter());

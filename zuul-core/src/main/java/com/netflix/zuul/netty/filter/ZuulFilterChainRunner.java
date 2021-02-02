@@ -27,6 +27,7 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.handler.codec.http.HttpContent;
 
 import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,24 +51,18 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
     @Override
     public void filter(final T inMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "filter");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filter")) {
             addPerfMarkTags(inMesg);
             runFilters(inMesg, initRunningFilterIndex(inMesg));
-        } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "filter");
         }
     }
 
     @Override
     protected void resume(final T inMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "resume");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".resume")) {
             final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
             runningFilterIdx.incrementAndGet();
             runFilters(inMesg, runningFilterIdx);
-        } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "resume");
         }
     }
 
@@ -100,8 +95,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     @Override
     public void filter(T inMesg, HttpContent chunk) {
         String filterName = "-";
-        PerfMark.startTask(getClass().getName(), "filterChunk");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(inMesg);
             Preconditions.checkNotNull(inMesg, "input message");
 
@@ -159,9 +153,6 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         }
         catch (Exception ex) {
             handleException(inMesg, filterName, ex);
-        } finally {
-            PerfMark.stopTask(getClass().getName(), "filterChunk");
         }
     }
-
 }

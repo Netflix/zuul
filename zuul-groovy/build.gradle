@@ -1,0 +1,18 @@
+apply plugin: "java-library"
+
+dependencies {
+    implementation libraries.guava
+    implementation project(":zuul-core")
+    api "org.codehaus.groovy:groovy-all:${versions_groovy}"
+
+    testImplementation libraries.junit,
+            libraries.mockito,
+            libraries.truth
+}
+
+// Silences log statements during tests.   This still allows normal failures to be printed.
+test {
+    testLogging {
+        showStandardStreams = false
+    }
+}

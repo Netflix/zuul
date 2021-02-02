@@ -16,13 +16,15 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.zuul.origins.OriginName;
+
 /**
  * Created by saroskar on 3/24/16.
  */
 public interface ConnectionPoolConfig {
 
     /* Origin name from connection pool */
-    String getOriginName();
+    OriginName getOriginName();
 
     /* Max number of requests per connection before it needs to be recycled */
     int getMaxRequestsPerConnection();

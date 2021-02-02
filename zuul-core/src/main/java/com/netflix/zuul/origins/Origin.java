@@ -21,8 +21,7 @@ package com.netflix.zuul.origins;
  * Time: 3:14 PM
  */
 public interface Origin {
-    String getName();
-    String getVip();
+    OriginName getName();
     boolean isAvailable();
     boolean isCold();
 }

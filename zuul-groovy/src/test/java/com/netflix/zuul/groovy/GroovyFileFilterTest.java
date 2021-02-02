@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Netflix, Inc.
+ * Copyright 2019 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -13,24 +13,29 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
+
 package com.netflix.zuul.groovy;
 
-/**
- * Created with IntelliJ IDEA.
- * User: mcohen
- * Date: 5/30/13
- * Time: 11:47 AM
- * To change this template use File | Settings | File Templates.
- */
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
- * Filters only .groovy files
+ * Unit tests for {@link GroovyFileFilter}.
  */
-public class GroovyFileFilter implements FilenameFilter {
-    public boolean accept(File dir, String name) {
-        return name.endsWith(".groovy");
+@RunWith(JUnit4.class)
+public class GroovyFileFilterTest {
+
+    @Test
+    public void testGroovyFileFilter() {
+
+        GroovyFileFilter filter = new GroovyFileFilter();
+
+        assertFalse(filter.accept(new File("/"), "file.mikey"));
+        assertTrue(filter.accept(new File("/"), "file.groovy"));
     }
 }

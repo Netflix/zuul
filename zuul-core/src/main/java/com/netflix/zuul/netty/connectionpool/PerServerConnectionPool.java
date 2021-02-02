@@ -18,17 +18,16 @@ package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
-import com.netflix.zuul.stats.Timing;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Deque;
@@ -38,7 +37,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +53,6 @@ public class PerServerConnectionPool implements IConnectionPool
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
 
-    private final Server server;
     private final ServerStats stats;
     private final InstanceInfo instanceInfo;
     private final SocketAddress serverAddr;
@@ -83,7 +80,6 @@ public class PerServerConnectionPool implements IConnectionPool
     private final AtomicInteger connCreationsInProgress;
 
     public PerServerConnectionPool(
-            Server server,
             ServerStats stats,
             InstanceInfo instanceInfo,
             SocketAddress serverAddr,
@@ -100,7 +96,6 @@ public class PerServerConnectionPool implements IConnectionPool
             Timer connEstablishTimer,
             AtomicInteger connsInPool,
             AtomicInteger connsInUse) {
-        this.server = server;
         this.stats = stats;
         this.instanceInfo = instanceInfo;
         // Note: child classes can sometimes connect to different addresses than
@@ -156,7 +151,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     @Override
     public Promise<PooledConnection> acquire(
-            EventLoop eventLoop, CurrentPassport passport, AtomicReference<String> selectedHostAddr) {
+            EventLoop eventLoop, CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr) {
         requestConnCounter.increment();
         stats.incrementActiveRequestsCount();
         
@@ -229,7 +224,7 @@ public class PerServerConnectionPool implements IConnectionPool
 
     protected void tryMakingNewConnection(
             EventLoop eventLoop, Promise<PooledConnection> promise, CurrentPassport passport,
-            AtomicReference<String> selectedHostAddr) {
+            AtomicReference<? super InetAddress> selectedHostAddr) {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
         int openAndOpeningConnectionCount = stats.getOpenConnectionsCount() + connCreationsInProgress.get(); 
@@ -247,7 +242,6 @@ public class PerServerConnectionPool implements IConnectionPool
             return;
         }
 
-        Timing timing = startConnEstablishTimer();
         try {
             createNewConnCounter.increment();
             connCreationsInProgress.incrementAndGet();
@@ -258,13 +252,11 @@ public class PerServerConnectionPool implements IConnectionPool
             final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
-                endConnEstablishTimer(timing);
                 handleConnectCompletion(cf, promise, passport);
             }
             else {
                 cf.addListener(future -> {
                     try {
-                        endConnEstablishTimer(timing);
                         handleConnectCompletion((ChannelFuture) future, promise, passport);
                     }
                     catch (Throwable e) {
@@ -280,26 +272,12 @@ public class PerServerConnectionPool implements IConnectionPool
             }
         }
         catch (Throwable e) {
-            endConnEstablishTimer(timing);
             promise.setFailure(e);
         }
     }
 
     protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, SocketAddress serverAddr) {
         return connectionFactory.connect(eventLoop, serverAddr, passport);
-    }
-
-    private Timing startConnEstablishTimer()
-    {
-        Timing timing = new Timing("connection_establish");
-        timing.start();
-        return timing;
-    }
-
-    private void endConnEstablishTimer(Timing timing)
-    {
-        timing.end();
-        connEstablishTimer.record(timing.getDuration(), TimeUnit.NANOSECONDS);
     }
 
     protected void handleConnectCompletion(
@@ -419,14 +397,13 @@ public class PerServerConnectionPool implements IConnectionPool
         return connsInUse.get();
     }
 
-    private static String getSelectedHostString(SocketAddress addr) {
+    @Nullable
+    private static InetAddress getSelectedHostString(SocketAddress addr) {
         if (addr instanceof InetSocketAddress) {
-            // This is used for logging mainly.  TODO(carl-mastrangelo): consider passing the whole address back
-            // rather than the string form.
-            return ((InetSocketAddress) addr).getAddress().getHostAddress();
+            return ((InetSocketAddress) addr).getAddress();
         } else {
-            // If it's some other kind of address, just set it to the string form as a best effort guess.
-            return addr.toString();
+            // If it's some other kind of address, just set it to empty
+            return null;
         }
     }
 

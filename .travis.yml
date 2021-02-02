@@ -5,6 +5,8 @@ matrix:
       env: GRADLE_PUBLISH=true
     - jdk: openjdk11
       env: GRADLE_PUBLISH=false
+    - jdk: openjdk15
+      env: GRADLE_PUBLISH=false
 install: "./installViaTravis.sh"
 script: "./buildViaTravis.sh"
 cache:

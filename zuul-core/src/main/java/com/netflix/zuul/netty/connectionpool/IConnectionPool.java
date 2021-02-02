@@ -20,6 +20,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
+import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface IConnectionPool
 {
     Promise<PooledConnection> acquire(
-            EventLoop eventLoop, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
+            EventLoop eventLoop, CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr);
     boolean release(PooledConnection conn);
     boolean remove(PooledConnection conn);
     void shutdown();

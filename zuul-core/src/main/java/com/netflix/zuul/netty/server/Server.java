@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
@@ -23,9 +25,20 @@ import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
+import com.netflix.spectator.api.patterns.PolledMeter;
+import com.netflix.zuul.Attrs;
+import com.netflix.zuul.monitoring.ConnCounter;
+import com.netflix.zuul.monitoring.ConnTimer;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufAllocatorMetric;
+import io.netty.buffer.ByteBufAllocatorMetricProvider;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultSelectStrategyFactory;
@@ -43,31 +56,27 @@ import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -105,10 +114,15 @@ public class Server
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
     private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
+    private final Registry registry;
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
     private final ServerStatusManager serverStatusManager;
-    private final Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
+    private final Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers;
+    /**
+     * Unlike the above, the socket addresses in this map are the *bound* addresses, rather than the requested ones.
+     */
+    private final Map<NamedSocketAddress, Channel> addressesToChannels = new LinkedHashMap<>();
     private final EventLoopConfig eventLoopConfig;
 
     /**
@@ -119,7 +133,8 @@ public class Server
     public static final AtomicReference<Class<? extends Channel>> defaultOutboundChannelType = new AtomicReference<>();
 
     /**
-     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)}
      * instead.
      */
     @Deprecated
@@ -131,7 +146,8 @@ public class Server
     }
 
     /**
-     * Use {@link #Server(ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics, EventLoopConfig)}
+     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)}
      * instead.
      */
     @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
@@ -139,15 +155,16 @@ public class Server
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
                   EventLoopConfig eventLoopConfig) {
-        this(serverStatusManager,
+        this(Spectator.globalRegistry(), serverStatusManager,
                 convertPortMap((Map<Integer, ChannelInitializer<?>>) (Map) portsToChannelInitializers),
                 clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
     }
 
-    public Server(ServerStatusManager serverStatusManager,
-           Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
+    public Server(Registry registry, ServerStatusManager serverStatusManager,
+           Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
            EventLoopConfig eventLoopConfig) {
+        this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
         this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
@@ -155,8 +172,7 @@ public class Server
         this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
     }
 
-    public void stop()
-    {
+    public void stop() {
         LOG.info("Shutting down Zuul.");
         serverGroup.stop();
 
@@ -170,7 +186,7 @@ public class Server
         LOG.info("Completed zuul shutdown.");
     }
 
-    public void start(boolean sync)
+    public void start()
     {
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
@@ -179,20 +195,13 @@ public class Server
             List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
             // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<? extends SocketAddress, ? extends ChannelInitializer<?>> entry
+            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry
                     : addressesToInitializers.entrySet()) {
-                ChannelFuture nettyServerFuture = setupServerBootstrap(entry.getKey(), entry.getValue());
-                serverGroup.addListeningServer(nettyServerFuture.channel());
+                NamedSocketAddress requestedNamedAddr = entry.getKey();
+                ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
+                Channel chan = nettyServerFuture.channel();
+                addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
                 allBindFutures.add(nettyServerFuture);
-            }
-
-            // Once all server bootstraps are successfully initialized, then bind to each port.
-            for (ChannelFuture f : allBindFutures) {
-                // Wait until the server socket is closed.
-                ChannelFuture cf = f.channel().closeFuture();
-                if (sync) {
-                    cf.sync();
-                }
             }
         }
         catch (InterruptedException e) {
@@ -200,11 +209,17 @@ public class Server
         }
     }
 
-    public final List<SocketAddress> getListeningAddresses() {
+    public final void awaitTermination() throws InterruptedException {
+        for (Channel chan : addressesToChannels.values()) {
+            chan.closeFuture().sync();
+        }
+    }
+
+    public final List<NamedSocketAddress> getListeningAddresses() {
         if (serverGroup == null) {
             throw new IllegalStateException("Server has not been started");
         }
-        return serverGroup.getListeningAddresses();
+        return Collections.unmodifiableList(new ArrayList<>(addressesToChannels.keySet()));
     }
 
     @VisibleForTesting
@@ -225,12 +240,12 @@ public class Server
     }
 
     private ChannelFuture setupServerBootstrap(
-            SocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
+            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
         // Choose socket options.
-        Map<ChannelOption, Object> channelOptions = new HashMap<>();
+        Map<ChannelOption<?>, Object> channelOptions = new HashMap<>();
         channelOptions.put(ChannelOption.SO_BACKLOG, 128);
         channelOptions.put(ChannelOption.SO_LINGER, -1);
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
@@ -240,14 +255,15 @@ public class Server
         serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
-        for (Map.Entry<ChannelOption, Object> optionEntry : channelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
+        for (Map.Entry<ChannelOption<?>, ?> optionEntry : channelOptions.entrySet()) {
+            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
         }
         // Apply transport specific socket options.
-        for (Map.Entry<ChannelOption, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
+        for (Map.Entry<ChannelOption<?>, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
+            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
         }
 
+        serverBootstrap.handler(new NewConnHandler());
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
@@ -259,7 +275,17 @@ public class Server
         }
 
         // Bind and start to accept incoming connections.
-        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress);
+        ChannelFuture bindFuture = serverBootstrap.bind(listenAddress.unwrap());
+
+        ByteBufAllocator alloc = bindFuture.channel().alloc();
+        if (alloc instanceof ByteBufAllocatorMetricProvider) {
+            ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                    .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
+        }
+
         try {
             return bindFuture.sync();
         } catch (Exception e) {
@@ -291,15 +317,9 @@ public class Server
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
         private Class<? extends ServerChannel> channelType;
-        private Map<ChannelOption, ?> transportChannelOptions;
+        private Map<ChannelOption<?>, ?> transportChannelOptions;
 
         private volatile boolean stopped = false;
-
-        private final Set<Channel> nettyServers = new LinkedHashSet<>();
-
-        void addListeningServer(Channel channel) {
-            nettyServers.add(channel);
-        }
 
         private ServerGroup(String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
             this.name = name;
@@ -316,17 +336,6 @@ public class Server
             Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
-        synchronized List<SocketAddress> getListeningAddresses() {
-            if (stopped) {
-                return Collections.emptyList();
-            }
-            List<SocketAddress> listeningAddresses = new ArrayList<>(nettyServers.size());
-            for (Channel nettyServer : nettyServers) {
-                listeningAddresses.add(nettyServer.localAddress());
-            }
-            return Collections.unmodifiableList(listeningAddresses);
-        }
-
         private void initializeTransport()
         {
             // TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
@@ -340,7 +349,7 @@ public class Server
             ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
-            Map<ChannelOption, Object> extraOptions = new HashMap<>();
+            Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
             boolean useNio = FORCE_NIO.get();
             if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
@@ -395,9 +404,6 @@ public class Server
                 return;
             }
 
-            // TODO(carl-mastrangelo): shutdown the netty servers accepting new connections.
-            nettyServers.clear();
-
             if (MANUAL_DISCOVERY_STATUS.get()) {
                 // Flag status as down.
                 // that we can flag to return DOWN here (would that then update Discovery? or still be a delay?)
@@ -437,12 +443,34 @@ public class Server
         }
     }
 
-    static Map<SocketAddress, ChannelInitializer<?>> convertPortMap(
+    /**
+     * Keys should be a short string usable in metrics.
+     */
+    public static final AttributeKey<Attrs> CONN_DIMENSIONS = AttributeKey.newInstance("zuulconndimensions");
+
+    private final class NewConnHandler extends ChannelInboundHandlerAdapter {
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            Long now = System.nanoTime();
+            final Channel child = (Channel) msg;
+            child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
+            ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
+            timer.record(now, "ACCEPT");
+            ConnCounter.install(child, registry, registry.createId("zuul.conn.client.current"));
+            super.channelRead(ctx, msg);
+        }
+    }
+
+    static Map<NamedSocketAddress, ChannelInitializer<?>> convertPortMap(
             Map<Integer, ChannelInitializer<?>> portsToChannelInitializers) {
-        Map<SocketAddress, ChannelInitializer<?>> addrsToInitializers =
+        Map<NamedSocketAddress, ChannelInitializer<?>> addrsToInitializers =
                 new LinkedHashMap<>(portsToChannelInitializers.size());
-        for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()){
-            addrsToInitializers.put(new InetSocketAddress(portToInitializer.getKey()), portToInitializer.getValue());
+        for (Map.Entry<Integer, ChannelInitializer<?>> portToInitializer : portsToChannelInitializers.entrySet()) {
+            int portNumber = portToInitializer.getKey();
+            addrsToInitializers.put(
+                    new NamedSocketAddress("port" + portNumber, new InetSocketAddress(portNumber)),
+                    portToInitializer.getValue());
         }
         return Collections.unmodifiableMap(addrsToInitializers);
     }

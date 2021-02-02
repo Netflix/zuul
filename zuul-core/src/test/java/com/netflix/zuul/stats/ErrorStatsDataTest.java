@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link ErrorStatsData}.
@@ -33,11 +33,10 @@ public class ErrorStatsDataTest {
     @Test
     public void testUpdateStats() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
-        assertEquals(sd.error_cause, "test");
         sd.update();
-        assertEquals(sd.count.get(), 1);
+        assertEquals(sd.getCount(), 1);
         sd.update();
-        assertEquals(sd.count.get(), 2);
+        assertEquals(sd.getCount(), 2);
     }
 
 

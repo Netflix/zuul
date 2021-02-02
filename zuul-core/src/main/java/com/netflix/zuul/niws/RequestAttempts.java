@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 public class RequestAttempts extends ArrayList<RequestAttempt>
 {
     private static final Logger LOG = LoggerFactory.getLogger(RequestAttempts.class);
-    private static ThreadLocal<RequestAttempts> threadLocal = new ThreadLocal<>().withInitial(() -> new RequestAttempts());
     private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
 
     public RequestAttempts()
@@ -43,6 +43,7 @@ public class RequestAttempts extends ArrayList<RequestAttempt>
         super();
     }
 
+    @Nullable
     public RequestAttempt getFinalAttempt()
     {
         if (size() > 0) {
@@ -56,25 +57,6 @@ public class RequestAttempts extends ArrayList<RequestAttempt>
     public static RequestAttempts getFromSessionContext(SessionContext ctx)
     {
         return (RequestAttempts) ctx.get(CommonContextKeys.REQUEST_ATTEMPTS);
-    }
-
-    /**
-     * This is only intended for use when running on a blocking server (ie. tomcat).
-     * @return
-     */
-    public static RequestAttempts getThreadLocalInstance()
-    {
-        return threadLocal.get();
-    }
-
-    public static void setThreadLocalInstance(RequestAttempts instance)
-    {
-        threadLocal.set(instance);
-    }
-
-    public static void removeThreadLocalInstance()
-    {
-        threadLocal.remove();
     }
 
     public static RequestAttempts parse(String attemptsJson) throws IOException

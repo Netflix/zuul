@@ -26,6 +26,7 @@ import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -107,9 +108,6 @@ public class HttpQueryParams implements Cloneable
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return null.
-     *
-     * @param name
-     * @return
      */
     public String getFirst(String name)
     {
@@ -132,6 +130,14 @@ public class HttpQueryParams implements Cloneable
         return delegate.containsKey(name);
     }
 
+    /**
+     * Per https://tools.ietf.org/html/rfc7230#page-19, query params are to be treated as case sensitive.
+     * However, as an utility, this exists to allow us to do a case insensitive match on demand.
+     */
+    public boolean containsIgnoreCase(String name) {
+        return delegate.containsKey(name) || delegate.containsKey(name.toLowerCase(Locale.ROOT));
+    }
+
     public boolean contains(String name, String value)
     {
         return delegate.containsEntry(name, value);
@@ -139,9 +145,6 @@ public class HttpQueryParams implements Cloneable
 
     /**
      * Replace any/all entries with this key, with this single entry.
-     *
-     * @param name
-     * @param value
      */
     public void set(String name, String value)
     {

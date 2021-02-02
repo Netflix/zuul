@@ -2,11 +2,12 @@ apply plugin: "java-library"
 
 dependencies {
     implementation project(":zuul-core")
-    api(group: 'com.google.inject', name: 'guice', version: "4.2.3")
+    api(group: 'com.google.inject', name: 'guice', version: "4.2.3", classifier: "no_aop")
     implementation 'commons-configuration:commons-configuration:1.8'
 
     testImplementation "com.netflix.governator:governator-test-junit:1.+"
     testImplementation libraries.junit,
+            libraries.mockito,
             libraries.truth
 }
 

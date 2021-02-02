@@ -16,6 +16,9 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Registry;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -31,9 +34,13 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
 
     public static final String NAME = ElbProxyProtocolChannelHandler.class.getSimpleName();
     private final boolean withProxyProtocol;
+    private final Registry spectatorRegistry;
+    private final Counter hapmDecodeFailure;
 
-    public ElbProxyProtocolChannelHandler(boolean withProxyProtocol) {
+    public ElbProxyProtocolChannelHandler(Registry registry, boolean withProxyProtocol) {
         this.withProxyProtocol = withProxyProtocol;
+        this.spectatorRegistry = checkNotNull(registry);
+        this.hapmDecodeFailure = spectatorRegistry.counter("zuul.hapm.failure");
     }
 
     public void addProxyProtocol(ChannelPipeline pipeline) {
@@ -46,6 +53,10 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
             ctx.pipeline().addAfter(NAME, null, new HAProxyMessageChannelHandler())
                     .replace(this, null, new HAProxyMessageDecoder());
         } else {
+            if (withProxyProtocol) {
+                // This likely means initialization was requested with proxy protocol, but we failed to decode the message
+                hapmDecodeFailure.increment();
+            }
             ctx.pipeline().remove(this);
         }
         super.channelRead(ctx, msg);

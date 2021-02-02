@@ -24,6 +24,7 @@ import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NA
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
@@ -62,6 +63,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +128,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
                 RejectionUtils.rejectByClosingConnection(
                         ctx,
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
@@ -186,7 +191,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 }
             }
 
-            if (reason == CompleteReason.INACTIVE) {
+            if (reason == CompleteReason.INACTIVE && zuulRequest != null) {
                 // Client closed connection prematurely.
                 StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
             }
@@ -199,7 +204,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up state. But
                         // thats ok, so don't log in that case.
                         if (! "HTTP/2".equals(zuulRequest.getProtocol())) {
-                            LOG.info("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
+                            LOG.debug("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(),
                                     zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
                         }
                     }
@@ -209,6 +214,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                     dumpDebugInfo(Debug.getRequestDebug(zuulCtx));
                     dumpDebugInfo(Debug.getRoutingDebug(zuulCtx));
                 }
+            }
+
+            if (zuulRequest == null) {
+                Spectator.globalRegistry()
+                        .counter("zuul.client.complete.null", "reason", String.valueOf(reason))
+                        .increment();
             }
 
             clientRequest = null;
@@ -266,6 +277,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         final int port = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
         final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS).get();
         final SocketAddress clientDestinationAddress = channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
+        final InetSocketAddress proxyProtocolDestinationAddress =
+                channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
+        if (proxyProtocolDestinationAddress != null) {
+            context.set(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS, proxyProtocolDestinationAddress);
+        }
 
         // Store info about the SSL handshake if applicable, and choose the http scheme.
         String scheme = SCHEME_HTTP;
@@ -376,7 +392,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         if (cause instanceof java.nio.channels.ClosedChannelException ||
                 cause instanceof Errors.NativeIoException) {
-            LOG.info(errMesg + " - client connection is closed.");
+            LOG.debug(errMesg + " - client connection is closed.");
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);

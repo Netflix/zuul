@@ -30,9 +30,7 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
-import com.netflix.servo.DefaultMonitorRegistry;
-import com.netflix.servo.monitor.BasicCounter;
-import com.netflix.servo.monitor.MonitorConfig;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -43,7 +41,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
-import io.netty.util.DomainNameMapping;
+import io.netty.util.AsyncMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -59,6 +57,7 @@ public abstract class BaseServerStartup
 
     protected final ServerStatusManager serverStatusManager;
     protected final Registry registry;
+    @SuppressWarnings("unused") // force initialization
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
     protected final EurekaClient discoveryClient;
@@ -69,7 +68,7 @@ public abstract class BaseServerStartup
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier usageNotifier;
 
-    private Map<? extends SocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
+    private Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
     private ClientConnectionsShutdown clientConnectionsShutdown;
     private Server server;
 
@@ -109,9 +108,8 @@ public abstract class BaseServerStartup
 
         addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
 
-        directMemoryMonitor.init();
-
         server = new Server(
+                registry,
                 serverStatusManager,
                 addrsToChannelInitializers,
                 clientConnectionsShutdown,
@@ -129,7 +127,7 @@ public abstract class BaseServerStartup
     }
 
     @ForOverride
-    protected Map<SocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+    protected Map<NamedSocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
         @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
         Map<Integer, ChannelInitializer<?>> portMap =
                 (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
@@ -155,8 +153,7 @@ public abstract class BaseServerStartup
 
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
-        final BasicCounter httpRequestReadTimeoutCounter =  new BasicCounter(MonitorConfig.builder("server.http.request.read.timeout").build());
-        DefaultMonitorRegistry.getInstance().register(httpRequestReadTimeoutCounter);
+        final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
         channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
@@ -171,11 +168,6 @@ public abstract class BaseServerStartup
      * First looks for a property specific to the named listen address of the form -
      * "server.${addrName}.${propertySuffix}". If none found, then looks for a server-wide property of the form -
      * "server.${propertySuffix}".  If that is also not found, then returns the specified default value.
-     *
-     * @param listenAddressName
-     * @param propertySuffix
-     * @param defaultValue
-     * @return
      */
     public static int chooseIntChannelProperty(String listenAddressName, String propertySuffix, int defaultValue) {
         String globalPropertyName = "server." + propertySuffix;
@@ -300,10 +292,10 @@ public abstract class BaseServerStartup
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
     /**
-     * Use {@link #logAddrConfigured(SocketAddress, DomainNameMapping)} instead.
+     * Use {@link #logAddrConfigured(SocketAddress, AsyncMapping)} instead.
      */
     @Deprecated
-    protected void logPortConfigured(int port, DomainNameMapping<SslContext> sniMapping) {
+    protected void logPortConfigured(int port, AsyncMapping<String, SslContext> sniMapping) {
         logAddrConfigured(new InetSocketAddress(port), sniMapping);
     }
 
@@ -319,11 +311,16 @@ public abstract class BaseServerStartup
         LOG.info(msg);
     }
 
-    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable DomainNameMapping<?> sniMapping) {
+    protected final void logAddrConfigured(
+            SocketAddress socketAddress, @Nullable AsyncMapping<String, SslContext> sniMapping) {
         String msg = "Configured address: " + socketAddress;
         if (sniMapping != null) {
-            msg = msg + " with SNI config: " + sniMapping.asMap();
+            msg = msg + " with SNI config: " + sniMapping;
         }
         LOG.info(msg);
+    }
+
+    protected final void logSecureAddrConfigured(SocketAddress socketAddress, @Nullable Object securityConfig) {
+        LOG.info("Configured address: {} with security config {}", socketAddress, securityConfig);
     }
 }

@@ -21,7 +21,7 @@ import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.zuul.netty.server.ServerTimeout;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
 import io.netty.handler.ssl.SslContext;
-import io.netty.util.DomainNameMapping;
+import io.netty.util.AsyncMapping;
 
 /**
  * User: michaels@netflix.com
@@ -51,7 +51,7 @@ public class CommonChannelConfigKeys
     public static final ChannelConfigKey<Boolean> isSSlFromIntermediary = new ChannelConfigKey<>("isSSlFromIntermediary", false);
     public static final ChannelConfigKey<ServerSslConfig> serverSslConfig = new ChannelConfigKey<>("serverSslConfig");
     public static final ChannelConfigKey<SslContextFactory> sslContextFactory = new ChannelConfigKey<>("sslContextFactory");
-    public static final ChannelConfigKey<DomainNameMapping<SslContext>> sniMapping = new ChannelConfigKey<>("sniMapping");
+    public static final ChannelConfigKey<AsyncMapping<String, SslContext>> sniMapping = new ChannelConfigKey<>("sniMapping");
 
     // HTTP/2 specific:
     public static final ChannelConfigKey<Integer> maxConcurrentStreams = new ChannelConfigKey<>("maxConcurrentStreams", 100);

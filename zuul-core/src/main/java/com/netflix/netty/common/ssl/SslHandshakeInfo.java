@@ -18,16 +18,14 @@ package com.netflix.netty.common.ssl;
 
 import io.netty.handler.ssl.ClientAuth;
 
-import javax.security.cert.X509Certificate;
+import java.security.cert.X509Certificate;
 import java.security.cert.Certificate;
 
 /**
- * User: michaels@netflix.com
- * Date: 3/29/16
- * Time: 11:06 AM
+ * User: michaels@netflix.com Date: 3/29/16 Time: 11:06 AM
  */
-public class SslHandshakeInfo
-{
+public class SslHandshakeInfo {
+
     private final String protocol;
     private final String cipherSuite;
     private final ClientAuth clientAuthRequirement;
@@ -35,19 +33,9 @@ public class SslHandshakeInfo
     private final X509Certificate clientCertificate;
     private final boolean isOfIntermediary;
 
-    public SslHandshakeInfo(boolean isOfIntermediary, String protocol, String cipherSuite, Certificate serverCertificate)
-    {
-        this.protocol = protocol;
-        this.cipherSuite = cipherSuite;
-        this.isOfIntermediary = isOfIntermediary;
-        this.serverCertificate = serverCertificate;
-        this.clientAuthRequirement = ClientAuth.NONE;
-        this.clientCertificate = null;
-    }
-
-    public SslHandshakeInfo(boolean isOfIntermediary, String protocol, String cipherSuite, ClientAuth clientAuthRequirement,
-                            Certificate serverCertificate, X509Certificate clientCertificate)
-    {
+    public SslHandshakeInfo(boolean isOfIntermediary, String protocol, String cipherSuite,
+            ClientAuth clientAuthRequirement,
+            Certificate serverCertificate, X509Certificate clientCertificate) {
         this.protocol = protocol;
         this.cipherSuite = cipherSuite;
         this.clientAuthRequirement = clientAuthRequirement;
@@ -56,23 +44,19 @@ public class SslHandshakeInfo
         this.isOfIntermediary = isOfIntermediary;
     }
 
-    public boolean isOfIntermediary()
-    {
+    public boolean isOfIntermediary() {
         return isOfIntermediary;
     }
 
-    public String getProtocol()
-    {
+    public String getProtocol() {
         return protocol;
     }
 
-    public String getCipherSuite()
-    {
+    public String getCipherSuite() {
         return cipherSuite;
     }
 
-    public ClientAuth getClientAuthRequirement()
-    {
+    public ClientAuth getClientAuthRequirement() {
         return clientAuthRequirement;
     }
 
@@ -81,14 +65,12 @@ public class SslHandshakeInfo
         return serverCertificate;
     }
 
-    public X509Certificate getClientCertificate()
-    {
+    public X509Certificate getClientCertificate() {
         return clientCertificate;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "SslHandshakeInfo{" +
                 "protocol='" + protocol + '\'' +
                 ", cipherSuite='" + cipherSuite + '\'' +

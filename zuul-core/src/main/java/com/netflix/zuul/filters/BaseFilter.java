@@ -74,26 +74,21 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     /**
      * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
-     *
-     * @return
      */
     public String disablePropertyName() {
         return "zuul." + baseName + ".disable";
     }
 
     /**
-     * The name of the Archaius property for this filter's max concurrency. by default it is zuul.[classname].[filtertype].concurrency.limit
-     *
-     * @return
+     * The name of the Archaius property for this filter's max concurrency. by default it is
+     * zuul.[classname].[filtertype].concurrency.limit
      */
     public String maxConcurrencyPropertyName() {
         return "zuul." + baseName + ".concurrency.limit";
     }
 
     /**
-     * If true, the filter has been disabled by archaius and will not be run
-     *
-     * @return
+     * If true, the filter has been disabled by archaius and will not be run.
      */
     @Override
     public boolean isDisabled() {

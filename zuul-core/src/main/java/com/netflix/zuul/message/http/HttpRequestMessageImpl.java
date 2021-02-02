@@ -472,8 +472,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      *
      * The Host header may contain port, but in this method we strip it out for consistency - use the
      * getOriginalPort method for that.
-     *
-     * @return
      */
     @Override
     public String getOriginalHost() {
@@ -524,16 +522,19 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     @Override
     public int getOriginalPort() {
         try {
-            return getOriginalPort(getHeaders(), getPort());
+            return getOriginalPort(getContext(), getHeaders(), getPort());
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
     @VisibleForTesting
-    static int getOriginalPort(Headers headers, int serverPort) throws URISyntaxException {
+    static int getOriginalPort(SessionContext context, Headers headers, int serverPort) throws URISyntaxException {
+        if (context.containsKey(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)) {
+            return ((InetSocketAddress) context.get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
+        }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
-        if (portStr != null) {
+        if (portStr != null && !portStr.isEmpty()) {
             return Integer.parseInt(portStr);
         }
         // Check if port was specified on a Host header.
@@ -584,7 +585,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
             String scheme = getOriginalScheme().toLowerCase();
             uri.append(scheme);
-            uri.append(URI_SCHEME_SEP).append(getOriginalHost());
+            uri.append(URI_SCHEME_SEP).append(getOriginalHost(getHeaders(), getServerName()));
 
             int port = getOriginalPort();
             if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port)
@@ -597,6 +598,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             uri.append(getPathAndQuery());
 
             return uri.toString();
+        }
+        catch (URISyntaxException e) {
+            // This is not really so bad, just debug log it and move on.
+            LOG.debug("Error reconstructing request URI!", e);
+            return "";
         }
         catch (Exception e) {
             LOG.error("Error reconstructing request URI!", e);

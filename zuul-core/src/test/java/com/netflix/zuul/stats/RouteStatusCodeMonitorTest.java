@@ -22,21 +22,21 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.runners.JUnit4;
 
 /**
  * Unit tests for {@link RouteStatusCodeMonitor}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnit4.class)
 public class RouteStatusCodeMonitorTest {
     @Test
     public void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
         assertEquals(sd.route, "test");
         sd.update();
-        assertEquals(sd.count.get(), 1);
+        assertEquals(sd.getCount(), 1);
         sd.update();
-        assertEquals(sd.count.get(), 2);
+        assertEquals(sd.getCount(), 2);
     }
 
     @Test

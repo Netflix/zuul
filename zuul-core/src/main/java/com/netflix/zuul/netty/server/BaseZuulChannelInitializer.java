@@ -34,10 +34,10 @@ import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
 import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
-import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
-import com.netflix.servo.monitor.BasicCounter;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -130,7 +130,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     //protected final RequestRejectedChannelHandler requestRejectedChannelHandler;
     protected final SessionContextDecorator sessionContextDecorator;
     protected final RequestCompleteHandler requestCompleteHandler;
-    protected final BasicCounter httpRequestReadTimeoutCounter;
+    protected final Counter httpRequestReadTimeoutCounter;
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
     protected final SourceAddressChannelHandler sourceAddressChannelHandler;
@@ -179,7 +179,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + metricId);
+        this.channelMetrics = new ServerChannelMetrics("http-" + metricId, Spectator.globalRegistry());
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
         this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricId);
 
@@ -235,7 +235,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast("channelMetrics", channelMetrics);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
 
-        new ElbProxyProtocolChannelHandler(withProxyProtocol).addProxyProtocol(pipeline);
+        new ElbProxyProtocolChannelHandler(registry, withProxyProtocol).addProxyProtocol(pipeline);
 
         pipeline.addLast(maxConnectionsHandler);
     }

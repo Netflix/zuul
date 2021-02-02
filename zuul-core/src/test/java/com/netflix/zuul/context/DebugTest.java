@@ -163,4 +163,14 @@ public class DebugTest {
                 "RESPONSE_INBOUND:: < HDR: lah:deda",
                 "RESPONSE_INBOUND:: < BODY: response text");
     }
+
+    @Test
+    public void testNoCMEWhenComparingContexts() {
+        final SessionContext context = new SessionContext();
+        final SessionContext copy = new SessionContext();
+
+        context.set("foo", "bar");
+
+        Debug.compareContextState("testfilter", context, copy);
+    }
 }

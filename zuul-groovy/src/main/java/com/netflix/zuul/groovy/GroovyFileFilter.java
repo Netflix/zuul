@@ -13,21 +13,16 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-package com.netflix.zuul.plugins;
+package com.netflix.zuul.groovy;
 
-import com.netflix.servo.monitor.Monitors;
-import com.netflix.zuul.stats.monitoring.Monitor;
-import com.netflix.zuul.stats.monitoring.NamedCount;
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
- * implementation to hook up the Servo Monitors to register Named counters
- * @author Mikey Cohen
- * Date: 4/16/13
- * Time: 4:40 PM
+ * Filters only .groovy files
  */
-public class ServoMonitor implements Monitor {
-    @Override
-    public void register(NamedCount monitorObj) {
-        Monitors.registerObject(monitorObj);
+public class GroovyFileFilter implements FilenameFilter {
+    public boolean accept(File dir, String name) {
+        return name.endsWith(".groovy");
     }
 }

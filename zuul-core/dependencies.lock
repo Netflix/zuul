@@ -1,121 +1,90 @@
 {
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
-            "requested": "0.7.5"
+            "locked": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
-            "requested": "1.7.25"
+            "locked": "1.7.25"
         }
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.27"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.27"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -123,644 +92,462 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
-            "requested": "0.7.5"
+            "locked": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.27"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.27"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
-            "requested": "1.7.25"
+            "locked": "1.7.25"
         }
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6",
-            "requested": "0.7.5"
+            "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.7.7"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.27"
+        },
+        "org.openjdk.jmh:jmh-generator-annprocess": {
+            "locked": "1.27"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21",
-            "requested": "1.21"
+            "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
+            "locked": "1.7.30"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29",
-            "requested": "1.7.29"
+            "locked": "1.7.29"
         }
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6",
-            "requested": "0.7.5"
+            "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
+            "locked": "1.7.30"
         }
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5",
-            "requested": "0.7.5"
+            "locked": "0.7.5"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.7.2",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.7.7"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25",
-            "requested": "1.7.25"
+            "locked": "1.7.25"
         }
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.9.8",
-            "requested": "2.9.8"
+            "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "28.1-jre",
-            "requested": "28.1-jre"
+            "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1",
-            "requested": "1.0.1"
+            "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6",
-            "requested": "0.7.5"
+            "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18",
-            "requested": "1.9.18"
+            "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
-            "locked": "0.3.0",
-            "requested": "0.3.0"
+            "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
+            "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.7.17",
-            "requested": "2.7.17"
-        },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "requested": "0.7.2"
+            "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.103.0",
-            "requested": "0.103.0"
+            "locked": "0.123.1"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.30.Final",
-            "requested": "2.0.30.Final"
+            "locked": "2.0.36.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.48.Final",
-            "requested": "4.1.48.Final"
+            "locked": "4.1.58.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.21.0",
-            "requested": "0.21.0"
+            "locked": "0.23.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1",
-            "requested": "1.2.1"
+            "locked": "1.2.1"
         },
         "javax.inject:javax.inject": {
-            "locked": "1",
-            "requested": "1"
+            "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13",
-            "requested": "4.13"
+            "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.65",
-            "requested": "1.+"
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "2.4.4",
-            "requested": "2.4.4"
+            "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "1.10.19",
-            "requested": "1.10.19"
+            "locked": "3.7.7"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
-            "requested": "1.7.25"
+            "locked": "1.7.30"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29",
-            "requested": "1.7.29"
+            "locked": "1.7.29"
         }
     }
 }

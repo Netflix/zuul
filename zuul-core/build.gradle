@@ -4,16 +4,14 @@ apply plugin: "java-library"
 dependencies {
 
     implementation libraries.guava
-    api "org.codehaus.groovy:groovy-all:${versions_groovy}"
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
-    api 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.12.1'
+    api 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
 
     api "com.netflix.archaius:archaius-core:0.7.5"
-    api "com.netflix.servo:servo-core:0.7.2"
-    api "com.netflix.spectator:spectator-api:0.103.0"
+    api "com.netflix.spectator:spectator-api:0.123.1"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
     api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
@@ -36,15 +34,18 @@ dependencies {
     implementation "io.netty:netty-codec-haproxy:${versions_netty}"
     implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
-    runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.30.Final"
+    runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.36.Final"
 
-    implementation 'io.perfmark:perfmark-api:0.21.0'
+    implementation 'io.perfmark:perfmark-api:0.23.0'
     implementation 'javax.inject:javax.inject:1'
 
     testImplementation libraries.junit,
             libraries.mockito,
             libraries.truth
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.29'
+
+    jmh 'org.openjdk.jmh:jmh-core:1.+'
+    jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.
@@ -54,7 +55,7 @@ test {
     }
 }
 
-// ./gradlew --no-daemon clean :zuul-core:jmh --stacktrace
+// ./gradlew --no-daemon clean :zuul-core:jmh
 jmh {
     profilers = ["gc"]
     timeOnIteration = "1s"

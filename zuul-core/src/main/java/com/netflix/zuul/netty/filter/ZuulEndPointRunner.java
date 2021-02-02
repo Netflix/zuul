@@ -35,6 +35,7 @@ import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.handler.codec.http.HttpContent;
 import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,8 +85,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
 
         final String endpointName = getEndPointName(zuulReq.getContext());
-        PerfMark.startTask(getClass().getName(), "filter");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filter")) {
             Preconditions.checkNotNull(zuulReq, "input message");
             addPerfMarkTags(zuulReq);
 
@@ -102,21 +102,16 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
         catch (Exception ex) {
             handleException(zuulReq, endpointName, ex);
-        } finally {
-            PerfMark.stopTask(getClass().getName(), "filter");
         }
     }
 
     @Override
     protected void resume(final HttpResponseMessage zuulMesg) {
-        PerfMark.startTask(getClass().getSimpleName(), "resume");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".resume")) {
             if (zuulMesg.getContext().isCancelled()) {
                 return;
             }
             invokeNextStage(zuulMesg);
-        } finally {
-            PerfMark.stopTask(getClass().getSimpleName(), "resume");
         }
     }
 
@@ -128,8 +123,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
 
         String endpointName = "-";
-        PerfMark.startTask(getClass().getName(), "filterChunk");
-        try {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(zuulReq);
             ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint = Preconditions.checkNotNull(
                     getEndpoint(zuulReq), "endpoint");
@@ -153,8 +147,6 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         }
         catch (Exception ex) {
             handleException(zuulReq, endpointName, ex);
-        } finally {
-            PerfMark.stopTask(getClass().getName(), "filterChunk");
         }
     }
 

@@ -24,6 +24,8 @@ import static com.netflix.zuul.ExecutionStatus.SUCCESS;
 import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
 import static com.netflix.zuul.filters.FilterType.ENDPOINT;
 import static com.netflix.zuul.filters.FilterType.INBOUND;
+import static io.perfmark.PerfMark.attachTag;
+import static io.perfmark.PerfMark.traceTask;
 
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.spectator.impl.Preconditions;
@@ -52,6 +54,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.Link;
 import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -132,42 +135,34 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final void invokeNextStage(final O zuulMesg, final HttpContent chunk) {
         if (nextStage != null) {
-            PerfMark.startTask(getClass().getName(), "invokeNextStageChunk");
-            try {
+            try (TaskCloseable ignored =
+                    traceTask(this, s -> s.getClass().getSimpleName() + ".invokeNextStageChunk")){
                 addPerfMarkTags(zuulMesg);
                 nextStage.filter(zuulMesg, chunk);
-            } finally {
-                PerfMark.stopTask(getClass().getName(), "invokeNextStageChunk");
             }
         } else {
             //Next stage is Netty channel handler
-            PerfMark.startTask(getClass().getName(), "fireChannelReadChunk");
-            try {
+            try (TaskCloseable ignored =
+                    traceTask(this, s -> s.getClass().getSimpleName() + ".fireChannelReadChunk")) {
                 addPerfMarkTags(zuulMesg);
                 getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
-            } finally {
-                PerfMark.stopTask(getClass().getName(), "fireChannelReadChunk");
             }
         }
     }
 
     protected final void invokeNextStage(final O zuulMesg) {
         if (nextStage != null) {
-            PerfMark.startTask(getClass().getName(), "invokeNextStage");
-            try {
+            try (TaskCloseable ignored =
+                    traceTask(this, s -> s.getClass().getSimpleName() + ".invokeNextStage")) {
                 addPerfMarkTags(zuulMesg);
                 nextStage.filter(zuulMesg);
-            } finally {
-                PerfMark.stopTask(getClass().getName(), "invokeNextStage");
             }
         } else {
             //Next stage is Netty channel handler
-            PerfMark.startTask(getClass().getName(), "fireChannelRead");
-            try {
+            try (TaskCloseable ignored =
+                    traceTask(this, s -> s.getClass().getSimpleName() + ".fireChannelRead")) {
                 addPerfMarkTags(zuulMesg);
                 getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
-            } finally {
-                PerfMark.stopTask(getClass().getName(), "fireChannelRead");
             }
         }
     }
@@ -178,22 +173,22 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             req = (HttpRequestInfo) inMesg;
         }
         if (inMesg instanceof HttpResponseMessage) {
-            req = ((HttpResponseMessage) inMesg).getOutboundRequest();
-            PerfMark.attachTag("statuscode", ((HttpResponseMessage) inMesg).getStatus());
+            HttpResponseMessage msg = (HttpResponseMessage) inMesg;
+            req = msg.getOutboundRequest();
+            attachTag("statuscode", msg.getStatus());
         }
         if (req != null) {
-            PerfMark.attachTag("path", req.getPath());
-            PerfMark.attachTag("originalhost", req.getOriginalHost());
+            attachTag("path", req, HttpRequestInfo::getPath);
+            attachTag("originalhost", req, HttpRequestInfo::getOriginalHost);
         }
-        PerfMark.attachTag("uuid", inMesg.getContext().getUUID());
+        attachTag("uuid", inMesg, m -> m.getContext().getUUID());
     }
 
     protected final O filter(final ZuulFilter<I, O> filter, final I inMesg) {
         final long startTime = System.nanoTime();
         final ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
         boolean decrementConcurrency = false;
-        PerfMark.startTask(filter.filterName(), "filter");
-        try {
+        try (TaskCloseable ignored = traceTask(filter, f -> f.filterName() + ".filter")) {
             addPerfMarkTags(inMesg);
             ExecutionStatus filterRunStatus = null;
             if (filter.filterType() == INBOUND && inMesg.getContext().shouldSendErrorResponse()) {
@@ -201,13 +196,11 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 filterRunStatus = SKIPPED;
             }
 
-            PerfMark.startTask(filter.filterName(), "shouldSkipFilter");
-            try {
+            ;
+            try (TaskCloseable ignored2 = traceTask(filter, f -> f.filterName() + ".shouldSkipFilter")){
                 if (shouldSkipFilter(inMesg, filter)) {
                     filterRunStatus = SKIPPED;
                 }
-            } finally {
-              PerfMark.stopTask(filter.filterName(), "shouldSkipFilter");
             }
 
             if (filter.isDisabled()) {
@@ -236,12 +229,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             if (filter.getSyncType() == FilterSyncType.SYNC) {
                 final SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter) filter;
                 final O outMesg;
-                PerfMark.startTask(filter.filterName(), "apply");
-                try {
+                try (TaskCloseable ignored2 = traceTask(filter, f -> f.filterName() + ".apply")) {
                     addPerfMarkTags(inMesg);
                     outMesg = syncFilter.apply(inMesg);
-                } finally {
-                  PerfMark.stopTask(filter.filterName(), "apply");
                 }
                 recordFilterCompletion(SUCCESS, filter, startTime, inMesg, snapshot);
                 return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
@@ -282,8 +272,6 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             outMesg.finishBufferedBodyIfIncomplete();
             recordFilterCompletion(FAILED, filter, startTime, inMesg, snapshot);
             return outMesg;
-        } finally {
-          PerfMark.stopTask(filter.filterName(), "filter");
         }
     }
 

@@ -23,12 +23,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tests for {@link FilterFileManager}.
@@ -51,7 +52,12 @@ public class FilterFileManagerTest {
 
     @Test
     public void testFileManagerInit() throws Exception {
-        FilterFileManager.FilterFileManagerConfig config = new FilterFileManager.FilterFileManagerConfig(new String[]{"test", "test1"}, new String[]{"com.netflix.blah.SomeFilter"}, 1);
+        FilterFileManager.FilterFileManagerConfig config =
+            new FilterFileManager.FilterFileManagerConfig(
+                new String[]{"test", "test1"},
+                new String[]{"com.netflix.blah.SomeFilter"},
+                1,
+               (dir, name) -> false);
         FilterFileManager manager = new FilterFileManager(config, filterLoader);
 
         manager = spy(manager);

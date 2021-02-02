@@ -18,12 +18,17 @@ package com.netflix.zuul.init;
 
 import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
+import com.netflix.spectator.api.NoopRegistry;
+import com.netflix.spectator.api.Registry;
+import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 
 public class InitTestModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(AbstractConfiguration.class).toInstance(ConfigurationManager.getConfigInstance());
+        bind(FilenameFilter.class).toInstance((dir, name) -> false);
+        bind(Registry.class).to(NoopRegistry.class);
     }
 
 }

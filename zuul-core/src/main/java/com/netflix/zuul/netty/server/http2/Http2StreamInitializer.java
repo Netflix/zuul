@@ -85,6 +85,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         pipeline.addLast("h2_downgrader", new Http2StreamFrameToHttpObjectCodec(true));
         pipeline.addLast(http2StreamErrorHandler);
         pipeline.addLast(http2StreamHeaderCleaner);
+        pipeline.addLast(new Http2ContentLengthEnforcingHandler());
     }
 
     protected void copyAttrsFromParentChannel(Channel parent, Channel child)
@@ -92,12 +93,11 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         AttributeKey[] attributesToCopy = {
                 SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
                 SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
-                SourceAddressChannelHandler.ATTR_LOCAL_PORT,
                 SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS,
                 SourceAddressChannelHandler.ATTR_SOURCE_INET_ADDR,
-                SourceAddressChannelHandler.ATTR_SOURCE_PORT,
                 SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
                 SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
+                SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
 
                 PROTOCOL_NAME,
                 SslHandshakeInfoHandler.ATTR_SSL_INFO,

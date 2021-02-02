@@ -20,6 +20,8 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
+import com.netflix.zuul.origins.OriginName;
+import java.util.Objects;
 
 /**
  * Created by saroskar on 3/24/16.
@@ -31,7 +33,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     private static final int DEFAULT_IDLE_TIMEOUT = 60000;
     private static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
 
-    private final String originName;
+    private final OriginName originName;
     private final IClientConfig clientConfig;
 
     private final CachedDynamicIntProperty MAX_REQUESTS_PER_CONNECTION;
@@ -44,24 +46,31 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     private final CachedDynamicBooleanProperty AUTO_READ;
 
 
-    public ConnectionPoolConfigImpl(final String originName, IClientConfig clientConfig) {
-        this.originName = originName;
+    public ConnectionPoolConfigImpl(final OriginName originName, IClientConfig clientConfig) {
+        this.originName = Objects.requireNonNull(originName, "originName");
+        String niwsClientName = originName.getNiwsClientName();
         this.clientConfig = clientConfig;
 
-        this.MAX_REQUESTS_PER_CONNECTION = new CachedDynamicIntProperty(originName+".netty.client.maxRequestsPerConnection", 1000);
+        this.MAX_REQUESTS_PER_CONNECTION =
+                new CachedDynamicIntProperty(niwsClientName + ".netty.client.maxRequestsPerConnection", 1000);
 
         // NOTE that the each eventloop has it's own connection pool per host, and this is applied per event-loop.
-        this.PER_SERVER_WATERLINE = new CachedDynamicIntProperty(originName+".netty.client.perServerWaterline", 4);
+        this.PER_SERVER_WATERLINE =
+                new CachedDynamicIntProperty(niwsClientName + ".netty.client.perServerWaterline", 4);
 
-        this.SOCKET_KEEP_ALIVE = new CachedDynamicBooleanProperty(originName+".netty.client.TcpKeepAlive", false);
-        this.TCP_NO_DELAY = new CachedDynamicBooleanProperty(originName+".netty.client.TcpNoDelay", false);
-        this.WRITE_BUFFER_HIGH_WATER_MARK = new CachedDynamicIntProperty(originName+".netty.client.WriteBufferHighWaterMark", 32 * 1024);
-        this.WRITE_BUFFER_LOW_WATER_MARK = new CachedDynamicIntProperty(originName+".netty.client.WriteBufferLowWaterMark", 8 * 1024);
-        this.AUTO_READ = new CachedDynamicBooleanProperty(originName+".netty.client.AutoRead", false);
+        this.SOCKET_KEEP_ALIVE =
+                new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
+        this.TCP_NO_DELAY =
+                new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
+        this.WRITE_BUFFER_HIGH_WATER_MARK =
+                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferHighWaterMark", 32 * 1024);
+        this.WRITE_BUFFER_LOW_WATER_MARK =
+                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferLowWaterMark", 8 * 1024);
+        this.AUTO_READ = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.AutoRead", false);
     }
 
     @Override
-    public String getOriginName() {
+    public OriginName getOriginName() {
         return originName;
     }
 

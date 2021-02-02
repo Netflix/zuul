@@ -16,10 +16,12 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import com.google.errorprone.annotations.ForOverride;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import io.netty.handler.ssl.CipherSuiteFilter;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -30,6 +32,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -42,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.ToDoubleFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +58,8 @@ import org.slf4j.LoggerFactory;
 public class BaseSslContextFactory implements SslContextFactory {
     private static final Logger LOG = LoggerFactory.getLogger(BaseSslContextFactory.class);
 
-    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL = new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
+    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL =
+            new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
 
     static {
         // Install BouncyCastle provider.
@@ -65,8 +70,8 @@ public class BaseSslContextFactory implements SslContextFactory {
     protected final ServerSslConfig serverSslConfig;
 
     public BaseSslContextFactory(Registry spectatorRegistry, ServerSslConfig serverSslConfig) {
-        this.spectatorRegistry = spectatorRegistry;
-        this.serverSslConfig = serverSslConfig;
+        this.spectatorRegistry = Objects.requireNonNull(spectatorRegistry);
+        this.serverSslConfig = Objects.requireNonNull(serverSslConfig);
     }
 
     @Override
@@ -75,12 +80,9 @@ public class BaseSslContextFactory implements SslContextFactory {
             ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
 
-            LOG.warn("Using SslProvider of type - " + sslProvider.name() + " for certChainFile - " + serverSslConfig.getCertChainFile());
+            LOG.debug("Using SslProvider of type {}", sslProvider.name());
 
-            InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile());
-            InputStream keyInput = getKeyInputStream();
-
-            SslContextBuilder builder = SslContextBuilder.forServer(certChainInput, keyInput)
+            SslContextBuilder builder = newBuilderForServer()
                     .ciphers(getCiphers(), getCiphersFilter())
                     .sessionTimeout(serverSslConfig.getSessionTimeout())
                     .sslProvider(sslProvider);
@@ -95,6 +97,19 @@ public class BaseSslContextFactory implements SslContextFactory {
         }
         catch (Exception e) {
             throw new RuntimeException("Error configuring SslContext!", e);
+        }
+    }
+
+    /**
+     * This function is meant to call the correct overload of {@code SslContextBuilder.forServer()}.  It should not
+     * apply any other customization.
+     */
+    @ForOverride
+    protected SslContextBuilder newBuilderForServer() throws IOException {
+        LOG.debug("Using certChainFile {}", serverSslConfig.getCertChainFile());
+        try (InputStream keyInput = getKeyInputStream();
+                InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile())) {
+            return SslContextBuilder.forServer(certChainInput, keyInput);
         }
     }
 
@@ -127,9 +142,11 @@ public class BaseSslContextFactory implements SslContextFactory {
         }
     }
 
-    private void openSslStatGauge(OpenSslSessionStats stats, String sslContextId, String statName, ToDoubleFunction<OpenSslSessionStats> value) {
+    private void openSslStatGauge(
+            OpenSslSessionStats stats, String sslContextId, String statName,
+            ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
-        spectatorRegistry.gauge(id, stats, value);
+        PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
         LOG.debug("Registered spectator gauge - " + id.name());
     }
 
@@ -165,7 +182,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     protected ArrayList<X509Certificate> getTrustedX509Certificates() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
 
-        // Add the certifcates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
+        // Add the certificates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
         if (serverSslConfig.getClientAuth() == ClientAuth.REQUIRE || serverSslConfig.getClientAuth() == ClientAuth.OPTIONAL) {
             // Get the encrypted bytes of the truststore password.
             byte[] trustStorePwdBytes;
@@ -204,8 +221,6 @@ public class BaseSslContextFactory implements SslContextFactory {
     /**
      * Can be overridden to implement your own decryption scheme.
      *
-     * @param trustStorePwdBytes
-     * @return
      */
     protected String getTruststorePassword(byte[] trustStorePwdBytes) {
         return new String(trustStorePwdBytes).trim();
@@ -213,9 +228,6 @@ public class BaseSslContextFactory implements SslContextFactory {
 
     /**
      * Can be overridden to implement your own decryption scheme.
-     *
-     * @return
-     * @throws IOException
      */
     protected InputStream getKeyInputStream() throws IOException {
         return new FileInputStream(serverSslConfig.getKeyFile());

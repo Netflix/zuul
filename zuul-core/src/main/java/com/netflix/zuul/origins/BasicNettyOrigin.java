@@ -43,13 +43,15 @@ import com.netflix.zuul.netty.connectionpool.DefaultClientChannelManager;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.passport.CurrentPassport;
-import com.netflix.zuul.stats.Timing;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+import java.net.InetAddress;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
 /**
  * Netty Origin basic implementation that can be used for most apps, with the more complex methods having no-op
@@ -60,49 +62,50 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class BasicNettyOrigin implements NettyOrigin {
 
-    private final String name;
-    private final String vip;
+    private final OriginName originName;
     private final Registry registry;
     private final IClientConfig config;
     private final ClientChannelManager clientChannelManager;
     private final NettyRequestAttemptFactory requestAttemptFactory;
+    private final OriginStats stats = new OriginStats();
 
     private final AtomicInteger concurrentRequests;
     private final Counter rejectedRequests;
     private final CachedDynamicIntProperty concurrencyMax;
     private final CachedDynamicBooleanProperty concurrencyProtectionEnabled;
 
-    public BasicNettyOrigin(String name, String vip, Registry registry) {
-        this.name = name;
-        this.vip = vip;
+    public BasicNettyOrigin(OriginName originName, Registry registry) {
+        this.originName = Objects.requireNonNull(originName, "originName");
         this.registry = registry;
-        this.config = setupClientConfig(name);
-        this.clientChannelManager = new DefaultClientChannelManager(name, vip, config, registry);
+        this.config = setupClientConfig(originName);
+        this.clientChannelManager = new DefaultClientChannelManager(originName, config, registry);
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
-        this.concurrentRequests = SpectatorUtils.newGauge("zuul.origin.concurrent.requests", name, new AtomicInteger(0));
-        this.rejectedRequests = SpectatorUtils.newCounter("zuul.origin.rejected.requests", name);
-        this.concurrencyMax = new CachedDynamicIntProperty("zuul.origin." + name + ".concurrency.max.requests", 200);
-        this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.origin." + name + ".concurrency.protect.enabled", true);
+        String niwsClientName = getName().getNiwsClientName();
+        this.concurrentRequests =
+                SpectatorUtils.newGauge(
+                        "zuul.origin.concurrent.requests", niwsClientName, new AtomicInteger(0));
+        this.rejectedRequests =
+                SpectatorUtils.newCounter("zuul.origin.rejected.requests", niwsClientName);
+        this.concurrencyMax =
+                new CachedDynamicIntProperty("zuul.origin." + niwsClientName + ".concurrency.max.requests", 200);
+        this.concurrencyProtectionEnabled =
+                new CachedDynamicBooleanProperty("zuul.origin." + niwsClientName + ".concurrency.protect.enabled", true);
     }
 
-    protected IClientConfig setupClientConfig(String name) {
+    protected IClientConfig setupClientConfig(OriginName originName) {
         // Get the NIWS properties for this Origin.
-        IClientConfig niwsClientConfig = DefaultClientConfigImpl.getClientConfigWithDefaultValues(name);
-        niwsClientConfig.set(CommonClientConfigKey.ClientClassName, name);
-        niwsClientConfig.loadProperties(name);
+        IClientConfig niwsClientConfig =
+                DefaultClientConfigImpl.getClientConfigWithDefaultValues(originName.getNiwsClientName());
+        niwsClientConfig.set(CommonClientConfigKey.ClientClassName, originName.getNiwsClientName());
+        niwsClientConfig.loadProperties(originName.getNiwsClientName());
         return niwsClientConfig;
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getVip() {
-        return vip;
+    public OriginName getName() {
+        return originName;
     }
 
     @Override
@@ -118,16 +121,10 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public Promise<PooledConnection> connectToOrigin(
             HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<Server> chosenServer, AtomicReference<String> chosenHostAddr) {
+            AtomicReference<Server> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
-    @Override
-    public Timing getProxyTiming(HttpRequestMessage zuulReq) {
-        return new Timing(name);
-    }
-
-    @Override
     public int getMaxRetriesForRequest(SessionContext context) {
         return config.get(CommonClientConfigKey.MaxAutoRetriesNextServer, 0);
     }
@@ -172,8 +169,8 @@ public class BasicNettyOrigin implements NettyOrigin {
             }
 
             final ExecutionContext<?> context = new ExecutionContext<>(zuulRequest, overriddenClientConfig, this.config, null);
-            context.put("vip", getVip());
-            context.put("clientName", getName());
+            context.put("vip", getName().getTarget());
+            context.put("clientName", getName().getNiwsClientName());
 
             zuulRequest.getContext().set(CommonContextKeys.REST_EXECUTION_CONTEXT, context);
             execCtx = context;
@@ -235,6 +232,11 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public void recordProxyRequestEnd() {
         concurrentRequests.decrementAndGet();
+    }
+
+    @Override
+    public final OriginStats stats() {
+        return stats;
     }
 
     /* Not required for basic operation */

@@ -16,17 +16,40 @@
 
 package com.netflix.zuul.util;
 
-public class VipUtils
+public final class VipUtils
 {
-    public static String getVIPPrefix(String vipAddress)
-    {
-        String vipHost = vipAddress.split(":")[0];
-        return vipHost.split("\\.")[0];
+    public static String getVIPPrefix(String vipAddress) {
+        for (int i = 0; i < vipAddress.length(); i++) {
+            char c = vipAddress.charAt(i);
+            if (c == '.' || c == ':') {
+                return vipAddress.substring(0, i);
+            }
+        }
+        return vipAddress;
     }
 
-    public static String extractAppNameFromVIP(String vipAddress)
-    {
+    /**
+     * Use {@link #extractUntrustedAppNameFromVIP} instead.
+     */
+    @Deprecated
+    public static String extractAppNameFromVIP(String vipAddress) {
         String vipPrefix = getVIPPrefix(vipAddress);
         return vipPrefix.split("-")[0];
     }
+
+    /**
+     * Attempts to derive an app name from the VIP.   Because the VIP is an arbitrary collection of characters, the
+     * value is just a best guess and not suitable for security purposes.
+     */
+    public static String extractUntrustedAppNameFromVIP(String vipAddress) {
+        for (int i = 0; i < vipAddress.length(); i++) {
+            char c = vipAddress.charAt(i);
+            if (c == '-' || c == '.' || c == ':') {
+                return vipAddress.substring(0, i);
+            }
+        }
+        return vipAddress;
+    }
+
+    private VipUtils() {}
 }
