@@ -130,7 +130,10 @@ public final class ConnCounter {
             return;
         }
         synchronized (getLock(gauge.id())) {
-            assert !Double.isNaN(gauge.value());
+            // Noop gauges break this assertion in tests, but the type is package private.   Check to make sure
+            // the gauge has a value, or by implementation cannot have a value.
+            assert !Double.isNaN(gauge.value())
+                    || gauge.getClass().getName().equals("com.netflix.spectator.api.NoopGauge");
             gauge.set(gauge.value() - 1);
         }
     }
