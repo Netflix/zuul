@@ -103,6 +103,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
      */
     @Deprecated
     protected final int port;
+    protected final String metricId;
     protected final ChannelConfig channelConfig;
     protected final ChannelConfig channelDependencies;
     protected final int idleTimeout;
@@ -169,6 +170,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             ChannelGroup channels) {
         this.port = port;
         checkNotNull(metricId, "metricId");
+        this.metricId = metricId;
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
@@ -289,7 +291,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addTimeoutHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new IdleStateHandler(0, 0, idleTimeout, TimeUnit.MILLISECONDS));
-        pipeline.addLast(new CloseOnIdleStateHandler());
+        pipeline.addLast(new CloseOnIdleStateHandler(registry, metricId));
     }
 
     protected void addSslInfoHandlers(ChannelPipeline pipeline, boolean isSSlFromIntermediary) {
