@@ -23,11 +23,9 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class CloseOnIdleStateHandler extends ChannelInboundHandlerAdapter {
 
-    private final Registry registry;
     private final Counter counter;
 
     public CloseOnIdleStateHandler(Registry registry, String metricId) {
-        this.registry = registry;
         this.counter = registry.counter("zuul.conn.idle.timeout", "id", metricId);
     }
 
