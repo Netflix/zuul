@@ -32,22 +32,20 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * User: Mike Smith
- * Date: 3/5/16
- * Time: 5:47 PM
+ * User: Mike Smith Date: 3/5/16 Time: 5:47 PM
  */
 @ChannelHandler.Sharable
-public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
-{
+public class ServerChannelMetrics extends ChannelInboundHandlerAdapter {
+
     private static final Logger LOG = LoggerFactory.getLogger(ServerChannelMetrics.class);
-    private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey.newInstance("_server_connections_count");
+    private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey
+            .newInstance("_server_connections_count");
 
     private final Gauge currentConnectionsGauge;
     private final AtomicInteger currentConnections = new AtomicInteger(0);
     private final Counter totalConnections;
     private final Counter connectionClosed;
     private final Counter connectionErrors;
-    private final Counter connectionThrottled;
 
     public ServerChannelMetrics(String id, Registry registry) {
         String metricNamePrefix = "server.connections.";
@@ -55,11 +53,9 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
         totalConnections = registry.counter(metricNamePrefix + "connect", "id", id);
         connectionErrors = registry.counter(metricNamePrefix + "errors", "id", id);
         connectionClosed = registry.counter(metricNamePrefix + "close", "id", id);
-        connectionThrottled = registry.counter(metricNamePrefix + "throttled", "id", id);
     }
 
-    public static int currentConnectionCountFromChannel(Channel ch)
-    {
+    public static int currentConnectionCountFromChannel(Channel ch) {
         AtomicInteger count = ch.attr(ATTR_CURRENT_CONNS).get();
         return count == null ? 0 : count.get();
     }
@@ -74,34 +70,21 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         try {
             super.channelInactive(ctx);
-        }
-        finally {
+        } finally {
             currentConnectionsGauge.set(currentConnections.decrementAndGet());
             connectionClosed.increment();
         }
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-    {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         connectionErrors.increment();
         if (LOG.isInfoEnabled()) {
             LOG.info("Connection error caught. " + String.valueOf(cause), cause);
         }
         super.exceptionCaught(ctx, cause);
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-    {
-        if (evt == MaxInboundConnectionsHandler.CONNECTION_THROTTLED_EVENT) {
-            connectionThrottled.increment();
-        }
-
-        super.userEventTriggered(ctx, evt);
     }
 }

@@ -191,7 +191,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.perEventLoopRequestsMetricsHandler = perEventLoopMetricsHandler.new HttpRequests();
 
         this.maxConnections = channelConfig.get(CommonChannelConfigKeys.maxConnections);
-        this.maxConnectionsHandler = new MaxInboundConnectionsHandler(maxConnections);
+        this.maxConnectionsHandler = new MaxInboundConnectionsHandler(registry, metricId, maxConnections);
         this.maxRequestsPerConnection = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnection);
         this.maxRequestsPerConnectionInBrownout = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout);
         this.connectionExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
