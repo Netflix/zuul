@@ -46,7 +46,6 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
     private final AtomicInteger currentConnections = new AtomicInteger(0);
     private final Counter totalConnections;
     private final Counter connectionClosed;
-    private final Counter connectionIdleTimeout;
     private final Counter connectionErrors;
     private final Counter connectionThrottled;
 
@@ -56,7 +55,6 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
         totalConnections = registry.counter(metricNamePrefix + "connect", "id", id);
         connectionErrors = registry.counter(metricNamePrefix + "errors", "id", id);
         connectionClosed = registry.counter(metricNamePrefix + "close", "id", id);
-        connectionIdleTimeout = registry.counter(metricNamePrefix + "idle.timeout", "id", id);
         connectionThrottled = registry.counter(metricNamePrefix + "throttled", "id", id);
     }
 
@@ -102,9 +100,6 @@ public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
     {
         if (evt == MaxInboundConnectionsHandler.CONNECTION_THROTTLED_EVENT) {
             connectionThrottled.increment();
-        }
-        else if (evt instanceof IdleStateEvent) {
-            connectionIdleTimeout.increment();
         }
 
         super.userEventTriggered(ctx, evt);
