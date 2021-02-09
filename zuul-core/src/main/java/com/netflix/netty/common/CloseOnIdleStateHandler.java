@@ -26,7 +26,7 @@ public class CloseOnIdleStateHandler extends ChannelInboundHandlerAdapter {
     private final Counter counter;
 
     public CloseOnIdleStateHandler(Registry registry, String metricId) {
-        this.counter = registry.counter("zuul.conn.idle.timeout", "id", metricId);
+        this.counter = registry.counter("server.connections.idle.timeout", "id", metricId);
     }
 
     @Override

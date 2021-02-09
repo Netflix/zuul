@@ -42,7 +42,7 @@ public class CloseOnIdleStateHandlerTest {
 
     @Before
     public void setup() {
-        when(registry.counter("zuul.conn.idle.timeout", "id", listener)).thenReturn(counter);
+        when(registry.counter("server.connections.idle.timeout", "id", listener)).thenReturn(counter);
     }
 
 
@@ -56,4 +56,4 @@ public class CloseOnIdleStateHandlerTest {
 
         verify(counter, times(1)).increment();
     }
-}H
+}
