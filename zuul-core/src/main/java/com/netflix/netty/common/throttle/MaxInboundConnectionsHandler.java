@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ChannelHandler.Sharable
 public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
 {
-    public static final String CONNECTION_THROTTLED_EVENT = "connection_throttled";
     public static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
@@ -67,7 +66,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
                 channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
                 CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
                 channel.close();
-                ctx.pipeline().fireUserEventTriggered(CONNECTION_THROTTLED_EVENT);
+                connectionThrottled.increment();
             }
         }
 
@@ -83,14 +82,6 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
         else {
             super.channelRead(ctx, msg);
         }
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt == MaxInboundConnectionsHandler.CONNECTION_THROTTLED_EVENT) {
-            connectionThrottled.increment();
-        }
-        super.userEventTriggered(ctx, evt);
     }
 
     @Override
