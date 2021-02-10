@@ -1,0 +1,23 @@
+apply plugin: "java-library"
+
+dependencies {
+
+    implementation "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
+    implementation "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
+    implementation "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
+    implementation "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
+
+    // Eureka
+    implementation "com.netflix.eureka:eureka-client:1.9.18"
+
+
+    testImplementation libraries.junit,
+            libraries.mockito,
+            libraries.truth
+}
+
+test {
+    testLogging {
+        showStandardStreams = false
+    }
+}

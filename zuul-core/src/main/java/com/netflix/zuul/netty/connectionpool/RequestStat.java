@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.loadbalancer.Server;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ErrorType;
 
@@ -41,7 +41,7 @@ public interface RequestStat {
         return (RequestStat) context.get(SESSION_CONTEXT_KEY);
     }
 
-    RequestStat server(Server server);
+    RequestStat server(OriginServer server);
 
     boolean isFinished();
 

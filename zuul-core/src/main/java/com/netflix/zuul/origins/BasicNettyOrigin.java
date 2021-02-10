@@ -20,17 +20,15 @@ import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
 import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
 import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
 
-import com.google.common.base.Strings;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ErrorType;
@@ -49,9 +47,9 @@ import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
 
 /**
  * Netty Origin basic implementation that can be used for most apps, with the more complex methods having no-op
@@ -121,7 +119,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public Promise<PooledConnection> connectToOrigin(
             HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<Server> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
+            AtomicReference<OriginServer> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
@@ -130,22 +128,14 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public RequestAttempt newRequestAttempt(Server server, SessionContext zuulCtx, int attemptNum) {
+    public RequestAttempt newRequestAttempt(OriginServer server, SessionContext zuulCtx, int attemptNum) {
         return new RequestAttempt(server, config, attemptNum, config.get(CommonClientConfigKey.ReadTimeout));
     }
 
     @Override
-    public String getIpAddrFromServer(Server server) {
-        if (server instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) server;
-            if (discoveryServer.getInstanceInfo() != null) {
-                String ip = discoveryServer.getInstanceInfo().getIPAddr();
-                if (!Strings.isNullOrEmpty(ip)) {
-                    return ip;
-                }
-            }
-        }
-        return null;
+    public String getIpAddrFromServer(OriginServer originServer) {
+        final Optional<String> ipAddr = originServer.ipAddr();
+        return ipAddr.isPresent() ? ipAddr.get() : null;
     }
 
     @Override
@@ -256,19 +246,19 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public void onRequestStartWithServer(HttpRequestMessage zuulReq, Server originServer, int attemptNum) {
+    public void onRequestStartWithServer(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum) {
     }
 
     @Override
-    public void onRequestExceptionWithServer(HttpRequestMessage zuulReq, Server originServer, int attemptNum, Throwable t) {
+    public void onRequestExceptionWithServer(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum, Throwable t) {
     }
 
     @Override
-    public void onRequestExecutionSuccess(HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, Server originServer, int attemptNum) {
+    public void onRequestExecutionSuccess(HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, OriginServer originServer, int attemptNum) {
     }
 
     @Override
-    public void onRequestExecutionFailed(HttpRequestMessage zuulReq, Server originServer, int attemptNum, Throwable t) {
+    public void onRequestExecutionFailed(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum, Throwable t) {
     }
 
     @Override
