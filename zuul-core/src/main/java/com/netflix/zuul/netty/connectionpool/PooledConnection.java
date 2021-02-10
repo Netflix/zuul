@@ -16,9 +16,8 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -38,10 +37,9 @@ public class PooledConnection {
     protected static final AttributeKey<PooledConnection> CHANNEL_ATTR = AttributeKey.newInstance("_pooled_connection");
     public static final String READ_TIMEOUT_HANDLER_NAME = "readTimeoutHandler";
 
-    private final Server server;
+    private final OriginServer server;
     private final Channel channel;
     private final ClientChannelManager channelManager;
-    private final ServerStats serverStats;
     private final long creationTS;
     private final Counter closeConnCounter;
     private final Counter closeWrtBusyConnCounter;
@@ -70,15 +68,13 @@ public class PooledConnection {
     private boolean shouldClose = false;
     private boolean released = false;
 
-    public PooledConnection(final Channel channel, final Server server, final ClientChannelManager channelManager,
-                     final ServerStats serverStats, 
+    public PooledConnection(final Channel channel, final OriginServer server, final ClientChannelManager channelManager,
                      final Counter closeConnCounter, 
                      final Counter closeWrtBusyConnCounter)
     {
         this.channel = channel;
         this.server = server;
         this.channelManager = channelManager;
-        this.serverStats = serverStats;
         this.creationTS = System.currentTimeMillis();
         this.closeConnCounter = closeConnCounter;
         this.closeWrtBusyConnCounter = closeWrtBusyConnCounter;
@@ -109,7 +105,7 @@ public class PooledConnection {
         return this.channelManager.getConfig();
     }
 
-    public Server getServer()
+    public OriginServer getServer()
     {
         return server;
     }
@@ -136,17 +132,13 @@ public class PooledConnection {
         return System.currentTimeMillis() - creationTS;
     }
 
-    public ServerStats getServerStats() {
-        return serverStats;
-    }
-
     public void startRequestTimer() {
         reqStartTime = System.nanoTime();
     }
 
     public long stopRequestTimer() {
         final long responseTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - reqStartTime);
-        serverStats.noteResponseTime(responseTime);
+        server.noteResponseTime(responseTime);
         return responseTime;
     }
 
@@ -175,16 +167,14 @@ public class PooledConnection {
     }
 
     public ChannelFuture close() {
-        final ServerStats stats = getServerStats();
-        stats.decrementOpenConnectionsCount();
+        server.decrementOpenConnectionsCount();
         closeConnCounter.increment();
         return channel.close();
     }
 
     public void updateServerStats() {
-        final ServerStats stats = getServerStats();
-        stats.decrementOpenConnectionsCount();
-        stats.close();
+        server.decrementOpenConnectionsCount();
+        server.stopPublishingStats();
     }
 
     public ChannelFuture closeAndRemoveFromPool()

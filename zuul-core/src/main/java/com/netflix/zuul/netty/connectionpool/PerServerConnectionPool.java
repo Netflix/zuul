@@ -18,9 +18,9 @@ package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.ServerStats;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
@@ -53,7 +53,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
 
-    private final ServerStats stats;
+    private final OriginServer server;
     private final InstanceInfo instanceInfo;
     private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
@@ -80,7 +80,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final AtomicInteger connCreationsInProgress;
 
     public PerServerConnectionPool(
-            ServerStats stats,
+            OriginServer server,
             InstanceInfo instanceInfo,
             SocketAddress serverAddr,
             NettyClientConnectionFactory connectionFactory,
@@ -96,7 +96,7 @@ public class PerServerConnectionPool implements IConnectionPool
             Timer connEstablishTimer,
             AtomicInteger connsInPool,
             AtomicInteger connsInUse) {
-        this.stats = stats;
+        this.server = server;
         this.instanceInfo = instanceInfo;
         // Note: child classes can sometimes connect to different addresses than
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
@@ -153,7 +153,7 @@ public class PerServerConnectionPool implements IConnectionPool
     public Promise<PooledConnection> acquire(
             EventLoop eventLoop, CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr) {
         requestConnCounter.increment();
-        stats.incrementActiveRequestsCount();
+        server.incrementActiveRequestsCount();
         
         Promise<PooledConnection> promise = eventLoop.newPromise();
 
@@ -227,7 +227,7 @@ public class PerServerConnectionPool implements IConnectionPool
             AtomicReference<? super InetAddress> selectedHostAddr) {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
-        int openAndOpeningConnectionCount = stats.getOpenConnectionsCount() + connCreationsInProgress.get(); 
+        int openAndOpeningConnectionCount = server.getOpenConnectionsCount() + connCreationsInProgress.get();
         if (maxConnectionsPerHost != -1 && openAndOpeningConnectionCount >= maxConnectionsPerHost) {
             maxConnsPerHostExceededCounter.increment();
             promise.setFailure(new OriginConnectException(
@@ -288,16 +288,16 @@ public class PerServerConnectionPool implements IConnectionPool
             
             passport.add(PassportState.ORIGIN_CH_CONNECTED);
             
-            stats.incrementOpenConnectionsCount();
+            server.incrementOpenConnectionsCount();
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
 
             createConnection(cf, callerPromise, passport);
         }
         else {
-            stats.incrementSuccessiveConnectionFailureCount();
-            stats.addToFailureCount();
-            stats.decrementActiveRequestsCount();
+            server.incrementSuccessiveConnectionFailureCount();
+            server.addToFailureCount();
+            server.decrementActiveRequestsCount();
             createConnFailedCounter.increment();
             callerPromise.setFailure(new OriginConnectException(cf.cause().getMessage(), OutboundErrorType.CONNECT_ERROR));
         }

@@ -17,7 +17,7 @@
 package com.netflix.zuul.netty.connectionpool;
 
 import com.google.common.base.Stopwatch;
-import com.netflix.loadbalancer.Server;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
 
@@ -38,7 +38,7 @@ public class BasicRequestStat implements RequestStat {
     }
 
     @Override
-    public RequestStat server(Server server) {
+    public RequestStat server(OriginServer server) {
         return this;
     }
 

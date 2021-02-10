@@ -14,12 +14,14 @@ dependencies {
     api "com.netflix.spectator:spectator-api:0.123.1"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
+    api project(":zuul-discovery")
+
     api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
     api "com.netflix.ribbon:ribbon-httpclient:${versions_ribbon}"
-    api "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
+//    api "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
     api "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
     api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
-    // TODO(carl-mastrangelo): this is not actually needed, but it is pulling in API deps.  Remove it.
+//    // TODO(carl-mastrangelo): this is not actually needed, but it is pulling in API deps.  Remove it.
     api "com.netflix.eureka:eureka-client:1.9.18"
     api "io.reactivex:rxjava:1.2.1"
 

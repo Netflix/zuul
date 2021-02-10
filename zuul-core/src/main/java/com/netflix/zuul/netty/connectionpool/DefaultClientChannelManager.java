@@ -26,12 +26,11 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.LoadBalancerStats;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
+import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
@@ -229,9 +228,9 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         releaseConnCounter.increment();
         connsInUse.decrementAndGet();
 
-        final ServerStats stats = conn.getServerStats();
-        stats.decrementActiveRequestsCount();
-        stats.incrementNumRequests();
+        final OriginServer originServer = conn.getServer();
+        originServer.decrementActiveRequestsCount();
+        originServer.incrementNumRequests();
 
         if (shuttingDown) {
             return false;
@@ -247,7 +246,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             conn.setInPool(false);
             conn.close();
         }
-        else if (stats.isCircuitBreakerTripped()) {
+        else if (originServer.isCircuitBreakerTripped()) {
             // Don't put conns for currently circuit-tripped servers back into the pool.
             conn.setInPool(false);
             conn.close();
@@ -263,7 +262,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             releaseHandlers(conn);
 
             // Attempt to return connection to the pool.
-            IConnectionPool pool = perServerPools.get(conn.getServer());
+            IConnectionPool pool = perServerPools.get(originServer);
             if (pool != null) {
                 released = pool.release(conn);
             }
@@ -330,7 +329,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             EventLoop eventLoop,
             @Nullable Object key,
             CurrentPassport passport,
-            AtomicReference<Server> selectedServer,
+            AtomicReference<OriginServer> selectedServer,
             AtomicReference<? super InetAddress> selectedHostAddr) {
 
         if (shuttingDown) {
@@ -371,20 +370,20 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     protected PooledConnectionFactory createPooledConnectionFactory(
-            Server chosenServer, ServerStats stats, ClientChannelManager clientChannelMgr, Counter closeConnCounter,
+            OriginServer chosenServer, ClientChannelManager clientChannelMgr, Counter closeConnCounter,
             Counter closeWrtBusyConnCounter) {
-        return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, stats, closeConnCounter, closeWrtBusyConnCounter);
+        return ch -> new PooledConnection(ch, chosenServer, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
     }
 
     protected IConnectionPool createConnectionPool(
-            ServerStats stats, InstanceInfo instanceInfo, SocketAddress serverAddr,
+            OriginServer originServer, InstanceInfo instanceInfo, SocketAddress serverAddr,
             NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
             ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig, Counter createNewConnCounter,
             Counter createConnSucceededCounter, Counter createConnFailedCounter, Counter requestConnCounter,
             Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen, Counter maxConnsPerHostExceededCounter,
             PercentileTimer connEstablishTimer, AtomicInteger connsInPool, AtomicInteger connsInUse) {
         return new PerServerConnectionPool(
-                stats,
+                originServer,
                 instanceInfo,
                 serverAddr,
                 clientConnFactory,
@@ -428,7 +427,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @VisibleForTesting
-    static InstanceInfo deriveInstanceInfoInternal(Server chosenServer) {
+    static InstanceInfo deriveInstanceInfoInternal(OriginServer chosenServer) {
         if (chosenServer instanceof DiscoveryEnabledServer) {
             DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
             return discoveryServer.getInstanceInfo();
