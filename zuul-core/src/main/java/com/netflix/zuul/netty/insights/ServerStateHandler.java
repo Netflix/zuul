@@ -43,30 +43,13 @@ public final class ServerStateHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerStateHandler.class);
 
-    private static Registry registry;
-
     private static CurrentPassport passport(ChannelHandlerContext ctx) {
         return CurrentPassport.fromChannel(ctx.channel());
     }
 
-    public static void setRegistry(Registry registry) {
-        checkNotNull(registry, "registry");
-        checkState(
-                ServerStateHandler.registry == null || ServerStateHandler.registry == registry,
-                "registry already set");
-        ServerStateHandler.registry = registry;
-    }
-
-    protected static void incrementExceptionCounter(Throwable throwable, String handler) {
-        checkState(ServerStateHandler.registry != null, "registry not set");
-        registry.counter("server.connection.exception",
-                "handler", handler,
-                "id", throwable.getClass().getSimpleName())
-                .increment();
-    }
-
     public static final class InboundHandler extends ChannelInboundHandlerAdapter {
 
+        private final Registry registry;
         private final Gauge currentConnectionsGauge;
         private final AtomicInteger currentConnections = new AtomicInteger(0);
         private final Counter totalConnections;
@@ -76,7 +59,8 @@ public final class ServerStateHandler {
         private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey
                 .newInstance("_server_connections_count");
 
-        public InboundHandler(String metricId) {
+        public InboundHandler(Registry registry, String metricId) {
+            this.registry = registry;
             this.currentConnectionsGauge = registry.gauge("server.connections.current", "id", metricId);
             this.totalConnections = registry.counter("server.connections.connect", "id", metricId);
             this.connectionClosed = registry.counter("server.connections.close", "id", metricId);
@@ -105,7 +89,10 @@ public final class ServerStateHandler {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             connectionErrors.increment();
-            incrementExceptionCounter(cause, "PassportStateServerHandler.Inbound");
+            registry.counter("server.connection.exception.inbound",
+                    "handler", "ServerStateHandler.InboundHandler",
+                    "id", cause.getClass().getSimpleName())
+                    .increment();
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             logger.info("Connection error on Inbound: {} ", cause);
 
@@ -133,6 +120,12 @@ public final class ServerStateHandler {
 
     public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
 
+        private final Registry registry;
+
+        public OutboundHandler(Registry registry) {
+            this.registry = registry;
+        }
+
         @Override
         public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             passport(ctx).add(PassportState.SERVER_CH_CLOSE);
@@ -150,7 +143,11 @@ public final class ServerStateHandler {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             if (cause instanceof Errors.NativeIoException) {
                 logger.debug("PassportStateServerHandler Outbound NativeIoException " + cause);
-                incrementExceptionCounter(cause, "PassportStateServerHandler.Outbound");
+                registry.counter("server.connection.exception.outbound",
+                        "handler", "ServerStateHandler.OutboundHandler",
+                        "id", cause.getClass().getSimpleName())
+                        .increment();
+
             } else {
                 super.exceptionCaught(ctx, cause);
             }
