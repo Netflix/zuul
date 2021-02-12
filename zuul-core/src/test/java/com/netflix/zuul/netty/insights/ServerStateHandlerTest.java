@@ -40,7 +40,6 @@ public class ServerStateHandlerTest {
     private Id connectsId;
     private Id errorsId;
     private Id closesId;
-    private Id exceptionsId;
 
     final String listener = "test-conn-throttled";
 
@@ -51,7 +50,6 @@ public class ServerStateHandlerTest {
         connectsId = registry.createId("server.connections.connect").withTags("id", listener);
         closesId = registry.createId("server.connections.close").withTags("id", listener);
         errorsId = registry.createId("server.connections.errors").withTags("id", listener);
-        exceptionsId = registry.createId("server.connection.exception").withTags("id", listener);
     }
 
     @Test
