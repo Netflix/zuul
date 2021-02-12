@@ -17,34 +17,29 @@
 package com.netflix.netty.common;
 
 import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
 import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.DefaultRegistry;
+import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.runners.JUnit4;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(JUnit4.class)
 public class CloseOnIdleStateHandlerTest {
 
-    @Mock
-    private Registry registry;
-    @Mock
-    private Counter counter;
-
+    private Registry registry = new DefaultRegistry();
+    private Id counterId;
     private final String listener = "test-idle-state";
 
     @Before
     public void setup() {
-        when(registry.counter("server.connections.idle.timeout", "id", listener)).thenReturn(counter);
+        counterId = registry.createId("server.connections.idle.timeout").withTags("id", listener);
     }
-
 
     @Test
     public void incrementCounterOnIdleStateEvent() {
@@ -54,6 +49,7 @@ public class CloseOnIdleStateHandlerTest {
 
         channel.pipeline().context(DummyChannelHandler.class).fireUserEventTriggered(ALL_IDLE_STATE_EVENT);
 
-        verify(counter, times(1)).increment();
+        final Counter idleTimeouts = (Counter) registry.get(counterId);
+        assertEquals(1, idleTimeouts.count());
     }
 }

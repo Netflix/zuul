@@ -19,43 +19,47 @@ package com.netflix.netty.common.throttle;
 import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
+import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Mockito;
 
 @RunWith(JUnit4.class)
 public class MaxInboundConnectionsHandlerTest {
 
+    private Registry registry = new DefaultRegistry();
+    private String listener = "test-throttled";
+    private Id counterId;
+
+    @Before
+    public void setup() {
+        counterId = registry.createId("server.connections.throttled").withTags("id", listener);
+    }
+
     @Test
     public void verifyPassportStateAndAttrs() {
-        Registry registry = Mockito.mock(Registry.class);
-        Counter counter = Mockito.mock(Counter.class);
-
-        when(registry.counter("server.connections.throttled", "id", "test-conn-throttled")).thenReturn(counter);
 
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
-        channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, "test-conn-throttled", 1));
+        channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, listener, 1));
 
         // Fire twice to increment current conns. count
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        verify(counter, times(1)).increment();
+        final Counter throttledCount = (Counter) registry.get(counterId);
+
+        assertEquals(1, throttledCount.count());
         assertEquals(PassportState.SERVER_CH_THROTTLING, CurrentPassport.fromChannel(channel).getState());
         assertTrue(channel.attr(ATTR_CH_THROTTLED).get());
-
 
     }
 }
