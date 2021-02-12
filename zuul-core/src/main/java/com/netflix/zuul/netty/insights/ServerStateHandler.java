@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.insights;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;
@@ -31,7 +29,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.unix.Errors;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +48,11 @@ public final class ServerStateHandler {
 
         private final Registry registry;
         private final Gauge currentConnectionsGauge;
-        private final AtomicInteger currentConnections = new AtomicInteger(0);
         private final Counter totalConnections;
         private final Counter connectionClosed;
         private final Counter connectionErrors;
 
-        private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey
-                .newInstance("_server_connections_count");
+        private static final AttributeKey<Double> ATTR_CURRENT_CONNS = AttributeKey.newInstance("_server_connections_count");
 
         public InboundHandler(Registry registry, String metricId) {
             this.registry = registry;
@@ -69,9 +64,13 @@ public final class ServerStateHandler {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            currentConnectionsGauge.set(currentConnections.incrementAndGet());
+            synchronized (currentConnectionsGauge) {
+                double currentVal = currentConnectionsGauge.value();
+                currentConnectionsGauge.set(Double.isNaN(currentVal) ? 1.0 : currentVal + 1);
+            }
+
             totalConnections.increment();
-            ctx.channel().attr(ATTR_CURRENT_CONNS).set(currentConnections);
+            ctx.channel().attr(ATTR_CURRENT_CONNS).set(currentConnectionsGauge.value());
             passport(ctx).add(PassportState.SERVER_CH_ACTIVE);
 
             super.channelActive(ctx);
@@ -79,7 +78,10 @@ public final class ServerStateHandler {
 
         @Override
         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            currentConnectionsGauge.set(currentConnections.decrementAndGet());
+            synchronized (currentConnectionsGauge) {
+                double currentVal = currentConnectionsGauge.value();
+                currentConnectionsGauge.set(Double.isNaN(currentVal) ? 1.0 : currentVal - 1);
+            }
             connectionClosed.increment();
             passport(ctx).add(PassportState.SERVER_CH_INACTIVE);
 
@@ -111,9 +113,9 @@ public final class ServerStateHandler {
             super.userEventTriggered(ctx, evt);
         }
 
-        public static int currentConnectionCountFromChannel(Channel ch) {
-            AtomicInteger count = ch.attr(ATTR_CURRENT_CONNS).get();
-            return count == null ? 0 : count.get();
+        public static double currentConnectionCountFromChannel(Channel ch) {
+            Double count = ch.attr(ATTR_CURRENT_CONNS).get();
+            return count == null ? 0.0 : count;
         }
 
     }
