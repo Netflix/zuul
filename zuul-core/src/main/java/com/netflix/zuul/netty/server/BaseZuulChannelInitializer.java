@@ -222,9 +222,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     }
 
     protected void addPassportHandler(ChannelPipeline pipeline) {
-        ServerStateHandler.setRegistry(registry);
-        pipeline.addLast(new ServerStateHandler.InboundHandler("http-" + metricId));
-        pipeline.addLast(new ServerStateHandler.OutboundHandler());
+        pipeline.addLast(new ServerStateHandler.InboundHandler(registry,"http-" + metricId));
+        pipeline.addLast(new ServerStateHandler.OutboundHandler(registry));
     }
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
