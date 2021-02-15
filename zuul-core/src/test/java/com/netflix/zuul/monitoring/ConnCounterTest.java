@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -56,5 +55,22 @@ public class ConnCounterTest {
         Gauge meter3 = registry.gauge(registry.createId("foo.end", "from", "middle", "bar", "baz"));
         assertNotNull(meter3);
         assertEquals(1, meter3.value(), 0);
+    }
+
+    @Test
+    public void activeConnsCount() {
+        EmbeddedChannel channel = new EmbeddedChannel();
+        Attrs attrs = Attrs.newInstance();
+        channel.attr(Server.CONN_DIMENSIONS).set(attrs);
+        Registry registry = new DefaultRegistry();
+
+        ConnCounter.install(channel, registry, registry.createId("foo"));
+
+        // Dedup increments
+        ConnCounter.from(channel).increment("active");
+        ConnCounter.from(channel).increment("active");
+
+
+        assertEquals(1, ConnCounter.from(channel).getCurrentActiveConns(), 0);
     }
 }

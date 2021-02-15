@@ -45,7 +45,7 @@ public final class ConnCounter {
 
     /**
      * An array of locks to guard the gauges.   This is the same as Guava's Striped, but avoids the dep.
-     *
+     * <p>
      * This can be removed after https://github.com/Netflix/spectator/issues/862 is fixed.
      */
     private static final Object[] locks = new Object[LOCK_COUNT];
@@ -119,6 +119,10 @@ public final class ConnCounter {
             gauge.set(Double.isNaN(current) ? 1 : current + 1);
         }
         counts.put(event, gauge);
+    }
+
+    public double getCurrentActiveConns() {
+        return counts.containsKey("active") ? counts.get("active").value() : 0.0;
     }
 
     public void decrement(String event) {

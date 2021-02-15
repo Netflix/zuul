@@ -60,7 +60,6 @@ public class ServerStateHandlerTest {
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 
         final Counter connects = (Counter) registry.get(connectsId);
-        final Gauge currentConns = (Gauge) registry.get(currentConnsId);
         final Counter closes = (Counter) registry.get(closesId);
         final Counter errors = (Counter) registry.get(errorsId);
 
@@ -69,13 +68,11 @@ public class ServerStateHandlerTest {
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        assertEquals(3.0, currentConns.value(), 0.0);
         assertEquals(3, connects.count());
 
         // Closes X 1
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
 
-        assertEquals(2.0, currentConns.value(), 0.0);
         assertEquals(3, connects.count());
         assertEquals(1, closes.count());
         assertEquals(0, errors.count());
