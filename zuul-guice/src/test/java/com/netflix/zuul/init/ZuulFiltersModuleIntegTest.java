@@ -19,8 +19,8 @@ package com.netflix.zuul.init;
 import static org.junit.Assert.assertEquals;
 
 import com.netflix.config.ConfigurationManager;
+import com.netflix.zuul.BaseInjectionIntegTest;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
-import com.netflix.zuul.BaseInjectionTest;
 import javax.inject.Inject;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.BeforeClass;
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 @RunWith(BlockJUnit4ClassRunner.class)
-public class ZuulFiltersModuleIntegTest extends BaseInjectionTest {
+public class ZuulFiltersModuleIntegTest extends BaseInjectionIntegTest {
 
     @Inject
     private FilterFileManagerConfig filterFileManagerConfig;

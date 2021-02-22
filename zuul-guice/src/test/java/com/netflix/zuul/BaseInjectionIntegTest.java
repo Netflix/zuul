@@ -22,12 +22,14 @@ import com.netflix.zuul.init.ZuulFiltersModule;
 import org.junit.Before;
 
 /**
- * Base Injection Test
+ * Base Injection Integration Test
+ *
+ * This test should be extended for integration tests requiring Guice injection.
  *
  * @author Arthur Gonigberg
  * @since February 22, 2021
  */
-public class BaseInjectionTest {
+public abstract class BaseInjectionIntegTest {
     protected Injector injector = Guice.createInjector(new InitTestModule(), new ZuulFiltersModule());
 
     @Before

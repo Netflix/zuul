@@ -19,13 +19,13 @@ package com.netflix.zuul.guice;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.inject.Inject;
-import com.netflix.zuul.BaseInjectionTest;
+import com.netflix.zuul.BaseInjectionIntegTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 @RunWith(BlockJUnit4ClassRunner.class)
-public class GuiceFilterFactoryIntegTest extends BaseInjectionTest {
+public class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
     @Inject
     private GuiceFilterFactory filterFactory;
