@@ -16,20 +16,18 @@
 
 package com.netflix.zuul.guice;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
-import com.netflix.governator.guice.test.ModulesForTesting;
-import com.netflix.governator.guice.test.junit4.GovernatorJunit4ClassRunner;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
-@RunWith(GovernatorJunit4ClassRunner.class)
-@ModulesForTesting()
-public class GuiceFilterFactoryIntegTest {
+@RunWith(BlockJUnit4ClassRunner.class)
+public class GuiceFilterFactoryIntegTest extends BaseInjectionTest {
 
     @Inject
-    GuiceFilterFactory filterFactory;
+    private GuiceFilterFactory filterFactory;
 
     @Test
     public void ctorInjection() throws Exception {

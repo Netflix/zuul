@@ -16,24 +16,23 @@
 
 package com.netflix.zuul.init;
 
+import static org.junit.Assert.assertEquals;
+
 import com.netflix.config.ConfigurationManager;
-import com.netflix.governator.guice.test.ModulesForTesting;
-import com.netflix.governator.guice.test.junit4.GovernatorJunit4ClassRunner;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
+import com.netflix.zuul.guice.BaseInjectionTest;
+import javax.inject.Inject;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
-import javax.inject.Inject;
+@RunWith(BlockJUnit4ClassRunner.class)
+public class ZuulFiltersModuleIntegTest extends BaseInjectionTest {
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(GovernatorJunit4ClassRunner.class)
-@ModulesForTesting({InitTestModule.class, ZuulFiltersModule.class})
-public class ZuulFiltersModuleIntegTest {
     @Inject
-    FilterFileManagerConfig filterFileManagerConfig;
+    private FilterFileManagerConfig filterFileManagerConfig;
 
     @BeforeClass
     public static void before() {
