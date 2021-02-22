@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
-import com.netflix.zuul.guice.BaseInjectionTest;
+import com.netflix.zuul.BaseInjectionTest;
 import javax.inject.Inject;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.BeforeClass;
