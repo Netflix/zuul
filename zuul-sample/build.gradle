@@ -8,7 +8,6 @@ dependencies {
             project(":zuul-guice")
     implementation "com.netflix.eureka:eureka-client:1.9.18"
     implementation 'commons-configuration:commons-configuration:1.8'
-    implementation "com.netflix.governator:governator-core:1.+"
     annotationProcessor project(":zuul-processor")
 
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.14.0'

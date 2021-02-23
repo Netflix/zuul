@@ -18,8 +18,6 @@ package com.netflix.zuul.sample;
 
 import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.status.ServerStatusManager;
