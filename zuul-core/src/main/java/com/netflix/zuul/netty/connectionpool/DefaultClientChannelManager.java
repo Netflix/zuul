@@ -16,22 +16,17 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
-
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.google.common.net.InetAddresses;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
-import com.netflix.loadbalancer.LoadBalancerStats;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.domain.ServerPool;
 import com.netflix.zuul.exception.OutboundErrorType;
+import com.netflix.zuul.listeners.ResolverListener;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.insights.PassportStateHttpClientHandler;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
@@ -69,7 +64,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     public static final String METRIC_PREFIX = "connectionpool";
 
-    private final DynamicServerListLoadBalancer<?> loadBalancer;
+    private final ServerPool serverPool;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
     private final Registry spectatorRegistry;
@@ -95,7 +90,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
 
-    private final ConcurrentHashMap<Server, IConnectionPool> perServerPools;
+    private final ConcurrentHashMap<OriginServer, IConnectionPool> perServerPools;
 
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
@@ -105,16 +100,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public DefaultClientChannelManager(
             OriginName originName, IClientConfig clientConfig, Registry spectatorRegistry) {
         this.originName = Objects.requireNonNull(originName, "originName");
-        this.loadBalancer = createLoadBalancer(clientConfig);
+        this.serverPool = new ServerPool(clientConfig, originName.getTarget(), new ServerPoolListener());
 
         String metricId = originName.getMetricId();
 
         this.clientConfig = clientConfig;
         this.spectatorRegistry = spectatorRegistry;
         this.perServerPools = new ConcurrentHashMap<>(200);
-
-        // Setup a listener for Discovery serverlist changes.
-        this.loadBalancer.addServerListChangeListener(this::removeMissingServerConnectionPools);
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
@@ -153,43 +145,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return new NettyClientConnectionFactory(connPoolConfig, clientConnInitializer);
     }
 
-    protected DynamicServerListLoadBalancer<?> createLoadBalancer(IClientConfig clientConfig) {
-        // Create and configure a loadbalancer for this vip.  Use a hard coded string for the LB default name to avoid
-        // a dependency on Ribbon classes.
-        String loadBalancerClassName =
-                clientConfig.get(NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
-
-        DynamicServerListLoadBalancer<?> lb;
-        try {
-            Class<?> clazz = Class.forName(loadBalancerClassName);
-            lb = clazz.asSubclass(DynamicServerListLoadBalancer.class).getConstructor().newInstance();
-            lb.initWithNiwsConfig(clientConfig);
-        } catch (Exception e) {
-            Throwables.throwIfUnchecked(e);
-            throw new IllegalStateException("Could not instantiate LoadBalancer " + loadBalancerClassName, e);
-        }
-
-        return lb;
-    }
-
-    protected void removeMissingServerConnectionPools(List<Server> oldList, List<Server> newList) {
-        Set<Server> oldSet = new HashSet<>(oldList);
-        Set<Server> newSet = new HashSet<>(newList);
-        Set<Server> removedSet = Sets.difference(oldSet, newSet);
-
-        if (!removedSet.isEmpty()) {
-            LOG.debug("Removing connection pools for missing servers. name = " + originName
-                    + ". " + removedSet.size() + " servers gone.");
-
-            for (Server s : removedSet) {
-                IConnectionPool pool = perServerPools.remove(s);
-                if (pool != null) {
-                    pool.shutdown();
-                }
-            }
-        }
-    }
-
     @Override
     public ConnectionPoolConfig getConfig() {
         return connPoolConfig;
@@ -197,7 +152,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public boolean isAvailable() {
-        return !loadBalancer.getReachableServers().isEmpty();
+        return serverPool.hasServers();
     }
 
     @Override
@@ -214,7 +169,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public void shutdown() {
         this.shuttingDown = true;
 
-        loadBalancer.shutdown();
+        serverPool.shutdown();
 
         for (IConnectionPool pool : perServerPools.values()) {
             pool.shutdown();
@@ -339,7 +294,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         // Choose the next load-balanced server.
-        final Server chosenServer = loadBalancer.chooseServer(key);
+        final OriginServer chosenServer = serverPool.chooseServer(key);
         if (chosenServer == null) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(new OriginConnectException("No servers available", OutboundErrorType.NO_AVAILABLE_SERVERS));
@@ -351,16 +306,11 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         // Now get the connection-pool for this server.
         IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
             SocketAddress finalServerAddr = pickAddress(chosenServer);
-            InstanceInfo instanceInfo = deriveInstanceInfoInternal(chosenServer);
-            // Get the stats from LB for this server.
-            LoadBalancerStats lbStats = loadBalancer.getLoadBalancerStats();
-            ServerStats stats = lbStats.getSingleServerStat(chosenServer);
-
             final ClientChannelManager clientChannelMgr = this;
-            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, stats, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
+            PooledConnectionFactory pcf = createPooledConnectionFactory(chosenServer, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
 
             // Create a new pool for this server.
-            return createConnectionPool(stats, instanceInfo, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
+            return createConnectionPool(chosenServer, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
                     clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
                     requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, maxConnsPerHostExceededCounter,
                     connEstablishTimer, connsInPool, connsInUse);
@@ -376,7 +326,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     protected IConnectionPool createConnectionPool(
-            OriginServer originServer, InstanceInfo instanceInfo, SocketAddress serverAddr,
+            OriginServer originServer, SocketAddress serverAddr,
             NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
             ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig, Counter createNewConnCounter,
             Counter createConnSucceededCounter, Counter createConnFailedCounter, Counter requestConnCounter,
@@ -384,7 +334,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             PercentileTimer connEstablishTimer, AtomicInteger connsInPool, AtomicInteger connsInUse) {
         return new PerServerConnectionPool(
                 originServer,
-                instanceInfo,
                 serverAddr,
                 clientConnFactory,
                 pcf,
@@ -403,6 +352,23 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         );
     }
 
+    final class ServerPoolListener implements ResolverListener<OriginServer> {
+        @Override
+        public void onChange(List<OriginServer> removedSet) {
+                if (!removedSet.isEmpty()) {
+                    LOG.debug("Removing connection pools for missing servers. name = " + originName
+                            + ". " + removedSet.size() + " servers gone.");
+                    for (OriginServer s : removedSet) {
+                        IConnectionPool pool = perServerPools.remove(s);
+                        if (pool != null) {
+                            pool.shutdown();
+                        }
+                    }
+                }
+            }
+
+        }
+
     @Override
     public int getConnsInPool() {
         return connsInPool.get();
@@ -414,70 +380,20 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     // This is just used for information in the RestClient 'bridge'.
-    public DynamicServerListLoadBalancer<?> getLoadBalancer() {
-        return this.loadBalancer;
+    public ServerPool getServerPool() {
+        return this.serverPool;
     }
 
-    public IClientConfig getClientConfig() {
-        return this.loadBalancer.getClientConfig();
-    }
-
-    protected ConcurrentHashMap<Server, IConnectionPool> getPerServerPools() {
+    protected ConcurrentHashMap<OriginServer, IConnectionPool> getPerServerPools() {
         return perServerPools;
     }
 
     @VisibleForTesting
-    static InstanceInfo deriveInstanceInfoInternal(OriginServer chosenServer) {
-        if (chosenServer instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
-            return discoveryServer.getInstanceInfo();
-        } else {
-            return new InstanceInfo(
-                    /* instanceId= */ chosenServer.getId(),
-                    /* appName= */ null,
-                    /* appGroupName= */ null,
-                    /* ipAddr= */ chosenServer.getHost(),
-                    /* sid= */ chosenServer.getId(),
-                    /* port= */ null,
-                    /* securePort= */ null,
-                    /* homePageUrl= */ null,
-                    /* statusPageUrl= */ null,
-                    /* healthCheckUrl= */ null,
-                    /* secureHealthCheckUrl= */ null,
-                    /* vipAddress= */ null,
-                    /* secureVipAddress= */ null,
-                    /* countryId= */ 0,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
-        }
-    }
-
-    @VisibleForTesting
-    static SocketAddress pickAddressInternal(Server chosenServer, @Nullable OriginName originName) {
+    static SocketAddress pickAddressInternal(OriginServer chosenServer, @Nullable OriginName originName) {
         String rawHost;
         int port;
-        if (chosenServer instanceof DiscoveryEnabledServer) {
-            DiscoveryEnabledServer discoveryServer = (DiscoveryEnabledServer) chosenServer;
-            // Configuration for whether to use IP address or host has already been applied in the
-            // DiscoveryEnabledServer constructor.
-            rawHost = discoveryServer.getHost();
-            port = discoveryServer.getPort();
-        } else {
-            // create mock instance info for non-discovery instances
             rawHost = chosenServer.getHost();
             port = chosenServer.getPort();
-        }
-
         InetSocketAddress serverAddr;
         try {
             InetAddress ipAddr = InetAddresses.forString(rawHost);
@@ -502,7 +418,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     /**
      * Given a server chosen from the load balancer, pick the appropriate address to connect to.
      */
-    protected SocketAddress pickAddress(Server chosenServer) {
+    protected SocketAddress pickAddress(OriginServer chosenServer) {
         return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
     }
 }

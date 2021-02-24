@@ -16,10 +16,15 @@
 
 package com.netflix.zuul.domain;
 
+import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import com.netflix.zuul.misc.SimpleMetaInfo;
+import java.util.Locale;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * @author Argha C
@@ -34,10 +39,6 @@ public final class OriginServer {
         this.server = server;
         serverStats = new ServerStats();
         serverStats.initialize(server);
-    }
-
-    public DiscoveryEnabledServer getServer() {
-        return server;
     }
 
     public Optional<String> ipAddr() {
@@ -55,6 +56,32 @@ public final class OriginServer {
         return server.getHost();
     }
 
+    public String getVIP() {
+        final InstanceInfo instanceInfo = server.getInstanceInfo();
+        if (server.getPort() == instanceInfo.getSecurePort()) {
+            return instanceInfo.getSecureVipAddress();
+        } else {
+            return instanceInfo.getVIPAddress();
+        }
+    }
+
+    public boolean isDiscoveryEnabled() {
+        return server instanceof DiscoveryEnabledServer;
+    }
+
+    public SimpleMetaInfo getMetaInfo() {
+        return new SimpleMetaInfo(server.getMetaInfo());
+    }
+
+    @Nullable
+    public String getAvailabilityZone(){
+        final InstanceInfo instanceInfo = server.getInstanceInfo();
+        if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
+            return  ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
+        }
+        return null;
+    }
+
     public int getPort() {
         return server.getPort();
     }
@@ -63,8 +90,16 @@ public final class OriginServer {
         return server.getZone();
     }
 
-    public InstanceInfo getInstanceInfo() {
-        return server.getInstanceInfo();
+    public String getServerId() {
+        return server.getInstanceInfo().getId();
+    }
+
+    public String getASGName() {
+        return server.getInstanceInfo().getASGName();
+    }
+
+    public String getAppName(){
+        return server.getInstanceInfo().getAppName().toLowerCase(Locale.ROOT);
     }
 
     public void noteResponseTime(double msecs) {
@@ -118,12 +153,23 @@ public final class OriginServer {
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return server.hashCode();
     }
 
+
+    /**
+     *
+     * Two instances are deemed identical if they wrap the same underlying discovery server instance.
+     */
     @Override
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if(obj == this)
+            return true;
+
+        if (!(obj instanceof OriginServer))
+            return false;
+        final OriginServer other = (OriginServer) obj;
+        return server.equals(other.server);
     }
 
 }

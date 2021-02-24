@@ -24,9 +24,9 @@ import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.domain.OriginServer;
 import com.netflix.zuul.exception.OutboundException;
+import com.netflix.zuul.misc.SimpleMetaInfo;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
 
@@ -109,26 +109,18 @@ public class RequestAttempt
             this.port = server.getPort();
             this.availabilityZone = server.getZone();
 
-            if (server instanceof DiscoveryEnabledServer) {
-                InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
-                this.app = instanceInfo.getAppName().toLowerCase();
-                this.asg = instanceInfo.getASGName();
-                this.instanceId = instanceInfo.getInstanceId();
-                this.host = instanceInfo.getHostName();
-                this.port = instanceInfo.getPort();
+            if (server.isDiscoveryEnabled()) {
+                this.app = server.getAppName().toLowerCase();
+                this.asg = server.getASGName();
+                this.instanceId = server.getServerId();
+                this.host = server.getHost();
+                this.port = server.getPort();
+                this.vip = server.getVIP();
+                this.availabilityZone = server.getAvailabilityZone();
 
-                if (server.getPort() == instanceInfo.getSecurePort()) {
-                    this.vip = instanceInfo.getSecureVipAddress();
-                }
-                else {
-                    this.vip = instanceInfo.getVIPAddress();
-                }
-                if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
-                    this.availabilityZone = ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
-                }
             }
             else {
-                final Server.MetaInfo metaInfo = server.getMetaInfo();
+                SimpleMetaInfo metaInfo = server.getMetaInfo();
                 if (metaInfo != null) {
                     this.asg = metaInfo.getServerGroup();
                     this.vip = metaInfo.getServiceIdForDiscovery();
