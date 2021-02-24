@@ -2,6 +2,9 @@ apply plugin: "java-library"
 
 dependencies {
 
+    implementation libraries.guava
+    implementation libraries.slf4j
+
     implementation "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
     implementation "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
     implementation "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"

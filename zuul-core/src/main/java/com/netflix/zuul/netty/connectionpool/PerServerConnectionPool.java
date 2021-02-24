@@ -54,7 +54,6 @@ public class PerServerConnectionPool implements IConnectionPool
             new ConcurrentHashMap<>();
 
     private final OriginServer server;
-    private final InstanceInfo instanceInfo;
     private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
     private final PooledConnectionFactory pooledConnectionFactory;
@@ -81,7 +80,6 @@ public class PerServerConnectionPool implements IConnectionPool
 
     public PerServerConnectionPool(
             OriginServer server,
-            InstanceInfo instanceInfo,
             SocketAddress serverAddr,
             NettyClientConnectionFactory connectionFactory,
             PooledConnectionFactory pooledConnectionFactory,
@@ -97,7 +95,6 @@ public class PerServerConnectionPool implements IConnectionPool
             AtomicInteger connsInPool,
             AtomicInteger connsInUse) {
         this.server = server;
-        this.instanceInfo = instanceInfo;
         // Note: child classes can sometimes connect to different addresses than
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
         this.connectionFactory = connectionFactory;
@@ -236,7 +233,7 @@ public class PerServerConnectionPool implements IConnectionPool
             LOG.warn("Unable to create new connection because at MaxConnectionsPerHost! "
                             + "maxConnectionsPerHost=" + maxConnectionsPerHost
                             + ", connectionsPerHost=" + openAndOpeningConnectionCount
-                            + ", host=" + instanceInfo.getId()
+                            + ", host=" + server.getServerId()
                             + "origin=" + config.getOriginName()
                     );
             return;
@@ -265,7 +262,7 @@ public class PerServerConnectionPool implements IConnectionPool
                         }
                         LOG.warn("Error creating new connection! "
                                         + "origin=" + config.getOriginName()
-                                        + ", host=" + instanceInfo.getId()
+                                        + ", host=" + server.getServerId()
                                 );
                     }
                 });
