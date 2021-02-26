@@ -17,7 +17,7 @@
 package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.spectator.api.Counter;
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -37,7 +37,7 @@ public class PooledConnection {
     protected static final AttributeKey<PooledConnection> CHANNEL_ATTR = AttributeKey.newInstance("_pooled_connection");
     public static final String READ_TIMEOUT_HANDLER_NAME = "readTimeoutHandler";
 
-    private final OriginServer server;
+    private final DiscoveryResult server;
     private final Channel channel;
     private final ClientChannelManager channelManager;
     private final long creationTS;
@@ -68,7 +68,7 @@ public class PooledConnection {
     private boolean shouldClose = false;
     private boolean released = false;
 
-    public PooledConnection(final Channel channel, final OriginServer server, final ClientChannelManager channelManager,
+    public PooledConnection(final Channel channel, final DiscoveryResult server, final ClientChannelManager channelManager,
                      final Counter closeConnCounter, 
                      final Counter closeWrtBusyConnCounter)
     {
@@ -105,7 +105,7 @@ public class PooledConnection {
         return this.channelManager.getConfig();
     }
 
-    public OriginServer getServer()
+    public DiscoveryResult getServer()
     {
         return server;
     }

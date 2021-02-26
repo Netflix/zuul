@@ -1,10 +1,10 @@
-package com.netflix.zuul.misc;
+package com.netflix.zuul.discovery;
 
 import com.netflix.loadbalancer.Server.MetaInfo;
 
 /**
  * @author Argha C
- * @since 2/24/21
+ * @since 2/25/21
  */
 public class SimpleMetaInfo {
 

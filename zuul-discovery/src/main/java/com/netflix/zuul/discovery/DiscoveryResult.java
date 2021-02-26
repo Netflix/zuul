@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Netflix, Inc.
+ * Copyright 2021 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -14,28 +14,28 @@
  *      limitations under the License.
  */
 
-package com.netflix.zuul.domain;
+package com.netflix.zuul.discovery;
 
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import com.netflix.zuul.misc.SimpleMetaInfo;
 import java.util.Locale;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
 /**
  * @author Argha C
- * @since 2/10/21
+ * @since 2/25/21
+ *
+ * Wraps a discovery enabled server, and stats related to it.
  */
-public final class OriginServer {
+public final class DiscoveryResult {
 
     private final DiscoveryEnabledServer server;
     private final ServerStats serverStats;
 
-    public OriginServer(DiscoveryEnabledServer server) {
+    public DiscoveryResult(DiscoveryEnabledServer server) {
         this.server = server;
         serverStats = new ServerStats();
         serverStats.initialize(server);
@@ -166,9 +166,9 @@ public final class OriginServer {
         if(obj == this)
             return true;
 
-        if (!(obj instanceof OriginServer))
+        if (!(obj instanceof DiscoveryResult))
             return false;
-        final OriginServer other = (OriginServer) obj;
+        final DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }
 
