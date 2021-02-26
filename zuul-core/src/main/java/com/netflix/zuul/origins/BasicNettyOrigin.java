@@ -28,7 +28,7 @@ import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ErrorType;
@@ -119,7 +119,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public Promise<PooledConnection> connectToOrigin(
             HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<OriginServer> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
+            AtomicReference<DiscoveryResult> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
@@ -128,13 +128,13 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public RequestAttempt newRequestAttempt(OriginServer server, SessionContext zuulCtx, int attemptNum) {
+    public RequestAttempt newRequestAttempt(DiscoveryResult server, SessionContext zuulCtx, int attemptNum) {
         return new RequestAttempt(server, config, attemptNum, config.get(CommonClientConfigKey.ReadTimeout));
     }
 
     @Override
-    public String getIpAddrFromServer(OriginServer originServer) {
-        final Optional<String> ipAddr = originServer.ipAddr();
+    public String getIpAddrFromServer(DiscoveryResult discoveryResult) {
+        final Optional<String> ipAddr = discoveryResult.ipAddr();
         return ipAddr.isPresent() ? ipAddr.get() : null;
     }
 
@@ -246,19 +246,19 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public void onRequestStartWithServer(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum) {
+    public void onRequestStartWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum) {
     }
 
     @Override
-    public void onRequestExceptionWithServer(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum, Throwable t) {
+    public void onRequestExceptionWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {
     }
 
     @Override
-    public void onRequestExecutionSuccess(HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, OriginServer originServer, int attemptNum) {
+    public void onRequestExecutionSuccess(HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, DiscoveryResult discoveryResult, int attemptNum) {
     }
 
     @Override
-    public void onRequestExecutionFailed(HttpRequestMessage zuulReq, OriginServer originServer, int attemptNum, Throwable t) {
+    public void onRequestExecutionFailed(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {
     }
 
     @Override

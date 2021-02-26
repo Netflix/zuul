@@ -17,7 +17,7 @@
 package com.netflix.zuul.netty.connectionpool;
 
 
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
@@ -48,7 +48,7 @@ public interface ClientChannelManager
             EventLoop eventLoop,
             Object key,
             CurrentPassport passport,
-            AtomicReference<OriginServer> selectedServer,
+            AtomicReference<DiscoveryResult> selectedServer,
             AtomicReference<? super InetAddress> selectedHostAddr);
 
     boolean isCold();

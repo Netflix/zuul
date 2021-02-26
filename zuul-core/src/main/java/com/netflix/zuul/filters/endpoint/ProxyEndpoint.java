@@ -41,7 +41,7 @@ import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
@@ -121,7 +121,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private final ChannelHandlerContext channelCtx;
     private final FilterRunner<HttpResponseMessage, ?> responseFilters;
-    protected final AtomicReference<OriginServer> chosenServer;
+    protected final AtomicReference<DiscoveryResult> chosenServer;
     protected final AtomicReference<InetAddress> chosenHostAddr;
 
     /* Individual request related state */
@@ -463,7 +463,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             methodBinding.bind(() -> {
 
                 Integer readTimeout = null;
-                OriginServer server = chosenServer.get();
+                DiscoveryResult server = chosenServer.get();
 
                 // The chosen server would be null if the loadbalancer found no available servers.
                 if (server != null) {
@@ -659,7 +659,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return new OriginResponseReceiver(this);
     }
 
-    protected void preWriteToOrigin(OriginServer chosenServer, HttpRequestMessage zuulRequest) {
+    protected void preWriteToOrigin(DiscoveryResult chosenServer, HttpRequestMessage zuulRequest) {
         // override for custom metrics or processing
     }
 
@@ -763,7 +763,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    protected void postErrorProcessing(Throwable ex, SessionContext zuulCtx, ErrorType err, OriginServer chosenServer, int attemptNum) {
+    protected void postErrorProcessing(Throwable ex, SessionContext zuulCtx, ErrorType err, DiscoveryResult chosenServer, int attemptNum) {
         // override for custom processing
     }
 
@@ -834,7 +834,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    protected void handleOriginSuccessResponse(final HttpResponse originResponse, OriginServer chosenServer) {
+    protected void handleOriginSuccessResponse(final HttpResponse originResponse, DiscoveryResult chosenServer) {
         origin.recordSuccessResponse();
         if (originConn != null) {
             originConn.getServer().clearSuccessiveConnectionFailureCount();
@@ -911,7 +911,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return resp;
     }
 
-    protected void handleOriginNonSuccessResponse(final HttpResponse originResponse, OriginServer chosenServer) {
+    protected void handleOriginNonSuccessResponse(final HttpResponse originResponse, DiscoveryResult chosenServer) {
         final int respStatus = originResponse.status().code();
         OutboundException obe;
         StatusCategory statusCategory;

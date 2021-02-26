@@ -24,9 +24,9 @@ import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.OutboundException;
-import com.netflix.zuul.misc.SimpleMetaInfo;
+import com.netflix.zuul.discovery.SimpleMetaInfo;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
 
@@ -99,7 +99,7 @@ public class RequestAttempt
         this.maxRetries = maxRetries;
     }
 
-    public RequestAttempt(final OriginServer server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
+    public RequestAttempt(final DiscoveryResult server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
         this.status = -1;
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;

@@ -16,11 +16,10 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Timer;
-import com.netflix.zuul.domain.OriginServer;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
@@ -34,7 +33,6 @@ import java.util.Deque;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
@@ -53,7 +51,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
 
-    private final OriginServer server;
+    private final DiscoveryResult server;
     private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
     private final PooledConnectionFactory pooledConnectionFactory;
@@ -79,7 +77,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final AtomicInteger connCreationsInProgress;
 
     public PerServerConnectionPool(
-            OriginServer server,
+            DiscoveryResult server,
             SocketAddress serverAddr,
             NettyClientConnectionFactory connectionFactory,
             PooledConnectionFactory pooledConnectionFactory,
