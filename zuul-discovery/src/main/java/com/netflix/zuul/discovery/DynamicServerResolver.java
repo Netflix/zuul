@@ -17,6 +17,7 @@
 package com.netflix.zuul.discovery;
 
 import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import com.netflix.client.config.IClientConfig;
@@ -82,7 +83,8 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
         return lb;
     }
 
-    private void onUpdate(List<Server> oldList, List<Server> newList) {
+    @VisibleForTesting
+    void onUpdate(List<Server> oldList, List<Server> newList) {
         Set<Server> oldSet = new HashSet<>(oldList);
         Set<Server> newSet = new HashSet<>(newList);
         final List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream()
