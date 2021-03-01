@@ -134,7 +134,7 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public String getIpAddrFromServer(DiscoveryResult discoveryResult) {
-        final Optional<String> ipAddr = discoveryResult.ipAddr();
+        final Optional<String> ipAddr = discoveryResult.getIPAddr();
         return ipAddr.isPresent() ? ipAddr.get() : null;
     }
 

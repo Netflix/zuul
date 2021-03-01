@@ -24,6 +24,7 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.discovery.DynamicServerResolver;
+import com.netflix.zuul.discovery.ResolverResult;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.resolver.ResolverListener;
 import com.netflix.zuul.netty.SpectatorUtils;
@@ -386,7 +387,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @VisibleForTesting
-    static SocketAddress pickAddressInternal(DiscoveryResult chosenServer, @Nullable OriginName originName) {
+    static SocketAddress pickAddressInternal(ResolverResult chosenServer, @Nullable OriginName originName) {
         String rawHost;
         int port;
             rawHost = chosenServer.getHost();

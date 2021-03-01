@@ -28,9 +28,9 @@ import javax.annotation.Nullable;
  * @author Argha C
  * @since 2/25/21
  *
- * Wraps a discovery enabled server, and stats related to it.
+ * Wraps a single instance of discovery enabled server, and stats related to it.
  */
-public final class DiscoveryResult {
+public final class DiscoveryResult implements ResolverResult {
 
     private final DiscoveryEnabledServer server;
     private final ServerStats serverStats;
@@ -41,7 +41,11 @@ public final class DiscoveryResult {
         serverStats.initialize(server);
     }
 
-    public Optional<String> ipAddr() {
+    public static DiscoveryResult from(InstanceInfo instanceInfo, boolean useSecurePort) {
+        return new DiscoveryResult(new DiscoveryEnabledServer(instanceInfo, useSecurePort ));
+    }
+
+    public Optional<String> getIPAddr() {
         if (server.getInstanceInfo() != null) {
             String ip = server.getInstanceInfo().getIPAddr();
             if (ip != null && !ip.isEmpty()) {
@@ -52,8 +56,19 @@ public final class DiscoveryResult {
         return Optional.empty();
     }
 
+    @Override
     public String getHost() {
         return server.getHost();
+    }
+
+    @Override
+    public boolean isDiscoveryEnabled() {
+        return server instanceof DiscoveryEnabledServer;
+    }
+
+    @Override
+    public int getPort() {
+        return server.getPort();
     }
 
     public String getVIP() {
@@ -65,9 +80,7 @@ public final class DiscoveryResult {
         }
     }
 
-    public boolean isDiscoveryEnabled() {
-        return server instanceof DiscoveryEnabledServer;
-    }
+
 
     public SimpleMetaInfo getMetaInfo() {
         return new SimpleMetaInfo(server.getMetaInfo());
@@ -80,10 +93,6 @@ public final class DiscoveryResult {
             return  ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
         }
         return null;
-    }
-
-    public int getPort() {
-        return server.getPort();
     }
 
     public String getZone() {
@@ -149,7 +158,6 @@ public final class DiscoveryResult {
     public void stopPublishingStats() {
         serverStats.close();
     }
-
 
     @Override
     public int hashCode() {
