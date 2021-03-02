@@ -71,7 +71,7 @@ public final class DiscoveryResult implements ResolverResult {
         return server.getPort();
     }
 
-    public String getVIP() {
+    public String getTarget() {
         final InstanceInfo instanceInfo = server.getInstanceInfo();
         if (server.getPort() == instanceInfo.getSecurePort()) {
             return instanceInfo.getSecureVipAddress();

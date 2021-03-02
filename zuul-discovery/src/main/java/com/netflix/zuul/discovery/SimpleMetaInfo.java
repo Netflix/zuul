@@ -25,7 +25,7 @@ import com.netflix.loadbalancer.Server.MetaInfo;
  * placeholder to mimic metainfo for a non-Eureka enabled server.
  * This exists to preserve compatibility with some current logic, but should be revisited.
  */
-public class SimpleMetaInfo {
+public final class SimpleMetaInfo {
 
     private final MetaInfo metaInfo;
 

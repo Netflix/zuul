@@ -17,6 +17,7 @@
 package com.netflix.zuul.discovery;
 
 import com.netflix.loadbalancer.Server;
+import java.util.Objects;
 
 /**
  * @author Argha C
@@ -24,12 +25,13 @@ import com.netflix.loadbalancer.Server;
  * <p>
  * This exists merely to wrap a resolver lookup result, that is not discovery enabled.
  */
-public class NonDiscoveryServer implements ResolverResult {
+public final class NonDiscoveryServer implements ResolverResult {
 
     private final Server server;
 
     public NonDiscoveryServer(String host, int port) {
-        this.server = new Server(host, port);
+        Objects.requireNonNull(host, "host name");
+        this.server = new Server(host, validatePort(port));
     }
 
     @Override
@@ -45,5 +47,11 @@ public class NonDiscoveryServer implements ResolverResult {
     @Override
     public boolean isDiscoveryEnabled() {
         return false;
+    }
+
+    private int validatePort(int port) {
+        if (port < 0 || port > 0xFFFF)
+            throw new IllegalArgumentException("port out of range:" + port);
+        return port;
     }
 }
