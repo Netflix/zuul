@@ -1,12 +1,12 @@
 language: java
 matrix:
   include:
-    - jdk: openjdk8
-      env: GRADLE_PUBLISH=true
-    - jdk: openjdk11
-      env: GRADLE_PUBLISH=false
-    - jdk: openjdk15
-      env: GRADLE_PUBLISH=false
+  - jdk: openjdk8
+    env: GRADLE_PUBLISH=true
+  - jdk: openjdk11
+    env: GRADLE_PUBLISH=false
+  - jdk: openjdk15
+    env: GRADLE_PUBLISH=false
 install: "./installViaTravis.sh"
 script: "./buildViaTravis.sh"
 cache:
@@ -14,7 +14,12 @@ cache:
   - "$HOME/.gradle"
 env:
   global:
-  - secure: Hrc3t9ev/oGkIkeHk+vSYeqvIN5kW6mhtSLovvhyR3KV2TRBqjHdWW3c5MDgvetZu2s/DgUnQNtkHWrDpK+tXpT8gbJda+c2MkjmkZZH6hoVF2ASSWauDjBt8lbXcANDi2JJI3pMYxgK+H3Y9MgP1Sn+1FPdYm1MiUSpCT7Sxzc=
-  - secure: PW/r0i02LqX8z/GAipforVN7Xj51F+H3oIzMxoJByM++CYp6Nx+EVym04+1rkHKVFbq7IXFdqe5pji3xrVsEilaB9jVDbmB2WdSmNxYvTHNTFtBmbmYMylc+hmV9pPh66JctyE9urq1q3x/e3stE1vVPHwqty8yDPCopsmlJRnc=
-  - secure: FyNZfd3ML1DEgEfvORzVgBS3w8T7MKhcJVCuWJeAk+7oO4oVZdW9Es+xM1ylbZxpSQEDJlXopsjUXHaICYXGU3LvMsWtbm5LEJLBfLTVs0vlwZev2Us9KVChUf3JhjDmQVGOJL0+P+spjacN31xt3CL1qDkwSShvX2rX2RiRInw=
-  - secure: Ak7IXZVWhEricCsiVH1Pbqjp8ywIvqB1FBxdQlZ+GkZzRekxa51BI9ZTLwuWfQvqJgmb+IXKWg7mvHu7DVFFCRRSb2C70C0CZICbIu2C9Xe5g15k4aFw/0vz+a7qVdvT+Q/ZlQ4vlxdcAt7Oh/MyUZ6f3+jO7w45v+8a04spmgY=
+  - secure: Br0TpGFVeojjo77l8kGqIQKir+8aWlu2A+a96xzkZnOkL5tEHG9tRfcJNwKQs2w5pepc3hGAHPC38tB4NQL7LwsZTyHI4l/6HJFpy1BXeTNfi46CcCdnFUYR0yYEY/sjU67pgFDW3tM02JxVq6QaNawrhmipcGBps+bNqQH0Rno=
+  - secure: Jt3PJOvR4KDwCkJdLD58ftA+ftc+6TQLd/orRphhVat3lDtZe6CwADBmuH+LW2ystiQdqAJEI7CFjfWzJuQJA/DJK4HzVfl65cpWGe0+eYxNia4xm4LeqoIK8HKUMRROZ2MDd1Eltv6t8H1WSbHVWwWY5xYsi1NdWnThQP+XcFQ=
+  - secure: ap3WBWV5qH/OIv9r2qeCIruIlWEx5/4Jie37ENeIOdlNkBvQosM2hEjQC6GVkrepmpeaWrNVAho46ApUSxxoDjzeMtxVewkCCVXQPKTlmBrj3P4y/2xkLBHJX4wWHT0cHY2rMZbAnTX5aUvdb+8kxZD65+YAZtK4KBL0VO+hUDc=
+  - secure: WO0otm45qt5Tg1tU5Y7kWBG+LPEjyekiigQe3yxKBprVDYu4c0XYw9qqwsqajdBTbUNIaVgngG73aincCHGmaZVoloSesBIpEZUwgmvgSf3P5GQKEN4+a/k/NZlB/8buPSM267a4Vvpug9IgKmqqa2XZYwT/uwF4A0KMLOEF76o=
+  - secure: REA+XXrIp56i3ydbzUUcxRQ5mT4Tl1aVZJt87Tim7UG+iOFV23tBlmpKwjFbbKMkVBP/c2y/hZsyKDrS9XcgkheteJZew+6kGIw0kiDnoh3mDhDxKE6oMn5XtIz+m6LoqJqB+XKeaunpLdbaExO8DFPyVPKAzSqyaIfsKvh0eQA=
+  - secure: J9/D9jjpU2OiWBGOIzmlf4MMHde5MF1u82CkF6qLkyLG+6WO5JOQpRlPx7LHyHRZteMsq2Wux5QNnUdr/2wAv8fNeB3QmZT5CKS0P4rK9wHx5ZRWbOMnysbYtnm3bm/jxM7tLiB3hbRNhyhEyeDu2GmpEwLhJbFnlZGPq4K3y6w=
+before_install:
+- openssl aes-256-cbc -K $encrypted_d34093053982_key -iv $encrypted_d34093053982_iv
+  -in secrets/signing-key.enc -out secrets/signing-key -d

@@ -424,7 +424,7 @@
             "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.7.7"
+            "locked": "3.8.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21"
@@ -731,7 +731,7 @@
             "locked": "4.13.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.7.7"
+            "locked": "3.8.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -913,7 +913,7 @@
             "locked": "1.67"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.7.7"
+            "locked": "3.8.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
