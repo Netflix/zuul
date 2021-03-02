@@ -24,6 +24,12 @@ package com.netflix.zuul.resolver;
  */
 public interface Resolver<T> {
 
+    /**
+     *
+     * @param key unique identifier that may be used by certain resolvers as part of lookup. Implementations
+     *            can narrow this down to be nullable.
+     * @return the result of a resolver lookup
+     */
     //TODO(argha-c) Param needs to be typed, once the ribbon LB lookup API is figured out.
     T resolve(Object key);
 }

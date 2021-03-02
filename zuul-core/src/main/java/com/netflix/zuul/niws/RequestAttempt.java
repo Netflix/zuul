@@ -115,7 +115,7 @@ public class RequestAttempt
                 this.instanceId = server.getServerId();
                 this.host = server.getHost();
                 this.port = server.getPort();
-                this.vip = server.getVIP();
+                this.vip = server.getTarget();
                 this.availabilityZone = server.getAvailabilityZone();
 
             }

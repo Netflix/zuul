@@ -351,21 +351,22 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     final class ServerPoolListener implements ResolverListener<DiscoveryResult> {
+
         @Override
         public void onChange(List<DiscoveryResult> removedSet) {
-                if (!removedSet.isEmpty()) {
-                    LOG.debug("Removing connection pools for missing servers. name = " + originName
-                            + ". " + removedSet.size() + " servers gone.");
-                    for (DiscoveryResult s : removedSet) {
-                        IConnectionPool pool = perServerPools.remove(s);
-                        if (pool != null) {
-                            pool.shutdown();
-                        }
+            if (!removedSet.isEmpty()) {
+                LOG.debug("Removing connection pools for missing servers. name = " + originName
+                        + ". " + removedSet.size() + " servers gone.");
+                for (DiscoveryResult s : removedSet) {
+                    IConnectionPool pool = perServerPools.remove(s);
+                    if (pool != null) {
+                        pool.shutdown();
                     }
                 }
             }
-
         }
+
+    }
 
     @Override
     public int getConnsInPool() {

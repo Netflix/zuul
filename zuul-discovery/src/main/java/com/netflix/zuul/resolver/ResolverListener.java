@@ -26,5 +26,9 @@ import java.util.List;
  */
 public interface ResolverListener<T> {
 
+    /**
+     * Hook to respond to resolver updates
+     * @param removedSet the servers removed from the latest resolver update, but included in the previous update.
+     */
     void onChange(List<T> removedSet);
 }
