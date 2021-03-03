@@ -16,6 +16,8 @@
 
 package com.netflix.netty.common.throttle;
 
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.Channel;
@@ -38,17 +40,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ChannelHandler.Sharable
 public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
 {
-    public static final String CONNECTION_THROTTLED_EVENT = "connection_throttled";
     public static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
 
     private final static AtomicInteger connections = new AtomicInteger(0);
+    private final Counter connectionThrottled;
     private final int maxConnections;
 
-    public MaxInboundConnectionsHandler(int maxConnections)
+    public MaxInboundConnectionsHandler(Registry registry, String metricId, int maxConnections)
     {
         this.maxConnections = maxConnections;
+        this.connectionThrottled = registry.counter("server.connections.throttled", "id", metricId);
     }
 
     @Override
@@ -63,7 +66,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
                 channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
                 CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
                 channel.close();
-                ctx.pipeline().fireUserEventTriggered(CONNECTION_THROTTLED_EVENT);
+                connectionThrottled.increment();
             }
         }
 

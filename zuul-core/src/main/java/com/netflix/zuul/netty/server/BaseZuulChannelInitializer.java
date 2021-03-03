@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_END;
+import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_START;
+import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_END;
+import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
 import com.netflix.netty.common.Http1ConnectionCloseHandler;
@@ -31,13 +36,11 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
 import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
-import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -54,7 +57,7 @@ import com.netflix.zuul.netty.filter.ZuulFilterChainHandler;
 import com.netflix.zuul.netty.filter.ZuulFilterChainRunner;
 import com.netflix.zuul.netty.insights.PassportLoggingHandler;
 import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
-import com.netflix.zuul.netty.insights.PassportStateServerHandler;
+import com.netflix.zuul.netty.insights.ServerStateHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -66,13 +69,8 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
-
-import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.netflix.zuul.passport.PassportState.*;
 
 /**
  * User: Mike Smith
@@ -103,6 +101,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
      */
     @Deprecated
     protected final int port;
+    protected final String metricId;
     protected final ChannelConfig channelConfig;
     protected final ChannelConfig channelDependencies;
     protected final int idleTimeout;
@@ -114,7 +113,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     private final int connCloseDelay;
     
     protected final Registry registry;
-    protected final ServerChannelMetrics channelMetrics;
     protected final HttpMetricsChannelHandler httpMetricsHandler;
     protected final PerEventLoopMetricsChannelHandler.Connections perEventLoopConnectionMetricsHandler;
     protected final PerEventLoopMetricsChannelHandler.HttpRequests perEventLoopRequestsMetricsHandler;
@@ -169,6 +167,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             ChannelGroup channels) {
         this.port = port;
         checkNotNull(metricId, "metricId");
+        this.metricId = metricId;
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
         this.channels = channels;
@@ -179,7 +178,6 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.idleTimeout = channelConfig.get(CommonChannelConfigKeys.idleTimeout);
         this.httpRequestReadTimeout = channelConfig.get(CommonChannelConfigKeys.httpRequestReadTimeout);
-        this.channelMetrics = new ServerChannelMetrics("http-" + metricId, Spectator.globalRegistry());
         this.registry = channelDependencies.get(ZuulDependencyKeys.registry);
         this.httpMetricsHandler = new HttpMetricsChannelHandler(registry, "server", "http-" + metricId);
 
@@ -189,7 +187,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.perEventLoopRequestsMetricsHandler = perEventLoopMetricsHandler.new HttpRequests();
 
         this.maxConnections = channelConfig.get(CommonChannelConfigKeys.maxConnections);
-        this.maxConnectionsHandler = new MaxInboundConnectionsHandler(maxConnections);
+        this.maxConnectionsHandler = new MaxInboundConnectionsHandler(registry, metricId, maxConnections);
         this.maxRequestsPerConnection = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnection);
         this.maxRequestsPerConnectionInBrownout = channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout);
         this.connectionExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
@@ -224,17 +222,14 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     }
 
     protected void addPassportHandler(ChannelPipeline pipeline) {
-        PassportStateServerHandler.setRegistry(registry);
-        pipeline.addLast(new PassportStateServerHandler.InboundHandler());
-        pipeline.addLast(new PassportStateServerHandler.OutboundHandler());
+        pipeline.addLast(new ServerStateHandler.InboundHandler(registry,"http-" + metricId));
+        pipeline.addLast(new ServerStateHandler.OutboundHandler(registry));
     }
     
     protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
     {
         pipeline.addLast(sourceAddressChannelHandler);
-        pipeline.addLast("channelMetrics", channelMetrics);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
-
         new ElbProxyProtocolChannelHandler(registry, withProxyProtocol).addProxyProtocol(pipeline);
 
         pipeline.addLast(maxConnectionsHandler);
@@ -289,7 +284,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addTimeoutHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new IdleStateHandler(0, 0, idleTimeout, TimeUnit.MILLISECONDS));
-        pipeline.addLast(new CloseOnIdleStateHandler());
+        pipeline.addLast(new CloseOnIdleStateHandler(registry, metricId));
     }
 
     protected void addSslInfoHandlers(ChannelPipeline pipeline, boolean isSSlFromIntermediary) {

@@ -45,7 +45,7 @@ public final class ConnCounter {
 
     /**
      * An array of locks to guard the gauges.   This is the same as Guava's Striped, but avoids the dep.
-     *
+     * <p>
      * This can be removed after https://github.com/Netflix/spectator/issues/862 is fixed.
      */
     private static final Object[] locks = new Object[LOCK_COUNT];
@@ -121,6 +121,10 @@ public final class ConnCounter {
         counts.put(event, gauge);
     }
 
+    public double getCurrentActiveConns() {
+        return counts.containsKey("active") ? counts.get("active").value() : 0.0;
+    }
+
     public void decrement(String event) {
         Objects.requireNonNull(event);
         Gauge gauge = counts.remove(event);
@@ -130,7 +134,10 @@ public final class ConnCounter {
             return;
         }
         synchronized (getLock(gauge.id())) {
-            assert !Double.isNaN(gauge.value());
+            // Noop gauges break this assertion in tests, but the type is package private.   Check to make sure
+            // the gauge has a value, or by implementation cannot have a value.
+            assert !Double.isNaN(gauge.value())
+                    || gauge.getClass().getName().equals("com.netflix.spectator.api.NoopGauge");
             gauge.set(gauge.value() - 1);
         }
     }

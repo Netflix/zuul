@@ -17,11 +17,14 @@
 package com.netflix.zuul.netty.insights;
 
 import com.netflix.config.CachedDynamicLongProperty;
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
+import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.monitoring.ConnCounter;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.ClientRequestReceiver;
 import com.netflix.zuul.niws.RequestAttempts;
@@ -33,9 +36,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import com.netflix.netty.common.HttpLifecycleChannelHandler;
-import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
-import com.netflix.netty.common.metrics.ServerChannelMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter
         // Do some debug logging of the Passport.
         if (LOG.isDebugEnabled()) {
             LOG.debug("State after complete. "
-                    + ", current-server-conns = " + ServerChannelMetrics.currentConnectionCountFromChannel(channel)
+                    + ", current-server-conns = " + ConnCounter.from(channel).getCurrentActiveConns()
                     + ", current-http-reqs = " + HttpMetricsChannelHandler.getInflightRequestCountFromChannel(channel)
                     + ", status = " + (response == null ? getRequestId(channel, ctx) : response.getStatus())
                     + ", nfstatus = " + String.valueOf(StatusCategoryUtils.getStatusCategory(ctx))
