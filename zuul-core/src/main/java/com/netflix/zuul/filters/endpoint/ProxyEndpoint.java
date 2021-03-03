@@ -158,7 +158,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
     private static final DynamicBooleanProperty ENABLE_CACHING_BODIES = new DynamicBooleanProperty("zuul.cache.bodies", true);
     private static final DynamicBooleanProperty ENABLE_CACHING_PLAINTEXT_BODIES =
-            new DynamicBooleanProperty("zuul.cache.bodies.plaintext", false);
+            new DynamicBooleanProperty("zuul.cache.bodies.plaintext", true);
 
     private static final CachedDynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
             new CachedDynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
