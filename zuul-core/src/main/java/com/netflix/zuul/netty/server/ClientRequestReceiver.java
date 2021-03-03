@@ -63,6 +63,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -108,6 +110,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+        try (TaskCloseable ignore = PerfMark.traceTask("CRR.channelRead")) {
+            channelReadInternal(ctx, msg);
+        }
+    }
+
+    private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
         // Flag that we have now received the LastContent for this request from the client.
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
@@ -242,6 +250,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private void handleExpect100Continue(ChannelHandlerContext ctx, HttpRequest req) {
         if (HttpUtil.is100ContinueExpected(req)) {
+            PerfMark.event("CRR.handleExpect100Continue");
             final ChannelFuture f = ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
             f.addListener((s) -> {
                 if (! s.isSuccess()) {
@@ -257,6 +266,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     // Build a ZuulMessage from the netty request.
     private HttpRequestMessage buildZuulHttpRequest(
             final HttpRequest nativeRequest, final ChannelHandlerContext clientCtx) {
+        PerfMark.attachTag("path", nativeRequest, HttpRequest::uri);
         // Setup the context for this request.
         final SessionContext context;
         if (decorator != null) { // Optionally decorate the context.
@@ -264,6 +274,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             // Store the netty channel in SessionContext.
             tempContext.set(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, clientCtx);
             context = decorator.decorate(tempContext);
+            // We expect the UUID is present after decoration
+            PerfMark.attachTag("uuid", context, SessionContext::getUUID);
         }
         else {
             context = new SessionContext();
@@ -363,26 +375,28 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof HttpResponse) {
-            promise.addListener((future) -> {
-                if (! future.isSuccess()) {
-                    fireWriteError("response headers", future.cause(), ctx);
-                }
-            });
-            super.write(ctx, msg, promise);
-        }
-        else if (msg instanceof HttpContent) {
-            promise.addListener((future) -> {
-                if (! future.isSuccess())  {
-                    fireWriteError("response content", future.cause(), ctx);
-                }
-            });
-            super.write(ctx, msg, promise);
-        }
-        else {
-            //should never happen
-            ReferenceCountUtil.release(msg);
-            throw new ZuulException("Attempt to write invalid content type to client: "+msg.getClass().getSimpleName(), true);
+        try (TaskCloseable ignored = PerfMark.traceTask("CRR.write")) {
+            if (msg instanceof HttpResponse) {
+                promise.addListener((future) -> {
+                    if (! future.isSuccess()) {
+                        fireWriteError("response headers", future.cause(), ctx);
+                    }
+                });
+                super.write(ctx, msg, promise);
+            }
+            else if (msg instanceof HttpContent) {
+                promise.addListener((future) -> {
+                    if (! future.isSuccess())  {
+                        fireWriteError("response content", future.cause(), ctx);
+                    }
+                });
+                super.write(ctx, msg, promise);
+            }
+            else {
+                //should never happen
+                ReferenceCountUtil.release(msg);
+                throw new ZuulException("Attempt to write invalid content type to client: "+msg.getClass().getSimpleName(), true);
+            }
         }
     }
 

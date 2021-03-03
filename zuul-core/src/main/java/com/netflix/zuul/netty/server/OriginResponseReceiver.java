@@ -39,6 +39,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +71,15 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         edgeProxy = null;
     }
 
+
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+    public final void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+        try (TaskCloseable a = PerfMark.traceTask("ORR.channelRead")) {
+            channelReadInternal(ctx, msg);
+        }
+    }
+
+    private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
@@ -180,7 +189,13 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     }
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+    public final void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        try (TaskCloseable ignore = PerfMark.traceTask("ORR.writeInternal")) {
+            writeInternal(ctx, msg, promise);
+        }
+    }
+
+    private void writeInternal(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (!ctx.channel().isActive()) {
             ReferenceCountUtil.release(msg);
             return;

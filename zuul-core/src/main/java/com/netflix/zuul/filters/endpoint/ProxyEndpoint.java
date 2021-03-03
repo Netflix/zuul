@@ -57,6 +57,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
@@ -96,6 +97,8 @@ import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
+import io.perfmark.PerfMark;
+import io.perfmark.TaskCloseable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -819,7 +822,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     public void responseFromOrigin(final HttpResponse originResponse) {
-        try {
+        try (TaskCloseable ignore = PerfMark.traceTask("ProxyEndpoint.responseFromOrigin")) {
+            PerfMark.attachTag("uuid", zuulRequest, r -> r.getContext().getUUID());
+            PerfMark.attachTag("path", zuulRequest, HttpRequestInfo::getPath);
             methodBinding.bind(() -> processResponseFromOrigin(originResponse));
         } catch (Exception ex) {
             unlinkFromOrigin();
