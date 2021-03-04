@@ -71,6 +71,4 @@ public interface NettyOrigin extends InstrumentedOrigin {
     IClientConfig getClientConfig();
 
     Registry getSpectatorRegistry();
-
-    ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest);
 }

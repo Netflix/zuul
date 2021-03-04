@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.filters.endpoint;
 
-import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
 import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
 import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
 import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
@@ -38,7 +37,7 @@ import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
-import com.netflix.loadbalancer.reactive.ExecutionContext;
+import com.netflix.loadbalancer.Server;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -70,6 +69,7 @@ import com.netflix.zuul.netty.connectionpool.RequestStat;
 import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.netty.server.MethodBinding;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
+import com.netflix.zuul.netty.timeouts.OriginTimeoutManager;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.NettyOrigin;
@@ -135,10 +135,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected final RequestAttempts requestAttempts;
     protected final CurrentPassport passport;
     protected final NettyRequestAttemptFactory requestAttemptFactory;
+    protected final OriginTimeoutManager originTimeoutManager;
 
     protected MethodBinding<?> methodBinding;
     protected HttpResponseMessage zuulResponse;
     protected boolean startedSendingResponseToClient;
+    // this is an Object because it can be a String or Integer depending on timeout config
     protected Object originalReadTimeout;
 
     /* Individual retry related state */
@@ -158,8 +160,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final DynamicBooleanProperty ENABLE_CACHING_PLAINTEXT_BODIES =
             new DynamicBooleanProperty("zuul.cache.bodies.plaintext", true);
 
-    private static final CachedDynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
-            new CachedDynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
     /**
      * Indicates how long Zuul should remember throttle events for an origin.  As of this writing, throttling is used
      * to decide to cache request bodies.
@@ -189,6 +189,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         zuulRequest = transformRequest(inMesg);
         context = zuulRequest.getContext();
         origin = getOrigin(zuulRequest);
+        originTimeoutManager = getTimeoutManager(origin);
         requestAttempts = RequestAttempts.getFromSessionContext(context);
         passport = CurrentPassport.fromSessionContext(context);
         chosenServer = new AtomicReference<>();
@@ -295,9 +296,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
 
             // To act the same as Ribbon, we must do this before starting execution (as well as before each attempt).
-            IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
-            originalReadTimeout = requestConfig.getProperty(ReadTimeout, null);
-            setReadTimeoutOnContext(requestConfig, 1);
+            IClientConfig requestConfig = originTimeoutManager.getRequestClientConfig(zuulRequest);
+
+            // set original timeout so we can have a default to reset attempts to
+            originalReadTimeout = originTimeoutManager.getRequestReadTimeout(requestConfig, null);
+
+            // compute read timeout from existing configs
+            int computeReadTimeout = originTimeoutManager.computeReadTimeout(requestConfig, 1);
+            originTimeoutManager.setRequestReadTimeout(requestConfig, computeReadTimeout);
 
             origin.onRequestExecutionStart(zuulRequest);
             proxyRequestToOrigin();
@@ -408,8 +414,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         try {
             attemptNum += 1;
 
-            IClientConfig requestConfig = origin.getExecutionContext(zuulRequest).getRequestConfig();
-            setReadTimeoutOnContext(requestConfig, attemptNum);
+            IClientConfig requestConfig = originTimeoutManager.getRequestClientConfig(zuulRequest);
+
+            // compute read timeout from existing configs
+            int computeReadTimeout = originTimeoutManager.computeReadTimeout(requestConfig, attemptNum);
+            originTimeoutManager.setRequestReadTimeout(requestConfig, computeReadTimeout);
 
             currentRequestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
@@ -454,18 +463,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return basicRequestStat;
     }
 
-    private void setReadTimeoutOnContext(IClientConfig requestConfig, int attempt) {
-        Duration readTimeout = getReadTimeout(requestConfig, attempt);
-        requestConfig.set(ReadTimeout, Math.toIntExact(readTimeout.toMillis()));
-    }
-
     @Override
     public void operationComplete(final Future<PooledConnection> connectResult) {
         // MUST run this within bindingcontext because RequestExpiryProcessor (and probably other things) depends on ThreadVariables.
         try {
             methodBinding.bind(() -> {
 
-                Integer readTimeout = null;
+                Object readTimeout = null;
                 DiscoveryResult server = chosenServer.get();
 
                 /** TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
@@ -477,20 +481,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     }
 
                     // Invoke the ribbon execution listeners (including RequestExpiry).
-                    final ExecutionContext<?> executionContext = origin.getExecutionContext(zuulRequest);
-                    IClientConfig requestConfig = executionContext.getRequestConfig();
+                    IClientConfig requestConfig = originTimeoutManager.getRequestClientConfig(zuulRequest);
                     try {
-                        readTimeout = requestConfig.get(ReadTimeout);
+                        readTimeout = originTimeoutManager.getRequestReadTimeout(requestConfig, null);
 
                         origin.onRequestStartWithServer(zuulRequest, server, attemptNum);
 
                         // As the read-timeout can be overridden in the listeners executed from onRequestStartWithServer() above
                         // check now to see if it was. And if it was, then use that.
-                        Object overriddenReadTimeoutObj = requestConfig.get(IClientConfigKey.Keys.ReadTimeout);
-                        if (overriddenReadTimeoutObj != null && overriddenReadTimeoutObj instanceof Integer) {
-                            int overriddenReadTimeout = (Integer) overriddenReadTimeoutObj;
-                            readTimeout = overriddenReadTimeout;
-                        }
+                        readTimeout = originTimeoutManager.computeOverriddenReadTimeout(readTimeout, requestConfig);
                     }
                     catch (Throwable e) {
                         handleError(e);
@@ -499,18 +498,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     finally {
                         // Reset the timeout in overriddenConfig back to what it was before, otherwise it will take
                         // preference on subsequent retry attempts in RequestExpiryProcessor.
-                        if (originalReadTimeout == null) {
-                            requestConfig.setProperty(ReadTimeout, null);
-                        }
-                        else {
-                            requestConfig.setProperty(ReadTimeout, originalReadTimeout);
-                        }
+                        originTimeoutManager.setRequestReadTimeout(requestConfig, originalReadTimeout);
                     }
                 }
 
                 // Handle the connection establishment result.
                 if (connectResult.isSuccess()) {
-                    onOriginConnectSucceeded(connectResult.getNow(), readTimeout);
+                    onOriginConnectSucceeded(connectResult.getNow(), (Integer) readTimeout);
                 } else {
                     onOriginConnectFailed(connectResult.cause());
                 }
@@ -542,50 +536,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             // Start sending the request to origin now.
             writeClientRequestToOrigin(conn, readTimeout);
-        }
-    }
-
-    /**
-     * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin
-     * timeout or the request timeout.
-     *
-     * @param requestConfig the config for the request.
-     * @param attemptNum the attempt number, starting at 1.
-     */
-    protected Duration getReadTimeout(IClientConfig requestConfig, int attemptNum) {
-        Long noTimeout = null;
-        // TODO(carl-mastrangelo): getProperty is deprecated, and suggests using the typed overload `get`.   However,
-        //  the value is parsed using parseReadTimeoutMs, which supports String, implying not all timeouts are Integer.
-        //  Figure out where a string ReadTimeout is coming from and replace it.
-        Long originTimeout =
-                parseReadTimeoutMs(origin.getClientConfig().getProperty(IClientConfigKey.Keys.ReadTimeout, noTimeout));
-        Long requestTimeout =
-                parseReadTimeoutMs(requestConfig.getProperty(IClientConfigKey.Keys.ReadTimeout, noTimeout));
-
-        if (originTimeout == null && requestTimeout == null) {
-            return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
-        } else if (originTimeout == null || requestTimeout == null) {
-            return Duration.ofMillis(originTimeout == null ? requestTimeout : originTimeout);
-        } else {
-            // return the greater of two timeouts
-            return Duration.ofMillis(originTimeout > requestTimeout ? originTimeout : requestTimeout);
-        }
-    }
-
-    /**
-     * An Integer is expected as an input, but supports parsing Long and String.  Returns {@code null} if no type is
-     * acceptable.
-     */
-    @Nullable
-    private Long parseReadTimeoutMs(Object p) {
-        if (p instanceof String && !Strings.isNullOrEmpty((String) p)) {
-            return Long.valueOf((String)p);
-        } else if (p instanceof Long) {
-            return (Long) p;
-        } else if (p instanceof Integer) {
-            return Long.valueOf((Integer) p);
-        } else {
-            return null;
         }
     }
 
@@ -1176,4 +1126,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override for metrics or custom processing
     }
 
+    @ForOverride
+    protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
+        return new OriginTimeoutManager(origin);
+    }
 }
