@@ -17,7 +17,6 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.SessionContext;
