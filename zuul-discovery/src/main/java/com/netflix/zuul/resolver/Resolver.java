@@ -32,4 +32,14 @@ public interface Resolver<T> {
      */
     //TODO(argha-c) Param needs to be typed, once the ribbon LB lookup API is figured out.
     T resolve(Object key);
+
+    /**
+     * @return true if the resolver has available servers, false otherwise
+     */
+    boolean hasServers();
+
+    /**
+     * hook to perform activities on shutdown
+     */
+    void shutdown();
 }

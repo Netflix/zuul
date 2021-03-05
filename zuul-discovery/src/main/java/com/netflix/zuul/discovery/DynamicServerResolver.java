@@ -55,10 +55,12 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
         return new DiscoveryResult((DiscoveryEnabledServer) server);
     }
 
+    @Override
     public boolean hasServers() {
         return !loadBalancer.getReachableServers().isEmpty();
     }
 
+    @Override
     public void shutdown() {
         loadBalancer.shutdown();
     }
