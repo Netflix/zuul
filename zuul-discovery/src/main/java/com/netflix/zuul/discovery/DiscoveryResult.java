@@ -71,6 +71,13 @@ public final class DiscoveryResult implements ResolverResult {
         return server.getPort();
     }
 
+    public int getSecurePort() {
+        return server.getInstanceInfo().getSecurePort();
+    }
+    public boolean isSecurePortEnabled() {
+        return server.getPort() == server.getInstanceInfo().getSecurePort();
+    }
+
     public String getTarget() {
         final InstanceInfo instanceInfo = server.getInstanceInfo();
         if (server.getPort() == instanceInfo.getSecurePort()) {
@@ -101,6 +108,10 @@ public final class DiscoveryResult implements ResolverResult {
 
     public String getServerId() {
         return server.getInstanceInfo().getId();
+    }
+
+    public DiscoveryEnabledServer getServer() {
+        return server;
     }
 
     public String getASGName() {
@@ -137,6 +148,13 @@ public final class DiscoveryResult implements ResolverResult {
 
     public int getOpenConnectionsCount() {
         return serverStats.getOpenConnectionsCount();
+    }
+
+    public long getTotalRequestsCount() {
+        return serverStats.getTotalRequestsCount();
+    }
+    public int getActiveRequestsCount() {
+        return serverStats.getActiveRequestsCount();
     }
 
     public void decrementOpenConnectionsCount() {
