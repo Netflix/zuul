@@ -21,6 +21,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
@@ -179,7 +180,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Override
     public int hashCode() {
-        return server.hashCode();
+        return Objects.hashCode(server);
     }
 
 
