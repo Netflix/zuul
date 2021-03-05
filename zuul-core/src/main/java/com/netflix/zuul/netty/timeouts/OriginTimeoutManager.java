@@ -26,6 +26,7 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
 import java.time.Duration;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -39,7 +40,7 @@ public class OriginTimeoutManager {
     private final NettyOrigin origin;
 
     public OriginTimeoutManager(NettyOrigin origin) {
-        this.origin = origin;
+        this.origin = Objects.requireNonNull(origin);
     }
 
     private static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
