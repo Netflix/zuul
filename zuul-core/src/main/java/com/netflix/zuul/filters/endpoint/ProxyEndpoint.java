@@ -468,8 +468,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 Integer readTimeout = null;
                 DiscoveryResult server = chosenServer.get();
 
-                // The chosen server would be null if the loadbalancer found no available servers.
-                if (server != null) {
+                // The discovery result lookup is EMPTY if the loadbalancer resolves no available servers.
+                if (server != DiscoveryResult.EMPTY) {
                     if (currentRequestStat != null) {
                         currentRequestStat.server(server);
                     }
@@ -738,7 +738,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
             final ClientException niwsEx = new ClientException(ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-            if (chosenServer.get() != null) {
+            if (chosenServer.get() != DiscoveryResult.EMPTY) {
                 origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
