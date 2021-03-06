@@ -24,7 +24,9 @@ import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.ResolverListener;
+import java.security.cert.TrustAnchor;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -71,5 +73,20 @@ public class DynamicServerResolverTest {
         resolver.onUpdate(ImmutableList.of(server1, server2), ImmutableList.of());
 
         Truth.assertThat(listener.updatedList()).containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
+    }
+
+    @Test
+    public void properSentinelValueWhenServersUnavailable() {
+        final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), new ResolverListener<DiscoveryResult>() {
+            @Override
+            public void onChange(List<DiscoveryResult> removedSet) {
+            }
+        });
+
+        final DiscoveryResult nonExistentServer = resolver.resolve(null);
+
+        Truth.assertThat(nonExistentServer).isSameInstanceAs(DiscoveryResult.EMPTY);
+        Truth.assertThat(nonExistentServer.getHost()).isEqualTo("undefined");
+        Truth.assertThat(nonExistentServer.getPort()).isEqualTo(-1);
     }
 }

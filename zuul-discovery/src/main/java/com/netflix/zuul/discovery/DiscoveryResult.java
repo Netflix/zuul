@@ -28,13 +28,22 @@ import javax.annotation.Nullable;
 /**
  * @author Argha C
  * @since 2/25/21
- *
+ * <p>
  * Wraps a single instance of discovery enabled server, and stats related to it.
  */
 public final class DiscoveryResult implements ResolverResult {
 
     private final DiscoveryEnabledServer server;
     private final ServerStats serverStats;
+    /**
+     * This exists to allow for a semblance of type safety, and encourages avoiding null checks on the underlying Server,
+     * thus representing a sentinel value for an empty resolution result.
+     */
+    public static final DiscoveryResult EMPTY =
+            DiscoveryResult.from(InstanceInfo.Builder.newBuilder()
+                                .setAppName("undefined")
+                                .setHostName("undefined")
+                                .setPort(-1).build(), false);
 
     public DiscoveryResult(DiscoveryEnabledServer server) {
         this.server = server;
@@ -43,7 +52,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public static DiscoveryResult from(InstanceInfo instanceInfo, boolean useSecurePort) {
-        return new DiscoveryResult(new DiscoveryEnabledServer(instanceInfo, useSecurePort ));
+        return new DiscoveryResult(new DiscoveryEnabledServer(instanceInfo, useSecurePort));
     }
 
     public Optional<String> getIPAddr() {
@@ -75,6 +84,7 @@ public final class DiscoveryResult implements ResolverResult {
     public int getSecurePort() {
         return server.getInstanceInfo().getSecurePort();
     }
+
     public boolean isSecurePortEnabled() {
         return server.getPort() == server.getInstanceInfo().getSecurePort();
     }
@@ -89,16 +99,15 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
 
-
     public SimpleMetaInfo getMetaInfo() {
         return new SimpleMetaInfo(server.getMetaInfo());
     }
 
     @Nullable
-    public String getAvailabilityZone(){
+    public String getAvailabilityZone() {
         final InstanceInfo instanceInfo = server.getInstanceInfo();
         if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
-            return  ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
+            return ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
         }
         return null;
     }
@@ -119,7 +128,7 @@ public final class DiscoveryResult implements ResolverResult {
         return server.getInstanceInfo().getASGName();
     }
 
-    public String getAppName(){
+    public String getAppName() {
         return server.getInstanceInfo().getAppName().toLowerCase(Locale.ROOT);
     }
 
@@ -154,6 +163,7 @@ public final class DiscoveryResult implements ResolverResult {
     public long getTotalRequestsCount() {
         return serverStats.getTotalRequestsCount();
     }
+
     public int getActiveRequestsCount() {
         return serverStats.getActiveRequestsCount();
     }
@@ -185,16 +195,17 @@ public final class DiscoveryResult implements ResolverResult {
 
 
     /**
-     *
      * Two instances are deemed identical if they wrap the same underlying discovery server instance.
      */
     @Override
     public boolean equals(Object obj) {
-        if(obj == this)
+        if (obj == this) {
             return true;
+        }
 
-        if (!(obj instanceof DiscoveryResult))
+        if (!(obj instanceof DiscoveryResult)) {
             return false;
+        }
         final DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }

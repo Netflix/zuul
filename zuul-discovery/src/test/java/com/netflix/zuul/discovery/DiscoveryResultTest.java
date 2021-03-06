@@ -22,8 +22,17 @@ import org.junit.Test;
 public class DiscoveryResultTest {
 
     @Test
-    public void testHashCode() {
+    public void hashCodeForNull() {
         final DiscoveryResult discoveryResult = new DiscoveryResult(null);
         assertNotNull(discoveryResult.hashCode());
+        assertEquals(0, discoveryResult.hashCode());
+    }
+
+    @Test
+    public void hostAndPortForNullServer() {
+        final DiscoveryResult discoveryResult = new DiscoveryResult(null);
+
+        assertEquals("undefined", discoveryResult.getHost());
+        assertEquals(-1, discoveryResult.getPort());
     }
 }

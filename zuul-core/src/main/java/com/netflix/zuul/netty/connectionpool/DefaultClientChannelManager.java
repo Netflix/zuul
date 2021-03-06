@@ -326,7 +326,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         // Choose the next load-balanced server.
         final DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
-        if (chosenServer == null) {
+        if (chosenServer == DiscoveryResult.EMPTY) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(new OriginConnectException("No servers available", OutboundErrorType.NO_AVAILABLE_SERVERS));
             return promise;
