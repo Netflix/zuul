@@ -56,6 +56,9 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public Optional<String> getIPAddr() {
+        if (this == DiscoveryResult.EMPTY) {
+            return Optional.empty();
+        }
         if (server.getInstanceInfo() != null) {
             String ip = server.getInstanceInfo().getIPAddr();
             if (ip != null && !ip.isEmpty()) {

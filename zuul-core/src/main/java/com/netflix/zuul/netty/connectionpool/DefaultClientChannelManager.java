@@ -326,13 +326,16 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         // Choose the next load-balanced server.
         final DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
+
+        //(argha-c): Always ensure the selected server is updated, since the call chain relies on this mutation.
+        selectedServer.set(chosenServer);
         if (chosenServer == DiscoveryResult.EMPTY) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(new OriginConnectException("No servers available", OutboundErrorType.NO_AVAILABLE_SERVERS));
             return promise;
         }
 
-        selectedServer.set(chosenServer);
+
 
         // Now get the connection-pool for this server.
         IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {

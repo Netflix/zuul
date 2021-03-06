@@ -41,10 +41,10 @@ import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
-import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
@@ -468,7 +468,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 Integer readTimeout = null;
                 DiscoveryResult server = chosenServer.get();
 
-                // The discovery result lookup is EMPTY if the loadbalancer resolves no available servers.
+                /** TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
+                 * @see DiscoveryResult.EMPTY indicates that the loadbalancer found no available servers.
+                */
                 if (server != DiscoveryResult.EMPTY) {
                     if (currentRequestStat != null) {
                         currentRequestStat.server(server);
