@@ -104,7 +104,7 @@ public class RequestAttempt
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;
 
-        if (server != null) {
+        if (server != null && server != DiscoveryResult.EMPTY) {
             this.host = server.getHost();
             this.port = server.getPort();
             this.availabilityZone = server.getZone();
