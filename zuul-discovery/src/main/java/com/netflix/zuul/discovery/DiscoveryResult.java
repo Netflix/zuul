@@ -59,7 +59,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Override
     public String getHost() {
-        return server.getHost();
+        return server == null ? "undefined" : server.getHost();
     }
 
     @Override
@@ -69,7 +69,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Override
     public int getPort() {
-        return server.getPort();
+        return server == null ? -1 : server.getPort();
     }
 
     public int getSecurePort() {
