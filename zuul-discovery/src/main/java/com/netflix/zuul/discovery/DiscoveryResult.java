@@ -16,8 +16,10 @@
 
 package com.netflix.zuul.discovery;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.loadbalancer.LoadBalancerStats;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import java.util.Locale;
@@ -45,14 +47,31 @@ public final class DiscoveryResult implements ResolverResult {
                                 .setHostName("undefined")
                                 .setPort(-1).build(), false);
 
-    public DiscoveryResult(DiscoveryEnabledServer server) {
+    public DiscoveryResult(DiscoveryEnabledServer server, LoadBalancerStats lbStats) {
         this.server = server;
-        serverStats = new ServerStats();
-        serverStats.initialize(server);
+        Objects.requireNonNull(lbStats, "Loadbalancer stats must be a valid instance");
+        this.serverStats = lbStats.getSingleServerStat(server);
     }
 
+    /**
+     *
+     * This solely exists to create a result object from incomplete InstanceInfo.
+     * Usage of this for production code is strongly discouraged, since the underlying instances are prone to memory leaks
+     */
+    public DiscoveryResult(DiscoveryEnabledServer server) {
+        this.server = server;
+        this.serverStats = new ServerStats();
+    }
+
+    /**
+     *
+     * This convenience method exists for usage in tests. For production usage, please use the constructor linked:
+     * @see DiscoveryResult#DiscoveryResult(DiscoveryEnabledServer, LoadBalancerStats)
+     */
+    @VisibleForTesting
     public static DiscoveryResult from(InstanceInfo instanceInfo, boolean useSecurePort) {
-        return new DiscoveryResult(new DiscoveryEnabledServer(instanceInfo, useSecurePort));
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, useSecurePort);
+        return new DiscoveryResult(server);
     }
 
     public Optional<String> getIPAddr() {
