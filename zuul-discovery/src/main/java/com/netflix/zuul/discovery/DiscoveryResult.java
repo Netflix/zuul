@@ -146,6 +146,11 @@ public final class DiscoveryResult implements ResolverResult {
         return server;
     }
 
+    @VisibleForTesting
+    ServerStats getServerStats(){
+        return this.serverStats;
+    }
+
     public String getASGName() {
         return server.getInstanceInfo().getASGName();
     }
