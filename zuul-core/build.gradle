@@ -8,21 +8,18 @@ dependencies {
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.12.1'
-    api 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
 
     api "com.netflix.archaius:archaius-core:0.7.5"
     api "com.netflix.spectator:spectator-api:0.123.1"
-    api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
+    implementation "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
-    api project(":zuul-discovery")
+    implementation project(":zuul-discovery")
 
-    api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
-    //TODO(argha-c): the only remaining dep is ExecutionContext. Remove this once decoupled.
-    api "com.netflix.ribbon:ribbon-loadbalancer:${versions_ribbon}"
-    api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
+    implementation "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
+    implementation "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
 
-
-    api "com.netflix.eureka:eureka-client:1.9.18"
+    implementation "com.netflix.eureka:eureka-client:1.9.18"
     api "io.reactivex:rxjava:1.2.1"
 
     // TODO(carl-mastrangelo): some of these could probably be implementation.   Do a deeper check.

@@ -37,7 +37,6 @@ import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
-import com.netflix.loadbalancer.Server;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
