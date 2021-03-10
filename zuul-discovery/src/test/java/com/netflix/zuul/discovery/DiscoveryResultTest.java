@@ -24,6 +24,7 @@ import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import java.util.Optional;
 import org.junit.Test;
 
 public class DiscoveryResultTest {
@@ -79,5 +80,75 @@ public class DiscoveryResultTest {
         final DiscoveryResult result1 = new DiscoveryResult(serverSecure, lb.getLoadBalancerStats());
 
         Truth.assertThat(result.getServerStats()).isNotSameInstanceAs(result1.getServerStats());
+    }
+
+    @Test
+    public void ipAddrV4FromInstanceInfo() {
+        final String ipAddr = "100.1.0.1";
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("ipAddrv4")
+                .setHostName("ipAddrv4")
+                .setIPAddr(ipAddr)
+                .setPort(7777).build();
+
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, false);
+        final DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
+        final DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
+
+        Truth.assertThat(result.getIPAddr()).isEqualTo(Optional.of(ipAddr));
+    }
+
+    @Test
+    public void ipAddrEmptyForIncompleteInstanceInfo() {
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("ipAddrMissing")
+                .setHostName("ipAddrMissing")
+                .setPort(7777).build();
+
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, false);
+        final DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
+        final DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
+
+        Truth.assertThat(result.getIPAddr()).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    public void sameUnderlyingInstanceInfoEqualsSameResult() {
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("server-equality")
+                .setHostName("server-equality")
+                .setPort(7777).build();
+
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, false);
+        final DiscoveryEnabledServer otherServer = new DiscoveryEnabledServer(instanceInfo, false);
+
+        final DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
+
+        final DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
+        final DiscoveryResult otherResult = new DiscoveryResult(otherServer, lb.getLoadBalancerStats());
+
+        Truth.assertThat(result).isEqualTo(otherResult);
+    }
+
+    @Test
+    public void serverInstancesExposingDiffPortsAreNotEqual() {
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("server-equality")
+                .setHostName("server-equality")
+                .setPort(7777).build();
+        final InstanceInfo otherPort = Builder.newBuilder()
+                .setAppName("server-equality")
+                .setHostName("server-equality")
+                .setPort(9999).build();
+
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, false);
+        final DiscoveryEnabledServer otherServer  = new DiscoveryEnabledServer(otherPort, false);
+
+        final DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
+
+        final DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
+        final DiscoveryResult otherResult = new DiscoveryResult(otherServer, lb.getLoadBalancerStats());
+
+        Truth.assertThat(result).isNotEqualTo(otherResult);
     }
 }
