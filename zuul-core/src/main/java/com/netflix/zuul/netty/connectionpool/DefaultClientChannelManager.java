@@ -391,8 +391,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         @Override
         public void onChange(List<DiscoveryResult> removedSet) {
             if (!removedSet.isEmpty()) {
-                LOG.debug("Removing connection pools for missing servers. name = " + originName
-                        + ". " + removedSet.size() + " servers gone.");
+                LOG.debug("Removing connection pools for missing servers. name = {}. {} servers gone.", originName,
+                        removedSet.size());
                 for (DiscoveryResult s : removedSet) {
                     IConnectionPool pool = perServerPools.remove(s);
                     if (pool != null) {
