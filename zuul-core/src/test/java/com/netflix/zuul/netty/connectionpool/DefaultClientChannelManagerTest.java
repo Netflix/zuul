@@ -18,22 +18,32 @@ package com.netflix.zuul.netty.connectionpool;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import com.google.common.net.InetAddresses;
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
+import com.netflix.client.config.DefaultClientConfigImpl;
+import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.zuul.discovery.DiscoveryResult;
+import com.netflix.zuul.discovery.DynamicServerResolver;
 import com.netflix.zuul.discovery.NonDiscoveryServer;
 import com.netflix.zuul.origins.OriginName;
+import com.netflix.zuul.passport.CurrentPassport;
+import io.netty.channel.DefaultEventLoop;
+import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Tests for {@link DefaultClientChannelManager}.  These tests don't use IPv6 addresses because {@link InstanceInfo}
- * is not capable of expressing them.
+ * Tests for {@link DefaultClientChannelManager}.  These tests don't use IPv6 addresses because {@link InstanceInfo} is
+ * not capable of expressing them.
  */
 @RunWith(JUnit4.class)
 public class DefaultClientChannelManagerTest {
@@ -90,5 +100,51 @@ public class DefaultClientChannelManagerTest {
 
         assertTrue(socketAddress.toString(), socketAddress.getAddress().isLoopbackAddress());
         assertEquals(443, socketAddress.getPort());
+    }
+
+    @Test
+    public void updateServerRefOnEmptyDiscoveryResult() {
+        OriginName originName = OriginName.fromVip("vip", "test");
+        final DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
+        final DynamicServerResolver resolver = mock(DynamicServerResolver.class);
+
+        when(resolver.resolve(any())).thenReturn(DiscoveryResult.EMPTY);
+
+        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
+                clientConfig, resolver, new DefaultRegistry());
+
+        final AtomicReference<DiscoveryResult> serverRef = new AtomicReference<>();
+
+        final Promise<PooledConnection> promise = clientChannelManager
+                .acquire(new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
+
+        Truth.assertThat(promise.isSuccess()).isFalse();
+        Truth.assertThat(serverRef.get()).isSameInstanceAs(DiscoveryResult.EMPTY);
+    }
+
+    @Test
+    public void updateServerRefOnValidDiscoveryResult() {
+        OriginName originName = OriginName.fromVip("vip", "test");
+        final DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
+
+        final DynamicServerResolver resolver = mock(DynamicServerResolver.class);
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("server-equality")
+                .setHostName("server-equality")
+                .setPort(7777).build();
+        final DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, false);
+
+        when(resolver.resolve(any())).thenReturn(discoveryResult);
+
+        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
+                clientConfig, resolver, new DefaultRegistry());
+
+        final AtomicReference<DiscoveryResult> serverRef = new AtomicReference<>();
+
+        //TODO(argha-c) capture and assert on the promise once we have a dummy with ServerStats initialized
+        clientChannelManager
+                .acquire(new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
+
+        Truth.assertThat(serverRef.get()).isSameInstanceAs(discoveryResult);
     }
 }
