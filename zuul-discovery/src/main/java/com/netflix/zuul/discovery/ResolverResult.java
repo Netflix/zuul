@@ -25,6 +25,7 @@ package com.netflix.zuul.discovery;
 
 public interface ResolverResult {
 
+    //TODO(argha-c): This should ideally model returning a collection of host/port pairs.
     public String getHost();
 
     public int getPort();
