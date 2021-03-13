@@ -25,7 +25,6 @@ import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
-import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.discovery.DiscoveryResult;
@@ -146,26 +145,6 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public Registry getSpectatorRegistry() {
         return registry;
-    }
-
-    @Override
-    public ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest) {
-        ExecutionContext<?> execCtx = (ExecutionContext<?>) zuulRequest.getContext().get(CommonContextKeys.REST_EXECUTION_CONTEXT);
-        if (execCtx == null) {
-            IClientConfig overriddenClientConfig = (IClientConfig) zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
-            if (overriddenClientConfig == null) {
-                overriddenClientConfig = new DefaultClientConfigImpl();
-                zuulRequest.getContext().put(CommonContextKeys.REST_CLIENT_CONFIG, overriddenClientConfig);
-            }
-
-            final ExecutionContext<?> context = new ExecutionContext<>(zuulRequest, overriddenClientConfig, this.config, null);
-            context.put("vip", getName().getTarget());
-            context.put("clientName", getName().getNiwsClientName());
-
-            zuulRequest.getContext().set(CommonContextKeys.REST_EXECUTION_CONTEXT, context);
-            execCtx = context;
-        }
-        return execCtx;
     }
 
     @Override
