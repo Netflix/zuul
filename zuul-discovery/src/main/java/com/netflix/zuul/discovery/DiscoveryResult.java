@@ -19,6 +19,7 @@ package com.netflix.zuul.discovery;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.loadbalancer.LoadBalancerStats;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -108,7 +109,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public boolean isSecurePortEnabled() {
-        return server.getPort() == server.getInstanceInfo().getSecurePort();
+        return server.getInstanceInfo().isPortEnabled(PortType.SECURE);
     }
 
     public String getTarget() {
