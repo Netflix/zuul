@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
+import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.Server;
@@ -150,5 +151,31 @@ public class DiscoveryResultTest {
         final DiscoveryResult otherResult = new DiscoveryResult(otherServer, lb.getLoadBalancerStats());
 
         Truth.assertThat(result).isNotEqualTo(otherResult);
+    }
+
+    @Test
+    public void securePortMustCheckInstanceInfo() {
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("secure-port")
+                .setHostName("secure-port")
+                .setPort(7777)
+                .enablePort(PortType.SECURE, false)
+                .build();
+        final InstanceInfo secureEnabled = Builder.newBuilder()
+                .setAppName("secure-port")
+                .setHostName("secure-port")
+                .setPort(7777)
+                .enablePort(PortType.SECURE, true)
+                .build();
+
+        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, true);
+        final DiscoveryEnabledServer secureServer = new DiscoveryEnabledServer(secureEnabled, true);
+        final DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
+
+        final DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
+        final DiscoveryResult secure = new DiscoveryResult(secureServer, lb.getLoadBalancerStats());
+
+        Truth.assertThat(result.isSecurePortEnabled()).isFalse();
+        Truth.assertThat(secure.isSecurePortEnabled()).isTrue();
     }
 }
