@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.timeouts;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -42,7 +43,8 @@ public class OriginTimeoutManager {
         this.origin = Objects.requireNonNull(origin);
     }
 
-    private static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
+    @VisibleForTesting
+    static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
             new DynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
 
     /**
@@ -61,14 +63,18 @@ public class OriginTimeoutManager {
         Long originTimeout = getOriginReadTimeout();
         Long requestTimeout = getRequestReadTimeout(clientConfig);
 
+        long computedTimeout;
         if (originTimeout == null && requestTimeout == null) {
-            return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
+            computedTimeout = MAX_OUTBOUND_READ_TIMEOUT_MS.get();
         } else if (originTimeout == null || requestTimeout == null) {
-            return Duration.ofMillis(originTimeout == null ? requestTimeout : originTimeout);
+            computedTimeout = originTimeout == null ? requestTimeout : originTimeout;
         } else {
-            // return the stricter (i.e. lower) of two timeouts
-            return Duration.ofMillis(originTimeout > requestTimeout ? requestTimeout : originTimeout);
+            // return the stricter (i.e. lower) of the two timeouts
+            computedTimeout = Math.min(originTimeout, requestTimeout);
         }
+
+        // enforce max timeout upperbound
+        return Duration.ofMillis(Math.min(computedTimeout, MAX_OUTBOUND_READ_TIMEOUT_MS.get()));
     }
 
     /**
