@@ -24,6 +24,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.AttributeKey;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,9 +224,10 @@ public class PooledConnection {
         }
     }
 
-    public void startReadTimeoutHandler(int readTimeout)
+    public void startReadTimeoutHandler(Duration readTimeout)
     {
-        channel.pipeline().addBefore("originNettyLogger", READ_TIMEOUT_HANDLER_NAME, new ReadTimeoutHandler(readTimeout, TimeUnit.MILLISECONDS));
+        channel.pipeline().addBefore("originNettyLogger", READ_TIMEOUT_HANDLER_NAME,
+                new ReadTimeoutHandler(readTimeout.toMillis(), TimeUnit.MILLISECONDS));
     }
 
 

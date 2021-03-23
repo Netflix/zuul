@@ -46,28 +46,8 @@ public class OriginTimeoutManager {
     private static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
             new DynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
 
-    public Object getRequestReadTimeout(IClientConfig requestConfig, Long defaultTimeout) {
-        return requestConfig.getProperty(ReadTimeout, defaultTimeout);
-    }
 
-    public void setRequestReadTimeout(IClientConfig requestConfig, Object timeout) {
-        requestConfig.setProperty(ReadTimeout, timeout);
-    }
-
-    public Object getOriginReadTimeout(Long noTimeout) {
-        return origin.getClientConfig().getProperty(ReadTimeout, noTimeout);
-    }
-
-    public Object computeOverriddenReadTimeout(Object originalTimeout, IClientConfig requestConfig) {
-        // check if there is a numeric override of the timeout
-        Integer overriddenReadTimeout = requestConfig.get(ReadTimeout);
-        if (overriddenReadTimeout != null) {
-            return overriddenReadTimeout;
-        }
-        return originalTimeout;
-    }
-
-    public IClientConfig getRequestClientConfig(HttpRequestMessage zuulRequest) {
+    protected IClientConfig getRequestClientConfig(HttpRequestMessage zuulRequest) {
         IClientConfig overriddenClientConfig =
                 (IClientConfig) zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
         if (overriddenClientConfig == null) {
@@ -78,25 +58,20 @@ public class OriginTimeoutManager {
         return overriddenClientConfig;
     }
 
-    public int computeReadTimeout(IClientConfig requestConfig, int attempt) {
-        Duration readTimeout = getReadTimeout(requestConfig, attempt);
-        return Math.toIntExact(readTimeout.toMillis());
-    }
-
     /**
      * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin
      * timeout or the request timeout.
      *
-     * @param requestConfig the config for the request.
-     * @param attemptNum    the attempt number, starting at 1.
+     * @param request the request.
+     * @param attemptNum the attempt number, starting at 1.
      */
-    protected Duration getReadTimeout(IClientConfig requestConfig, int attemptNum) {
+    public Duration computeReadTimeout(HttpRequestMessage request, int attemptNum) {
         Long noTimeout = null;
         // TODO(carl-mastrangelo): getProperty is deprecated, and suggests using the typed overload `get`.   However,
         //  the value is parsed using parseReadTimeoutMs, which supports String, implying not all timeouts are Integer.
         //  Figure out where a string ReadTimeout is coming from and replace it.
         Long originTimeout = parseReadTimeoutMs(getOriginReadTimeout(noTimeout));
-        Long requestTimeout = parseReadTimeoutMs(getRequestReadTimeout(requestConfig, noTimeout));
+        Long requestTimeout = parseReadTimeoutMs(getRequestReadTimeout(request, noTimeout));
 
         if (originTimeout == null && requestTimeout == null) {
             return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
@@ -123,5 +98,15 @@ public class OriginTimeoutManager {
         } else {
             return null;
         }
+    }
+
+    @Nullable
+    private Object getRequestReadTimeout(HttpRequestMessage zuulRequest, Long defaultTimeout) {
+        return getRequestClientConfig(zuulRequest).getProperty(ReadTimeout, defaultTimeout);
+    }
+
+    @Nullable
+    private Object getOriginReadTimeout(Long noTimeout) {
+        return origin.getClientConfig().getProperty(ReadTimeout, noTimeout);
     }
 }
