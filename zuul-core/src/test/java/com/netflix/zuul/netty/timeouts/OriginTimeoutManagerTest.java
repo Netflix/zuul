@@ -115,12 +115,12 @@ public class OriginTimeoutManagerTest {
 
     @Test
     public void computeReadTimeout_bolth_requestLower() {
-        requestConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
+        requestConfig.set(CommonClientConfigKey.ReadTimeout, 100);
         originConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(1000, timeout.toMillis());
+        assertEquals(100, timeout.toMillis());
     }
 
     @Test
