@@ -22,7 +22,7 @@ configurations.all {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
