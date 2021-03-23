@@ -379,6 +379,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             attemptToChosenHostMap = new HashMap<>();
         }
 
+        // the chosen server can be null in the case of a timeout exception that skips acquiring a new origin connection
         if (chosenServer.get() != null) {
             String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
             if (ipAddr != null) {
@@ -405,7 +406,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         try {
             attemptNum += 1;
 
-            // compute how much time we have left for this attempt
+            /*
+             * Before connecting to the origin, we need to compute how much time we have left for this attempt. This
+             * method is also intended to validate deadline and timeouts boundaries for the request as a whole and could
+             * throw an exception, skipping the logic below.
+             */
             timeLeftForAttempt = originTimeoutManager.computeReadTimeout(zuulRequest, attemptNum);
 
             currentRequestStat = createRequestStat();

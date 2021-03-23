@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.timeouts;
 
-import static com.netflix.client.config.CommonClientConfigKey.ReadTimeout;
-
-import com.google.common.base.Strings;
+import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.config.DynamicLongProperty;
@@ -27,6 +25,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 
 /**
@@ -46,7 +45,38 @@ public class OriginTimeoutManager {
     private static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
             new DynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
 
+    /**
+     * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin
+     * timeout or the request timeout.
+     * <p>
+     * This method can also be used to validate timeout and deadline boundaries and throw exceptions as needed. If
+     * extending this method to do validation, you should extend {@link com.netflix.zuul.exception.OutboundException}
+     * and set the appropriate {@link com.netflix.zuul.exception.ErrorType}.
+     *
+     * @param request    the request.
+     * @param attemptNum the attempt number, starting at 1.
+     */
+    public Duration computeReadTimeout(HttpRequestMessage request, int attemptNum) {
+        IClientConfig clientConfig = getRequestClientConfig(request);
+        Long originTimeout = getOriginReadTimeout();
+        Long requestTimeout = getRequestReadTimeout(clientConfig);
 
+        if (originTimeout == null && requestTimeout == null) {
+            return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
+        } else if (originTimeout == null || requestTimeout == null) {
+            return Duration.ofMillis(originTimeout == null ? requestTimeout : originTimeout);
+        } else {
+            // return the stricter (i.e. lower) of two timeouts
+            return Duration.ofMillis(originTimeout > requestTimeout ? requestTimeout : originTimeout);
+        }
+    }
+
+    /**
+     * This method will create a new client config or retrieve the existing one from the current request.
+     *
+     * @param zuulRequest - the request
+     * @return the config
+     */
     protected IClientConfig getRequestClientConfig(HttpRequestMessage zuulRequest) {
         IClientConfig overriddenClientConfig =
                 (IClientConfig) zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
@@ -59,54 +89,22 @@ public class OriginTimeoutManager {
     }
 
     /**
-     * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin
-     * timeout or the request timeout.
-     *
-     * @param request the request.
-     * @param attemptNum the attempt number, starting at 1.
+     * This method makes the assumption that the timeout is a numeric value
      */
-    public Duration computeReadTimeout(HttpRequestMessage request, int attemptNum) {
-        Long noTimeout = null;
-        // TODO(carl-mastrangelo): getProperty is deprecated, and suggests using the typed overload `get`.   However,
-        //  the value is parsed using parseReadTimeoutMs, which supports String, implying not all timeouts are Integer.
-        //  Figure out where a string ReadTimeout is coming from and replace it.
-        Long originTimeout = parseReadTimeoutMs(getOriginReadTimeout(noTimeout));
-        Long requestTimeout = parseReadTimeoutMs(getRequestReadTimeout(request, noTimeout));
-
-        if (originTimeout == null && requestTimeout == null) {
-            return Duration.ofMillis(MAX_OUTBOUND_READ_TIMEOUT_MS.get());
-        } else if (originTimeout == null || requestTimeout == null) {
-            return Duration.ofMillis(originTimeout == null ? requestTimeout : originTimeout);
-        } else {
-            // return the greater of two timeouts
-            return Duration.ofMillis(originTimeout > requestTimeout ? originTimeout : requestTimeout);
-        }
+    @Nullable
+    private Long getRequestReadTimeout(IClientConfig clientConfig) {
+        return Optional.ofNullable(clientConfig.get(CommonClientConfigKey.ReadTimeout))
+                .map(Long::valueOf)
+                .orElse(null);
     }
 
     /**
-     * An Integer is expected as an input, but supports parsing Long and String.  Returns {@code null} if no type is
-     * acceptable.
+     * This method makes the assumption that the timeout is a numeric value
      */
     @Nullable
-    private Long parseReadTimeoutMs(Object p) {
-        if (p instanceof String && !Strings.isNullOrEmpty((String) p)) {
-            return Long.valueOf((String) p);
-        } else if (p instanceof Long) {
-            return (Long) p;
-        } else if (p instanceof Integer) {
-            return Long.valueOf((Integer) p);
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private Object getRequestReadTimeout(HttpRequestMessage zuulRequest, Long defaultTimeout) {
-        return getRequestClientConfig(zuulRequest).getProperty(ReadTimeout, defaultTimeout);
-    }
-
-    @Nullable
-    private Object getOriginReadTimeout(Long noTimeout) {
-        return origin.getClientConfig().getProperty(ReadTimeout, noTimeout);
+    private Long getOriginReadTimeout() {
+        return Optional.ofNullable(origin.getClientConfig().get(CommonClientConfigKey.ReadTimeout))
+                .map(Long::valueOf)
+                .orElse(null);
     }
 }
