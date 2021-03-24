@@ -259,7 +259,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             LOG.debug("Received IdleStateEvent.");
         }
         else {
-            LOG.info("ClientResponseWriter Received event {}", evt);
+            LOG.debug("ClientResponseWriter Received event {}", evt);
         }
     }
 
