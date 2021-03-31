@@ -1,0 +1,187 @@
+{
+    "compileClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    },
+    "jmh": {
+        "org.openjdk.jmh:jmh-core": {
+            "locked": "1.21"
+        },
+        "org.openjdk.jmh:jmh-generator-bytecode": {
+            "locked": "1.21"
+        }
+    },
+    "jmhCompileClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "org.openjdk.jmh:jmh-core": {
+            "locked": "1.21"
+        },
+        "org.openjdk.jmh:jmh-generator-bytecode": {
+            "locked": "1.21"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    },
+    "jmhRuntimeClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.google.truth:truth": {
+            "locked": "1.0.1"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "junit:junit": {
+            "locked": "4.13"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "3.8.0"
+        },
+        "org.openjdk.jmh:jmh-core": {
+            "locked": "1.21"
+        },
+        "org.openjdk.jmh:jmh-generator-bytecode": {
+            "locked": "1.21"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    },
+    "runtimeClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    },
+    "testCompileClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.google.truth:truth": {
+            "locked": "1.0.1"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "junit:junit": {
+            "locked": "4.13"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "3.8.0"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    },
+    "testRuntimeClasspath": {
+        "com.google.guava:guava": {
+            "locked": "29.0-jre"
+        },
+        "com.google.truth:truth": {
+            "locked": "1.0.1"
+        },
+        "com.netflix.eureka:eureka-client": {
+            "locked": "1.9.18"
+        },
+        "com.netflix.ribbon:ribbon-archaius": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-core": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-eureka": {
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "locked": "2.4.4"
+        },
+        "junit:junit": {
+            "locked": "4.13"
+        },
+        "org.mockito:mockito-core": {
+            "locked": "3.8.0"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.25"
+        }
+    }
+}

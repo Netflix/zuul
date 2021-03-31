@@ -24,44 +24,38 @@
         "com.netflix.ribbon:ribbon-core": {
             "locked": "2.4.4"
         },
-        "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -73,7 +67,7 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -81,10 +75,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -115,44 +109,38 @@
         "com.netflix.ribbon:ribbon-core": {
             "locked": "2.4.4"
         },
-        "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -164,13 +152,13 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -187,6 +175,9 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
@@ -196,58 +187,73 @@
             "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -262,21 +268,24 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.mockito:mockito-core": {
             "locked": "3.8.0"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.28"
+            "locked": "1.29"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
         },
         "org.slf4j:slf4j-api": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.7.30"
         },
         "org.slf4j:slf4j-simple": {
@@ -291,64 +300,82 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "29.0-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -360,9 +387,12 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.slf4j:slf4j-api": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.7.30"
         }
     },
@@ -394,44 +424,38 @@
         "com.netflix.ribbon:ribbon-core": {
             "locked": "2.4.4"
         },
-        "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-loadbalancer": {
-            "locked": "2.4.4"
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -446,7 +470,7 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.mockito:mockito-core": {
             "locked": "3.8.0"
@@ -463,6 +487,9 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "29.0-jre"
         },
         "com.google.truth:truth": {
@@ -472,58 +499,73 @@
             "locked": "0.7.6"
         },
         "com.netflix.eureka:eureka-client": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.9.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
         },
         "com.netflix.ribbon:ribbon-archaius": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-core": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-eureka": {
-            "locked": "2.4.4"
-        },
-        "com.netflix.ribbon:ribbon-httpclient": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
             "locked": "0.123.1"
         },
+        "com.netflix.zuul:zuul-discovery": {
+            "project": true
+        },
         "io.netty:netty-buffer": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "locked": "2.0.35.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.55.Final"
+            "locked": "4.1.62.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.23.0"
@@ -538,12 +580,15 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.67"
+            "locked": "1.68"
         },
         "org.mockito:mockito-core": {
             "locked": "3.8.0"
         },
         "org.slf4j:slf4j-api": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "1.7.30"
         },
         "org.slf4j:slf4j-simple": {
