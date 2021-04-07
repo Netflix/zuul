@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.DefaultRegistry;
@@ -28,14 +33,16 @@ import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpVersion;
+import java.net.InetSocketAddress;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.net.InetSocketAddress;
-
-import static org.junit.Assert.*;
 
 /**
  * Unit tests for {@link ClientRequestReceiver}.
