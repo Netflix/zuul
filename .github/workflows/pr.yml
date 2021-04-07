@@ -17,13 +17,13 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.4
         id: gradle-cache
         with:
           path: |
             ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v2.1.4
         id: gradle-wrapper-cache
         with:
           path: |
