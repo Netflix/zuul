@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: gradle/wrapper-validation-action@v1
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
