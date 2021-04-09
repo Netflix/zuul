@@ -189,7 +189,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -319,7 +319,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -455,13 +455,13 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "29.0-jre"
+            "locked": "30.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -668,13 +668,13 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "29.0-jre"
+            "locked": "30.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -867,7 +867,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -997,13 +997,13 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "29.0-jre"
+            "locked": "30.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "4.2.3"
+            "locked": "5.0.1"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
