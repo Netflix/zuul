@@ -2,7 +2,7 @@ apply plugin: "java-library"
 
 dependencies {
     implementation project(":zuul-core")
-    api(group: 'com.google.inject', name: 'guice', version: "4.2.3", classifier: "no_aop")
+    api(group: 'com.google.inject', name: 'guice', version: "5.0.1")
     implementation 'commons-configuration:commons-configuration:1.8'
 
     testImplementation libraries.junit,
