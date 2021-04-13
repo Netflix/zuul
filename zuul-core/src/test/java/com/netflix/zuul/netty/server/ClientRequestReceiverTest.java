@@ -22,9 +22,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import com.google.common.net.InetAddresses;
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.zuul.context.CommonContextKeys;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.netty.insights.PassportLoggingHandler;
@@ -34,9 +38,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
@@ -59,12 +65,14 @@ public class ClientRequestReceiverTest {
         channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(hapmDestinationAddress);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
+            channel.writeInbound(
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
         assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
-        int destinationPort = ((InetSocketAddress) result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
+        int destinationPort = ((InetSocketAddress) result.getContext()
+                .get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
         assertEquals(destinationPort, 444);
         assertEquals(result.getOriginalPort(), 444);
         channel.close();
@@ -77,7 +85,8 @@ public class ClientRequestReceiverTest {
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                    "foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
@@ -153,7 +162,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void maxHeaderSizeExceeded_setBadRequestStatus(){
+    public void maxHeaderSizeExceeded_setBadRequestStatus() {
 
         int maxInitialLineLength = BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get();
         int maxHeaderSize = 10;
@@ -176,7 +185,7 @@ public class ClientRequestReceiverTest {
         String str = "test-header-value";
         ByteBuf buf = Unpooled.buffer(1);
         HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf);
-        for(int i = 0;i< 100;i++) {
+        for (int i = 0; i < 100; i++) {
             httpRequest.headers().add("test-header" + i, str);
         }
 
@@ -187,7 +196,33 @@ public class ClientRequestReceiverTest {
         channel.close();
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertEquals(StatusCategoryUtils.getStatusCategory(request.getContext()), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertEquals(StatusCategoryUtils.getStatusCategory(request.getContext()),
+                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+    }
+
+    @Test
+    public void setStatusCategoryForHttpPipelining() {
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+
+        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                "?ELhAWDLM1hwm8bhU0UT4", Unpooled.buffer());
+
+        // Write the message and save a copy
+        channel.writeInbound(request);
+        final HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
+
+        // Set the attr to emulate pipelining rejection
+        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
+
+        // Fire completion event
+        channel.pipeline().fireUserEventTriggered(new CompleteEvent(CompleteReason.PIPELINE_REJECT, request,
+                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST)));
+        channel.close();
+
+        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT,
+                StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()));
     }
 }
 

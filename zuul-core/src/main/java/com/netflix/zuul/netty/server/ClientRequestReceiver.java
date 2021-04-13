@@ -21,6 +21,7 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReaso
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
@@ -202,6 +203,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             if (reason == CompleteReason.INACTIVE && zuulRequest != null) {
                 // Client closed connection prematurely.
                 StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
+            }
+
+            if (reason == CompleteReason.PIPELINE_REJECT && zuulRequest != null) {
+                    StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT);
             }
 
             if (reason != SESSION_COMPLETE && zuulRequest != null) {
