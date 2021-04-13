@@ -107,9 +107,12 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
         public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
         {
             addPassportState(ctx, PassportState.SERVER_CH_CLOSE);
-            
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
-
+            // This will likely expand based on more specific reasons for completion
+            if (ctx.channel().attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).get() == null) {
+                fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
+            } else {
+                fireCompleteEventIfNotAlready(ctx, CompleteReason.PIPELINE_REJECT);
+            }
             super.close(ctx, promise);
         }
 

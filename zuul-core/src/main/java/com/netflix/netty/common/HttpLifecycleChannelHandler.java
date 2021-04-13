@@ -37,7 +37,8 @@ public abstract class HttpLifecycleChannelHandler {
 
     public static final AttributeKey<HttpRequest> ATTR_HTTP_REQ = AttributeKey.newInstance("_http_request");
     public static final AttributeKey<HttpResponse> ATTR_HTTP_RESP = AttributeKey.newInstance("_http_response");
-    
+    public static final AttributeKey<Boolean> ATTR_HTTP_PIPELINE_REJECT = AttributeKey.newInstance("_http_pipeline_reject");
+
     protected enum State {
         STARTED, COMPLETED
     }
@@ -56,6 +57,7 @@ public abstract class HttpLifecycleChannelHandler {
             // without waiting for the response from the first. And we don't support HTTP Pipelining.
             LOG.error("Received a http request on connection where we already have a request being processed. " +
                     "Closing the connection now. channel = " + channel.id().asLongText());
+            channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
             channel.close();
             ctx.pipeline().fireUserEventTriggered(new RejectedPipeliningEvent());
             return false;
@@ -105,7 +107,7 @@ public abstract class HttpLifecycleChannelHandler {
 //        IDLE,
         DISCONNECT,
         DEREGISTER,
-//        PIPELINE_REJECT,
+        PIPELINE_REJECT,
         EXCEPTION,
         CLOSE
 //        FAILURE_CLIENT_CANCELLED,
