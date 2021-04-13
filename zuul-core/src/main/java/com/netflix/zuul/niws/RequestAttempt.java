@@ -55,7 +55,7 @@ public class RequestAttempt
     private String vip;
     private String region;
     private String availabilityZone;
-    private int readTimeout;
+    private long readTimeout;
     private int connectTimeout;
     private int maxRetries;
 
@@ -209,7 +209,7 @@ public class RequestAttempt
         return exceptionType;
     }
 
-    public int getReadTimeout()
+    public long getReadTimeout()
     {
         return readTimeout;
     }
@@ -279,7 +279,7 @@ public class RequestAttempt
         this.availabilityZone = availabilityZone;
     }
 
-    public void setReadTimeout(int readTimeout)
+    public void setReadTimeout(long readTimeout)
     {
         this.readTimeout = readTimeout;
     }
