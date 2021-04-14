@@ -108,10 +108,6 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             fireEndpointFinish(true);
             ctx.close();
         }
-        else if (evt instanceof HttpLifecycleChannelHandler.RejectedPipeliningEvent) {
-            sendResponse(FAILURE_CLIENT_PIPELINE_REJECT, 400, ctx);
-        }
-
         super.userEventTriggered(ctx, evt);
     }
 
