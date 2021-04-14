@@ -59,7 +59,6 @@ public abstract class HttpLifecycleChannelHandler {
                     "Closing the connection now. channel = " + channel.id().asLongText());
             channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
             channel.close();
-            ctx.pipeline().fireUserEventTriggered(new RejectedPipeliningEvent());
             return false;
         }
         
@@ -177,7 +176,5 @@ public abstract class HttpLifecycleChannelHandler {
             return response;
         }
     }
-    
-    public static class RejectedPipeliningEvent
-    {}
+
 }

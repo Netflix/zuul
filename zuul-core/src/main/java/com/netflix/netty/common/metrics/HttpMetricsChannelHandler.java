@@ -16,6 +16,8 @@
 
 package com.netflix.netty.common.metrics;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Gauge;
@@ -84,13 +86,12 @@ public class HttpMetricsChannelHandler extends ChannelInboundHandlerAdapter
         if (evt instanceof HttpServerLifecycleChannelHandler.StartEvent) {
             incrementCurrentRequestsInFlight(ctx);
         }
+        else if (evt instanceof HttpServerLifecycleChannelHandler.CompleteEvent && ((CompleteEvent) evt).getReason() == CompleteReason.PIPELINE_REJECT ) {
+            unSupportedPipeliningCounter.increment();
+        }
         else if (evt instanceof HttpServerLifecycleChannelHandler.CompleteEvent) {
             decrementCurrentRequestsIfOneInflight(ctx);
         }
-        else if (evt instanceof HttpLifecycleChannelHandler.RejectedPipeliningEvent) {
-            unSupportedPipeliningCounter.increment();
-        }
-
         super.userEventTriggered(ctx, evt);
     }
 
