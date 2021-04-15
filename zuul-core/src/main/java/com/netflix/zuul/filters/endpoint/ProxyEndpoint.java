@@ -662,7 +662,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
             final ClientException niwsEx = new ClientException(ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-            if (chosenServer.get() != DiscoveryResult.EMPTY) {
+            if (chosenServer.get() != null && chosenServer.get() != DiscoveryResult.EMPTY) {
                 origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
