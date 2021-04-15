@@ -190,7 +190,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         originTimeoutManager = getTimeoutManager(origin);
         requestAttempts = RequestAttempts.getFromSessionContext(context);
         passport = CurrentPassport.fromSessionContext(context);
-        chosenServer = new AtomicReference<>();
+        chosenServer = new AtomicReference<>(DiscoveryResult.EMPTY);
         chosenHostAddr = new AtomicReference<>();
 
         // This must happen after origin is set, since it depends on it.
@@ -380,14 +380,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         // the chosen server can be null in the case of a timeout exception that skips acquiring a new origin connection
-        if (chosenServer.get() != null) {
-            String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
-            if (ipAddr != null) {
-                attemptToIpAddressMap.put(attemptNum, ipAddr);
-                eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
-                context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
-            }
+        String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
+        if (ipAddr != null) {
+            attemptToIpAddressMap.put(attemptNum, ipAddr);
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
+            context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
         }
+
         if (chosenHostAddr.get() != null) {
             attemptToChosenHostMap.put(attemptNum, chosenHostAddr.get());
             eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
@@ -662,7 +661,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
             final ClientException niwsEx = new ClientException(ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-            if (chosenServer.get() != null && chosenServer.get() != DiscoveryResult.EMPTY) {
+            if (chosenServer.get() != DiscoveryResult.EMPTY) {
                 origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
