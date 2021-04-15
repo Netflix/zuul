@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.Channel;
@@ -43,7 +44,8 @@ public abstract class HttpLifecycleChannelHandler {
         STARTED, COMPLETED
     }
 
-    private static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_httplifecycle_state");
+    @VisibleForTesting
+    protected static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_httplifecycle_state");
 
     protected static boolean fireStartEvent(ChannelHandlerContext ctx, HttpRequest request)
     {
