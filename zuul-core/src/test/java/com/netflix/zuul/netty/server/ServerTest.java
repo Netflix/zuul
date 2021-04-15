@@ -54,9 +54,8 @@ public class ServerTest {
             protected void initChannel(Channel ch) {}
         };
         initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
-        // Pick an InetAddress likely different than the above.  The port to channel map has a unique Key; this
-        // prevents the key being a duplicate.
-        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(InetAddress.getLocalHost(), 0)), init);
+        // The port to channel map keys on the port, post bind. This should be unique even if InetAddress is same
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress( 0)), init);
         ClientConnectionsShutdown ccs =
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
