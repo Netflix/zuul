@@ -19,6 +19,8 @@ package com.netflix.zuul.origins;
 import com.netflix.zuul.util.VipUtils;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.CheckReturnValue;
 
 public final class OriginName {
     /**
@@ -55,6 +57,11 @@ public final class OriginName {
         return new OriginName(niwsClientName, vip, VipUtils.extractUntrustedAppNameFromVIP(vip), false);
     }
 
+    @CheckReturnValue
+    public OriginName withTrustedAuthority(String authority) {
+        return new OriginName(niwsClientName, target, authority, true);
+    }
+
     private OriginName(String niwsClientName, String target, String authority, boolean authorityTrusted) {
         this.niwsClientName = Objects.requireNonNull(niwsClientName, "niwsClientName");
         this.metricId = niwsClientName.toLowerCase(Locale.ROOT);
@@ -86,6 +93,17 @@ public final class OriginName {
         return metricId;
     }
 
+    /**
+     * Returns the Authority of this origin.   This is used for establishing secure connections.  May be absent
+     * if the authority is not trusted.
+     */
+    public Optional<String> getTrustedAuthority() {
+        if (authorityTrusted) {
+            return Optional.of(authority);
+        }
+        return Optional.empty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof OriginName)) {
@@ -100,7 +118,7 @@ public final class OriginName {
 
     @Override
     public int hashCode() {
-        return Objects.hash(niwsClientName, target, authority, authorityTrusted);
+        return Objects.hash(authorityTrusted, niwsClientName, target, authority);
     }
 
     @Override
