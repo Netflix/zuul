@@ -34,6 +34,8 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import com.netflix.zuul.message.util.HttpRequestBuilder;
+import io.netty.handler.codec.http.HttpMethod;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,8 +61,10 @@ public class DebugTest {
         params = new HttpQueryParams();
         params.add("k1", "v1");
 
-        request = new HttpRequestMessageImpl(ctx, "HTTP/1.1", "post", "/some/where",
-                params, headers, "9.9.9.9", "https", 80, "localhost");
+        request = new HttpRequestBuilder(ctx).withMethod(HttpMethod.POST)
+                .withUri("/some/where")
+                .withHeaders(headers)
+                .withQueryParams(params).build();
         request.setBodyAsText("some text");
         request.storeInboundRequest();
 
