@@ -201,6 +201,35 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
+    public void duplicateHostHeader_setBadRequestStatus() {
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
+        PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
+
+        // Required for messages
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.pipeline().addLast(new HttpServerCodec());
+        channel.pipeline().addLast(receiver);
+        channel.pipeline().addLast(loggingHandler);
+
+        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post");
+        httpRequest.headers().add("Host", "foo.bar.com");
+        httpRequest.headers().add("Host", "bar.foo.com");
+
+        channel.writeOutbound(httpRequest);
+        ByteBuf byteBuf = channel.readOutbound();
+        channel.writeInbound(byteBuf);
+        channel.readInbound();
+        channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        SessionContext context = request.getContext();
+        assertEquals(StatusCategoryUtils.getStatusCategory(context),
+                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertEquals("Duplicate Host headers", context.getError().getMessage());
+    }
+
+    @Test
     public void setStatusCategoryForHttpPipelining() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
