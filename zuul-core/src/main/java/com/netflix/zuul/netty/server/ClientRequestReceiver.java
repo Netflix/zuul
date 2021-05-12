@@ -132,7 +132,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             if (clientRequest.decoderResult().isFailure()) {
                 LOG.warn(
                         "Invalid http request. clientRequest = {} , uri = {}, info = {}",
-                        clientRequest.toString(),
+                        clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
@@ -161,7 +161,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             } else if (zuulRequest.getHeaders().getAll(HttpHeaderNames.HOST.toString()).size() > 1) {
                 LOG.debug(
                         "Duplicate Host headers. clientRequest = {} , uri = {}, info = {}",
-                        clientRequest.toString(),
+                        clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()));
                 final ZuulException ze = new ZuulException("Duplicate Host headers");
