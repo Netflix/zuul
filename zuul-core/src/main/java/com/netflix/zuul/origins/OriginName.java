@@ -19,8 +19,6 @@ package com.netflix.zuul.origins;
 import com.netflix.zuul.util.VipUtils;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
-import javax.annotation.CheckReturnValue;
 
 public final class OriginName {
     /**
@@ -44,30 +42,36 @@ public final class OriginName {
      * used for establishing a secure connection, as well as logging.
      */
     private final String authority;
+
     /**
-     * Indicates if the authority comes from a trusted source.
+     * @deprecated use {@link #fromVipAndApp(String, String)}
      */
-    private final boolean authorityTrusted;
-
+    @Deprecated
     public static OriginName fromVip(String vip) {
-        return fromVip(vip, vip);
+        return fromVipAndApp(vip, VipUtils.extractUntrustedAppNameFromVIP(vip));
     }
 
+    /**
+     * @deprecated use {@link #fromVipAndApp(String, String, String)}
+     */
+    @Deprecated
     public static OriginName fromVip(String vip, String niwsClientName) {
-        return new OriginName(niwsClientName, vip, VipUtils.extractUntrustedAppNameFromVIP(vip), false);
+        return fromVipAndApp(vip, VipUtils.extractUntrustedAppNameFromVIP(vip), niwsClientName);
     }
 
-    @CheckReturnValue
-    public OriginName withTrustedAuthority(String authority) {
-        return new OriginName(niwsClientName, target, authority, true);
+    public static OriginName fromVipAndApp(String vip, String appName) {
+        return fromVipAndApp(vip, appName, vip);
     }
 
-    private OriginName(String niwsClientName, String target, String authority, boolean authorityTrusted) {
-        this.niwsClientName = Objects.requireNonNull(niwsClientName, "niwsClientName");
-        this.metricId = niwsClientName.toLowerCase(Locale.ROOT);
+    public static OriginName fromVipAndApp(String vip, String appName, String niwsClientName) {
+        return new OriginName(vip, appName, niwsClientName);
+    }
+
+    private OriginName(String target, String authority, String niwsClientName) {
         this.target = Objects.requireNonNull(target, "target");
         this.authority = Objects.requireNonNull(authority, "authority");
-        this.authorityTrusted = authorityTrusted;
+        this.niwsClientName = Objects.requireNonNull(niwsClientName, "niwsClientName");
+        this.metricId = niwsClientName.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -97,11 +101,8 @@ public final class OriginName {
      * Returns the Authority of this origin.   This is used for establishing secure connections.  May be absent
      * if the authority is not trusted.
      */
-    public Optional<String> getTrustedAuthority() {
-        if (authorityTrusted) {
-            return Optional.of(authority);
-        }
-        return Optional.empty();
+    public String getAuthority() {
+        return authority;
     }
 
     @Override
@@ -110,15 +111,14 @@ public final class OriginName {
             return false;
         }
         OriginName that = (OriginName) o;
-        return authorityTrusted == that.authorityTrusted
-                && Objects.equals(niwsClientName, that.niwsClientName)
+        return Objects.equals(niwsClientName, that.niwsClientName)
                 && Objects.equals(target, that.target)
                 && Objects.equals(authority, that.authority);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(authorityTrusted, niwsClientName, target, authority);
+        return Objects.hash(niwsClientName, target, authority);
     }
 
     @Override
@@ -127,7 +127,6 @@ public final class OriginName {
                 "niwsClientName='" + niwsClientName + '\'' +
                 ", target='" + target + '\'' +
                 ", authority='" + authority + '\'' +
-                ", authorityTrusted=" + authorityTrusted +
                 '}';
     }
 }

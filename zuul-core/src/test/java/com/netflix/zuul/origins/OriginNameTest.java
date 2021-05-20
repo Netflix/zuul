@@ -18,7 +18,6 @@
 package com.netflix.zuul.origins;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,13 +26,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class OriginNameTest {
     @Test
-    public void getTrustedAuthority() {
-        OriginName originName = OriginName.fromVip("woodly-doodly");
+    public void getAuthority() {
+        OriginName trusted = OriginName.fromVipAndApp("woodly-doodly", "westerndigital");
 
-        assertFalse(originName.getTrustedAuthority().isPresent());
-
-        OriginName trusted = originName.withTrustedAuthority("westerndigital");
-
-        assertEquals("westerndigital", trusted.getTrustedAuthority().get());
+        assertEquals("westerndigital", trusted.getAuthority());
     }
 }
