@@ -20,6 +20,25 @@ import com.netflix.zuul.util.VipUtils;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * An Origin Name is a tuple of a target to connect to, an authority to use for connecting, and an NIWS client name
+ * used for configuration of an Origin.   These fields are semi independent, but are usually used in proximity to each
+ * other, and thus makes sense to group them together.
+ *
+ * <p>The {@code target} represents the string used to look up the origin during name resolution.   Currently, this is
+ * a {@code VIP}, which is passed to a Eureka name resolved.   In the future, other targets will be supported, such as
+ * DNS.
+ *
+ * <p>The {@code authority} represents who we plan to connect to.   In the case of TLS / SSL connections, this can be
+ * used to verify the remote endpoint.  It is not specified what the format is, but it may not be null.  In the case
+ * of VIPs, which are frequently used with AWS clusters, this is the Application Name.
+ *
+ * <p>The {@code NIWS Client Name} is a legacy construct, which is used to configure an origin.   When the origin is
+ * created, the NIWS client name can be used as a key into a configuration mapping to decide how the Origin should
+ * behave.  By default, the VIP is the same for the NIWS client name, but it can be different in scenarios where
+ * multiple connections to the same origin are needed.  Additionally, the NIWS client name also functions as a key
+ * in metrics.
+ */
 public final class OriginName {
     /**
      * The NIWS client name of the origin.  This is typically used in metrics and for configuration of NIWS
@@ -59,10 +78,18 @@ public final class OriginName {
         return fromVipAndApp(vip, VipUtils.extractUntrustedAppNameFromVIP(vip), niwsClientName);
     }
 
+    /**
+     * Constructs an OriginName with a target and authority from the vip and app name.   The vip is used as the NIWS
+     * client name, which is frequently used for configuration.
+     */
     public static OriginName fromVipAndApp(String vip, String appName) {
         return fromVipAndApp(vip, appName, vip);
     }
 
+    /**
+     * Constructs an OriginName with a target, authority, and NIWS client name.   The NIWS client name can be different
+     * from the vip in cases where custom configuration for an Origin is needed.
+     */
     public static OriginName fromVipAndApp(String vip, String appName, String niwsClientName) {
         return new OriginName(vip, appName, niwsClientName);
     }
