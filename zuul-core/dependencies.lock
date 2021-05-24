@@ -58,7 +58,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -75,10 +75,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -143,7 +143,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -155,10 +155,10 @@
             "locked": "1.68"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -256,7 +256,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -271,13 +271,13 @@
             "locked": "1.68"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.29"
+            "locked": "1.31"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -378,7 +378,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -458,7 +458,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -473,7 +473,7 @@
             "locked": "1.68"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -568,7 +568,7 @@
             "locked": "4.1.63.Final"
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "locked": "1.2.1"
@@ -583,7 +583,7 @@
             "locked": "1.68"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [

@@ -380,7 +380,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -404,7 +404,7 @@
             "locked": "1.68"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.21"
@@ -570,7 +570,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -705,7 +705,7 @@
             "locked": "4.13.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -867,7 +867,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.23.0"
+            "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -891,7 +891,7 @@
             "locked": "1.68"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.9.0"
+            "locked": "3.10.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
