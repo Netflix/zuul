@@ -201,7 +201,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void duplicateHostHeader_setBadRequestStatus() {
+    public void multipleHostHeaders_setBadRequestStatus() {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
         PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
@@ -226,7 +226,7 @@ public class ClientRequestReceiverTest {
         SessionContext context = request.getContext();
         assertEquals(StatusCategoryUtils.getStatusCategory(context),
                 ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-        assertEquals("Duplicate Host headers", context.getError().getMessage());
+        assertEquals("Multiple Host headers", context.getError().getMessage());
     }
 
     @Test

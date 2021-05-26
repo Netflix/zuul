@@ -160,11 +160,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest.getHeaders().getAll(HttpHeaderNames.HOST.toString()).size() > 1) {
                 LOG.debug(
-                        "Duplicate Host headers. clientRequest = {} , uri = {}, info = {}",
+                        "Multiple Host headers. clientRequest = {} , uri = {}, info = {}",
                         clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()));
-                final ZuulException ze = new ZuulException("Duplicate Host headers");
+                final ZuulException ze = new ZuulException("Multiple Host headers");
                 ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 StatusCategoryUtils.setStatusCategory(
                         zuulRequest.getContext(),
