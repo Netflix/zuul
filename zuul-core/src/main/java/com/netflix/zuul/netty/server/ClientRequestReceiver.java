@@ -21,7 +21,6 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReaso
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
-import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
@@ -133,7 +132,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             if (clientRequest.decoderResult().isFailure()) {
                 LOG.warn(
                         "Invalid http request. clientRequest = {} , uri = {}, info = {}",
-                        clientRequest.toString(),
+                        clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
@@ -154,6 +153,19 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 final ZuulException ze = new ZuulException(errorMsg);
                 ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+                zuulRequest.getContext().setError(ze);
+                zuulRequest.getContext().setShouldSendErrorResponse(true);
+            } else if (zuulRequest.getHeaders().getAll(HttpHeaderNames.HOST.toString()).size() > 1) {
+                LOG.debug(
+                        "Multiple Host headers. clientRequest = {} , uri = {}, info = {}",
+                        clientRequest,
+                        clientRequest.uri(),
+                        ChannelUtils.channelInfoForLogging(ctx.channel()));
+                final ZuulException ze = new ZuulException("Multiple Host headers");
+                ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 StatusCategoryUtils.setStatusCategory(
                         zuulRequest.getContext(),
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
@@ -206,7 +218,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
 
             if (reason == CompleteReason.PIPELINE_REJECT && zuulRequest != null) {
-                    StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT);
+                StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT);
             }
 
             if (reason != SESSION_COMPLETE && zuulRequest != null) {
