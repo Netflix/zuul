@@ -35,8 +35,7 @@ import java.util.Map;
  * Date: 4/28/15
  * Time: 6:45 PM
  */
-public class SessionContext extends HashMap<String, Object> implements Cloneable
-{
+public final class SessionContext extends HashMap<String, Object> implements Cloneable {
     private static final int INITIAL_SIZE =
             DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
 
