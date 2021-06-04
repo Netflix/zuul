@@ -171,9 +171,8 @@ public class FilterFileManager {
             tasks.add(() -> {
                 try {
                     return filterLoader.putFilter(file);
-                }
-                catch(Exception e) {
-                    LOG.error("Error loading groovy filter from disk! file = " + String.valueOf(file), e);
+                } catch (Exception e) {
+                    LOG.error("Error loading groovy filter from disk! file = " + file, e);
                     return false;
                 }
             });
