@@ -17,8 +17,8 @@
 package com.netflix.zuul.filters.http;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.filters.Endpoint;
+import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.SyncZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -47,6 +47,9 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
         return HttpResponseMessageImpl.defaultErrorResponse(request);
     }
 
+    /**
+     * If you override this class, make sure to override {@link #getSyncType()} as well.
+     */
     @Override
     public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input)
     {
@@ -62,6 +65,11 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
         else {
             return Observable.just(this.apply(input));
         }
+    }
+
+    @Override
+    public FilterSyncType getSyncType() {
+        return FilterSyncType.SYNC;
     }
 
     @Override
