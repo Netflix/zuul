@@ -20,7 +20,7 @@ dependencies {
     api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
 
     api "com.netflix.eureka:eureka-client:1.9.18"
-    api "io.reactivex:rxjava:1.2.1"
+    api "io.reactivex:rxjava:1.3.8"
 
     // TODO(carl-mastrangelo): some of these could probably be implementation.   Do a deeper check.
     api "io.netty:netty-common:${versions_netty}"
