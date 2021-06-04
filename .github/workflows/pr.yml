@@ -9,7 +9,7 @@ jobs:
       matrix:
         java: [8, 11, 15]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
       - name: Set up JDK ${{ matrix.java }}
@@ -35,5 +35,5 @@ jobs:
     name: "Gradle Validation"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - uses: gradle/wrapper-validation-action@v1
