@@ -203,6 +203,19 @@ public class Server
                 addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
                 allBindFutures.add(nettyServerFuture);
             }
+
+            // All channels should share a single ByteBufAllocator instance.
+            // Add metrics to monitor that allocator's memory usage.
+            if (!allBindFutures.isEmpty()) {
+                ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
+                if (alloc instanceof ByteBufAllocatorMetricProvider) {
+                    ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+                    PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                            .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+                    PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                            .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
+                }
+            }
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -276,15 +289,6 @@ public class Server
 
         // Bind and start to accept incoming connections.
         ChannelFuture bindFuture = serverBootstrap.bind(listenAddress.unwrap());
-
-        ByteBufAllocator alloc = bindFuture.channel().alloc();
-        if (alloc instanceof ByteBufAllocatorMetricProvider) {
-            ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
-            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
-                    .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
-            PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
-                    .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
-        }
 
         try {
             return bindFuture.sync();
