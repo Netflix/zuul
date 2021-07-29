@@ -31,31 +31,31 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -67,7 +67,7 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -75,10 +75,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -116,31 +116,31 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -152,13 +152,13 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -226,34 +226,34 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.38.Final"
+            "locked": "2.0.40.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -268,16 +268,16 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.10.0"
+            "locked": "3.11.2"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.31"
+            "locked": "1.32"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.21"
@@ -348,34 +348,34 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.38.Final"
+            "locked": "2.0.40.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -387,7 +387,7 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -431,31 +431,31 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -470,10 +470,10 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.10.0"
+            "locked": "3.11.2"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -538,34 +538,34 @@
             "project": true
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.38.Final"
+            "locked": "2.0.40.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.63.Final"
+            "locked": "4.1.66.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.24.0"
@@ -580,10 +580,10 @@
             "locked": "4.13.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.68"
+            "locked": "1.69"
         },
         "org.mockito:mockito-core": {
-            "locked": "3.10.0"
+            "locked": "3.11.2"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
