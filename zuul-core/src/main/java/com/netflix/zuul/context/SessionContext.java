@@ -16,14 +16,22 @@
 package com.netflix.zuul.context;
 
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
@@ -57,6 +65,46 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
+    private final IdentityHashMap<Key<?>, ?> typedMap = new IdentityHashMap<>();
+
+    /**
+     * A Key is type-safe, identity-based key into the Session Context.
+     * @param <T>
+     */
+    public static final class Key<T> {
+
+        private final String name;
+
+        private Key(String name) {
+            this.name = Objects.requireNonNull(name, "name");
+        }
+
+        @Override
+        public String toString() {
+            return "Key{" + name + '}';
+        }
+
+        public String name() {
+            return name;
+        }
+
+        /**
+         * This method exists solely to indicate that Keys are based on identity and not name.
+         */
+        @Override
+        public boolean equals(Object o) {
+            return super.equals(o);
+        }
+
+        /**
+         * This method exists solely to indicate that Keys are based on identity and not name.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+    }
+
     public SessionContext()
     {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
@@ -66,6 +114,90 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         put(KEY_FILTER_EXECS, new StringBuilder());
         put(KEY_EVENT_PROPS, new HashMap<String, Object>());
         put(KEY_FILTER_ERRORS, new ArrayList<FilterError>());
+    }
+
+    public static <T> Key<T> newKey(String name) {
+        return new Key<>(name);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
+    public Object get(Object key) {
+        return super.get(key);
+    }
+
+    /**
+     * Returns the value in the context, or {@code null} if absent.
+     */
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public <T> T get(Key<T> key) {
+        return (T) typedMap.get(Objects.requireNonNull(key, "key"));
+    }
+
+    /**
+     * Returns the value in the context, or {@code defaultValue} if absent.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getOrDefault(Key<T> key, T defaultValue) {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(defaultValue, "defaultValue");
+        T value = (T) typedMap.get(Objects.requireNonNull(key));
+        if (value != null) {
+            return value;
+        }
+        return defaultValue;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
+    public Object put(String key, Object value) {
+        return super.put(key, value);
+    }
+
+    /**
+     * Returns the previous value associated with key, or {@code null} if there was no mapping for key.  Unlike
+     * {@link #put(String, Object)}, this will never return a null value if the key is present in the map.
+     */
+    @Nullable
+    @CanIgnoreReturnValue
+    public <T> T put(Key<T> key, T value) {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(value, "value");
+
+        @SuppressWarnings("unchecked") // Sorry.
+        T res = ((Map<Key<T>, T>) (Map) typedMap).put(key, value);
+        return res;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
+    public boolean remove(Object key, Object value) {
+        return super.remove(key, value);
+    }
+
+    public <T> boolean remove(Key<T> key, T value) {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(value, "value");
+        @SuppressWarnings("unchecked") // sorry
+        boolean res = ((Map<Key<T>, T>) (Map) typedMap).remove(key, value);
+        return res;
+    }
+
+    public Set<Key<?>> keys() {
+        return Collections.unmodifiableSet(new HashSet<>(typedMap.keySet()));
     }
 
     /**
