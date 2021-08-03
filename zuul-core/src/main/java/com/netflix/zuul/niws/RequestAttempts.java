@@ -56,7 +56,7 @@ public class RequestAttempts extends ArrayList<RequestAttempt>
 
     public static RequestAttempts getFromSessionContext(SessionContext ctx)
     {
-        return (RequestAttempts) ctx.get(CommonContextKeys.REQUEST_ATTEMPTS);
+        return ctx.get(CommonContextKeys.REQUEST_ATTEMPTS);
     }
 
     public static RequestAttempts parse(String attemptsJson) throws IOException

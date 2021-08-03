@@ -20,6 +20,7 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +36,18 @@ public class StatusCategoryUtils {
         return getStatusCategory(msg.getContext());
     }
 
+    @Nullable
     public static StatusCategory getStatusCategory(SessionContext ctx) {
-        return (StatusCategory) ctx.get(CommonContextKeys.STATUS_CATGEORY);
+        return ctx.get(CommonContextKeys.STATUS_CATGEORY);
     }
 
     public static void setStatusCategory(SessionContext ctx, StatusCategory statusCategory) {
-        ctx.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+        ctx.put(CommonContextKeys.STATUS_CATGEORY, statusCategory);
     }
 
+    @Nullable
     public static StatusCategory getOriginStatusCategory(SessionContext ctx) {
-        return (StatusCategory) ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
+        return ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
     }
 
     public static boolean isResponseHttpErrorStatus(HttpResponseMessage response) {
@@ -60,11 +63,12 @@ public class StatusCategoryUtils {
         return (status < 100 || status >= 500);
     }
 
-    public static void storeStatusCategoryIfNotAlreadyFailure(final SessionContext context, final StatusCategory statusCategory) {
+    public static void storeStatusCategoryIfNotAlreadyFailure(
+            final SessionContext context, final StatusCategory statusCategory) {
         if (statusCategory != null) {
-            final StatusCategory nfs = (StatusCategory) context.get(CommonContextKeys.STATUS_CATGEORY);
+            final StatusCategory nfs = context.get(CommonContextKeys.STATUS_CATGEORY);
             if (nfs == null || nfs.getGroup().getId() == ZuulStatusCategoryGroup.SUCCESS.getId()) {
-                context.set(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+                context.put(CommonContextKeys.STATUS_CATGEORY, statusCategory);
             }
         }
     }
