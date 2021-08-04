@@ -94,4 +94,17 @@ public class SessionContextTest {
 
         assertThrows(NullPointerException.class, () -> context.getOrDefault(key, null));
     }
+
+    @Test
+    public void remove() {
+        SessionContext context = new SessionContext();
+        Key<String> key = SessionContext.newKey("foo");
+        context.put(key, "bar");
+
+        Truth.assertThat(context.get(key)).isEqualTo("bar");
+
+        String val = context.remove(key);
+        Truth.assertThat(context.get(key)).isNull();
+        Truth.assertThat(val).isEqualTo("bar");
+    }
 }
