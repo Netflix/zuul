@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.context;
 
+import com.netflix.zuul.niws.RequestAttempts;
+import com.netflix.zuul.stats.status.StatusCategory;
+
 /**
  * Common Context Keys
  *
@@ -24,10 +27,13 @@ package com.netflix.zuul.context;
  */
 public class CommonContextKeys {
 
-    public static final String STATUS_CATGEORY = "status_category";
-    public static final String ORIGIN_STATUS_CATEGORY = "origin_status_category";
-    public static final String ORIGIN_STATUS = "origin_status";
-    public static final String REQUEST_ATTEMPTS = "request_attempts";
+    public static final SessionContext.Key<StatusCategory> STATUS_CATGEORY =
+            SessionContext.newKey("status_category");
+    public static final SessionContext.Key<StatusCategory> ORIGIN_STATUS_CATEGORY =
+            SessionContext.newKey("origin_status_category");
+    public static final SessionContext.Key<Integer>  ORIGIN_STATUS = SessionContext.newKey("origin_status");
+    public static final SessionContext.Key<RequestAttempts> REQUEST_ATTEMPTS =
+            SessionContext.newKey("request_attempts");
 
     public static final String REST_CLIENT_CONFIG = "rest_client_config";
     public static final String REST_EXECUTION_CONTEXT = "rest_exec_ctx";

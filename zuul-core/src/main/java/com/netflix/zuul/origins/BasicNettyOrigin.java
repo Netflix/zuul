@@ -158,8 +158,8 @@ public class BasicNettyOrigin implements NettyOrigin {
         // Choose StatusCategory based on the ErrorType.
         final ErrorType et = requestAttemptFactory.mapNettyToOutboundErrorType(throwable);
         final StatusCategory nfs = et.getStatusCategory();
-        zuulCtx.set(CommonContextKeys.STATUS_CATGEORY, nfs);
-        zuulCtx.set(CommonContextKeys.ORIGIN_STATUS_CATEGORY, nfs);
+        zuulCtx.put(CommonContextKeys.STATUS_CATGEORY, nfs);
+        zuulCtx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, nfs);
 
         zuulCtx.setError(throwable);
     }
@@ -171,7 +171,7 @@ public class BasicNettyOrigin implements NettyOrigin {
 
             // Store the status code of final attempt response.
             int originStatusCode = resp.getStatus();
-            zuulCtx.set(CommonContextKeys.ORIGIN_STATUS, originStatusCode);
+            zuulCtx.put(CommonContextKeys.ORIGIN_STATUS, originStatusCode);
 
             // Mark origin StatusCategory based on http status code.
             StatusCategory originNfs = SUCCESS;
@@ -181,7 +181,7 @@ public class BasicNettyOrigin implements NettyOrigin {
             else if (StatusCategoryUtils.isResponseHttpErrorStatus(originStatusCode)) {
                 originNfs = FAILURE_ORIGIN;
             }
-            zuulCtx.set(CommonContextKeys.ORIGIN_STATUS_CATEGORY, originNfs);
+            zuulCtx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, originNfs);
             // Choose the zuul StatusCategory based on the origin one...
             // ... but only if existing one has not already been set to a non-success value.
             StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, originNfs);
