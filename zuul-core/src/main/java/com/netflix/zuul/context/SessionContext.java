@@ -196,6 +196,23 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         return res;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
+    public Object remove(Object key) {
+        return super.remove(key);
+    }
+
+    public <T> T remove(Key<T> key) {
+        Objects.requireNonNull(key, "key");
+        @SuppressWarnings("unchecked") // sorry
+        T res = ((Map<Key<T>, T>) (Map) typedMap).remove(key);
+        return res;
+    }
+
     public Set<Key<?>> keys() {
         return Collections.unmodifiableSet(new HashSet<>(typedMap.keySet()));
     }
@@ -206,6 +223,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     @Override
     public SessionContext clone()
     {
+        // TODO(carl-mastrangelo): copy over the type safe keys
         return (SessionContext) super.clone();
     }
 
