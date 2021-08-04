@@ -24,9 +24,11 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoop;
+import io.netty.channel.WriteBufferWaterMark;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
+
 /**
  * Created by saroskar on 3/16/16.
  */
@@ -36,7 +38,7 @@ public final class NettyClientConnectionFactory {
     private final ChannelInitializer<? extends Channel> channelInitializer;
 
     NettyClientConnectionFactory(final ConnectionPoolConfig connPoolConfig,
-                                 final ChannelInitializer<? extends Channel> channelInitializer) {
+            final ChannelInitializer<? extends Channel> channelInitializer) {
         this.connPoolConfig = connPoolConfig;
         this.channelInitializer = channelInitializer;
     }
@@ -57,8 +59,9 @@ public final class NettyClientConnectionFactory {
                 .option(ChannelOption.TCP_NODELAY, connPoolConfig.getTcpNoDelay())
                 .option(ChannelOption.SO_SNDBUF, connPoolConfig.getTcpSendBufferSize())
                 .option(ChannelOption.SO_RCVBUF, connPoolConfig.getTcpReceiveBufferSize())
-                .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, connPoolConfig.getNettyWriteBufferHighWaterMark())
-                .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, connPoolConfig.getNettyWriteBufferLowWaterMark())
+                .option(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                        new WriteBufferWaterMark(connPoolConfig.getNettyWriteBufferLowWaterMark(),
+                                connPoolConfig.getNettyWriteBufferHighWaterMark()))
                 .option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
                 .remoteAddress(socketAddress);
         return bootstrap.connect();
