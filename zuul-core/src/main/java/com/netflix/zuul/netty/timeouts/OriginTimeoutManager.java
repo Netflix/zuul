@@ -84,8 +84,7 @@ public class OriginTimeoutManager {
      * @return the config
      */
     protected IClientConfig getRequestClientConfig(HttpRequestMessage zuulRequest) {
-        IClientConfig overriddenClientConfig =
-                (IClientConfig) zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
+        IClientConfig overriddenClientConfig = zuulRequest.getContext().get(CommonContextKeys.REST_CLIENT_CONFIG);
         if (overriddenClientConfig == null) {
             overriddenClientConfig = new DefaultClientConfigImpl();
             zuulRequest.getContext().put(CommonContextKeys.REST_CLIENT_CONFIG, overriddenClientConfig);

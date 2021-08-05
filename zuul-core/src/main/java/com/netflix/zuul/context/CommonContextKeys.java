@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.context;
 
+import com.netflix.client.config.IClientConfig;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.stats.status.StatusCategory;
 
@@ -35,8 +36,8 @@ public class CommonContextKeys {
     public static final SessionContext.Key<RequestAttempts> REQUEST_ATTEMPTS =
             SessionContext.newKey("request_attempts");
 
-    public static final String REST_CLIENT_CONFIG = "rest_client_config";
-    public static final String REST_EXECUTION_CONTEXT = "rest_exec_ctx";
+    public static final SessionContext.Key<IClientConfig> REST_CLIENT_CONFIG =
+            SessionContext.newKey("rest_client_config");
 
     public static final String ZUUL_ENDPOINT = "_zuul_endpoint";
     public static final String ZUUL_FILTER_CHAIN = "_zuul_filter_chain";
