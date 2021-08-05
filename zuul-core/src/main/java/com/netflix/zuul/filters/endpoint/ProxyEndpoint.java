@@ -121,6 +121,8 @@ import org.slf4j.LoggerFactory;
 @Filter(order = 0, type = FilterType.ENDPOINT)
 public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> implements GenericFutureListener<Future<PooledConnection>> {
 
+    private static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
+
     private final ChannelHandlerContext channelCtx;
     private final FilterRunner<HttpResponseMessage, ?> responseFilters;
     protected final AtomicReference<DiscoveryResult> chosenServer;
@@ -370,8 +372,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // an IP address semantically, but a String here.   The two should be swapped.
         // ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY is almost always an IP address, but may some times be a hostname in
         // case the discovery info is not an IP. 
-        Map<Integer, String> attemptToIpAddressMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
-        Map<Integer, InetAddress> attemptToChosenHostMap = (Map) eventProps.get(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY);
+        Map<Integer, String> attemptToIpAddressMap =
+                (Map<Integer, String>) eventProps.get(ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY);
+        Map<Integer, InetAddress> attemptToChosenHostMap =
+                (Map<Integer, InetAddress>) eventProps.get(
+                        CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY.name());
         if (attemptToIpAddressMap == null) {
             attemptToIpAddressMap = new HashMap<>();
         }
@@ -383,13 +388,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         String ipAddr = origin.getIpAddrFromServer(chosenServer.get());
         if (ipAddr != null) {
             attemptToIpAddressMap.put(attemptNum, ipAddr);
-            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
-            context.put(CommonContextKeys.ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
+            eventProps.put(ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY, attemptToIpAddressMap);
         }
 
         if (chosenHostAddr.get() != null) {
             attemptToChosenHostMap.put(attemptNum, chosenHostAddr.get());
-            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
+            eventProps.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY.name(), attemptToChosenHostMap);
             context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
         }
 

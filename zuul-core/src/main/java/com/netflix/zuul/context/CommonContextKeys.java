@@ -17,8 +17,13 @@
 package com.netflix.zuul.context;
 
 import com.netflix.client.config.IClientConfig;
+import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.stats.status.StatusCategory;
+import java.net.InetAddress;
+import java.util.Map;
 
 /**
  * Common Context Keys
@@ -39,10 +44,10 @@ public class CommonContextKeys {
     public static final SessionContext.Key<IClientConfig> REST_CLIENT_CONFIG =
             SessionContext.newKey("rest_client_config");
 
-    public static final String ZUUL_ENDPOINT = "_zuul_endpoint";
-    public static final String ZUUL_FILTER_CHAIN = "_zuul_filter_chain";
-    public static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
-    public static final String ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY = "_zuul_origin_chosen_host_addr_map";
+    public static final SessionContext.Key<ZuulFilter<HttpRequestMessage, HttpResponseMessage>> ZUUL_ENDPOINT =
+            SessionContext.newKey("_zuul_endpoint");
+    public static final SessionContext.Key<Map<Integer, InetAddress>> ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY =
+            SessionContext.newKey("_zuul_origin_chosen_host_addr_map");
     public static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
     public static final String ORIGIN_CHANNEL = "_origin_channel";
     public static final String ORIGIN_MANAGER = "origin_manager";

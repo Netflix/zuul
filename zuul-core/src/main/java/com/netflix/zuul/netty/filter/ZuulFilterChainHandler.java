@@ -16,7 +16,16 @@
 
 package com.netflix.zuul.netty.filter;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_CANCELLED;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL_IDLE_TIMEOUT;
+
 import com.google.common.base.Preconditions;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpRequestReadTimeoutEvent;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
@@ -33,22 +42,9 @@ import io.netty.channel.unix.Errors;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
-import com.netflix.netty.common.HttpLifecycleChannelHandler;
-import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import com.netflix.netty.common.HttpRequestReadTimeoutEvent;
+import java.nio.channels.ClosedChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.channels.ClosedChannelException;
-
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
-import static com.netflix.zuul.context.CommonContextKeys.ZUUL_FILTER_CHAIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_CANCELLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL_IDLE_TIMEOUT;
 
 /**
  * Created by saroskar on 5/18/17.
@@ -76,7 +72,6 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             //Replace NETTY_SERVER_CHANNEL_HANDLER_CONTEXT in SessionContext
             final SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, ctx);
-            zuulCtx.put(ZUUL_FILTER_CHAIN, requestFilterChain);
 
             requestFilterChain.filter(zuulRequest);
         }
