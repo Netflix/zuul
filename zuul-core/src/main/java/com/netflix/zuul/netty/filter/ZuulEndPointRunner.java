@@ -36,6 +36,7 @@ import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.handler.codec.http.HttpContent;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,15 +65,17 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         this.filterLoader = filterLoader;
     }
 
-    public static ZuulFilter<HttpRequestMessage, HttpResponseMessage> getEndpoint(final HttpRequestMessage zuulReq) {
+    @Nullable
+    public static ZuulFilter<HttpRequestMessage, HttpResponseMessage> getEndpoint(
+            @Nullable final HttpRequestMessage zuulReq) {
         if (zuulReq != null) {
-            return (ZuulFilter<HttpRequestMessage, HttpResponseMessage>) zuulReq.getContext().get(ZUUL_ENDPOINT);
+            return zuulReq.getContext().get(ZUUL_ENDPOINT);
         }
         return null;
     }
 
     public static void setEndpoint(HttpRequestMessage zuulReq, ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint) {
-        zuulReq.getContext().set(ZUUL_ENDPOINT, endpoint);
+        zuulReq.getContext().put(ZUUL_ENDPOINT, endpoint);
     }
 
     @Override
