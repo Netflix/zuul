@@ -122,6 +122,7 @@ import org.slf4j.LoggerFactory;
 public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> implements GenericFutureListener<Future<PooledConnection>> {
 
     private static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
+    private static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
 
     private final ChannelHandlerContext channelCtx;
     private final FilterRunner<HttpResponseMessage, ?> responseFilters;
@@ -397,7 +398,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             context.put(CommonContextKeys.ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY, attemptToChosenHostMap);
         }
 
-        eventProps.put(CommonContextKeys.ZUUL_ORIGIN_REQUEST_URI, zuulRequest.getPathAndQuery());
+        eventProps.put(ZUUL_ORIGIN_REQUEST_URI, zuulRequest.getPathAndQuery());
     }
 
     protected void updateOriginRpsTrackers(NettyOrigin origin, int attempt) {
@@ -562,7 +563,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // set read timeout on origin channel
         ch.attr(ClientTimeoutHandler.ORIGIN_RESPONSE_READ_TIMEOUT).set(readTimeout);
 
-        context.set(ORIGIN_CHANNEL, ch);
+        context.put(ORIGIN_CHANNEL, ch);
         context.set(POOLED_ORIGIN_CONNECTION_KEY, conn);
 
         preWriteToOrigin(chosenServer.get(), zuulRequest);
