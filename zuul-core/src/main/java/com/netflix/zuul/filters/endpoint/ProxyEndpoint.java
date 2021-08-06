@@ -1015,7 +1015,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         OriginManager<NettyOrigin> originManager = (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
         if (Debug.debugRequest(context)) {
 
-            ImmutableList.Builder<String> routingLogEntries = (ImmutableList.Builder<String>)context.get(CommonContextKeys.ROUTING_LOG);
+            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
             if(routingLogEntries != null) {
                 for (String entry : routingLogEntries.build()) {
                     Debug.addRequestDebug(context, "RoutingLog: " + entry);
