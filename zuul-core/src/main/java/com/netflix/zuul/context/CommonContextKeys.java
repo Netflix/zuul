@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.context;
 
+import com.google.common.collect.ImmutableList;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -51,7 +52,8 @@ public class CommonContextKeys {
             SessionContext.newKey("_zuul_origin_chosen_host_addr_map");
     public static final SessionContext.Key<Channel> ORIGIN_CHANNEL = SessionContext.newKey("_origin_channel");
     public static final String ORIGIN_MANAGER = "origin_manager";
-    public static final String ROUTING_LOG = "routing_log";
+    public static final SessionContext.Key<ImmutableList.Builder<String>> ROUTING_LOG =
+            SessionContext.newKey("routing_log");
     public static final String USE_FULL_VIP_NAME = "use_full_vip_name";
     public static final String ACTUAL_VIP = "origin_vip_actual";
     public static final String ORIGIN_VIP_SECURE = "origin_vip_secure";
