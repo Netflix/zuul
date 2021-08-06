@@ -22,6 +22,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.stats.status.StatusCategory;
+import io.netty.channel.Channel;
 import java.net.InetAddress;
 import java.util.Map;
 
@@ -48,8 +49,7 @@ public class CommonContextKeys {
             SessionContext.newKey("_zuul_endpoint");
     public static final SessionContext.Key<Map<Integer, InetAddress>> ZUUL_ORIGIN_CHOSEN_HOST_ADDR_MAP_KEY =
             SessionContext.newKey("_zuul_origin_chosen_host_addr_map");
-    public static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
-    public static final String ORIGIN_CHANNEL = "_origin_channel";
+    public static final SessionContext.Key<Channel> ORIGIN_CHANNEL = SessionContext.newKey("_origin_channel");
     public static final String ORIGIN_MANAGER = "origin_manager";
     public static final String ROUTING_LOG = "routing_log";
     public static final String USE_FULL_VIP_NAME = "use_full_vip_name";
