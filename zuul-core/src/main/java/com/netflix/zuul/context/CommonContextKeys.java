@@ -22,10 +22,12 @@ import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.niws.RequestAttempts;
+import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.stats.status.StatusCategory;
 import io.netty.channel.Channel;
 import java.net.InetAddress;
 import java.util.Map;
+import javax.inject.Provider;
 
 /**
  * Common Context Keys
@@ -75,9 +77,12 @@ public class CommonContextKeys {
     public static final String REQ_BODY_DCS = "_request_body_dcs";
     public static final String RESP_BODY_DCS = "_response_body_dcs";
 
-    public static final String REQ_BODY_SIZE_PROVIDER = "request_body_size";
-    public static final String RESP_BODY_SIZE_PROVIDER = "response_body_size";
+    public static final SessionContext.Key<Provider<Long>> REQ_BODY_SIZE_PROVIDER =
+            SessionContext.newKey("request_body_size");
+    public static final SessionContext.Key<Provider<Long>> RESP_BODY_SIZE_PROVIDER =
+            SessionContext.newKey("response_body_size");
 
-    public static final String PASSPORT = "_passport";
-    public static final String ZUUL_USE_DECODED_URI = "zuul_use_decoded_uri";
+    public static final SessionContext.Key<CurrentPassport> PASSPORT = SessionContext.newKey("_passport");
+    public static final SessionContext.Key<Boolean> ZUUL_USE_DECODED_URI =
+            SessionContext.newKey("zuul_use_decoded_uri");
 }

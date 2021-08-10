@@ -126,7 +126,7 @@ public class CurrentPassport
 
     public static CurrentPassport fromSessionContext(SessionContext ctx)
     {
-        return (CurrentPassport) ctx.get(CommonContextKeys.PASSPORT);
+        return ctx.get(CommonContextKeys.PASSPORT);
     }
 
     public static CurrentPassport createForChannel(Channel ch)

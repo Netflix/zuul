@@ -253,7 +253,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public String getPath() {
-        if (message.getContext().containsKey(CommonContextKeys.ZUUL_USE_DECODED_URI)) {
+        if (message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI) == Boolean.TRUE) {
             return decodedPath;
         }
         return path;
