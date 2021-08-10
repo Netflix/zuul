@@ -69,11 +69,15 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
         ctx.put(CommonContextKeys.REQUEST_ATTEMPTS, new RequestAttempts());
 
         // Providers for getting the size of read/written request and response body sizes from channel.
-        ctx.set(CommonContextKeys.REQ_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentInboundBodySize(channel));
-        ctx.set(CommonContextKeys.RESP_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentOutboundBodySize(channel));
+        ctx.put(
+                CommonContextKeys.REQ_BODY_SIZE_PROVIDER,
+                HttpBodySizeRecordingChannelHandler.getCurrentInboundBodySize(channel));
+        ctx.put(
+                CommonContextKeys.RESP_BODY_SIZE_PROVIDER,
+                HttpBodySizeRecordingChannelHandler.getCurrentOutboundBodySize(channel));
 
         CurrentPassport passport = CurrentPassport.fromChannel(channel);
-        ctx.set(CommonContextKeys.PASSPORT, passport);
+        ctx.put(CommonContextKeys.PASSPORT, passport);
 
         ctx.setUUID(UUID_FACTORY.generateRandomUuid().toString());
 
