@@ -144,4 +144,18 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasCompleteBody());
         assertEquals("Goodbye World!", body);
     }
+
+    @Test
+    public void testGetBodyLength() {
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        String body1 = "Hello World!";
+        msg.setBody(body1.getBytes());
+        assertTrue(msg.hasCompleteBody());
+        assertEquals(body1.getBytes().length, msg.getBodyLength());
+
+        String body2 = "Foobar";
+        msg.setBody(body2.getBytes());
+        assertTrue(msg.hasCompleteBody());
+        assertEquals(body2.getBytes().length, msg.getBodyLength());
+    }
 }

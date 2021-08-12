@@ -17,6 +17,7 @@ package com.netflix.zuul.message;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.context.SessionContext;
@@ -167,7 +168,7 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public int getBodyLength() {
         int size = 0;
-        for (final HttpContent chunk : bodyChunks) {
+        for (final HttpContent chunk : ImmutableList.copyOf(bodyChunks)) {
             size += chunk.content().readableBytes();
         }
         return size;
