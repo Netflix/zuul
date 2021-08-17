@@ -17,6 +17,8 @@
 package com.netflix.zuul.netty.filter;
 
 import com.netflix.config.CachedDynamicIntProperty;
+import com.netflix.spectator.api.Id;
+import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -37,6 +39,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
 import io.perfmark.Link;
 import io.perfmark.TaskCloseable;
+
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,12 +82,16 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME = new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
 
+    private final Registry registry;
+    private final Id filterExcessiveTimerId;
 
-    protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage) {
+    protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage, Registry registry) {
         this.usageNotifier = Preconditions.checkNotNull(usageNotifier, "filter usage notifier");
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
         this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";
+        this.registry = registry;
+        this.filterExcessiveTimerId = registry.createId("zuul.request.timing.filterExcessive");
     }
 
     public static final ChannelHandlerContext getChannelHandlerContext(final ZuulMessage mesg) {
@@ -318,7 +326,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         final long execTimeNs = System.nanoTime() - startTime;
         final long execTimeMs = execTimeNs / 1_000_000L;
         if (execTimeMs >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
-            logger.warn("Filter {} took {} ms to complete! status = {}", filter.filterName(), execTimeMs, status.name());
+            registry.timer(filterExcessiveTimerId
+                    .withTag("id", filter.filterName())
+                    .withTag("status", status.name()))
+                    .record(execTimeMs, TimeUnit.MILLISECONDS);
         }
 
         // Record the execution summary in context.
