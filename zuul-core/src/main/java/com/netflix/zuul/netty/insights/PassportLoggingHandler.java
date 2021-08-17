@@ -99,21 +99,31 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter
                     + ", toplevelid = " + topLevelRequestId
                     + ", req = " + request.getInfoForLogging()
                     + ", passport = " + String.valueOf(passport));
-        }
 
-        // Some logging of session states if certain criteria match:
-        if (LOG.isInfoEnabled()) {
-            if (passport.wasProxyAttempt()) {
-
-                if (passport.findStateBackwards(PassportState.OUT_RESP_LAST_CONTENT_SENDING) == null) {
-                    incompleteProxySessionCounter.increment();
-                    LOG.info("Incorrect final state! toplevelid = " + topLevelRequestId + ", " + ChannelUtils.channelInfoForLogging(channel));
-                }
+            StartAndEnd inReqToOutResp = passport.findFirstStartAndLastEndStates(PassportState.IN_REQ_HEADERS_RECEIVED, PassportState.OUT_REQ_LAST_CONTENT_SENT);
+            if (passport.calculateTimeBetween(inReqToOutResp) > WARN_REQ_PROCESSING_TIME_NS.get()) {
+                LOG.debug("Request processing took longer than threshold! toplevelid = " + topLevelRequestId + ", "
+                        + ChannelUtils.channelInfoForLogging(channel));
             }
 
-            if (! passport.wasProxyAttempt()) {
-                if (ctx != null && !isHealthcheckRequest(request)) {
-                    // Why did we fail to attempt to proxy this request?
+            StartAndEnd inRespToOutResp = passport.findLastStartAndFirstEndStates(PassportState.IN_RESP_HEADERS_RECEIVED, PassportState.OUT_RESP_LAST_CONTENT_SENT);
+            if (passport.calculateTimeBetween(inRespToOutResp) > WARN_RESP_PROCESSING_TIME_NS.get()) {
+                LOG.debug("Response processing took longer than threshold! toplevelid = " + topLevelRequestId + ", "
+                        + ChannelUtils.channelInfoForLogging(channel));
+            }
+        }
+
+        if (passport.wasProxyAttempt()) {
+            if (passport.findStateBackwards(PassportState.OUT_RESP_LAST_CONTENT_SENDING) == null) {
+                incompleteProxySessionCounter.increment();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Incorrect final state! toplevelid = " + topLevelRequestId + ", " + ChannelUtils.channelInfoForLogging(channel));
+                }
+            }
+        } else {
+            if (ctx != null && !isHealthcheckRequest(request)) {
+                // Why did we fail to attempt to proxy this request?
+                if (LOG.isDebugEnabled()) {
                     RequestAttempts attempts = RequestAttempts.getFromSessionContext(ctx);
                     LOG.debug("State after complete. "
                             + ", context-error = " + String.valueOf(ctx.getError())
@@ -123,18 +133,6 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter
                             + ", attempts = " + String.valueOf(attempts)
                             + ", passport = " + String.valueOf(passport));
                 }
-            }
-
-            StartAndEnd inReqToOutResp = passport.findFirstStartAndLastEndStates(PassportState.IN_REQ_HEADERS_RECEIVED, PassportState.OUT_REQ_LAST_CONTENT_SENT);
-            if (passport.calculateTimeBetween(inReqToOutResp) > WARN_REQ_PROCESSING_TIME_NS.get()) {
-                LOG.info("Request processing took longer than threshold! toplevelid = " + topLevelRequestId + ", "
-                        + ChannelUtils.channelInfoForLogging(channel));
-            }
-
-            StartAndEnd inRespToOutResp = passport.findLastStartAndFirstEndStates(PassportState.IN_RESP_HEADERS_RECEIVED, PassportState.OUT_RESP_LAST_CONTENT_SENT);
-            if (passport.calculateTimeBetween(inRespToOutResp)
-                    > WARN_RESP_PROCESSING_TIME_NS.get()) {
-                LOG.info("Response processing took longer than threshold! toplevelid = " + topLevelRequestId + ", " + ChannelUtils.channelInfoForLogging(channel));
             }
         }
     }
