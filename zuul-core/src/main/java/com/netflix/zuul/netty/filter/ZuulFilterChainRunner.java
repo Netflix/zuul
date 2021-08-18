@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.filter;
 
+import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -40,13 +41,14 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
     private final ZuulFilter<T, T>[] filters;
 
-    public ZuulFilterChainRunner(ZuulFilter<T, T>[] zuulFilters, FilterUsageNotifier usageNotifier, FilterRunner<T, ?> nextStage) {
-        super(zuulFilters[0].filterType(), usageNotifier, nextStage);
+    public ZuulFilterChainRunner(ZuulFilter<T, T>[] zuulFilters, FilterUsageNotifier usageNotifier,
+                                 FilterRunner<T, ?> nextStage, Registry registry) {
+        super(zuulFilters[0].filterType(), usageNotifier, nextStage, registry);
         this.filters = zuulFilters;
     }
 
-    public ZuulFilterChainRunner(ZuulFilter<T, T>[] zuulFilters, FilterUsageNotifier usageNotifier) {
-        this(zuulFilters, usageNotifier, null);
+    public ZuulFilterChainRunner(ZuulFilter<T, T>[] zuulFilters, FilterUsageNotifier usageNotifier, Registry registry) {
+        this(zuulFilters, usageNotifier, null, registry);
     }
 
     @Override

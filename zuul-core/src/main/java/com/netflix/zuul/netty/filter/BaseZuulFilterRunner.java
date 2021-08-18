@@ -85,7 +85,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     private final Registry registry;
     private final Id filterExcessiveTimerId;
 
-    protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage, Registry registry) {
+    protected BaseZuulFilterRunner(FilterType filterType, FilterUsageNotifier usageNotifier,
+                                   FilterRunner<O, ?> nextStage, Registry registry) {
         this.usageNotifier = Preconditions.checkNotNull(usageNotifier, "filter usage notifier");
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
