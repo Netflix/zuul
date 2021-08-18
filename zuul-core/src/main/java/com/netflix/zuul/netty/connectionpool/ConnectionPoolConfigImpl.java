@@ -62,6 +62,8 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
                 new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
         this.TCP_NO_DELAY =
                 new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
+
+        //TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
         this.WRITE_BUFFER_HIGH_WATER_MARK =
                 new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferHighWaterMark", 32 * 1024);
         this.WRITE_BUFFER_LOW_WATER_MARK =
