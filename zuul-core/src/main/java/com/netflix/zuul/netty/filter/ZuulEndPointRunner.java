@@ -18,6 +18,7 @@ package com.netflix.zuul.netty.filter;
 
 import com.google.common.base.Strings;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -60,8 +61,8 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
 
     public ZuulEndPointRunner(FilterUsageNotifier usageNotifier, FilterLoader filterLoader,
-                              FilterRunner<HttpResponseMessage, HttpResponseMessage> respFilters) {
-        super(FilterType.ENDPOINT, usageNotifier, respFilters);
+                              FilterRunner<HttpResponseMessage, HttpResponseMessage> respFilters, Registry registry) {
+        super(FilterType.ENDPOINT, usageNotifier, respFilters, registry);
         this.filterLoader = filterLoader;
     }
 

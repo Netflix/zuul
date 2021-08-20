@@ -336,18 +336,18 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected ZuulEndPointRunner getEndpointRunner(ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain,
                                                    FilterUsageNotifier filterUsageNotifier, FilterLoader filterLoader) {
-        return new ZuulEndPointRunner(filterUsageNotifier, filterLoader, responseFilterChain);
+        return new ZuulEndPointRunner(filterUsageNotifier, filterLoader, responseFilterChain, registry);
     }
 
     protected <T extends ZuulMessage> ZuulFilterChainRunner<T> getFilterChainRunner(ZuulFilter<T, T>[] filters,
                                                                                     FilterUsageNotifier filterUsageNotifier) {
-        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier);
+        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, registry);
     }
 
     protected <T extends ZuulMessage, R extends ZuulMessage> ZuulFilterChainRunner<T> getFilterChainRunner(ZuulFilter<T, T>[] filters,
                                                                                     FilterUsageNotifier filterUsageNotifier,
                                                                                     FilterRunner<T, R> filterRunner) {
-        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterRunner);
+        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterRunner, registry);
     }
 
     @SuppressWarnings("unchecked") // For the conversion from getFiltersByType.  It's not safe, sorry.
