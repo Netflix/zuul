@@ -69,7 +69,7 @@ public class HttpUtils
             return null;
         }
         xForwardedFor = xForwardedFor.trim();
-        String tokenized[] = xForwardedFor.split(",");
+        String[] tokenized = xForwardedFor.split(",");
         if (tokenized.length == 0) {
             return null;
         } else {
@@ -104,16 +104,21 @@ public class HttpUtils
      * @return - clean header string
      */
     public static String stripMaliciousHeaderChars(@Nullable String input) {
+        StringBuilder strippedInput = new StringBuilder();
+
         if (input == null) {
             return null;
         }
-        // TODO(carl-mastrangelo): implement this more efficiently.
-        for (char c : MALICIOUS_HEADER_CHARS) {
-            if (input.indexOf(c) != -1) {
-                input = input.replace(Character.toString(c), "");
+
+        for(char inputChar : input.toCharArray()){
+            for(char c : MALICIOUS_HEADER_CHARS) {
+                if(inputChar != c) {
+                    strippedInput.append(inputChar);
+                }
             }
         }
-        return input;
+
+        return strippedInput.toString();
     }
 
 
