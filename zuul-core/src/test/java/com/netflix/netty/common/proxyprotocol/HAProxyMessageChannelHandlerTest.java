@@ -18,6 +18,7 @@ package com.netflix.netty.common.proxyprotocol;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
@@ -25,8 +26,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -51,17 +54,23 @@ public class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        InetSocketAddress destAddress = channel
-                .attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
+        InetSocketAddress destAddress =
+                channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
 
-        InetSocketAddress srcAddress = (InetSocketAddress) channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR)
-                .get();
+        InetSocketAddress proxyProtocolSrcAddress =
+                channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_REMOTE_ADDRESS).get();
+
+        InetSocketAddress srcAddress =
+                (InetSocketAddress) channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get();
 
         assertEquals("124.123.111.111", destAddress.getHostString());
         assertEquals(443, destAddress.getPort());
 
         assertEquals("192.168.0.1", srcAddress.getHostString());
         assertEquals(10008, srcAddress.getPort());
+
+        assertEquals("192.168.0.1", proxyProtocolSrcAddress.getHostString());
+        assertEquals(10008, proxyProtocolSrcAddress.getPort());
 
         Attrs attrs = channel.attr(Server.CONN_DIMENSIONS).get();
         Integer port = HAProxyMessageChannelHandler.HAPM_DEST_PORT.get(attrs);
