@@ -99,8 +99,11 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);
                         case TCP4:
                         case TCP6:
-                            addr = new InetSocketAddress(
+                            InetSocketAddress inetAddr = new InetSocketAddress(
                                     InetAddresses.forString(sourceAddress), hapm.sourcePort());
+                            addr = inetAddr;
+                            // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_REMOTE_ADDR could be PPv2 or not
+                            channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_REMOTE_ADDRESS).set(inetAddr);
                             break out;
                         case UNIX_STREAM: // TODO: implement
                         case UDP4:
