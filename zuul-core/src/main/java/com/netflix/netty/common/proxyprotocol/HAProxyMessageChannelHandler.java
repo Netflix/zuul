@@ -47,7 +47,9 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
     @VisibleForTesting
     static final Attrs.Key<Integer> HAPM_DEST_PORT = Attrs.newKey("hapm_port");
+    @VisibleForTesting
     static final Attrs.Key<String> HAPM_DEST_IP_VERSION = Attrs.newKey("hapm_dst_ipproto");
+    @VisibleForTesting
     static final Attrs.Key<String> HAPM_SRC_IP_VERSION = Attrs.newKey("hapm_src_ipproto");
 
     @Override
