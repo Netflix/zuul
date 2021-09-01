@@ -66,5 +66,9 @@ public class HAProxyMessageChannelHandlerTest {
         Attrs attrs = channel.attr(Server.CONN_DIMENSIONS).get();
         Integer port = HAProxyMessageChannelHandler.HAPM_DEST_PORT.get(attrs);
         assertEquals(443, port.intValue());
+        String sourceIpVersion = HAProxyMessageChannelHandler.HAPM_SRC_IP_VERSION.get(attrs);
+        assertEquals("v4", sourceIpVersion);
+        String destIpVersion = HAProxyMessageChannelHandler.HAPM_DEST_IP_VERSION.get(attrs);
+        assertEquals("v4", destIpVersion);
     }
 }

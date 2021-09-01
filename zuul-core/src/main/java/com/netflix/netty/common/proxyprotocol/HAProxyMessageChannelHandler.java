@@ -28,6 +28,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.util.AttributeKey;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -45,6 +47,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
     @VisibleForTesting
     static final Attrs.Key<Integer> HAPM_DEST_PORT = Attrs.newKey("hapm_port");
+    @VisibleForTesting
+    static final Attrs.Key<String> HAPM_DEST_IP_VERSION = Attrs.newKey("hapm_dst_ipproto");
+    @VisibleForTesting
+    static final Attrs.Key<String> HAPM_SRC_IP_VERSION = Attrs.newKey("hapm_src_ipproto");
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -72,6 +78,13 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_LOCAL_ADDR could be PPv2 or not
                             channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(inetAddr);
                             Attrs attrs = ctx.channel().attr(Server.CONN_DIMENSIONS).get();
+                            if (inetAddr.getAddress() instanceof Inet4Address) {
+                                HAPM_DEST_IP_VERSION.put(attrs, "v4");
+                            } else if (inetAddr.getAddress() instanceof Inet6Address) {
+                                HAPM_DEST_IP_VERSION.put(attrs, "v6");
+                            } else {
+                                HAPM_DEST_IP_VERSION.put(attrs, "unknown");
+                            }
                             HAPM_DEST_PORT.put(attrs, hapm.destinationPort());
                             break out;
                         case UNIX_STREAM: // TODO: implement
@@ -99,8 +112,17 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);
                         case TCP4:
                         case TCP6:
-                            addr = new InetSocketAddress(
+                            InetSocketAddress inetAddr;
+                            addr = inetAddr = new InetSocketAddress(
                                     InetAddresses.forString(sourceAddress), hapm.sourcePort());
+                            Attrs attrs = ctx.channel().attr(Server.CONN_DIMENSIONS).get();
+                            if (inetAddr.getAddress() instanceof Inet4Address) {
+                                HAPM_SRC_IP_VERSION.put(attrs, "v4");
+                            } else if (inetAddr.getAddress() instanceof Inet6Address) {
+                                HAPM_SRC_IP_VERSION.put(attrs, "v6");
+                            } else {
+                                HAPM_SRC_IP_VERSION.put(attrs, "unknown");
+                            }
                             break out;
                         case UNIX_STREAM: // TODO: implement
                         case UDP4:
