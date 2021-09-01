@@ -20,6 +20,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.Server;
+import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bootstrap
@@ -29,13 +32,15 @@ import com.netflix.zuul.netty.server.Server;
  */
 public class Bootstrap {
 
+    private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
+
     public static void main(String[] args) {
         new Bootstrap().start();
     }
 
     public void start() {
-        System.out.println("Zuul Sample: starting up.");
-        long startTime = System.currentTimeMillis();
+        long startNanos = System.nanoTime();
+        logger.info("Zuul Sample: starting up.");
         int exitCode = 0;
 
         Server server = null;
@@ -45,13 +50,13 @@ public class Bootstrap {
             BaseServerStartup serverStartup = injector.getInstance(BaseServerStartup.class);
             server = serverStartup.server();
 
-            long startupDuration = System.currentTimeMillis() - startTime;
-            System.out.println("Zuul Sample: finished startup. Duration = " + startupDuration + " ms");
-
             server.start();
+            long startupDuration = System.nanoTime() - startNanos;
+            logger.info(
+                    "Zuul Sample: finished startup. Duration = {}ms", TimeUnit.NANOSECONDS.toMillis(startupDuration));
             server.awaitTermination();
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
+            // Don't use logger here, as we may be shutting down the JVM and the logs won't be printed.
             t.printStackTrace();
             System.err.println("###############");
             System.err.println("Zuul Sample: initialization failed. Forcing shutdown now.");
@@ -60,7 +65,9 @@ public class Bootstrap {
         }
         finally {
             // server shutdown
-            if (server != null) server.stop();
+            if (server != null) {
+                server.stop();
+            }
 
             System.exit(exitCode);
         }
