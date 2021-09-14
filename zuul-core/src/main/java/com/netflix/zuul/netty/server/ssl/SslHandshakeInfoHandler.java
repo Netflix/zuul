@@ -155,8 +155,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                 spectatorRegistry.counter("zuul.sni.parse.success").increment();
             } else {
                 Throwable cause = sniCompletionEvent.cause();
-                spectatorRegistry.counter("zuul.sni.parse.failure", cause != null ? cause.getMessage() : "UNKNOWN")
-                        .increment();
+                spectatorRegistry.counter("zuul.sni.parse.failure",
+                        "cause", cause != null ? cause.getMessage() : "UNKNOWN").increment();
             }
         }
         super.userEventTriggered(ctx, evt);
