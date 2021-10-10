@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.message;
 
+import static com.netflix.zuul.TestUtils.assertContentLength;
+import static com.netflix.zuul.TestUtils.assertContentLengthIsAbsent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -61,6 +63,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLengthIsAbsent(msg);
     }
 
     @Test
@@ -73,6 +76,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLengthIsAbsent(msg);
     }
 
     @Test
@@ -85,6 +89,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLengthIsAbsent(msg);
     }
 
     @Test
@@ -93,6 +98,7 @@ public class ZuulMessageImplTest {
         msg.setBody("Hello World!".getBytes());
         final String body = new String(msg.getBody());
         assertEquals("Hello World!", body);
+        assertContentLength(msg, 12);
     }
 
     @Test
@@ -103,6 +109,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLength(msg, 12);
     }
 
     @Test
@@ -113,6 +120,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLength(msg, 12);
     }
 
     @Test
@@ -123,11 +131,14 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLength(msg, 12);
+
         msg.setBodyAsText("Goodbye World!");
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Goodbye World!", body);
+        assertContentLength(msg, 14);
     }
 
     @Test
@@ -138,10 +149,14 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertContentLength(msg, 12);
+
         msg.setBody("Goodbye World!".getBytes());
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Goodbye World!", body);
+        assertContentLength(msg, 14);
     }
+
 }

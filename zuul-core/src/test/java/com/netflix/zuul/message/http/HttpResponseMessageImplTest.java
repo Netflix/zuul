@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.message.http;
 
+import static com.netflix.zuul.TestUtils.assertContentLength;
+import static com.netflix.zuul.TestUtils.assertContentLengthIsAbsent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +29,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Unit tests for {@link HttpResponseMessageImpl}.
@@ -64,5 +68,16 @@ public class HttpResponseMessageImplTest {
         assertEquals(1, response.getHeaders().size());
         assertFalse(response.hasSetCookieWithName("c1"));
         assertTrue(response.hasSetCookieWithName("c2"));
+    }
+
+    @Test
+    public void testContentLengthHeaderHasCorrectValue() {
+        assertContentLengthIsAbsent(response);
+
+        response.setBodyAsText("Hello world!");
+        assertContentLength(response, 12);
+
+        response.setBody("abc".getBytes(StandardCharsets.UTF_8));
+        assertContentLength(response, 3);
     }
 }
