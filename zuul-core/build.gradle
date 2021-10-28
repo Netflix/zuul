@@ -22,18 +22,19 @@ dependencies {
     api "com.netflix.eureka:eureka-client:1.9.18"
     api "io.reactivex:rxjava:1.2.1"
 
+    api platform("io.netty:netty-bom:${versions_netty}")
     // TODO(carl-mastrangelo): some of these could probably be implementation.   Do a deeper check.
-    api "io.netty:netty-common:${versions_netty}"
-    api "io.netty:netty-buffer:${versions_netty}"
-    api "io.netty:netty-codec-http:${versions_netty}"
-    api "io.netty:netty-codec-http2:${versions_netty}"
-    api "io.netty:netty-handler:${versions_netty}"
-    api "io.netty:netty-transport:${versions_netty}"
+    api "io.netty:netty-common"
+    api "io.netty:netty-buffer"
+    api "io.netty:netty-codec-http"
+    api "io.netty:netty-codec-http2"
+    api "io.netty:netty-handler"
+    api "io.netty:netty-transport"
 
-    implementation "io.netty:netty-codec-haproxy:${versions_netty}"
-    implementation "io.netty:netty-transport-native-epoll:${versions_netty}:linux-x86_64"
-    implementation "io.netty:netty-transport-native-kqueue:${versions_netty}:osx-x86_64"
-    runtimeOnly "io.netty:netty-tcnative-boringssl-static:2.0.40.Final"
+    implementation "io.netty:netty-codec-haproxy"
+    implementation "io.netty:netty-transport-native-epoll"
+    implementation "io.netty:netty-transport-native-kqueue"
+    runtimeOnly "io.netty:netty-tcnative-boringssl-static"
 
     implementation 'io.perfmark:perfmark-api:0.24.0'
     implementation 'javax.inject:javax.inject:1'
