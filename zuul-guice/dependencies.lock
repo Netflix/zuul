@@ -13,7 +13,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -134,7 +134,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -269,7 +269,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -465,7 +465,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -639,7 +639,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -774,7 +774,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
