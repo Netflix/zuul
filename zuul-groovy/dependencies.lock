@@ -7,7 +7,7 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -128,7 +128,7 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -257,7 +257,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1"
@@ -453,7 +453,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -624,7 +624,7 @@
             "locked": "2.12.1"
         },
         "com.google.guava:guava": {
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1"
@@ -756,7 +756,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
             "locked": "1.0.1"
