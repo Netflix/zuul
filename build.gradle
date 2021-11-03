@@ -65,7 +65,7 @@ subprojects {
                 guava: "com.google.guava:guava:31.0.1-jre",
                 junit: "junit:junit:4.13.2",
                 mockito: 'org.mockito:mockito-core:4.+',
-                slf4j: "org.slf4j:slf4j-api:1.7.25",
+                slf4j: "org.slf4j:slf4j-api:1.7.32",
                 truth: 'com.google.truth:truth:1.0.1'
         ]
     }
