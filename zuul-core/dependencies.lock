@@ -73,7 +73,7 @@
             "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "jmh": {
@@ -170,7 +170,7 @@
             "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "jmhRuntimeClasspath": {
@@ -491,7 +491,7 @@
             "locked": "4.1.0"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "testRuntimeClasspath": {

@@ -103,7 +103,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "jmh": {
@@ -224,7 +224,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "jmhRuntimeClasspath": {
@@ -723,7 +723,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.25"
+            "locked": "1.7.32"
         }
     },
     "testRuntimeClasspath": {
