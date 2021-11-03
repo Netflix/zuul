@@ -18,7 +18,7 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-processor"
             ],
-            "locked": "29.0-jre"
+            "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -473,7 +473,7 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "30.1-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -692,7 +692,7 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "30.1-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -1033,7 +1033,7 @@
                 "com.netflix.zuul:zuul-discovery",
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "30.1-jre"
+            "locked": "31.0.1-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [

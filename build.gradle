@@ -63,7 +63,7 @@ subprojects {
 
     ext {
         libraries = [
-                guava: "com.google.guava:guava:29.0-jre",
+                guava: "com.google.guava:guava:31.0.1-jre",
                 junit: "junit:junit:4.13",
                 mockito: 'org.mockito:mockito-core:3.+',
                 slf4j: "org.slf4j:slf4j-api:1.7.25",
