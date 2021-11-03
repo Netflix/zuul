@@ -10,7 +10,7 @@
             "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.18"
@@ -98,7 +98,7 @@
             "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.18"
@@ -190,7 +190,7 @@
             "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -315,7 +315,7 @@
             "locked": "31.0.1-jre"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
@@ -422,7 +422,7 @@
             "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.5"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "locked": "1.9.18"
@@ -511,7 +511,7 @@
             "locked": "1.0.1"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.6"
+            "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
             "firstLevelTransitive": [
