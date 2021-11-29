@@ -29,6 +29,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZuulMessageImplTest {
+    private static final String TEXT1 = "Hello World!";
+    private static final String TEXT2 = "Goodbye World!";
 
     @Test
     public void testClone() {
@@ -61,6 +63,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
     @Test
@@ -73,6 +76,7 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
     @Test
@@ -85,63 +89,81 @@ public class ZuulMessageImplTest {
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
+        assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
     @Test
     public void testSetBodyGetBody() {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBody("Hello World!".getBytes());
+        msg.setBody(TEXT1.getBytes());
         final String body = new String(msg.getBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
     }
 
     @Test
     public void testSetBodyAsTextGetBody() {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBodyAsText("Hello World!");
+        msg.setBodyAsText(TEXT1);
         final String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
     }
 
     @Test
     public void testSetBodyAsTextGetBodyAsText() {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBodyAsText("Hello World!");
+        msg.setBodyAsText(TEXT1);
         final String body = msg.getBodyAsText();
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
     }
 
     @Test
     public void testMultiSetBodyAsTextGetBody() {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBodyAsText("Hello World!");
+        msg.setBodyAsText(TEXT1);
         String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
-        msg.setBodyAsText("Goodbye World!");
+        assertEquals(TEXT1, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
+
+        msg.setBodyAsText(TEXT2);
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Goodbye World!", body);
+        assertEquals(TEXT2, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT2.length()), msg.getHeaders().getFirst("Content-Length"));
     }
 
     @Test
     public void testMultiSetBodyGetBody() {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBody("Hello World!".getBytes());
+        msg.setBody(TEXT1.getBytes());
         String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
-        msg.setBody("Goodbye World!".getBytes());
+        assertEquals(TEXT1, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
+
+        msg.setBody(TEXT2.getBytes());
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Goodbye World!", body);
+        assertEquals(TEXT2, body);
+        assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
+        assertEquals(String.valueOf(TEXT2.length()), msg.getHeaders().getFirst("Content-Length"));
     }
+
 }

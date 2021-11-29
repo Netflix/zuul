@@ -28,11 +28,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Unit tests for {@link HttpResponseMessageImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class HttpResponseMessageImplTest {
+    private static final String TEXT1 = "Hello World!";
+    private static final String TEXT2 = "Goodbye World!";
 
     @Mock
     private HttpRequestMessage request;
@@ -64,5 +68,16 @@ public class HttpResponseMessageImplTest {
         assertEquals(1, response.getHeaders().size());
         assertFalse(response.hasSetCookieWithName("c1"));
         assertTrue(response.hasSetCookieWithName("c2"));
+    }
+
+    @Test
+    public void testContentLengthHeaderHasCorrectValue() {
+        assertEquals(0, response.getHeaders().getAll("Content-Length").size());
+
+        response.setBodyAsText(TEXT1);
+        assertEquals(String.valueOf(TEXT1.length()), response.getHeaders().getFirst("Content-Length"));
+
+        response.setBody(TEXT2.getBytes(StandardCharsets.UTF_8));
+        assertEquals(String.valueOf(TEXT2.length()), response.getHeaders().getFirst("Content-Length"));
     }
 }

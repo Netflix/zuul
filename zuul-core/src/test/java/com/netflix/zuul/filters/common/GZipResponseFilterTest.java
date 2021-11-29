@@ -98,7 +98,7 @@ public class GZipResponseFilterTest {
         assertEquals("blah", bodyStr);
         assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"));
 
-        // Check Content-Length header has been removed.;
+        // Check Content-Length header has been removed
         assertEquals(0, result.getHeaders().getAll("Content-Length").size());
     }
 
