@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.message.http;
 
-import static com.netflix.zuul.TestUtils.assertContentLength;
-import static com.netflix.zuul.TestUtils.assertContentLengthIsAbsent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +35,8 @@ import java.nio.charset.StandardCharsets;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class HttpResponseMessageImplTest {
+    private static final String TEXT1 = "Hello World!";
+    private static final String TEXT2 = "Goodbye World!";
 
     @Mock
     private HttpRequestMessage request;
@@ -72,12 +72,12 @@ public class HttpResponseMessageImplTest {
 
     @Test
     public void testContentLengthHeaderHasCorrectValue() {
-        assertContentLengthIsAbsent(response);
+        assertEquals(0, response.getHeaders().getAll("Content-Length").size());
 
-        response.setBodyAsText("Hello world!");
-        assertContentLength(response, 12);
+        response.setBodyAsText(TEXT1);
+        assertEquals(String.valueOf(TEXT1.length()), response.getHeaders().getFirst("Content-Length"));
 
-        response.setBody("abc".getBytes(StandardCharsets.UTF_8));
-        assertContentLength(response, 3);
+        response.setBody(TEXT2.getBytes(StandardCharsets.UTF_8));
+        assertEquals(String.valueOf(TEXT2.length()), response.getHeaders().getFirst("Content-Length"));
     }
 }

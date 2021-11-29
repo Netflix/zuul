@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.filters.common;
 
-import static com.netflix.zuul.TestUtils.assertContentLengthIsAbsent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -99,8 +98,8 @@ public class GZipResponseFilterTest {
         assertEquals("blah", bodyStr);
         assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"));
 
-        // Check Content-Length header has been removed.;
-        assertContentLengthIsAbsent(result);
+        // Check Content-Length header has been removed
+        assertEquals(0, result.getHeaders().getAll("Content-Length").size());
     }
 
     @Test
