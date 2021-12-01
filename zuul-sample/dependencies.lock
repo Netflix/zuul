@@ -4,13 +4,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -69,7 +69,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -162,7 +162,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "firstLevelTransitive": [
@@ -174,14 +174,14 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         }
     },
     "compileClasspath": {
@@ -231,7 +231,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -249,7 +249,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -297,7 +297,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -314,10 +314,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         }
     },
     "jmhCompileClasspath": {
@@ -367,7 +367,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -385,7 +385,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -433,7 +433,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -442,10 +442,10 @@
             "locked": "3.0.3"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -459,13 +459,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -530,7 +530,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -555,7 +555,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -633,7 +633,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "firstLevelTransitive": [
@@ -642,16 +642,16 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -660,17 +660,17 @@
             "locked": "3.0.3"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         }
     },
     "runtimeClasspath": {
@@ -678,13 +678,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -749,7 +749,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -774,7 +774,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -852,7 +852,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "firstLevelTransitive": [
@@ -861,16 +861,16 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -883,7 +883,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         }
     },
     "testCompileClasspath": {
@@ -933,7 +933,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -951,7 +951,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -999,7 +999,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -1019,13 +1019,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -1090,7 +1090,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -1115,7 +1115,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-guice"
             ],
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -1193,7 +1193,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "firstLevelTransitive": [
@@ -1202,16 +1202,16 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.14.0"
+            "locked": "2.14.1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
@@ -1224,7 +1224,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         }
     }
 }

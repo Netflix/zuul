@@ -24,10 +24,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         }
     },
     "jmhCompileClasspath": {
@@ -50,10 +50,10 @@
             "locked": "2.4.4"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -82,16 +82,16 @@
             "locked": "2.4.4"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.2"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -143,10 +143,10 @@
             "locked": "2.4.4"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.2"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -175,10 +175,10 @@
             "locked": "2.4.4"
         },
         "junit:junit": {
-            "locked": "4.13"
+            "locked": "4.13.2"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
