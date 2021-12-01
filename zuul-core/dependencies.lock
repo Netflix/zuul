@@ -1,10 +1,10 @@
 {
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -25,7 +25,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -64,13 +64,13 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -84,15 +84,15 @@
             "locked": "1.33"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         }
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -113,7 +113,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -152,13 +152,13 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.33"
@@ -167,7 +167,7 @@
             "locked": "1.33"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -175,10 +175,10 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -226,7 +226,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -268,19 +268,19 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13.1"
+            "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.33"
@@ -289,24 +289,24 @@
             "locked": "1.33"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.21"
+            "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29"
+            "locked": "1.7.32"
         }
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -351,7 +351,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -393,27 +393,27 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         }
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -437,7 +437,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -476,19 +476,19 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13.1"
+            "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
@@ -496,10 +496,10 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.1"
+            "locked": "2.13.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -547,7 +547,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "0.123.1"
+            "locked": "1.0.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -589,28 +589,28 @@
             "locked": "0.24.0"
         },
         "io.reactivex:rxjava": {
-            "locked": "1.2.1"
+            "locked": "1.3.8"
         },
         "javax.inject:javax.inject": {
             "locked": "1"
         },
         "junit:junit": {
-            "locked": "4.13.1"
+            "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.69"
+            "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.0.0"
+            "locked": "4.1.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.30"
+            "locked": "1.7.32"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.29"
+            "locked": "1.7.32"
         }
     }
 }
