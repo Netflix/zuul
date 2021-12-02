@@ -421,6 +421,12 @@
             ],
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
         "org.mockito:mockito-core": {
             "locked": "4.1.0"
         },
@@ -609,6 +615,12 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
@@ -921,6 +933,12 @@
             "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
