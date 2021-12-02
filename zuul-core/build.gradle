@@ -6,7 +6,8 @@ dependencies {
     implementation libraries.guava
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.+'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'org.bouncycastle:bcpkix-jdk15on:1.70'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     api 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
 
