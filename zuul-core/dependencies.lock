@@ -72,6 +72,9 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "locked": "1.70"
+        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.25"
         }
@@ -158,6 +161,9 @@
             "locked": "1"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "locked": "1.70"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -277,6 +283,9 @@
             "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
@@ -401,6 +410,9 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "locked": "1.70"
+        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
@@ -485,6 +497,9 @@
             "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
@@ -598,6 +613,9 @@
             "locked": "4.13.2"
         },
         "org.bouncycastle:bcprov-jdk15on": {
+            "locked": "1.70"
+        },
+        "org.bouncycastle:bcpkix-jdk15on": {
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
