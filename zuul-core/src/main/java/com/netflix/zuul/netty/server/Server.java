@@ -56,6 +56,10 @@ import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.incubator.channel.uring.IOUring;
+import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
+import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
+import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
@@ -378,6 +382,15 @@ public class Server
                         workerExecutor,
                         chooserFactory,
                         DefaultSelectStrategyFactory.INSTANCE);
+            } else if (!useNio && ioUringIsAvailable()) {
+                channelType = IOUringServerSocketChannel.class;
+                defaultOutboundChannelType.set(IOUringSocketChannel.class);
+                clientToProxyBossPool = new IOUringEventLoopGroup(
+                        acceptorThreads,
+                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                clientToProxyWorkerPool = new IOUringEventLoopGroup(
+                        workerThreads,
+                        workerExecutor);
             } else {
                 channelType = NioServerSocketChannel.class;
                 defaultOutboundChannelType.set(NioSocketChannel.class);
@@ -492,6 +505,23 @@ public class Server
         }
         if (!available) {
             LOG.debug("Epoll is unavailable, skipping", Epoll.unavailabilityCause());
+        }
+        return available;
+    }
+
+    private static boolean ioUringIsAvailable() {
+        boolean available;
+        try {
+            available = IOUring.isAvailable();
+        } catch (NoClassDefFoundError e) {
+            LOG.debug("io_uring is unavailable, skipping", e);
+            return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("io_uring is unavailable, skipping", e);
+            return false;
+        }
+        if (!available) {
+            LOG.debug("io_uring is unavailable, skipping", IOUring.unavailabilityCause());
         }
         return available;
     }

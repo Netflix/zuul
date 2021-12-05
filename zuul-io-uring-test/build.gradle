@@ -1,0 +1,23 @@
+apply plugin: 'groovy'
+apply plugin: "java"
+apply plugin: 'application'
+
+dependencies {
+    implementation project(":zuul-core"),
+            project(":zuul-groovy"),
+            project(":zuul-guice")
+    implementation "com.netflix.eureka:eureka-client:1.9.18"
+    implementation 'commons-configuration:commons-configuration:1.10'
+    annotationProcessor project(":zuul-processor")
+
+    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
+
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.14.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+
+    testImplementation libraries.junit,
+            libraries.mockito,
+            libraries.truth
+
+    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+}
