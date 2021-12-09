@@ -176,6 +176,12 @@
             ],
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
@@ -303,7 +309,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -439,7 +445,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.25"
@@ -653,11 +659,17 @@
             ],
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.25"
@@ -872,11 +884,17 @@
             ],
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1005,7 +1023,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1213,11 +1231,17 @@
             ],
             "locked": "1.70"
         },
+        "org.bouncycastle:bcpkix-jdk15on": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "1.70"
+        },
         "org.codehaus.groovy:groovy-all": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-groovy"
             ],
-            "locked": "3.0.3"
+            "locked": "3.0.9"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
