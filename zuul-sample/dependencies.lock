@@ -624,7 +624,7 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.15.0"
+            "locked": "2.16.0"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
             "locked": "2.15.0"
@@ -843,7 +843,7 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.15.0"
+            "locked": "2.16.0"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
             "locked": "2.15.0"
@@ -1178,7 +1178,7 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.15.0"
+            "locked": "2.16.0"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
             "locked": "2.15.0"
