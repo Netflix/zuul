@@ -74,6 +74,8 @@ public class IoUringTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
+                logger.info("Channel isActive: " + ch.isActive());
+                logger.info("Channel isOpen: " + ch.isOpen());
                 assertTrue("isActive", ch.isActive());
                 assertTrue("isOpen", ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
