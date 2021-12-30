@@ -3,10 +3,7 @@ apply plugin: "java"
 apply plugin: 'application'
 
 dependencies {
-    implementation (project(":zuul-core")) {
-        exclude group: 'io.netty', module: 'netty-transport-native-epoll'
-        exclude group: 'io.netty', module: 'netty-transport-native-kqueue'
-    }
+    implementation (project(":zuul-core"))
     implementation project(":zuul-guice")
     implementation "com.netflix.eureka:eureka-client:1.9.18"
     implementation 'commons-configuration:commons-configuration:1.10'
@@ -22,4 +19,9 @@ dependencies {
             libraries.truth
 
     testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+}
+
+configurations.implementation {
+    exclude group: 'io.netty', module: 'netty-transport-native-epoll'
+    exclude group: 'io.netty', module: 'netty-transport-native-kqueue'
 }
