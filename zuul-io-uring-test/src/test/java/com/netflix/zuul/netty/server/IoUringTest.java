@@ -70,7 +70,7 @@ public class IoUringTest {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
-        final AtomicInteger ioUringInitChannelCount = new AtomicInteger(0);
+        final AtomicInteger ioUringChannelCount = new AtomicInteger(0);
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
@@ -80,7 +80,7 @@ public class IoUringTest {
                 assertTrue("isActive", ch.isActive());
                 assertTrue("isOpen", ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
-                    ioUringInitChannelCount.incrementAndGet();
+                    ioUringChannelCount.incrementAndGet();
                 }
             }
         };
