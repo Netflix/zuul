@@ -11,8 +11,8 @@ dependencies {
 
     implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
 
-    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.14.1'
-    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.17.1'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.1'
 
     testImplementation libraries.junit,
             libraries.mockito,
