@@ -120,7 +120,7 @@ public class IoUringTest {
 
         s.stop();
 
-        assertEquals(2, ioUringInitChannelCount.get());
+        assertEquals(2, ioUringChannelCount.get());
     }
 
     private static void openHttpConnection(final int port) {
