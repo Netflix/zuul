@@ -248,7 +248,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -615,7 +615,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -741,7 +741,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
