@@ -43,7 +43,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -155,7 +155,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -242,7 +242,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -293,7 +293,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -480,7 +480,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -659,7 +659,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -785,7 +785,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -821,7 +821,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -905,7 +905,7 @@
             "locked": "31.0.1-jre"
         },
         "com.google.truth:truth": {
-            "locked": "1.0.1"
+            "locked": "1.1.3"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -956,7 +956,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.0.9"
+            "locked": "1.0.13"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
