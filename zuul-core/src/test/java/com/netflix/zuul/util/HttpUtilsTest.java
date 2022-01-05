@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.netflix.zuul.message.Headers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -33,17 +34,46 @@ public class HttpUtilsTest {
 
     @Test
     public void detectsGzip() {
-        assertTrue(HttpUtils.isGzipped("gzip"));
+        assertTrue(HttpUtils.isCompressed("gzip"));
+    }
+
+    @Test
+    public void detectsDeflate() {
+        assertTrue(HttpUtils.isCompressed("deflate"));
+    }
+
+    @Test
+    public void detectsCompress() {
+        assertTrue(HttpUtils.isCompressed("compress"));
+    }
+
+    @Test
+    public void detectsBR() {
+        assertTrue(HttpUtils.isCompressed("br"));
     }
 
     @Test
     public void detectsNonGzip() {
-        assertFalse(HttpUtils.isGzipped("identity"));
+        assertFalse(HttpUtils.isCompressed("identity"));
     }
 
     @Test
     public void detectsGzipAmongOtherEncodings() {
-        assertTrue(HttpUtils.isGzipped("gzip, deflate"));
+        assertTrue(HttpUtils.isCompressed("gzip, deflate"));
+    }
+
+    @Test
+    public void acceptsGzip() {
+        Headers headers = new Headers();
+        headers.add("Accept-Encoding", "gzip, deflate");
+        assertTrue(HttpUtils.acceptsGzip(headers));
+    }
+
+    @Test
+    public void acceptsGzip_only() {
+        Headers headers = new Headers();
+        headers.add("Accept-Encoding", "deflate");
+        assertFalse(HttpUtils.acceptsGzip(headers));
     }
 
     @Test

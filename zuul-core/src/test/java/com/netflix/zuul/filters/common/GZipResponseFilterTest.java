@@ -27,7 +27,6 @@ import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.util.Gzipper;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
@@ -35,7 +34,6 @@ import io.netty.handler.codec.http.HttpContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -147,6 +145,7 @@ public class GZipResponseFilterTest {
 
         byte[] originBody = "blah".getBytes();
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
+        response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "gzip");
         response.setHasBody(true);
         assertFalse(filter.shouldFilter(response));
@@ -158,6 +157,7 @@ public class GZipResponseFilterTest {
 
         byte[] originBody = "blah".getBytes();
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
+        response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "deflate");
         response.setHasBody(true);
         assertFalse(filter.shouldFilter(response));
