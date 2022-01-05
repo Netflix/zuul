@@ -78,7 +78,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
 
         // Check the headers to see if response is already gzipped.
         final Headers respHeaders = response.getHeaders();
-        boolean isResponseGzipped = HttpUtils.isGzipped(respHeaders);
+        boolean isResponseGzipped = HttpUtils.isGzipped(respHeaders) || HttpUtils.isDeflated(respHeaders);
 
         // Decide what to do.;
         final boolean shouldGzip = isGzippableContentType(response) && isGzipRequested && !isResponseGzipped && isRightSizeForGzip(response);

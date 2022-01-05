@@ -22,6 +22,7 @@ import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -84,12 +85,21 @@ public class HttpUtils
      * @return true if the content-encoding param containg gzip
      */
     public static boolean isGzipped(String contentEncoding) {
-        return contentEncoding.contains("gzip");
+        return contentEncoding.contains(HttpHeaderValues.GZIP.toString());
+    }
+
+    public static boolean isDeflated(String contentEncoding) {
+        return contentEncoding.contains(HttpHeaderValues.DEFLATE.toString());
     }
 
     public static boolean isGzipped(Headers headers) {
         String ce = headers.getFirst(HttpHeaderNames.CONTENT_ENCODING);
         return ce != null && isGzipped(ce);
+    }
+
+    public static boolean isDeflated(Headers headers) {
+        String ce = headers.getFirst(HttpHeaderNames.CONTENT_ENCODING);
+        return ce != null && isDeflated(ce);
     }
 
     public static boolean acceptsGzip(Headers headers) {
