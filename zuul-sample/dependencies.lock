@@ -624,10 +624,10 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.16.0"
+            "locked": "2.17.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.15.0"
+            "locked": "2.17.1"
         },
         "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
@@ -843,10 +843,10 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.16.0"
+            "locked": "2.17.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.15.0"
+            "locked": "2.17.1"
         },
         "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
@@ -1178,10 +1178,10 @@
             "locked": "1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.16.0"
+            "locked": "2.17.1"
         },
         "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.15.0"
+            "locked": "2.17.1"
         },
         "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
