@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -22,6 +23,7 @@ import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -77,24 +79,22 @@ public class HttpUtils
         }
     }
 
-    /**
-     * return true if the client requested gzip content
-     *
-     * @param contentEncoding a <code>String</code> value
-     * @return true if the content-encoding param containg gzip
-     */
-    public static boolean isGzipped(String contentEncoding) {
-        return contentEncoding.contains("gzip");
+    @VisibleForTesting
+    static boolean isCompressed(String contentEncoding) {
+        return contentEncoding.contains(HttpHeaderValues.GZIP.toString()) ||
+                contentEncoding.contains(HttpHeaderValues.DEFLATE.toString()) ||
+                contentEncoding.contains(HttpHeaderValues.BR.toString()) ||
+                contentEncoding.contains(HttpHeaderValues.COMPRESS.toString());
     }
 
-    public static boolean isGzipped(Headers headers) {
+    public static boolean isCompressed(Headers headers) {
         String ce = headers.getFirst(HttpHeaderNames.CONTENT_ENCODING);
-        return ce != null && isGzipped(ce);
+        return ce != null && isCompressed(ce);
     }
 
     public static boolean acceptsGzip(Headers headers) {
         String ae = headers.getFirst(HttpHeaderNames.ACCEPT_ENCODING);
-        return ae != null && isGzipped(ae);
+        return ae != null && ae.contains(HttpHeaderValues.GZIP.toString());
     }
 
     /**
