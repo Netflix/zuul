@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -48,6 +49,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static org.awaitility.Awaitility.await;
 
 @RunWith(JUnit4.class)
 public class IoUringTest {
@@ -121,6 +123,10 @@ public class IoUringTest {
             assertNotEquals(inetAddress.getPort(), 0);
             checkConnection(inetAddress.getPort());
         });
+
+        await()
+            .atMost(1, SECONDS)
+            .until(() -> ioUringChannelCount.get() == 2);
 
         s.stop();
 
