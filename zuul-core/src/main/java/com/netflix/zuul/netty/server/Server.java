@@ -107,6 +107,9 @@ public class Server
     private static final DynamicBooleanProperty FORCE_NIO =
             new DynamicBooleanProperty("zuul.server.netty.socket.force_nio", false);
 
+    private static final DynamicBooleanProperty FORCE_IO_URING =
+            new DynamicBooleanProperty("zuul.server.netty.socket.force_io_uring", false);
+
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
     private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS =
@@ -358,8 +361,18 @@ public class Server
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
-            boolean useNio = FORCE_NIO.get();
-            if (!useNio && epollIsAvailable()) {
+            final boolean useNio = FORCE_NIO.get();
+            final boolean useIoUring = FORCE_IO_URING.get();
+            if (useIoUring && ioUringIsAvailable()) {
+                channelType = IOUringServerSocketChannel.class;
+                defaultOutboundChannelType.set(IOUringSocketChannel.class);
+                clientToProxyBossPool = new IOUringEventLoopGroup(
+                        acceptorThreads,
+                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                clientToProxyWorkerPool = new IOUringEventLoopGroup(
+                        workerThreads,
+                        workerExecutor);
+            } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
                 defaultOutboundChannelType.set(EpollSocketChannel.class);
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
@@ -382,15 +395,6 @@ public class Server
                         workerExecutor,
                         chooserFactory,
                         DefaultSelectStrategyFactory.INSTANCE);
-            } else if (!useNio && ioUringIsAvailable()) {
-                channelType = IOUringServerSocketChannel.class;
-                defaultOutboundChannelType.set(IOUringSocketChannel.class);
-                clientToProxyBossPool = new IOUringEventLoopGroup(
-                        acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new IOUringEventLoopGroup(
-                        workerThreads,
-                        workerExecutor);
             } else {
                 channelType = NioServerSocketChannel.class;
                 defaultOutboundChannelType.set(NioSocketChannel.class);
