@@ -76,11 +76,12 @@ public class IoUringTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
-                logger.info("Channel: " + ch.getClass().getName());
-                logger.info("Channel isActive: " + ch.isActive());
-                logger.info("Channel isOpen: " + ch.isOpen());
-                assertTrue("isActive", ch.isActive());
-                assertTrue("isOpen", ch.isOpen());
+                logger.info("Channel: "
+                        + ch.getClass().getName()
+                        + ", isActive="
+                        + ch.isActive()
+                        + ", isOpen="
+                        + ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
                     ioUringChannelCount.incrementAndGet();
                 }
