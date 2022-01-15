@@ -32,9 +32,10 @@ import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 
-import java.net.HttpURLConnection;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.URL;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,7 +116,7 @@ public class IoUringTest {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
             InetSocketAddress inetAddress = ((InetSocketAddress) address.unwrap());
             assertNotEquals(inetAddress.getPort(), 0);
-            openHttpConnection(inetAddress.getPort());
+            checkConnection(inetAddress.getPort());
         });
 
         s.stop();
@@ -123,19 +124,24 @@ public class IoUringTest {
         assertEquals(2, ioUringChannelCount.get());
     }
 
-    private static void openHttpConnection(final int port) {
+    private static void checkConnection(final int port) {
+        Socket sock = null;
         try {
-            URL u = new URL("http://127.0.0.1:" + port + "/");
-            HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setConnectTimeout(100);
-            conn.setReadTimeout(100);
-            conn.connect();
-            String ignored = conn.getResponseMessage();
-            conn.disconnect();
-        } catch (Exception ignored) {
-            // ignored
+            InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);
+            sock = new Socket();
+            sock.setSoTimeout(100);
+            sock.connect(socketAddress, 100);
+            OutputStream out = sock.getOutputStream();
+            out.write("Hello".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            out.close();
+        } catch (Exception ex) {
+            try {
+                sock.close();
+            }
+            catch (Exception ignored) {
+                // ignored
+            }
         }
     }
 }
