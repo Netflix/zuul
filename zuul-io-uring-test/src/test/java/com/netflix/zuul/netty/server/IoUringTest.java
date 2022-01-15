@@ -30,7 +30,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.incubator.channel.uring.IOUring;
 import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
+import io.netty.util.internal.PlatformDependent;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 @RunWith(JUnit4.class)
 public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
+    private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
     @Test
     public void testIoUringServer() throws Exception {
