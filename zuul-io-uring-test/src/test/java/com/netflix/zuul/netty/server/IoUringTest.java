@@ -52,6 +52,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.awaitility.Awaitility.await;
 
+/*
+
+      Goals of this test:
+      1) verify that the server starts
+      2) verify that the server is listening on 2 ports
+      3) verify that the correct number of IOUringSocketChannel's are initialized
+      4) verify that the server stops
+
+ */
 @RunWith(JUnit4.class)
 public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
