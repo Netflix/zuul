@@ -32,6 +32,7 @@ import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -135,7 +136,9 @@ public class IoUringTest {
             out.write("Hello".getBytes(StandardCharsets.UTF_8));
             out.flush();
             out.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } finally {
             try {
                 sock.close();
             }
