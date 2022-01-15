@@ -38,10 +38,11 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
@@ -75,7 +76,9 @@ public class IoUringTest {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
-        final AtomicInteger ioUringChannelCount = new AtomicInteger(0);
+
+        final List<IOUringSocketChannel> ioUringChannels = Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
+
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
@@ -86,7 +89,7 @@ public class IoUringTest {
                         + ", isOpen="
                         + ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
-                    ioUringChannelCount.incrementAndGet();
+                    ioUringChannels.add((IOUringSocketChannel)ch);
                 }
             }
         };
@@ -126,11 +129,15 @@ public class IoUringTest {
 
         await()
             .atMost(1, SECONDS)
-            .until(() -> ioUringChannelCount.get() == 2);
+            .until(() -> ioUringChannels.size() == 2);
 
         s.stop();
 
-        assertEquals(2, ioUringChannelCount.get());
+        assertEquals(2, ioUringChannels.size());
+
+        for (IOUringSocketChannel ch : ioUringChannels) {
+            assertTrue("isShutdown", ch.isShutdown());
+        }
     }
 
     private static void checkConnection(final int port) {
