@@ -51,16 +51,16 @@ import org.slf4j.LoggerFactory;
 
 @RunWith(JUnit4.class)
 public class IoUringTest {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
 
     @Test
     public void testIoUringServer() throws Exception {
-        logger.info("IOUring.isAvailable: {}", IOUring.isAvailable());
-        logger.info("IS_OS_LINUX: {}", IS_OS_LINUX);
+        LOGGER.info("IOUring.isAvailable: {}", IOUring.isAvailable());
+        LOGGER.info("IS_OS_LINUX: {}", IS_OS_LINUX);
 
         if (IS_OS_LINUX) {
             if (IOUring.unavailabilityCause() != null) {
-                logger.info(ExceptionUtils.getStackTrace(IOUring.unavailabilityCause()));
+                LOGGER.info(ExceptionUtils.getStackTrace(IOUring.unavailabilityCause()));
             }
             exerciseIoUringServer();
         }
@@ -76,7 +76,7 @@ public class IoUringTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
-                logger.info("Channel: "
+                LOGGER.info("Channel: "
                         + ch.getClass().getName()
                         + ", isActive="
                         + ch.isActive()
@@ -127,6 +127,7 @@ public class IoUringTest {
     }
 
     private static void checkConnection(final int port) {
+        LOGGER.info("checkConnection port " + port);
         Socket sock = null;
         try {
             InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);
