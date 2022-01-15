@@ -27,10 +27,17 @@ import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,11 +85,37 @@ public class ServerTest {
 
         List<NamedSocketAddress> addrs = s.getListeningAddresses();
         assertEquals(2, addrs.size());
-        assertTrue(addrs.get(0).unwrap() instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(0).unwrap()).getPort(), 0);
-        assertTrue(addrs.get(1).unwrap() instanceof InetSocketAddress);
-        assertNotEquals(((InetSocketAddress) addrs.get(1).unwrap()).getPort(), 0);
+        for (NamedSocketAddress address: addrs) {
+            assertTrue(address.unwrap() instanceof InetSocketAddress);
+            final int port = ((InetSocketAddress) address.unwrap()).getPort();
+            assertNotEquals(port, 0);
+            checkConnection(port);
+        }
 
         s.stop();
+
+    }
+
+    private static void checkConnection(final int port) {
+        Socket sock = null;
+        try {
+            InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);
+            sock = new Socket();
+            sock.setSoTimeout(100);
+            sock.connect(socketAddress, 100);
+            OutputStream out = sock.getOutputStream();
+            out.write("Hello".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            out.close();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            try {
+                sock.close();
+            }
+            catch (Exception ignored) {
+                // ignored
+            }
+        }
     }
 }
