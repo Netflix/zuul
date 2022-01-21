@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -33,7 +34,6 @@ import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -161,15 +161,13 @@ public class IoUringTest {
             out.write("Hello".getBytes(StandardCharsets.UTF_8));
             out.flush();
             out.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception exception) {
+            fail("checkConnection failed. port=" + port + " " + exception);
         } finally {
             try {
                 sock.close();
             }
-            catch (Exception ignored) {
-                // ignored
-            }
+            catch (Exception ignored) { }
         }
     }
 }
