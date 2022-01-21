@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -41,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,15 +109,13 @@ public class ServerTest {
             out.write("Hello".getBytes(StandardCharsets.UTF_8));
             out.flush();
             out.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception exception) {
+            fail("checkConnection failed. port=" + port + " " + exception);
         } finally {
             try {
                 sock.close();
             }
-            catch (Exception ignored) {
-                // ignored
-            }
+            catch (Exception ignored) { }
         }
     }
 }
