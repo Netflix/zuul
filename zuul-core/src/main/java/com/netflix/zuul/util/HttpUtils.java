@@ -141,7 +141,7 @@ public class HttpUtils
     public static Integer getBodySizeIfKnown(ZuulMessage msg) {
         final Integer bodySize = getContentLengthIfPresent(msg);
         if (bodySize != null) {
-            return bodySize.intValue();
+            return bodySize;
         }
         if (msg.hasCompleteBody()) {
             return msg.getBodyLength();
