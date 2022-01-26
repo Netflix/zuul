@@ -79,6 +79,60 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
+    public void parseUriFromNetty_relative() {
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
+
+        channel.close();
+    }
+
+    @Test
+    public void parseUriFromNetty_absolute() {
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                    "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
+
+        channel.close();
+    }
+
+    @Test
+    public void parseUriFromNetty_unknown() {
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
+                    "asdf", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertEquals("asdf", result.getPath());
+
+        channel.close();
+    }
+
+    @Test
     public void parseQueryParamsWithEncodedCharsInURI() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
@@ -86,7 +140,7 @@ public class ClientRequestReceiverTest {
         HttpRequestMessageImpl result;
         {
             channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    "foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }

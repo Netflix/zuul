@@ -69,6 +69,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,17 +80,21 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientRequestReceiver extends ChannelDuplexHandler {
 
-    private final SessionContextDecorator decorator;
-
-    private HttpRequestMessage zuulRequest;
-    private HttpRequest clientRequest;
+    public static final AttributeKey<HttpRequestMessage> ATTR_ZUUL_REQ = AttributeKey.newInstance("_zuul_request");
+    public static final AttributeKey<HttpResponseMessage> ATTR_ZUUL_RESP = AttributeKey.newInstance("_zuul_response");
+    public static final AttributeKey<Boolean> ATTR_LAST_CONTENT_RECEIVED = AttributeKey.newInstance("_last_content_received");
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientRequestReceiver.class);
     private static final String SCHEME_HTTP = "http";
     private static final String SCHEME_HTTPS = "https";
-    public static final AttributeKey<HttpRequestMessage> ATTR_ZUUL_REQ = AttributeKey.newInstance("_zuul_request");
-    public static final AttributeKey<HttpResponseMessage> ATTR_ZUUL_RESP = AttributeKey.newInstance("_zuul_response");
-    public static final AttributeKey<Boolean> ATTR_LAST_CONTENT_RECEIVED = AttributeKey.newInstance("_last_content_received");
+
+    // via @stephenhay https://mathiasbynens.be/demo/url-regex, groups added
+    private static final Pattern URL_REGEX = Pattern.compile("^(https?)://([^\\s/$.?#].[^\\s/]*)([^\\s]*)$");
+
+    private final SessionContextDecorator decorator;
+
+    private HttpRequestMessage zuulRequest;
+    private HttpRequest clientRequest;
 
 
     public ClientRequestReceiver(SessionContextDecorator decorator) {
@@ -327,11 +333,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         // Strip off the query from the path.
-        String path = nativeRequest.uri();
-        int queryIndex = path.indexOf('?');
-        if (queryIndex > -1) {
-            path = path.substring(0, queryIndex);
-        }
+        String path = parsePath(nativeRequest.uri());
 
         // Setup the req/resp message objects.
         final HttpRequestMessage request = new HttpRequestMessageImpl(
@@ -372,6 +374,34 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         return request;
+    }
+
+    private String parsePath(String uri) {
+        String path;
+        // relative uri
+        if (uri.startsWith("/")) {
+            path = uri;
+        } else {
+            Matcher m = URL_REGEX.matcher(uri);
+
+            // absolute uri
+            if (m.matches()) {
+                String match = m.group(3);
+                path = match == null ? uri : match;
+            }
+            // unknown value
+            else {
+                // in case of unknown value, default to existing behavior
+                path = uri;
+            }
+        }
+
+        int queryIndex = path.indexOf('?');
+        if (queryIndex > -1) {
+            return path.substring(0, queryIndex);
+        } else {
+            return path;
+        }
     }
 
     private static Headers copyHeaders(final HttpRequest req) {
