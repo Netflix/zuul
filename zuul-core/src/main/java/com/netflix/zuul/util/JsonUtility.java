@@ -73,7 +73,7 @@ public class JsonUtility {
 
             json.endGroup();
 
-            logger.debug("created json from map => " + json.toString());
+            logger.debug("created json from map => {}", json);
             return json.toString();
         } catch (Exception e) {
             logger.error("Could not create JSON from Map. ", e);
