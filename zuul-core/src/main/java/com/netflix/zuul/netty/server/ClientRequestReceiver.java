@@ -89,6 +89,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     private static final String SCHEME_HTTPS = "https";
 
     // via @stephenhay https://mathiasbynens.be/demo/url-regex, groups added
+    // group 1: scheme, group 2: domain, group 3: path+query
     private static final Pattern URL_REGEX = Pattern.compile("^(https?)://([^\\s/$.?#].[^\\s/]*)([^\\s]*)$");
 
     private final SessionContextDecorator decorator;
@@ -387,7 +388,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             // absolute uri
             if (m.matches()) {
                 String match = m.group(3);
-                path = match == null ? uri : match;
+                if (match == null) {
+                    // in case of no match, default to existing behavior
+                    path = uri;
+                } else {
+                    path = match;
+                }
             }
             // unknown value
             else {
