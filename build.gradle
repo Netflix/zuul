@@ -1,7 +1,7 @@
 
 plugins {
     id 'nebula.netflixoss' version '10.4.0'
-    id "com.google.osdetector" version "1.6.2"
+    id "com.google.osdetector" version "1.7.0"
     id "me.champeau.gradle.jmh" version "0.5.3"
 }
 
