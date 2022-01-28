@@ -1,10 +1,10 @@
 {
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -25,7 +25,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -92,10 +92,10 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -116,7 +116,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -181,10 +181,10 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -232,7 +232,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -289,7 +289,7 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.2.0"
+            "locked": "4.3.1"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.34"
@@ -312,10 +312,10 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -360,7 +360,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -422,10 +422,10 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "locked": "31.0.1-jre"
@@ -449,7 +449,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -503,7 +503,7 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.2.0"
+            "locked": "4.3.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.35"
@@ -511,10 +511,10 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.0"
+            "locked": "2.13.1"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -562,7 +562,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.0.13"
+            "locked": "1.0.14"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -619,7 +619,7 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.2.0"
+            "locked": "4.3.1"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
