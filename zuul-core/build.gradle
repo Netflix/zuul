@@ -42,7 +42,7 @@ dependencies {
     testImplementation libraries.junit,
             libraries.mockito,
             libraries.truth
-    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.32'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'

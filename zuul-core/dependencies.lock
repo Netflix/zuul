@@ -76,7 +76,7 @@
             "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     },
     "jmh": {
@@ -176,7 +176,7 @@
             "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     },
     "jmhRuntimeClasspath": {
@@ -304,10 +304,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     },
     "runtimeClasspath": {
@@ -417,7 +417,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     },
     "testCompileClasspath": {
@@ -506,7 +506,7 @@
             "locked": "4.2.0"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     },
     "testRuntimeClasspath": {
@@ -625,10 +625,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.32"
+            "locked": "1.7.35"
         }
     }
 }
