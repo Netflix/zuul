@@ -16,12 +16,21 @@
 
 package com.netflix.zuul.util;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.ZuulMessageImpl;
+import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessageImpl;
+import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -84,5 +93,34 @@ public class HttpUtilsTest {
         assertEquals("", HttpUtils.stripMaliciousHeaderChars("\r"));
         assertEquals("", HttpUtils.stripMaliciousHeaderChars(""));
         assertNull(HttpUtils.stripMaliciousHeaderChars(null));
+    }
+
+    @Test
+    public void getBodySizeIfKnown_returnsContentLengthValue() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH, "23450");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        assertThat(HttpUtils.getBodySizeIfKnown(msg)).isEqualTo(Integer.valueOf(23450));
+    }
+
+    @Test
+    public void getBodySizeIfKnown_returnsResponseBodySize() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        HttpQueryParams queryParams = new HttpQueryParams();
+        HttpRequestMessage request = new HttpRequestMessageImpl(context, "http", "GET", "/path", queryParams, headers, "127.0.0.1", "scheme", 6666, "server-name");
+        request.storeInboundRequest();
+        HttpResponseMessage response = new HttpResponseMessageImpl(context, request, 200);
+        response.setBodyAsText("Hello world");
+        assertThat(HttpUtils.getBodySizeIfKnown(response)).isEqualTo(Integer.valueOf(11));
+    }
+
+    @Test
+    public void getBodySizeIfKnown_returnsNull() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        assertThat(HttpUtils.getBodySizeIfKnown(msg)).isNull();
     }
 }
