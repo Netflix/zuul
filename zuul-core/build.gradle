@@ -35,7 +35,7 @@ dependencies {
     implementation "io.netty:netty-transport-native-epoll:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:osx-x86_64"
 
-    compileOnly "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}"
+    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}"
 
     runtimeOnly "io.netty:netty-tcnative-boringssl-static"
 
@@ -44,7 +44,11 @@ dependencies {
 
     testImplementation libraries.junit,
             libraries.mockito,
-            libraries.truth
+            libraries.truth,
+            libraries.awaitility
+
+    testImplementation 'commons-configuration:commons-configuration:1.8'
+
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'

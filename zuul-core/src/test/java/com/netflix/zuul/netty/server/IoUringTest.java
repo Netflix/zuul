@@ -38,13 +38,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -66,15 +61,17 @@ public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
+    static {
+        System.setProperty("archaius.default.configuration.class",
+                           IoUringTestConfiguration.class.getName());
+    }
+
     @Test
     public void testIoUringServer() throws Exception {
         LOGGER.info("IOUring.isAvailable: {}", IOUring.isAvailable());
         LOGGER.info("IS_OS_LINUX: {}", IS_OS_LINUX);
 
         if (IS_OS_LINUX) {
-            if (IOUring.unavailabilityCause() != null) {
-                LOGGER.info(ExceptionUtils.getStackTrace(IOUring.unavailabilityCause()));
-            }
             exerciseIoUringServer();
         }
     }
