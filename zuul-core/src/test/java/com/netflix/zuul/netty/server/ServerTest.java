@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+
+import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.NoopRegistry;
@@ -43,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +56,13 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class ServerTest {
+
+    @Before
+    public void beforeTest() {
+        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("zuul.server.netty.socket.force_nio", "true");
+        config.setProperty("zuul.server.netty.socket.force_io_uring", "false");
+    }
 
     @Test
     public void getListeningSockets() throws Exception {

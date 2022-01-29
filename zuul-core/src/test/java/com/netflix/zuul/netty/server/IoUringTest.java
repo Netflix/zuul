@@ -42,6 +42,8 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -63,9 +65,11 @@ public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
-    static {
-        ConfigurationManager.getConfigInstance()
-            .setProperty("zuul.server.netty.socket.force_io_uring", "true");
+    @Before
+    public void beforeTest() {
+        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("zuul.server.netty.socket.force_io_uring", "true");
+        config.setProperty("zuul.server.netty.socket.force_nio", "false");
     }
 
     @Test
