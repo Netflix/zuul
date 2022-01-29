@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+
+import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.NoopRegistry;
@@ -62,8 +64,8 @@ public class IoUringTest {
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
     static {
-        System.setProperty("archaius.default.configuration.class",
-                           IoUringTestConfiguration.class.getName());
+        ConfigurationManager.getConfigInstance()
+            .setProperty("zuul.server.netty.socket.force_io_uring", "true");
     }
 
     @Test
