@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.connectionpool;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -27,15 +28,23 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.spectator.api.DefaultRegistry;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.discovery.DynamicServerResolver;
 import com.netflix.zuul.discovery.NonDiscoveryServer;
+import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.origins.OriginName;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.DefaultEventLoop;
+import io.netty.channel.EventLoop;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.SocketAddress;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -146,5 +155,60 @@ public class DefaultClientChannelManagerTest {
                 .acquire(new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
         Truth.assertThat(serverRef.get()).isSameInstanceAs(discoveryResult);
+    }
+
+    @Test
+    public void initializeAndShutdown() throws Exception {
+        final String appName = "app-" + UUID.randomUUID();
+        final ServerSocket serverSocket = new ServerSocket(0);
+        final InetSocketAddress serverSocketAddress = (InetSocketAddress) serverSocket.getLocalSocketAddress();
+        final String serverHostname = serverSocketAddress.getHostName();
+        final int serverPort = serverSocketAddress.getPort();
+        final OriginName originName = OriginName.fromVipAndApp("vip", appName);
+        final DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
+
+        Server.defaultOutboundChannelType.set(NioSocketChannel.class);
+
+        final InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName(appName)
+                .setHostName(serverHostname)
+                .setPort(serverPort)
+                .build();
+        DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, true);
+
+        final DynamicServerResolver resolver = mock(DynamicServerResolver.class);
+        when(resolver.resolve(any())).thenReturn(discoveryResult);
+        when(resolver.hasServers()).thenReturn(true);
+
+        final Registry registry = new DefaultRegistry();
+        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
+                clientConfig, resolver, registry);
+
+        final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(10);
+        final EventLoop eventLoop = eventLoopGroup.next();
+
+        clientChannelManager.init();
+
+        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
+
+        final Promise<PooledConnection> promiseConn = clientChannelManager.acquire(eventLoop);
+        promiseConn.await(200, TimeUnit.MILLISECONDS);
+        assertTrue(promiseConn.isDone());
+        assertTrue(promiseConn.isSuccess());
+
+        final PooledConnection connection = promiseConn.get();
+        assertTrue(connection.isActive());
+        assertFalse(connection.isInPool());
+
+        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(1);
+
+        final boolean releaseResult = clientChannelManager.release(connection);
+        assertTrue(releaseResult);
+        assertTrue(connection.isInPool());
+
+        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
+
+        clientChannelManager.shutdown();
+        serverSocket.close();
     }
 }
