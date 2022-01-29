@@ -47,6 +47,8 @@ dependencies {
             libraries.truth,
             libraries.awaitility
 
+    testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
+
     testImplementation 'commons-configuration:commons-configuration:1.8'
 
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
