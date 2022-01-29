@@ -88,6 +88,7 @@ public class IoUringTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
+                System.out.println("Hello: " + ch.getClass().getName());
                 LOGGER.info("Channel: "
                         + ch.getClass().getName()
                         + ", isActive="
