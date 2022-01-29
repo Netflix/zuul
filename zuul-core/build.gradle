@@ -35,7 +35,7 @@ dependencies {
     implementation "io.netty:netty-transport-native-epoll:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:osx-x86_64"
 
-    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}"
+    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
 
     runtimeOnly "io.netty:netty-tcnative-boringssl-static"
 
@@ -47,7 +47,6 @@ dependencies {
             libraries.truth,
             libraries.awaitility
 
-    testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
 
     testImplementation 'commons-configuration:commons-configuration:1.8'
 
