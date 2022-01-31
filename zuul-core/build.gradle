@@ -48,7 +48,7 @@ dependencies {
             libraries.awaitility
 
 
-    testImplementation 'commons-configuration:commons-configuration:1.8'
+    testImplementation 'commons-configuration:commons-configuration:1.10'
 
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
 
