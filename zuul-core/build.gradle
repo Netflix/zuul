@@ -34,6 +34,9 @@ dependencies {
     implementation "io.netty:netty-codec-haproxy"
     implementation "io.netty:netty-transport-native-epoll:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:osx-x86_64"
+
+    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
+
     runtimeOnly "io.netty:netty-tcnative-boringssl-static"
 
     implementation 'io.perfmark:perfmark-api:0.24.0'
@@ -41,7 +44,12 @@ dependencies {
 
     testImplementation libraries.junit,
             libraries.mockito,
-            libraries.truth
+            libraries.truth,
+            libraries.awaitility
+
+
+    testImplementation 'commons-configuration:commons-configuration:1.8'
+
     testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'

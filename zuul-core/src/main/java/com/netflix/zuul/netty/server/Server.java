@@ -56,6 +56,10 @@ import io.netty.channel.kqueue.KQueueSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.incubator.channel.uring.IOUring;
+import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
+import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
+import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
@@ -102,6 +106,9 @@ public class Server
      */
     private static final DynamicBooleanProperty FORCE_NIO =
             new DynamicBooleanProperty("zuul.server.netty.socket.force_nio", false);
+
+    private static final DynamicBooleanProperty FORCE_IO_URING =
+            new DynamicBooleanProperty("zuul.server.netty.socket.force_io_uring", false);
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
@@ -354,8 +361,18 @@ public class Server
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
-            boolean useNio = FORCE_NIO.get();
-            if (!useNio && epollIsAvailable()) {
+            final boolean useNio = FORCE_NIO.get();
+            final boolean useIoUring = FORCE_IO_URING.get();
+            if (useIoUring && ioUringIsAvailable()) {
+                channelType = IOUringServerSocketChannel.class;
+                defaultOutboundChannelType.set(IOUringSocketChannel.class);
+                clientToProxyBossPool = new IOUringEventLoopGroup(
+                        acceptorThreads,
+                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                clientToProxyWorkerPool = new IOUringEventLoopGroup(
+                        workerThreads,
+                        workerExecutor);
+            } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
                 defaultOutboundChannelType.set(EpollSocketChannel.class);
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
@@ -492,6 +509,23 @@ public class Server
         }
         if (!available) {
             LOG.debug("Epoll is unavailable, skipping", Epoll.unavailabilityCause());
+        }
+        return available;
+    }
+
+    private static boolean ioUringIsAvailable() {
+        boolean available;
+        try {
+            available = IOUring.isAvailable();
+        } catch (NoClassDefFoundError e) {
+            LOG.debug("io_uring is unavailable, skipping", e);
+            return false;
+        } catch (RuntimeException | Error e) {
+            LOG.warn("io_uring is unavailable, skipping", e);
+            return false;
+        }
+        if (!available) {
+            LOG.debug("io_uring is unavailable, skipping", IOUring.unavailabilityCause());
         }
         return available;
     }
