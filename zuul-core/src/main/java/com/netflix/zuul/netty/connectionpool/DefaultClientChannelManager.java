@@ -79,6 +79,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     private final Counter closeConnCounter;
     private final Counter requestConnCounter;
+    private final Counter closeAbovePoolHighWaterMarkCounter;
+    private final Counter closeExpiredConnLifetimeCounter;
     private final Counter reuseConnCounter;
     private final Counter releaseConnCounter;
     private final Counter alreadyClosedCounter;
@@ -114,6 +116,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.createConnFailedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_fail", metricId);
 
         this.closeConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_close", metricId);
+        this.closeAbovePoolHighWaterMarkCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeAbovePoolHighWaterMark", metricId);
+        this.closeExpiredConnLifetimeCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeExpiredConnLifetime", metricId);
         this.requestConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_request", metricId);
         this.reuseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_reuse", metricId);
         this.releaseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_release", metricId);
@@ -146,6 +150,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.createConnFailedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_fail", metricId);
 
         this.closeConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_close", metricId);
+        this.closeAbovePoolHighWaterMarkCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeAbovePoolHighWaterMark", metricId);
+        this.closeExpiredConnLifetimeCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "__closeExpiredConnLifetime", metricId);
         this.requestConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_request", metricId);
         this.reuseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_reuse", metricId);
         this.releaseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_release", metricId);
@@ -224,13 +230,16 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         boolean released = false;
 
-        if (conn.isShouldClose() ||
-                // if the connection has been around too long (i.e. too many requests), then close it
-                conn.getUsageCount() > connPoolConfig.getMaxRequestsPerConnection()) {
-
+        // if the connection has been around too long (i.e. too many requests), then close it
+        // TODO(argha-c): Document what is a reasonable default here, and the class of origins that optimizes for
+        final boolean connExpiredLifetime = conn.getUsageCount() > connPoolConfig.getMaxRequestsPerConnection();
+        if (conn.isShouldClose() || connExpiredLifetime) {
             // Close and discard the connection, as it has been flagged (possibly due to receiving a non-channel error like a 503).
             conn.setInPool(false);
             conn.close();
+            if (connExpiredLifetime) {
+                closeExpiredConnLifetimeCounter.increment();
+            }
         }
         else if (discoveryResult.isCircuitBreakerTripped()) {
             // Don't put conns for currently circuit-tripped servers back into the pool.
@@ -346,7 +355,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             // Create a new pool for this server.
             return createConnectionPool(chosenServer, finalServerAddr, clientConnFactory, pcf, connPoolConfig,
                     clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
-                    requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, maxConnsPerHostExceededCounter,
+                    requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen,
+                    closeAbovePoolHighWaterMarkCounter, maxConnsPerHostExceededCounter,
                     connEstablishTimer, connsInPool, connsInUse);
         });
 
@@ -364,7 +374,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             NettyClientConnectionFactory clientConnFactory, PooledConnectionFactory pcf,
             ConnectionPoolConfig connPoolConfig, IClientConfig clientConfig, Counter createNewConnCounter,
             Counter createConnSucceededCounter, Counter createConnFailedCounter, Counter requestConnCounter,
-            Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen, Counter maxConnsPerHostExceededCounter,
+            Counter reuseConnCounter, Counter connTakenFromPoolIsNotOpen, Counter closeAbovePoolHighWaterMarkCounter, Counter maxConnsPerHostExceededCounter,
             PercentileTimer connEstablishTimer, AtomicInteger connsInPool, AtomicInteger connsInUse) {
         return new PerServerConnectionPool(
                 discoveryResult,
@@ -379,6 +389,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 requestConnCounter,
                 reuseConnCounter,
                 connTakenFromPoolIsNotOpen,
+                closeAbovePoolHighWaterMarkCounter,
                 maxConnsPerHostExceededCounter,
                 connEstablishTimer,
                 connsInPool,
