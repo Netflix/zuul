@@ -66,6 +66,7 @@ public class PerServerConnectionPool implements IConnectionPool
     private final Counter reuseConnCounter;
     private final Counter connTakenFromPoolIsNotOpen;
     private final Counter maxConnsPerHostExceededCounter;
+    private final Counter closeAboveHighWaterMarkCounter;
     private final Timer connEstablishTimer;
     private final AtomicInteger connsInPool;
     private final AtomicInteger connsInUse;
@@ -88,6 +89,7 @@ public class PerServerConnectionPool implements IConnectionPool
             Counter createConnFailedCounter,
             Counter requestConnCounter, Counter reuseConnCounter,
             Counter connTakenFromPoolIsNotOpen,
+            Counter closeAboveHighWaterMarkCounter,
             Counter maxConnsPerHostExceededCounter,
             Timer connEstablishTimer,
             AtomicInteger connsInPool,
@@ -105,6 +107,7 @@ public class PerServerConnectionPool implements IConnectionPool
         this.requestConnCounter = requestConnCounter;
         this.reuseConnCounter = reuseConnCounter;
         this.connTakenFromPoolIsNotOpen = connTakenFromPoolIsNotOpen;
+        this.closeAboveHighWaterMarkCounter = closeAboveHighWaterMarkCounter;
         this.maxConnsPerHostExceededCounter = maxConnsPerHostExceededCounter;
         this.connEstablishTimer = connEstablishTimer;
         this.connsInPool = connsInPool;
@@ -328,6 +331,7 @@ public class PerServerConnectionPool implements IConnectionPool
         // Discard conn if already at least above waterline in the pool already for this server.
         int poolWaterline = config.perServerWaterline();
         if (poolWaterline > -1 && connections.size() >= poolWaterline) {
+            closeAboveHighWaterMarkCounter.increment();
             conn.close();
             conn.setInPool(false);
             return false;
