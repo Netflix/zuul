@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,17 +32,15 @@ import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +50,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests for {@link Server}.
  */
 @RunWith(JUnit4.class)
 public class ServerTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
     @Before
     public void beforeTest() {
@@ -68,9 +71,20 @@ public class ServerTest {
     public void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
+        final List<NioSocketChannel> nioChannels = Collections.synchronizedList(new ArrayList<NioSocketChannel>());
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
-            protected void initChannel(Channel ch) {}
+            protected void initChannel(final Channel ch) {
+                LOGGER.info("Channel: "
+                        + ch.getClass().getName()
+                        + ", isActive="
+                        + ch.isActive()
+                        + ", isOpen="
+                        + ch.isOpen());
+                if (ch instanceof NioSocketChannel) {
+                    nioChannels.add((NioSocketChannel)ch);
+                }
+            }
         };
         initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // The port to channel map keys on the port, post bind. This should be unique even if InetAddress is same
@@ -104,8 +118,17 @@ public class ServerTest {
             checkConnection(port);
         }
 
+        await()
+                .atMost(1, SECONDS)
+                .until(() -> nioChannels.size() == 2);
+
         s.stop();
 
+        assertEquals(2, nioChannels.size());
+
+        for (NioSocketChannel ch : nioChannels) {
+            assertTrue("isShutdown", ch.isShutdown());
+        }
     }
 
     private static void checkConnection(final int port) {
