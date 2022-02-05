@@ -54,7 +54,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     public static final CachedDynamicBooleanProperty KEEP_ALIVE_ENABLED = new CachedDynamicBooleanProperty("zuul.push.keepalive.enabled", true);
     public static final CachedDynamicIntProperty KEEP_ALIVE_INTERVAL = new CachedDynamicIntProperty("zuul.push.keepalive.interval.seconds", 3 * 60);
 
-    private static Logger logger = LoggerFactory.getLogger(PushRegistrationHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PushRegistrationHandler.class);
 
 
     public PushRegistrationHandler(PushConnectionRegistry pushConnectionRegistry, PushProtocol pushProtocol) {

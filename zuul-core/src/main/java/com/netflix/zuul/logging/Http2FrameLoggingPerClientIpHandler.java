@@ -28,7 +28,7 @@ import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
  */
 public class Http2FrameLoggingPerClientIpHandler extends ChannelInboundHandlerAdapter
 {
-    private static DynamicStringSetProperty IPS = 
+    private static final DynamicStringSetProperty IPS =
             new DynamicStringSetProperty("server.http2.frame.logging.ips", "");
     
     @Override
