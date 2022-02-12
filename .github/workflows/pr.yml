@@ -30,7 +30,9 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradlewrapper-${{ hashFiles('gradle/wrapper/*') }}
       - name: Build
-        run: sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ulimit -a && ./gradlew --no-daemon build"
+        run: |
+          sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ulimit -a && ./gradlew --no-daemon build"
+          echo "Status of build: $?"
   validation:
     name: "Gradle Validation"
     runs-on: ubuntu-latest
