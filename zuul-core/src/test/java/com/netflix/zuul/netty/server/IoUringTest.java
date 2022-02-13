@@ -44,6 +44,7 @@ import java.util.*;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -61,6 +62,7 @@ import static org.awaitility.Awaitility.await;
 
  */
 @RunWith(JUnit4.class)
+@Ignore
 public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
