@@ -30,7 +30,10 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradlewrapper-${{ hashFiles('gradle/wrapper/*') }}
       - name: Build snapshot
-        run: sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ./gradlew build snapshot"
+        run: |
+          sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ./gradlew --no-daemon build"
+          ./gradlew snapshot
+          echo "Status of snapshot: $?"
         env:
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
