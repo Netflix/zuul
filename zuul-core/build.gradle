@@ -50,7 +50,7 @@ dependencies {
 
     testImplementation 'commons-configuration:commons-configuration:1.8'
 
-    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.35'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.36'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'
