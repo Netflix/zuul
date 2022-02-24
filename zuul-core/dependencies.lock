@@ -13,7 +13,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -79,7 +79,7 @@
             "locked": "1.70"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     },
     "jmh": {
@@ -107,7 +107,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -182,7 +182,7 @@
             "locked": "1.25"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     },
     "jmhRuntimeClasspath": {
@@ -208,7 +208,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -244,7 +244,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "locked": "0.0.12.Final"
@@ -319,10 +319,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     },
     "runtimeClasspath": {
@@ -345,7 +345,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -435,7 +435,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     },
     "testCompileClasspath": {
@@ -455,7 +455,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -473,7 +473,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "locked": "0.0.12.Final"
@@ -533,7 +533,7 @@
             "locked": "4.3.1"
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     },
     "testRuntimeClasspath": {
@@ -559,7 +559,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.9.18"
+            "locked": "1.10.17"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -595,7 +595,7 @@
             "project": true
         },
         "commons-configuration:commons-configuration": {
-            "locked": "1.8"
+            "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "locked": "0.0.12.Final"
@@ -661,10 +661,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         },
         "org.slf4j:slf4j-simple": {
-            "locked": "1.7.35"
+            "locked": "1.7.36"
         }
     }
 }
