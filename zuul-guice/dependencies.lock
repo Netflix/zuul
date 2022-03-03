@@ -257,7 +257,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "31.0.1-jre"
+            "locked": "31.1-jre"
         },
         "com.google.inject:guice": {
             "locked": "5.1.0"
@@ -468,7 +468,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "31.0.1-jre"
+            "locked": "31.1-jre"
         },
         "com.google.inject:guice": {
             "locked": "5.1.0"
@@ -786,7 +786,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "31.0.1-jre"
+            "locked": "31.1-jre"
         },
         "com.google.inject:guice": {
             "locked": "5.1.0"
