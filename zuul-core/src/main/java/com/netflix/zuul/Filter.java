@@ -47,6 +47,11 @@ public @interface Filter {
     FilterType type() default FilterType.INBOUND;
 
     /**
+     * Category of the filter.
+     */
+    String category() default "zuul";
+
+    /**
      * Indicates if this is a synchronous filter.
      */
     FilterSyncType sync() default FilterSyncType.SYNC;

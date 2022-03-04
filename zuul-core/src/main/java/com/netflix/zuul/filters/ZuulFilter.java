@@ -63,6 +63,19 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     }
 
     /**
+     * Classify a filter by category.
+     *
+     * @return String the classification of this filter
+     */
+    default String category() {
+        Filter f = getClass().getAnnotation(Filter.class);
+        if (f != null) {
+            return f.category();
+        }
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    /**
      * Whether this filter's shouldFilter() method should be checked, and apply() called, even
      * if SessionContext.stopFilterProcessing has been set.
      *
