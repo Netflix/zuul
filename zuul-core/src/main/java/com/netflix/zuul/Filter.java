@@ -49,7 +49,7 @@ public @interface Filter {
     /**
      * Category of the filter.
      */
-    String category() default "zuul";
+    FilterCategory category() default FilterCategory.HTTP;
 
     /**
      * Indicates if this is a synchronous filter.
