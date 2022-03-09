@@ -16,6 +16,7 @@
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.Filter;
+import com.netflix.zuul.FilterCategory;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
@@ -65,9 +66,9 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     /**
      * Classify a filter by category.
      *
-     * @return String the classification of this filter
+     * @return FilterCategory the classification of this filter
      */
-    default String category() {
+    default FilterCategory category() {
         Filter f = getClass().getAnnotation(Filter.class);
         if (f != null) {
             return f.category();
