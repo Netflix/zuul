@@ -4,13 +4,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -69,7 +69,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -201,7 +201,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -243,7 +243,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -337,7 +337,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -379,7 +379,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -471,13 +471,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -542,7 +542,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -702,13 +702,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -773,7 +773,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
@@ -927,7 +927,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -969,7 +969,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -1055,13 +1055,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.1"
+            "locked": "2.13.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -1126,7 +1126,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.1.1"
+            "locked": "1.2.0"
         },
         "com.netflix.zuul:zuul-core": {
             "firstLevelTransitive": [
