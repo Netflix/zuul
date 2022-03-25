@@ -89,7 +89,7 @@ public class ZuulEndPointRunnerTest {
     @Test
     public void nonErrorEndpoint() {
         request.getContext().setShouldSendErrorResponse(false);
-        request.getContext().set("_endpoint", BASIC_ENDPOINT);
+        request.getContext().setEndpoint(BASIC_ENDPOINT);
         assertNull(request.getContext().get(ZUUL_ENDPOINT));
         endpointRunner.filter(request);
         final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter = request.getContext().get(ZUUL_ENDPOINT);
