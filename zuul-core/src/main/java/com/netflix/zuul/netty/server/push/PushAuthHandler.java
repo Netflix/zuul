@@ -32,7 +32,6 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Date: 5/11/18
  */
 @ChannelHandler.Sharable
-
 public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private final String pushConnectionPath;
@@ -73,13 +72,9 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         }
         else if (pushConnectionPath.equals(path)) {
             // CSRF protection
-            final String origin = req.headers().get(HttpHeaderNames.ORIGIN);
-            if (((PushProtocol.WEBSOCKET.getPath().equals(pushConnectionPath))) &&
-                ((origin == null) || (!origin.toLowerCase().endsWith(originDomain)))) {
-                logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
+            if (isInvalidOrigin(req)) {
                 sendHttpResponse(req, ctx, BAD_REQUEST);
-            }
-            else if (isDelayedAuth(req, ctx)) {
+            } else if (isDelayedAuth(req, ctx)) {
                 // client auth will happen later, continue with WebSocket upgrade handshake
                 ctx.fireChannelRead(req.retain());
             } else {
@@ -98,6 +93,15 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         }
     }
 
+    protected boolean isInvalidOrigin(FullHttpRequest req) {
+        final String origin = req.headers().get(HttpHeaderNames.ORIGIN);
+        if (origin == null || !origin.toLowerCase().endsWith(originDomain)) {
+            logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
+            return true;
+        }
+        return false;
+    }
+
     protected final Cookies parseCookies(FullHttpRequest req) {
         final Cookies cookies = new Cookies();
         final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
@@ -108,11 +112,11 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         return cookies;
     }
 
+
     /**
      * @return true if Auth credentials will be provided later, for example in first WebSocket frame sent
      */
     protected abstract boolean isDelayedAuth(FullHttpRequest req, ChannelHandlerContext ctx);
 
     protected abstract PushUserAuth doAuth(FullHttpRequest req);
-
 }
