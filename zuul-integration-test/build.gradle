@@ -1,0 +1,29 @@
+apply plugin: "java"
+apply plugin: 'application'
+
+dependencies {
+    implementation project(":zuul-core"),
+            project(":zuul-guice"),
+            project(":zuul-discovery")
+    implementation "com.netflix.eureka:eureka-client:1.10.17"
+    implementation "com.netflix.ribbon:ribbon-eureka:$versions_ribbon"
+    implementation "com.netflix.ribbon:ribbon-loadbalancer:$versions_ribbon"
+    implementation 'commons-configuration:commons-configuration:1.10'
+    annotationProcessor project(":zuul-processor")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'
+    testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
+    testImplementation 'io.rest-assured:rest-assured:5.0.1'
+    testImplementation libraries.truth
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.17.2'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.17.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+project.tasks.publish.enabled = false

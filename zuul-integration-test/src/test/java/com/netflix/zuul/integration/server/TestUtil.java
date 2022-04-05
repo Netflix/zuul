@@ -1,0 +1,58 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ *
+ *      Licensed under the Apache License, Version 2.0 (the "License");
+ *      you may not use this file except in compliance with the License.
+ *      You may obtain a copy of the License at
+ *
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing, software
+ *      distributed under the License is distributed on an "AS IS" BASIS,
+ *      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *      See the License for the specific language governing permissions and
+ *      limitations under the License.
+ */
+
+package com.netflix.zuul.integration.server;
+
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+
+import java.util.UUID;
+
+public class TestUtil {
+    private TestUtil() { }
+
+    public static DiscoveryEnabledServer makeDiscoveryEnabledServer(final String appName, final String ipAddress, final int port) {
+        InstanceInfo instanceInfo = new InstanceInfo(
+                UUID.randomUUID().toString(),
+                appName,
+                appName,
+                ipAddress,
+                "sid123",
+                new InstanceInfo.PortWrapper(true, port),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                1,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        return new DiscoveryEnabledServer(instanceInfo, false, true);
+    }
+}
