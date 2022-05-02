@@ -25,7 +25,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -84,10 +84,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.25"
@@ -119,7 +119,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -173,10 +173,10 @@
             "locked": "1.70"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.25"
@@ -238,7 +238,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -304,13 +304,13 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.4.0"
+            "locked": "4.5.1"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.34"
+            "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
             "locked": "1.25"
@@ -375,7 +375,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -467,7 +467,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -530,7 +530,7 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.4.0"
+            "locked": "4.5.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -589,7 +589,7 @@
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.2.0"
+            "locked": "1.3.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -655,7 +655,7 @@
             "locked": "1.70"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.4.0"
+            "locked": "4.5.1"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
