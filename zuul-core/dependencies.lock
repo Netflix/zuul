@@ -90,7 +90,7 @@
             "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.25"
+            "locked": "1.35"
         }
     },
     "jmhCompileClasspath": {
@@ -179,7 +179,7 @@
             "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.25"
+            "locked": "1.35"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -313,7 +313,7 @@
             "locked": "1.35"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.25"
+            "locked": "1.35"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
