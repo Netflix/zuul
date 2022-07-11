@@ -2,7 +2,7 @@
 plugins {
     id 'nebula.netflixoss' version '10.6.0'
     id "com.google.osdetector" version "1.7.0"
-    id "me.champeau.gradle.jmh" version "0.5.3"
+    id "me.champeau.jmh" version "0.6.6"
 }
 
 ext.githubProjectName = rootProject.name
@@ -30,7 +30,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'nebula.javadoc-jar'
     apply plugin: 'nebula.dependency-lock'
-    apply plugin: 'me.champeau.gradle.jmh'
+    apply plugin: 'me.champeau.jmh'
 
     license {
         ignoreFailures = false
