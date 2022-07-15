@@ -20,6 +20,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -40,6 +41,7 @@ public class PushConnectionRegistry {
         secureTokenGenerator = new SecureRandom();
     }
 
+    @Nullable
     public PushConnection get(final String clientId) {
         return clientPushConnectionMap.get(clientId);
     }
