@@ -25,7 +25,6 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import io.restassured.internal.http.ResponseParseException;
-import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.commons.configuration.AbstractConfiguration;
@@ -193,8 +192,11 @@ public class IntegrationTest {
                                 aResponse()
                                         .withStatus(500)));
 
-        final Response response = givenZuul().get(path);
-        assertThat(response.getStatusCode()).isEqualTo(500);
+        givenZuul()
+                .get(path)
+                .then()
+                .assertThat()
+                .spec(responseSpec(500, ""));
 
         verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
@@ -209,8 +211,11 @@ public class IntegrationTest {
                                 aResponse()
                                         .withStatus(503)));
 
-        final Response response = givenZuul().get(path);
-        assertThat(response.getStatusCode()).isEqualTo(503);
+        givenZuul()
+                .get(path)
+                .then()
+                .assertThat()
+                .spec(responseSpec(503, ""));
 
         verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
