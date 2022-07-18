@@ -25,6 +25,7 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import io.restassured.internal.http.ResponseParseException;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.commons.configuration.AbstractConfiguration;
@@ -180,6 +181,36 @@ public class IntegrationTest {
                 .hasMessageThat().isEqualTo("Premature end of chunk coded message body: closing chunk expected");
 
         verify(1, getRequestedFor(urlEqualTo(path)));
+        verify(0, postRequestedFor(anyUrl()));
+    }
+
+    @Test
+    void zuulWillRetryHttpGetWhenOriginReturns500(final WireMockRuntimeInfo wmRuntimeInfo) {
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                get(path)
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(500)));
+
+        final Response response = givenZuul().get(path);
+
+        verify(2, getRequestedFor(urlEqualTo(path)));
+        verify(0, postRequestedFor(anyUrl()));
+    }
+
+    @Test
+    void zuulWillRetryHttpGetWhenOriginReturns503(final WireMockRuntimeInfo wmRuntimeInfo) {
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                get(path)
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(503)));
+
+        final Response response = givenZuul().get(path);
+
+        verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
     }
 
