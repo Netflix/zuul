@@ -194,6 +194,7 @@ public class IntegrationTest {
                                         .withStatus(500)));
 
         final Response response = givenZuul().get(path);
+        assertThat(response.getStatusCode()).isEqualTo(500);
 
         verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
@@ -209,6 +210,7 @@ public class IntegrationTest {
                                         .withStatus(503)));
 
         final Response response = givenZuul().get(path);
+        assertThat(response.getStatusCode()).isEqualTo(503);
 
         verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
