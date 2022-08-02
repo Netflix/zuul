@@ -71,7 +71,13 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         if (! destroyed.get()) {
             destroyed.set(true);
             if (authEvent != null) {
-                pushConnectionRegistry.remove(authEvent.getClientIdentity());
+                // We should only remove the PushConnection entry from the registry if it's still this pushConnection.
+                String clientID = authEvent.getClientIdentity();
+                PushConnection savedPushConnection = pushConnectionRegistry.get(clientID);
+                if (savedPushConnection != null && savedPushConnection == pushConnection) {
+                    pushConnectionRegistry.remove(authEvent.getClientIdentity());
+                    logger.debug("Removed connection from registry for {}", authEvent);
+                }
                 logger.debug("Closing connection for {}", authEvent);
             }
         }
