@@ -533,10 +533,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // plaintext requests.  Unfortunately, the cost of cahcing the body is non trivial, and as of the
             // current implementation, it's only technically required for SSL.  See comment above.
             if (origin.getClientConfig().get(Keys.IsSecure, false) || ENABLE_CACHING_PLAINTEXT_BODIES.get()) {
-                ZonedDateTime lastThrottleEvent = origin.stats().lastThrottleEvent();
-                if (lastThrottleEvent != null) {
+                ZonedDateTime lastRetryableErrorEvent = origin.stats().lastRetryableErrorEvent();
+                if (lastRetryableErrorEvent != null) {
                     // This is technically the wrong method to call, but the toSeconds() method is only present in JDK9.
-                    long timeSinceLastThrottle = Duration.between(lastThrottleEvent, ZonedDateTime.now()).getSeconds();
+                    long timeSinceLastThrottle = Duration.between(lastRetryableErrorEvent, ZonedDateTime.now()).getSeconds();
                     if (timeSinceLastThrottle <= THROTTLE_MEMORY_SECONDS.get()) {
                         // only cache requests if already buffered
                         return zuulRequest.getBody();
@@ -850,13 +850,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         StatusCategory statusCategory;
         ClientException.ErrorType niwsErrorType;
 
+        if (isRetryable5xxResponse(zuulRequest, originResponse)) {
+            origin.stats().lastRetryableErrorEvent(ZonedDateTime.now());
+        }
+
         if (respStatus == 503) {
             //Treat 503 status from Origin similarly to connection failures, ie. we want to back off from this server
             statusCategory = FAILURE_ORIGIN_THROTTLED;
             niwsErrorType = ClientException.ErrorType.SERVER_THROTTLED;
             obe = new OutboundException(OutboundErrorType.SERVICE_UNAVAILABLE, requestAttempts);
-            // TODO(carl-mastrangelo): pass in the clock for testing.
-            origin.stats().lastThrottleEvent(ZonedDateTime.now());
             if (originConn != null) {
                 originConn.getServer().incrementSuccessiveConnectionFailureCount();
                 originConn.getServer().addToFailureCount();

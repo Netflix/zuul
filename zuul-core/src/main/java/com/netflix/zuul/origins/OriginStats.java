@@ -31,7 +31,7 @@ public final class OriginStats {
     /**
      * Represents the last time a Server in this Origin was throttled.
      */
-    private final AtomicReference<ZonedDateTime> lastThrottleEvent = new AtomicReference<>();
+    private final AtomicReference<ZonedDateTime> lastRetryableErrorEvent = new AtomicReference<>();
 
 
     /**
@@ -40,21 +40,21 @@ public final class OriginStats {
      * {@link com.netflix.zuul.filters.endpoint.ProxyEndpoint}.
      */
     @Nullable
-    public ZonedDateTime lastThrottleEvent() {
-        return lastThrottleEvent.get();
+    public ZonedDateTime lastRetryableErrorEvent() {
+        return lastRetryableErrorEvent.get();
     }
 
     /**
-     * Sets the last throttle event, if it is after the existing last throttle event.
+     * Sets the last retryable error event, if it is after the existing last retryable event.
      */
-    public void lastThrottleEvent(ZonedDateTime lastThrottleEvent) {
-        Objects.requireNonNull(lastThrottleEvent);
+    public void lastRetryableErrorEvent(ZonedDateTime lastRetryableErrorEvent) {
+        Objects.requireNonNull(lastRetryableErrorEvent);
         ZonedDateTime existing;
         do {
-            existing = this.lastThrottleEvent.get();
-            if (existing != null && lastThrottleEvent.compareTo(existing) <= 0) {
+            existing = this.lastRetryableErrorEvent.get();
+            if (existing != null && lastRetryableErrorEvent.compareTo(existing) <= 0) {
                 break;
             }
-        } while (!this.lastThrottleEvent.compareAndSet(existing, lastThrottleEvent));
+        } while (!this.lastRetryableErrorEvent.compareAndSet(existing, lastRetryableErrorEvent));
     }
 }
