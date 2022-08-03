@@ -848,6 +848,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             unlinkFromOrigin();
 
             // ensure body reader indexes are reset so retry is able to access the body buffer
+            // otherwise when the body is read by netty (in writeBufferedBodyContent) the body will appear empty
             zuulRequest.resetBodyReader();
 
             //retry request with different origin
