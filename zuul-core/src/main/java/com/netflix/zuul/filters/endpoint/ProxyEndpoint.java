@@ -101,7 +101,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -153,13 +152,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected RequestAttempt currentRequestAttempt;
     protected List<RequestStat> requestStats = new ArrayList<>();
     protected RequestStat currentRequestStat;
-    private final byte[] retryBodyCache;
 
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS = new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
-    private static final DynamicBooleanProperty ENABLE_CACHING_BODIES = new DynamicBooleanProperty("zuul.cache.bodies", true);
-    private static final DynamicBooleanProperty ENABLE_CACHING_PLAINTEXT_BODIES =
-            new DynamicBooleanProperty("zuul.cache.bodies.plaintext", true);
 
     /**
      * Indicates how long Zuul should remember throttle events for an origin.  As of this writing, throttling is used
@@ -175,7 +170,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
-    private final Counter populatedRetryBody;
 
     public ProxyEndpoint(final HttpRequestMessage inMesg, final ChannelHandlerContext ctx,
                          final FilterRunner<HttpResponseMessage, ?> filters, MethodBinding<?> methodBinding) {
@@ -195,11 +189,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         passport = CurrentPassport.fromSessionContext(context);
         chosenServer = new AtomicReference<>(DiscoveryResult.EMPTY);
         chosenHostAddr = new AtomicReference<>();
-
-        // This must happen after origin is set, since it depends on it.
-        this.retryBodyCache = preCacheBodyForRetryingRequests();
-        this.populatedRetryBody = SpectatorUtils.newCounter(
-                "zuul.populated.retry.body", origin == null ? "null" : origin.getName().getTarget());
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -522,40 +511,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    @Nullable
-    private byte[] preCacheBodyForRetryingRequests() {
-        // Netty SSL handler clears body ByteBufs, so we need to cache the body if we want to retry POSTs
-        // Followup: We expect most origin connections to be secure, so it's okay to unconditionally cache here.
-        // Additionally, it's risky to assume the plaintext handlers won't clear the body (they do), so just pay the
-        // cost caching regardless.
-        if (ENABLE_CACHING_BODIES.get() && origin != null && zuulRequest.hasCompleteBody()) {
-            // This second check to see if the origin is secure is a kludge to avoid spending too much CPU on
-            // plaintext requests.  Unfortunately, the cost of cahcing the body is non trivial, and as of the
-            // current implementation, it's only technically required for SSL.  See comment above.
-            if (origin.getClientConfig().get(Keys.IsSecure, false) || ENABLE_CACHING_PLAINTEXT_BODIES.get()) {
-                ZonedDateTime lastThrottleEvent = origin.stats().lastThrottleEvent();
-                if (lastThrottleEvent != null) {
-                    // This is technically the wrong method to call, but the toSeconds() method is only present in JDK9.
-                    long timeSinceLastThrottle = Duration.between(lastThrottleEvent, ZonedDateTime.now()).getSeconds();
-                    if (timeSinceLastThrottle <= THROTTLE_MEMORY_SECONDS.get()) {
-                        // only cache requests if already buffered
-                        return zuulRequest.getBody();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private void repopulateRetryBody() {
-        // note: it's not null but is empty because the content chunks exist but the actual readable bytes are 0
-        if (retryBodyCache != null && attemptNum > 1
-                && zuulRequest.getBodyLength() == 0 && zuulRequest.getBody() != null) {
-            zuulRequest.setBody(retryBodyCache);
-            populatedRetryBody.increment();
-        }
-    }
-
     private void writeClientRequestToOrigin(final PooledConnection conn, Duration readTimeout) {
         final Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
@@ -571,9 +526,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         final ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
         pipeline.addBefore("connectionPoolHandler", OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
-
-        // check if body needs to be repopulated for retry
-        repopulateRetryBody();
 
         ch.write(zuulRequest);
         writeBufferedBodyContent(zuulRequest, ch);
@@ -855,8 +807,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             statusCategory = FAILURE_ORIGIN_THROTTLED;
             niwsErrorType = ClientException.ErrorType.SERVER_THROTTLED;
             obe = new OutboundException(OutboundErrorType.SERVICE_UNAVAILABLE, requestAttempts);
-            // TODO(carl-mastrangelo): pass in the clock for testing.
-            origin.stats().lastThrottleEvent(ZonedDateTime.now());
             if (originConn != null) {
                 originConn.getServer().incrementSuccessiveConnectionFailureCount();
                 originConn.getServer().addToFailureCount();
@@ -896,6 +846,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //detach from current origin.
             unlinkFromOrigin();
+
+            // ensure body reader indexes are reset so retry is able to access the body buffer
+            zuulRequest.resetBodyReader();
+
             //retry request with different origin
             passport.add(ORIGIN_RETRY_START);
             origin.adjustRetryPolicyIfNeeded(zuulRequest);

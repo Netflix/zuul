@@ -144,6 +144,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
+    public void resetBodyReader() {
+        message.resetBodyReader();
+    }
+
+    @Override
     public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
         message.runBufferedBodyContentThroughFilter(filter);
     }

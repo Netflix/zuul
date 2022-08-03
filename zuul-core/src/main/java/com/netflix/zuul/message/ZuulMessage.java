@@ -127,6 +127,12 @@ public interface ZuulMessage extends Cloneable {
     String getBodyAsText();
 
     /**
+     * Reset the chunked body reader indexes. Users SHOULD call this method before retrying requests
+     * as the chunked body buffer will have had the reader indexes changed during channel writes.
+     */
+    void resetBodyReader();
+
+    /**
      * Returns the maximum body size that this message is willing to hold.  This value value should be more than the
      * sum of lengths of the body chunks.  The max body size may not be strictly enforced, and is informational.
      */

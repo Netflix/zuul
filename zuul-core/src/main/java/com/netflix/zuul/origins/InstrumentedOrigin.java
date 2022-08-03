@@ -37,13 +37,4 @@ public interface InstrumentedOrigin extends Origin {
     void recordSuccessResponse();
 
     void recordProxyRequestEnd();
-
-    /**
-     * Returns the mutable origin stats for this origin.  Unlike the other methods in this interface,
-     * External callers are expected to update these numbers, rather than this object itself.
-     * @return
-     */
-    default OriginStats stats() {
-        throw new UnsupportedOperationException();
-    }
 }

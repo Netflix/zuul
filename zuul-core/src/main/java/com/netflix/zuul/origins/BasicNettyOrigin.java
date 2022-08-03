@@ -64,7 +64,6 @@ public class BasicNettyOrigin implements NettyOrigin {
     private final IClientConfig config;
     private final ClientChannelManager clientChannelManager;
     private final NettyRequestAttemptFactory requestAttemptFactory;
-    private final OriginStats stats = new OriginStats();
 
     private final AtomicInteger concurrentRequests;
     private final Counter rejectedRequests;
@@ -201,11 +200,6 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public void recordProxyRequestEnd() {
         concurrentRequests.decrementAndGet();
-    }
-
-    @Override
-    public final OriginStats stats() {
-        return stats;
     }
 
     /* Not required for basic operation */
