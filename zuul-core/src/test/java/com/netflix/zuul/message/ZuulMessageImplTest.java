@@ -16,16 +16,16 @@
 
 package com.netflix.zuul.message;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpContent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZuulMessageImplTest {
@@ -164,6 +164,22 @@ public class ZuulMessageImplTest {
         assertEquals(TEXT2, body);
         assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
         assertEquals(String.valueOf(TEXT2.length()), msg.getHeaders().getFirst("Content-Length"));
+    }
+
+    @Test
+    public void testResettingBodyReaderIndex() {
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+
+        // replicate what happens in nettys tls channel writer which moves the reader index on the contained ByteBuf
+        for (HttpContent c : msg.getBodyContents()) {
+            c.content().readerIndex(c.content().capacity());
+        }
+
+        assertArrayEquals("body should be empty as readerIndex at end of buffers", new byte[0], msg.getBody());
+        msg.resetBodyReader();
+        assertEquals("Hello World!", new String(msg.getBody()));
     }
 
 }

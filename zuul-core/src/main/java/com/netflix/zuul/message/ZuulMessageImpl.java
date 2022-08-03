@@ -179,6 +179,13 @@ public class ZuulMessageImpl implements ZuulMessage
     }
 
     @Override
+    public void resetBodyReader() {
+        for (final HttpContent chunk : bodyChunks) {
+            chunk.content().resetReaderIndex();
+        }
+    }
+
+    @Override
     public boolean finishBufferedBodyIfIncomplete() {
         if (! bodyBufferedCompletely) {
             bufferBodyContents(new DefaultLastHttpContent());

@@ -219,6 +219,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
+    public void resetBodyReader() {
+        message.resetBodyReader();
+    }
+
+    @Override
     public boolean hasCompleteBody() {
         return message.hasCompleteBody();
     }
