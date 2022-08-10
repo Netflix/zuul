@@ -95,10 +95,9 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public final void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error("Exception caught, closing push channel for " + authEvent, cause);
         ctx.close();
-        super.exceptionCaught(ctx, cause);
     }
 
     protected final void forceCloseConnectionFromServerSide() {
