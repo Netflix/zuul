@@ -38,6 +38,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.util.ReferenceCountUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -151,7 +152,7 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
                 sendHttpResponse(ctx, request, NO_CONTENT, userAuth);
                 // Because we are not passing the body to the pushConn (who would normally handle destroying),
                 // we need to release it here.
-                body.release();
+                ReferenceCountUtil.release(body);
                 return;
             }
 
