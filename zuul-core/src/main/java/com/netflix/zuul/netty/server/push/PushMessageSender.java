@@ -38,8 +38,11 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.util.ReferenceCountUtil;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,15 +141,18 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
                 return;
             }
 
-            final ByteBuf body = request.content().retain();
-            if (body.readableBytes() <= 0) {
-                sendHttpResponse(ctx, request, NO_CONTENT, userAuth);
-                return;
-            }
-
             if (pushConn.isRateLimited()) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.SERVICE_UNAVAILABLE, userAuth);
                 logRateLimited();
+                return;
+            }
+
+            final ByteBuf body = request.content().retain();
+            if (body.readableBytes() <= 0) {
+                sendHttpResponse(ctx, request, NO_CONTENT, userAuth);
+                // Because we are not passing the body to the pushConn (who would normally handle destroying),
+                // we need to release it here.
+                ReferenceCountUtil.release(body);
                 return;
             }
 
