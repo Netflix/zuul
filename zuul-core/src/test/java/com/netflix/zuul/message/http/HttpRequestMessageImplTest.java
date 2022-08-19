@@ -26,6 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.net.InetAddresses;
+import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
@@ -36,6 +37,9 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.util.Optional;
+
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +49,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class HttpRequestMessageImplTest {
 
     HttpRequestMessageImpl request;
+    private final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+
+    @After
+    public void resetConfig() {
+        config.clearProperty("zuul.HttpRequestMessage.host.header.strict.validation");
+    }
 
     @Test
     public void testOriginalRequestInfo() {
@@ -261,6 +271,40 @@ public class HttpRequestMessageImplTest {
     }
 
     @Test
+    public void testGetOriginalHost_handlesNonRFC2396Hostnames() {
+        config.setProperty("zuul.HttpRequestMessage.host.header.strict.validation", false);
+
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "my_underscore_endpoint.netflix.com");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("my_underscore_endpoint.netflix.com", request.getOriginalHost());
+
+        headers = new Headers();
+        headers.add("Host", "my_underscore_endpoint.netflix.com:8080");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("my_underscore_endpoint.netflix.com", request.getOriginalHost());
+
+        headers = new Headers();
+        headers.add("Host", "my_underscore_endpoint^including~more-chars.netflix.com");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("my_underscore_endpoint^including~more-chars.netflix.com", request.getOriginalHost());
+
+        headers = new Headers();
+        headers.add("Host", "hostname%5Ewith-url-encoded.netflix.com");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("hostname%5Ewith-url-encoded.netflix.com", request.getOriginalHost());
+    }
+
+    @Test
     public void getOriginalHost_failsOnUnbracketedIpv6Address() {
         HttpQueryParams queryParams = new HttpQueryParams();
         Headers headers = new Headers();
@@ -270,6 +314,20 @@ public class HttpRequestMessageImplTest {
                 "192.168.0.2", "https", 7002, "localhost");
 
         assertThrows(URISyntaxException.class, () -> HttpRequestMessageImpl.getOriginalHost(headers, "server"));
+    }
+
+    @Test
+    public void getOriginalHost_fallsBackOnUnbracketedIpv6Address_WithNonStrictValidation() {
+        config.setProperty("zuul.HttpRequestMessage.host.header.strict.validation", false);
+
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "ba::dd");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "server");
+
+        Assert.assertEquals("server", request.getOriginalHost());
     }
 
     @Test
@@ -331,6 +389,40 @@ public class HttpRequestMessageImplTest {
                 headers,
                 "192.168.0.2", "https", 7002, "localhost");
         Assert.assertEquals(7005, request.getOriginalPort());
+
+        headers = new Headers();
+        headers.add("Host", "host_with_underscores.netflix.com:8080");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals("should fallback to server port", 7002, request.getOriginalPort());
+    }
+
+    @Test
+    public void testGetOriginalPort_NonStrictValidation() {
+        config.setProperty("zuul.HttpRequestMessage.host.header.strict.validation", false);
+
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "host_with_underscores.netflix.com:8080");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals(8080, request.getOriginalPort());
+
+        headers = new Headers();
+        headers.add("Host", "host-with-carrots^1.0.0.netflix.com:8080");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals(8080, request.getOriginalPort());
+
+        headers = new Headers();
+        headers.add("Host", "host-with-carrots-no-port^1.0.0.netflix.com");
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", queryParams,
+                headers,
+                "192.168.0.2", "https", 7002, "localhost");
+        Assert.assertEquals(7002, request.getOriginalPort());
     }
 
     @Test

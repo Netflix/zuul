@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.config.DynamicStringProperty;
+import com.netflix.util.Pair;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -52,6 +53,10 @@ import org.slf4j.LoggerFactory;
 public class HttpRequestMessageImpl implements HttpRequestMessage
 {
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
+
+    private static final CachedDynamicBooleanProperty STRICT_HOST_HEADER_VALIDATION = new CachedDynamicBooleanProperty(
+            "zuul.HttpRequestMessage.host.header.strict.validation", true
+    );
 
     private static final CachedDynamicIntProperty MAX_BODY_SIZE_PROP = new CachedDynamicIntProperty(
             "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024
@@ -493,13 +498,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         if (xForwardedHost != null) {
             return xForwardedHost;
         }
-        String host = headers.getFirst(HttpHeaderNames.HOST);
-        if (host != null) {
-            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
-            if (uri.getHost() == null) {
-                throw new URISyntaxException(host, "Bad host name");
-            }
-            return uri.getHost();
+        Pair<String, Integer> host = parseHostHeader(headers);
+        if (host.first() != null) {
+            return host.first();
         }
         return serverName;
     }
@@ -542,14 +543,17 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         if (portStr != null && !portStr.isEmpty()) {
             return Integer.parseInt(portStr);
         }
-        // Check if port was specified on a Host header.
-        String host = headers.getFirst(HttpHeaderNames.HOST);
-        if (host != null) {
-            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
-            if (uri.getPort() != -1) {
-                return uri.getPort();
+
+        try {
+            // Check if port was specified on a Host header.
+            Pair<String, Integer> host = parseHostHeader(headers);
+            if (host.second() != -1) {
+                return host.second();
             }
+        } catch (URISyntaxException e) {
+            LOG.debug("Invalid host header, falling back to serverPort", e);
         }
+
         return serverPort;
     }
 
@@ -561,6 +565,55 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         } else {
             return Optional.empty();
         }
+    }
+
+    /**
+     * Attempt to parse the Host header from the collection of headers
+     * and return the hostname and port components.
+     *
+     * @return Hostname and Port pair.
+     *         Hostname may be null. Port may be -1 when no valid port is found in the host header.
+     */
+    private static Pair<String, Integer> parseHostHeader(Headers headers) throws URISyntaxException {
+        String host = headers.getFirst(HttpHeaderNames.HOST);
+        if (host == null) {
+            return new Pair<>(null, -1);
+        }
+
+        try {
+            // attempt to use default URI parsing - this can fail when not strictly following RFC2396,
+            // for example, having underscores in host names will fail parsing
+            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
+            if (uri.getHost() != null) {
+                return new Pair<>(uri.getHost(), uri.getPort());
+            }
+        } catch (URISyntaxException e) {
+            LOG.debug("URI parsing failed", e);
+        }
+
+        if (STRICT_HOST_HEADER_VALIDATION.get()) {
+            throw new URISyntaxException(host, "Invalid host");
+        }
+
+        // fallback to using a colon split
+        // valid IPv6 addresses would have been handled already so any colon is safely assumed a port separator
+        String[] components = host.split(":");
+        if (components.length > 2) {
+            // handle case with unbracketed IPv6 addresses
+            return new Pair<>(null, -1);
+        }
+
+        String parsedHost = components[0];
+        int parsedPort = -1;
+        if (components.length > 1) {
+            try {
+                parsedPort = Integer.parseInt(components[1]);
+            } catch (NumberFormatException e) {
+                // ignore failing to parse port numbers and fallback to default port
+                LOG.debug("Parsing of host port component failed", e);
+            }
+        }
+        return new Pair<>(parsedHost, parsedPort);
     }
 
     /**
