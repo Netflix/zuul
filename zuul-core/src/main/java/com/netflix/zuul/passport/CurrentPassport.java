@@ -162,7 +162,8 @@ public class CurrentPassport
 
     public PassportState getState() {
         try (Unlocker ignored = lock()){
-            return history.peekLast().getState();
+            PassportItem passportItem = history.peekLast();
+            return passportItem != null ? passportItem.getState() : null;
         }
     }
 

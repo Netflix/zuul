@@ -22,6 +22,7 @@ import java.util.List;
 
 import static com.netflix.zuul.passport.PassportState.MISC_IO_START;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CurrentPassportTest
 {
@@ -88,5 +89,10 @@ public class CurrentPassportTest
                 "CurrentPassport {start_ms=0, [+0=FILTERS_INBOUND_START, +50=IN_REQ_LAST_CONTENT_RECEIVED, +200=MISC_IO_START, +250=IN_REQ_HEADERS_RECEIVED, +1117794707=NOW]}");
 
         assertEquals(200, passport.findStateBackwards(MISC_IO_START).getTime());
+    }
+
+    @Test
+    public void testGetStateWithNoHistory() {
+        assertNull(CurrentPassport.create().getState());
     }
 }
