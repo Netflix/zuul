@@ -49,7 +49,7 @@ public final class ConnTimer {
 
     private final Registry registry;
     private final Channel chan;
-    // TODO(carl-mastrangelo): make this changable.
+    // TODO(carl-mastrangelo): make this changeable.
     private final Id metricBase;
     @Nullable
     private final Id preciseMetricBase;
