@@ -21,6 +21,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.util.concurrent.ScheduledFuture;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +47,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     protected final AtomicBoolean destroyed;
     private ChannelHandlerContext ctx;
     private volatile PushConnection pushConnection;
-    private ScheduledFuture<?> keepAliveTask;
-
+    private final List<ScheduledFuture<?>> scheduledFutures;
 
     public static final CachedDynamicIntProperty PUSH_REGISTRY_TTL = new CachedDynamicIntProperty("zuul.push.registry.ttl.seconds", 30 * 60);
     public static final CachedDynamicIntProperty RECONNECT_DITHER = new CachedDynamicIntProperty("zuul.push.reconnect.dither.seconds", 3 * 60);
@@ -54,13 +56,14 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     public static final CachedDynamicBooleanProperty KEEP_ALIVE_ENABLED = new CachedDynamicBooleanProperty("zuul.push.keepalive.enabled", true);
     public static final CachedDynamicIntProperty KEEP_ALIVE_INTERVAL = new CachedDynamicIntProperty("zuul.push.keepalive.interval.seconds", 3 * 60);
 
-    private static Logger logger = LoggerFactory.getLogger(PushRegistrationHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PushRegistrationHandler.class);
 
 
     public PushRegistrationHandler(PushConnectionRegistry pushConnectionRegistry, PushProtocol pushProtocol) {
         this.pushConnectionRegistry = pushConnectionRegistry;
         this.pushProtocol = pushProtocol;
         this.destroyed = new AtomicBoolean();
+        this.scheduledFutures = Collections.synchronizedList(new ArrayList<>());
     }
 
     protected final boolean isAuthenticated() {
@@ -68,8 +71,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void tearDown()  {
-        if (! destroyed.get()) {
-            destroyed.set(true);
+        if (! destroyed.getAndSet(true)) {
             if (authEvent != null) {
                 // We should only remove the PushConnection entry from the registry if it's still this pushConnection.
                 String clientID = authEvent.getClientIdentity();
@@ -81,10 +83,8 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("Closing connection for {}", authEvent);
             }
         }
-        if (keepAliveTask != null) {
-            keepAliveTask.cancel(false);
-            keepAliveTask = null;
-        }
+        scheduledFutures.forEach(f -> f.cancel(false));
+        scheduledFutures.clear();
     }
 
     @Override
@@ -119,7 +119,8 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
             // Application level protocol for asking client to close connection
             ctx.writeAndFlush(pushProtocol.goAwayMessage());
             // Force close connection if client doesn't close in reasonable time after we made request
-            ctx.executor().schedule(() -> forceCloseConnectionFromServerSide(), CLIENT_CLOSE_GRACE_PERIOD.get(), TimeUnit.SECONDS);
+            scheduledFutures.add(ctx.executor().schedule(this::forceCloseConnectionFromServerSide,
+                    CLIENT_CLOSE_GRACE_PERIOD.get(), TimeUnit.SECONDS));
         } else {
             forceCloseConnectionFromServerSide();
         }
@@ -180,12 +181,14 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
      * event loop doesn't block
      */
     protected void registerClient(ChannelHandlerContext ctx, PushUserAuth authEvent,
-                                 PushConnection conn, PushConnectionRegistry registry) {
+            PushConnection conn, PushConnectionRegistry registry) {
         registry.put(authEvent.getClientIdentity(), conn);
         //Make client reconnect after ttl seconds by closing this connection to limit stickiness of the client
-        ctx.executor().schedule(this::requestClientToCloseConnection, ditheredReconnectDeadline(), TimeUnit.SECONDS);
+        scheduledFutures.add(ctx.executor().schedule(this::requestClientToCloseConnection, ditheredReconnectDeadline(),
+                TimeUnit.SECONDS));
         if (KEEP_ALIVE_ENABLED.get()) {
-            keepAliveTask = ctx.executor().scheduleWithFixedDelay(this::keepAlive, KEEP_ALIVE_INTERVAL.get(), KEEP_ALIVE_INTERVAL.get(), TimeUnit.SECONDS);
+            scheduledFutures.add(ctx.executor().scheduleWithFixedDelay(this::keepAlive, KEEP_ALIVE_INTERVAL.get(),
+                    KEEP_ALIVE_INTERVAL.get(), TimeUnit.SECONDS));
         }
     }
 
