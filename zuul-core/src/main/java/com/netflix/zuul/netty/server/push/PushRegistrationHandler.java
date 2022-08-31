@@ -15,6 +15,7 @@
  */
 package com.netflix.zuul.netty.server.push;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import io.netty.channel.ChannelHandlerContext;
@@ -192,4 +193,13 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    @VisibleForTesting
+    PushConnection getPushConnection() {
+        return pushConnection;
+    }
+
+    @VisibleForTesting
+    List<ScheduledFuture<?>> getScheduledFutures() {
+        return scheduledFutures;
+    }
 }
