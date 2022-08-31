@@ -36,7 +36,7 @@ public class PushConnectionRegistry {
     private final SecureRandom secureTokenGenerator;
 
     @Inject
-    private PushConnectionRegistry() {
+    PushConnectionRegistry() {
         clientPushConnectionMap = new ConcurrentHashMap<>(1024 * 32);
         secureTokenGenerator = new SecureRandom();
     }
