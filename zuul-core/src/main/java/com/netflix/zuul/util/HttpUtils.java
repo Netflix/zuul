@@ -71,7 +71,7 @@ public class HttpUtils
             return null;
         }
         xForwardedFor = xForwardedFor.trim();
-        String tokenized[] = xForwardedFor.split(",");
+        String[] tokenized = xForwardedFor.split(",");
         if (tokenized.length == 0) {
             return null;
         } else {
@@ -120,7 +120,7 @@ public class HttpUtils
     public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg)
     {
         final Integer contentLengthVal = getContentLengthIfPresent(msg);
-        return (contentLengthVal != null) && (contentLengthVal.intValue() > 0);
+        return (contentLengthVal != null) && (contentLengthVal > 0);
     }
 
     public static Integer getContentLengthIfPresent(ZuulMessage msg)
@@ -154,7 +154,7 @@ public class HttpUtils
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
         if (!Strings.isNullOrEmpty(teValue)) {
-            isChunked = "chunked".equals(teValue.toLowerCase());
+            isChunked = "chunked".equalsIgnoreCase(teValue);
         }
         return isChunked;
     }

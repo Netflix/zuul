@@ -43,7 +43,7 @@ public class Gzipper
             gzos = new GZIPOutputStream(baos, true);
         }
         catch (IOException e) {
-            throw new RuntimeException("Error finalizing the GzipOutputstream", e);
+            throw new RuntimeException("Error finalizing the GzipOutputStream", e);
         }
     }
 

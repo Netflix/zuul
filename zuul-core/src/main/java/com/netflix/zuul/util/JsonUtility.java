@@ -85,7 +85,7 @@ public class JsonUtility {
     /*
      * return a string like: "one","two","three"
      */
-    private static String stringArrayFromObjectArray(Object data[]) {
+    private static String stringArrayFromObjectArray(Object[] data) {
         StringBuilder arrayAsString = new StringBuilder();
         for (Object o : data) {
             if (arrayAsString.length() > 0) {
@@ -143,9 +143,9 @@ public class JsonUtility {
 
     }
 
-    public static interface JsonCapableObject {
+    public interface JsonCapableObject {
 
-        public Map<String, Object> jsonMap();
+        Map<String, Object> jsonMap();
 
     }
 }
