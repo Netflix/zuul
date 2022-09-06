@@ -17,7 +17,6 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import javax.annotation.Nullable;
 
 /**
  * User: michaels@netflix.com
