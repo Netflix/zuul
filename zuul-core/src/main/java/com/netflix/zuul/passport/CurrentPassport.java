@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -168,7 +167,7 @@ public class CurrentPassport
     }
 
     @VisibleForTesting
-    public LinkedList<PassportItem> getHistory()
+    public List<PassportItem> getHistory()
     {
         try (Unlocker ignored = lock()) {
             // best effort, but doesn't actually protect anything
@@ -338,9 +337,9 @@ public class CurrentPassport
     public PassportItem findStateBackwards(PassportState state)
     {
         try (Unlocker ignored = lock()) {
-            Iterator itr = history.descendingIterator();
+            Iterator<PassportItem> itr = history.descendingIterator();
             while (itr.hasNext()) {
-                PassportItem item = (PassportItem) itr.next();
+                PassportItem item = itr.next();
                 if (item.getState() == state) {
                     return item;
                 }
@@ -392,7 +391,7 @@ public class CurrentPassport
     public String toString()
     {
         try (Unlocker ignored = lock()) {
-            long startTime = history.size() > 0 ? firstTime() : 0;
+            long startTime = !history.isEmpty() ? firstTime() : 0;
             long now = now();
 
             StringBuilder sb = new StringBuilder();
@@ -430,12 +429,12 @@ public class CurrentPassport
                     if (stateMatch.matches()) {
                         String stateName = stateMatch.group(2);
                         if (stateName.equals("NOW")) {
-                            long startTime = passport.history.size() > 0 ? passport.firstTime() : 0;
-                            long now = Long.valueOf(stateMatch.group(1)) + startTime;
+                            long startTime = !passport.history.isEmpty() ? passport.firstTime() : 0;
+                            long now = Long.parseLong(stateMatch.group(1)) + startTime;
                             ticker.setNow(now);
                         } else {
                             PassportState state = PassportState.valueOf(stateName);
-                            PassportItem item = new PassportItem(state, Long.valueOf(stateMatch.group(1)));
+                            PassportItem item = new PassportItem(state, Long.parseLong(stateMatch.group(1)));
                             passport.history.add(item);
                         }
                     }
@@ -467,17 +466,17 @@ public class CurrentPassport
 
 class CountingCurrentPassport extends CurrentPassport
 {
-    private final static Counter IN_REQ_HEADERS_RECEIVED_CNT = createCounter("in_req_hdrs_rec");
-    private final static Counter IN_REQ_LAST_CONTENT_RECEIVED_CNT = createCounter("in_req_last_cont_rec");
+    private static final Counter IN_REQ_HEADERS_RECEIVED_CNT = createCounter("in_req_hdrs_rec");
+    private static final Counter IN_REQ_LAST_CONTENT_RECEIVED_CNT = createCounter("in_req_last_cont_rec");
 
-    private final static Counter IN_RESP_HEADERS_RECEIVED_CNT = createCounter("in_resp_hdrs_rec");
-    private final static Counter IN_RESP_LAST_CONTENT_RECEIVED_CNT = createCounter("in_resp_last_cont_rec");
+    private static final Counter IN_RESP_HEADERS_RECEIVED_CNT = createCounter("in_resp_hdrs_rec");
+    private static final Counter IN_RESP_LAST_CONTENT_RECEIVED_CNT = createCounter("in_resp_last_cont_rec");
 
-    private final static Counter OUT_REQ_HEADERS_SENT_CNT = createCounter("out_req_hdrs_sent");
-    private final static Counter OUT_REQ_LAST_CONTENT_SENT_CNT = createCounter("out_req_last_cont_sent");
+    private static final Counter OUT_REQ_HEADERS_SENT_CNT = createCounter("out_req_hdrs_sent");
+    private static final Counter OUT_REQ_LAST_CONTENT_SENT_CNT = createCounter("out_req_last_cont_sent");
 
-    private final static Counter OUT_RESP_HEADERS_SENT_CNT = createCounter("out_resp_hdrs_sent");
-    private final static Counter OUT_RESP_LAST_CONTENT_SENT_CNT = createCounter("out_resp_last_cont_sent");
+    private static final Counter OUT_RESP_HEADERS_SENT_CNT = createCounter("out_resp_hdrs_sent");
+    private static final Counter OUT_RESP_LAST_CONTENT_SENT_CNT = createCounter("out_resp_last_cont_sent");
 
     private static Counter createCounter(String name)
     {
