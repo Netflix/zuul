@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 4:16 PM
  */
 public class ErrorStatsManager {
-    ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>> routeMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>>();
+    ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>> routeMap = new ConcurrentHashMap<>();
     final static ErrorStatsManager INSTANCE = new ErrorStatsManager();
 
     /**
@@ -61,7 +61,7 @@ public class ErrorStatsManager {
         route = route.replace("/", "_");
         ConcurrentHashMap<String, ErrorStatsData> statsMap = routeMap.get(route);
         if (statsMap == null) {
-            statsMap = new ConcurrentHashMap<String, ErrorStatsData>();
+            statsMap = new ConcurrentHashMap<>();
             routeMap.putIfAbsent(route, statsMap);
         }
         ErrorStatsData sd = statsMap.get(cause);

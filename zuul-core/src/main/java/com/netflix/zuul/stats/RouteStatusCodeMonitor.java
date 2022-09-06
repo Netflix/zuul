@@ -61,11 +61,7 @@ public class RouteStatusCodeMonitor implements NamedCount {
         if (statusCode != statsData.statusCode) {
             return false;
         }
-        if (!Objects.equals(route, statsData.route)) {
-            return false;
-        }
-
-        return true;
+        return Objects.equals(route, statsData.route);
     }
 
     @Override

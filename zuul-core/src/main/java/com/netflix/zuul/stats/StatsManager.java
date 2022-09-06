@@ -57,19 +57,19 @@ public class StatsManager {
 
     @VisibleForTesting
     final ConcurrentMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>> routeStatusMap =
-            new ConcurrentHashMap<String, ConcurrentHashMap<Integer, RouteStatusCodeMonitor>>();
+            new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> namedStatusMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> hostCounterMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> protocolCounterMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, NamedCountingMonitor> ipVersionCounterMap =
-            new ConcurrentHashMap<String, NamedCountingMonitor>();
+            new ConcurrentHashMap<>();
 
 
     protected static StatsManager INSTANCE = new StatsManager();
@@ -179,7 +179,7 @@ public class StatsManager {
     }
 
     /**
-     * helper method to create new monitor, place into map, and register wtih Epic, if necessary
+     * helper method to create new monitor, place into map, and register with Epic, if necessary
      */
     protected void incrementNamedCountingMonitor(String name, ConcurrentMap<String, NamedCountingMonitor> map) {
         NamedCountingMonitor monitor = map.get(name);
@@ -227,7 +227,7 @@ public class StatsManager {
         route = route.replace("/", "_");
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> statsMap = routeStatusMap.get(route);
         if (statsMap == null) {
-            statsMap = new ConcurrentHashMap<Integer, RouteStatusCodeMonitor>();
+            statsMap = new ConcurrentHashMap<>();
             routeStatusMap.putIfAbsent(route, statsMap);
         }
         RouteStatusCodeMonitor sd = statsMap.get(statusCode);
