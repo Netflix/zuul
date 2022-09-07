@@ -36,6 +36,8 @@ import javax.annotation.Nullable;
  */
 public final class Attrs {
 
+    private static final String ATTRS_MESSAGE = "attrs";
+
     final Map<Key<?>, Object> storage = new IdentityHashMap<>();
 
     public static <T> Key<T> newKey(String keyName) {
@@ -52,7 +54,7 @@ public final class Attrs {
         @Nullable
         @SuppressWarnings("unchecked")
         public T get(Attrs attrs) {
-            Objects.requireNonNull(attrs, "attrs");
+            Objects.requireNonNull(attrs, ATTRS_MESSAGE);
             return (T) attrs.storage.get(this);
         }
 
@@ -62,7 +64,7 @@ public final class Attrs {
          */
         @SuppressWarnings("unchecked")
         public T getOrDefault(Attrs attrs, T defaultValue) {
-            Objects.requireNonNull(attrs, "attrs");
+            Objects.requireNonNull(attrs, ATTRS_MESSAGE);
             Objects.requireNonNull(defaultValue, "defaultValue");
             T result = (T) attrs.storage.get(this);
             if (result != null) {
@@ -72,7 +74,7 @@ public final class Attrs {
         }
 
         public void put(Attrs attrs, T value) {
-            Objects.requireNonNull(attrs, "attrs");
+            Objects.requireNonNull(attrs, ATTRS_MESSAGE);
             Objects.requireNonNull(value);
             attrs.storage.put(this, value);
         }

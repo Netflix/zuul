@@ -40,17 +40,17 @@ public class PatternListStringProperty extends DerivedStringProperty<List<Patter
     @Override
     protected List<Pattern> derive(String value)
     {
-        ArrayList<Pattern> ptns = new ArrayList<>();
+        ArrayList<Pattern> patterns = new ArrayList<>();
         if (value != null) {
             for (String ptnTxt : value.split(",")) {
                 try {
-                    ptns.add(Pattern.compile(ptnTxt.trim()));
+                    patterns.add(Pattern.compile(ptnTxt.trim()));
                 }
                 catch (Exception e) {
-                    LOG.error("Error parsing regex pattern list from property! name = " + String.valueOf(this.getName()) + ", value = " + String.valueOf(this.getValue()) + ", pattern = " + String.valueOf(value));
+                    LOG.error("Error parsing regex pattern list from property! name = {}, value = {}, pattern = {}", this.getName(), this.getValue(), value);
                 }
             }
         }
-        return ptns;
+        return patterns;
     }
 }
