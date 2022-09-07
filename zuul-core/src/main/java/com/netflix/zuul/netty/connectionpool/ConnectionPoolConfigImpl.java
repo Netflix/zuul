@@ -87,14 +87,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     }
 
     @Override
-    public int maxConnectionsPerHost()
-    {
+    public int maxConnectionsPerHost() {
         return clientConfig.getPropertyAsInteger(IClientConfigKey.Keys.MaxConnectionsPerHost, DEFAULT_MAX_CONNS_PER_HOST);
     }
 
     @Override
-    public int perServerWaterline()
-    {
+    public int perServerWaterline() {
         return PER_SERVER_WATERLINE.get();
     }
 
@@ -139,14 +137,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     }
 
     @Override
-    public boolean isSecure()
-    {
+    public boolean isSecure() {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.IsSecure, false);
     }
 
     @Override
-    public boolean useIPAddrForServer()
-    {
+    public boolean useIPAddrForServer() {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.UseIPAddrForServer, true);
     }
 

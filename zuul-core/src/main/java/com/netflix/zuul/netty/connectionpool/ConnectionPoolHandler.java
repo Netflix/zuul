@@ -24,7 +24,6 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
@@ -65,11 +64,12 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // First let other handlers do their thing ...
         // super.userEventTriggered(ctx, evt);
+        final String ORIGIN_CHANNEL_FOR_ORIGIN = "Origin channel for origin - ";
 
         if (evt instanceof IdleStateEvent) {
             // Log some info about this.
             idleCounter.increment();
-            final String msg = "Origin channel for origin - " + originName + " - idle timeout has fired. " + ChannelUtils.channelInfoForLogging(ctx.channel());
+            final String msg = ORIGIN_CHANNEL_FOR_ORIGIN + originName + " - idle timeout has fired. " + ChannelUtils.channelInfoForLogging(ctx.channel());
             closeConnection(ctx, msg);
         }
         else if (evt instanceof CompleteEvent) {
@@ -82,7 +82,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                 final PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
                 if (conn != null) {
                     if ("close".equalsIgnoreCase(getConnectionHeader(completeEvt))) {
-                        final String msg = "Origin channel for origin - " + originName + " - completed because of expired keep-alive. "
+                        final String msg = ORIGIN_CHANNEL_FOR_ORIGIN + originName + " - completed because of expired keep-alive. "
                                 + ChannelUtils.channelInfoForLogging(ctx.channel());
                         closeConnection(ctx, msg);
                     } else {
@@ -91,7 +91,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                     }
                 }
             } else {
-                final String msg = "Origin channel for origin - " + originName + " - completed with reason "
+                final String msg = ORIGIN_CHANNEL_FOR_ORIGIN + originName + " - completed with reason "
                         + reason.name() + ", " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 closeConnection(ctx, msg);
             }
@@ -133,7 +133,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         else {
             // If somehow we don't have a PooledConnection instance attached to this channel, then
             // close the channel directly.
-            LOG.warn(msg + " But no PooledConnection attribute. So just closing Channel.");
+            LOG.warn("{} But no PooledConnection attribute. So just closing Channel.", msg);
             ctx.close();
         }
     }

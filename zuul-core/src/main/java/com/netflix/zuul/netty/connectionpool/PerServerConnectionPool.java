@@ -44,8 +44,7 @@ import org.slf4j.LoggerFactory;
  * Date: 7/8/16
  * Time: 1:09 PM
  */
-public class PerServerConnectionPool implements IConnectionPool
-{
+public class PerServerConnectionPool implements IConnectionPool {
     private static final Logger LOG = LoggerFactory.getLogger(PerServerConnectionPool.class);
 
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
@@ -117,30 +116,26 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public ConnectionPoolConfig getConfig()
-    {
+    public ConnectionPoolConfig getConfig() {
         return this.config;
     }
 
-    public IClientConfig getNiwsClientConfig()
-    {
+    public IClientConfig getNiwsClientConfig() {
         return niwsClientConfig;
     }
 
     @Override
-    public boolean isAvailable()
-    {
+    public boolean isAvailable() {
         return true;
     }
 
     /** function to run when a connection is acquired before returning it to caller. */
-    private void onAcquire(final PooledConnection conn, CurrentPassport passport)
-    {
+    private void onAcquire(final PooledConnection conn, CurrentPassport passport) {
         passport.setOnChannel(conn.getChannel());
         removeIdleStateHandler(conn);
 
         conn.setInUse();
-        if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: " + conn.toString());
+        if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: {}", conn.toString());
     }
 
     protected void removeIdleStateHandler(PooledConnection conn) {
@@ -174,8 +169,7 @@ public class PerServerConnectionPool implements IConnectionPool
         return promise;
     }
 
-    public PooledConnection tryGettingFromConnectionPool(EventLoop eventLoop)
-    {
+    public PooledConnection tryGettingFromConnectionPool(EventLoop eventLoop) {
         PooledConnection conn;
         Deque<PooledConnection> connections = getPoolForEventLoop(eventLoop);
         while ((conn = connections.poll()) != null) {
@@ -207,8 +201,7 @@ public class PerServerConnectionPool implements IConnectionPool
         promise.setSuccess(conn);
     }
 
-    protected Deque<PooledConnection> getPoolForEventLoop(EventLoop eventLoop)
-    {
+    protected Deque<PooledConnection> getPoolForEventLoop(EventLoop eventLoop) {
         // We don't want to block under any circumstances, so can't use CHM.computeIfAbsent().
         // Instead we accept the slight inefficiency of an unnecessary instantiation of a ConcurrentLinkedDeque.
 
@@ -232,10 +225,11 @@ public class PerServerConnectionPool implements IConnectionPool
                 "maxConnectionsPerHost=" + maxConnectionsPerHost + ", connectionsPerHost=" + openAndOpeningConnectionCount,
                     OutboundErrorType.ORIGIN_SERVER_MAX_CONNS));
             LOG.warn("Unable to create new connection because at MaxConnectionsPerHost! "
-                            + "maxConnectionsPerHost=" + maxConnectionsPerHost
-                            + ", connectionsPerHost=" + openAndOpeningConnectionCount
-                            + ", host=" + server.getServerId()
-                            + "origin=" + config.getOriginName()
+                            + "maxConnectionsPerHost={}"
+                            + ", connectionsPerHost={}"
+                            + ", host={}"
+                            + "origin={}",
+                    maxConnectionsPerHost, openAndOpeningConnectionCount, server.getServerId(), config.getOriginName()
                     );
             return;
         }
@@ -262,8 +256,9 @@ public class PerServerConnectionPool implements IConnectionPool
                             promise.setFailure(e);
                         }
                         LOG.warn("Error creating new connection! "
-                                        + "origin=" + config.getOriginName()
-                                        + ", host=" + server.getServerId()
+                                        + "origin={}"
+                                        + ", host={}",
+                                config.getOriginName(), server.getServerId()
                                 );
                     }
                 });
@@ -313,8 +308,7 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public boolean release(PooledConnection conn)
-    {
+    public boolean release(PooledConnection conn) {
         if (conn == null) {
             return false;
         }
@@ -352,8 +346,7 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public boolean remove(PooledConnection conn)
-    {
+    public boolean remove(PooledConnection conn) {
         if (conn == null) {
             return false;
         }
@@ -377,8 +370,7 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
-    public void shutdown()
-    {
+    public void shutdown() {
         for (Deque<PooledConnection> connections : connectionsPerEventLoop.values()) {
             for (PooledConnection conn : connections) {
                 conn.close();
