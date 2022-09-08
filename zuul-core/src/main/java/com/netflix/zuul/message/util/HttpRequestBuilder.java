@@ -101,7 +101,7 @@ public final class HttpRequestBuilder {
     }
 
     /**
-     * Used to build a request with overriden values
+     * Used to build a request with overridden values
      *
      * @return `HttpRequestMessage`
      */

@@ -28,6 +28,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,11 +38,10 @@ import java.util.List;
  * Date: 2/20/15
  * Time: 3:10 PM
  */
-public class ZuulMessageImpl implements ZuulMessage
-{
+public class ZuulMessageImpl implements ZuulMessage {
     protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.message.body.max.size", 25 * 1000 * 1024);
-    private static final Charset CS_UTF8 = Charset.forName("UTF-8");
+    private static final Charset CS_UTF8 = StandardCharsets.UTF_8;
 
     protected final SessionContext context;
     protected Headers headers;
@@ -80,7 +80,6 @@ public class ZuulMessageImpl implements ZuulMessage
     public int getMaxBodySize() {
         return MAX_BODY_SIZE_PROP.get();
     }
-
 
     @Override
     public void setHasBody(boolean hasBody) {
@@ -145,7 +144,7 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public byte[] getBody() {
-        if (bodyChunks.size() == 0) {
+        if (bodyChunks.isEmpty()) {
             return null;
         }
 

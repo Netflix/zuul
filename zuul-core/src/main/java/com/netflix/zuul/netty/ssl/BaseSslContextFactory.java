@@ -31,8 +31,10 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -47,8 +49,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToDoubleFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -147,7 +147,7 @@ public class BaseSslContextFactory implements SslContextFactory {
             ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
         PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
-        LOG.debug("Registered spectator gauge - " + id.name());
+        LOG.debug("Registered spectator gauge - {}", id.name());
     }
 
     public static SslProvider chooseSslProvider() {
@@ -201,7 +201,7 @@ public class BaseSslContextFactory implements SslContextFactory {
 
             boolean dumpDecryptedTrustStorePassword = false;
             if (dumpDecryptedTrustStorePassword) {
-                LOG.debug("X509Cert Trust Store Password " + trustStorePassword);
+                LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
 
             final KeyStore trustStore = KeyStore.getInstance("JKS");

@@ -50,8 +50,7 @@ import org.slf4j.LoggerFactory;
  * Date: 2/24/15
  * Time: 10:54 AM
  */
-public class HttpRequestMessageImpl implements HttpRequestMessage
-{
+public class HttpRequestMessageImpl implements HttpRequestMessage {
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
 
     private static final CachedDynamicBooleanProperty STRICT_HOST_HEADER_VALIDATION = new CachedDynamicBooleanProperty(
@@ -110,8 +109,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName)
-    {
+                                  int port, String serverName) {
         this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
                 UNDEFINED_CLIENT_DEST_ADDRESS, false);
     }
@@ -119,8 +117,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
                                   HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
                                   int port, String serverName, SocketAddress clientRemoteAddress,
-                                  boolean immutable)
-    {
+                                  boolean immutable) {
         this.immutable = immutable;
         this.message = new ZuulMessageImpl(context, headers);
         this.protocol = protocol;
@@ -142,28 +139,24 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.clientRemoteAddress = clientRemoteAddress;
     }
 
-    private void immutableCheck()
-    {
+    private void immutableCheck() {
         if (immutable) {
             throw new IllegalStateException("This HttpRequestMessageImpl is immutable. No mutating operations allowed!");
         }
     }
 
     @Override
-    public SessionContext getContext()
-    {
+    public SessionContext getContext() {
         return message.getContext();
     }
 
     @Override
-    public Headers getHeaders()
-    {
+    public Headers getHeaders() {
         return message.getHeaders();
     }
 
     @Override
-    public void setHeaders(Headers newHeaders)
-    {
+    public void setHeaders(Headers newHeaders) {
         immutableCheck();
         message.setHeaders(newHeaders);
     }
@@ -244,8 +237,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void setProtocol(String protocol)
-    {
+    public void setProtocol(String protocol) {
         immutableCheck();
         this.protocol = protocol;
     }
@@ -255,8 +247,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return method;
     }
     @Override
-    public void setMethod(String method)
-    {
+    public void setMethod(String method) {
         immutableCheck();
         this.method = method;
     }
@@ -269,8 +260,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return path;
     }
     @Override
-    public void setPath(String path)
-    {
+    public void setPath(String path) {
         immutableCheck();
         this.path = path;
         this.decodedPath = path;
@@ -282,8 +272,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getPathAndQuery()
-    {
+    public String getPathAndQuery() {
         // If this instance is immutable, then lazy-cache.
         if (immutable) {
             if (pathAndQuery == null) {
@@ -296,9 +285,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     }
 
-    protected String generatePathAndQuery()
-    {
-        if (queryParams != null && queryParams.entries().size() > 0) {
+    protected String generatePathAndQuery() {
+        if (queryParams != null && !queryParams.entries().isEmpty()) {
             return getPath() + "?" + queryParams.toEncodedString();
         }
         else {
@@ -313,8 +301,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Deprecated
     @VisibleForTesting
-    void setClientIp(String clientIp)
-    {
+    void setClientIp(String clientIp) {
         immutableCheck();
         this.clientIp = clientIp;
     }
@@ -324,41 +311,36 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return scheme;
     }
     @Override
-    public void setScheme(String scheme)
-    {
+    public void setScheme(String scheme) {
         immutableCheck();
         this.scheme = scheme;
     }
 
     @Override
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
     @Deprecated
     @VisibleForTesting
-    void setPort(int port)
-    {
+    void setPort(int port) {
         immutableCheck();
         this.port = port;
     }
 
     @Override
-    public String getServerName()
-    {
+    public String getServerName() {
         return serverName;
     }
+
     @Override
-    public void setServerName(String serverName)
-    {
+    public void setServerName(String serverName) {
         immutableCheck();
         this.serverName = serverName;
     }
 
     @Override
-    public Cookies parseCookies()
-    {
+    public Cookies parseCookies() {
         if (parsedCookies == null) {
             parsedCookies = reParseCookies();
         }
@@ -366,11 +348,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public Cookies reParseCookies()
-    {
+    public Cookies reParseCookies() {
         Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().getAll(HttpHeaderNames.COOKIE))
-        {
+        for (String aCookieHeader : getHeaders().getAll(HttpHeaderNames.COOKIE)) {
             try {
                 if (CLEAN_COOKIES.get()) {
                     aCookieHeader = cleanCookieHeader(aCookieHeader);
@@ -382,7 +362,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
                 }
             }
             catch (Exception e) {
-                LOG.error(String.format("Error parsing request Cookie header. cookie=%s, request-info=%s",
+                LOG.error("Error parsing request Cookie header. cookie={}, request-info={}",
                         aCookieHeader, getInfoForLogging()));
             }
 
@@ -392,8 +372,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @VisibleForTesting
-    static String cleanCookieHeader(String cookie)
-    {
+    static String cleanCookieHeader(String cookie) {
         for (Pattern stripPtn : RE_STRIP) {
             Matcher matcher = stripPtn.matcher(cookie);
             if (matcher.find()) {
@@ -409,8 +388,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public ZuulMessage clone()
-    {
+    public ZuulMessage clone() {
         HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
                 protocol, method, path,
                 queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme,
@@ -421,9 +399,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         return clone;
     }
 
-    protected HttpRequestInfo copyRequestInfo()
-    {
-
+    protected HttpRequestInfo copyRequestInfo() {
         HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(),
                 protocol, method, path,
                 queryParams.immutableCopy(),  Headers.copyOf(message.getHeaders()), clientIp, scheme,
@@ -433,27 +409,23 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void storeInboundRequest()
-    {
+    public void storeInboundRequest() {
         inboundRequest = copyRequestInfo();
     }
 
     @Override
-    public HttpRequestInfo getInboundRequest()
-    {
+    public HttpRequestInfo getInboundRequest() {
         return inboundRequest;
     }
 
     @Override
-    public void setQueryParams(HttpQueryParams queryParams)
-    {
+    public void setQueryParams(HttpQueryParams queryParams) {
         immutableCheck();
         this.queryParams = queryParams;
     }
 
     @Override
-    public String getInfoForLogging()
-    {
+    public String getInfoForLogging() {
         // If this instance is immutable, then lazy-cache generating this info.
         if (immutable) {
             if (infoForLogging == null) {
@@ -466,8 +438,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     }
 
-    protected String generateInfoForLogging()
-    {
+    protected String generateInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
         StringBuilder sb = new StringBuilder()
                 .append("uri=").append(req.reconstructURI())
@@ -506,8 +477,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getOriginalScheme()
-    {
+    public String getOriginalScheme() {
         String scheme = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO);
         if (scheme == null) {
             scheme = getScheme();
@@ -516,8 +486,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getOriginalProtocol()
-    {
+    public String getOriginalProtocol() {
         String proto = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO_VERSION);
         if (proto == null) {
             proto = getProtocol();
@@ -622,8 +591,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      * @return String
      */
     @Override
-    public String reconstructURI()
-    {
+    public String reconstructURI() {
         // If this instance is immutable, then lazy-cache reconstructing the uri.
         if (immutable) {
             if (reconstructedUri == null) {
@@ -636,8 +604,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
     }
 
-    protected String _reconstructURI()
-    {
+    protected String _reconstructURI() {
         try {
             StringBuilder uri = new StringBuilder(100);
 
