@@ -192,7 +192,6 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 filterRunStatus = SKIPPED;
             }
 
-            ;
             try (TaskCloseable ignored2 = traceTask(filter, f -> f.filterName() + ".shouldSkipFilter")){
                 if (shouldSkipFilter(inMesg, filter)) {
                     filterRunStatus = SKIPPED;
@@ -303,7 +302,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     protected void recordFilterError(final I inMesg, final ZuulFilter<I, O> filter, final Throwable t) {
         // Add a log statement for this exception.
         final String errorMsg = "Filter Exception: filter=" + filter.filterName() +
-                ", request-info=" + inMesg.getInfoForLogging() + ", msg=" + String.valueOf(t.getMessage());
+                ", request-info=" + inMesg.getInfoForLogging() + ", msg=" + t.getMessage();
         if (t instanceof ZuulException && !((ZuulException) t).shouldLogAsError()) {
             logger.warn(errorMsg);
         }

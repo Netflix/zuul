@@ -34,16 +34,13 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public final class PassportStateHttpClientHandler {
 
-    private static CurrentPassport passport(ChannelHandlerContext ctx)
-    {
+    private static CurrentPassport passport(ChannelHandlerContext ctx) {
         return CurrentPassport.fromChannel(ctx.channel());
     }
 
-    public static final class InboundHandler extends ChannelInboundHandlerAdapter
-    {
+    public static final class InboundHandler extends ChannelInboundHandlerAdapter {
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
                 CurrentPassport passport = passport(ctx);
 
@@ -64,11 +61,9 @@ public final class PassportStateHttpClientHandler {
         }
     }
 
-    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter
-    {
+    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
         @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             try {
                 CurrentPassport passport = passport(ctx);
 
