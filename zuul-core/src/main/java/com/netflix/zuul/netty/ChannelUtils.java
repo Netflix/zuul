@@ -20,8 +20,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 
 public class ChannelUtils {
-    public static String channelInfoForLogging(Channel ch)
-    {
+    public static String channelInfoForLogging(Channel ch) {
         if (ch == null) {
             return "null";
         }

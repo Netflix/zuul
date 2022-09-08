@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.passport;
 
-public enum PassportState
-{
+public enum PassportState {
     IN_REQ_HEADERS_RECEIVED,
     IN_REQ_CONTENT_RECEIVED,
     IN_REQ_LAST_CONTENT_RECEIVED,

@@ -36,8 +36,7 @@ public abstract class OriginThrottledException extends ZuulException {
         return originName;
     }
 
-    public StatusCategory getStatusCategory()
-    {
+    public StatusCategory getStatusCategory() {
         return statusCategory;
     }
 }

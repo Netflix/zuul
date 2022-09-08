@@ -193,7 +193,7 @@ public class StatsManager {
     }
 
     /**
-     * collects and increments counts of status code, route/status code and statuc_code bucket, eg 2xx 3xx 4xx 5xx
+     * collects and increments counts of status code, route/status code and status_code bucket, eg 2xx 3xx 4xx 5xx
      *
      * @param route
      * @param statusCode

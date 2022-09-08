@@ -72,8 +72,7 @@ public class FilterFileManager {
      * @throws Exception
      */
     @Inject
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
         long startTime = System.currentTimeMillis();
         
         filterLoader.putFiltersForClasses(config.getClassNames());
@@ -181,8 +180,7 @@ public class FilterFileManager {
         processFilesService.invokeAll(tasks, FILE_PROCESSOR_TASKS_TIMEOUT_SECS.get(), TimeUnit.SECONDS);
     }
 
-    void manageFiles()
-    {
+    void manageFiles() {
         try {
             List<File> aFiles = getFiles();
             processGroovyFiles(aFiles);
@@ -194,8 +192,7 @@ public class FilterFileManager {
         }
     }
 
-    public static class FilterFileManagerConfig
-    {
+    public static class FilterFileManagerConfig {
         private String[] directories;
         private String[] classNames;
         private int pollingIntervalSeconds;

@@ -35,7 +35,7 @@ public class BasicFilterUsageNotifier implements FilterUsageNotifier {
     @Override
     public void notify(ZuulFilter<?, ?> filter, ExecutionStatus status) {
         registry.counter(
-                "zuul.filter-" + filter.getClass().getSimpleName(),
+                METRIC_PREFIX + filter.getClass().getSimpleName(),
                 "status", status.name(),
                 "filtertype", filter.filterType().toString()).increment();
     }

@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
  * Date: 4/28/15
  * Time: 11:05 PM
  */
-public class HttpUtils
-{
+public class HttpUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HttpUtils.class);
     private static final char[] MALICIOUS_HEADER_CHARS = {'\r', '\n'};
 
@@ -48,8 +47,7 @@ public class HttpUtils
      * @param request <code>HttpRequestMessage</code>
      * @return <code>String</code> IP address
      */
-    public static String getClientIP(HttpRequestInfo request)
-    {
+    public static String getClientIP(HttpRequestInfo request) {
         final String xForwardedFor = request.getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_FOR);
         String clientIP;
         if (xForwardedFor == null) {
@@ -117,14 +115,12 @@ public class HttpUtils
     }
 
 
-    public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg)
-    {
+    public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg) {
         final Integer contentLengthVal = getContentLengthIfPresent(msg);
         return (contentLengthVal != null) && (contentLengthVal > 0);
     }
 
-    public static Integer getContentLengthIfPresent(ZuulMessage msg)
-    {
+    public static Integer getContentLengthIfPresent(ZuulMessage msg) {
         final String contentLengthValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
         if (!Strings.isNullOrEmpty(contentLengthValue)) {
             try {
@@ -149,8 +145,7 @@ public class HttpUtils
         return null;
     }
 
-    public static boolean hasChunkedTransferEncodingHeader(ZuulMessage msg)
-    {
+    public static boolean hasChunkedTransferEncodingHeader(ZuulMessage msg) {
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
         if (!Strings.isNullOrEmpty(teValue)) {
@@ -163,13 +158,11 @@ public class HttpUtils
      * If http/1 then will always want to just use ChannelHandlerContext.channel(), but for http/2
      * will want the parent channel (as the child channel is different for each h2 stream).
      */
-    public static Channel getMainChannel(ChannelHandlerContext ctx)
-    {
+    public static Channel getMainChannel(ChannelHandlerContext ctx) {
         return getMainChannel(ctx.channel());
     }
 
-    public static Channel getMainChannel(Channel channel)
-    {
+    public static Channel getMainChannel(Channel channel) {
         if (channel instanceof Http2StreamChannel) {
             return channel.parent();
         }
