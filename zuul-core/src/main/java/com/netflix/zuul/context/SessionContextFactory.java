@@ -18,8 +18,7 @@ package com.netflix.zuul.context;
 import com.netflix.zuul.message.ZuulMessage;
 import rx.Observable;
 
-public interface SessionContextFactory<T, V>
-{
+public interface SessionContextFactory<T, V> {
     public ZuulMessage create(SessionContext context, T nativeRequest, V nativeResponse);
     public Observable<ZuulMessage> write(ZuulMessage msg, V nativeResponse);
 }
