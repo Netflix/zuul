@@ -49,8 +49,7 @@ public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception
-    {
+    protected void initChannel(Channel ch) throws Exception {
         // Configure our pipeline of ChannelHandlerS.
         ChannelPipeline pipeline = ch.pipeline();
 

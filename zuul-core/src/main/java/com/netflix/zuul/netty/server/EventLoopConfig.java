@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,7 @@
  */
 package com.netflix.zuul.netty.server;
 
-public interface EventLoopConfig
-{
+public interface EventLoopConfig {
     int eventLoopCount();
 
     int acceptorCount();

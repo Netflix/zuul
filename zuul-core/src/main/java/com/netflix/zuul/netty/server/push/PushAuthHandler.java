@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -50,7 +50,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
         final boolean closeConn = ((status != OK) || (! HttpUtil.isKeepAlive(req)));
-        if (closeConn)  {
+        if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
         final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
@@ -107,7 +107,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
             final Set<Cookie> decoded = CookieDecoder.decode(cookieStr, false);
-            decoded.forEach(cookie -> cookies.add(cookie));
+            decoded.forEach(cookies::add);
         }
         return cookies;
     }
