@@ -25,16 +25,14 @@ import com.netflix.zuul.filters.BaseFilter;
  * Date: 5/29/15
  * Time: 3:23 PM
  */
-public abstract class HttpOutboundFilter extends BaseFilter<HttpResponseMessage, HttpResponseMessage>
-{
+public abstract class HttpOutboundFilter extends BaseFilter<HttpResponseMessage, HttpResponseMessage> {
     @Override
     public FilterType filterType() {
         return FilterType.OUTBOUND;
     }
 
     @Override
-    public HttpResponseMessage getDefaultOutput(HttpResponseMessage input)
-    {
+    public HttpResponseMessage getDefaultOutput(HttpResponseMessage input) {
         return input;
     }
 }

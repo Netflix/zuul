@@ -22,8 +22,7 @@ import com.netflix.zuul.message.ZuulMessage;
  * Date: 5/7/15
  * Time: 3:31 PM
  */
-public interface ShouldFilter<T extends ZuulMessage>
-{
+public interface ShouldFilter<T extends ZuulMessage> {
     /**
      * a "true" return from this method means that the apply() method should be invoked
      *
