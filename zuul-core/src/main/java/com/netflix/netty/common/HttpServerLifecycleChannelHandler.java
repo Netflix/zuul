@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * @author michaels
@@ -41,6 +42,8 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
                 // continue to next handler in pipeline.
                 if (fireStartEvent(ctx, (HttpRequest) msg)) {
                     super.channelRead(ctx, msg);
+                } else {
+                    ReferenceCountUtil.release(msg);
                 }
             }
             else {
