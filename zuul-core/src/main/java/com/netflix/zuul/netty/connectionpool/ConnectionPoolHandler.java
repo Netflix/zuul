@@ -50,6 +50,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     private final Counter idleCounter;
     private final Counter inactiveCounter;
     private final Counter errorCounter;
+    private final Counter headerCloseCounter;
 
     public ConnectionPoolHandler(OriginName originName) {
         if (originName == null) {
@@ -59,6 +60,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         this.idleCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_idle", originName.getMetricId());
         this.inactiveCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_inactive", originName.getMetricId());
         this.errorCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_error", originName.getMetricId());
+        this.headerCloseCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_headerClose", originName.getMetricId());
     }
 
     @Override
@@ -84,6 +86,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                     if ("close".equalsIgnoreCase(getConnectionHeader(completeEvt))) {
                         final String msg = "Origin channel for origin - " + originName + " - completed because of expired keep-alive. "
                                 + ChannelUtils.channelInfoForLogging(ctx.channel());
+                        headerCloseCounter.increment();
                         closeConnection(ctx, msg);
                     } else {
                         conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
