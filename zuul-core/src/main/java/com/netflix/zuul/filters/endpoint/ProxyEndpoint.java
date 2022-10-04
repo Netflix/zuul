@@ -803,15 +803,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         ClientException.ErrorType niwsErrorType;
 
         if (respStatus == 503) {
-            //Treat 503 status from Origin similarly to connection failures, ie. we want to back off from this server
             statusCategory = FAILURE_ORIGIN_THROTTLED;
             niwsErrorType = ClientException.ErrorType.SERVER_THROTTLED;
             obe = new OutboundException(OutboundErrorType.SERVICE_UNAVAILABLE, requestAttempts);
-            if (originConn != null) {
-                originConn.getServer().incrementSuccessiveConnectionFailureCount();
-                originConn.getServer().addToFailureCount();
-                originConn.flagShouldClose();
-            }
             if (currentRequestStat != null) {
                 currentRequestStat.updateWithHttpStatusCode(respStatus);
                 currentRequestStat.serviceUnavailable();
