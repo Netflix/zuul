@@ -58,10 +58,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
@@ -152,10 +152,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
@@ -277,10 +277,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
@@ -411,10 +411,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
@@ -503,10 +503,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
@@ -628,10 +628,10 @@
             "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.25.0"
