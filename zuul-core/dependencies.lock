@@ -34,28 +34,28 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
@@ -128,28 +128,28 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
@@ -250,31 +250,31 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.53.Final"
+            "locked": "2.0.54.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
@@ -384,31 +384,31 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.53.Final"
+            "locked": "2.0.54.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
@@ -479,28 +479,28 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
@@ -601,31 +601,31 @@
             "locked": "0.0.14.Final"
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.53.Final"
+            "locked": "2.0.54.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.79.Final"
+            "locked": "4.1.82.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.79.Final"
