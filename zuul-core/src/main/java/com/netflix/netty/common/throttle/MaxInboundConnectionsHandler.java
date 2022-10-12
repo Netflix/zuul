@@ -25,6 +25,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
     {
         if (ctx.channel().attr(ATTR_CH_THROTTLED).get() != null) {
             // Discard this msg as channel is in process of being closed.
+            ReferenceCountUtil.safeRelease(msg);
         }
         else {
             super.channelRead(ctx, msg);

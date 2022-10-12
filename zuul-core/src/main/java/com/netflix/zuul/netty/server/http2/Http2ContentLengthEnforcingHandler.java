@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
+import io.netty.util.ReferenceCountUtil;
 import java.util.List;
 
 /**
@@ -56,18 +57,21 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
             List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
             if (lengthHeaders.size() > 1) {
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                ReferenceCountUtil.safeRelease(msg);
                 return;
             } else if (lengthHeaders.size() == 1) {
                 expectedContentLength = Long.parseLong(lengthHeaders.get(0));
                 if (expectedContentLength < 0) {
                     // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                     ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                    ReferenceCountUtil.safeRelease(msg);
                     return;
                 }
             }
             if (hasContentLength() && HttpUtil.isTransferEncodingChunked(req)) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                ReferenceCountUtil.safeRelease(msg);
                 return;
             }
         }
@@ -77,6 +81,7 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
             if (hasContentLength() && seenContentLength > expectedContentLength) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                ReferenceCountUtil.safeRelease(msg);
                 return;
             }
         }
@@ -84,6 +89,7 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
             if (hasContentLength() && seenContentLength != expectedContentLength) {
                 // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                ReferenceCountUtil.safeRelease(msg);
                 return;
             }
         }
