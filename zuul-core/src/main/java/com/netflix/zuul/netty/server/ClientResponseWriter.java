@@ -140,6 +140,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 writeBufferedBodyContent(zuulResponse, channel);
                 channel.flush();
             } else {
+                resp.disposeBufferedBody();
                 channel.close();
             }
         }
