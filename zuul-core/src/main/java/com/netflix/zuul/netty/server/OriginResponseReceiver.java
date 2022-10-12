@@ -80,6 +80,13 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     }
 
     private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
+        // add safety callback to ensure bytebufs are released at channel close
+        ctx.channel().closeFuture().addListener(cf -> {
+            if (ReferenceCountUtil.refCnt(msg) > 0) {
+                ReferenceCountUtil.safeRelease(msg);
+            }
+        });
+
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
