@@ -16,12 +16,14 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.passport.PassportState;
@@ -84,6 +86,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         ctx.channel().closeFuture().addListener(cf -> {
             if (ReferenceCountUtil.refCnt(msg) > 0) {
                 ReferenceCountUtil.safeRelease(msg);
+                SpectatorUtils.newCounter("zuul.origin.responseReceiver.safetyRelease", msg.getClass().getSimpleName())
+                        .increment();
             }
         });
 
