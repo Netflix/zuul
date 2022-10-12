@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http2.Http2ResetFrame;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * User: michaels@netflix.com
@@ -36,6 +37,7 @@ public class Http2ResetFrameHandler extends ChannelInboundHandlerAdapter
         if (msg instanceof Http2ResetFrame) {
             // Inform zuul to cancel the request.
             ctx.fireUserEventTriggered(new RequestCancelledEvent());
+            ReferenceCountUtil.safeRelease(msg);
         }
         else {
             super.channelRead(ctx, msg);
