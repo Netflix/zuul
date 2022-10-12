@@ -53,51 +53,44 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
-            try {
-                HttpRequest req = (HttpRequest) msg;
-                List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
-                if (lengthHeaders.size() > 1) {
-                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                    return;
-                } else if (lengthHeaders.size() == 1) {
-                    expectedContentLength = Long.parseLong(lengthHeaders.get(0));
-                    if (expectedContentLength < 0) {
-                        // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                        return;
-                    }
-                }
-                if (hasContentLength() && HttpUtil.isTransferEncodingChunked(req)) {
+            HttpRequest req = (HttpRequest) msg;
+            List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
+            if (lengthHeaders.size() > 1) {
+                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                ReferenceCountUtil.safeRelease(msg);
+                return;
+            } else if (lengthHeaders.size() == 1) {
+                expectedContentLength = Long.parseLong(lengthHeaders.get(0));
+                if (expectedContentLength < 0) {
                     // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                     ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                    ReferenceCountUtil.safeRelease(msg);
                     return;
                 }
-            } finally {
+            }
+            if (hasContentLength() && HttpUtil.isTransferEncodingChunked(req)) {
+                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 ReferenceCountUtil.safeRelease(msg);
+                return;
             }
         }
         if (msg instanceof HttpContent) {
-            try {
-                ByteBuf content = ((HttpContent) msg).content();
-                incrementSeenContent(content.readableBytes());
-                if (hasContentLength() && seenContentLength > expectedContentLength) {
-                    // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                    return;
-                }
-            } finally {
+            ByteBuf content = ((HttpContent) msg).content();
+            incrementSeenContent(content.readableBytes());
+            if (hasContentLength() && seenContentLength > expectedContentLength) {
+                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 ReferenceCountUtil.safeRelease(msg);
+                return;
             }
         }
         if (msg instanceof LastHttpContent) {
-            try {
-                if (hasContentLength() && seenContentLength != expectedContentLength) {
-                    // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                    return;
-                }
-            } finally {
+            if (hasContentLength() && seenContentLength != expectedContentLength) {
+                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
                 ReferenceCountUtil.safeRelease(msg);
+                return;
             }
         }
         super.channelRead(ctx, msg);
