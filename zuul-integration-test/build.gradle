@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.33.2'
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.34.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation 'io.rest-assured:rest-assured:5.0.1'
     testImplementation libraries.truth
