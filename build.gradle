@@ -3,6 +3,7 @@ plugins {
     id 'nebula.netflixoss' version '10.6.0'
     id "com.google.osdetector" version "1.7.1"
     id "me.champeau.jmh" version "0.6.6"
+    id "org.openrewrite.rewrite" version "5.30.0"
 }
 
 ext.githubProjectName = rootProject.name
@@ -31,6 +32,7 @@ subprojects {
     apply plugin: 'nebula.javadoc-jar'
     apply plugin: 'nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
+    apply plugin: 'org.openrewrite.rewrite'
 
     license {
         ignoreFailures = false
@@ -76,4 +78,13 @@ subprojects {
             showStandardStreams = true
         }
     }
+}
+
+dependencies {
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.10.0"))
+    rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
+}
+
+rewrite {
+    activeRecipe("org.openrewrite.java.testing.junit5.JUnit5BestPractices")
 }
