@@ -20,6 +20,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -62,15 +63,15 @@ public class ByteBufFollower {
             while (iterator.hasNext()) {
                 SeenBuf next = iterator.next();
                 // was already released in the time we've been watching it
-                if (ReferenceCountUtil.refCnt(next.bytebuf) <= 0) {
+                if (next.bytebuf.get() == null || ReferenceCountUtil.refCnt(next.bytebuf.get()) <= 0) {
                     iterator.remove();
                 } else {
                     log.warn("Tracking unclosed ByteBuf: {}", next);
-                    SpectatorUtils.newCounter("zuul.bytebuf.follower", next.bytebuf.getClass().toString())
+                    SpectatorUtils.newCounter("zuul.bytebuf.follower", next.clazz.toString())
                             .increment();
 
                     if (SHOULD_RELEASE.get()) {
-                        ReferenceCountUtil.safeRelease(next.bytebuf);
+                        ReferenceCountUtil.safeRelease(next.bytebuf.get());
                     }
                 }
             }
@@ -80,19 +81,22 @@ public class ByteBufFollower {
     private static class SeenBuf {
 
         private final String entry;
-        private final Object bytebuf;
+        // use weak reference to allow garbage collection and leak detection to work properly
+        private final WeakReference<Object> bytebuf;
+        private final Class<?> clazz;
 
         public SeenBuf(String entry, Object bytebuf) {
             this.entry = entry;
-            this.bytebuf = bytebuf;
+            this.bytebuf = new WeakReference<>(bytebuf);
+            this.clazz = bytebuf.getClass();
         }
 
         @Override
         public String toString() {
             return "SeenBuf{" +
                     "entry='" + entry + '\'' +
-                    ", clazz=" + bytebuf.getClass() +
-                    ", count=" + ReferenceCountUtil.refCnt(bytebuf) +
+                    ", clazz=" + clazz +
+                    ", count=" + (bytebuf.get() == null ? -1 : ReferenceCountUtil.refCnt(bytebuf.get())) +
                     '}';
         }
     }
