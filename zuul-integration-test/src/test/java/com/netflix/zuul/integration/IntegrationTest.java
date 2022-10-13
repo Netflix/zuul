@@ -24,6 +24,7 @@ import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.InstrumentedResourceLeakDetector;
 import com.netflix.spectator.api.Gauge;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.netty.SpectatorUtils;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -90,7 +92,6 @@ public class IntegrationTest {
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
-        // TODO assertEquals(nettyLeakCounter.get(), 0);
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
@@ -100,6 +101,7 @@ public class IntegrationTest {
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
+        assertEquals(0, resourceLeakCount());
     }
 
     @AfterAll
@@ -107,7 +109,7 @@ public class IntegrationTest {
         if (bootstrap != null) {
             bootstrap.stop();
         }
-        // TODO assertEquals(nettyLeakCounter.get(), 0);
+        assertEquals(0, resourceLeakCount());
     }
 
     @BeforeEach
@@ -280,4 +282,10 @@ public class IntegrationTest {
         }
     }
 
+    private static long resourceLeakCount() {
+        return (long) Spectator.globalRegistry().stream()
+                .filter((meter) -> meter.id().name().startsWith("NettyLeakDetector"))
+                .mapToDouble((meter) -> ((Gauge) meter).value())
+                .sum();
+    }
 }
