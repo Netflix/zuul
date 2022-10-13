@@ -21,6 +21,7 @@ import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.monitoring.ByteBufFollower;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
@@ -80,6 +81,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     }
 
     private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
+        ctx.channel().closeFuture().addListener(cf ->
+                ByteBufFollower.trackByteBuf("OriginResponseReceiver.read", msg));
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
@@ -200,6 +203,9 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             ReferenceCountUtil.release(msg);
             return;
         }
+
+        ctx.channel().closeFuture().addListener(cf ->
+                ByteBufFollower.trackByteBuf("OriginResponseReceiver.write", msg));
 
         if (msg instanceof HttpRequestMessage) {
             promise.addListener((future) -> {

@@ -35,6 +35,7 @@ import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.monitoring.ByteBufFollower;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import com.netflix.zuul.passport.CurrentPassport;
@@ -123,6 +124,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
+        ctx.channel().closeFuture().addListener(cf ->
+                ByteBufFollower.trackByteBuf("ClientRequestReceiver.read", msg));
         // Flag that we have now received the LastContent for this request from the client.
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
@@ -428,6 +431,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        ctx.channel().closeFuture().addListener(cf ->
+                ByteBufFollower.trackByteBuf("ClientRequestReceiver.write", msg));
         try (TaskCloseable ignored = PerfMark.traceTask("CRR.write")) {
             if (msg instanceof HttpResponse) {
                 promise.addListener((future) -> {
