@@ -22,8 +22,12 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
+import com.netflix.netty.common.metrics.InstrumentedResourceLeakDetector;
+import com.netflix.spectator.api.Gauge;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
+import com.netflix.zuul.netty.SpectatorUtils;
+import io.netty.util.ResourceLeakDetector;
 import io.restassured.internal.http.ResponseParseException;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
@@ -56,17 +60,24 @@ import static com.netflix.zuul.integration.matchers.IsRequestId.isRequestId;
 import static io.restassured.RestAssured.expect;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IntegrationTest {
+
+    static {
+        System.setProperty("io.netty.customResourceLeakDetector",
+                InstrumentedResourceLeakDetector.class.getCanonicalName());
+
+    }
+
     static private Bootstrap bootstrap;
     static private final int ZUUL_SERVER_PORT = findAvailableTcpPort();
 
     static private final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String path;
-
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -77,6 +88,10 @@ public class IntegrationTest {
 
     @BeforeAll
     static void beforeAll() {
+        assertTrue(ResourceLeakDetector.isEnabled());
+        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
+        // TODO assertEquals(nettyLeakCounter.get(), 0);
+
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
@@ -92,6 +107,7 @@ public class IntegrationTest {
         if (bootstrap != null) {
             bootstrap.stop();
         }
+        // TODO assertEquals(nettyLeakCounter.get(), 0);
     }
 
     @BeforeEach

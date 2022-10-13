@@ -22,6 +22,10 @@ dependencies {
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.18.0'
 }
 
+tasks.withType(Test).all {
+    systemProperty("io.netty.leakDetection.level", "paranoid")
+}
+
 test {
     useJUnitPlatform()
 }
