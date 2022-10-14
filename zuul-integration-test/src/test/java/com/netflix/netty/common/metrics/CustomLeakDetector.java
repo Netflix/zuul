@@ -15,9 +15,19 @@ public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
                             .collect(Collectors.toList());
         Truth.assertThat(leaks).isEmpty();
     }
+    private final String resourceTypeName;
+
     public CustomLeakDetector(Class<?> resourceType, int samplingInterval) {
         super(resourceType, samplingInterval);
+        this.resourceTypeName = resourceType.getSimpleName();
         GLOBAL_REGISTRY.add(this);
     }
 
+    @Override
+    public String toString() {
+        return "CustomLeakDetector: "
+                + this.resourceTypeName
+                + " leakCount="
+                + leakCounter.get();
+    }
 }
