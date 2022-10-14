@@ -116,7 +116,7 @@ public class FilterVerifierTest {
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
 
-        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
+        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
     }
 
     @Test
@@ -131,7 +131,7 @@ public class FilterVerifierTest {
         assertNotNull(filterClass);
 
         Object filter2 = FilterVerifier.INSTANCE.instantiateClass(filterClass);
-        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
+        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
     }
 
     @Test
