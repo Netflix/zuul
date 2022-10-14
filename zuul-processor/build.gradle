@@ -4,7 +4,7 @@ dependencies {
     implementation libraries.guava
     implementation project(":zuul-core")
 
-    testImplementation libraries.junit,
+    testImplementation libraries.jupiterApi, libraries.jupiterEngine,
             libraries.truth
     testAnnotationProcessor project(":zuul-processor")
 }

@@ -16,21 +16,17 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link RouteStatusCodeMonitor}.
  */
-@RunWith(JUnit4.class)
 public class RouteStatusCodeMonitorTest {
     @Test
-    public void testUpdateStats() {
+    void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
         assertEquals(sd.route, "test");
         sd.update();
@@ -40,17 +36,17 @@ public class RouteStatusCodeMonitorTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
         RouteStatusCodeMonitor sd1 = new RouteStatusCodeMonitor("test", 200);
         RouteStatusCodeMonitor sd2 = new RouteStatusCodeMonitor("test1", 200);
         RouteStatusCodeMonitor sd3 = new RouteStatusCodeMonitor("test", 201);
 
-        assertTrue(sd.equals(sd1));
-        assertTrue(sd1.equals(sd));
-        assertTrue(sd.equals(sd));
-        assertFalse(sd.equals(sd2));
-        assertFalse(sd.equals(sd3));
-        assertFalse(sd2.equals(sd3));
+        assertEquals(sd, sd1);
+        assertEquals(sd1, sd);
+        assertEquals(sd, sd);
+        assertNotEquals(sd, sd2);
+        assertNotEquals(sd, sd3);
+        assertNotEquals(sd2, sd3);
     }
 }

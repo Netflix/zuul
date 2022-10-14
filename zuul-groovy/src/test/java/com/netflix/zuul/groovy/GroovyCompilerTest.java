@@ -16,38 +16,38 @@
 
 package com.netflix.zuul.groovy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.spy;
 
 import groovy.lang.GroovyObject;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link GroovyCompiler}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GroovyCompilerTest {
 
     @Test
-    public void testLoadGroovyFromString() {
+    void testLoadGroovyFromString() {
 
         GroovyCompiler compiler = Mockito.spy(new GroovyCompiler());
 
         try {
 
             String code = "class test { public String hello(){return \"hello\" } } ";
-            Class clazz = compiler.compile(code, "test");
+            Class clazz = compiler.compile(code,"test");
             assertNotNull(clazz);
-            assertEquals(clazz.getName(), "test");
+            assertEquals(clazz.getName(),"test");
             GroovyObject groovyObject = (GroovyObject) clazz.newInstance();
             Object[] args = {};
-            String s = (String) groovyObject.invokeMethod("hello", args);
-            assertEquals(s, "hello");
+            String s = (String) groovyObject.invokeMethod("hello",args);
+            assertEquals(s,"hello");
         } catch (Exception e) {
             assertFalse(true);
         }

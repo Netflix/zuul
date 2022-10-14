@@ -16,22 +16,19 @@
 
 package com.netflix.zuul.scriptManager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.netflix.zuul.filters.FilterType;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 
 /**
  * Unit tests for {@link FilterVerifier}.
  */
-@RunWith(JUnit4.class)
 public class FilterVerifierTest {
 
     private final String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
@@ -113,17 +110,17 @@ public class FilterVerifierTest {
         "}";
 
     @Test
-    public void testCompile() {
+    void testCompile() {
         Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
 
-        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
+        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
     }
 
     @Test
-    public void testZuulFilterInstance() throws Exception {
+    void testZuulFilterInstance() throws Exception {
         Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
 
@@ -134,21 +131,21 @@ public class FilterVerifierTest {
         assertNotNull(filterClass);
 
         Object filter2 = FilterVerifier.INSTANCE.instantiateClass(filterClass);
-        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
+        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
     }
 
     @Test
-    public void testVerify() throws Exception {
+    void testVerify() throws Exception {
         FilterInfo filterInfo1 = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
         assertNotNull(filterInfo1);
-        assertEquals(filterInfo1.getFilterID(), "null:filter:in");
-        assertEquals(filterInfo1.getFilterType(), FilterType.INBOUND);
-        assertEquals(filterInfo1.getFilterName(), "filter");
+        assertEquals(filterInfo1.getFilterID(),"null:filter:in");
+        assertEquals(filterInfo1.getFilterType(),FilterType.INBOUND);
+        assertEquals(filterInfo1.getFilterName(),"filter");
         assertFalse(filterInfo1.isActive());
         assertFalse(filterInfo1.isCanary());
 
-        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
+        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
 
-        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
+        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
     }
 }

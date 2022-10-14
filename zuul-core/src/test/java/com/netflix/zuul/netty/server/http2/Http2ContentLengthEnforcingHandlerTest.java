@@ -30,15 +30,12 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http2.Http2ResetFrame;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class Http2ContentLengthEnforcingHandlerTest {
 
     @Test
-    public void failsOnMultipleContentLength() {
+    void failsOnMultipleContentLength() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
@@ -53,7 +50,7 @@ public class Http2ContentLengthEnforcingHandlerTest {
     }
 
     @Test
-    public void failsOnMixedContentLengthAndChunked() {
+    void failsOnMixedContentLengthAndChunked() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
@@ -69,7 +66,7 @@ public class Http2ContentLengthEnforcingHandlerTest {
     }
 
     @Test
-    public void failsOnShortContentLength() {
+    void failsOnShortContentLength() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
@@ -97,7 +94,7 @@ public class Http2ContentLengthEnforcingHandlerTest {
     }
 
     @Test
-    public void failsOnShortContent() {
+    void failsOnShortContent() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 

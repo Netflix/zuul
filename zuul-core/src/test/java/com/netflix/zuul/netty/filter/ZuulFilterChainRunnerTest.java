@@ -43,20 +43,16 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import rx.Observable;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-
-@RunWith(JUnit4.class)
 public class ZuulFilterChainRunnerTest {
     private HttpRequestMessage request;
     private HttpResponseMessage response;
 
-    @Before
+    @BeforeEach
     public void before() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
@@ -69,11 +65,11 @@ public class ZuulFilterChainRunnerTest {
     }
 
     @Test
-    public void testInboundFilterChain() {
+    void testInboundFilterChain() {
         final SimpleInboundFilter inbound1 = spy(new SimpleInboundFilter(true));
         final SimpleInboundFilter inbound2 = spy(new SimpleInboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[] { inbound1, inbound2 };
+        final ZuulFilter[] filters = new ZuulFilter[]{inbound1, inbound2};
 
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);
@@ -94,11 +90,11 @@ public class ZuulFilterChainRunnerTest {
     }
 
     @Test
-    public void testOutboundFilterChain() {
+    void testOutboundFilterChain() {
         final SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
         final SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[] { outbound1, outbound2 };
+        final ZuulFilter[] filters = new ZuulFilter[]{outbound1, outbound2};
 
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);

@@ -17,32 +17,30 @@
 package com.netflix.netty.common;
 
 import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class CloseOnIdleStateHandlerTest {
 
     private Registry registry = new DefaultRegistry();
     private Id counterId;
     private final String listener = "test-idle-state";
 
-    @Before
+    @BeforeEach
     public void setup() {
         counterId = registry.createId("server.connections.idle.timeout").withTags("id", listener);
     }
 
     @Test
-    public void incrementCounterOnIdleStateEvent() {
+    void incrementCounterOnIdleStateEvent() {
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new CloseOnIdleStateHandler(registry, listener));

@@ -16,25 +16,22 @@
 
 package com.netflix.zuul.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link JsonUtility}.
  */
-@RunWith(JUnit4.class)
 public class JsonUtilityTest {
 
     // I'm using LinkedHashMap in the testing so I get consistent ordering for the expected results
 
     @Test
-    public void testSimpleOne() {
+    void testSimpleOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
 
@@ -45,7 +42,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testSimpleTwo() {
+    void testSimpleTwo() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
         jsonData.put("myKey2", "myValue2");
@@ -57,7 +54,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testNestedMapOne() {
+    void testNestedMapOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
 
@@ -73,7 +70,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testNestedMapTwo() {
+    void testNestedMapTwo() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
 
@@ -90,7 +87,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testArrayOne() {
+    void testArrayOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         int[] numbers = {1, 2, 3, 4};
         jsonData.put("myKey", numbers);
@@ -102,7 +99,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testArrayTwo() {
+    void testArrayTwo() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         String[] values = {"one", "two", "three", "four"};
         jsonData.put("myKey", values);
@@ -114,7 +111,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testCollectionOne() {
+    void testCollectionOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         ArrayList<String> values = new ArrayList<String>();
         values.add("one");
@@ -130,7 +127,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testMapAndList() {
+    void testMapAndList() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
         int[] numbers = {1, 2, 3, 4};
@@ -151,7 +148,7 @@ public class JsonUtilityTest {
     }
 
     @Test
-    public void testArrayOfMaps() {
+    void testArrayOfMaps() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         ArrayList<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
 

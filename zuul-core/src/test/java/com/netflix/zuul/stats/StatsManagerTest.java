@@ -16,28 +16,25 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import java.util.concurrent.ConcurrentHashMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link StatsManager}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class StatsManagerTest {
 
     @Test
-    public void testCollectRouteStats() {
+    void testCollectRouteStats() {
         String route = "test";
         int status = 500;
 
@@ -60,7 +57,7 @@ public class StatsManagerTest {
     }
 
     @Test
-    public void testGetRouteStatusCodeMonitor() {
+    void testGetRouteStatusCodeMonitor() {
         StatsManager sm = StatsManager.getManager();
         assertNotNull(sm);
         sm.collectRouteStats("test", 500);
@@ -68,7 +65,7 @@ public class StatsManagerTest {
     }
 
     @Test
-    public void testCollectRequestStats() {
+    void testCollectRequestStats() {
         final String host = "api.netflix.com";
         final String proto = "https";
 
@@ -83,17 +80,17 @@ public class StatsManagerTest {
         sm.collectRequestStats(req);
 
         final NamedCountingMonitor hostMonitor = sm.getHostMonitor(host);
-        assertNotNull("hostMonitor should not be null", hostMonitor);
+        assertNotNull(hostMonitor, "hostMonitor should not be null");
 
         final NamedCountingMonitor protoMonitor = sm.getProtocolMonitor(proto);
-        assertNotNull("protoMonitor should not be null", protoMonitor);
+        assertNotNull(protoMonitor, "protoMonitor should not be null");
 
         assertEquals(1, hostMonitor.getCount());
         assertEquals(1, protoMonitor.getCount());
     }
 
     @Test
-    public void createsNormalizedHostKey() {
+    void createsNormalizedHostKey() {
         assertEquals("host_EC2.amazonaws.com", StatsManager.hostKey("ec2-174-129-179-89.compute-1.amazonaws.com"));
         assertEquals("host_IP", StatsManager.hostKey("12.345.6.789"));
         assertEquals("host_IP", StatsManager.hostKey("ip-10-86-83-168"));
@@ -103,7 +100,7 @@ public class StatsManagerTest {
     }
 
     @Test
-    public void extractsClientIpFromXForwardedFor() {
+    void extractsClientIpFromXForwardedFor() {
         final String ip1 = "hi";
         final String ip2 = "hey";
         assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(ip1));
@@ -112,7 +109,7 @@ public class StatsManagerTest {
     }
 
     @Test
-    public void isIPv6() {
+    void isIPv6() {
         assertTrue(StatsManager.isIPv6("0:0:0:0:0:0:0:1"));
         assertTrue(StatsManager.isIPv6("2607:fb10:2:232:72f3:95ff:fe03:a6e7"));
         assertFalse(StatsManager.isIPv6("127.0.0.1"));

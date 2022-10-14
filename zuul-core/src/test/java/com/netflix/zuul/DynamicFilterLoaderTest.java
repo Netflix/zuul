@@ -15,9 +15,7 @@
  */
 package com.netflix.zuul;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -30,14 +28,11 @@ import com.netflix.zuul.message.ZuulMessage;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-@RunWith(JUnit4.class)
 public class DynamicFilterLoaderTest {
 
     @Mock
@@ -54,7 +49,7 @@ public class DynamicFilterLoaderTest {
 
     private final TestZuulFilter filter = new TestZuulFilter();
 
-    @Before
+    @BeforeEach
     public void before() throws Exception
     {
         MockitoAnnotations.initMocks(this);
@@ -66,7 +61,7 @@ public class DynamicFilterLoaderTest {
     }
 
     @Test
-    public void testGetFilterFromFile() throws Exception {
+    void testGetFilterFromFile() throws Exception {
         assertTrue(loader.putFilter(file));
 
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
@@ -74,7 +69,7 @@ public class DynamicFilterLoaderTest {
     }
 
     @Test
-    public void testPutFiltersForClasses() throws Exception {
+    void testPutFiltersForClasses() throws Exception {
         loader.putFiltersForClasses(new String[]{TestZuulFilter.class.getName()});
 
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
@@ -82,7 +77,7 @@ public class DynamicFilterLoaderTest {
     }
 
     @Test
-    public void testPutFiltersForClassesException() throws Exception {
+    void testPutFiltersForClassesException() throws Exception {
         Exception caught = null;
         try {
             loader.putFiltersForClasses(new String[]{"asdf"});
@@ -96,7 +91,7 @@ public class DynamicFilterLoaderTest {
     }
 
     @Test
-    public void testGetFiltersByType() throws Exception {
+    void testGetFiltersByType() throws Exception {
         assertTrue(loader.putFilter(file));
 
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
@@ -104,20 +99,20 @@ public class DynamicFilterLoaderTest {
 
         Collection<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
         assertTrue(list != null);
-        assertTrue(list.size() == 1);
+        assertEquals(list.size(), 1);
         ZuulFilter<?, ?> filter = list.iterator().next();
         assertTrue(filter != null);
-        assertTrue(filter.filterType().equals(FilterType.INBOUND));
+        assertEquals(filter.filterType(), FilterType.INBOUND);
     }
 
     @Test
-    public void testGetFilterFromString() throws Exception {
+    void testGetFilterFromString() throws Exception {
         String string = "";
         doReturn(TestZuulFilter.class).when(compiler).compile(string, string);
         ZuulFilter filter = loader.getFilter(string, string);
 
         assertNotNull(filter);
-        assertTrue(filter.getClass() == TestZuulFilter.class);
+        assertEquals(filter.getClass(), TestZuulFilter.class);
 //            assertTrue(loader.filterInstanceMapSize() == 1);
     }
 

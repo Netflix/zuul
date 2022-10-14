@@ -19,10 +19,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.message.ZuulMessage;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -30,7 +28,6 @@ import org.mockito.MockitoAnnotations;
  * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing
  * class named BaseFilterTest.
  */
-@RunWith(JUnit4.class)
 public class BaseFilterTest {
 
     @Mock
@@ -40,13 +37,13 @@ public class BaseFilterTest {
     @Mock
     private ZuulMessage req;
 
-    @Before
+    @BeforeEach
     public void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testShouldFilter() {
+    void testShouldFilter() {
         class TestZuulFilter extends BaseSyncFilter
         {
             @Override

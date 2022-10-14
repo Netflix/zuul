@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,19 +44,16 @@ import java.net.SocketAddress;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link DefaultClientChannelManager}.  These tests don't use IPv6 addresses because {@link InstanceInfo} is
  * not capable of expressing them.
  */
-@RunWith(JUnit4.class)
 public class DefaultClientChannelManagerTest {
 
     @Test
-    public void pickAddressInternal_discovery() {
+    void pickAddressInternal_discovery() {
         InstanceInfo instanceInfo =
                 Builder.newBuilder().setAppName("app").setHostName("192.168.0.1").setPort(443).build();
         DiscoveryResult s = DiscoveryResult.from(instanceInfo, true);
@@ -72,7 +67,7 @@ public class DefaultClientChannelManagerTest {
     }
 
     @Test
-    public void pickAddressInternal_discovery_unresolved() {
+    void pickAddressInternal_discovery_unresolved() {
         InstanceInfo instanceInfo =
                 Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
         DiscoveryResult s = DiscoveryResult.from(instanceInfo, true);
@@ -82,12 +77,12 @@ public class DefaultClientChannelManagerTest {
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
 
-        assertTrue(socketAddress.toString(), socketAddress.getAddress().isLoopbackAddress());
+        assertTrue(socketAddress.getAddress().isLoopbackAddress(), socketAddress.toString());
         assertEquals(443, socketAddress.getPort());
     }
 
     @Test
-    public void pickAddressInternal_nonDiscovery() {
+    void pickAddressInternal_nonDiscovery() {
         NonDiscoveryServer s = new NonDiscoveryServer("192.168.0.1", 443);
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
@@ -99,7 +94,7 @@ public class DefaultClientChannelManagerTest {
     }
 
     @Test
-    public void pickAddressInternal_nonDiscovery_unresolved() {
+    void pickAddressInternal_nonDiscovery_unresolved() {
         NonDiscoveryServer s = new NonDiscoveryServer("localhost", 443);
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
@@ -107,12 +102,12 @@ public class DefaultClientChannelManagerTest {
         Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
 
-        assertTrue(socketAddress.toString(), socketAddress.getAddress().isLoopbackAddress());
+        assertTrue(socketAddress.getAddress().isLoopbackAddress(), socketAddress.toString());
         assertEquals(443, socketAddress.getPort());
     }
 
     @Test
-    public void updateServerRefOnEmptyDiscoveryResult() {
+    void updateServerRefOnEmptyDiscoveryResult() {
         OriginName originName = OriginName.fromVip("vip", "test");
         final DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
         final DynamicServerResolver resolver = mock(DynamicServerResolver.class);
@@ -132,7 +127,7 @@ public class DefaultClientChannelManagerTest {
     }
 
     @Test
-    public void updateServerRefOnValidDiscoveryResult() {
+    void updateServerRefOnValidDiscoveryResult() {
         OriginName originName = OriginName.fromVip("vip", "test");
         final DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
 
@@ -158,7 +153,7 @@ public class DefaultClientChannelManagerTest {
     }
 
     @Test
-    public void initializeAndShutdown() throws Exception {
+    void initializeAndShutdown() throws Exception {
         final String appName = "app-" + UUID.randomUUID();
         final ServerSocket serverSocket = new ServerSocket(0);
         final InetSocketAddress serverSocketAddress = (InetSocketAddress) serverSocket.getLocalSocketAddress();

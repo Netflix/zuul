@@ -16,8 +16,9 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
@@ -27,15 +28,12 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class HAProxyMessageChannelHandlerTest {
 
     @Test
-    public void setClientDestPortForHAPM() {
+    void setClientDestPortForHAPM() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());

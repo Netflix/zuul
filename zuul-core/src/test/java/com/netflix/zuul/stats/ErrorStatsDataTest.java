@@ -16,22 +16,21 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link ErrorStatsData}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ErrorStatsDataTest {
 
     @Test
-    public void testUpdateStats() {
+    void testUpdateStats() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
         sd.update();
         assertEquals(sd.getCount(), 1);
@@ -41,16 +40,16 @@ public class ErrorStatsDataTest {
 
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
         ErrorStatsData sd1 = new ErrorStatsData("route", "test");
         ErrorStatsData sd2 = new ErrorStatsData("route", "test1");
         ErrorStatsData sd3 = new ErrorStatsData("route", "test");
 
-        assertTrue(sd.equals(sd1));
-        assertTrue(sd1.equals(sd));
-        assertTrue(sd.equals(sd));
-        assertFalse(sd.equals(sd2));
-        assertFalse(sd2.equals(sd3));
+        assertEquals(sd, sd1);
+        assertEquals(sd1, sd);
+        assertEquals(sd, sd);
+        assertNotEquals(sd, sd2);
+        assertNotEquals(sd2, sd3);
     }
 }

@@ -21,13 +21,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.netflix.zuul.init2.TestZuulFilter2;
 import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ZuulFiltersModuleTest {
 
     @Mock
@@ -36,37 +36,37 @@ public class ZuulFiltersModuleTest {
     private final ZuulFiltersModule module = new ZuulFiltersModule();
 
     @Test
-    public void testDefaultFilterLocations() {
+    void testDefaultFilterLocations() {
         Mockito.when(configuration.getStringArray("zuul.filters.locations"))
                 .thenReturn("inbound,outbound,endpoint".split(","));
 
         String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length, equalTo(3));
-        assertThat(filterLocations[1], equalTo("outbound"));
+        assertThat(filterLocations.length,equalTo(3));
+        assertThat(filterLocations[1],equalTo("outbound"));
     }
 
     @Test
-    public void testEmptyFilterLocations() {
+    void testEmptyFilterLocations() {
         Mockito.when(configuration.getStringArray("zuul.filters.locations")).thenReturn(new String[0]);
 
         String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length, equalTo(0));
+        assertThat(filterLocations.length,equalTo(0));
     }
 
     @Test
-    public void testEmptyClassNames() {
+    void testEmptyClassNames() {
         Mockito.when(configuration.getStringArray("zuul.filters.classes")).thenReturn(new String[]{});
         Mockito.when(configuration.getStringArray("zuul.filters.packages")).thenReturn(new String[]{});
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(0));
+        assertThat(classNames.length,equalTo(0));
     }
 
     @Test
-    public void testClassNamesOnly() {
+    void testClassNamesOnly() {
 
         Class<?> expectedClass = TestZuulFilter.class;
 
@@ -76,13 +76,13 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(1));
-        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
+        assertThat(classNames.length,equalTo(1));
+        assertThat(classNames[0],equalTo(expectedClass.getCanonicalName()));
 
     }
 
     @Test
-    public void testClassNamesPackagesOnly() {
+    void testClassNamesPackagesOnly() {
 
         Class<?> expectedClass = TestZuulFilter.class;
 
@@ -92,41 +92,41 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(1));
-        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
+        assertThat(classNames.length,equalTo(1));
+        assertThat(classNames[0],equalTo(expectedClass.getCanonicalName()));
 
     }
 
     @Test
-    public void testMultiClasses() {
+    void testMultiClasses() {
         Class<?> expectedClass1 = TestZuulFilter.class;
         Class<?> expectedClass2 = TestZuulFilter2.class;
 
         Mockito.when(configuration.getStringArray("zuul.filters.classes"))
-                .thenReturn(new String[] {
-                        "com.netflix.zuul.init.TestZuulFilter", "com.netflix.zuul.init2.TestZuulFilter2"});
+                .thenReturn(new String[]{
+                        "com.netflix.zuul.init.TestZuulFilter","com.netflix.zuul.init2.TestZuulFilter2"});
         Mockito.when(configuration.getStringArray("zuul.filters.packages")).thenReturn(new String[0]);
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(2));
-        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
+        assertThat(classNames.length,equalTo(2));
+        assertThat(classNames[0],equalTo(expectedClass1.getCanonicalName()));
+        assertThat(classNames[1],equalTo(expectedClass2.getCanonicalName()));
     }
 
     @Test
-    public void testMultiPackages() {
+    void testMultiPackages() {
         Class<?> expectedClass1 = TestZuulFilter.class;
         Class<?> expectedClass2 = TestZuulFilter2.class;
 
         Mockito.when(configuration.getStringArray("zuul.filters.classes")).thenReturn(new String[0]);
         Mockito.when(configuration.getStringArray("zuul.filters.packages"))
-                .thenReturn(new String[]{"com.netflix.zuul.init", "com.netflix.zuul.init2"});
+                .thenReturn(new String[]{"com.netflix.zuul.init","com.netflix.zuul.init2"});
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(2));
-        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
+        assertThat(classNames.length,equalTo(2));
+        assertThat(classNames[0],equalTo(expectedClass1.getCanonicalName()));
+        assertThat(classNames[1],equalTo(expectedClass2.getCanonicalName()));
     }
 }

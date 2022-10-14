@@ -17,10 +17,7 @@
 package com.netflix.zuul.netty.server;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import com.netflix.config.ConfigurationManager;
@@ -43,11 +40,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.awaitility.Awaitility.await;
@@ -61,13 +56,12 @@ import static org.awaitility.Awaitility.await;
       4) verify that the server stops
 
  */
-@RunWith(JUnit4.class)
-@Ignore
+@Disabled
 public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_io_uring", "true");
@@ -75,7 +69,7 @@ public class IoUringTest {
     }
 
     @Test
-    public void testIoUringServer() throws Exception {
+    void testIoUringServer() throws Exception {
         LOGGER.info("IOUring.isAvailable: {}", IOUring.isAvailable());
         LOGGER.info("IS_OS_LINUX: {}", IS_OS_LINUX);
 
@@ -150,7 +144,7 @@ public class IoUringTest {
         assertEquals(2, ioUringChannels.size());
 
         for (IOUringSocketChannel ch : ioUringChannels) {
-            assertTrue("isShutdown", ch.isShutdown());
+            assertTrue(ch.isShutdown(), "isShutdown");
         }
     }
 

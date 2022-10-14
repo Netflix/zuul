@@ -16,8 +16,9 @@
 
 package com.netflix.zuul.discovery;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
@@ -27,19 +28,19 @@ import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DiscoveryResultTest {
 
     @Test
-    public void hashCodeForNull() {
+    void hashCodeForNull() {
         final DiscoveryResult discoveryResult = new DiscoveryResult(null);
         assertNotNull(discoveryResult.hashCode());
         assertEquals(0, discoveryResult.hashCode());
     }
 
     @Test
-    public void hostAndPortForNullServer() {
+    void hostAndPortForNullServer() {
         final DiscoveryResult discoveryResult = new DiscoveryResult(null);
 
         assertEquals("undefined", discoveryResult.getHost());
@@ -47,7 +48,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void serverStatsCacheForSameServer() {
+    void serverStatsCacheForSameServer() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("serverstats-cache")
                 .setHostName("serverstats-cache")
@@ -64,7 +65,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void serverStatsDifferForDifferentServer() {
+    void serverStatsDifferForDifferentServer() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("serverstats-cache")
                 .setHostName("serverstats-cache")
@@ -85,7 +86,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void ipAddrV4FromInstanceInfo() {
+    void ipAddrV4FromInstanceInfo() {
         final String ipAddr = "100.1.0.1";
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("ipAddrv4")
@@ -101,7 +102,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void ipAddrEmptyForIncompleteInstanceInfo() {
+    void ipAddrEmptyForIncompleteInstanceInfo() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("ipAddrMissing")
                 .setHostName("ipAddrMissing")
@@ -115,7 +116,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void sameUnderlyingInstanceInfoEqualsSameResult() {
+    void sameUnderlyingInstanceInfoEqualsSameResult() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
@@ -133,7 +134,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void serverInstancesExposingDiffPortsAreNotEqual() {
+    void serverInstancesExposingDiffPortsAreNotEqual() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
@@ -155,7 +156,7 @@ public class DiscoveryResultTest {
     }
 
     @Test
-    public void securePortMustCheckInstanceInfo() {
+    void securePortMustCheckInstanceInfo() {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("secure-port")
                 .setHostName("secure-port")

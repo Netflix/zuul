@@ -17,7 +17,7 @@
 package com.netflix.zuul.netty.timeouts;
 
 import static com.netflix.zuul.netty.timeouts.OriginTimeoutManager.MAX_OUTBOUND_READ_TIMEOUT_MS;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import com.netflix.client.config.CommonClientConfigKey;
@@ -28,11 +28,11 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
 import java.time.Duration;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Origin Timeout Manager Test
@@ -40,7 +40,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Arthur Gonigberg
  * @since March 23, 2021
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class OriginTimeoutManagerTest {
 
     @Mock
@@ -54,7 +54,7 @@ public class OriginTimeoutManagerTest {
 
     private OriginTimeoutManager originTimeoutManager;
 
-    @Before
+    @BeforeEach
     public void before() {
         originTimeoutManager = new OriginTimeoutManager(origin);
 
@@ -69,14 +69,14 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_default() {
+    void computeReadTimeout_default() {
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
         assertEquals(MAX_OUTBOUND_READ_TIMEOUT_MS.get(), timeout.toMillis());
     }
 
     @Test
-    public void computeReadTimeout_requestOnly() {
+    void computeReadTimeout_requestOnly() {
         requestConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
@@ -85,7 +85,7 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_originOnly() {
+    void computeReadTimeout_originOnly() {
         originConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
@@ -94,7 +94,7 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_bolth_equal() {
+    void computeReadTimeout_bolth_equal() {
         requestConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
         originConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
 
@@ -104,7 +104,7 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_bolth_originLower() {
+    void computeReadTimeout_bolth_originLower() {
         requestConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
         originConfig.set(CommonClientConfigKey.ReadTimeout, 100);
 
@@ -114,7 +114,7 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_bolth_requestLower() {
+    void computeReadTimeout_bolth_requestLower() {
         requestConfig.set(CommonClientConfigKey.ReadTimeout, 100);
         originConfig.set(CommonClientConfigKey.ReadTimeout, 1000);
 
@@ -124,7 +124,7 @@ public class OriginTimeoutManagerTest {
     }
 
     @Test
-    public void computeReadTimeout_bolth_enforceMax() {
+    void computeReadTimeout_bolth_enforceMax() {
         requestConfig.set(CommonClientConfigKey.ReadTimeout,
                 (int) MAX_OUTBOUND_READ_TIMEOUT_MS.get() + 1000);
         originConfig.set(CommonClientConfigKey.ReadTimeout,

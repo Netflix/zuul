@@ -16,21 +16,18 @@
 
 package com.netflix.zuul.netty.ssl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.netty.handler.ssl.SslProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 
 /**
  * Tests for {@link BaseSslContextFactory}.
  */
-@RunWith(JUnit4.class)
 public class BaseSslContextFactoryTest {
     @Test
-    public void testDefaultSslProviderIsOpenSsl() {
+    void testDefaultSslProviderIsOpenSsl() {
         assertEquals(SslProvider.OPENSSL, BaseSslContextFactory.chooseSslProvider());
     }
 }

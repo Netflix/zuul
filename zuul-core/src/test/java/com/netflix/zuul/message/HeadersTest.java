@@ -16,10 +16,7 @@
 
 package com.netflix.zuul.message;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.exception.ZuulException;
@@ -32,18 +29,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link Headers}.
  */
-@RunWith(JUnit4.class)
 public class HeadersTest {
 
     @Test
-    public void copyOf() {
+    void copyOf() {
         Headers headers = new Headers();
         headers.set("Content-Length", "5");
         Headers headers2 = Headers.copyOf(headers);
@@ -55,7 +49,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_normalizesName() {
+    void getFirst_normalizesName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -65,7 +59,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_headerName_normalizesName() {
+    void getFirst_headerName_normalizesName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -75,7 +69,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_returnsNull() {
+    void getFirst_returnsNull() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -85,7 +79,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_headerName_returnsNull() {
+    void getFirst_headerName_returnsNull() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -95,7 +89,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_returnsDefault() {
+    void getFirst_returnsDefault() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -105,7 +99,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getFirst_headerName_returnsDefault() {
+    void getFirst_headerName_returnsDefault() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -115,7 +109,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void forEachNormalised() {
+    void forEachNormalised() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -130,7 +124,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getAll() {
+    void getAll() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -140,7 +134,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void getAll_headerName() {
+    void getAll_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -151,7 +145,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setClearsExisting() {
+    void setClearsExisting() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -164,7 +158,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setClearsExisting_headerName() {
+    void setClearsExisting_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -177,7 +171,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setNullIsEmtpy() {
+    void setNullIsEmtpy() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -190,7 +184,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setNullIsEmtpy_headerName() {
+    void setNullIsEmtpy_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -203,7 +197,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidNullIsEmtpy() {
+    void setIfValidNullIsEmtpy() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -216,7 +210,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidNullIsEmtpy_headerName() {
+    void setIfValidNullIsEmtpy_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -229,7 +223,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidIgnoresInvalidValues() {
+    void setIfValidIgnoresInvalidValues() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
         headers.add("X-Valid-K2", "def-xyz");
@@ -246,7 +240,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidIgnoresInvalidValues_headerName() {
+    void setIfValidIgnoresInvalidValues_headerName() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
         headers.add("X-Valid-K2", "def-xyz");
@@ -263,7 +257,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidIgnoresInvalidKey() {
+    void setIfValidIgnoresInvalidKey() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
 
@@ -279,7 +273,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfValidIgnoresInvalidKey_headerName() {
+    void setIfValidIgnoresInvalidKey_headerName() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
 
@@ -295,7 +289,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentKeepsExisting() {
+    void setIfAbsentKeepsExisting() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -307,7 +301,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentKeepsExisting_headerName() {
+    void setIfAbsentKeepsExisting_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -319,7 +313,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentFailsOnNull() {
+    void setIfAbsentFailsOnNull() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -329,7 +323,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentFailsOnNull_headerName() {
+    void setIfAbsentFailsOnNull_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -339,7 +333,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsent() {
+    void setIfAbsent() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -351,7 +345,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsent_headerName() {
+    void setIfAbsent_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -363,7 +357,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentAndValid() {
+    void setIfAbsentAndValid() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -377,7 +371,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void setIfAbsentAndValidIgnoresInvalidValues() {
+    void setIfAbsentAndValidIgnoresInvalidValues() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
 
@@ -393,7 +387,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void add() {
+    void add() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -405,7 +399,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void add_headerName() {
+    void add_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -417,7 +411,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void addIfValid() {
+    void addIfValid() {
         Headers headers = new Headers();
         headers.addIfValid("Via", "duct");
         headers.addIfValid("Cookie", "abc=def");
@@ -429,7 +423,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void addIfValid_headerName() {
+    void addIfValid_headerName() {
         Headers headers = new Headers();
         headers.addIfValid("Via", "duct");
         headers.addIfValid("Cookie", "abc=def");
@@ -441,7 +435,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void addIfValidIgnoresInvalidValues() {
+    void addIfValidIgnoresInvalidValues() {
         Headers headers = new Headers();
         headers.addIfValid("Via", "duct");
         headers.addIfValid("Cookie", "abc=def");
@@ -458,7 +452,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void putAll() {
+    void putAll() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -478,7 +472,7 @@ public class HeadersTest {
 
 
     @Test
-    public void remove() {
+    void remove() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -494,7 +488,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void remove_headerName() {
+    void remove_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -510,7 +504,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void removeEmpty() {
+    void removeEmpty() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -526,7 +520,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void removeEmpty_headerName() {
+    void removeEmpty_headerName() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -542,7 +536,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void removeIf() {
+    void removeIf() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
@@ -557,7 +551,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void keySet() {
+    void keySet() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("COOKie", "this=that");
@@ -577,7 +571,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void contains() {
+    void contains() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("COOKie", "this=that");
@@ -591,7 +585,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void containsValue() {
+    void containsValue() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
         headers.add("COOKie", "this=that");
@@ -606,7 +600,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testCaseInsensitiveKeys_Set() {
+    void testCaseInsensitiveKeys_Set() {
         Headers headers = new Headers();
         headers.set("Content-Length", "5");
         headers.set("content-length", "10");
@@ -617,7 +611,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testCaseInsensitiveKeys_Add() {
+    void testCaseInsensitiveKeys_Add() {
         Headers headers = new Headers();
         headers.add("Content-Length", "5");
         headers.add("content-length", "10");
@@ -629,7 +623,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testCaseInsensitiveKeys_SetIfAbsent() {
+    void testCaseInsensitiveKeys_SetIfAbsent() {
         Headers headers = new Headers();
         headers.set("Content-Length", "5");
         headers.setIfAbsent("content-length", "10");
@@ -640,7 +634,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testCaseInsensitiveKeys_PutAll() {
+    void testCaseInsensitiveKeys_PutAll() {
         Headers headers = new Headers();
         headers.add("Content-Length", "5");
         headers.add("content-length", "10");
@@ -655,7 +649,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_CRLF() {
+    void testSanitizeValues_CRLF() {
         Headers headers = new Headers();
 
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\r\nb\r\nc"));
@@ -663,7 +657,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_LF() {
+    void testSanitizeValues_LF() {
         Headers headers = new Headers();
 
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\nb\nc"));
@@ -671,7 +665,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_ISO88591Value() {
+    void testSanitizeValues_ISO88591Value() {
         Headers headers = new Headers();
 
         headers.addAndValidate("x-test-ISO-8859-1", "P Venkmän");
@@ -684,7 +678,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_UTF8Value() {
+    void testSanitizeValues_UTF8Value() {
         // Ideally Unicode characters should not appear in the Header values.
         Headers headers = new Headers();
 
@@ -704,7 +698,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_addSetHeaderName() {
+    void testSanitizeValues_addSetHeaderName() {
         Headers headers = new Headers();
 
         assertThrows(ZuulException.class, () -> headers.setAndValidate(new HeaderName("x-test-break1"), "a\nb\nc"));
@@ -712,7 +706,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSanitizeValues_nameCRLF() {
+    void testSanitizeValues_nameCRLF() {
         Headers headers = new Headers();
 
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-br\r\neak1", "a\r\nb\r\nc"));

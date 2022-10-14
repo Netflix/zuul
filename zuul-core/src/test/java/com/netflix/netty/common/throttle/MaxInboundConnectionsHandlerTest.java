@@ -17,8 +17,9 @@
 package com.netflix.netty.common.throttle;
 
 import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -27,25 +28,22 @@ import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class MaxInboundConnectionsHandlerTest {
 
     private Registry registry = new DefaultRegistry();
     private String listener = "test-throttled";
     private Id counterId;
 
-    @Before
+    @BeforeEach
     public void setup() {
         counterId = registry.createId("server.connections.throttled").withTags("id", listener);
     }
 
     @Test
-    public void verifyPassportStateAndAttrs() {
+    void verifyPassportStateAndAttrs() {
 
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());

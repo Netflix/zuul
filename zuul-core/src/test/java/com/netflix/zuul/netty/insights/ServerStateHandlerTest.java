@@ -16,7 +16,8 @@
 
 package com.netflix.zuul.netty.insights;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
@@ -27,12 +28,9 @@ import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class ServerStateHandlerTest {
 
     private Registry registry;
@@ -43,7 +41,7 @@ public class ServerStateHandlerTest {
 
     final String listener = "test-conn-throttled";
 
-    @Before
+    @BeforeEach
     public void init() {
         registry = new DefaultRegistry();
         currentConnsId = registry.createId("server.connections.current").withTags("id", listener);
@@ -53,7 +51,7 @@ public class ServerStateHandlerTest {
     }
 
     @Test
-    public void verifyConnMetrics() {
+    void verifyConnMetrics() {
 
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
@@ -79,7 +77,7 @@ public class ServerStateHandlerTest {
     }
 
     @Test
-    public void setPassportStateOnConnect() {
+    void setPassportStateOnConnect() {
 
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
@@ -91,7 +89,7 @@ public class ServerStateHandlerTest {
     }
 
     @Test
-    public void setPassportStateOnDisconnect() {
+    void setPassportStateOnDisconnect() {
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));

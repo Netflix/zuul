@@ -17,7 +17,6 @@
 package com.netflix.netty.common;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT;
-import static org.junit.Assert.fail;
 import com.google.common.truth.Truth;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
@@ -34,7 +33,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class HttpServerLifecycleChannelHandlerTest {
 
@@ -54,7 +53,7 @@ public class HttpServerLifecycleChannelHandlerTest {
     }
 
     @Test
-    public void completionEventReasonIsUpdatedOnPipelineReject() {
+    void completionEventReasonIsUpdatedOnPipelineReject() {
 
         final EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
         final AssertReasonHandler reasonHandler = new AssertReasonHandler();
@@ -70,7 +69,7 @@ public class HttpServerLifecycleChannelHandlerTest {
     }
 
     @Test
-    public void completionEventReasonIsCloseByDefault() {
+    void completionEventReasonIsCloseByDefault() {
 
         final EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
         final AssertReasonHandler reasonHandler = new AssertReasonHandler();
@@ -84,7 +83,7 @@ public class HttpServerLifecycleChannelHandlerTest {
     }
 
     @Test
-    public void pipelineRejectReleasesIfNeeded() {
+    void pipelineRejectReleasesIfNeeded() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleInboundChannelHandler());
 
@@ -99,7 +98,7 @@ public class HttpServerLifecycleChannelHandlerTest {
             Truth.assertThat(channel.attr(ATTR_HTTP_PIPELINE_REJECT).get()).isEqualTo(Boolean.TRUE);
             Truth.assertThat(buffer.refCnt()).isEqualTo(0);
         } finally {
-            if(buffer.refCnt() != 0) {
+            if (buffer.refCnt() != 0) {
                 ReferenceCountUtil.release(buffer);
             }
         }

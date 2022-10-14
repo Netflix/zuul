@@ -17,18 +17,19 @@
 package com.netflix.zuul.message.http;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import java.util.Locale;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
 public class HttpQueryParamsTest {
 
     @Test
-    public void testMultiples() {
+    void testMultiples() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k1", "v1");
         qp.add("k1", "v2");
@@ -38,7 +39,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testToEncodedString() {
+    void testToEncodedString() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k'1", "v1&");
         assertEquals("k%271=v1%26", qp.toEncodedString());
@@ -49,7 +50,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k'1", "v1&");
         assertEquals("k'1=v1&", qp.toString());
@@ -60,7 +61,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         HttpQueryParams qp1 = new HttpQueryParams();
         qp1.add("k1", "v1");
         qp1.add("k2", "v2");
@@ -72,7 +73,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeysWithoutValues() {
+    void parseKeysWithoutValues() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
         expected.add("k2", "v2");
@@ -86,7 +87,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeyWithoutValueEquals() {
+    void parseKeyWithoutValueEquals() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
 
@@ -98,7 +99,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeyWithoutValue() {
+    void parseKeyWithoutValue() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
 
@@ -110,7 +111,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeyWithoutValueShort() {
+    void parseKeyWithoutValueShort() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("=", "");
 
@@ -122,7 +123,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeysWithoutValuesMixedTrailers() {
+    void parseKeysWithoutValuesMixedTrailers() {
         HttpQueryParams expected = new HttpQueryParams();
         expected.add("k1", "");
         expected.add("k2", "v2");
@@ -137,7 +138,7 @@ public class HttpQueryParamsTest {
     }
 
     @Test
-    public void parseKeysIgnoreCase() {
+    void parseKeysIgnoreCase() {
         String camelCaseKey = "keyName";
         HttpQueryParams queryParams = new HttpQueryParams();
         queryParams.add("foo", "bar");

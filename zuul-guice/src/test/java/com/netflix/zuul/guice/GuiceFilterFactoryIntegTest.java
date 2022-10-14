@@ -16,29 +16,26 @@
 
 package com.netflix.zuul.guice;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.inject.Inject;
 import com.netflix.zuul.BaseInjectionIntegTest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.jupiter.api.Test;
 
-@RunWith(BlockJUnit4ClassRunner.class)
 public class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
     @Inject
     private GuiceFilterFactory filterFactory;
 
     @Test
-    public void ctorInjection() throws Exception {
+    void ctorInjection() throws Exception {
         TestGuiceConstructorFilter filter = (TestGuiceConstructorFilter) filterFactory.newInstance(TestGuiceConstructorFilter.class);
 
         assertNotNull(filter.injector);
     }
 
     @Test
-    public void fieldInjection() throws Exception {
+    void fieldInjection() throws Exception {
         TestGuiceFieldFilter filter = (TestGuiceFieldFilter) filterFactory.newInstance(TestGuiceFieldFilter.class);
 
         assertNotNull(filter.injector);
