@@ -1,6 +1,6 @@
 
 plugins {
-    id 'nebula.netflixoss' version '10.6.0'
+    id 'com.netflix.nebula.netflixoss' version '11.0.0'
     id "com.google.osdetector" version "1.7.1"
     id "me.champeau.jmh" version "0.6.8"
     id "org.openrewrite.rewrite" version "5.30.0"
@@ -27,10 +27,10 @@ allprojects {
 }
 
 subprojects {
-    apply plugin: 'nebula.netflixoss'
+    apply plugin: 'com.netflix.nebula.netflixoss'
     apply plugin: 'java'
-    apply plugin: 'nebula.javadoc-jar'
-    apply plugin: 'nebula.dependency-lock'
+    apply plugin: 'com.netflix.nebula.javadoc-jar'
+    apply plugin: 'com.netflix.nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
 
