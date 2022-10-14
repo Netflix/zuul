@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 
+import io.netty.util.ReferenceCountUtil;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -197,8 +198,8 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void disposeBufferedBody() {
         bodyChunks.forEach(chunk -> {
-            if ((chunk != null) && (chunk.refCnt() > 0)) {
-                chunk.release();
+            if (ReferenceCountUtil.refCnt(chunk) > 0) {
+                ReferenceCountUtil.safeRelease(chunk, chunk.refCnt());
             }
         });
         bodyChunks.clear();
@@ -214,9 +215,8 @@ public class ZuulMessageImpl implements ZuulMessage
             if ((filteredChunk != null) && (filteredChunk != origChunk)) {
                 //filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
-                final int refCnt = origChunk.refCnt();
-                if (refCnt > 0) {
-                    origChunk.release(refCnt);
+                if (ReferenceCountUtil.refCnt(origChunk) > 0) {
+                    ReferenceCountUtil.safeRelease(origChunk, origChunk.refCnt());
                 }
             }
         }
