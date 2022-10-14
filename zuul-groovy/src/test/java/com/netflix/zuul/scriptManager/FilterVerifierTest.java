@@ -16,22 +16,19 @@
 
 package com.netflix.zuul.scriptManager;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.netflix.zuul.filters.FilterType;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 
 /**
  * Unit tests for {@link FilterVerifier}.
  */
-@RunWith(JUnit4.class)
 public class FilterVerifierTest {
 
     private final String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
@@ -113,7 +110,7 @@ public class FilterVerifierTest {
         "}";
 
     @Test
-    public void testCompile() {
+    void testCompile() {
         Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
@@ -123,7 +120,7 @@ public class FilterVerifierTest {
     }
 
     @Test
-    public void testZuulFilterInstance() throws Exception {
+    void testZuulFilterInstance() throws Exception {
         Class<?> filterClass = FilterVerifier.INSTANCE.compileGroovy(sGoodGroovyScriptFilter);
         assertNotNull(filterClass);
 
@@ -138,7 +135,7 @@ public class FilterVerifierTest {
     }
 
     @Test
-    public void testVerify() throws Exception {
+    void testVerify() throws Exception {
         FilterInfo filterInfo1 = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
         assertNotNull(filterInfo1);
         assertEquals(filterInfo1.getFilterID(), "null:filter:in");

@@ -16,24 +16,22 @@
 
 package com.netflix.zuul.message.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
 
 /**
  * Unit tests for {@link HttpResponseMessageImpl}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class HttpResponseMessageImplTest {
     private static final String TEXT1 = "Hello World!";
     private static final String TEXT2 = "Goodbye World!";
@@ -43,13 +41,13 @@ public class HttpResponseMessageImplTest {
 
     private HttpResponseMessageImpl response;
 
-    @Before
+    @BeforeEach
     public void setup() {
         response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
     }
 
     @Test
-    public void testHasSetCookieWithName() {
+    void testHasSetCookieWithName() {
         response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
         response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
 
@@ -59,7 +57,7 @@ public class HttpResponseMessageImplTest {
     }
 
     @Test
-    public void testRemoveExistingSetCookie() {
+    void testRemoveExistingSetCookie() {
         response.getHeaders().add("Set-Cookie", "c1=1234; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
         response.getHeaders().add("Set-Cookie", "c2=4567; Max-Age=-1; Expires=Tue, 01 Sep 2015 22:49:57 GMT; Path=/; Domain=.netflix.com");
 
@@ -71,7 +69,7 @@ public class HttpResponseMessageImplTest {
     }
 
     @Test
-    public void testContentLengthHeaderHasCorrectValue() {
+    void testContentLengthHeaderHasCorrectValue() {
         assertEquals(0, response.getHeaders().getAll("Content-Length").size());
 
         response.setBodyAsText(TEXT1);

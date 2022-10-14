@@ -25,17 +25,14 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class StaticFilterLoaderTest {
 
     private static final FilterFactory factory = new DefaultFilterFactory();
 
     @Test
-    public void getFiltersByType() {
+    void getFiltersByType() {
         StaticFilterLoader filterLoader =
                 new StaticFilterLoader(factory,
                         ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
@@ -50,7 +47,7 @@ public class StaticFilterLoaderTest {
     }
 
     @Test
-    public void getFilterByNameAndType() {
+    void getFilterByNameAndType() {
         StaticFilterLoader filterLoader =
                 new StaticFilterLoader(factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class));
 

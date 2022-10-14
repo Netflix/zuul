@@ -16,10 +16,12 @@
 
 package com.netflix.zuul.com.netflix.zuul.netty.server.push;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.netflix.zuul.netty.server.push.PushConnection;
 import com.netflix.zuul.netty.server.push.PushProtocol;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Author: Susheel Aroskar
@@ -28,55 +30,55 @@ import org.junit.Test;
 public class PushConnectionTest {
 
     @Test
-    public void testOneMessagePerSecond() throws InterruptedException{
+    void testOneMessagePerSecond() throws InterruptedException {
         final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
-        for (int i=0; i < 5; i ++) {
-            Assert.assertFalse(conn.isRateLimited());
+        for (int i = 0; i < 5; i++) {
+            assertFalse(conn.isRateLimited());
             Thread.sleep(1000);
         }
     }
 
     @Test
-    public void testThreeMessagesInSuccession() {
+    void testThreeMessagesInSuccession() {
         final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
     }
 
     @Test
-    public void testFourMessagesInSuccession() {
+    void testFourMessagesInSuccession() {
         final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertTrue(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertTrue(conn.isRateLimited());
     }
 
     @Test
-    public void testFirstThreeMessagesSuccess() {
+    void testFirstThreeMessagesSuccess() {
         final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
-        for (int i=0; i < 10; i ++) {
+        for (int i = 0; i < 10; i++) {
             if (i < 3) {
-                Assert.assertFalse(conn.isRateLimited());
+                assertFalse(conn.isRateLimited());
             } else {
-                Assert.assertTrue(conn.isRateLimited());
+                assertTrue(conn.isRateLimited());
             }
         }
     }
 
     @Test
-    public void testMessagesInBatches() throws InterruptedException{
+    void testMessagesInBatches() throws InterruptedException {
         final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertTrue(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertTrue(conn.isRateLimited());
         Thread.sleep(2000);
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertFalse(conn.isRateLimited());
-        Assert.assertTrue(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertFalse(conn.isRateLimited());
+        assertTrue(conn.isRateLimited());
     }
 
 

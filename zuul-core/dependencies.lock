@@ -291,9 +291,6 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
@@ -303,7 +300,16 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
         "org.mockito:mockito-core": {
+            "locked": "4.8.0"
+        },
+        "org.mockito:mockito-junit-jupiter": {
             "locked": "4.8.0"
         },
         "org.openjdk.jmh:jmh-core": {
@@ -517,9 +523,6 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
@@ -529,7 +532,16 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
         "org.mockito:mockito-core": {
+            "locked": "4.8.0"
+        },
+        "org.mockito:mockito-junit-jupiter": {
             "locked": "4.8.0"
         },
         "org.slf4j:slf4j-api": {
@@ -642,9 +654,6 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
-        },
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
@@ -654,7 +663,16 @@
         "org.bouncycastle:bcprov-jdk15on": {
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
         "org.mockito:mockito-core": {
+            "locked": "4.8.0"
+        },
+        "org.mockito:mockito-junit-jupiter": {
             "locked": "4.8.0"
         },
         "org.slf4j:slf4j-api": {

@@ -31,22 +31,22 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.local.LocalAddress;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProxyEndpointTest {
 
     ProxyEndpoint proxyEndpoint;
     HttpRequestMessage request;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         NettyRequestAttemptFactory attemptFactory = mock(NettyRequestAttemptFactory.class);
@@ -63,7 +63,7 @@ public class ProxyEndpointTest {
     }
 
     @Test
-    public void testRetryWillResetBodyReader() {
+    void testRetryWillResetBodyReader() {
 
         assertEquals("Hello There", new String(request.getBody()));
 

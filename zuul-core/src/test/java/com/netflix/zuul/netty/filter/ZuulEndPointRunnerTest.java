@@ -34,10 +34,8 @@ import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -47,13 +45,12 @@ import rx.Observable;
 import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
 import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
 import static com.netflix.zuul.netty.filter.ZuulEndPointRunner.DEFAULT_ERROR_ENDPOINT;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class ZuulEndPointRunnerTest {
     private static final String BASIC_ENDPOINT = "basicEndpoint";
     private ZuulEndPointRunner endpointRunner;
@@ -63,7 +60,7 @@ public class ZuulEndPointRunnerTest {
     private Registry registry;
     private HttpRequestMessageImpl request;
 
-    @Before
+    @BeforeEach
     public void beforeEachTest() {
         usageNotifier = mock(FilterUsageNotifier.class);
 
@@ -87,7 +84,7 @@ public class ZuulEndPointRunnerTest {
     }
 
     @Test
-    public void nonErrorEndpoint() {
+    void nonErrorEndpoint() {
         request.getContext().setShouldSendErrorResponse(false);
         request.getContext().setEndpoint(BASIC_ENDPOINT);
         assertNull(request.getContext().get(ZUUL_ENDPOINT));
@@ -104,7 +101,7 @@ public class ZuulEndPointRunnerTest {
     }
 
     @Test
-    public void errorEndpoint() {
+    void errorEndpoint() {
         request.getContext().setShouldSendErrorResponse(true);
         assertNull(request.getContext().get(ZUUL_ENDPOINT));
         endpointRunner.filter(request);

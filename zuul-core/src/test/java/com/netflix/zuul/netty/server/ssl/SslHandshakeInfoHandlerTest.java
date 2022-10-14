@@ -16,8 +16,8 @@
 
 package com.netflix.zuul.netty.server.ssl;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,18 +31,15 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.ReferenceCountUtil;
 import java.nio.channels.ClosedChannelException;
 import javax.net.ssl.SSLEngine;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link SslHandshakeInfoHandler}.
  */
-@RunWith(JUnit4.class)
 public class SslHandshakeInfoHandlerTest {
 
     @Test
-    public void sslEarlyHandshakeFailure() throws Exception {
+    void sslEarlyHandshakeFailure() throws Exception {
         EmbeddedChannel clientChannel = new EmbeddedChannel();
         SSLEngine clientEngine = SslContextBuilder.forClient().build().newEngine(clientChannel.alloc());
         clientChannel.pipeline().addLast(new SslHandler(clientEngine));

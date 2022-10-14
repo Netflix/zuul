@@ -18,10 +18,7 @@ package com.netflix.zuul.netty.server;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import com.netflix.config.ConfigurationManager;
@@ -46,21 +43,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Tests for {@link Server}.
  */
-@RunWith(JUnit4.class)
 public class ServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
@@ -68,7 +62,7 @@ public class ServerTest {
     }
 
     @Test
-    public void getListeningSockets() throws Exception {
+    void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
         final List<NioSocketChannel> nioChannels = Collections.synchronizedList(new ArrayList<NioSocketChannel>());
@@ -82,7 +76,7 @@ public class ServerTest {
                         + ", isOpen="
                         + ch.isOpen());
                 if (ch instanceof NioSocketChannel) {
-                    nioChannels.add((NioSocketChannel)ch);
+                    nioChannels.add((NioSocketChannel) ch);
                 }
             }
         };
@@ -93,7 +87,7 @@ public class ServerTest {
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
                         GlobalEventExecutor.INSTANCE,
-                        /* discoveryClient= */ null);
+                                /* discoveryClient= */ null);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
             @Override
@@ -111,7 +105,7 @@ public class ServerTest {
 
         List<NamedSocketAddress> addrs = s.getListeningAddresses();
         assertEquals(2, addrs.size());
-        for (NamedSocketAddress address: addrs) {
+        for (NamedSocketAddress address : addrs) {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
             final int port = ((InetSocketAddress) address.unwrap()).getPort();
             assertNotEquals(port, 0);
@@ -127,7 +121,7 @@ public class ServerTest {
         assertEquals(2, nioChannels.size());
 
         for (NioSocketChannel ch : nioChannels) {
-            assertTrue("isShutdown", ch.isShutdown());
+            assertTrue(ch.isShutdown(), "isShutdown");
         }
     }
 

@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.filters.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.context.SessionContext;
@@ -34,14 +32,14 @@ import io.netty.handler.codec.http.HttpContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.zip.GZIPInputStream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GZipResponseFilterTest {
     private final SessionContext context = new SessionContext();
     private final Headers originalRequestHeaders = new Headers();
@@ -54,7 +52,7 @@ public class GZipResponseFilterTest {
     GZipResponseFilter filter;
     HttpResponseMessage response;
 
-    @Before
+    @BeforeEach
     public void setup() {
         //when(request.getContext()).thenReturn(context);
         when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
@@ -66,7 +64,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareResponseBody_NeedsGZipping() throws Exception {
+    void prepareResponseBody_NeedsGZipping() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
 
         byte[] originBody = "blah".getBytes();
@@ -103,7 +101,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareResponseBody_NeedsGZipping_gzipDeflate() throws Exception {
+    void prepareResponseBody_NeedsGZipping_gzipDeflate() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
         byte[] originBody = "blah".getBytes();
@@ -140,7 +138,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareResponseBody_alreadyZipped() throws Exception {
+    void prepareResponseBody_alreadyZipped() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
         byte[] originBody = "blah".getBytes();
@@ -152,7 +150,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareResponseBody_alreadyDeflated() throws Exception {
+    void prepareResponseBody_alreadyDeflated() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
         byte[] originBody = "blah".getBytes();
@@ -164,7 +162,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareResponseBody_NeedsGZipping_butTooSmall() throws Exception {
+    void prepareResponseBody_NeedsGZipping_butTooSmall() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
         byte[] originBody = "blah".getBytes();
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
@@ -173,7 +171,7 @@ public class GZipResponseFilterTest {
     }
 
     @Test
-    public void prepareChunkedEncodedResponseBody_NeedsGZipping() throws Exception {
+    void prepareChunkedEncodedResponseBody_NeedsGZipping() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
         response.getHeaders().set("Transfer-Encoding", "chunked");
         response.setHasBody(true);

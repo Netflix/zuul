@@ -22,18 +22,15 @@ import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.processor.override.SubpackageFilter;
 import com.netflix.zuul.filters.processor.subpackage.OverrideFilter;
 import java.util.Collection;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link FilterProcessor}.
  */
-@RunWith(JUnit4.class)
 public class FilterProcessorTest {
 
     @Test
-    public void allFilterClassedRecorded() throws Exception {
+    void allFilterClassedRecorded() throws Exception {
         Collection<Class<ZuulFilter<?, ?>>> filters =
                 StaticFilterLoader.loadFilterTypesFromResources(getClass().getClassLoader());
 

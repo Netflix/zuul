@@ -16,20 +16,15 @@
 
 package com.netflix.zuul;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.Attrs.Key;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class AttrsTest {
     @Test
-    public void keysAreUnique() {
+    void keysAreUnique() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key1 = Attrs.newKey("foo");
         key1.put(attrs, "bar");
@@ -40,12 +35,12 @@ public class AttrsTest {
     }
 
     @Test
-    public void newKeyFailsOnNull() {
+    void newKeyFailsOnNull() {
         assertThrows(NullPointerException.class, () -> Attrs.newKey(null));
     }
 
     @Test
-    public void attrsPutFailsOnNull() {
+    void attrsPutFailsOnNull() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
 
@@ -53,7 +48,7 @@ public class AttrsTest {
     }
 
     @Test
-    public void attrsPutReplacesOld() {
+    void attrsPutReplacesOld() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
         key.put(attrs, "bar");
@@ -64,7 +59,7 @@ public class AttrsTest {
     }
 
     @Test
-    public void getReturnsNull() {
+    void getReturnsNull() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
 
@@ -72,7 +67,7 @@ public class AttrsTest {
     }
 
     @Test
-    public void getOrDefault_picksDefault() {
+    void getOrDefault_picksDefault() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
 
@@ -80,7 +75,7 @@ public class AttrsTest {
     }
 
     @Test
-    public void getOrDefault_failsOnNullDefault() {
+    void getOrDefault_failsOnNullDefault() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
         key.put(attrs, "bar");

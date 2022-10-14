@@ -17,7 +17,7 @@
 package com.netflix.netty.common.proxyprotocol;
 
 import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -35,11 +35,13 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AttributeKey;
 import io.netty.util.DefaultAttributeMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 /**
  * Strip Untrusted Proxy Headers Handler Test
@@ -47,7 +49,8 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Arthur Gonigberg
  * @since May 27, 2020
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class StripUntrustedProxyHeadersHandlerTest {
 
     @Mock
@@ -61,7 +64,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     private SslHandshakeInfo sslHandshakeInfo;
 
 
-    @Before
+    @BeforeEach
     public void before() {
         when(channelHandlerContext.channel()).thenReturn(channel);
 
@@ -75,7 +78,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void allow_never() throws Exception {
+    void allow_never() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.NEVER);
 
         stripHandler.channelRead(channelHandlerContext, msg);
@@ -84,7 +87,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void allow_always() throws Exception {
+    void allow_always() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.ALWAYS);
 
         stripHandler.channelRead(channelHandlerContext, msg);
@@ -94,7 +97,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void allow_mtls_noCert() throws Exception {
+    void allow_mtls_noCert() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.channelRead(channelHandlerContext, msg);
@@ -103,7 +106,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void allow_mtls_cert() throws Exception {
+    void allow_mtls_cert() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
         when(sslHandshakeInfo.getClientAuthRequirement()).thenReturn(ClientAuth.REQUIRE);
 
@@ -114,7 +117,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void blacklist_noMatch() {
+    void blacklist_noMatch() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.net"));
@@ -123,7 +126,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void blacklist_match() {
+    void blacklist_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.com"));
@@ -132,7 +135,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void blacklist_match_casing() {
+    void blacklist_match_casing() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         stripHandler.checkBlacklist(msg, ImmutableList.of("NeTfLiX.cOm"));
@@ -141,7 +144,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
     }
 
     @Test
-    public void strip_match() {
+    void strip_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
 
         headers.add("x-forwarded-for", "abcd");

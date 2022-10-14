@@ -16,7 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
@@ -31,18 +32,15 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link BaseZuulChannelInitializer}.
  */
-@RunWith(JUnit4.class)
 public class BaseZuulChannelInitializerTest {
 
     @Test
-    public void tcpHandlersAdded() {
+    void tcpHandlersAdded() {
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
@@ -54,9 +52,10 @@ public class BaseZuulChannelInitializerTest {
         BaseZuulChannelInitializer init =
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
-            @Override
-            protected void initChannel(Channel ch) {}
-        };
+                    @Override
+                    protected void initChannel(Channel ch) {
+                    }
+                };
         EmbeddedChannel channel = new EmbeddedChannel();
 
         init.addTcpRelatedHandlers(channel.pipeline());
@@ -68,7 +67,7 @@ public class BaseZuulChannelInitializerTest {
     }
 
     @Test
-    public void tcpHandlersAdded_withProxyProtocol() {
+    void tcpHandlersAdded_withProxyProtocol() {
         ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, true);
         ChannelConfig channelDependencies = new ChannelConfig();
@@ -82,7 +81,8 @@ public class BaseZuulChannelInitializerTest {
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
-                    protected void initChannel(Channel ch) {}
+                    protected void initChannel(Channel ch) {
+                    }
                 };
         EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -95,7 +95,7 @@ public class BaseZuulChannelInitializerTest {
     }
 
     @Test
-    public void serverStateHandlerAdded() {
+    void serverStateHandlerAdded() {
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
@@ -109,7 +109,8 @@ public class BaseZuulChannelInitializerTest {
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
-                    protected void initChannel(Channel ch) {}
+                    protected void initChannel(Channel ch) {
+                    }
                 };
         EmbeddedChannel channel = new EmbeddedChannel();
 

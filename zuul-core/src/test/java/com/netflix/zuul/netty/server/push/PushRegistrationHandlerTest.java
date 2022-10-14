@@ -15,10 +15,7 @@
  */
 package com.netflix.zuul.netty.server.push;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -39,10 +36,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -80,17 +77,17 @@ public class PushRegistrationHandlerTest {
     private DefaultEventLoop eventLoopSpy;
     private TestAuth successfulAuth;
 
-    @BeforeClass
+    @BeforeAll
     public static void classSetup() {
         EXECUTOR = Executors.newSingleThreadExecutor();
     }
 
-    @AfterClass
+    @AfterAll
     public static void classCleanup() {
         MoreExecutors.shutdownAndAwaitTermination(EXECUTOR, 5, TimeUnit.SECONDS);
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
         registry = new PushConnectionRegistry();
@@ -105,7 +102,7 @@ public class PushRegistrationHandlerTest {
     }
 
     @Test
-    public void closeIfNotAuthenticated() throws Exception {
+    void closeIfNotAuthenticated() throws Exception {
         doHandshakeComplete();
 
         Runnable scheduledTask = scheduledCaptor.getValue();
@@ -115,20 +112,20 @@ public class PushRegistrationHandlerTest {
     }
 
     @Test
-    public void authFailed() throws Exception {
+    void authFailed() throws Exception {
         doHandshakeComplete();
         handler.userEventTriggered(context, new TestAuth(false));
         validateConnectionClosed(1008, "Auth failed");
     }
 
     @Test
-    public void authSuccess() throws Exception {
+    void authSuccess() throws Exception {
         doHandshakeComplete();
         authenticateChannel();
     }
 
     @Test
-    public void requestClientToCloseInactiveConnection() throws Exception {
+    void requestClientToCloseInactiveConnection() throws Exception {
         doHandshakeComplete();
         Mockito.reset(eventLoopSpy);
         authenticateChannel();
@@ -140,7 +137,7 @@ public class PushRegistrationHandlerTest {
     }
 
     @Test
-    public void requestClientToClose() throws Exception {
+    void requestClientToClose() throws Exception {
         doHandshakeComplete();
         Mockito.reset(eventLoopSpy);
         authenticateChannel();
@@ -158,7 +155,7 @@ public class PushRegistrationHandlerTest {
     }
 
     @Test
-    public void channelInactiveCancelsTasks() throws Exception {
+    void channelInactiveCancelsTasks() throws Exception {
         doHandshakeComplete();
         TestAuth testAuth = new TestAuth(true);
         authenticateChannel();

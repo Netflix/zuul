@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.spy;
@@ -24,17 +24,17 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Tests for {@link FilterFileManager}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class FilterFileManagerTest {
     @Mock
     private File nonGroovyFile;
@@ -45,19 +45,19 @@ public class FilterFileManagerTest {
     @Mock
     private FilterLoader filterLoader;
 
-    @Before
+    @BeforeEach
     public void before() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testFileManagerInit() throws Exception {
+    void testFileManagerInit() throws Exception {
         FilterFileManager.FilterFileManagerConfig config =
-            new FilterFileManager.FilterFileManagerConfig(
-                new String[]{"test", "test1"},
-                new String[]{"com.netflix.blah.SomeFilter"},
-                1,
-               (dir, name) -> false);
+                new FilterFileManager.FilterFileManagerConfig(
+                        new String[]{"test", "test1"},
+                        new String[]{"com.netflix.blah.SomeFilter"},
+                        1,
+                        (dir, name) -> false);
         FilterFileManager manager = new FilterFileManager(config, filterLoader);
 
         manager = spy(manager);

@@ -26,17 +26,13 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.ResolverListener;
 import java.security.cert.TrustAnchor;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class DynamicServerResolverTest {
 
 
     @Test
-    public void verifyListenerUpdates() {
+    void verifyListenerUpdates() {
 
         class CustomListener implements ResolverListener<DiscoveryResult> {
 
@@ -76,7 +72,7 @@ public class DynamicServerResolverTest {
     }
 
     @Test
-    public void properSentinelValueWhenServersUnavailable() {
+    void properSentinelValueWhenServersUnavailable() {
         final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), new ResolverListener<DiscoveryResult>() {
             @Override
             public void onChange(List<DiscoveryResult> removedSet) {

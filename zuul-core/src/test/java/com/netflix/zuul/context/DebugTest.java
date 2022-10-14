@@ -23,9 +23,8 @@ import static com.netflix.zuul.context.Debug.getRequestDebug;
 import static com.netflix.zuul.context.Debug.getRoutingDebug;
 import static com.netflix.zuul.context.Debug.setDebugRequest;
 import static com.netflix.zuul.context.Debug.setDebugRouting;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.message.Headers;
@@ -37,12 +36,9 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import io.netty.handler.codec.http.HttpMethod;
 import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class DebugTest {
 
     private SessionContext ctx;
@@ -51,7 +47,7 @@ public class DebugTest {
     private HttpRequestMessage request;
     private HttpResponseMessage response;
 
-    @Before
+    @BeforeEach
     public void setup() {
         ctx = new SessionContext();
 
@@ -73,7 +69,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testRequestDebug() {
+    void testRequestDebug() {
         assertFalse(debugRouting(ctx));
         assertFalse(debugRequest(ctx));
         setDebugRouting(ctx, true);
@@ -89,7 +85,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteInboundRequestDebug() {
+    void testWriteInboundRequestDebug() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
@@ -102,7 +98,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteOutboundRequestDebug() {
+    void testWriteOutboundRequestDebug() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugRequest(ctx, request, false).toBlocking().single();
@@ -115,7 +111,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteRequestDebug_WithBody() {
+    void testWriteRequestDebug_WithBody() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(false);
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
@@ -129,7 +125,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteInboundResponseDebug() {
+    void testWriteInboundResponseDebug() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
@@ -142,7 +138,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteOutboundResponseDebug() {
+    void testWriteOutboundResponseDebug() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugResponse(ctx, response, false).toBlocking().single();
@@ -155,7 +151,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testWriteResponseDebug_WithBody() {
+    void testWriteResponseDebug_WithBody() {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(false);
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
@@ -169,7 +165,7 @@ public class DebugTest {
     }
 
     @Test
-    public void testNoCMEWhenComparingContexts() {
+    void testNoCMEWhenComparingContexts() {
         final SessionContext context = new SessionContext();
         final SessionContext copy = new SessionContext();
 

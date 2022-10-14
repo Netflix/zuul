@@ -16,8 +16,8 @@
 
 package com.netflix.zuul.monitoring;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
@@ -25,14 +25,11 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-@RunWith(JUnit4.class)
 public class ConnCounterTest {
     @Test
-    public void record() {
+    void record() {
         EmbeddedChannel chan = new EmbeddedChannel();
         Attrs attrs = Attrs.newInstance();
         chan.attr(Server.CONN_DIMENSIONS).set(attrs);
@@ -58,7 +55,7 @@ public class ConnCounterTest {
     }
 
     @Test
-    public void activeConnsCount() {
+    void activeConnsCount() {
         EmbeddedChannel channel = new EmbeddedChannel();
         Attrs attrs = Attrs.newInstance();
         channel.attr(Server.CONN_DIMENSIONS).set(attrs);

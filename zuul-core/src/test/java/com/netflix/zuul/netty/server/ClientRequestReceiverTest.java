@@ -16,11 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
@@ -46,18 +43,18 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link ClientRequestReceiver}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ClientRequestReceiverTest {
 
     @Test
-    public void proxyProtocol_portSetInSessionContextAndInHttpRequestMessageImpl() {
+    void proxyProtocol_portSetInSessionContextAndInHttpRequestMessageImpl() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         InetSocketAddress hapmDestinationAddress = new InetSocketAddress(InetAddresses.forString("2.2.2.2"), 444);
@@ -79,7 +76,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void parseUriFromNetty_relative() {
+    void parseUriFromNetty_relative() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
@@ -97,7 +94,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void parseUriFromNetty_absolute() {
+    void parseUriFromNetty_absolute() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
@@ -115,7 +112,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void parseUriFromNetty_unknown() {
+    void parseUriFromNetty_unknown() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
@@ -133,7 +130,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void parseQueryParamsWithEncodedCharsInURI() {
+    void parseQueryParamsWithEncodedCharsInURI() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
@@ -153,7 +150,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void largeResponse_atLimit() {
+    void largeResponse_atLimit() {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(receiver);
         // Required for messages
@@ -184,7 +181,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void largeResponse_aboveLimit() {
+    void largeResponse_aboveLimit() {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(receiver);
         // Required for messages
@@ -216,7 +213,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void maxHeaderSizeExceeded_setBadRequestStatus() {
+    void maxHeaderSizeExceeded_setBadRequestStatus() {
 
         int maxInitialLineLength = BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get();
         int maxHeaderSize = 10;
@@ -255,7 +252,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void multipleHostHeaders_setBadRequestStatus() {
+    void multipleHostHeaders_setBadRequestStatus() {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
         PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
@@ -284,7 +281,7 @@ public class ClientRequestReceiverTest {
     }
 
     @Test
-    public void setStatusCategoryForHttpPipelining() {
+    void setStatusCategoryForHttpPipelining() {
 
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);

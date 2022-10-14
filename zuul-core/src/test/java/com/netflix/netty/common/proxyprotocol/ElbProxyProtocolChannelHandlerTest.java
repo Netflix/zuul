@@ -16,10 +16,7 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,14 +34,14 @@ import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ElbProxyProtocolChannelHandlerTest {
 
     @Mock
@@ -52,13 +49,13 @@ public class ElbProxyProtocolChannelHandlerTest {
     @Mock
     private Counter counter;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(registry.counter("zuul.hapm.failure")).thenReturn(counter);
     }
 
     @Test
-    public void noProxy() {
+    void noProxy() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -83,7 +80,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void extraDataForwarded() {
+    void extraDataForwarded() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -102,7 +99,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void passThrough_ProxyProtocolEnabled_nonProxyBytes() {
+    void passThrough_ProxyProtocolEnabled_nonProxyBytes() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -128,7 +125,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void incrementCounterWhenPPEnabledButNonHAPMMessage() {
+    void incrementCounterWhenPPEnabledButNonHAPMMessage() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -146,9 +143,9 @@ public class ElbProxyProtocolChannelHandlerTest {
         verify(counter, times(1)).increment();
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void detectsSplitPpv1Message() {
+    void detectsSplitPpv1Message() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -172,7 +169,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void negotiateProxy_ppv1_ipv4() {
+    void negotiateProxy_ppv1_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -201,7 +198,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void negotiateProxy_ppv1_ipv6() {
+    void negotiateProxy_ppv1_ipv6() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
@@ -232,7 +229,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     }
 
     @Test
-    public void negotiateProxy_ppv2_ipv4() {
+    void negotiateProxy_ppv2_ipv4() {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());

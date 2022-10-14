@@ -19,7 +19,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.zuul.init.InitTestModule;
 import com.netflix.zuul.init.ZuulFiltersModule;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base Injection Integration Test
@@ -32,7 +32,7 @@ import org.junit.Before;
 public abstract class BaseInjectionIntegTest {
     protected Injector injector = Guice.createInjector(new InitTestModule(), new ZuulFiltersModule());
 
-    @Before
+    @BeforeEach
     public void setup () {
         injector.injectMembers(this);
     }

@@ -16,22 +16,22 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link ErrorStatsManager}.
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ErrorStatsManagerTest {
 
     @Test
-    public void testPutStats() {
+    void testPutStats() {
         ErrorStatsManager sm = new ErrorStatsManager();
         assertNotNull(sm);
         sm.putStats("test", "cause");
@@ -44,7 +44,7 @@ public class ErrorStatsManagerTest {
     }
 
     @Test
-    public void testGetStats() {
+    void testGetStats() {
         ErrorStatsManager sm = new ErrorStatsManager();
         assertNotNull(sm);
         sm.putStats("test", "cause");

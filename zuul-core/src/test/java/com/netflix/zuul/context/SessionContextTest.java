@@ -15,28 +15,26 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.truth.Truth;
 import com.netflix.zuul.context.SessionContext.Key;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SessionContextTest {
 
     @Test
-    public void testBoolean() {
+    void testBoolean() {
         SessionContext context = new SessionContext();
         assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
         assertEquals(context.getBoolean("boolean_test", true), true);
     }
 
     @Test
-    public void keysAreUnique() {
+    void keysAreUnique() {
         SessionContext context = new SessionContext();
         Key<String> key1 = SessionContext.newKey("foo");
         context.put(key1, "bar");
@@ -47,12 +45,12 @@ public class SessionContextTest {
     }
 
     @Test
-    public void newKeyFailsOnNull() {
+    void newKeyFailsOnNull() {
         assertThrows(NullPointerException.class, () -> SessionContext.newKey(null));
     }
 
     @Test
-    public void putFailsOnNull() {
+    void putFailsOnNull() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
 
@@ -60,7 +58,7 @@ public class SessionContextTest {
     }
 
     @Test
-    public void putReplacesOld() {
+    void putReplacesOld() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
@@ -71,7 +69,7 @@ public class SessionContextTest {
     }
 
     @Test
-    public void getReturnsNull() {
+    void getReturnsNull() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
 
@@ -79,7 +77,7 @@ public class SessionContextTest {
     }
 
     @Test
-    public void getOrDefault_picksDefault() {
+    void getOrDefault_picksDefault() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
 
@@ -87,7 +85,7 @@ public class SessionContextTest {
     }
 
     @Test
-    public void getOrDefault_failsOnNullDefault() {
+    void getOrDefault_failsOnNullDefault() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
@@ -96,7 +94,7 @@ public class SessionContextTest {
     }
 
     @Test
-    public void remove() {
+    void remove() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");

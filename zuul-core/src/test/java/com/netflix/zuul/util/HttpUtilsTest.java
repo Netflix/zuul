@@ -17,10 +17,7 @@
 package com.netflix.zuul.util;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
@@ -31,62 +28,59 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HttpUtils}.
  */
-@RunWith(JUnit4.class)
 public class HttpUtilsTest {
 
     @Test
-    public void detectsGzip() {
+    void detectsGzip() {
         assertTrue(HttpUtils.isCompressed("gzip"));
     }
 
     @Test
-    public void detectsDeflate() {
+    void detectsDeflate() {
         assertTrue(HttpUtils.isCompressed("deflate"));
     }
 
     @Test
-    public void detectsCompress() {
+    void detectsCompress() {
         assertTrue(HttpUtils.isCompressed("compress"));
     }
 
     @Test
-    public void detectsBR() {
+    void detectsBR() {
         assertTrue(HttpUtils.isCompressed("br"));
     }
 
     @Test
-    public void detectsNonGzip() {
+    void detectsNonGzip() {
         assertFalse(HttpUtils.isCompressed("identity"));
     }
 
     @Test
-    public void detectsGzipAmongOtherEncodings() {
+    void detectsGzipAmongOtherEncodings() {
         assertTrue(HttpUtils.isCompressed("gzip, deflate"));
     }
 
     @Test
-    public void acceptsGzip() {
+    void acceptsGzip() {
         Headers headers = new Headers();
         headers.add("Accept-Encoding", "gzip, deflate");
         assertTrue(HttpUtils.acceptsGzip(headers));
     }
 
     @Test
-    public void acceptsGzip_only() {
+    void acceptsGzip_only() {
         Headers headers = new Headers();
         headers.add("Accept-Encoding", "deflate");
         assertFalse(HttpUtils.acceptsGzip(headers));
     }
 
     @Test
-    public void stripMaliciousHeaderChars() {
+    void stripMaliciousHeaderChars() {
         assertEquals("something", HttpUtils.stripMaliciousHeaderChars("some\r\nthing"));
         assertEquals("some thing", HttpUtils.stripMaliciousHeaderChars("some thing"));
         assertEquals("something", HttpUtils.stripMaliciousHeaderChars("\nsome\r\nthing\r"));
@@ -96,7 +90,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void getBodySizeIfKnown_returnsContentLengthValue() {
+    void getBodySizeIfKnown_returnsContentLengthValue() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
         headers.add(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH, "23450");
@@ -105,7 +99,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void getBodySizeIfKnown_returnsResponseBodySize() {
+    void getBodySizeIfKnown_returnsResponseBodySize() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
         HttpQueryParams queryParams = new HttpQueryParams();
@@ -117,7 +111,7 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void getBodySizeIfKnown_returnsNull() {
+    void getBodySizeIfKnown_returnsNull() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
         ZuulMessage msg = new ZuulMessageImpl(context, headers);
