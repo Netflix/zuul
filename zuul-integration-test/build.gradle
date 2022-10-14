@@ -11,9 +11,6 @@ dependencies {
     implementation 'commons-configuration:commons-configuration:1.10'
     annotationProcessor project(":zuul-processor")
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.34.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation 'io.rest-assured:rest-assured:5.0.1'
@@ -24,10 +21,6 @@ dependencies {
 
 tasks.withType(Test).all {
     systemProperty("io.netty.leakDetection.level", "paranoid")
-}
-
-test {
-    useJUnitPlatform()
 }
 
 project.tasks.publish.enabled = false
