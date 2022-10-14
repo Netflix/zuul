@@ -1,10 +1,10 @@
 package com.netflix.netty.common.metrics;
 
-import com.google.common.truth.Truth;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
     public static final List<CustomLeakDetector> GLOBAL_REGISTRY = new CopyOnWriteArrayList<>();
@@ -13,7 +13,7 @@ public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
         List<CustomLeakDetector> leaks = GLOBAL_REGISTRY.stream()
                             .filter(detector -> detector.leakCounter.get() > 0)
                             .collect(Collectors.toList());
-        Truth.assertThat(leaks).isEmpty();
+        assertTrue(leaks.isEmpty(), "LEAKS DETECTED: " + leaks);
     }
 
     private final String resourceTypeName;
