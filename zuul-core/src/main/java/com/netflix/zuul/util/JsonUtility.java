@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Utility for generating JSON from Maps/Lists
@@ -26,6 +27,7 @@ import java.util.*;
 public class JsonUtility {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonUtility.class);
+    private static final Pattern PATTERN_WHITESPACE = Pattern.compile(" ");
 
     /**
      * Pass in a Map and this method will return a JSON string.
@@ -61,7 +63,7 @@ public class JsonUtility {
                     /* it's an int array, so we'll get the string representation */
                     String intArray = Arrays.toString((int[]) data);
                     /* remove whitespace */
-                    intArray = intArray.replaceAll(" ", "");
+                    intArray = PATTERN_WHITESPACE.matcher(intArray).replaceAll("");
                     json.addValue(key, intArray);
                 } else if (data instanceof JsonCapableObject) {
                     json.addValue(key, jsonFromMap(((JsonCapableObject) data).jsonMap()));

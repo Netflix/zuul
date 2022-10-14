@@ -1,0 +1,17 @@
+apply plugin: "java"
+
+dependencies {
+    implementation project(":zuul-core"),
+            project(":zuul-discovery"),
+            project(":zuul-processor"),
+            project(":zuul-guice")
+
+    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+
+    testImplementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    testImplementation libraries.junit,
+            libraries.archunit
+}
+
+project.tasks.publish.enabled = false
