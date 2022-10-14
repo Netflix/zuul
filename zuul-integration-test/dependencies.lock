@@ -678,6 +678,15 @@
             ],
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
+        "org.mockito:mockito-junit-jupiter": {
+            "locked": "4.8.0"
+        },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.35"
         },
@@ -689,7 +698,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.1"
         }
     },
     "runtimeClasspath": {
@@ -1030,11 +1039,20 @@
         "javax.servlet:javax.servlet-api": {
             "locked": "4.0.1"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
+        "org.mockito:mockito-junit-jupiter": {
+            "locked": "4.8.0"
+        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.1"
         }
     },
     "testRuntimeClasspath": {
@@ -1255,12 +1273,21 @@
             ],
             "locked": "1.70"
         },
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
+        "org.mockito:mockito-junit-jupiter": {
+            "locked": "4.8.0"
+        },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.1"
         }
     }
 }
