@@ -22,6 +22,8 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.UnpooledByteBufAllocator;
 
 @Filter(order = 0, type = FilterType.INBOUND)
 public class InboundRoutesFilter extends HttpInboundSyncFilter {
@@ -37,6 +39,9 @@ public class InboundRoutesFilter extends HttpInboundSyncFilter {
 
     @Override
     public HttpRequestMessage apply(HttpRequestMessage input) {
+        // uncomment this line to trigger a resource leak
+        // ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer();
+
         SessionContext context = input.getContext();
         context.setEndpoint(ProxyEndpoint.class.getCanonicalName());
         context.setRouteVIP("api");
