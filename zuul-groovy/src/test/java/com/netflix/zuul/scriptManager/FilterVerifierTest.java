@@ -144,8 +144,8 @@ public class FilterVerifierTest {
         assertFalse(filterInfo1.isActive());
         assertFalse(filterInfo1.isCanary());
 
-        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
+        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
 
-        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
+        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
     }
 }
