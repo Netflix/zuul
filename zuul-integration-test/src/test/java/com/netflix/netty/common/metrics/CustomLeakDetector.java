@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
-    public static final List<CustomLeakDetector> GLOBAL_REGISTRY = new CopyOnWriteArrayList<>();
+    private static final List<CustomLeakDetector> GLOBAL_REGISTRY = new CopyOnWriteArrayList<>();
 
     public static void assertZeroLeaks() {
         List<CustomLeakDetector> leaks = GLOBAL_REGISTRY.stream()
