@@ -81,8 +81,11 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
             "locked": "4.8.0"
@@ -142,8 +145,11 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
             "locked": "4.8.0"
@@ -174,8 +180,11 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
-        "junit:junit": {
-            "locked": "4.13.2"
+        "org.junit.jupiter:junit-jupiter-api": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
             "locked": "4.8.0"
