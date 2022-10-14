@@ -88,7 +88,6 @@ public class IntegrationTest {
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
-        assertZeroLeaks();
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
