@@ -42,8 +42,8 @@ public class ZuulFiltersModuleTest {
 
         String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length,equalTo(3));
-        assertThat(filterLocations[1],equalTo("outbound"));
+        assertThat(filterLocations.length, equalTo(3));
+        assertThat(filterLocations[1], equalTo("outbound"));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ZuulFiltersModuleTest {
 
         String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length,equalTo(0));
+        assertThat(filterLocations.length, equalTo(0));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length,equalTo(0));
+        assertThat(classNames.length, equalTo(0));
     }
 
     @Test
@@ -76,8 +76,8 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length,equalTo(1));
-        assertThat(classNames[0],equalTo(expectedClass.getCanonicalName()));
+        assertThat(classNames.length, equalTo(1));
+        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
 
     }
 
@@ -92,8 +92,8 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length,equalTo(1));
-        assertThat(classNames[0],equalTo(expectedClass.getCanonicalName()));
+        assertThat(classNames.length, equalTo(1));
+        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
 
     }
 
@@ -109,9 +109,9 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length,equalTo(2));
-        assertThat(classNames[0],equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1],equalTo(expectedClass2.getCanonicalName()));
+        assertThat(classNames.length, equalTo(2));
+        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
+        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
     }
 
     @Test
@@ -125,8 +125,8 @@ public class ZuulFiltersModuleTest {
 
         String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length,equalTo(2));
-        assertThat(classNames[0],equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1],equalTo(expectedClass2.getCanonicalName()));
+        assertThat(classNames.length, equalTo(2));
+        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
+        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
     }
 }
