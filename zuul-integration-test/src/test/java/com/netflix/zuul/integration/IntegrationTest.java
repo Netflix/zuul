@@ -22,12 +22,9 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
-import com.netflix.netty.common.metrics.InstrumentedResourceLeakDetector;
-import com.netflix.spectator.api.Gauge;
-import com.netflix.spectator.api.Spectator;
+import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
-import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.util.ResourceLeakDetector;
 import io.restassured.internal.http.ResponseParseException;
 import io.restassured.specification.RequestSpecification;
@@ -44,7 +41,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -58,6 +54,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.google.common.truth.Truth.assertThat;
+import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
 import static com.netflix.zuul.integration.matchers.IsRequestId.isRequestId;
 import static io.restassured.RestAssured.expect;
 import static io.restassured.RestAssured.given;
@@ -70,8 +67,7 @@ public class IntegrationTest {
 
     static {
         System.setProperty("io.netty.customResourceLeakDetector",
-                InstrumentedResourceLeakDetector.class.getCanonicalName());
-
+                CustomLeakDetector.class.getCanonicalName());
     }
 
     static private Bootstrap bootstrap;
@@ -92,6 +88,7 @@ public class IntegrationTest {
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
+        assertZeroLeaks();
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
@@ -101,7 +98,7 @@ public class IntegrationTest {
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
-        assertEquals(0, resourceLeakCount());
+        assertZeroLeaks();
     }
 
     @AfterAll
@@ -109,7 +106,7 @@ public class IntegrationTest {
         if (bootstrap != null) {
             bootstrap.stop();
         }
-        assertEquals(0, resourceLeakCount());
+        assertZeroLeaks();
     }
 
     @BeforeEach
@@ -280,12 +277,5 @@ public class IntegrationTest {
         } catch (IOException e) {
             return -1;
         }
-    }
-
-    private static long resourceLeakCount() {
-        return (long) Spectator.globalRegistry().stream()
-                .filter((meter) -> meter.id().name().startsWith("NettyLeakDetector"))
-                .mapToDouble((meter) -> ((Gauge) meter).value())
-                .sum();
     }
 }
