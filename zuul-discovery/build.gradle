@@ -14,7 +14,7 @@ dependencies {
     implementation "com.netflix.eureka:eureka-client:1.10.17"
 
 
-    testImplementation libraries.jupiterApi, libraries.jupiterEngine,
+    testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine,
             libraries.mockito,
             libraries.truth
 }

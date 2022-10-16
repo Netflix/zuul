@@ -5,7 +5,7 @@ dependencies {
     implementation project(":zuul-core")
     api "org.codehaus.groovy:groovy-all:${versions_groovy}"
 
-    testImplementation libraries.jupiterApi, libraries.jupiterEngine, libraries.jupiterMockito,
+    testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito,
             libraries.mockito,
             libraries.truth
 }

@@ -66,6 +66,7 @@ subprojects {
         libraries = [
                 guava: "com.google.guava:guava:31.1-jre",
                 jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.+',
+                jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.+',
                 jupiterEngine: 'org.junit.jupiter:junit-jupiter-engine:5.+',
                 jupiterMockito: 'org.mockito:mockito-junit-jupiter:4.+',
                 mockito: 'org.mockito:mockito-core:4.+',
