@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +73,9 @@ public class IntegrationTest {
                 CustomLeakDetector.class.getCanonicalName());
     }
 
+    private static final OkHttpClient okHttp1 = setupOkHttpClient(Protocol.HTTP_1_1);
+    private static final OkHttpClient okHttp2 = setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1);
+
     static private Bootstrap bootstrap;
     static private final int ZUUL_SERVER_PORT = findAvailableTcpPort();
 
@@ -79,7 +83,6 @@ public class IntegrationTest {
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String path;
     private String requestUrl;
-    private OkHttpClient okhttp;
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -112,25 +115,26 @@ public class IntegrationTest {
         assertZeroLeaks();
     }
 
+
     @BeforeEach
     void beforeEachTest() {
-        okhttp = setupOkHttpClient(Protocol.HTTP_1_1);
         path = randomPath();
         requestUrl = zuulBaseUri + path;
     }
 
-    private static OkHttpClient setupOkHttpClient(final Protocol protocol) {
+    private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
         return new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.MILLISECONDS)
                 .readTimeout(5, TimeUnit.SECONDS)
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .retryOnConnectionFailure(false)
-                .protocols(Collections.singletonList(protocol))
+                .protocols(Arrays.asList(protocols))
                 .build();
     }
 
     @Test
+    // @ParameterizedTest
     void httpGetHappyPath(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
@@ -141,7 +145,7 @@ public class IntegrationTest {
                 .withBody("hello world")));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
 
@@ -162,7 +166,7 @@ public class IntegrationTest {
                 .url(zuulBaseUri + path)
                 .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
                 .build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
 
@@ -182,7 +186,7 @@ public class IntegrationTest {
                     .withBody("Slow poke")));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -200,7 +204,7 @@ public class IntegrationTest {
                 .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         // assertThat(response.body().string()).isEqualTo("hello world");
 
@@ -224,7 +228,7 @@ public class IntegrationTest {
                                         .withStatus(500)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -242,7 +246,7 @@ public class IntegrationTest {
                                         .withStatus(503)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -260,7 +264,7 @@ public class IntegrationTest {
                     .withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okhttp.newCall(request).execute();
+        Response response = okHttp1.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
 
