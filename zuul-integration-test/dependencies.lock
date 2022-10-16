@@ -684,6 +684,9 @@
         "org.junit.jupiter:junit-jupiter-engine": {
             "locked": "5.9.1"
         },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.9.1"
+        },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "4.8.0"
         },
@@ -1045,6 +1048,9 @@
         "org.junit.jupiter:junit-jupiter-engine": {
             "locked": "5.9.1"
         },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.9.1"
+        },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "4.8.0"
         },
@@ -1277,6 +1283,9 @@
             "locked": "5.9.1"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
+            "locked": "5.9.1"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
             "locked": "5.9.1"
         },
         "org.mockito:mockito-junit-jupiter": {
