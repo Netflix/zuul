@@ -35,17 +35,18 @@ import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -72,9 +73,6 @@ public class IntegrationTest {
         System.setProperty("io.netty.customResourceLeakDetector",
                 CustomLeakDetector.class.getCanonicalName());
     }
-
-    private static final OkHttpClient okHttp1 = setupOkHttpClient(Protocol.HTTP_1_1);
-    private static final OkHttpClient okHttp2 = setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1);
 
     static private Bootstrap bootstrap;
     static private final int ZUUL_SERVER_PORT = findAvailableTcpPort();
@@ -133,9 +131,15 @@ public class IntegrationTest {
                 .build();
     }
 
-    @Test
-    // @ParameterizedTest
-    void httpGetHappyPath(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    static Stream<OkHttpClient> okHttpClientProvider() {
+        return Stream.of(
+                    setupOkHttpClient(Protocol.HTTP_1_1),
+                    setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1));
+    }
+
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void httpGetHappyPath(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
         wireMock.register(
@@ -145,7 +149,7 @@ public class IntegrationTest {
                 .withBody("hello world")));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
 
@@ -153,8 +157,9 @@ public class IntegrationTest {
         verify(0, postRequestedFor(anyUrl()));
     }
 
-    @Test
-    void httpPostHappyPath(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void httpPostHappyPath(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             post(path)
@@ -166,7 +171,7 @@ public class IntegrationTest {
                 .url(zuulBaseUri + path)
                 .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
                 .build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
 
@@ -175,8 +180,9 @@ public class IntegrationTest {
         verify(0, getRequestedFor(anyUrl()));
     }
 
-    @Test
-    void httpGetFailsDueToOriginReadTimeout(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void httpGetFailsDueToOriginReadTimeout(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
@@ -186,7 +192,7 @@ public class IntegrationTest {
                     .withBody("Slow poke")));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -194,8 +200,9 @@ public class IntegrationTest {
         verify(0, postRequestedFor(anyUrl()));
     }
 
-    @Test
-    void httpGetFailsDueToMalformedResponseChunk(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void httpGetFailsDueToMalformedResponseChunk(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
@@ -204,7 +211,7 @@ public class IntegrationTest {
                 .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         // assertThat(response.body().string()).isEqualTo("hello world");
 
@@ -218,8 +225,9 @@ public class IntegrationTest {
         verify(0, postRequestedFor(anyUrl()));
     }
 
-    @Test
-    void zuulWillRetryHttpGetWhenOriginReturns500(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void zuulWillRetryHttpGetWhenOriginReturns500(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
                 get(path)
@@ -228,7 +236,7 @@ public class IntegrationTest {
                                         .withStatus(500)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -236,8 +244,9 @@ public class IntegrationTest {
         verify(0, postRequestedFor(anyUrl()));
     }
 
-    @Test
-    void zuulWillRetryHttpGetWhenOriginReturns503(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void zuulWillRetryHttpGetWhenOriginReturns503(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
                 get(path)
@@ -246,7 +255,7 @@ public class IntegrationTest {
                                         .withStatus(503)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
 
@@ -254,8 +263,9 @@ public class IntegrationTest {
         verify(0, postRequestedFor(anyUrl()));
     }
 
-    @Test
-    void httpGetReturnsStatus500DueToConnectionResetByPeer(final WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+    @ParameterizedTest
+    @MethodSource("okHttpClientProvider")
+    void httpGetReturnsStatus500DueToConnectionResetByPeer(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
@@ -264,7 +274,7 @@ public class IntegrationTest {
                     .withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
         Request request = new Request.Builder().url(zuulBaseUri + path).build();
-        Response response = okHttp1.newCall(request).execute();
+        Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
 
