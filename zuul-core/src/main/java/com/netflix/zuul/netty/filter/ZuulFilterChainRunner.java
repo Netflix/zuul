@@ -27,6 +27,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.handler.codec.http.HttpContent;
 
+import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -154,6 +155,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             }
         }
         catch (Exception ex) {
+            ReferenceCountUtil.safeRelease(chunk);
             handleException(inMesg, filterName, ex);
         }
     }
