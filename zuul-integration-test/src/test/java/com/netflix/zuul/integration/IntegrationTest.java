@@ -37,6 +37,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
@@ -81,6 +82,7 @@ public class IntegrationTest {
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String path;
     private String requestUrl;
+    private WireMockRuntimeInfo wmRuntimeInfo;
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -115,9 +117,10 @@ public class IntegrationTest {
 
 
     @BeforeEach
-    void beforeEachTest() {
+    void beforeEachTest(final WireMockRuntimeInfo wmRuntimeInfo) {
         path = randomPath();
         requestUrl = zuulBaseUri + path;
+        this.wmRuntimeInfo = wmRuntimeInfo;
     }
 
     private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
@@ -131,15 +134,15 @@ public class IntegrationTest {
                 .build();
     }
 
-    static Stream<OkHttpClient> okHttpClientProvider() {
+    static Stream<Arguments> arguments() {
         return Stream.of(
-                    setupOkHttpClient(Protocol.HTTP_1_1),
-                    setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1));
+                    Arguments.of("HTTP 1.1", setupOkHttpClient(Protocol.HTTP_1_1)),
+                    Arguments.of("HTTP 2", setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1)));
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void httpGetHappyPath(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void httpGetHappyPath(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
         wireMock.register(
@@ -158,8 +161,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void httpPostHappyPath(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void httpPostHappyPath(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             post(path)
@@ -181,8 +184,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void httpGetFailsDueToOriginReadTimeout(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void httpGetFailsDueToOriginReadTimeout(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
@@ -201,8 +204,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void httpGetFailsDueToMalformedResponseChunk(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void httpGetFailsDueToMalformedResponseChunk(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
@@ -226,8 +229,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void zuulWillRetryHttpGetWhenOriginReturns500(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void zuulWillRetryHttpGetWhenOriginReturns500(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
                 get(path)
@@ -245,8 +248,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void zuulWillRetryHttpGetWhenOriginReturns503(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void zuulWillRetryHttpGetWhenOriginReturns503(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
                 get(path)
@@ -264,8 +267,8 @@ public class IntegrationTest {
     }
 
     @ParameterizedTest
-    @MethodSource("okHttpClientProvider")
-    void httpGetReturnsStatus500DueToConnectionResetByPeer(final WireMockRuntimeInfo wmRuntimeInfo, final OkHttpClient okHttp) throws Exception {
+    @MethodSource("arguments")
+    void httpGetReturnsStatus500DueToConnectionResetByPeer(final String description, final OkHttpClient okHttp) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
             get(path)
