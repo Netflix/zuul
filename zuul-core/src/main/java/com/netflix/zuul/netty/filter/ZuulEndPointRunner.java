@@ -106,6 +106,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             }
         }
         catch (Exception ex) {
+            zuulReq.disposeBufferedBody();
             handleException(zuulReq, endpointName, ex);
         }
     }
