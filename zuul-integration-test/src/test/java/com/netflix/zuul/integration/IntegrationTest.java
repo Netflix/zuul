@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
@@ -182,6 +183,27 @@ public class IntegrationTest {
         verify(1, postRequestedFor(urlEqualTo(path))
                 .withRequestBody(equalTo("Simple POST request body")));
         verify(0, getRequestedFor(anyUrl()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("arguments")
+    void httpPostWithInvalidHostHeader(final String description, final OkHttpClient okHttp) throws Exception {
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                post(path)
+                        .willReturn(
+                                ok()
+                                        .withBody("Thank you next")));
+
+        Request request = new Request.Builder()
+                .url(zuulBaseUri + path)
+                .addHeader("Host", "_invalid_hostname_")
+                .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
+                .build();
+        Response response = okHttp.newCall(request).execute();
+        assertThat(response.code()).isEqualTo(500);
+
+        verify(0, anyRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
