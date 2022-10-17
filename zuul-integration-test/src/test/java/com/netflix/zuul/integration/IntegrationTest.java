@@ -40,6 +40,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
@@ -62,8 +63,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.google.common.truth.Truth.assertThat;
 import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
-import static com.netflix.zuul.integration.matchers.IsRequestId.isRequestId;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -155,6 +154,7 @@ public class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
+        assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
 
         verify(1, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
@@ -177,6 +177,7 @@ public class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
+        assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
 
         verify(1, postRequestedFor(urlEqualTo(path))
                 .withRequestBody(equalTo("Simple POST request body")));
@@ -194,7 +195,7 @@ public class IntegrationTest {
                     .withFixedDelay((int) ORIGIN_READ_TIMEOUT.toMillis() + 50)
                     .withBody("Slow poke")));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).build();
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
@@ -213,17 +214,13 @@ public class IntegrationTest {
                 aResponse()
                 .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).build();
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
-        // assertThat(response.body().string()).isEqualTo("hello world");
+        assertThrowsExactly(EOFException.class, () -> {
+            response.body().string();
+        });
 
-        /*
-        assertThat(exception)
-                .hasCauseThat().isInstanceOf(ConnectionClosedException.class);
-        assertThat(exception.getCause())
-                .hasMessageThat().isEqualTo("Premature end of chunk coded message body: closing chunk expected");
-*/
         verify(1, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
     }
@@ -238,7 +235,7 @@ public class IntegrationTest {
                                 aResponse()
                                         .withStatus(500)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).build();
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
@@ -257,7 +254,7 @@ public class IntegrationTest {
                                 aResponse()
                                         .withStatus(503)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).build();
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
@@ -276,7 +273,7 @@ public class IntegrationTest {
                     aResponse()
                     .withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).build();
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
