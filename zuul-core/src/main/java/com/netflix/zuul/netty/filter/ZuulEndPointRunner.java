@@ -35,6 +35,7 @@ import com.netflix.zuul.filters.endpoint.MissingEndpointHandlingFilter;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import javax.annotation.Nullable;
@@ -150,6 +151,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             }
         }
         catch (Exception ex) {
+            ReferenceCountUtil.safeRelease(chunk);
             handleException(zuulReq, endpointName, ex);
         }
     }
