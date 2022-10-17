@@ -22,4 +22,14 @@ tasks.withType(Test).all {
     systemProperty("io.netty.leakDetection.level", "paranoid")
 }
 
-project.tasks.publish.enabled = false
+tasks.withType(PublishToMavenRepository) {
+    onlyIf { false }
+}
+
+tasks.withType(PublishToMavenLocal) {
+    onlyIf { false }
+}
+
+tasks.withType(PublishToIvyRepository) {
+    onlyIf { false }
+}
