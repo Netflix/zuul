@@ -154,7 +154,7 @@ public class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
-        assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
+        verifyResponseHeaders(response);
 
         verify(1, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
@@ -177,7 +177,7 @@ public class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
-        assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
+        verifyResponseHeaders(response);
 
         verify(1, postRequestedFor(urlEqualTo(path))
                 .withRequestBody(equalTo("Simple POST request body")));
@@ -199,6 +199,7 @@ public class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
+        verifyResponseHeaders(response);
 
         verify(2, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
@@ -293,4 +294,9 @@ public class IntegrationTest {
             return -1;
         }
     }
+
+    static private void verifyResponseHeaders(final Response response) {
+        assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
+    }
+
 }
