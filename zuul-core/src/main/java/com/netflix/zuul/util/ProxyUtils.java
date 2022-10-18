@@ -30,8 +30,7 @@ import java.util.Set;
  * Date: 6/8/15
  * Time: 11:50 AM
  */
-public class ProxyUtils
-{
+public class ProxyUtils {
     private static final CachedDynamicBooleanProperty OVERWRITE_XF_HEADERS = new CachedDynamicBooleanProperty("zuul.headers.xforwarded.overwrite", false);
 
     private static final Set<HeaderName> RESP_HEADERS_TO_STRIP = new HashSet<>();
@@ -49,18 +48,15 @@ public class ProxyUtils
         REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
     }
 
-    public static boolean isValidRequestHeader(HeaderName headerName)
-    {
+    public static boolean isValidRequestHeader(HeaderName headerName) {
         return ! REQ_HEADERS_TO_STRIP.contains(headerName);
     }
 
-    public static boolean isValidResponseHeader(HeaderName headerName)
-    {
+    public static boolean isValidResponseHeader(HeaderName headerName) {
         return ! RESP_HEADERS_TO_STRIP.contains(headerName);
     }
 
-    public static void addXForwardedHeaders(HttpRequestMessage request)
-    {
+    public static void addXForwardedHeaders(HttpRequestMessage request) {
         // Add standard Proxy request headers.
         Headers headers = request.getHeaders();
         addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_HOST, request.getOriginalHost());
@@ -69,8 +65,7 @@ public class ProxyUtils
         addXForwardedHeader(headers, HttpHeaderNames.X_FORWARDED_FOR, request.getClientIp());
     }
 
-    public static void addXForwardedHeader(Headers headers, HeaderName name, String latestValue)
-    {
+    public static void addXForwardedHeader(Headers headers, HeaderName name, String latestValue) {
         if (OVERWRITE_XF_HEADERS.get()) {
             headers.set(name, latestValue);
         }

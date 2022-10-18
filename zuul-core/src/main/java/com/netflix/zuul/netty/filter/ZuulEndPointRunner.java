@@ -56,7 +56,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
     private final FilterLoader filterLoader;
 
-    private static Logger logger = LoggerFactory.getLogger(ZuulEndPointRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZuulEndPointRunner.class);
     public static final String PROXY_ENDPOINT_FILTER_NAME = ProxyEndpoint.class.getCanonicalName();
     public static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT = new DynamicStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
 
@@ -205,7 +205,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         return (Endpoint<I, O>) filterLoader.getFilterByNameAndType(endpointName, FilterType.ENDPOINT);
     }
 
-    final protected static ZuulFilter<HttpRequestMessage, HttpResponseMessage> STATIC_RESPONSE_ENDPOINT = new SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage>() {
+    protected static final ZuulFilter<HttpRequestMessage, HttpResponseMessage> STATIC_RESPONSE_ENDPOINT = new SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage>() {
         @Override
         public HttpResponseMessage apply(HttpRequestMessage request) {
             final HttpResponseMessage resp = request.getContext().getStaticResponse();

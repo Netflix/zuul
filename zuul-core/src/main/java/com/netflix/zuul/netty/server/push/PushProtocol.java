@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,7 +96,7 @@ public enum PushProtocol {
             return ctx.channel().writeAndFlush(newBuff);
         }
 
-        private static final String  SSE_PING = "event: ping\r\ndata: ping\r\n\r\n";
+        private static final String  SSE_PING = "event: ping\r\ndata: ping" + SSE_TERMINATION;
 
         @Override
         public ChannelFuture sendPing(ChannelHandlerContext ctx) {
@@ -108,12 +108,12 @@ public enum PushProtocol {
 
         @Override
         public Object goAwayMessage() {
-            return "event: goaway\r\ndata: _CLOSE_\r\n\r\n";
+            return "event: goaway\r\ndata: _CLOSE_" + SSE_TERMINATION;
         }
 
         @Override
         public Object serverClosingConnectionMessage(int statusCode, String reasonText) {
-            return "event: close\r\ndata: " + statusCode + " " + reasonText + "\r\n\r\n";
+            return "event: close\r\ndata: " + statusCode + " " + reasonText + SSE_TERMINATION;
         }
 
     };

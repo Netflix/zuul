@@ -16,26 +16,13 @@
 
 package com.netflix.zuul.filters.endpoint;
 
-import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_FAILED;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_RETRY_START;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_NOT_FOUND;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.config.CachedDynamicLongProperty;
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
@@ -97,6 +84,10 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -108,9 +99,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
+import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
+import static com.netflix.zuul.passport.PassportState.*;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.*;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -451,7 +444,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     @Override
     public void operationComplete(final Future<PooledConnection> connectResult) {
-        // MUST run this within bindingcontext to support ThreadVariables.
+        // MUST run this within binding context to support ThreadVariables.
         try {
             methodBinding.bind(() -> {
                 DiscoveryResult server = chosenServer.get();
@@ -506,7 +499,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     private void onOriginConnectFailed(Throwable cause) {
         passport.add(ORIGIN_CONN_ACQUIRE_FAILED);
-        if (! context.isCancelled()) {
+        if (!context.isCancelled()) {
             errorFromOrigin(cause);
         }
     }
@@ -547,9 +540,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private static void writeBufferedBodyContent(final HttpRequestMessage zuulRequest, final Channel channel) {
-        zuulRequest.getBodyContents().forEach((chunk) -> {
-            channel.write(chunk.retain());
-        });
+        zuulRequest.getBodyContents().forEach(chunk -> channel.write(chunk.retain()));
     }
 
     protected boolean isRemoteZuulRetriesBelowRetryLimit(int maxAllowedRetries) {
@@ -593,15 +584,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // Be cautious about how much we log about errors from origins, as it can have perf implications at high rps.
             if (zuulCtx.isInBrownoutMode()) {
                 // Don't include the stacktrace or the channel info.
-                LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ": " + String.valueOf(ex));
+                LOG.warn("{}, origin = {}: {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex));
             } else {
                 final String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
                 if (LOG.isInfoEnabled()) {
                     // Include the stacktrace.
-                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", origin channel info = " + origChInfo, ex);
+                    LOG.warn("{}, origin = {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), origChInfo, ex);
                 }
                 else {
-                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", " + String.valueOf(ex) + ", origin channel info = " + origChInfo);
+                    LOG.warn("{}, origin = {}, {}, origin channel info = {}",err.getStatusCategory().name(), origin.getName(), String.valueOf(ex), origChInfo);
                 }
             }
 
@@ -784,7 +775,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Collect some info about the received response.
         origin.recordFinalResponse(zuulResponse);
         origin.recordFinalError(zuulRequest, ex);
-        zuulCtx.put(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+        zuulCtx.put(CommonContextKeys.STATUS_CATEGORY, statusCategory);
         zuulCtx.setError(ex);
         zuulCtx.put("origin_http_status", Integer.toString(respStatus));
 
@@ -850,9 +841,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             origin.adjustRetryPolicyIfNeeded(zuulRequest);
             proxyRequestToOrigin();
         } else {
-            SessionContext zuulCtx = context;
             LOG.info("Sending error to client: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
-                    respStatus, attemptNum, origin.getMaxRetriesForRequest(zuulCtx),
+                    respStatus, attemptNum, origin.getMaxRetriesForRequest(context),
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //This is a final response after all retries that will go to the client
             zuulResponse = buildZuulHttpResponse(originResponse, statusCategory, obe);
@@ -866,7 +856,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             if (status == 503 || originIndicatesRetryableInternalServerError(originResponse)) {
                 return true;
             }
-            // Retry if this is an idempotent http method AND status code was retriable for idempotent methods.
+            // Retry if this is an idempotent http method AND status code was retryable for idempotent methods.
             else if (RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS.get().contains(status) && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase())) {
                 return true;
             }
@@ -1036,7 +1026,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private void verifyOrigin(SessionContext context, HttpRequestMessage request, String restClientName, Origin primaryOrigin) {
         if (primaryOrigin == null) {
             // If no origin found then add specific error-cause metric tag, and throw an exception with 404 status.
-            context.put(CommonContextKeys.STATUS_CATGEORY, SUCCESS_LOCAL_NO_ROUTE);
+            context.put(CommonContextKeys.STATUS_CATEGORY, SUCCESS_LOCAL_NO_ROUTE);
             String causeName = "RESTCLIENT_NOTFOUND";
             originNotFound(context, causeName);
             ZuulException ze = new ZuulException("No origin found for request. name=" + restClientName

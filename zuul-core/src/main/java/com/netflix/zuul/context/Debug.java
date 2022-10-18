@@ -66,8 +66,7 @@ public class Debug {
         rd.add(line);
     }
 
-    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
-    {
+    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix) {
         for (Header header : message.getHeaders().entries()) {
             Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
         }
@@ -85,7 +84,7 @@ public class Debug {
     public static List<String> getRoutingDebug(SessionContext ctx) {
         List<String> rd = (List<String>) ctx.get("routingDebug");
         if (rd == null) {
-            rd = new ArrayList<String>();
+            rd = new ArrayList<>();
             ctx.set("routingDebug", rd);
         }
         return rd;
@@ -107,7 +106,7 @@ public class Debug {
     public static List<String> getRequestDebug(SessionContext ctx) {
         List<String> rd = (List<String>) ctx.get("requestDebug");
         if (rd == null) {
-            rd = new ArrayList<String>();
+            rd = new ArrayList<>();
             ctx.set("requestDebug", rd);
         }
         return rd;
@@ -149,8 +148,7 @@ public class Debug {
     }
 
     public static Observable<Boolean> writeDebugRequest(SessionContext context,
-                                                                HttpRequestInfo request, boolean isInbound)
-    {
+                                                                HttpRequestInfo request, boolean isInbound) {
         Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "REQUEST_INBOUND" : "REQUEST_OUTBOUND";
@@ -168,8 +166,7 @@ public class Debug {
     }
 
     public static Observable<Boolean> writeDebugResponse(SessionContext context,
-                                                                  HttpResponseInfo response, boolean isInbound)
-    {
+                                                                  HttpResponseInfo response, boolean isInbound) {
         Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "RESPONSE_INBOUND" : "RESPONSE_OUTBOUND";
@@ -186,8 +183,7 @@ public class Debug {
     }
 
     public static Observable<Boolean> writeDebugMessage(SessionContext context, ZuulMessage msg,
-                                                            String prefix, String arrow)
-    {
+                                                            String prefix, String arrow) {
         Observable<Boolean> obs = null;
 
         for (Header header : msg.getHeaders().entries()) {

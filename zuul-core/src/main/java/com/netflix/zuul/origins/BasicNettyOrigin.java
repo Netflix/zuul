@@ -133,7 +133,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public String getIpAddrFromServer(DiscoveryResult discoveryResult) {
         final Optional<String> ipAddr = discoveryResult.getIPAddr();
-        return ipAddr.isPresent() ? ipAddr.get() : null;
+        return ipAddr.orElse(null);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         // Choose StatusCategory based on the ErrorType.
         final ErrorType et = requestAttemptFactory.mapNettyToOutboundErrorType(throwable);
         final StatusCategory nfs = et.getStatusCategory();
-        zuulCtx.put(CommonContextKeys.STATUS_CATGEORY, nfs);
+        zuulCtx.put(CommonContextKeys.STATUS_CATEGORY, nfs);
         zuulCtx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, nfs);
 
         zuulCtx.setError(throwable);

@@ -24,8 +24,7 @@ import com.netflix.zuul.filters.BaseSyncFilter;
  * Date: 5/29/15
  * Time: 3:23 PM
  */
-public abstract class HttpOutboundSyncFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
-{
+public abstract class HttpOutboundSyncFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage> {
     @Override
     public FilterType filterType() {
         return FilterType.OUTBOUND;

@@ -23,8 +23,7 @@ public final class Header {
     private final HeaderName name;
     private final String value;
 
-    public Header(HeaderName name, String value)
-    {
+    public Header(HeaderName name, String value) {
         if (name == null) throw new NullPointerException("Header name cannot be null!");
         this.name = name;
         this.value = value;

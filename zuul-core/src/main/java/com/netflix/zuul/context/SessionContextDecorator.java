@@ -21,5 +21,5 @@ package com.netflix.zuul.context;
  * Time: 4:09 PM
  */
 public interface SessionContextDecorator {
-    public SessionContext decorate(SessionContext ctx);
+    SessionContext decorate(SessionContext ctx);
 }

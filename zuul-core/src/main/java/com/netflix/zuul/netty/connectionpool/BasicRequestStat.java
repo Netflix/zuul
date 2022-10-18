@@ -74,7 +74,8 @@ public class BasicRequestStat implements RequestStat {
     }
 
     @Override
-    public void finalAttempt(boolean finalAttempt) {}
+    public void finalAttempt(boolean finalAttempt) {
+    }
 
     @Override
     public boolean finishIfNotAlready() {

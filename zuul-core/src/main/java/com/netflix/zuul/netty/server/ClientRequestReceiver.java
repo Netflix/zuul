@@ -156,7 +156,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
                         + "clientRequest = " + clientRequest.toString()
-                        + ", uri = " + String.valueOf(clientRequest.uri())
+                        + ", uri = " + clientRequest.uri()
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 final ZuulException ze = new ZuulException(errorMsg);
                 ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
@@ -200,7 +200,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ReferenceCountUtil.release(msg);
         }
         else {
-            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
+            LOG.debug("Received unrecognized message type. {}", msg.getClass().getName());
             ReferenceCountUtil.release(msg);
         }
     }
@@ -269,14 +269,14 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     private static void dumpDebugInfo(final List<String> debugInfo) {
-        debugInfo.forEach((dbg) -> LOG.debug(dbg));
+        debugInfo.forEach(LOG::debug);
     }
 
     private void handleExpect100Continue(ChannelHandlerContext ctx, HttpRequest req) {
         if (HttpUtil.is100ContinueExpected(req)) {
             PerfMark.event("CRR.handleExpect100Continue");
             final ChannelFuture f = ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
-            f.addListener((s) -> {
+            f.addListener(s -> {
                 if (! s.isSuccess()) {
                     throw new ZuulException(s.cause(), "Failed while writing 100-continue response", true);
                 }
@@ -430,7 +430,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         try (TaskCloseable ignored = PerfMark.traceTask("CRR.write")) {
             if (msg instanceof HttpResponse) {
-                promise.addListener((future) -> {
+                promise.addListener(future -> {
                     if (! future.isSuccess()) {
                         fireWriteError("response headers", future.cause(), ctx);
                     }
@@ -438,7 +438,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 super.write(ctx, msg, promise);
             }
             else if (msg instanceof HttpContent) {
-                promise.addListener((future) -> {
+                promise.addListener(future -> {
                     if (! future.isSuccess())  {
                         fireWriteError("response content", future.cause(), ctx);
                     }
@@ -459,7 +459,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         if (cause instanceof java.nio.channels.ClosedChannelException ||
                 cause instanceof Errors.NativeIoException) {
-            LOG.debug(errMesg + " - client connection is closed.");
+            LOG.debug("{} - client connection is closed.", errMesg);
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);

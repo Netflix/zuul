@@ -16,18 +16,15 @@
 
 package com.netflix.zuul.passport;
 
-public class StartAndEnd
-{
+public class StartAndEnd {
     long startTime = -1;
     long endTime = -1;
 
-    public long getStart()
-    {
+    public long getStart() {
         return startTime;
     }
 
-    public long getEnd()
-    {
+    public long getEnd() {
         return endTime;
     }
 

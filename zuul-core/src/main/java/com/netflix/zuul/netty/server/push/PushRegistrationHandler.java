@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,7 +97,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("Exception caught, closing push channel for " + authEvent, cause);
+        logger.error("Exception caught, closing push channel for {}", authEvent, cause);
         ctx.close();
     }
 

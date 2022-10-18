@@ -32,8 +32,7 @@ import javax.net.ssl.SSLException;
  * Date: 1/31/17
  * Time: 11:43 PM
  */
-public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
-{
+public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer {
     private final SslContextFactory sslContextFactory;
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
@@ -75,8 +74,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception
-    {
+    protected void initChannel(Channel ch) throws Exception {
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(sslContextFactory.getProtocols());
 

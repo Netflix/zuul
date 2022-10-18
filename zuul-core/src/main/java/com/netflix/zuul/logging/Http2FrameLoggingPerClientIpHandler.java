@@ -26,14 +26,12 @@ import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
  * Be aware that this will only work correctly for devices connected _directly_ to Zuul - ie. connected
  * through an ELB TCP Listener. And not through FTL either.
  */
-public class Http2FrameLoggingPerClientIpHandler extends ChannelInboundHandlerAdapter
-{
+public class Http2FrameLoggingPerClientIpHandler extends ChannelInboundHandlerAdapter {
     private static DynamicStringSetProperty IPS = 
             new DynamicStringSetProperty("server.http2.frame.logging.ips", "");
     
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
             String clientIP = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
 

@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
  * Date: 2/24/15
  * Time: 10:54 AM
  */
-public class HttpResponseMessageImpl implements HttpResponseMessage
-{
+public class HttpResponseMessageImpl implements HttpResponseMessage {
     private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
     private static final Logger LOG = LoggerFactory.getLogger(HttpResponseMessageImpl.class);
@@ -46,13 +45,11 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     private int status;
     private HttpResponseInfo inboundResponse = null;
 
-    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status)
-    {
+    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status) {
         this(context, new Headers(), request, status);
     }
 
-    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
-    {
+    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status) {
         this.message = new ZuulMessageImpl(context, headers);
         this.outboundRequest = request;
         if (this.outboundRequest.getInboundRequest() == null) {
@@ -63,28 +60,24 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         this.status = status;
     }
 
-    public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
-    {
+    public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request) {
         final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }
 
     @Override
-    public Headers getHeaders()
-    {
+    public Headers getHeaders() {
         return message.getHeaders();
     }
 
     @Override
-    public SessionContext getContext()
-    {
+    public SessionContext getContext() {
         return message.getContext();
     }
 
     @Override
-    public void setHeaders(Headers newHeaders)
-    {
+    public void setHeaders(Headers newHeaders) {
         message.setHeaders(newHeaders);
     }
 
@@ -183,8 +176,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public Cookies parseSetCookieHeader(String setCookieValue)
-    {
+    public Cookies parseSetCookieHeader(String setCookieValue) {
         Cookies cookies = new Cookies();
         for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
             cookies.add(cookie);
@@ -193,8 +185,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public boolean hasSetCookieWithName(String cookieName)
-    {
+    public boolean hasSetCookieWithName(String cookieName) {
         boolean has = false;
         for (String setCookieValue : getHeaders().getAll(HttpHeaderNames.SET_COOKIE)) {
             for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
@@ -208,8 +199,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public boolean removeExistingSetCookie(String cookieName)
-    {
+    public boolean removeExistingSetCookie(String cookieName) {
         String cookieNamePrefix = cookieName + "=";
         boolean dirty = false;
         Headers filtered = new Headers();
@@ -240,20 +230,17 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public void addSetCookie(Cookie cookie)
-    {
+    public void addSetCookie(Cookie cookie) {
         getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
-    public void setSetCookie(Cookie cookie)
-    {
+    public void setSetCookie(Cookie cookie) {
         getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
-    public ZuulMessage clone()
-    {
+    public ZuulMessage clone() {
         // TODO - not sure if should be cloning the outbound request object here or not....
         HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
                 Headers.copyOf(getHeaders()),
@@ -264,8 +251,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         return clone;
     }
 
-    protected HttpResponseInfo copyResponseInfo()
-    {
+    protected HttpResponseInfo copyResponseInfo() {
         HttpResponseMessageImpl response =
                 new HttpResponseMessageImpl(
                         getContext(),
@@ -287,14 +273,12 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public void storeInboundResponse()
-    {
+    public void storeInboundResponse() {
         inboundResponse = copyResponseInfo();
     }
 
     @Override
-    public HttpResponseInfo getInboundResponse()
-    {
+    public HttpResponseInfo getInboundResponse() {
         return inboundResponse;
     }
 

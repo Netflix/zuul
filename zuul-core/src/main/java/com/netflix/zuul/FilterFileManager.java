@@ -72,15 +72,14 @@ public class FilterFileManager {
      * @throws Exception
      */
     @Inject
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
         long startTime = System.currentTimeMillis();
         
         filterLoader.putFiltersForClasses(config.getClassNames());
         manageFiles();
         startPoller();
         
-        LOG.warn("Finished loading all zuul filters. Duration = " + (System.currentTimeMillis() - startTime) + " ms.");
+        LOG.warn("Finished loading all zuul filters. Duration = {} ms.", System.currentTimeMillis() - startTime);
     }
 
     /**
@@ -103,7 +102,7 @@ public class FilterFileManager {
             public void run() {
                 while (bRunning) {
                     try {
-                        sleep(config.getPollingIntervalSeconds() * 1000);
+                        sleep(config.getPollingIntervalSeconds() * 1000L);
                         manageFiles();
                     }
                     catch (Exception e) {
@@ -128,7 +127,7 @@ public class FilterFileManager {
             try {
                 directory = new File(resource.toURI());
             } catch (Exception e) {
-                LOG.error("Error accessing directory in classloader. path=" + sPath, e);
+                LOG.error("Error accessing directory in classloader. path={}", sPath, e);
             }
             if (!directory.isDirectory()) {
                 throw new RuntimeException(directory.getAbsolutePath() + " is not a valid directory");
@@ -143,7 +142,7 @@ public class FilterFileManager {
      * @return
      */
     List<File> getFiles() {
-        List<File> list = new ArrayList<File>();
+        List<File> list = new ArrayList<>();
         for (String sDirectory : config.getDirectories()) {
             if (sDirectory != null) {
                 File directory = getDirectory(sDirectory);
@@ -173,7 +172,7 @@ public class FilterFileManager {
                     return filterLoader.putFilter(file);
                 }
                 catch(Exception e) {
-                    LOG.error("Error loading groovy filter from disk! file = " + String.valueOf(file), e);
+                    LOG.error("Error loading groovy filter from disk! file = {}", file, e);
                     return false;
                 }
             });
@@ -181,8 +180,7 @@ public class FilterFileManager {
         processFilesService.invokeAll(tasks, FILE_PROCESSOR_TASKS_TIMEOUT_SECS.get(), TimeUnit.SECONDS);
     }
 
-    void manageFiles()
-    {
+    void manageFiles() {
         try {
             List<File> aFiles = getFiles();
             processGroovyFiles(aFiles);
@@ -194,8 +192,7 @@ public class FilterFileManager {
         }
     }
 
-    public static class FilterFileManagerConfig
-    {
+    public static class FilterFileManagerConfig {
         private String[] directories;
         private String[] classNames;
         private int pollingIntervalSeconds;

@@ -23,8 +23,7 @@ import com.netflix.zuul.message.ZuulMessage;
  * Date: 7/15/15
  * Time: 5:36 PM
  */
-public interface HttpRequestMessage extends HttpRequestInfo
-{
+public interface HttpRequestMessage extends HttpRequestInfo {
     void setProtocol(String protocol);
 
     void setMethod(String method);

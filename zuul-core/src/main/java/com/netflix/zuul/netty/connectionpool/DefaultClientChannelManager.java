@@ -165,8 +165,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
-    public void init()
-    {
+    public void init() {
         // Load channel initializer and conn factory.
         // We don't do this within the constructor because some subclass may not be initialized until post-construct.
         this.channelInitializer = createChannelInitializer(clientConfig, connPoolConfig, spectatorRegistry);
@@ -262,14 +261,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 released = pool.release(conn);
             }
             else {
-                // The pool for this server no longer exists (maybe due to it failling out of
+                // The pool for this server no longer exists (maybe due to it failing out of
                 // discovery).
                 conn.setInPool(false);
                 released = false;
                 conn.close();
             }
 
-            if (LOG.isDebugEnabled()) LOG.debug("PooledConnection released: " + conn.toString());
+            if (LOG.isDebugEnabled()) LOG.debug("PooledConnection released: {}", conn.toString());
         }
 
         return released;
@@ -306,7 +305,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             return pool.remove(conn);
         }
         else {
-            // The pool for this server no longer exists (maybe due to it failling out of
+            // The pool for this server no longer exists (maybe due to it failing out of
             // discovery).
             conn.setInPool(false);
             connsInPool.decrementAndGet();

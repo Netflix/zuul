@@ -51,8 +51,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseServerStartup
-{
+public abstract class BaseServerStartup {
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
@@ -79,8 +78,7 @@ public abstract class BaseServerStartup
                              RequestCompleteHandler reqCompleteHandler, Registry registry,
                              DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
                              EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
-                             AccessLogPublisher accessLogPublisher)
-    {
+                             AccessLogPublisher accessLogPublisher) {
         this.serverStatusManager = serverStatusManager;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
@@ -94,14 +92,12 @@ public abstract class BaseServerStartup
         this.usageNotifier = usageNotifier;
     }
 
-    public Server server()
-    {
+    public Server server() {
         return server;
     }
 
     @Inject
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
         ChannelGroup clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
                 GlobalEventExecutor.INSTANCE, discoveryClient);
@@ -172,7 +168,7 @@ public abstract class BaseServerStartup
     public static int chooseIntChannelProperty(String listenAddressName, String propertySuffix, int defaultValue) {
         String globalPropertyName = "server." + propertySuffix;
         String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
-        Integer value = new DynamicIntProperty(listenAddressPropertyName, -999).get();
+        int value = new DynamicIntProperty(listenAddressPropertyName, -999).get();
         if (value == -999) {
             value = new DynamicIntProperty(globalPropertyName, -999).get();
             if (value == -999) {

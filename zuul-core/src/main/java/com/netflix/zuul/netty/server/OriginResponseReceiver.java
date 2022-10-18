@@ -202,7 +202,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         }
 
         if (msg instanceof HttpRequestMessage) {
-            promise.addListener((future) -> {
+            promise.addListener(future -> {
                 if (!future.isSuccess()) {
                     Throwable cause = ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).get();
                     if (cause != null) {
@@ -222,7 +222,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             super.write(ctx, buildOriginHttpRequest(zuulReq), promise);
         }
         else if (msg instanceof HttpContent) {
-            promise.addListener((future) -> {
+            promise.addListener(future -> {
                 if (!future.isSuccess()) {
                     fireWriteError("request content chunk", future.cause(), ctx);
                 }

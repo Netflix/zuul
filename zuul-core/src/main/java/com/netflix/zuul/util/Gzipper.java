@@ -32,8 +32,7 @@ import java.util.zip.GZIPOutputStream;
  * Date: 5/10/16
  * Time: 12:31 PM
  */
-public class Gzipper
-{
+public class Gzipper {
     private final ByteArrayOutputStream baos;
     private final GZIPOutputStream gzos;
 
@@ -43,7 +42,7 @@ public class Gzipper
             gzos = new GZIPOutputStream(baos, true);
         }
         catch (IOException e) {
-            throw new RuntimeException("Error finalizing the GzipOutputstream", e);
+            throw new RuntimeException("Error finalizing the GzipOutputStream", e);
         }
     }
 

@@ -29,15 +29,13 @@ import javax.inject.Inject;
  * Date: 6/4/15
  * Time: 4:26 PM
  */
-public class BasicRequestCompleteHandler implements RequestCompleteHandler
-{
+public class BasicRequestCompleteHandler implements RequestCompleteHandler {
     @Inject
     @Nullable
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
-    public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response)
-    {
+    public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response) {
         SessionContext context = inboundRequest.getContext();
 
         // Publish request-level metrics.

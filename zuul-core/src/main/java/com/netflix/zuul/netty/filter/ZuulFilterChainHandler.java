@@ -79,7 +79,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             requestFilterChain.filter(zuulRequest, (HttpContent) msg);
         }
         else {
-            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
+            LOG.debug("Received unrecognized message type. {}", msg.getClass().getName());
             ReferenceCountUtil.release(msg);
         }
     }
@@ -138,7 +138,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error("zuul filter chain handler caught exception. cause=" + String.valueOf(cause), cause);
+        LOG.error("zuul filter chain handler caught exception. cause={}", String.valueOf(cause), cause);
         if (zuulRequest != null && !isClientChannelClosed(cause)) {
             final SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.setError(cause);

@@ -129,9 +129,9 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                     }
                     else {
                         responseBeforeReceivedLastContentCounter.increment();
-                        LOG.warn("Writing response to client channel before have received the LastContent of request! "
-                                + zuulResponse.getInboundRequest().getInfoForLogging() + ", "
-                                + ChannelUtils.channelInfoForLogging(channel));
+                        LOG.warn("Writing response to client channel before have received the LastContent of request! {}, {}",
+                                zuulResponse.getInboundRequest().getInfoForLogging(),
+                                ChannelUtils.channelInfoForLogging(channel));
                     }
                 }
 
@@ -248,7 +248,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             }
             else {
                 if (isHandlingRequest) {
-                    LOG.debug("Received complete event while still handling the request. With reason: " + reason.name() + " -- " +
+                    LOG.debug("Received complete event while still handling the request. With reason: {} -- {}", reason.name(),
                             ChannelUtils.channelInfoForLogging(ctx.channel()));
                 }
                 ctx.close();
@@ -297,7 +297,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             LOG.error(errorMsg, cause);
         }
         else if (cause instanceof ReadTimeoutException) {
-            LOG.error(errorMsg + ", Read timeout fired");
+            LOG.error("{}, Read timeout fired", errorMsg);
             status = 504;
         }
         else {

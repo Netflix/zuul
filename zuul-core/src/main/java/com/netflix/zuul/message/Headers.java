@@ -43,6 +43,8 @@ import javax.annotation.Nullable;
  */
 public final class Headers {
     private static final int ABSENT = -1;
+    private static final String HEADER_NAME = "headerName";
+    private static final String VALUE = "value";
 
     private final List<String> originalNames;
     private final List<String> names;
@@ -72,7 +74,7 @@ public final class Headers {
      */
     @Nullable
     public String getFirst(String headerName) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         return getFirstNormal(normalName);
     }
 
@@ -82,7 +84,7 @@ public final class Headers {
      */
     @Nullable
     public String getFirst(HeaderName headerName) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         return getFirstNormal(normalName);
     }
 
@@ -126,7 +128,7 @@ public final class Headers {
      * Returns all header values associated with the name.
      */
     public List<String> getAll(String headerName) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         return getAllNormal(normalName);
     }
 
@@ -134,7 +136,7 @@ public final class Headers {
      * Returns all header values associated with the name.
      */
     public List<String> getAll(HeaderName headerName) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         return getAllNormal(normalName);
     }
 
@@ -172,7 +174,7 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void set(String headerName, @Nullable String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         setNormal(headerName, normalName, value);
     }
 
@@ -182,7 +184,7 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void set(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         setNormal(headerName.getName(), normalName, value);
     }
 
@@ -194,7 +196,7 @@ public final class Headers {
      * @throws ZuulException on invalid name or value
      */
     public void setAndValidate(String headerName, @Nullable String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         setNormal(validateField(headerName), validateField(normalName), validateField(value));
     }
 
@@ -204,7 +206,7 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void setIfValid(HeaderName headerName, String value) {
-        requireNonNull(headerName, "headerName");
+        requireNonNull(headerName, HEADER_NAME);
         if (isValid(headerName.getName()) && isValid(value)) {
             String normalName = headerName.getNormalised();
             setNormal(headerName.getName(), normalName, value);
@@ -217,7 +219,7 @@ public final class Headers {
      * If value is {@code null}, then not added, but any existing header of same name is removed.
      */
     public void setIfValid(String headerName, @Nullable String value) {
-        requireNonNull(headerName, "headerName");
+        requireNonNull(headerName, HEADER_NAME);
         if (isValid(headerName) && isValid(value)) {
             String normalName = HeaderName.normalize(headerName);
             setNormal(headerName, normalName, value);
@@ -232,7 +234,7 @@ public final class Headers {
      * @throws ZuulException on invalid name or value
      */
     public void setAndValidate(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         setNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
     }
 
@@ -292,8 +294,8 @@ public final class Headers {
      * @return if the value was successfully added.
      */
     public boolean setIfAbsent(String headerName, String value) {
-        requireNonNull(value, "value");
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        requireNonNull(value, VALUE);
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         return setIfAbsentNormal(headerName, normalName, value);
     }
 
@@ -304,8 +306,8 @@ public final class Headers {
      * @return if the value was successfully added.
      */
     public boolean setIfAbsent(HeaderName headerName, String value) {
-        requireNonNull(value, "value");
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        requireNonNull(value, VALUE);
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         return setIfAbsentNormal(headerName.getName(), normalName, value);
     }
 
@@ -325,8 +327,8 @@ public final class Headers {
      * @return if the value was successfully added.
      */
     public boolean setIfAbsentAndValid(String headerName, String value) {
-        requireNonNull(value, "value");
-        requireNonNull(headerName, "headerName");
+        requireNonNull(value, VALUE);
+        requireNonNull(headerName, HEADER_NAME);
         if (isValid(headerName) && isValid(value)) {
             String normalName = HeaderName.normalize(headerName);
             return setIfAbsentNormal(headerName, normalName, value);
@@ -341,8 +343,8 @@ public final class Headers {
      * @return if the value was successfully added.
      */
     public boolean setIfAbsentAndValid(HeaderName headerName, String value) {
-        requireNonNull(value, "value");
-        requireNonNull(headerName, "headerName");
+        requireNonNull(value, VALUE);
+        requireNonNull(headerName, HEADER_NAME);
         if (isValid(headerName.getName()) && isValid((value))) {
             String normalName = headerName.getNormalised();
             return setIfAbsentNormal(headerName.getName(), normalName, value);
@@ -354,8 +356,8 @@ public final class Headers {
      * Adds the name and value to the headers.
      */
     public void add(String headerName, String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
-        requireNonNull(value, "value");
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
+        requireNonNull(value, VALUE);
         addNormal(headerName, normalName, value);
     }
 
@@ -363,8 +365,8 @@ public final class Headers {
      * Adds the name and value to the headers.
      */
     public void add(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
-        requireNonNull(value, "value");
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
+        requireNonNull(value, VALUE);
         addNormal(headerName.getName(), normalName, value);
     }
 
@@ -374,8 +376,8 @@ public final class Headers {
      * @throws ZuulException on invalid name or value
      */
     public void addAndValidate(String headerName, String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
-        requireNonNull(value, "value");
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
+        requireNonNull(value, VALUE);
         addNormal(validateField(headerName), validateField(normalName), validateField(value));
     }
 
@@ -385,8 +387,8 @@ public final class Headers {
      * @throws ZuulException on invalid name or value
      */
     public void addAndValidate(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
-        requireNonNull(value, "value");
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
+        requireNonNull(value, VALUE);
         addNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
     }
 
@@ -394,8 +396,8 @@ public final class Headers {
      * Adds the name and value to the headers if valid
      */
     public void addIfValid(String headerName, String value) {
-        requireNonNull(headerName, "headerName");
-        requireNonNull(value, "value");
+        requireNonNull(headerName, HEADER_NAME);
+        requireNonNull(value, VALUE);
         if (isValid(headerName) && isValid(value)) {
             String normalName = HeaderName.normalize(headerName);
             addNormal(headerName, normalName, value);
@@ -406,8 +408,8 @@ public final class Headers {
      * Adds the name and value to the headers if valid
      */
     public void addIfValid(HeaderName headerName, String value) {
-        requireNonNull(headerName, "headerName");
-        requireNonNull(value, "value");
+        requireNonNull(headerName, HEADER_NAME);
+        requireNonNull(value, VALUE);
         if (isValid(headerName.getName()) && isValid(value)) {
             String normalName = headerName.getNormalised();
             addNormal(headerName.getName(), normalName, value);
@@ -427,7 +429,7 @@ public final class Headers {
      * Removes the header entries that match the given header name, and returns them as a list.
      */
     public List<String> remove(String headerName) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         return removeNormal(normalName);
     }
 
@@ -435,7 +437,7 @@ public final class Headers {
      * Removes the header entries that match the given header name, and returns them as a list.
      */
     public List<String> remove(HeaderName headerName) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         return removeNormal(normalName);
     }
 
@@ -501,7 +503,7 @@ public final class Headers {
      * Returns if there is a header entry that matches the given name.
      */
     public boolean contains(String headerName) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
         return findNormal(normalName) != ABSENT;
     }
 
@@ -509,7 +511,7 @@ public final class Headers {
      * Returns if there is a header entry that matches the given name.
      */
     public boolean contains(HeaderName headerName) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
         return findNormal(normalName) != ABSENT;
     }
 
@@ -517,8 +519,8 @@ public final class Headers {
      * Returns if there is a header entry that matches the given name and value.
      */
     public boolean contains(String headerName, String value) {
-        String normalName = HeaderName.normalize(requireNonNull(headerName, "headerName"));
-        requireNonNull(value, "value");
+        String normalName = HeaderName.normalize(requireNonNull(headerName, HEADER_NAME));
+        requireNonNull(value, VALUE);
         return containsNormal(normalName, value);
     }
 
@@ -526,8 +528,8 @@ public final class Headers {
      * Returns if there is a header entry that matches the given name and value.
      */
     public boolean contains(HeaderName headerName, String value) {
-        String normalName = requireNonNull(headerName, "headerName").getNormalised();
-        requireNonNull(value, "value");
+        String normalName = requireNonNull(headerName, HEADER_NAME).getNormalised();
+        requireNonNull(value, VALUE);
         return containsNormal(normalName, value);
     }
 

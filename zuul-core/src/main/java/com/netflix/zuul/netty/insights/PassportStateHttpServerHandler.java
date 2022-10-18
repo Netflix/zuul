@@ -35,16 +35,13 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 public final class PassportStateHttpServerHandler {
 
-    private static CurrentPassport passport(ChannelHandlerContext ctx)
-    {
+    private static CurrentPassport passport(ChannelHandlerContext ctx) {
         return CurrentPassport.fromChannel(ctx.channel());
     }
     
-    public static final class InboundHandler extends ChannelInboundHandlerAdapter
-    {
+    public static final class InboundHandler extends ChannelInboundHandlerAdapter {
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             // Get existing passport or create new if none already.
             CurrentPassport passport = passport(ctx);
             
@@ -71,8 +68,7 @@ public final class PassportStateHttpServerHandler {
         }
 
         @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-        {
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             try {
                 super.userEventTriggered(ctx, evt);
             }
@@ -84,11 +80,9 @@ public final class PassportStateHttpServerHandler {
         }
     }
 
-    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter
-    {
+    public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
         @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             CurrentPassport passport = passport(ctx);
             
             // Set into the SENDING state.

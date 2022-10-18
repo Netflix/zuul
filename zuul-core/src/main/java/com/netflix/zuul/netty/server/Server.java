@@ -90,8 +90,7 @@ import org.slf4j.LoggerFactory;
  * Date: 11/8/14
  * Time: 8:39 PM
  */
-public class Server
-{
+public class Server {
     /**
      * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
      * using the {@link #FORCE_NIO} property.
@@ -146,8 +145,7 @@ public class Server
      */
     @Deprecated
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
-                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
-    {
+                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics) {
         this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics,
                 new DefaultEventLoopConfig());
     }
@@ -193,8 +191,7 @@ public class Server
         LOG.info("Completed zuul shutdown.");
     }
 
-    public void start()
-    {
+    public void start() {
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
@@ -206,8 +203,8 @@ public class Server
                     : addressesToInitializers.entrySet()) {
                 NamedSocketAddress requestedNamedAddr = entry.getKey();
                 ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
-                Channel chan = nettyServerFuture.channel();
-                addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
+                Channel channel = nettyServerFuture.channel();
+                addressesToChannels.put(requestedNamedAddr.withNewSocket(channel.localAddress()), channel);
                 allBindFutures.add(nettyServerFuture);
             }
 
@@ -243,8 +240,7 @@ public class Server
     }
 
     @VisibleForTesting
-    public void waitForEachEventLoop() throws InterruptedException, ExecutionException
-    {
+    public void waitForEachEventLoop() throws InterruptedException, ExecutionException {
         for (EventExecutor exec : serverGroup.clientToProxyWorkerPool)
         {
             exec.submit(() -> {
@@ -254,8 +250,7 @@ public class Server
     }
 
     @VisibleForTesting
-    public void gracefullyShutdownConnections()
-    {
+    public void gracefullyShutdownConnections() {
         clientConnectionsShutdown.gracefullyShutdownClientChannels();
     }
 
@@ -271,7 +266,7 @@ public class Server
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
         channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
 
-        LOG.info("Proxy listening with " + serverGroup.channelType);
+        LOG.info("Proxy listening with {}", serverGroup.channelType);
         serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
@@ -287,7 +282,7 @@ public class Server
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
-        LOG.info("Binding to : " + listenAddress);
+        LOG.info("Binding to : {}", listenAddress);
 
         if (MANUAL_DISCOVERY_STATUS.get()) {
             // Flag status as UP just before binding to the port.
@@ -313,11 +308,9 @@ public class Server
      * @param clientToProxyWorkerPool - worker pool
      */
     public void postEventLoopCreationHook(EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {
-
     }
 
-    private final class ServerGroup
-    {
+    private final class ServerGroup {
         /** A name for this ServerGroup to use in naming threads. */
         private final String name;
         private final int acceptorThreads;
@@ -338,19 +331,15 @@ public class Server
             this.workerThreads = workerThreads;
             this.eventLoopGroupMetrics = eventLoopGroupMetrics;
 
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                public void uncaughtException(final Thread t, final Throwable e) {
-                    LOG.error("Uncaught throwable", e);
-                }
-            });
+            Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOG.error("Uncaught throwable", e));
 
             Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
-        private void initializeTransport()
-        {
+        private void initializeTransport() {
             // TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
             EventExecutorChooserFactory chooserFactory;
+            final String CLIENT_TO_ZUUL_ACCEPTOR = "-ClientToZuulAcceptor";
             if (USE_LEASTCONNS_FOR_EVENTLOOPS.get()) {
                 chooserFactory = new LeastConnsEventLoopChooserFactory(eventLoopGroupMetrics);
             } else {
@@ -368,7 +357,7 @@ public class Server
                 defaultOutboundChannelType.set(IOUringSocketChannel.class);
                 clientToProxyBossPool = new IOUringEventLoopGroup(
                         acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        new CategorizedThreadFactory(name + CLIENT_TO_ZUUL_ACCEPTOR));
                 clientToProxyWorkerPool = new IOUringEventLoopGroup(
                         workerThreads,
                         workerExecutor);
@@ -378,7 +367,7 @@ public class Server
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
                 clientToProxyBossPool = new EpollEventLoopGroup(
                         acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        new CategorizedThreadFactory(name + CLIENT_TO_ZUUL_ACCEPTOR));
                 clientToProxyWorkerPool = new EpollEventLoopGroup(
                         workerThreads,
                         workerExecutor,
@@ -389,7 +378,7 @@ public class Server
                 defaultOutboundChannelType.set(KQueueSocketChannel.class);
                 clientToProxyBossPool = new KQueueEventLoopGroup(
                         acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        new CategorizedThreadFactory(name + CLIENT_TO_ZUUL_ACCEPTOR));
                 clientToProxyWorkerPool = new KQueueEventLoopGroup(
                         workerThreads,
                         workerExecutor,
@@ -408,7 +397,7 @@ public class Server
                 elg.setIoRatio(90);
                 clientToProxyBossPool = new NioEventLoopGroup(
                         acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        new CategorizedThreadFactory(name + CLIENT_TO_ZUUL_ACCEPTOR));
                 clientToProxyWorkerPool = elg;
             }
 
@@ -417,8 +406,7 @@ public class Server
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
         }
 
-        synchronized private void stop()
-        {
+        private synchronized void stop() {
             LOG.info("Shutting down");
             if (stopped) {
                 LOG.info("Already stopped");
@@ -497,52 +485,55 @@ public class Server
     }
 
     private static boolean epollIsAvailable() {
+        String msg = "Epoll is unavailable, skipping";
         boolean available;
         try {
             available = Epoll.isAvailable();
         } catch (NoClassDefFoundError e) {
-            LOG.debug("Epoll is unavailable, skipping", e);
+            LOG.debug(msg, e);
             return false;
         } catch (RuntimeException | Error e) {
-            LOG.warn("Epoll is unavailable, skipping", e);
+            LOG.warn(msg, e);
             return false;
         }
         if (!available) {
-            LOG.debug("Epoll is unavailable, skipping", Epoll.unavailabilityCause());
+            LOG.debug(msg, Epoll.unavailabilityCause());
         }
         return available;
     }
 
     private static boolean ioUringIsAvailable() {
+        String msg = "io_uring is unavailable, skipping";
         boolean available;
         try {
             available = IOUring.isAvailable();
         } catch (NoClassDefFoundError e) {
-            LOG.debug("io_uring is unavailable, skipping", e);
+            LOG.debug(msg, e);
             return false;
         } catch (RuntimeException | Error e) {
-            LOG.warn("io_uring is unavailable, skipping", e);
+            LOG.warn(msg, e);
             return false;
         }
         if (!available) {
-            LOG.debug("io_uring is unavailable, skipping", IOUring.unavailabilityCause());
+            LOG.debug(msg, IOUring.unavailabilityCause());
         }
         return available;
     }
 
     private static boolean kqueueIsAvailable() {
+        String msg = "KQueue is unavailable, skipping";
         boolean available;
         try {
             available = KQueue.isAvailable();
         } catch (NoClassDefFoundError e) {
-            LOG.debug("KQueue is unavailable, skipping", e);
+            LOG.debug(msg, e);
             return false;
         } catch (RuntimeException | Error e) {
-            LOG.warn("KQueue is unavailable, skipping", e);
+            LOG.warn(msg, e);
             return false;
         }
         if (!available) {
-            LOG.debug("KQueue is unavailable, skipping", KQueue.unavailabilityCause());
+            LOG.debug(msg, KQueue.unavailabilityCause());
         }
         return available;
     }

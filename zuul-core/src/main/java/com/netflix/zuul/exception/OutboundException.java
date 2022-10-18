@@ -27,13 +27,11 @@ import com.netflix.zuul.niws.RequestAttempts;
  * Date: 10/21/15
  * Time: 11:46 AM
  */
-public class OutboundException extends ZuulException
-{
+public class OutboundException extends ZuulException {
     private final ErrorType outboundErrorType;
     private final RequestAttempts requestAttempts;
 
-    public OutboundException(ErrorType outboundErrorType, RequestAttempts requestAttempts)
-    {
+    public OutboundException(ErrorType outboundErrorType, RequestAttempts requestAttempts) {
         super(outboundErrorType.toString(), outboundErrorType.toString(), true);
         this.outboundErrorType = outboundErrorType;
         this.requestAttempts = requestAttempts;
@@ -41,8 +39,7 @@ public class OutboundException extends ZuulException
         this.dontLogAsError();
     }
 
-    public OutboundException(ErrorType outboundErrorType, RequestAttempts requestAttempts, Throwable cause)
-    {
+    public OutboundException(ErrorType outboundErrorType, RequestAttempts requestAttempts, Throwable cause) {
         super(outboundErrorType.toString(), cause.getMessage(), true);
         this.outboundErrorType = outboundErrorType;
         this.requestAttempts = requestAttempts;
@@ -50,14 +47,12 @@ public class OutboundException extends ZuulException
         this.dontLogAsError();
     }
 
-    public RequestAttempt getFinalRequestAttempt()
-    {
+    public RequestAttempt getFinalRequestAttempt() {
         return requestAttempts == null ? null : requestAttempts.getFinalAttempt();
     }
 
 
-    public ErrorType getOutboundErrorType()
-    {
+    public ErrorType getOutboundErrorType() {
         return outboundErrorType;
     }
 

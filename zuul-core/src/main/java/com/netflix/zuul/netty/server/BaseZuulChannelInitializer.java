@@ -77,8 +77,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 3/5/16
  * Time: 6:26 PM
  */
-public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Channel>
-{
+public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Channel> {
     public static final String HTTP_CODEC_HANDLER_NAME = "codec";
     public static final AttributeKey<ChannelConfig> ATTR_CHANNEL_CONFIG = AttributeKey.newInstance("channel_config");
 
@@ -212,8 +211,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.sourceAddressChannelHandler = new SourceAddressChannelHandler();
     }
 
-    protected void storeChannel(Channel ch)
-    {
+    protected void storeChannel(Channel ch) {
         this.channels.add(ch);
 
         // Also add the ChannelConfig as an attribute on each channel. So interested filters/channel-handlers can introspect
@@ -226,8 +224,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast(new ServerStateHandler.OutboundHandler(registry));
     }
     
-    protected void addTcpRelatedHandlers(ChannelPipeline pipeline)
-    {
+    protected void addTcpRelatedHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(sourceAddressChannelHandler);
         pipeline.addLast(perEventLoopConnectionMetricsHandler);
         new ElbProxyProtocolChannelHandler(registry, withProxyProtocol).addProxyProtocol(pipeline);
@@ -235,8 +232,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast(maxConnectionsHandler);
     }
 
-    protected void addHttp1Handlers(ChannelPipeline pipeline)
-    {
+    protected void addHttp1Handlers(ChannelPipeline pipeline) {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
 
         pipeline.addLast(new Http1ConnectionCloseHandler());
@@ -244,8 +240,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
                 new Http1ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry));
     }
 
-    protected HttpServerCodec createHttpServerCodec()
-    {
+    protected HttpServerCodec createHttpServerCodec() {
         return new HttpServerCodec(
                 MAX_INITIAL_LINE_LENGTH.get(),
                 MAX_HEADER_SIZE.get(),
@@ -254,8 +249,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         );
     }
     
-    protected void addHttpRelatedHandlers(ChannelPipeline pipeline)
-    {
+    protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new PassportStateHttpServerHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpServerHandler.OutboundHandler());
         if (httpRequestReadTimeout > -1) {
@@ -291,8 +285,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast("ssl_info", new SslHandshakeInfoHandler(registry, isSSlFromIntermediary));
     }
 
-    protected void addSslClientCertChecks(ChannelPipeline pipeline)
-    {
+    protected void addSslClientCertChecks(ChannelPipeline pipeline) {
         if (channelConfig.get(ZuulDependencyKeys.SSL_CLIENT_CERT_CHECK_REQUIRED)) {
             if (this.sslClientCertCheckChannelHandler == null) {
                 throw new IllegalArgumentException("A sslClientCertCheckChannelHandler is required!");
@@ -301,8 +294,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         }
     }
 
-    protected void addZuulHandlers(final ChannelPipeline pipeline)
-    {
+    protected void addZuulHandlers(final ChannelPipeline pipeline) {
         pipeline.addLast("logger", nettyLogger);
         pipeline.addLast(new ClientRequestReceiver(sessionContextDecorator));
         pipeline.addLast(passportLoggingHandler);

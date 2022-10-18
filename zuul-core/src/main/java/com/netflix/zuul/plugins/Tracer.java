@@ -59,7 +59,7 @@ public class Tracer extends TracerFactory {
     }
 
     private static String getHostName() {
-        return (loadAddress() != null) ? loadAddress().getHostName() : "unkownHost";
+        return (loadAddress() != null) ? loadAddress().getHostName() : "unknownHost";
     }
 
     private static String getIp() {

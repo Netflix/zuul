@@ -37,8 +37,7 @@ import java.util.function.Consumer;
  * TODO - can this be done when we create the Http2StreamChannelBootstrap instead now?
  */
 @ChannelHandler.Sharable
-public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
-{
+public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
     private static final Http2StreamHeaderCleaner http2StreamHeaderCleaner = new Http2StreamHeaderCleaner();
     private static final Http2ResetFrameHandler http2ResetFrameHandler = new Http2ResetFrameHandler();
     private static final Http2StreamErrorHandler http2StreamErrorHandler = new Http2StreamErrorHandler();
@@ -53,8 +52,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     public Http2StreamInitializer(Channel parent, Consumer<ChannelPipeline> addHttpHandlerFn,
                                   Http2MetricsChannelHandlers http2MetricsChannelHandlers,
                                   Http2ConnectionCloseHandler connectionCloseHandler,
-                                  Http2ConnectionExpiryHandler connectionExpiryHandler)
-    {
+                                  Http2ConnectionExpiryHandler connectionExpiryHandler) {
         this.parent = parent;
         this.addHttpHandlerFn = addHttpHandlerFn;
 
@@ -64,8 +62,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception
-    {
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         copyAttrsFromParentChannel(this.parent, ctx.channel());
 
         addHttp2StreamSpecificHandlers(ctx.pipeline());
@@ -74,8 +71,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         ctx.pipeline().remove(this);
     }
 
-    protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline)
-    {
+    protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline) {
         pipeline.addLast("h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
         pipeline.addLast("h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
         pipeline.addLast("h2_max_requests_per_conn", connectionExpiryHandler);
@@ -88,8 +84,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         pipeline.addLast(new Http2ContentLengthEnforcingHandler());
     }
 
-    protected void copyAttrsFromParentChannel(Channel parent, Channel child)
-    {
+    protected void copyAttrsFromParentChannel(Channel parent, Channel child) {
         AttributeKey[] attributesToCopy = {
                 SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
                 SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
@@ -113,8 +108,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         }
     }
 
-    protected void copyAttrFromParentChannel(Channel parent, Channel child, AttributeKey key)
-    {
+    protected void copyAttrFromParentChannel(Channel parent, Channel child, AttributeKey key) {
         child.attr(key).set(parent.attr(key).get());
     }
 }

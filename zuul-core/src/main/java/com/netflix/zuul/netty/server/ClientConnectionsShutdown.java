@@ -23,13 +23,11 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.StatusChangeEvent;
 import com.netflix.netty.common.ConnectionCloseChannelAttributes;
 import com.netflix.netty.common.ConnectionCloseType;
-import com.netflix.netty.common.HttpChannelFlags;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.PromiseCombiner;
@@ -48,8 +46,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 3/6/17
  * Time: 12:36 PM
  */
-public class ClientConnectionsShutdown
-{
+public class ClientConnectionsShutdown {
     private static final Logger LOG = LoggerFactory.getLogger(ClientConnectionsShutdown.class);
     private static final DynamicBooleanProperty ENABLED = new DynamicBooleanProperty("server.outofservice.connections.shutdown", false);
     private static final DynamicIntProperty DELAY_AFTER_OUT_OF_SERVICE_MS =
@@ -59,8 +56,7 @@ public class ClientConnectionsShutdown
     private final EventExecutor executor;
     private final EurekaClient discoveryClient;
 
-    public ClientConnectionsShutdown(ChannelGroup channels, EventExecutor executor, EurekaClient discoveryClient)
-    {
+    public ClientConnectionsShutdown(ChannelGroup channels, EventExecutor executor, EurekaClient discoveryClient) {
         this.channels = channels;
         this.executor = executor;
         this.discoveryClient = discoveryClient;
@@ -79,13 +75,12 @@ public class ClientConnectionsShutdown
 //        });
     }
 
-    private void initDiscoveryListener()
-    {
+    private void initDiscoveryListener() {
         this.discoveryClient.registerEventListener(event -> {
             if (event instanceof StatusChangeEvent) {
                 StatusChangeEvent sce = (StatusChangeEvent) event;
 
-                LOG.info("Received " + sce.toString());
+                LOG.info("Received {}", sce.toString());
 
                 if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP
                     && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN))
@@ -94,9 +89,7 @@ public class ClientConnectionsShutdown
 
                     // Schedule to gracefully close all the client connections.
                     if (ENABLED.get()) {
-                        executor.schedule(() -> {
-                            gracefullyShutdownClientChannels();
-                        }, DELAY_AFTER_OUT_OF_SERVICE_MS.get(), TimeUnit.MILLISECONDS);
+                        executor.schedule(this::gracefullyShutdownClientChannels, DELAY_AFTER_OUT_OF_SERVICE_MS.get(), TimeUnit.MILLISECONDS);
                     }
                 }
             }
@@ -106,18 +99,15 @@ public class ClientConnectionsShutdown
     /**
      * Note this blocks until all the channels have finished closing.
      */
-    public void gracefullyShutdownClientChannels()
-    {
+    public void gracefullyShutdownClientChannels() {
         LOG.warn("Gracefully shutting down all client channels");
         try {
 
-
             // Mark all active connections to be closed after next response sent.
-            LOG.warn("Flagging CLOSE_AFTER_RESPONSE on " + channels.size() + " client channels.");
+            LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
             // Pick some arbitrary executor.
             PromiseCombiner closeAfterPromises = new PromiseCombiner(ImmediateEventExecutor.INSTANCE);
-            for (Channel channel : channels)
-            {
+            for (Channel channel : channels) {
                 ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
 
                 ChannelPromise closePromise = channel.pipeline().newPromise();
@@ -141,13 +131,13 @@ public class ClientConnectionsShutdown
                 }
             });
 
-            LOG.warn("Waiting for " + forceCloseFutures.size() + " client channels to be closed.");
+            LOG.warn("Waiting for {} client channels to be closed.", forceCloseFutures.size());
             PromiseCombiner closePromisesCombiner = new PromiseCombiner(ImmediateEventExecutor.INSTANCE);
             closePromisesCombiner.addAll(forceCloseFutures.toArray(new ChannelFuture[0]));
             Promise<Void> combinedClosePromise = executor.newPromise();
             closePromisesCombiner.finish(combinedClosePromise);
             combinedClosePromise.await(5, TimeUnit.SECONDS);
-            LOG.warn(forceCloseFutures.size() + " client channels closed.");
+            LOG.warn("{} client channels closed.", forceCloseFutures.size());
         }
         catch (InterruptedException ie) {
             LOG.warn("Interrupted while shutting down client channels");

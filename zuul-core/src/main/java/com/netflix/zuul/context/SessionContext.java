@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 /**
@@ -105,8 +104,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         }
     }
 
-    public SessionContext()
-    {
+    public SessionContext() {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
         super(INITIAL_SIZE);
@@ -221,14 +219,12 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Makes a copy of the RequestContext. This is used for debugging.
      */
     @Override
-    public SessionContext clone()
-    {
+    public SessionContext clone() {
         // TODO(carl-mastrangelo): copy over the type safe keys
         return (SessionContext) super.clone();
     }
 
-    public String getString(String key)
-    {
+    public String getString(String key) {
         return (String) get(key);
     }
 
@@ -247,9 +243,9 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * @return true or false depending what was set. default defaultResponse
      */
     public boolean getBoolean(String key, boolean defaultResponse) {
-        Boolean b = (Boolean) get(key);
-        if (b != null) {
-            return b.booleanValue();
+        Boolean booleanValue = (Boolean) get(key);
+        if (booleanValue != null) {
+            return booleanValue;
         }
         return defaultResponse;
     }
@@ -270,12 +266,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         else remove(key);
     }
 
-    public String getUUID()
-    {
+    public String getUUID() {
         return getString(KEY_UUID);
     }
-    public void setUUID(String uuid)
-    {
+    public void setUUID(String uuid) {
         set(KEY_UUID, uuid);
     }
 
@@ -292,7 +286,6 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     public Throwable getError() {
         return (Throwable) get("_error");
-
     }
 
     /**
@@ -300,12 +293,12 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     public void setError(Throwable th) {
         put("_error", th);
-
     }
 
     public String getErrorEndpoint() {
         return (String) get("_error-endpoint");
     }
+
     public void setErrorEndpoint(String name) {
         put("_error-endpoint", name);
     }
@@ -423,13 +416,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * to disable/sample/rate-limit some optional features.
      *
      */
-    public boolean isInBrownoutMode()
-    {
+    public boolean isInBrownoutMode() {
         return brownoutMode;
     }
 
-    public void setInBrownoutMode()
-    {
+    public void setInBrownoutMode() {
         this.brownoutMode = true;
     }
 
@@ -460,13 +451,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         set(KEY_VIP, sVip);
     }
 
-    public void setEndpoint(String endpoint)
-    {
+    public void setEndpoint(String endpoint) {
         put(KEY_ENDPOINT, endpoint);
     }
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return (String) get(KEY_ENDPOINT);
     }
 
@@ -482,13 +471,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         return (List<FilterError>) get(KEY_FILTER_ERRORS);
     }
 
-    public void setOriginReportedDuration(int duration)
-    {
+    public void setOriginReportedDuration(int duration) {
         put("_originReportedDuration", duration);
     }
 
-    public int getOriginReportedDuration()
-    {
+    public int getOriginReportedDuration() {
         Object value = get("_originReportedDuration");
         if (value != null) {
             return (Integer) value;

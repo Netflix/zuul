@@ -23,8 +23,7 @@ import io.netty.handler.codec.http.Cookie;
  * Date: 7/16/15
  * Time: 12:45 AM
  */
-public interface HttpResponseMessage extends HttpResponseInfo
-{
+public interface HttpResponseMessage extends HttpResponseInfo {
     void setStatus(int status);
 
     @Override

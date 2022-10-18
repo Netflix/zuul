@@ -45,8 +45,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  * @author Mike Smith
  */
 @Filter(order = 110, type = FilterType.OUTBOUND)
-public class GZipResponseFilter extends HttpOutboundSyncFilter
-{
+public class GZipResponseFilter extends HttpOutboundSyncFilter {
     private static DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty("zuul.gzip.contenttypes",
             "text/html,application/x-javascript,text/css,application/javascript,text/javascript,text/plain,text/xml," +
                     "application/json,application/vnd.ms-fontobject,application/x-font-opentype,application/x-font-truetype," +
@@ -70,17 +69,17 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
             return true;
         }
 
-        // A flag on SessionContext can be set to override normal mechanism of checking if client accepts gzip.;
+        // A flag on SessionContext can be set to override normal mechanism of checking if client accepts gzip.
         final HttpRequestInfo request = response.getInboundRequest();
         final Boolean overrideIsGzipRequested = (Boolean) response.getContext().get(CommonContextKeys.OVERRIDE_GZIP_REQUESTED);
         final boolean isGzipRequested = (overrideIsGzipRequested == null) ?
-                HttpUtils.acceptsGzip(request.getHeaders()) :  overrideIsGzipRequested.booleanValue();
+                HttpUtils.acceptsGzip(request.getHeaders()) : overrideIsGzipRequested;
 
         // Check the headers to see if response is already gzipped.
         final Headers respHeaders = response.getHeaders();
         boolean isResponseCompressed = HttpUtils.isCompressed(respHeaders);
 
-        // Decide what to do.;
+        // Decide what to do.
         final boolean shouldGzip = isGzippableContentType(response) && isGzipRequested && !isResponseCompressed && isRightSizeForGzip(response);
         if (shouldGzip) {
             response.getContext().set(CommonContextKeys.GZIPPER, getGzipper());
@@ -96,7 +95,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
     boolean isRightSizeForGzip(HttpResponseMessage response) {
         final Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
         //bodySize == null is chunked encoding which is eligible for gzip compression
-        return (bodySize == null) || (bodySize.intValue() >= MIN_BODY_SIZE_FOR_GZIP.get());
+        return (bodySize == null) || (bodySize >= MIN_BODY_SIZE_FOR_GZIP.get());
     }
 
     @Override

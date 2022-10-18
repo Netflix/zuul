@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,8 +58,7 @@ public class PushConnectionRegistry {
     }
 
     public PushConnection remove(final String clientId) {
-        final PushConnection pc = clientPushConnectionMap.remove(clientId);
-        return pc;
+        return clientPushConnectionMap.remove(clientId);
     }
 
     public int size() {
