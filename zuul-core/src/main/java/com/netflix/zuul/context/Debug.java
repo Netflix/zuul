@@ -19,6 +19,7 @@ import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseInfo;
+import io.netty.util.ReferenceCounted;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -131,11 +132,13 @@ public class Debug {
             if ((!key.equals("routingDebug") && !key.equals("requestDebug"))) {
                 Object newValue = context.get(key);
                 Object oldValue = copy.get(key);
-                if (oldValue == null && newValue != null) {
-                    addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
-                } else if (oldValue != null && newValue != null) {
-                    if (!(oldValue.equals(newValue))) {
-                        addRoutingDebug(context, "{" +filterName + "} changed " + key + "=" + newValue.toString());
+                if (!(newValue instanceof ReferenceCounted) && !(oldValue instanceof ReferenceCounted)) {
+                    if (oldValue == null && newValue != null) {
+                        addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
+                    } else if (oldValue != null && newValue != null) {
+                        if (!(oldValue.equals(newValue))) {
+                            addRoutingDebug(context, "{" +filterName + "} changed " + key + "=" + newValue.toString());
+                        }
                     }
                 }
             }
