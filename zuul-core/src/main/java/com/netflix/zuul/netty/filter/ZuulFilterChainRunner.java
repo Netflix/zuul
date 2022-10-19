@@ -115,10 +115,10 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
                         //Filter wants to break the chain and stop propagating this chunk any further
                         return;
                     }
-                    chunk.touch("Filter runner processing newChunk, filter: " + filter.filterName() +
-                            ",  message: " + inMesg);
                     //deallocate original chunk if necessary
                     if ((newChunk != chunk) && (chunk.refCnt() > 0)) {
+                        chunk.touch("Filter runner processing newChunk, filter: " + filter.filterName() +
+                                ",  message: " + inMesg);
                         chunk.release(chunk.refCnt());
                     }
                     chunk = newChunk;
