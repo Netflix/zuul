@@ -67,7 +67,7 @@ public final class DirectMemoryMonitor {
 
     private static double getReservedMemory(Object discard) {
         try {
-            return PlatformDependent.maxDirectMemory();
+            return PlatformDependent.usedDirectMemory();
         } catch (Throwable e) {
             LOG.warn("Error in DirectMemoryMonitor task.", e);
         }
@@ -76,7 +76,7 @@ public final class DirectMemoryMonitor {
 
     private static double getMaxMemory(Object discard) {
         try {
-            return PlatformDependent.usedDirectMemory();
+            return PlatformDependent.maxDirectMemory();
         } catch (Throwable e) {
             LOG.warn("Error in DirectMemoryMonitor task.", e);
         }
