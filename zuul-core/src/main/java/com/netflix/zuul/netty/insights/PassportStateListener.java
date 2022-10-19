@@ -48,8 +48,12 @@ public class PassportStateListener implements GenericFutureListener
             passport.add(successState);
         }
         else {
-            if (failState != null)
-                passport.add(failState);
+            if (failState != null) {
+                // only capture a single failure state event,
+                // as sending content errors will fire for all content chunks,
+                // and we only need the first one
+                passport.addIfNotAlready(failState);
+            }
         }
     }
 }
