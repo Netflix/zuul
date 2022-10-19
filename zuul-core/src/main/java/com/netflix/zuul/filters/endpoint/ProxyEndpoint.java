@@ -301,11 +301,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (originConn != null) {
             //Connected to origin, stream request body without buffering
             proxiedRequestWithoutBuffering = true;
+            chunk.touch("ProxyEndpoint writing chunk to origin");
             originConn.getChannel().writeAndFlush(chunk);
             return null;
         }
 
         //Not connected to origin yet, let caller buffer the request body
+        chunk.touch("ProxyEndpoint buffering chunk to origin");
         return chunk;
     }
 
@@ -334,8 +336,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     public void invokeNext(final HttpContent chunk) {
         try {
+            chunk.touch("ProxyEndpoint received chunk from origin, request: " + zuulRequest.getPath());
             methodBinding.bind(() -> filterResponseChunk(chunk));
         } catch (Exception ex) {
+            chunk.touch("ProxyEndpoint exception processing chunk from origin, request: " + zuulRequest.getPath());
             unlinkFromOrigin();
             LOG.error("Error in invokeNext content", ex);
             channelCtx.fireExceptionCaught(ex);
