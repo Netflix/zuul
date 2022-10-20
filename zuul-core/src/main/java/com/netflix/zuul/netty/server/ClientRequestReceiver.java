@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -458,11 +459,14 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         final String errMesg = String.format("Error writing %s to client", requestPart);
 
         if (cause instanceof java.nio.channels.ClosedChannelException ||
-                cause instanceof Errors.NativeIoException) {
+                cause instanceof Errors.NativeIoException ||
+                cause instanceof SSLException ||
+                (cause.getCause() != null && cause.getCause() instanceof SSLException)) {
             LOG.debug(errMesg + " - client connection is closed.");
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
-                StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
+                StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
             }
         }
         else {
