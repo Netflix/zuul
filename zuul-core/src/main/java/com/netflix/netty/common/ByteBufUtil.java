@@ -18,7 +18,6 @@ package com.netflix.netty.common;
 
 import static io.netty.util.ResourceLeakDetector.Level.ADVANCED;
 import static io.netty.util.ResourceLeakDetector.Level.PARANOID;
-import com.google.common.collect.Lists;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.ResourceLeakDetector;
@@ -32,7 +31,7 @@ import io.netty.util.ResourceLeakDetector;
 public class ByteBufUtil {
 
     private static final boolean isAdvancedLeakDetection =
-            Lists.newArrayList(PARANOID, ADVANCED).contains(ResourceLeakDetector.getLevel());
+            ResourceLeakDetector.getLevel() == PARANOID || ResourceLeakDetector.getLevel() == ADVANCED;
 
     public static void touch(ReferenceCounted byteBuf, String hint, ZuulMessage msg) {
         if (isAdvancedLeakDetection) {
