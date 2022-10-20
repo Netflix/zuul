@@ -75,9 +75,11 @@ public class IntegrationTest {
                 CustomLeakDetector.class.getCanonicalName());
     }
 
+
     static private Bootstrap bootstrap;
     static private final int ZUUL_SERVER_PORT = findAvailableTcpPort();
 
+    static private final Duration CLIENT_READ_TIMEOUT = Duration.ofMillis(3000);
     static private final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String path;
@@ -126,7 +128,7 @@ public class IntegrationTest {
     private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
         return new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.MILLISECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(CLIENT_READ_TIMEOUT)
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .retryOnConnectionFailure(false)
@@ -303,6 +305,24 @@ public class IntegrationTest {
 
         verify(1, getRequestedFor(urlEqualTo(path)));
         verify(0, postRequestedFor(anyUrl()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("arguments")
+    void httpGet_ServerChunkedDribbleDelay(final String description, final OkHttpClient okHttp) throws Exception {
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                get(path)
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withBody("Hello world, is anybody listening?")
+                                        .withChunkedDribbleDelay(10, (int) CLIENT_READ_TIMEOUT.toMillis() + 500)));
+
+        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Response response = okHttp.newCall(request).execute();
+        assertThat(response.code()).isEqualTo(200);
+        response.close();
     }
 
     private static String randomPath() {
