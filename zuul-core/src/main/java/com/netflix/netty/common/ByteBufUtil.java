@@ -31,7 +31,7 @@ import io.netty.util.ResourceLeakDetector;
 public class ByteBufUtil {
 
     private static final boolean isAdvancedLeakDetection =
-            ResourceLeakDetector.getLevel() == PARANOID || ResourceLeakDetector.getLevel() == ADVANCED;
+            ResourceLeakDetector.getLevel().ordinal() >= ResourceLeakDetector.Level.ADVANCED.ordinal();
 
     public static void touch(ReferenceCounted byteBuf, String hint, ZuulMessage msg) {
         if (isAdvancedLeakDetection) {
