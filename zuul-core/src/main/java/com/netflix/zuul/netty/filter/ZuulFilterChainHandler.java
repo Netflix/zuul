@@ -98,6 +98,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         }
         else if (evt instanceof RequestCancelledEvent) {
             if (zuulRequest != null) {
+                zuulRequest.getContext().cancel();
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(), FAILURE_CLIENT_CANCELLED);
             }
             fireEndpointFinish(true);
@@ -112,6 +113,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         }
         else {
             final SessionContext zuulCtx = zuulRequest.getContext();
+            zuulRequest.getContext().cancel();
             StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, statusCategory);
             final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, status);
             final Headers headers = zuulResponse.getHeaders();

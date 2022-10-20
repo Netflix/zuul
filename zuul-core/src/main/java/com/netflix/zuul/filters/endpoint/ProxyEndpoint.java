@@ -348,6 +348,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void filterResponseChunk(final HttpContent chunk) {
+        if (context.isCancelled() || !channelCtx.channel().isActive()) {
+            SpectatorUtils.newCounter("zuul.origin.strayChunk",
+                    origin == null ? "none" : origin.getName().getMetricId()).increment();
+            unlinkFromOrigin();
+            ReferenceCountUtil.safeRelease(chunk);
+            return;
+        }
+
         if (chunk instanceof LastHttpContent) {
             unlinkFromOrigin();
         }
