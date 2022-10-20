@@ -134,8 +134,10 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
                     getEndpoint(zuulReq), "endpoint");
             endpointName = endpoint.filterName();
 
+            chunk.touch("Endpoint processing chunk, ZuulMessage: " + zuulReq);
             final HttpContent newChunk = endpoint.processContentChunk(zuulReq, chunk);
             if (newChunk != null) {
+                newChunk.touch("Endpoint buffering newChunk, ZuulMessage: " + zuulReq);
                 //Endpoints do not directly forward content chunks to next stage in the filter chain.
                 zuulReq.bufferBodyContents(newChunk);
 
@@ -146,6 +148,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
                 if (isFilterAwaitingBody(zuulReq) && zuulReq.hasCompleteBody() && !(endpoint instanceof ProxyEndpoint)) {
                     //whole body has arrived, resume filter chain
+                    newChunk.touch("Endpoint body complete, resume chain, ZuulMessage: " + zuulReq);
                     invokeNextStage(filter(endpoint, zuulReq));
                 }
             }

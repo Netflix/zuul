@@ -108,6 +108,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
                 final ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
                 if ((! filter.isDisabled()) && (! shouldSkipFilter(inMesg, filter))) {
+                    chunk.touch("Filter runner processing chunk, filter: " + filter.filterName());
                     final HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
                     if (newChunk == null)  {
                         //Filter wants to break the chain and stop propagating this chunk any further
@@ -115,6 +116,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
                     }
                     //deallocate original chunk if necessary
                     if ((newChunk != chunk) && (chunk.refCnt() > 0)) {
+                        chunk.touch("Filter runner processing newChunk, filter: " + filter.filterName());
                         chunk.release(chunk.refCnt());
                     }
                     chunk = newChunk;
@@ -123,8 +125,10 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
             if (limit >= filters.length) {
                 //Filter chain has run to end, pass down the channel pipeline
+                chunk.touch("Filter runner chain complete, message: " + inMesg);
                 invokeNextStage(inMesg, chunk);
             } else {
+                chunk.touch("Filter runner buffering chunk, message: " + inMesg);
                 inMesg.bufferBodyContents(chunk);
 
                 boolean isAwaitingBody = isFilterAwaitingBody(inMesg);
@@ -150,6 +154,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
                 if (isAwaitingBody && inMesg.hasCompleteBody()) {
                     //whole body has arrived, resume filter chain
+                    chunk.touch("Filter body complete, resume chain, ZuulMessage: " + inMesg);
                     runFilters(inMesg, runningFilterIdx);
                 }
             }

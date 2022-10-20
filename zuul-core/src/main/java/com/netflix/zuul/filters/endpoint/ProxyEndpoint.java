@@ -92,6 +92,7 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -301,11 +302,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (originConn != null) {
             //Connected to origin, stream request body without buffering
             proxiedRequestWithoutBuffering = true;
+            chunk.touch("ProxyEndpoint writing chunk to origin, request: " + zuulReq);
             originConn.getChannel().writeAndFlush(chunk);
             return null;
         }
 
         //Not connected to origin yet, let caller buffer the request body
+        chunk.touch("ProxyEndpoint buffering chunk to origin, request: " + zuulReq);
         return chunk;
     }
 
@@ -334,8 +337,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     public void invokeNext(final HttpContent chunk) {
         try {
+            chunk.touch("ProxyEndpoint received chunk from origin, request: " + zuulRequest);
             methodBinding.bind(() -> filterResponseChunk(chunk));
         } catch (Exception ex) {
+            chunk.touch("ProxyEndpoint exception processing chunk from origin, request: " + zuulRequest);
             unlinkFromOrigin();
             LOG.error("Error in invokeNext content", ex);
             channelCtx.fireExceptionCaught(ex);
