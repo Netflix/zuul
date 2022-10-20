@@ -115,8 +115,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         return (AtomicInteger) Preconditions.checkNotNull(ctx.get(RUNNING_FILTER_IDX_SESSION_CTX_KEY), "runningFilterIndex");
     }
 
-    protected final boolean isFilterAwaitingBody(I zuulMesg) {
-        return zuulMesg.getContext().containsKey(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
+    protected final boolean isFilterAwaitingBody(SessionContext context) {
+        return context.containsKey(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
     }
 
     protected final void setFilterAwaitingBody(I zuulMesg, boolean flag) {

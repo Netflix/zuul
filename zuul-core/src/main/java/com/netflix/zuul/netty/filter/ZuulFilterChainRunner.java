@@ -131,7 +131,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
                 chunk.touch("Filter runner buffering chunk, message: " + inMesg);
                 inMesg.bufferBodyContents(chunk);
 
-                boolean isAwaitingBody = isFilterAwaitingBody(inMesg);
+                boolean isAwaitingBody = isFilterAwaitingBody(inMesg.getContext());
 
                 // Record passport states for start and end of buffering bodies.
                 if (isAwaitingBody) {

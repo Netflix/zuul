@@ -146,7 +146,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
                     chunk.release();
                 }
 
-                if (isFilterAwaitingBody(zuulReq) && zuulReq.hasCompleteBody() && !(endpoint instanceof ProxyEndpoint)) {
+                if (isFilterAwaitingBody(zuulReq.getContext()) && zuulReq.hasCompleteBody() && !(endpoint instanceof ProxyEndpoint)) {
                     //whole body has arrived, resume filter chain
                     newChunk.touch("Endpoint body complete, resume chain, ZuulMessage: " + zuulReq);
                     invokeNextStage(filter(endpoint, zuulReq));
