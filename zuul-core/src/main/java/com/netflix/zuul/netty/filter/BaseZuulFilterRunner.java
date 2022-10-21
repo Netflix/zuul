@@ -34,6 +34,7 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
@@ -115,8 +116,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         return (AtomicInteger) Preconditions.checkNotNull(ctx.get(RUNNING_FILTER_IDX_SESSION_CTX_KEY), "runningFilterIndex");
     }
 
-    protected final boolean isFilterAwaitingBody(I zuulMesg) {
-        return zuulMesg.getContext().containsKey(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
+    protected final boolean isFilterAwaitingBody(SessionContext context) {
+        return context.containsKey(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
     }
 
     protected final void setFilterAwaitingBody(I zuulMesg, boolean flag) {
@@ -140,7 +141,15 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             try (TaskCloseable ignored =
                     traceTask(this, s -> s.getClass().getSimpleName() + ".fireChannelReadChunk")) {
                 addPerfMarkTags(zuulMesg);
-                getChannelHandlerContext(zuulMesg).fireChannelRead(chunk);
+                ChannelHandlerContext channelHandlerContext = getChannelHandlerContext(zuulMesg);
+                if (!channelHandlerContext.channel().isActive()) {
+                    zuulMesg.getContext().cancel();
+                    zuulMesg.disposeBufferedBody();
+                    SpectatorUtils.newCounter("zuul.filterChain.chunk.hanging",
+                            zuulMesg.getClass().getSimpleName()).increment();
+                } else {
+                    channelHandlerContext.fireChannelRead(chunk);
+                }
             }
         }
     }
@@ -157,7 +166,16 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             try (TaskCloseable ignored =
                     traceTask(this, s -> s.getClass().getSimpleName() + ".fireChannelRead")) {
                 addPerfMarkTags(zuulMesg);
-                getChannelHandlerContext(zuulMesg).fireChannelRead(zuulMesg);
+                ChannelHandlerContext channelHandlerContext = getChannelHandlerContext(zuulMesg);
+                if (!channelHandlerContext.channel().isActive()) {
+                    zuulMesg.getContext().cancel();
+                    zuulMesg.disposeBufferedBody();
+                    SpectatorUtils.newCounter("zuul.filterChain.message.hanging",
+                            zuulMesg.getClass().getSimpleName()).increment();
+                }
+                else {
+                    channelHandlerContext.fireChannelRead(zuulMesg);
+                }
             }
         }
     }
