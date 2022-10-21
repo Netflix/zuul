@@ -34,6 +34,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.netty.RequestCancelledEvent;
+import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.ChannelHandlerContext;
@@ -149,6 +150,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             if (zuulResponse != null) {
                 // fire a last content into the filter chain to unblock any filters awaiting a buffered body
                 responseFilterChain.filter(zuulResponse, new DefaultLastHttpContent());
+                SpectatorUtils.newCounter("zuul.filterChain.bodyBuffer.hanging",
+                                zuulRequest.getContext().getRouteVIP()).increment();
             }
         }
     }
