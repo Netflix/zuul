@@ -19,6 +19,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.http.HttpHeaderNames;
@@ -100,10 +101,10 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void bufferBodyContents(final HttpContent chunk) {
         setHasBody(true);
-        chunk.touch("ZuulMessage buffering body content.");
+        ByteBufUtil.touch(chunk, "ZuulMessage buffering body content.");
         bodyChunks.add(chunk);
         if (chunk instanceof  LastHttpContent) {
-            chunk.touch("ZuulMessage buffering body content complete.");
+            ByteBufUtil.touch(chunk, "ZuulMessage buffering body content complete.");
             bodyBufferedCompletely = true;
         }
     }
@@ -200,7 +201,7 @@ public class ZuulMessageImpl implements ZuulMessage
     public void disposeBufferedBody() {
         bodyChunks.forEach(chunk -> {
             if ((chunk != null) && (chunk.refCnt() > 0)) {
-                chunk.touch("ZuulMessage disposing buffered body");
+                ByteBufUtil.touch(chunk, "ZuulMessage disposing buffered body");
                 chunk.release();
             }
         });
@@ -213,9 +214,9 @@ public class ZuulMessageImpl implements ZuulMessage
         // original chunk passed in as is without any processing
         for (int i=0; i < bodyChunks.size(); i++) {
             final HttpContent origChunk = bodyChunks.get(i);
-            origChunk.touch("ZuulMessage processing chunk, filter: " + filter.filterName());
+            ByteBufUtil.touch(origChunk, "ZuulMessage processing chunk, filter: " + filter.filterName());
             final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
-            filteredChunk.touch("ZuulMessage processing filteredChunk, filter: " + filter.filterName());
+            ByteBufUtil.touch(filteredChunk, "ZuulMessage processing filteredChunk, filter: " + filter.filterName());
             if ((filteredChunk != null) && (filteredChunk != origChunk)) {
                 //filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
