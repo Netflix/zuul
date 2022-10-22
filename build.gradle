@@ -91,5 +91,6 @@ dependencies {
 }
 
 rewrite {
+    failOnDryRunResults = true
     activeRecipe("org.openrewrite.java.testing.junit5.JUnit5BestPractices")
 }

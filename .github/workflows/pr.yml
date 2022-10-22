@@ -20,7 +20,7 @@ jobs:
           cache: 'gradle'
       - name: Build
         run: |
-          sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ulimit -a && ./gradlew --no-daemon build"
+          sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ulimit -a && ./gradlew --no-daemon rewriteDryRun build"
           echo "Status of build: $?"
   validation:
     name: "Gradle Validation"
