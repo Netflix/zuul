@@ -17,18 +17,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
-      - uses: actions/cache@v3
-        id: gradle-cache
-        with:
-          path: |
-            ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-      - uses: actions/cache@v3
-        id: gradle-wrapper-cache
-        with:
-          path: |
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradlewrapper-${{ hashFiles('gradle/wrapper/*') }}
+          cache: 'gradle'
       - name: Build
         run: |
           sudo env "PATH=$PATH" bash -c "ulimit -l 65536 && ulimit -a && ./gradlew --no-daemon build"
