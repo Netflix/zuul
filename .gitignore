@@ -58,6 +58,9 @@ atlassian-ide-plugin.xml
 # Visual Studio Code
 .vscode
 
+# Java heap profile
+*.hprof
+
 # Eclipse specific files/directories
 .classpath
 .project
