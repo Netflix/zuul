@@ -22,8 +22,10 @@ import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.StaticFilterLoader;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.integration.server.filters.InboundRoutesFilter;
+import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedInboundFilter;
 import com.netflix.zuul.integration.server.filters.RequestHeaderFilter;
 import com.netflix.zuul.integration.server.filters.ResponseHeaderFilter;
+import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedOutboundFilter;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -37,8 +39,10 @@ public class FilterLoaderProvider
     static {
         Set<Class<? extends ZuulFilter<?, ?>>> classes = new LinkedHashSet<>();
         classes.add(InboundRoutesFilter.class);
+        classes.add(NeedsBodyBufferedInboundFilter.class);
         classes.add(RequestHeaderFilter.class);
         classes.add(ResponseHeaderFilter.class);
+        classes.add(NeedsBodyBufferedOutboundFilter.class);
 
         FILTER_TYPES = Collections.unmodifiableSet(classes);
     }
