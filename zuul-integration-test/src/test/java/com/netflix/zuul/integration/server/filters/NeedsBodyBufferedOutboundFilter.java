@@ -22,22 +22,22 @@ import com.netflix.zuul.filters.http.HttpOutboundFilter;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import rx.Observable;
 
-import static com.netflix.zuul.integration.server.HeaderNames.REQUEST_ID;
+import static com.netflix.zuul.integration.server.filters.BodyUtil.needsResponseBodyBuffering;
 
-@Filter(order = 400, type = FilterType.OUTBOUND)
-public class ResponseHeaderFilter extends HttpOutboundFilter {
+@Filter(order = 450, type = FilterType.OUTBOUND)
+public class NeedsBodyBufferedOutboundFilter extends HttpOutboundFilter {
     @Override
     public boolean shouldFilter(HttpResponseMessage msg) {
-        return true;
+        return msg.hasBody();
     }
 
     @Override
-    public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response) {
-        final String requestId = response.getInboundRequest().getHeaders().getFirst(REQUEST_ID);
-        if (requestId != null) {
-            response.getHeaders().set(REQUEST_ID, requestId);
-            response.storeInboundResponse();
-        }
+    public boolean needsBodyBuffered(final HttpResponseMessage message) {
+        return needsResponseBodyBuffering(message.getOutboundRequest());
+    }
+
+    @Override
+    public Observable<HttpResponseMessage> applyAsync(final HttpResponseMessage response) {
         return Observable.just(response);
     }
 }

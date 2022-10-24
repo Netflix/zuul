@@ -20,12 +20,14 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.google.common.collect.ImmutableSet;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import io.netty.util.ResourceLeakDetector;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
@@ -40,12 +42,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -53,19 +56,14 @@ import java.util.stream.Stream;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.google.common.truth.Truth.assertThat;
 import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IntegrationTest {
@@ -82,8 +80,7 @@ public class IntegrationTest {
     static private final Duration CLIENT_READ_TIMEOUT = Duration.ofMillis(3000);
     static private final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
-    private String path;
-    private String requestUrl;
+    private String pathSegment;
     private WireMockRuntimeInfo wmRuntimeInfo;
 
     @RegisterExtension
@@ -120,8 +117,7 @@ public class IntegrationTest {
 
     @BeforeEach
     void beforeEachTest(final WireMockRuntimeInfo wmRuntimeInfo) {
-        path = randomPath();
-        requestUrl = zuulBaseUri + path;
+        this.pathSegment = randomPathSegment();
         this.wmRuntimeInfo = wmRuntimeInfo;
     }
 
@@ -136,69 +132,82 @@ public class IntegrationTest {
                 .build();
     }
 
+    private Request.Builder setupRequestBuilder(final boolean requestBodyBuffering, final boolean responseBodyBuffering) {
+        final HttpUrl url = new HttpUrl.Builder()
+                                    .scheme("http")
+                                    .host("localhost")
+                                    .port(ZUUL_SERVER_PORT)
+                                    .addPathSegment(pathSegment)
+                                    .addQueryParameter("bufferRequestBody", "" + requestBodyBuffering)
+                                    .addQueryParameter("bufferResponseBody", "" + responseBodyBuffering)
+                                    .build();
+        return new Request.Builder().url(url);
+    }
+
     static Stream<Arguments> arguments() {
-        return Stream.of(
-                    Arguments.of("HTTP 1.1", setupOkHttpClient(Protocol.HTTP_1_1)),
-                    Arguments.of("HTTP 2", setupOkHttpClient(Protocol.HTTP_2, Protocol.HTTP_1_1)));
+        List<Arguments> list = new ArrayList<Arguments>();
+        for (Protocol protocol : ImmutableSet.of(Protocol.HTTP_1_1)) {
+            for (boolean requestBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
+                for (boolean responseBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
+                    list.add(Arguments.of(
+                            protocol.name(),
+                            setupOkHttpClient(protocol),
+                            requestBodyBuffering,
+                            responseBodyBuffering));
+                }
+            }
+        }
+        return list.stream();
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetHappyPath(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpGetHappyPath(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
         wireMock.register(
-            get(path)
+            get(anyUrl())
             .willReturn(
                 ok()
                 .withBody("hello world")));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
         verifyResponseHeaders(response);
-
-        verify(1, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpPostHappyPath(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpPostHappyPath(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-            post(path)
+            post(anyUrl())
             .willReturn(
                 ok()
                 .withBody("Thank you next")));
 
-        Request request = new Request.Builder()
-                .url(zuulBaseUri + path)
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
                 .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
                 .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
         verifyResponseHeaders(response);
-
-        verify(1, postRequestedFor(urlEqualTo(path))
-                .withRequestBody(equalTo("Simple POST request body")));
-        verify(0, getRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpPostWithInvalidHostHeader(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpPostWithInvalidHostHeader(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                post(path)
+                post(anyUrl())
                         .willReturn(
                                 ok()
                                         .withBody("Thank you next")));
 
-        Request request = new Request.Builder()
-                .url(zuulBaseUri + path)
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
                 .addHeader("Host", "_invalid_hostname_")
                 .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
                 .build();
@@ -210,123 +219,108 @@ public class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetFailsDueToOriginReadTimeout(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpGetFailsDueToOriginReadTimeout(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-            get(path)
+            get(anyUrl())
                 .willReturn(
                     ok()
                     .withFixedDelay((int) ORIGIN_READ_TIMEOUT.toMillis() + 50)
                     .withBody("Slow poke")));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
         verifyResponseHeaders(response);
-
-        verify(2, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetFailsDueToMalformedResponseChunk(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpGetFailsDueToMalformedResponseChunk(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-            get(path)
+            get(anyUrl())
             .willReturn(
                 aResponse()
                 .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
-        assertThat(response.code()).isEqualTo(200);
-        assertThrowsExactly(EOFException.class, () -> {
-            response.body().string();
-        });
-
-        verify(1, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
+        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        assertThat(response.code()).isEqualTo(expectedStatusCode);
+        response.close();
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void zuulWillRetryHttpGetWhenOriginReturns500(final String description, final OkHttpClient okHttp) throws Exception {
+    void zuulWillRetryHttpGetWhenOriginReturns500(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(path)
+                get(anyUrl())
                         .willReturn(
                                 aResponse()
                                         .withStatus(500)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
-
-        verify(2, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void zuulWillRetryHttpGetWhenOriginReturns503(final String description, final OkHttpClient okHttp) throws Exception {
+    void zuulWillRetryHttpGetWhenOriginReturns503(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(path)
+                get(anyUrl())
                         .willReturn(
                                 aResponse()
                                         .withStatus(503)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
-
-        verify(2, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetReturnsStatus500DueToConnectionResetByPeer(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpGetReturnsStatus500DueToConnectionResetByPeer(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-            get(path)
+            get(anyUrl())
             .willReturn(
                     aResponse()
                     .withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
-
-        verify(1, getRequestedFor(urlEqualTo(path)));
-        verify(0, postRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGet_ServerChunkedDribbleDelay(final String description, final OkHttpClient okHttp) throws Exception {
+    void httpGet_ServerChunkedDribbleDelay(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(path)
+                get(anyUrl())
                         .willReturn(
                                 aResponse()
                                         .withStatus(200)
                                         .withBody("Hello world, is anybody listening?")
                                         .withChunkedDribbleDelay(10, (int) CLIENT_READ_TIMEOUT.toMillis() + 500)));
 
-        Request request = new Request.Builder().url(zuulBaseUri + path).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
         Response response = okHttp.newCall(request).execute();
-        assertThat(response.code()).isEqualTo(200);
+        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
 
-    private static String randomPath() {
-        return "/" + UUID.randomUUID();
+    private static String randomPathSegment() {
+        return UUID.randomUUID().toString();
     }
 
     private static int findAvailableTcpPort() {

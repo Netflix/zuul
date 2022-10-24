@@ -18,26 +18,27 @@ package com.netflix.zuul.integration.server.filters;
 
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.filters.FilterType;
-import com.netflix.zuul.filters.http.HttpOutboundFilter;
-import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.filters.http.HttpInboundFilter;
+import com.netflix.zuul.message.http.HttpRequestMessage;
 import rx.Observable;
 
-import static com.netflix.zuul.integration.server.HeaderNames.REQUEST_ID;
+import static com.netflix.zuul.integration.server.filters.BodyUtil.needsRequestBodyBuffering;
 
-@Filter(order = 400, type = FilterType.OUTBOUND)
-public class ResponseHeaderFilter extends HttpOutboundFilter {
+@Filter(order = 20, type = FilterType.INBOUND)
+public class NeedsBodyBufferedInboundFilter extends HttpInboundFilter {
+
     @Override
-    public boolean shouldFilter(HttpResponseMessage msg) {
-        return true;
+    public boolean shouldFilter(HttpRequestMessage msg) {
+        return msg.hasBody();
     }
 
     @Override
-    public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response) {
-        final String requestId = response.getInboundRequest().getHeaders().getFirst(REQUEST_ID);
-        if (requestId != null) {
-            response.getHeaders().set(REQUEST_ID, requestId);
-            response.storeInboundResponse();
-        }
-        return Observable.just(response);
+    public boolean needsBodyBuffered(final HttpRequestMessage message) {
+        return needsRequestBodyBuffering(message);
+    }
+
+    @Override
+    public Observable<HttpRequestMessage> applyAsync(final HttpRequestMessage input) {
+        return Observable.just(input);
     }
 }
