@@ -1,10 +1,10 @@
 {
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "locked": "31.1-jre"
@@ -95,10 +95,10 @@
     },
     "jmhCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "locked": "31.1-jre"
@@ -187,10 +187,10 @@
     },
     "jmhRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -336,10 +336,10 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -449,10 +449,10 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "locked": "31.1-jre"
@@ -556,10 +556,10 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.3"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.3"
+            "locked": "2.13.4.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
