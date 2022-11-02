@@ -474,7 +474,7 @@
             "locked": "2.13.4.2"
         },
         "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.34.0"
+            "locked": "2.35.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -701,7 +701,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.1"
+            "locked": "1.7.36"
         }
     },
     "runtimeClasspath": {
@@ -920,7 +920,7 @@
             "locked": "2.13.4.2"
         },
         "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.34.0"
+            "locked": "2.35.0"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -1058,7 +1058,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.1"
+            "locked": "1.7.36"
         }
     },
     "testRuntimeClasspath": {
@@ -1075,7 +1075,7 @@
             "locked": "2.13.4.2"
         },
         "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.34.0"
+            "locked": "2.35.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -1296,7 +1296,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.1"
+            "locked": "1.7.36"
         }
     }
 }
