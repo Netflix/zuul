@@ -11,7 +11,7 @@ dependencies {
     implementation 'commons-configuration:commons-configuration:1.10'
     annotationProcessor project(":zuul-processor")
 
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.34.0'
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
     testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
