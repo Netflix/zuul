@@ -67,7 +67,7 @@ public class PooledConnection {
     private long reqStartTime;
     private boolean inPool = false;
     private boolean shouldClose = false;
-    private boolean released = false;
+    protected boolean released = false;
 
     public PooledConnection(final Channel channel, final DiscoveryResult server, final ClientChannelManager channelManager,
                      final Counter closeConnCounter, 
