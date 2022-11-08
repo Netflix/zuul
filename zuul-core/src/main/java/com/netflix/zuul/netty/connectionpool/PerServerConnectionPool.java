@@ -50,11 +50,11 @@ public class PerServerConnectionPool implements IConnectionPool
 
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
+    protected final PooledConnectionFactory pooledConnectionFactory;
 
     private final DiscoveryResult server;
     private final SocketAddress serverAddr;
     private final NettyClientConnectionFactory connectionFactory;
-    private final PooledConnectionFactory pooledConnectionFactory;
     private final ConnectionPoolConfig config;
     private final IClientConfig niwsClientConfig;
 
@@ -134,7 +134,7 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     /** function to run when a connection is acquired before returning it to caller. */
-    private void onAcquire(final PooledConnection conn, CurrentPassport passport)
+    protected void onAcquire(final PooledConnection conn, CurrentPassport passport)
     {
         passport.setOnChannel(conn.getChannel());
         removeIdleStateHandler(conn);
@@ -297,7 +297,7 @@ public class PerServerConnectionPool implements IConnectionPool
             server.addToFailureCount();
             server.decrementActiveRequestsCount();
             createConnFailedCounter.increment();
-            callerPromise.setFailure(new OriginConnectException(cf.cause().getMessage(), OutboundErrorType.CONNECT_ERROR));
+            callerPromise.setFailure(new OriginConnectException(cf.cause().getMessage(), cf.cause(), OutboundErrorType.CONNECT_ERROR));
         }
     }
 
