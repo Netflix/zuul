@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer.ORIGIN_NETTY_LOGGER;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.passport.CurrentPassport;
@@ -226,7 +227,7 @@ public class PooledConnection {
 
     public void startReadTimeoutHandler(Duration readTimeout)
     {
-        channel.pipeline().addBefore("originNettyLogger", READ_TIMEOUT_HANDLER_NAME,
+        getChannel().pipeline().addBefore(ORIGIN_NETTY_LOGGER, READ_TIMEOUT_HANDLER_NAME,
                 new ReadTimeoutHandler(readTimeout.toMillis(), TimeUnit.MILLISECONDS));
     }
 

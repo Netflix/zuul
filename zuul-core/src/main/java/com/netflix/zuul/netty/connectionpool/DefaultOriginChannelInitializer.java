@@ -39,6 +39,9 @@ import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODE
  * Date: December 01, 2017
  */
 public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
+
+    public static final String ORIGIN_NETTY_LOGGER = "originNettyLogger";
+    public static final String CONNECTION_POOL_HANDLER = "connectionPoolHandler";
     private final ConnectionPoolConfig connectionPoolConfig;
     private final SslContext sslContext;
     protected final ConnectionPoolHandler connectionPoolHandler;
@@ -74,14 +77,14 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         ));
         pipeline.addLast(new PassportStateHttpClientHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpClientHandler.OutboundHandler());
-        pipeline.addLast("originNettyLogger", nettyLogger);
+        pipeline.addLast(ORIGIN_NETTY_LOGGER, nettyLogger);
         pipeline.addLast(httpMetricsHandler);
         addMethodBindingHandler(pipeline);
         pipeline.addLast(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER);
         pipeline.addLast(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
         pipeline.addLast(new ClientTimeoutHandler.InboundHandler());
         pipeline.addLast(new ClientTimeoutHandler.OutboundHandler());
-        pipeline.addLast("connectionPoolHandler", connectionPoolHandler);
+        pipeline.addLast(CONNECTION_POOL_HANDLER, connectionPoolHandler);
     }
 
     /**
