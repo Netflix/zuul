@@ -17,6 +17,7 @@
 package com.netflix.zuul.filters.endpoint;
 
 import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
+import static com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER;
 import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
 import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
 import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_FAILED;
@@ -539,7 +540,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         final ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
-        pipeline.addBefore("connectionPoolHandler", OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
+        pipeline.addBefore(CONNECTION_POOL_HANDLER, OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
 
         ch.write(zuulRequest);
         writeBufferedBodyContent(zuulRequest, ch);
