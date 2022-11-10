@@ -319,6 +319,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.clientIp = clientIp;
     }
 
+    /**
+     * Note: this is meant to be used typically in cases where TLS termination happens on instance.
+     * For CLB/ALB fronted traffic, consider using {@link #getOriginalScheme()} instead.
+     */
+
     @Override
     public String getScheme() {
         return scheme;
