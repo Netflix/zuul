@@ -239,14 +239,20 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             conn.close();
             if (connExpiredLifetime) {
                 closeExpiredConnLifetimeCounter.increment();
+                LOG.debug("[{}] closing conn lifetime expired, usage: {}", conn.getChannel().id(), conn.getUsageCount());
+            } else {
+                LOG.debug("[{}] closing conn flagged to be closed", conn.getChannel().id());
             }
+
         }
         else if (discoveryResult.isCircuitBreakerTripped()) {
+            LOG.debug("[{}] closing conn, server circuit breaker tripped", conn.getChannel().id());
             // Don't put conns for currently circuit-tripped servers back into the pool.
             conn.setInPool(false);
             conn.close();
         }
         else if (!conn.isActive()) {
+            LOG.debug("[{}] conn inactive, cleaning up", conn.getChannel().id());
             // Connection is already closed, so discard.
             alreadyClosedCounter.increment();
             // make sure to decrement OpenConnectionCounts

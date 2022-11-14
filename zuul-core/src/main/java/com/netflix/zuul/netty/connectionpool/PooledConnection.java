@@ -185,10 +185,10 @@ public class PooledConnection {
         return this.close();
     }
 
-    public void release()
+    public boolean release()
     {
         if (released) {
-            return;
+            return true;
         }
 
         if (isActive()) {
@@ -207,7 +207,7 @@ public class PooledConnection {
         // reset the connectionState
         connectionState = ConnectionState.WRITE_READY;
         released = true;
-        channelManager.release(this);
+        return channelManager.release(this);
     }
 
     public void removeReadTimeoutHandler()
