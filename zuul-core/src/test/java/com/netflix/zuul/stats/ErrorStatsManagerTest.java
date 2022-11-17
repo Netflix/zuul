@@ -38,9 +38,9 @@ public class ErrorStatsManagerTest {
         assertNotNull(sm.routeMap.get("test"));
         ConcurrentHashMap<String, ErrorStatsData> map = sm.routeMap.get("test");
         ErrorStatsData sd = map.get("cause");
-        assertEquals(sd.getCount(), 1);
+        assertEquals(1, sd.getCount());
         sm.putStats("test", "cause");
-        assertEquals(sd.getCount(), 2);
+        assertEquals(2, sd.getCount());
     }
 
     @Test

@@ -43,11 +43,11 @@ public class GroovyCompilerTest {
             String code = "class test { public String hello(){return \"hello\" } } ";
             Class clazz = compiler.compile(code,"test");
             assertNotNull(clazz);
-            assertEquals(clazz.getName(),"test");
+            assertEquals("test",clazz.getName());
             GroovyObject groovyObject = (GroovyObject) clazz.newInstance();
             Object[] args = {};
             String s = (String) groovyObject.invokeMethod("hello",args);
-            assertEquals(s,"hello");
+            assertEquals("hello",s);
         } catch (Exception e) {
             assertFalse(true);
         }

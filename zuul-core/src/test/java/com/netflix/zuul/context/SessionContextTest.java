@@ -29,8 +29,8 @@ public class SessionContextTest {
     @Test
     void testBoolean() {
         SessionContext context = new SessionContext();
-        assertEquals(context.getBoolean("boolean_test"), Boolean.FALSE);
-        assertEquals(context.getBoolean("boolean_test", true), true);
+        assertEquals(Boolean.FALSE, context.getBoolean("boolean_test"));
+        assertEquals(true, context.getBoolean("boolean_test", true));
     }
 
     @Test

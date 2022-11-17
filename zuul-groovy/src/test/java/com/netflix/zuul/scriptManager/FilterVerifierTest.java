@@ -138,9 +138,9 @@ public class FilterVerifierTest {
     void testVerify() throws Exception {
         FilterInfo filterInfo1 = FilterVerifier.INSTANCE.verifyFilter(sGoodGroovyScriptFilter);
         assertNotNull(filterInfo1);
-        assertEquals(filterInfo1.getFilterID(), "null:filter:in");
-        assertEquals(filterInfo1.getFilterType(), FilterType.INBOUND);
-        assertEquals(filterInfo1.getFilterName(), "filter");
+        assertEquals("null:filter:in",filterInfo1.getFilterID());
+        assertEquals(FilterType.INBOUND,filterInfo1.getFilterType());
+        assertEquals("filter",filterInfo1.getFilterName());
         assertFalse(filterInfo1.isActive());
         assertFalse(filterInfo1.isCanary());
 

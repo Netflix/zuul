@@ -131,7 +131,7 @@ public class IoUringTest {
         addresses.forEach(address -> {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
             InetSocketAddress inetAddress = ((InetSocketAddress) address.unwrap());
-            assertNotEquals(inetAddress.getPort(), 0);
+            assertNotEquals(0, inetAddress.getPort());
             checkConnection(inetAddress.getPort());
         });
 

@@ -99,10 +99,10 @@ public class DynamicFilterLoaderTest {
 
         Collection<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
         assertTrue(list != null);
-        assertEquals(list.size(), 1);
+        assertEquals(1, list.size());
         ZuulFilter<?, ?> filter = list.iterator().next();
         assertTrue(filter != null);
-        assertEquals(filter.filterType(), FilterType.INBOUND);
+        assertEquals(FilterType.INBOUND, filter.filterType());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class DynamicFilterLoaderTest {
         ZuulFilter filter = loader.getFilter(string, string);
 
         assertNotNull(filter);
-        assertEquals(filter.getClass(), TestZuulFilter.class);
+        assertEquals(TestZuulFilter.class, filter.getClass());
 //            assertTrue(loader.filterInstanceMapSize() == 1);
     }
 
