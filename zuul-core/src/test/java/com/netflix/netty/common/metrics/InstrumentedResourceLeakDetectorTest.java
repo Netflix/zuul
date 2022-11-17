@@ -37,12 +37,12 @@ public class InstrumentedResourceLeakDetectorTest {
     @Test
     void test() {
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(leakDetector.leakCounter.get(), 1);
+        assertEquals(1, leakDetector.leakCounter.get());
 
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(leakDetector.leakCounter.get(), 2);
+        assertEquals(2, leakDetector.leakCounter.get());
 
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(leakDetector.leakCounter.get(), 3);
+        assertEquals(3, leakDetector.leakCounter.get());
     }
 }

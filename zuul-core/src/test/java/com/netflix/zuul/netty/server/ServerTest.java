@@ -108,7 +108,7 @@ public class ServerTest {
         for (NamedSocketAddress address : addrs) {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
             final int port = ((InetSocketAddress) address.unwrap()).getPort();
-            assertNotEquals(port, 0);
+            assertNotEquals(0, port);
             checkConnection(port);
         }
 

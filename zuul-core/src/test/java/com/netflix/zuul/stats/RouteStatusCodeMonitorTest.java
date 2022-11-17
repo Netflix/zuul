@@ -28,11 +28,11 @@ public class RouteStatusCodeMonitorTest {
     @Test
     void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-        assertEquals(sd.route, "test");
+        assertEquals("test", sd.route);
         sd.update();
-        assertEquals(sd.getCount(), 1);
+        assertEquals(1, sd.getCount());
         sd.update();
-        assertEquals(sd.getCount(), 2);
+        assertEquals(2, sd.getCount());
     }
 
     @Test

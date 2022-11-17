@@ -33,9 +33,9 @@ public class ErrorStatsDataTest {
     void testUpdateStats() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
         sd.update();
-        assertEquals(sd.getCount(), 1);
+        assertEquals(1, sd.getCount());
         sd.update();
-        assertEquals(sd.getCount(), 2);
+        assertEquals(2, sd.getCount());
     }
 
 

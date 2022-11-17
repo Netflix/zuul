@@ -70,8 +70,8 @@ public class ClientRequestReceiverTest {
         assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
         int destinationPort = ((InetSocketAddress) result.getContext()
                 .get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
-        assertEquals(destinationPort, 444);
-        assertEquals(result.getOriginalPort(), 444);
+        assertEquals(444, destinationPort);
+        assertEquals(444, result.getOriginalPort());
         channel.close();
     }
 
@@ -247,8 +247,8 @@ public class ClientRequestReceiverTest {
         channel.close();
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertEquals(StatusCategoryUtils.getStatusCategory(request.getContext()),
-                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertEquals(
+                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(request.getContext()));
     }
 
     @Test
@@ -275,8 +275,8 @@ public class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         SessionContext context = request.getContext();
-        assertEquals(StatusCategoryUtils.getStatusCategory(context),
-                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertEquals(
+                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(context));
         assertEquals("Multiple Host headers", context.getError().getMessage());
     }
 
