@@ -140,7 +140,7 @@ public class PerServerConnectionPool implements IConnectionPool
         removeIdleStateHandler(conn);
 
         conn.setInUse();
-        if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: " + conn.toString());
+        if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: {}", conn.toString());
     }
 
     protected void removeIdleStateHandler(PooledConnection conn) {
@@ -231,12 +231,7 @@ public class PerServerConnectionPool implements IConnectionPool
             promise.setFailure(new OriginConnectException(
                 "maxConnectionsPerHost=" + maxConnectionsPerHost + ", connectionsPerHost=" + openAndOpeningConnectionCount,
                     OutboundErrorType.ORIGIN_SERVER_MAX_CONNS));
-            LOG.warn("Unable to create new connection because at MaxConnectionsPerHost! "
-                            + "maxConnectionsPerHost=" + maxConnectionsPerHost
-                            + ", connectionsPerHost=" + openAndOpeningConnectionCount
-                            + ", host=" + server.getServerId()
-                            + "origin=" + config.getOriginName()
-                    );
+            LOG.warn("Unable to create new connection because at MaxConnectionsPerHost! maxConnectionsPerHost={}, connectionsPerHost={}, host={}origin={}", maxConnectionsPerHost, openAndOpeningConnectionCount, server.getServerId(), config.getOriginName());
             return;
         }
 
@@ -261,10 +256,7 @@ public class PerServerConnectionPool implements IConnectionPool
                         if (! promise.isDone()) {
                             promise.setFailure(e);
                         }
-                        LOG.warn("Error creating new connection! "
-                                        + "origin=" + config.getOriginName()
-                                        + ", host=" + server.getServerId()
-                                );
+                        LOG.warn("Error creating new connection! origin={}, host={}", config.getOriginName(), server.getServerId());
                     }
                 });
             }

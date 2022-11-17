@@ -56,9 +56,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         this.message = new ZuulMessageImpl(context, headers);
         this.outboundRequest = request;
         if (this.outboundRequest.getInboundRequest() == null) {
-            LOG.warn("HttpResponseMessage created with a request that does not have a stored inboundRequest! " +
-                    "Probably a bug in the filter that is creating this response.",
-                    new RuntimeException("Invalid HttpRequestMessage"));
+            LOG.warn("HttpResponseMessage created with a request that does not have a stored inboundRequest! Probably a bug in the filter that is creating this response.", new RuntimeException("Invalid HttpRequestMessage"));
         }
         this.status = status;
     }

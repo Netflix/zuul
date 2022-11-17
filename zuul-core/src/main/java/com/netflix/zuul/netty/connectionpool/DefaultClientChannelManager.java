@@ -275,7 +275,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 conn.close();
             }
 
-            if (LOG.isDebugEnabled()) LOG.debug("PooledConnection released: " + conn.toString());
+            if (LOG.isDebugEnabled()) LOG.debug("PooledConnection released: {}", conn.toString());
         }
 
         return released;

@@ -101,7 +101,7 @@ public class ZuulFiltersModule extends AbstractModule {
         if (filterClassNames.length != 0) {
             LOG.info("Using filter classnames: ");
             for (String location : filterClassNames) {
-                LOG.info("  " + location);
+                LOG.info("  {}", location);
             }
         }
 
@@ -122,7 +122,7 @@ public class ZuulFiltersModule extends AbstractModule {
         if (filterLocations.length != 0) {
             LOG.info("Using filter locations: ");
             for (String location : filterLocations) {
-                LOG.info("  " + location);
+                LOG.info("  {}", location);
             }
         }
         return filterLocations;

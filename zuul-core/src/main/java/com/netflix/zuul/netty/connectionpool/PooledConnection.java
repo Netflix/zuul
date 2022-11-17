@@ -199,8 +199,7 @@ public class PooledConnection {
         
         if (! isShouldClose() && connectionState != ConnectionState.WRITE_READY) {
             CurrentPassport passport = CurrentPassport.fromChannel(channel);
-            LOG.info("Error - Attempt to put busy connection into the pool = " + this.toString()
-                    + ", " + String.valueOf(passport));
+            LOG.info("Error - Attempt to put busy connection into the pool = {}, {}", this.toString(), String.valueOf(passport));
             this.shouldClose = true;
         }
 

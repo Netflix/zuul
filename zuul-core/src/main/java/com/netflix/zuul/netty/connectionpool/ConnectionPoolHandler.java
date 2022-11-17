@@ -136,7 +136,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         else {
             // If somehow we don't have a PooledConnection instance attached to this channel, then
             // close the channel directly.
-            LOG.warn(msg + " But no PooledConnection attribute. So just closing Channel.");
+            LOG.warn("{} But no PooledConnection attribute. So just closing Channel.", msg);
             ctx.close();
         }
     }

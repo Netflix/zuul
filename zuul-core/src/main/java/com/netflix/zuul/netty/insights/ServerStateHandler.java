@@ -121,7 +121,7 @@ public final class ServerStateHandler {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             if (cause instanceof Errors.NativeIoException) {
-                logger.debug("PassportStateServerHandler Outbound NativeIoException " + cause);
+                logger.debug("PassportStateServerHandler Outbound NativeIoException {}", cause);
                 registry.counter("server.connection.exception.outbound",
                         "handler", "ServerStateHandler.OutboundHandler",
                         "id", cause.getClass().getSimpleName())

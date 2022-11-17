@@ -80,7 +80,7 @@ public class FilterFileManager {
         manageFiles();
         startPoller();
         
-        LOG.warn("Finished loading all zuul filters. Duration = " + (System.currentTimeMillis() - startTime) + " ms.");
+        LOG.warn("Finished loading all zuul filters. Duration = {} ms.", (System.currentTimeMillis() - startTime));
     }
 
     /**
@@ -128,7 +128,7 @@ public class FilterFileManager {
             try {
                 directory = new File(resource.toURI());
             } catch (Exception e) {
-                LOG.error("Error accessing directory in classloader. path=" + sPath, e);
+                LOG.error("Error accessing directory in classloader. path={}", sPath, e);
             }
             if (!directory.isDirectory()) {
                 throw new RuntimeException(directory.getAbsolutePath() + " is not a valid directory");
@@ -173,7 +173,7 @@ public class FilterFileManager {
                     return filterLoader.putFilter(file);
                 }
                 catch(Exception e) {
-                    LOG.error("Error loading groovy filter from disk! file = " + String.valueOf(file), e);
+                    LOG.error("Error loading groovy filter from disk! file = {}", String.valueOf(file), e);
                     return false;
                 }
             });

@@ -201,7 +201,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             ReferenceCountUtil.release(msg);
         }
         else {
-            LOG.debug("Received unrecognized message type. " + msg.getClass().getName());
+            LOG.debug("Received unrecognized message type. {}", msg.getClass().getName());
             ReferenceCountUtil.release(msg);
         }
     }
@@ -462,7 +462,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 cause instanceof Errors.NativeIoException ||
                 cause instanceof SSLException ||
                 (cause.getCause() != null && cause.getCause() instanceof SSLException)) {
-            LOG.debug(errMesg + " - client connection is closed.");
+            LOG.debug("{} - client connection is closed.", errMesg);
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(),

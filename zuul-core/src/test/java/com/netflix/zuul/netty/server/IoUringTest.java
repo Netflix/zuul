@@ -90,12 +90,7 @@ public class IoUringTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
-                LOGGER.info("Channel: "
-                        + ch.getClass().getName()
-                        + ", isActive="
-                        + ch.isActive()
-                        + ", isOpen="
-                        + ch.isOpen());
+                LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
                     ioUringChannels.add((IOUringSocketChannel)ch);
                 }
@@ -149,7 +144,7 @@ public class IoUringTest {
     }
 
     private static void checkConnection(final int port) {
-        LOGGER.info("checkConnection port " + port);
+        LOGGER.info("checkConnection port {}", port);
         Socket sock = null;
         try {
             InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);

@@ -69,12 +69,7 @@ public class ServerTest {
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(final Channel ch) {
-                LOGGER.info("Channel: "
-                        + ch.getClass().getName()
-                        + ", isActive="
-                        + ch.isActive()
-                        + ", isOpen="
-                        + ch.isOpen());
+                LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
                 if (ch instanceof NioSocketChannel) {
                     nioChannels.add((NioSocketChannel) ch);
                 }
