@@ -4,13 +4,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4"
+            "locked": "2.14.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -201,7 +201,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -334,7 +334,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -465,13 +465,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4"
+            "locked": "2.14.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.github.tomakehurst:wiremock-jre8": {
             "locked": "2.35.0"
@@ -709,13 +709,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4"
+            "locked": "2.14.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
@@ -917,7 +917,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.github.tomakehurst:wiremock-jre8": {
             "locked": "2.35.0"
@@ -1066,13 +1066,13 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4"
+            "locked": "2.14.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.13.4.2"
+            "locked": "2.14.0"
         },
         "com.github.tomakehurst:wiremock-jre8": {
             "locked": "2.35.0"
