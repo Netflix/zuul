@@ -190,7 +190,7 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler
         DefaultHttp2GoAwayFrame goaway = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR);
         goaway.setExtraStreamIds(Integer.MAX_VALUE);
         parent.writeAndFlush(goaway);
-        LOG.debug("gracefullyWithDelay: flushed initial go_away frame. channel=" + parent.id().asShortText());
+        LOG.debug("gracefullyWithDelay: flushed initial go_away frame. channel={}", parent.id().asShortText());
 
         // In N secs time, throw an error that causes the http2 codec to send another GOAWAY frame
         // (this time with accurate lastStreamId) and then close the connection.
@@ -202,8 +202,7 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler
                 // NOTE - the netty Http2ConnectionHandler specifically does not send another goaway when we call
                 // channel.close() if one has already been sent .... so when we want more than one sent, we need to do it
                 // explicitly ourselves like this.
-                LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel="
-                        + parent.id().asShortText());
+                LOG.debug("gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel={}", parent.id().asShortText());
                 Http2Exception h2e = new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
                 parent.pipeline().fireExceptionCaught(h2e);
 

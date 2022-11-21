@@ -147,7 +147,7 @@ public class BaseSslContextFactory implements SslContextFactory {
             ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
         PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
-        LOG.debug("Registered spectator gauge - " + id.name());
+        LOG.debug("Registered spectator gauge - {}", id.name());
     }
 
     public static SslProvider chooseSslProvider() {
@@ -201,7 +201,7 @@ public class BaseSslContextFactory implements SslContextFactory {
 
             boolean dumpDecryptedTrustStorePassword = false;
             if (dumpDecryptedTrustStorePassword) {
-                LOG.debug("X509Cert Trust Store Password " + trustStorePassword);
+                LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
 
             final KeyStore trustStore = KeyStore.getInstance("JKS");

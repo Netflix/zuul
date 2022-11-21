@@ -271,7 +271,7 @@ public class Server
         channelOptions.put(ChannelOption.TCP_NODELAY, true);
         channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
 
-        LOG.info("Proxy listening with " + serverGroup.channelType);
+        LOG.info("Proxy listening with {}", serverGroup.channelType);
         serverBootstrap.channel(serverGroup.channelType);
 
         // Apply socket options.
@@ -287,7 +287,7 @@ public class Server
         serverBootstrap.childHandler(channelInitializer);
         serverBootstrap.validate();
 
-        LOG.info("Binding to : " + listenAddress);
+        LOG.info("Binding to : {}", listenAddress);
 
         if (MANUAL_DISCOVERY_STATUS.get()) {
             // Flag status as UP just before binding to the port.

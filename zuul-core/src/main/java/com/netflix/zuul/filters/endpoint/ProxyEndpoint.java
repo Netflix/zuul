@@ -444,7 +444,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
         }
         catch (Exception ex) {
-            LOG.error("Error while connecting to origin, UUID {} " + context.getUUID(), ex);
+            LOG.error("Error while connecting to origin, UUID {} {}", context.getUUID(), ex);
             storeAndLogOriginRequestInfo();
             if (promise != null && ! promise.isDone()) {
                 promise.setFailure(ex);
@@ -608,15 +608,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // Be cautious about how much we log about errors from origins, as it can have perf implications at high rps.
             if (zuulCtx.isInBrownoutMode()) {
                 // Don't include the stacktrace or the channel info.
-                LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ": " + String.valueOf(ex));
+                LOG.warn("{}, origin = {}: {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex));
             } else {
                 final String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
                 if (LOG.isInfoEnabled()) {
                     // Include the stacktrace.
-                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", origin channel info = " + origChInfo, ex);
+                    LOG.warn("{}, origin = {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), origChInfo, ex);
                 }
                 else {
-                    LOG.warn(err.getStatusCategory().name() + ", origin = " + origin.getName() + ", " + String.valueOf(ex) + ", origin channel info = " + origChInfo);
+                    LOG.warn("{}, origin = {}, {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex), origChInfo);
                 }
             }
 
@@ -952,7 +952,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                         }
                     }
                 } catch (UnsupportedEncodingException e) {
-                    LOG.error("Error decoding url query param - " + paramString, e);
+                    LOG.error("Error decoding url query param - {}", paramString, e);
                 }
             } else {
                 modifiedPath = uri;

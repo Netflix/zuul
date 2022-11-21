@@ -62,7 +62,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
             int currentCount = connections.getAndIncrement();
 
             if (currentCount + 1 > maxConnections) {
-                LOG.warn("Throttling incoming connection as above configured max connections threshold of " + maxConnections);
+                LOG.warn("Throttling incoming connection as above configured max connections threshold of {}", maxConnections);
                 Channel channel = ctx.channel();
                 channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
                 CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);

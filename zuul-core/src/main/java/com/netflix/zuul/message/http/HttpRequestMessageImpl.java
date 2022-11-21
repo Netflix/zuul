@@ -387,8 +387,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
                 }
             }
             catch (Exception e) {
-                LOG.error(String.format("Error parsing request Cookie header. cookie=%s, request-info=%s",
-                        aCookieHeader, getInfoForLogging()));
+                LOG.error("Error parsing request Cookie header. cookie={}, request-info={}",
+                        aCookieHeader, getInfoForLogging());
             }
 
         }

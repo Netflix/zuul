@@ -92,9 +92,7 @@ public class LeastConnsEventLoopChooserFactory implements EventExecutorChooserFa
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Chose eventloop: " + String.valueOf(leastExec)
-                        + ", leastValue=" + leastValue
-                        + ", connsPer=" + String.valueOf(connsPer));
+                LOG.debug("Chose eventloop: {}, leastValue={}, connsPer={}", String.valueOf(leastExec), leastValue, String.valueOf(connsPer));
             }
 
             return leastExec;

@@ -115,15 +115,15 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
                     // either after the response finally gets written (due to us having set the CLOSE_AFTER_RESPONSE flag), or when the IdleTimeout
                     // for this conn fires.
                     if (requestInflight.get()) {
-                        LOG.debug("gracefully: firing graceful_shutdown event to close connection, but request still inflight, so leaving. channel=" + channelId);
+                        LOG.debug("gracefully: firing graceful_shutdown event to close connection, but request still inflight, so leaving. channel={}", channelId);
                     }
                     else {
-                        LOG.debug("gracefully: firing graceful_shutdown event to close connection. channel=" + channelId);
+                        LOG.debug("gracefully: firing graceful_shutdown event to close connection. channel={}", channelId);
                         ctx.close(promise);
                     }
                 }
                 else {
-                    LOG.debug("gracefully: connection already closed. channel=" + channelId);
+                    LOG.debug("gracefully: connection already closed. channel={}", channelId);
                     promise.setSuccess();
                 }
 
