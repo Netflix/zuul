@@ -24,6 +24,9 @@
         }
     },
     "rewrite": {
+        "org.openrewrite.recipe:rewrite-logging-frameworks": {
+            "locked": "1.15.0"
+        },
         "org.openrewrite.recipe:rewrite-recipe-bom": {
             "locked": "1.12.1"
         },
