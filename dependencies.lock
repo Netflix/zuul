@@ -28,7 +28,7 @@
             "locked": "1.15.0"
         },
         "org.openrewrite.recipe:rewrite-recipe-bom": {
-            "locked": "1.12.1"
+            "locked": "1.12.3"
         },
         "org.openrewrite.recipe:rewrite-testing-frameworks": {
             "locked": "1.31.0"
