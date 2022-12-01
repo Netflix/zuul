@@ -13,7 +13,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -107,7 +107,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -208,7 +208,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -354,7 +354,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -464,7 +464,7 @@
             "locked": "0.7.7"
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
@@ -577,7 +577,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.10.17"
+            "locked": "1.10.18"
         },
         "com.netflix.netflix-commons:netflix-commons-util": {
             "locked": "0.3.0"
