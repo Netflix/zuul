@@ -19,7 +19,7 @@ jobs:
           java-version: 8
           cache: 'gradle'
       - name: Build snapshot
-        run: ./gradlew build snapshot
+        run: sudo -E env "PATH=$PATH" bash -c "ulimit -l 65536 && ./gradlew --no-daemon build snapshot"
         env:
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}

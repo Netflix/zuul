@@ -41,7 +41,6 @@ import java.util.*;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +55,6 @@ import static org.awaitility.Awaitility.await;
       4) verify that the server stops
 
  */
-@Disabled
 public class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
