@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link ErrorStatsData}.
  */
 @ExtendWith(MockitoExtension.class)
-public class ErrorStatsDataTest {
+class ErrorStatsDataTest {
 
     @Test
     void testUpdateStats() {

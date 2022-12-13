@@ -33,7 +33,7 @@ import java.net.SocketAddress;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
-public class SocketAddressPropertyTest {
+class SocketAddressPropertyTest {
 
     @Test
     void defaultValueWorks() {

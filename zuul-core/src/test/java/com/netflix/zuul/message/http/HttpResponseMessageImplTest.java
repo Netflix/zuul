@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
  * Unit tests for {@link HttpResponseMessageImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-public class HttpResponseMessageImplTest {
+class HttpResponseMessageImplTest {
     private static final String TEXT1 = "Hello World!";
     private static final String TEXT2 = "Goodbye World!";
 
@@ -42,7 +42,7 @@ public class HttpResponseMessageImplTest {
     private HttpResponseMessageImpl response;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         response = new HttpResponseMessageImpl(new SessionContext(), new Headers(), request, 200);
     }
 

@@ -27,7 +27,7 @@ import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 
-public class ConnTimerTest {
+class ConnTimerTest {
     @Test
     void record() {
         EmbeddedChannel chan = new EmbeddedChannel();

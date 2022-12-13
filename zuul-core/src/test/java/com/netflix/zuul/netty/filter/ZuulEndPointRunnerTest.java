@@ -51,7 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ZuulEndPointRunnerTest {
+class ZuulEndPointRunnerTest {
     private static final String BASIC_ENDPOINT = "basicEndpoint";
     private ZuulEndPointRunner endpointRunner;
     private FilterUsageNotifier usageNotifier;
@@ -61,7 +61,7 @@ public class ZuulEndPointRunnerTest {
     private HttpRequestMessageImpl request;
 
     @BeforeEach
-    public void beforeEachTest() {
+    void beforeEachTest() {
         usageNotifier = mock(FilterUsageNotifier.class);
 
         filterLoader = mock(FilterLoader.class);

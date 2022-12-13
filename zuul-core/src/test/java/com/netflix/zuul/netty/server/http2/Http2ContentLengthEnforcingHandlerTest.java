@@ -32,7 +32,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.junit.jupiter.api.Test;
 
-public class Http2ContentLengthEnforcingHandlerTest {
+class Http2ContentLengthEnforcingHandlerTest {
 
     @Test
     void failsOnMultipleContentLength() {

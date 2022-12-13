@@ -39,7 +39,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DebugTest {
+class DebugTest {
 
     private SessionContext ctx;
     private Headers headers;
@@ -48,7 +48,7 @@ public class DebugTest {
     private HttpResponseMessage response;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ctx = new SessionContext();
 
         headers = new Headers();

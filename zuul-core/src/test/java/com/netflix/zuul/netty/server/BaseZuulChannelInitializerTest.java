@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link BaseZuulChannelInitializer}.
  */
-public class BaseZuulChannelInitializerTest {
+class BaseZuulChannelInitializerTest {
 
     @Test
     void tcpHandlersAdded() {

@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link GroovyCompiler}.
  */
 @ExtendWith(MockitoExtension.class)
-public class GroovyCompilerTest {
+class GroovyCompilerTest {
 
     @Test
     void testLoadGroovyFromString() {

@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class DynamicFilterLoaderTest {
+class DynamicFilterLoaderTest {
 
     @Mock
     private File file;
@@ -50,7 +50,7 @@ public class DynamicFilterLoaderTest {
     private final TestZuulFilter filter = new TestZuulFilter();
 
     @BeforeEach
-    public void before() throws Exception
+    void before() throws Exception
     {
         MockitoAnnotations.initMocks(this);
 

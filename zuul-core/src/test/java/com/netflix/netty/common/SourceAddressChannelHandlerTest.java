@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link SourceAddressChannelHandler}.
  */
-public class SourceAddressChannelHandlerTest {
+class SourceAddressChannelHandlerTest {
 
     @Test
     void ipv6AddressScopeIdRemoved() throws Exception {

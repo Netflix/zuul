@@ -50,7 +50,7 @@ import org.mockito.MockitoAnnotations;
  * @author Justin Guerra
  * @since 8/31/22
  */
-public class PushRegistrationHandlerTest {
+class PushRegistrationHandlerTest {
 
     private static ExecutorService EXECUTOR;
 
@@ -78,17 +78,17 @@ public class PushRegistrationHandlerTest {
     private TestAuth successfulAuth;
 
     @BeforeAll
-    public static void classSetup() {
+    static void classSetup() {
         EXECUTOR = Executors.newSingleThreadExecutor();
     }
 
     @AfterAll
-    public static void classCleanup() {
+    static void classCleanup() {
         MoreExecutors.shutdownAndAwaitTermination(EXECUTOR, 5, TimeUnit.SECONDS);
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
         registry = new PushConnectionRegistry();
         handler = new PushRegistrationHandler(registry, PushProtocol.WEBSOCKET);

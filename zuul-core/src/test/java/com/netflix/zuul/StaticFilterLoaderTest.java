@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.SortedSet;
 import org.junit.jupiter.api.Test;
 
-public class StaticFilterLoaderTest {
+class StaticFilterLoaderTest {
 
     private static final FilterFactory factory = new DefaultFilterFactory();
 

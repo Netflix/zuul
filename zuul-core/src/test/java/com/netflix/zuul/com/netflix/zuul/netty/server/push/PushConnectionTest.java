@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
  * Author: Susheel Aroskar
  * Date: 10/18/2018
  */
-public class PushConnectionTest {
+class PushConnectionTest {
 
     @Test
     void testOneMessagePerSecond() throws InterruptedException {

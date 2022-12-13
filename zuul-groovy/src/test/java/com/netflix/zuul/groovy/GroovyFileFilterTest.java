@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link GroovyFileFilter}.
  */
-public class GroovyFileFilterTest {
+class GroovyFileFilterTest {
 
     @Test
     void testGroovyFileFilter() {

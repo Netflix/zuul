@@ -42,13 +42,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class HttpRequestMessageImplTest {
+class HttpRequestMessageImplTest {
 
     HttpRequestMessageImpl request;
     private final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
 
     @AfterEach
-    public void resetConfig() {
+    void resetConfig() {
         config.clearProperty("zuul.HttpRequestMessage.host.header.strict.validation");
     }
 

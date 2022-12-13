@@ -24,7 +24,7 @@ import static com.netflix.zuul.passport.PassportState.MISC_IO_START;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class CurrentPassportTest
+class CurrentPassportTest
 {
     @Test
     void test_findEachPairOf_1pair()

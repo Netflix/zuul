@@ -51,11 +51,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests for {@link Server}.
  */
-public class ServerTest {
+class ServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
     @BeforeEach
-    public void beforeTest() {
+    void beforeTest() {
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.netty.socket.force_io_uring", "false");
@@ -137,7 +137,8 @@ public class ServerTest {
             try {
                 sock.close();
             }
-            catch (Exception ignored) { }
+            catch (Exception ignored) {
+            }
         }
     }
 }

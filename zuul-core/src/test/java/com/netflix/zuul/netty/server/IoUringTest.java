@@ -57,12 +57,12 @@ import static org.awaitility.Awaitility.await;
 
  */
 @Disabled
-public class IoUringTest {
+class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
     @BeforeEach
-    public void beforeTest() {
+    void beforeTest() {
         final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_io_uring", "true");
         config.setProperty("zuul.server.netty.socket.force_nio", "false");
@@ -92,7 +92,7 @@ public class IoUringTest {
             protected void initChannel(Channel ch) {
                 LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
                 if (ch instanceof IOUringSocketChannel) {
-                    ioUringChannels.add((IOUringSocketChannel)ch);
+                    ioUringChannels.add((IOUringSocketChannel) ch);
                 }
             }
         };
@@ -104,7 +104,7 @@ public class IoUringTest {
                 new ClientConnectionsShutdown(
                         new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
                         GlobalEventExecutor.INSTANCE,
-                        /* discoveryClient= */ null);
+                                /* discoveryClient= */ null);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
             @Override
@@ -131,8 +131,8 @@ public class IoUringTest {
         });
 
         await()
-            .atMost(1, SECONDS)
-            .until(() -> ioUringChannels.size() == 2);
+                .atMost(1, SECONDS)
+                .until(() -> ioUringChannels.size() == 2);
 
         s.stop();
 
@@ -161,7 +161,8 @@ public class IoUringTest {
             try {
                 sock.close();
             }
-            catch (Exception ignored) { }
+            catch (Exception ignored) {
+            }
         }
     }
 }

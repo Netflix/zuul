@@ -31,7 +31,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ServerStateHandlerTest {
+class ServerStateHandlerTest {
 
     private Registry registry;
     private Id currentConnsId;
@@ -42,7 +42,7 @@ public class ServerStateHandlerTest {
     final String listener = "test-conn-throttled";
 
     @BeforeEach
-    public void init() {
+    void init() {
         registry = new DefaultRegistry();
         currentConnsId = registry.createId("server.connections.current").withTags("id", listener);
         connectsId = registry.createId("server.connections.connect").withTags("id", listener);

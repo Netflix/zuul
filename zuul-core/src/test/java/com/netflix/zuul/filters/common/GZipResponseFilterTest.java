@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class GZipResponseFilterTest {
+class GZipResponseFilterTest {
     private final SessionContext context = new SessionContext();
     private final Headers originalRequestHeaders = new Headers();
 
@@ -53,7 +53,7 @@ public class GZipResponseFilterTest {
     HttpResponseMessage response;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         //when(request.getContext()).thenReturn(context);
         when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
 

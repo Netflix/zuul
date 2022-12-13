@@ -28,7 +28,7 @@ import java.security.cert.TrustAnchor;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-public class DynamicServerResolverTest {
+class DynamicServerResolverTest {
 
 
     @Test

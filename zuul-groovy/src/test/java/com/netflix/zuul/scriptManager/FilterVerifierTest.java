@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link FilterVerifier}.
  */
-public class FilterVerifierTest {
+class FilterVerifierTest {
 
     private final String sGoodGroovyScriptFilter = "import com.netflix.zuul.filters.*\n" +
         "import com.netflix.zuul.context.*\n" +
@@ -116,7 +116,7 @@ public class FilterVerifierTest {
         filterClass = FilterVerifier.INSTANCE.compileGroovy(sNotZuulFilterGroovy);
         assertNotNull(filterClass);
 
-        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
+        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.compileGroovy(sCompileFailCode));
     }
 
     @Test
@@ -131,7 +131,7 @@ public class FilterVerifierTest {
         assertNotNull(filterClass);
 
         Object filter2 = FilterVerifier.INSTANCE.instantiateClass(filterClass);
-        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
+        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.checkZuulFilterInstance(filter2));
     }
 
     @Test
@@ -144,8 +144,8 @@ public class FilterVerifierTest {
         assertFalse(filterInfo1.isActive());
         assertFalse(filterInfo1.isCanary());
 
-        assertThrows(InstantiationException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
+        assertThrows(InstantiationException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sNotZuulFilterGroovy));
 
-        assertThrows(CompilationFailedException.class, () -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
+        assertThrows(CompilationFailedException.class,() -> FilterVerifier.INSTANCE.verifyFilter(sCompileFailCode));
     }
 }

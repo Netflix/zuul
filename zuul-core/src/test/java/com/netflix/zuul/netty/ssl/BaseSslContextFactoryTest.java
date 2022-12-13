@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link BaseSslContextFactory}.
  */
-public class BaseSslContextFactoryTest {
+class BaseSslContextFactoryTest {
     @Test
     void testDefaultSslProviderIsOpenSsl() {
         assertEquals(SslProvider.OPENSSL, BaseSslContextFactory.chooseSslProvider());

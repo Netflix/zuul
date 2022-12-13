@@ -30,7 +30,7 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
-public class DiscoveryResultTest {
+class DiscoveryResultTest {
 
     @Test
     void hashCodeForNull() {

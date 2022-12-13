@@ -50,7 +50,7 @@ import org.junit.jupiter.api.Test;
  * Tests for {@link DefaultClientChannelManager}.  These tests don't use IPv6 addresses because {@link InstanceInfo} is
  * not capable of expressing them.
  */
-public class DefaultClientChannelManagerTest {
+class DefaultClientChannelManagerTest {
 
     @Test
     void pickAddressInternal_discovery() {
