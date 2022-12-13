@@ -51,7 +51,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link ClientRequestReceiver}.
  */
 @ExtendWith(MockitoExtension.class)
-public class ClientRequestReceiverTest {
+class ClientRequestReceiverTest {
 
     @Test
     void proxyProtocol_portSetInSessionContextAndInHttpRequestMessageImpl() {

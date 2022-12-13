@@ -42,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ElbProxyProtocolChannelHandlerTest {
+class ElbProxyProtocolChannelHandlerTest {
 
     @Mock
     private Registry registry;
@@ -50,7 +50,7 @@ public class ElbProxyProtocolChannelHandlerTest {
     private Counter counter;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         when(registry.counter("zuul.hapm.failure")).thenReturn(counter);
     }
 

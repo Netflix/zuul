@@ -25,12 +25,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class InstrumentedResourceLeakDetectorTest {
+class InstrumentedResourceLeakDetectorTest {
 
     InstrumentedResourceLeakDetector<Object> leakDetector;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         leakDetector = new InstrumentedResourceLeakDetector<>(ByteBuf.class, 1);
     }
 

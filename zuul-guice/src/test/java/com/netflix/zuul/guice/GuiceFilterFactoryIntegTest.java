@@ -22,7 +22,7 @@ import com.google.inject.Inject;
 import com.netflix.zuul.BaseInjectionIntegTest;
 import org.junit.jupiter.api.Test;
 
-public class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
+class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
     @Inject
     private GuiceFilterFactory filterFactory;

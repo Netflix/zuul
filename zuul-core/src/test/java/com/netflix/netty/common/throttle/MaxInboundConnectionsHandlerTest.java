@@ -31,14 +31,14 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MaxInboundConnectionsHandlerTest {
+class MaxInboundConnectionsHandlerTest {
 
     private Registry registry = new DefaultRegistry();
     private String listener = "test-throttled";
     private Id counterId;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         counterId = registry.createId("server.connections.throttled").withTags("id", listener);
     }
 

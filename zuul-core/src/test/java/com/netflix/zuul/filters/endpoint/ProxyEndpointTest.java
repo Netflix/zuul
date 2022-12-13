@@ -41,13 +41,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ProxyEndpointTest {
+class ProxyEndpointTest {
 
     ProxyEndpoint proxyEndpoint;
     HttpRequestMessage request;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         NettyRequestAttemptFactory attemptFactory = mock(NettyRequestAttemptFactory.class);
 

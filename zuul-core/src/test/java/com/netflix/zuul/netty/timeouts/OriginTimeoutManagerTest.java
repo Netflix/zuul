@@ -41,7 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * @since March 23, 2021
  */
 @ExtendWith(MockitoExtension.class)
-public class OriginTimeoutManagerTest {
+class OriginTimeoutManagerTest {
 
     @Mock
     private NettyOrigin origin;
@@ -55,7 +55,7 @@ public class OriginTimeoutManagerTest {
     private OriginTimeoutManager originTimeoutManager;
 
     @BeforeEach
-    public void before() {
+    void before() {
         originTimeoutManager = new OriginTimeoutManager(origin);
 
         context = new SessionContext();

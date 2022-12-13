@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link FilterProcessor}.
  */
-public class FilterProcessorTest {
+class FilterProcessorTest {
 
     @Test
     void allFilterClassedRecorded() throws Exception {

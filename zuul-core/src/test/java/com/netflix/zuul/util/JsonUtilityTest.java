@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link JsonUtility}.
  */
-public class JsonUtilityTest {
+class JsonUtilityTest {
 
     // I'm using LinkedHashMap in the testing so I get consistent ordering for the expected results
 

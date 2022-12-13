@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link Headers}.
  */
-public class HeadersTest {
+class HeadersTest {
 
     @Test
     void copyOf() {

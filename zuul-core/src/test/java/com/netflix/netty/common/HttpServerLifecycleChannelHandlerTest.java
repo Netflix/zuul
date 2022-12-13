@@ -35,7 +35,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.junit.jupiter.api.Test;
 
-public class HttpServerLifecycleChannelHandlerTest {
+class HttpServerLifecycleChannelHandlerTest {
 
     final class AssertReasonHandler extends ChannelInboundHandlerAdapter {
 

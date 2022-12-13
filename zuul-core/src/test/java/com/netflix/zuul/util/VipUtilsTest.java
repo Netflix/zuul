@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link VipUtils}.
  */
-public class VipUtilsTest {
+class VipUtilsTest {
     @Test
     void testGetVIPPrefix() {
         assertThrows(NullPointerException.class, () -> {

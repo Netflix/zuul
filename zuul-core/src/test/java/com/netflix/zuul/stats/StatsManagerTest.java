@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link StatsManager}.
  */
 @ExtendWith(MockitoExtension.class)
-public class StatsManagerTest {
+class StatsManagerTest {
 
     @Test
     void testCollectRouteStats() {

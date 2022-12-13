@@ -51,7 +51,7 @@ import org.mockito.quality.Strictness;
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class StripUntrustedProxyHeadersHandlerTest {
+class StripUntrustedProxyHeadersHandlerTest {
 
     @Mock
     private ChannelHandlerContext channelHandlerContext;
@@ -65,7 +65,7 @@ public class StripUntrustedProxyHeadersHandlerTest {
 
 
     @BeforeEach
-    public void before() {
+    void before() {
         when(channelHandlerContext.channel()).thenReturn(channel);
 
         DefaultAttributeMap attributeMap = new DefaultAttributeMap();

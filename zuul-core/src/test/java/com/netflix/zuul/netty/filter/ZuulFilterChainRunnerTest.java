@@ -48,12 +48,12 @@ import org.junit.jupiter.api.Test;
 import rx.Observable;
 
 
-public class ZuulFilterChainRunnerTest {
+class ZuulFilterChainRunnerTest {
     private HttpRequestMessage request;
     private HttpResponseMessage response;
 
     @BeforeEach
-    public void before() {
+    void before() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
@@ -169,6 +169,6 @@ public class ZuulFilterChainRunnerTest {
             return this.shouldFilter;
         }
     }
-    
+
 }
 

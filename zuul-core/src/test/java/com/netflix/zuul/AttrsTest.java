@@ -22,7 +22,7 @@ import com.google.common.truth.Truth;
 import com.netflix.zuul.Attrs.Key;
 import org.junit.jupiter.api.Test;
 
-public class AttrsTest {
+class AttrsTest {
     @Test
     void keysAreUnique() {
         Attrs attrs = Attrs.newInstance();

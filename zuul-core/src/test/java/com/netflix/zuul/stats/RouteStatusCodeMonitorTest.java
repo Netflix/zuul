@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link RouteStatusCodeMonitor}.
  */
-public class RouteStatusCodeMonitorTest {
+class RouteStatusCodeMonitorTest {
     @Test
     void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);

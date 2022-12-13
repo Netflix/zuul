@@ -33,7 +33,7 @@ public abstract class BaseInjectionIntegTest {
     protected Injector injector = Guice.createInjector(new InitTestModule(), new ZuulFiltersModule());
 
     @BeforeEach
-    public void setup () {
+    void setup() {
         injector.injectMembers(this);
     }
 }

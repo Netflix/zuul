@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests for {@link ClientSslContextFactory}.
  */
-public class ClientSslContextFactoryTest {
+class ClientSslContextFactoryTest {
 
     @Test
     void enableTls13() {

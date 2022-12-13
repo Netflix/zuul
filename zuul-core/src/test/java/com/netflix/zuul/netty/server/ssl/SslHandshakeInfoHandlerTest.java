@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link SslHandshakeInfoHandler}.
  */
-public class SslHandshakeInfoHandlerTest {
+class SslHandshakeInfoHandlerTest {
 
     @Test
     void sslEarlyHandshakeFailure() throws Exception {

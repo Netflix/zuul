@@ -28,7 +28,7 @@ import org.mockito.MockitoAnnotations;
  * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing
  * class named BaseFilterTest.
  */
-public class BaseFilterTest {
+class BaseFilterTest {
 
     @Mock
     private BaseFilter f1;
@@ -38,7 +38,7 @@ public class BaseFilterTest {
     private ZuulMessage req;
 
     @BeforeEach
-    public void before() {
+    void before() {
         MockitoAnnotations.initMocks(this);
     }
 

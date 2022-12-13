@@ -35,7 +35,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Tests for {@link FilterFileManager}.
  */
 @ExtendWith(MockitoExtension.class)
-public class FilterFileManagerTest {
+class FilterFileManagerTest {
     @Mock
     private File nonGroovyFile;
     @Mock
@@ -46,7 +46,7 @@ public class FilterFileManagerTest {
     private FilterLoader filterLoader;
 
     @BeforeEach
-    public void before() {
+    void before() {
         MockitoAnnotations.initMocks(this);
     }
 

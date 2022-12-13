@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  * @since November 18, 2020
  */
 
-public class Http2OrHttpHandlerTest {
+class Http2OrHttpHandlerTest {
 
     @Test
     void swapInHttp2HandlerBasedOnALPN() throws Exception {

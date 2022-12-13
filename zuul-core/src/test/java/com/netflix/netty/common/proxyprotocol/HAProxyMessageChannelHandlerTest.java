@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
-public class HAProxyMessageChannelHandlerTest {
+class HAProxyMessageChannelHandlerTest {
 
     @Test
     void setClientDestPortForHAPM() {
