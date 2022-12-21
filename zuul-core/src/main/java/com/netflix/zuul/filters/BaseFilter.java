@@ -23,7 +23,7 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.handler.codec.http.HttpContent;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Base abstract class for ZuulFilters. The base class defines abstract methods to define:
@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I,O>
 {
     private final String baseName;
-    private final AtomicInteger concurrentCount;
+    private final LongAdder concurrentCount;
     private final Counter concurrencyRejections;
 
     private final CachedDynamicBooleanProperty filterDisabled;
@@ -55,7 +55,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     protected BaseFilter() {
         baseName = getClass().getSimpleName() + "." + filterType();
-        concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
+        concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new LongAdder());
         concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
         filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
         filterConcurrencyLimit = new CachedDynamicIntProperty(maxConcurrencyPropertyName(), 4000);
@@ -126,15 +126,15 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public void incrementConcurrency() throws ZuulFilterConcurrencyExceededException {
         final int limit = filterConcurrencyLimit.get();
-        if ((concurrencyProtectEnabled.get()) && (concurrentCount.get() >= limit)) {
+        if ((concurrencyProtectEnabled.get()) && (concurrentCount.longValue() >= limit)) {
             concurrencyRejections.increment();
             throw new ZuulFilterConcurrencyExceededException(this, limit);
         }
-        concurrentCount.incrementAndGet();
+        concurrentCount.increment();
     }
 
     @Override
     public void decrementConcurrency() {
-        concurrentCount.decrementAndGet();
+        concurrentCount.decrement();
     }
 }
