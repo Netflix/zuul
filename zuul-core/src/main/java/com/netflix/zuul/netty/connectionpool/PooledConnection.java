@@ -109,7 +109,7 @@ public class PooledConnection {
 
     public DiscoveryResult getServer()
     {
-        return server;
+        return server.clone();
     }
 
     public Channel getChannel() {

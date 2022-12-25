@@ -30,7 +30,7 @@ public abstract class PushMessageSenderInitializer extends ChannelInitializer<Ch
     private final PushConnectionRegistry pushConnectionRegistry;
 
     public PushMessageSenderInitializer(PushConnectionRegistry pushConnectionRegistry) {
-        this.pushConnectionRegistry = pushConnectionRegistry;
+        this.pushConnectionRegistry = pushConnectionRegistry.clone();
     }
 
     @Override

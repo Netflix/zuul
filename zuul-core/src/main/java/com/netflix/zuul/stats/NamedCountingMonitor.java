@@ -46,7 +46,7 @@ public class NamedCountingMonitor implements NamedCount {
     /**
      * registers this objects
      */
-    public NamedCountingMonitor register() {
+    public NamedCountingMonitor register() throws CloneNotSupportedException {
         MonitorRegistry.getInstance().registerObject(this);
         return this;
     }

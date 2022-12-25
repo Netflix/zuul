@@ -202,7 +202,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     public RequestAttempts getRequestAttempts() {
-        return requestAttempts;
+        return (RequestAttempts) requestAttempts.clone();
     }
 
     protected RequestAttempt getCurrentRequestAttempt() {
@@ -218,7 +218,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     public HttpRequestMessage getZuulRequest() {
-        return zuulRequest;
+        return (HttpRequestMessage) zuulRequest.clone();
     }
 
     //Unlink OriginResponseReceiver from origin channel pipeline so that we no longer receive events
@@ -657,7 +657,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
         } catch (Exception e) {
             //Use original origin returned exception
-            handleError(ex);
+            handleError(e);
         }
     }
 

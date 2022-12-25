@@ -18,6 +18,7 @@ package com.netflix.zuul.message;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.exception.ZuulException;
@@ -675,5 +676,15 @@ public final class Headers {
             }
         }
         return ABSENT;
+    }
+
+    public Headers clone() {
+        try {
+            // call clone in Object.
+            return (Headers) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 }

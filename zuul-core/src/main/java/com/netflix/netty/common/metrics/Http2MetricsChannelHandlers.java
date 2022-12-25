@@ -46,7 +46,7 @@ public class Http2MetricsChannelHandlers
 
     public Outbound outbound()
     {
-        return outbound;
+        return outbound.clone();
     }
 
     protected static void incrementErrorCounter(Registry registry, String counterName, String metricId, Http2Exception h2e)
@@ -125,7 +125,7 @@ public class Http2MetricsChannelHandlers
     }
 
     @ChannelHandler.Sharable
-    private static class Outbound extends ChannelOutboundHandlerAdapter
+    private static class Outbound extends ChannelOutboundHandlerAdapter implements Cloneable
     {
         private final Registry registry;
         private final String metricId;
@@ -160,6 +160,16 @@ public class Http2MetricsChannelHandlers
             }
             finally {
                 super.exceptionCaught(ctx, cause);
+            }
+        }
+
+        public Outbound clone() {
+            try {
+                // call clone in Object.
+                return (Outbound) super.clone();
+            } catch (CloneNotSupportedException e) {
+                System.out.println("Cloning not allowed.");
+                return this;
             }
         }
     }

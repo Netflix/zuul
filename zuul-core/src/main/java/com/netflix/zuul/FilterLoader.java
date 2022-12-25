@@ -17,6 +17,7 @@ package com.netflix.zuul;
 
 import static java.util.Objects.requireNonNull;
 
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import java.io.File;

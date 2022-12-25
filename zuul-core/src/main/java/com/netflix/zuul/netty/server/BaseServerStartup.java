@@ -96,7 +96,7 @@ public abstract class BaseServerStartup
 
     public Server server()
     {
-        return server;
+        return server.clone();
     }
 
     @Inject

@@ -130,7 +130,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
             String application_name) {
         this.filter_id = filter_id;
         this.revision = revision;
-        this.creationDate = creationDate;
+        this.creationDate = (Date) creationDate.clone();
         this.isActive.set(isActive);
         this.isCanary.set(isCanary);
         this.filter_code = filter_code;
@@ -155,7 +155,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
      * @return creation date
      */
     public Date getCreationDate() {
-        return creationDate;
+        return (Date) creationDate.clone();
     }
 
     /**

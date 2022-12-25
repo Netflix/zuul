@@ -71,7 +71,7 @@ public class ServerSslConfig {
     public ServerSslConfig(
             String[] protocols, String[] ciphers, File certChainFile, File keyFile, ClientAuth clientAuth,
             File clientAuthTrustStoreFile, File clientAuthTrustStorePasswordFile, boolean sessionTicketsEnabled) {
-        this.protocols = protocols;
+        this.protocols = protocols.clone();
         this.ciphers = ciphers != null ? Arrays.asList(ciphers) : null;
         this.certChainFile = certChainFile;
         this.keyFile = keyFile;
@@ -86,7 +86,7 @@ public class ServerSslConfig {
     public ServerSslConfig(
             String[] protocols, String[] ciphers, File certChainFile, File keyFile, ClientAuth clientAuth,
             File clientAuthTrustStoreFile, String clientAuthTrustStorePassword, boolean sessionTicketsEnabled) {
-        this.protocols = protocols;
+        this.protocols = protocols.clone();
         this.ciphers = Arrays.asList(ciphers);
         this.certChainFile = certChainFile;
         this.keyFile = keyFile;
@@ -100,7 +100,7 @@ public class ServerSslConfig {
 
     public static String[] getDefaultCiphers()
     {
-        return DEFAULT_CIPHERS;
+        return DEFAULT_CIPHERS.clone();
     }
 
     public static ServerSslConfig withDefaultCiphers(File certChainFile, File keyFile, String ... protocols)
@@ -110,7 +110,7 @@ public class ServerSslConfig {
 
     public String[] getProtocols()
     {
-        return protocols;
+        return protocols.clone();
     }
 
     public List<String> getCiphers()

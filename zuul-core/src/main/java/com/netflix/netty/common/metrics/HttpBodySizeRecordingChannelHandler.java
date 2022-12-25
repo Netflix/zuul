@@ -142,7 +142,7 @@ public final class HttpBodySizeRecordingChannelHandler {
         public Long get()
         {
             State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.inboundBodySize;
+            return state.inboundBodySize;
         }
     }
 
@@ -159,7 +159,7 @@ public final class HttpBodySizeRecordingChannelHandler {
         public Long get()
         {
             State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.outboundBodySize;
+            return state.outboundBodySize;
         }
     }
 }

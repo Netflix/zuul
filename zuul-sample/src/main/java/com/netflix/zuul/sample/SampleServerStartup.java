@@ -84,7 +84,7 @@ public class SampleServerStartup extends BaseServerStartup {
         super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
                 directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
                 accessLogPublisher);
-        this.pushConnectionRegistry = pushConnectionRegistry;
+        this.pushConnectionRegistry = pushConnectionRegistry.clone();
         this.pushSenderInitializer = pushSenderInitializer;
     }
 

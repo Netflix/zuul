@@ -34,8 +34,8 @@ public class ErrorStatsManager {
      *
      * @return Singleton
      */
-    public static ErrorStatsManager getManager() {
-        return INSTANCE;
+    public static ErrorStatsManager getManager() throws CloneNotSupportedException {
+        return (ErrorStatsManager) INSTANCE.clone();
     }
 
 
@@ -56,7 +56,7 @@ public class ErrorStatsManager {
      * @param route
      * @param cause
      */
-    public void putStats(String route, String cause) {
+    public void putStats(String route, String cause) throws CloneNotSupportedException {
         if (route == null) route = "UNKNOWN_ROUTE";
         route = route.replace("/", "_");
         ConcurrentHashMap<String, ErrorStatsData> statsMap = routeMap.get(route);

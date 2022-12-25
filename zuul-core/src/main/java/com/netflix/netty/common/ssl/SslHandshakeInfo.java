@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.ssl;
 
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import io.netty.handler.ssl.ClientAuth;
 
 import java.security.cert.X509Certificate;
@@ -79,5 +80,15 @@ public class SslHandshakeInfo {
                 ", clientCertificate=" + clientCertificate +
                 ", isOfIntermediary=" + isOfIntermediary +
                 '}';
+    }
+
+    public SslHandshakeInfo clone() {
+        try {
+            // call clone in Object.
+            return (SslHandshakeInfo) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 }

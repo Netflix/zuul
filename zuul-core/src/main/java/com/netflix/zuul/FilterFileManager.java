@@ -202,18 +202,18 @@ public class FilterFileManager {
         private FilenameFilter filenameFilter;
 
         public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
-            this.directories = directories;
-            this.classNames = classNames;
+            this.directories = directories.clone();
+            this.classNames = classNames.clone();
             this.pollingIntervalSeconds = pollingIntervalSeconds;
             this.filenameFilter = filenameFilter;
         }
 
         public String[] getDirectories() {
-            return directories;
+            return directories.clone();
         }
         public String[] getClassNames()
         {
-            return classNames;
+            return classNames.clone();
         }
         public int getPollingIntervalSeconds() {
             return pollingIntervalSeconds;

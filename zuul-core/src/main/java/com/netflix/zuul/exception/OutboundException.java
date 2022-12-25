@@ -36,7 +36,7 @@ public class OutboundException extends ZuulException
     {
         super(outboundErrorType.toString(), outboundErrorType.toString(), true);
         this.outboundErrorType = outboundErrorType;
-        this.requestAttempts = requestAttempts;
+        this.requestAttempts = (RequestAttempts) requestAttempts.clone();
         this.setStatusCode(outboundErrorType.getStatusCodeToReturn());
         this.dontLogAsError();
     }
@@ -45,7 +45,7 @@ public class OutboundException extends ZuulException
     {
         super(outboundErrorType.toString(), cause.getMessage(), true);
         this.outboundErrorType = outboundErrorType;
-        this.requestAttempts = requestAttempts;
+        this.requestAttempts = (RequestAttempts) requestAttempts.clone();
         this.setStatusCode(outboundErrorType.getStatusCodeToReturn());
         this.dontLogAsError();
     }

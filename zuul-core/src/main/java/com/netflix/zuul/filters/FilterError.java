@@ -45,7 +45,8 @@ public class FilterError implements Cloneable
     }
 
     @Override
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
+        super.clone();
         return new FilterError(filterName, filterType, exception);
     }
 

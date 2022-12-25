@@ -70,8 +70,8 @@ public class ChannelConfig implements Cloneable
     }
 
     @Override
-    public ChannelConfig clone()
-    {
+    public ChannelConfig clone() throws CloneNotSupportedException {
+        super.clone();
         return new ChannelConfig(parameters);
     }
 }
