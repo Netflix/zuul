@@ -61,6 +61,7 @@ dependencies {
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'
+    jmh 'org.openjdk.jmh:jmh-generator-bytecode:1.+'
 }
 
 // Silences log statements during tests.   This still allows normal failures to be printed.
