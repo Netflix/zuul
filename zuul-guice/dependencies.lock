@@ -440,10 +440,10 @@
             "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.35"
@@ -774,10 +774,10 @@
             "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -987,10 +987,10 @@
             "locked": "5.9.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
