@@ -79,6 +79,6 @@ jmh {
     fork = 1
     warmupIterations = 10
     iterations = 5
-    // Not sure why duplicate classes are aon the path.  Something Nebula related I think.
+    // Not sure why duplicate classes are on the path.  Something Nebula related I think.
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }
