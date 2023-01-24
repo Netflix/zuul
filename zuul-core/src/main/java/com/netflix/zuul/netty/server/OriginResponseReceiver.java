@@ -83,6 +83,9 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
+            } else if (ReferenceCountUtil.refCnt(msg) > 0){
+                // this handles the case of a DefaultHttpResponse that could have content that needs to be released
+                ReferenceCountUtil.safeRelease(msg);
             }
             ctx.channel().read();
         }
@@ -90,9 +93,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             final HttpContent chunk = (HttpContent) msg;
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
-            }
-            else {
-                chunk.release();
+            } else {
+                ReferenceCountUtil.safeRelease(chunk);
             }
             ctx.channel().read();
         }
