@@ -84,7 +84,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
             } else if (ReferenceCountUtil.refCnt(msg) > 0){
-                // this handles the case of a DefaultHttpResponse that could have content that needs to be released
+                // this handles the case of a DefaultFullHttpResponse that could have content that needs to be released
                 ReferenceCountUtil.safeRelease(msg);
             }
             ctx.channel().read();
