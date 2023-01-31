@@ -26,6 +26,7 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
+import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -34,16 +35,21 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -52,6 +58,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
@@ -64,6 +72,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.google.common.truth.Truth.assertThat;
 import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IntegrationTest {
@@ -317,6 +326,95 @@ class IntegrationTest {
         final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
+    }
+
+    @Test
+    void deflateOnly() throws Exception {
+        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", "deflate");
+        InputStream inputStream = connection.getInputStream();
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertEquals("deflate", connection.getHeaderField("Content-Encoding"));
+        byte[] compressedData = IOUtils.toByteArray(inputStream);
+        Inflater inflater = new Inflater();
+        inflater.setInput(compressedData);
+        byte[] result = new byte[1000];
+        int nBytes = inflater.inflate(result);
+        String text = new String(result, 0, nBytes, TestUtil.CHARSET);
+        assertEquals(expectedResponseBody, text);
+        inputStream.close();
+        connection.disconnect();
+    }
+
+    @Test
+    void gzipOnly() throws Exception {
+        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", "gzip");
+        InputStream inputStream = connection.getInputStream();
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertEquals("gzip", connection.getHeaderField("Content-Encoding"));
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+        byte[] data = IOUtils.toByteArray(gzipInputStream);
+        String text = new String(data, TestUtil.CHARSET);
+        assertEquals(expectedResponseBody, text);
+        inputStream.close();
+        gzipInputStream.close();
+        connection.disconnect();
+    }
+
+    @Test
+    void noCompression() throws Exception {
+        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", ""); // no compression
+        InputStream inputStream = connection.getInputStream();
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertNull(connection.getHeaderField("Content-Encoding"));
+        byte[] data = IOUtils.toByteArray(inputStream);
+        String text = new String(data, TestUtil.CHARSET);
+        assertEquals(expectedResponseBody, text);
+        inputStream.close();
+        connection.disconnect();
     }
 
     private static String randomPathSegment() {

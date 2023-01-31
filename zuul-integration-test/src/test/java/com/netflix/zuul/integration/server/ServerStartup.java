@@ -36,7 +36,10 @@ import com.netflix.zuul.netty.server.http2.Http2SslChannelInitializer;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.netty.ssl.BaseSslContextFactory;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.codec.compression.CompressionOptions;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.ssl.ClientAuth;
 
 import javax.inject.Inject;
@@ -123,7 +126,14 @@ public class ServerStartup extends BaseServerStartup {
                 addrsToChannels.put(
                         new NamedSocketAddress("http", sockAddr),
                         new ZuulServerChannelInitializer(
-                                metricId, channelConfig, channelDependencies, clientChannels));
+                                metricId, channelConfig, channelDependencies, clientChannels) {
+                            @Override
+                            protected void addHttp1Handlers(ChannelPipeline pipeline)
+                            {
+                                super.addHttp1Handlers(pipeline);
+                                pipeline.addLast(new HttpContentCompressor((CompressionOptions[]) null));
+                            }
+                        });
                 logAddrConfigured(sockAddr);
                 break;
 

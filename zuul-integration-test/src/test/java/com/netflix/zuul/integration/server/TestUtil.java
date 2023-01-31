@@ -19,10 +19,17 @@ package com.netflix.zuul.integration.server;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class TestUtil {
     private TestUtil() { }
+
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
+
+    public static final String COMPRESSIBLE_CONTENT = "Hello Hello Hello Hello Hello";
+    public static final String COMPRESSIBLE_CONTENT_TYPE = "text/plain";
 
     public static DiscoveryEnabledServer makeDiscoveryEnabledServer(final String appName, final String ipAddress, final int port) {
         InstanceInfo instanceInfo = new InstanceInfo(
