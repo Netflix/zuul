@@ -72,6 +72,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.google.common.truth.Truth.assertThat;
 import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IntegrationTest {
@@ -408,7 +409,7 @@ class IntegrationTest {
         InputStream inputStream = connection.getInputStream();
         assertEquals(200, connection.getResponseCode());
         assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertEquals(null, connection.getHeaderField("Content-Encoding"));
+        assertNull(connection.getHeaderField("Content-Encoding"));
         byte[] data = IOUtils.toByteArray(inputStream);
         String text = new String(data, TestUtil.CHARSET);
         assertEquals(expectedResponseBody, text);
