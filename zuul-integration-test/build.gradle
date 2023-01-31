@@ -16,6 +16,11 @@ dependencies {
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
     testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    testRuntimeOnly "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-x86_64:$versions_brotli4j"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-aarch64:$versions_brotli4j"
 }
 
 tasks.withType(Test).all {
