@@ -27,6 +27,7 @@ import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
+import io.netty.handler.codec.compression.Brotli;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -386,6 +387,41 @@ class IntegrationTest {
         assertEquals(expectedResponseBody, text);
         inputStream.close();
         gzipInputStream.close();
+        connection.disconnect();
+    }
+
+    @Test
+    void brotliOnly() throws Throwable {
+        Brotli.ensureAvailability();
+        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                get(anyUrl())
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(200)
+                                        .withBody(expectedResponseBody)
+                                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", "br");
+        InputStream inputStream = connection.getInputStream();
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertEquals("br", connection.getHeaderField("Content-Encoding"));
+        byte[] compressedData = IOUtils.toByteArray(inputStream);
+        assertTrue(compressedData.length > 0);
+        /* TODO : call brotli4j DirectDecompress
+        DirectDecompress decompressResult = DirectDecompress.decompress(ByteBufUtil.getBytes(contentBuf));
+        assertEquals(DecoderJNI.Status.DONE, decompressResult.getResultStatus());
+        assertEquals("blah blah blah",
+                new String(decompressResult.getDecompressedData(), TestUtil.CHARSET));
+                */
+
+        inputStream.close();
         connection.disconnect();
     }
 
