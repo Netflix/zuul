@@ -329,16 +329,16 @@ class IntegrationTest {
     }
 
     @Test
-    public void deflateOnly() throws Exception {
+    void deflateOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(anyUrl())
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withBody(expectedResponseBody)
-                                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
         URL url = new URL(zuulBaseUri);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
@@ -360,16 +360,16 @@ class IntegrationTest {
     }
 
     @Test
-    public void gzipOnly() throws Exception {
+    void gzipOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(anyUrl())
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withBody(expectedResponseBody)
-                                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
 
         URL url = new URL(zuulBaseUri);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -390,16 +390,16 @@ class IntegrationTest {
     }
 
     @Test
-    public void noCompression() throws Exception {
+    void noCompression() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
         wireMock.register(
-                get(anyUrl())
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withBody(expectedResponseBody)
-                                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+            get(anyUrl())
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
 
         URL url = new URL(zuulBaseUri);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
