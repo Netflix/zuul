@@ -332,7 +332,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -549,7 +549,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -879,7 +879,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [

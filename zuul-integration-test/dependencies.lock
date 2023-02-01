@@ -90,7 +90,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -461,6 +461,21 @@
         }
     },
     "jmhRuntimeClasspath": {
+        "com.aayushatharva.brotli4j:brotli4j": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-linux-aarch64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-linux-x86_64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-osx-aarch64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-osx-x86_64": {
+            "locked": "1.9.0"
+        },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -571,7 +586,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -806,7 +821,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -1062,6 +1077,21 @@
         }
     },
     "testRuntimeClasspath": {
+        "com.aayushatharva.brotli4j:brotli4j": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-linux-aarch64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-linux-x86_64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-osx-aarch64": {
+            "locked": "1.9.0"
+        },
+        "com.aayushatharva.brotli4j:native-osx-x86_64": {
+            "locked": "1.9.0"
+        },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1172,7 +1202,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.16.Final"
+            "locked": "0.0.17.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
