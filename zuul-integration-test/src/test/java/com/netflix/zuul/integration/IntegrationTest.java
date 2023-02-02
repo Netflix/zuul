@@ -29,7 +29,6 @@ import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.compression.Brotli;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
