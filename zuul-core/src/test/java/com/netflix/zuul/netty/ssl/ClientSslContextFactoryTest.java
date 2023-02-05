@@ -70,7 +70,7 @@ class ClientSslContextFactoryTest {
     @Test
     void testGetCiphers() throws Exception {
         ClientSslContextFactory factory = new ClientSslContextFactory(new DefaultRegistry());
-        List<String> ciphers = factory.getCiphers();;
+        List<String> ciphers = factory.getCiphers();
         assertThat(ciphers).isNotEmpty();
         assertThat(ciphers).containsNoDuplicates();
     }
