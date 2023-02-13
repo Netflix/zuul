@@ -928,6 +928,9 @@
         }
     },
     "testCompileClasspath": {
+        "com.aayushatharva.brotli4j:brotli4j": {
+            "locked": "1.9.0"
+        },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"

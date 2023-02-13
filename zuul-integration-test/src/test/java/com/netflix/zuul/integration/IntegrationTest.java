@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.integration;
 
+import com.aayushatharva.brotli4j.decoder.DecoderJNI;
+import com.aayushatharva.brotli4j.decoder.DirectDecompress;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -414,12 +416,10 @@ class IntegrationTest {
         assertEquals("br", connection.getHeaderField("Content-Encoding"));
         byte[] compressedData = IOUtils.toByteArray(inputStream);
         assertTrue(compressedData.length > 0);
-        /* TODO : call brotli4j DirectDecompress
-        DirectDecompress decompressResult = DirectDecompress.decompress(ByteBufUtil.getBytes(contentBuf));
+        DirectDecompress decompressResult = DirectDecompress.decompress(compressedData);
         assertEquals(DecoderJNI.Status.DONE, decompressResult.getResultStatus());
-        assertEquals("blah blah blah",
+        assertEquals("Hello Hello Hello Hello Hello",
                 new String(decompressResult.getDecompressedData(), TestUtil.CHARSET));
-                */
 
         inputStream.close();
         connection.disconnect();
