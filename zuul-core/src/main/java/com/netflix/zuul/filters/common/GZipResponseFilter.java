@@ -50,7 +50,8 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
     private static DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty("zuul.gzip.contenttypes",
             "text/html,application/x-javascript,text/css,application/javascript,text/javascript,text/plain,text/xml," +
                     "application/json,application/vnd.ms-fontobject,application/x-font-opentype,application/x-font-truetype," +
-                    "application/x-font-ttf,application/xml,font/eot,font/opentype,font/otf,image/svg+xml,image/vnd.microsoft.icon",
+                    "application/x-font-ttf,application/xml,font/eot,font/opentype,font/otf,image/svg+xml,image/vnd.microsoft.icon," +
+                    "text/event-stream",
             ",");
 
     // https://webmasters.stackexchange.com/questions/31750/what-is-recommended-minimum-object-size-for-gzip-performance-benefits
