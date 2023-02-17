@@ -60,6 +60,12 @@ public final class Headers {
         values = new ArrayList<>();
     }
 
+    public Headers(int initialSize) {
+        originalNames = new ArrayList<>(initialSize);
+        names = new ArrayList<>(initialSize);
+        values = new ArrayList<>(initialSize);
+    }
+
     private Headers(Headers original) {
         originalNames = new ArrayList<>(original.originalNames);
         names = new ArrayList<>(original.names);

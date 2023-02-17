@@ -67,8 +67,10 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
@@ -412,9 +414,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     private static Headers copyHeaders(final HttpRequest req) {
-        final Headers headers = new Headers();
-        for (Map.Entry<String, String> entry : req.headers().entries()) {
-            headers.add(entry.getKey(), entry.getValue());
+        final Headers headers = new Headers(req.headers().size());
+        for (Iterator<Entry<String, String>> it = req.headers().iteratorAsString(); it.hasNext(); ) {
+            Entry<String, String> header = it.next();
+            headers.add(header.getKey(), header.getValue());
         }
         return headers;
     }

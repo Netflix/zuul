@@ -26,6 +26,7 @@ import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.netty.insights.PassportLoggingHandler;
@@ -43,6 +44,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -303,6 +306,40 @@ class ClientRequestReceiverTest {
 
         assertEquals(ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT,
                 StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()));
+    }
+
+    @Test
+    void headersAllCopied() {
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
+        PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
+
+        // Required for messages
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.pipeline().addLast(new HttpServerCodec());
+        channel.pipeline().addLast(receiver);
+        channel.pipeline().addLast(loggingHandler);
+
+        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post");
+        httpRequest.headers().add("Header1", "Value1");
+        httpRequest.headers().add("Header2", "Value2");
+        httpRequest.headers().add("Duplicate", "Duplicate1");
+        httpRequest.headers().add("Duplicate", "Duplicate2");
+
+        channel.writeOutbound(httpRequest);
+        ByteBuf byteBuf = channel.readOutbound();
+        channel.writeInbound(byteBuf);
+        channel.readInbound();
+        channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        Headers headers = request.getHeaders();
+        assertEquals(4, headers.size());
+        assertEquals("Value1", headers.getFirst("Header1"));
+        assertEquals("Value2", headers.getFirst("Header2"));
+
+        List<String> duplicates = headers.getAll("Duplicate");
+        assertEquals(Arrays.asList("Duplicate1", "Duplicate2"), duplicates);
     }
 }
 
