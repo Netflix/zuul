@@ -580,8 +580,18 @@ class HeadersTest {
 
         assertTrue(headers.contains("CoOkIe"));
         assertTrue(headers.contains(new HeaderName("CoOkIe")));
+        assertTrue(headers.contains("cookie"));
+        assertTrue(headers.contains(new HeaderName("cookie")));
+        assertTrue(headers.contains("Cookie"));
+        assertTrue(headers.contains(new HeaderName("Cookie")));
+        assertTrue(headers.contains("COOKIE"));
+        assertTrue(headers.contains(new HeaderName("COOKIE")));
         assertFalse(headers.contains("Monkey"));
         assertFalse(headers.contains(new HeaderName("Monkey")));
+
+        headers.remove("cookie");
+        assertFalse(headers.contains("cookie"));
+        assertFalse(headers.contains(new HeaderName("cookie")));
     }
 
     @Test
