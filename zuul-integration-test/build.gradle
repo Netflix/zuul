@@ -14,7 +14,7 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.20.0'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
