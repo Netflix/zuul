@@ -181,7 +181,9 @@ public class PooledConnection {
 
     public ChannelFuture closeAndRemoveFromPool()
     {
-        channelManager.remove(this);
+        synchronized (channelManager) {
+            channelManager.remove(this);
+        }
         return this.close();
     }
 
@@ -203,10 +205,12 @@ public class PooledConnection {
             this.shouldClose = true;
         }
 
-        // reset the connectionState
-        connectionState = ConnectionState.WRITE_READY;
-        released = true;
-        return channelManager.release(this);
+        // reset the connectionState and release
+        synchronized (channelManager) {
+            connectionState = ConnectionState.WRITE_READY;
+            released = true;
+            return channelManager.release(this);
+        }
     }
 
     public void removeReadTimeoutHandler()
