@@ -1,26 +1,26 @@
 {
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         }
     },
     "jmhCompileClasspath": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         }
     },
     "jmhRuntimeClasspath": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         }
     },
     "rewrite": {
