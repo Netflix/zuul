@@ -24,10 +24,10 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         }
     },
     "jmhCompileClasspath": {
@@ -50,10 +50,10 @@
             "locked": "2.4.4"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -94,10 +94,10 @@
             "locked": "4.11.0"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.35"
+            "locked": "1.36"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
