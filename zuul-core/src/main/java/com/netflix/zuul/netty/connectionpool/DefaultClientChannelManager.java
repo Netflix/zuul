@@ -213,6 +213,19 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
     }
 
+    /**
+     * Gracefully shuts down a DefaultClientChannelManager by allowing in-flight requests to finish before closing the connections.
+     * Idle connections in the connection pools are closed, and any connections associated with an in-flight request
+     * will be closed upon trying to return the connection to the pool
+     */
+    @Override
+    public void gracefulShutdown() {
+        LOG.info("Starting a graceful shutdown of {}", clientConfig.getClientName());
+        shuttingDown = true;
+        dynamicServerResolver.shutdown();
+        perServerPools.values().forEach(IConnectionPool::drain);
+    }
+
     @Override
     public boolean release(final PooledConnection conn) {
 
@@ -225,6 +238,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         discoveryResult.incrementNumRequests();
 
         if (shuttingDown) {
+            LOG.debug("[{}] closing connection released during shutdown", conn.getChannel().id());
+            conn.close();
             return false;
         }
 
@@ -268,14 +283,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 released = pool.release(conn);
             }
             else {
-                // The pool for this server no longer exists (maybe due to it failling out of
+                // The pool for this server no longer exists (maybe due to it falling out of
                 // discovery).
                 conn.setInPool(false);
                 released = false;
                 conn.close();
             }
 
-            if (LOG.isDebugEnabled()) LOG.debug("PooledConnection released: {}", conn.toString());
+            LOG.debug("PooledConnection released: {}", conn);
         }
 
         return released;
