@@ -431,12 +431,9 @@ public class PerServerConnectionPool implements IConnectionPool
      */
     void drainIdleConnectionsOnEventLoop(EventLoop eventLoop) {
         eventLoop.execute(() -> {
-            Deque<PooledConnection> connections = connectionsPerEventLoop.get(eventLoop);
-            for(Iterator<PooledConnection> it = connections.iterator(); it.hasNext(); ) {
+            for(PooledConnection connection : connectionsPerEventLoop.get(eventLoop)) {
                 //any connections in the Deque are idle since they are removed in tryGettingFromConnectionPool()
-                PooledConnection connection = it.next();
                 connection.setInPool(false);
-                it.remove();
                 LOG.debug("Closing connection {}", connection);
                 connection.close();
                 connsInPool.decrementAndGet();

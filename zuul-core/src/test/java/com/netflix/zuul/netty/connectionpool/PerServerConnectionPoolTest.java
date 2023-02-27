@@ -323,12 +323,10 @@ class PerServerConnectionPoolTest {
         connections.add(connection2);
         connsInPool.set(2);
 
-        assertEquals(2, connections.size());
         assertEquals(2, connsInPool.get());
         pool.drainIdleConnectionsOnEventLoop(channel1.eventLoop());
         channel1.runPendingTasks();
 
-        assertEquals(0, connections.size());
         assertEquals(0, connsInPool.get());
         assertTrue(connection1.getChannel().closeFuture().isSuccess());
         assertTrue(connection2.getChannel().closeFuture().isSuccess());
