@@ -210,30 +210,4 @@ class DefaultClientChannelManagerTest {
         clientChannelManager.shutdown();
         serverSocket.close();
     }
-
-    @Test
-    public void connClosedIfReleasedDuringShutdown() {
-        OriginName originName = OriginName.fromVip("vip", "test");
-        DynamicServerResolver resolver = mock(DynamicServerResolver.class);
-
-        NoopRegistry registry = new NoopRegistry();
-        DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
-                null, resolver, registry);
-
-        clientChannelManager.shutdown();
-
-        InstanceInfo instanceInfo = Builder.newBuilder()
-                                                 .setAppName("server-equality")
-                                                 .setHostName("server-equality")
-                                                 .setPort(7777).build();
-        DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, false);
-
-        EmbeddedChannel channel = new EmbeddedChannel();
-        PooledConnection pooledConnection = new PooledConnection(channel, discoveryResult, clientChannelManager,
-                registry.counter("counter1"), registry.counter("counter2"));
-
-        Truth.assertThat(clientChannelManager.release(pooledConnection)).isFalse();
-        Truth.assertThat(pooledConnection.getChannel().closeFuture().isSuccess()).isTrue();
-    }
-
 }

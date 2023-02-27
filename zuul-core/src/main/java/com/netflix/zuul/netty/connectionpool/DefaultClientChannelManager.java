@@ -237,12 +237,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         discoveryResult.decrementActiveRequestsCount();
         discoveryResult.incrementNumRequests();
 
-        if (shuttingDown) {
-            LOG.debug("[{}] closing connection released during shutdown", conn.getChannel().id());
-            conn.close();
-            return false;
-        }
-
         boolean released = false;
 
         // if the connection has been around too long (i.e. too many requests), then close it

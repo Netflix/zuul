@@ -323,6 +323,12 @@ public class PerServerConnectionPool implements IConnectionPool
             return false;
         }
 
+        if(draining) {
+            LOG.debug("[{}] closing released connection during drain", conn.getChannel().id());
+            conn.getChannel().close();
+            return false;
+        }
+
         // Get the eventloop for this channel.
         EventLoop eventLoop = conn.getChannel().eventLoop();
         Deque<PooledConnection> connections = getPoolForEventLoop(eventLoop);

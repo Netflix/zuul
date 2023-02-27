@@ -8,8 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Ticker;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
@@ -54,7 +52,7 @@ import org.mockito.MockitoAnnotations;
  * @author Justin Guerra
  * @since 2/24/23
  */
-public class PerServerConnectionPoolTest {
+class PerServerConnectionPoolTest {
 
     private static LocalAddress LOCAL_ADDRESS;
     private static DefaultEventLoopGroup ORIGIN_EVENT_LOOP_GROUP;
@@ -85,7 +83,7 @@ public class PerServerConnectionPoolTest {
 
     @BeforeAll
     @SuppressWarnings("deprecation")
-    public static void staticSetup() throws InterruptedException {
+    static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
 
         CLIENT_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
@@ -93,13 +91,13 @@ public class PerServerConnectionPoolTest {
 
         ORIGIN_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
         ServerBootstrap bootstrap = new ServerBootstrap().group(ORIGIN_EVENT_LOOP_GROUP)
-                                                         .localAddress(LOCAL_ADDRESS)
-                                                         .channel(LocalServerChannel.class)
-                                                         .childHandler(new ChannelInitializer<LocalChannel>() {
-                                                             @Override
-                                                             protected void initChannel(LocalChannel ch) {
-                                                             }
-                                                         });
+                .localAddress(LOCAL_ADDRESS)
+                .channel(LocalServerChannel.class)
+                .childHandler(new ChannelInitializer<LocalChannel>() {
+                    @Override
+                    protected void initChannel(LocalChannel ch) {
+                    }
+                });
 
         bootstrap.bind().sync();
         PREVIOUS_CHANNEL_TYPE = Server.defaultOutboundChannelType.getAndSet(LocalChannel.class);
@@ -107,17 +105,17 @@ public class PerServerConnectionPoolTest {
 
     @AfterAll
     @SuppressWarnings("deprecation")
-    public static void staticCleanup() {
+    static void staticCleanup() {
         ORIGIN_EVENT_LOOP_GROUP.shutdownGracefully();
         CLIENT_EVENT_LOOP_GROUP.shutdownGracefully();
 
-        if(PREVIOUS_CHANNEL_TYPE != null) {
+        if (PREVIOUS_CHANNEL_TYPE != null) {
             Server.defaultOutboundChannelType.set(PREVIOUS_CHANNEL_TYPE);
         }
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
 
         registry = new DefaultRegistry();
@@ -139,10 +137,10 @@ public class PerServerConnectionPoolTest {
         OriginName originName = OriginName.fromVipAndApp("whatever", "whatever-secure");
 
         InstanceInfo instanceInfo = Builder.newBuilder()
-                                           .setIPAddr("175.45.176.0")
-                                           .setPort(7001)
-                                           .setAppName("whatever")
-                                           .build();
+                .setIPAddr("175.45.176.0")
+                .setPort(7001)
+                .setAppName("whatever")
+                .build();
         discoveryResult = DiscoveryResult.from(instanceInfo, true);
 
         clientConfig = new DefaultClientConfigImpl();
@@ -166,7 +164,7 @@ public class PerServerConnectionPoolTest {
     }
 
     @Test
-    public void acquireNewConnectionHitsMaxConnections() {
+    void acquireNewConnectionHitsMaxConnections() {
         CurrentPassport currentPassport = CurrentPassport.create();
 
         clientConfig.set(Keys.MaxConnectionsPerHost, 1);
@@ -180,7 +178,7 @@ public class PerServerConnectionPoolTest {
     }
 
     @Test
-    public void acquireNewConnection() throws InterruptedException, ExecutionException {
+    void acquireNewConnection() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
 
@@ -188,18 +186,18 @@ public class PerServerConnectionPoolTest {
         assertEquals(1, requestConnCounter.count());
         assertEquals(1, createNewConnCounter.count());
         assertNotNull(currentPassport.findState(PassportState.ORIGIN_CH_CONNECTING));
-                assertNotNull(currentPassport.findState(PassportState.ORIGIN_CH_CONNECTED));
+        assertNotNull(currentPassport.findState(PassportState.ORIGIN_CH_CONNECTED));
         assertEquals(1, createConnSucceededCounter.count());
         assertEquals(1, connsInUse.get());
 
         //check state on PooledConnection - not all thread safe
         CLIENT_EVENT_LOOP.submit(() -> {
-                checkChannelState(connection, currentPassport, 1);
+            checkChannelState(connection, currentPassport, 1);
         }).sync();
     }
 
     @Test
-    public void acquireConnectionFromPool() throws InterruptedException, ExecutionException {
+    void acquireConnectionFromPoolAndRelease() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
 
@@ -221,12 +219,12 @@ public class PerServerConnectionPoolTest {
 
 
         CLIENT_EVENT_LOOP.submit(() -> {
-           checkChannelState(connection, newPassport, 2);
+            checkChannelState(connection, newPassport, 2);
         }).sync();
     }
 
     @Test
-    public void acquireConnectionFromPoolButAlreadyClosed() throws InterruptedException, ExecutionException {
+    void releaseFromPoolButAlreadyClosed() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
 
@@ -250,7 +248,7 @@ public class PerServerConnectionPoolTest {
     }
 
     @Test
-    public void poolAboveHighWaterMark() throws InterruptedException, ExecutionException {
+    void releaseFromPoolAboveHighWaterMark() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
 
         AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
@@ -273,14 +271,30 @@ public class PerServerConnectionPoolTest {
     }
 
     @Test
-    public void acquireWhileDraining() {
+    void releaseFromPoolWhileDraining() throws InterruptedException, ExecutionException {
+        Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, CurrentPassport.create(), new AtomicReference<>());
+
+        PooledConnection connection = promise.sync().get();
+        pool.drain();
+
+        CLIENT_EVENT_LOOP.submit(() -> {
+            assertFalse(connection.isInPool());
+            assertTrue(connection.getChannel().isActive(), "connection was incorrectly closed during the drain");
+            pool.release(connection);
+        }).sync();
+
+        assertTrue(connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS), "connection should have been closed after release");
+    }
+
+    @Test
+    void acquireWhileDraining() {
         pool.drain();
         assertFalse(pool.isAvailable());
         assertThrows(IllegalStateException.class, () -> pool.acquire(CLIENT_EVENT_LOOP, CurrentPassport.create(), new AtomicReference<>()));
     }
 
     @Test
-    public void gracefulDrain() {
+    void gracefulDrain() {
         EmbeddedChannel channel1 = new EmbeddedChannel();
         EmbeddedChannel channel2 = new EmbeddedChannel();
 
