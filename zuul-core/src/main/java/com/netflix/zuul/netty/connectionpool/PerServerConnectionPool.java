@@ -29,6 +29,7 @@ import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Objects;
@@ -431,7 +432,12 @@ public class PerServerConnectionPool implements IConnectionPool
      */
     void drainIdleConnectionsOnEventLoop(EventLoop eventLoop) {
         eventLoop.execute(() -> {
-            for(PooledConnection connection : connectionsPerEventLoop.get(eventLoop)) {
+            Deque<PooledConnection> connections = connectionsPerEventLoop.get(eventLoop);
+            if(connections == null) {
+                return;
+            }
+
+            for(PooledConnection connection : connections) {
                 //any connections in the Deque are idle since they are removed in tryGettingFromConnectionPool()
                 connection.setInPool(false);
                 LOG.debug("Closing connection {}", connection);
