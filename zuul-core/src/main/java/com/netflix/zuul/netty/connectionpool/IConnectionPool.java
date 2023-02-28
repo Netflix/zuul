@@ -35,8 +35,13 @@ public interface IConnectionPool
     boolean release(PooledConnection conn);
     boolean remove(PooledConnection conn);
     void shutdown();
+
+    default void drain() {
+        shutdown();
+    }
     boolean isAvailable();
     int getConnsInUse();
     int getConnsInPool();
     ConnectionPoolConfig getConfig();
+
 }

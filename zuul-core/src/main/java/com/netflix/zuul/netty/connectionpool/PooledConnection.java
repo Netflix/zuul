@@ -230,6 +230,13 @@ public class PooledConnection {
                 new ReadTimeoutHandler(readTimeout.toMillis(), TimeUnit.MILLISECONDS));
     }
 
+    ConnectionState getConnectionState() {
+        return connectionState;
+    }
+
+    boolean isReleased() {
+        return released;
+    }
 
     @Override
     public String toString()

@@ -40,6 +40,10 @@ public interface ClientChannelManager
 
     void shutdown();
 
+    default void gracefulShutdown() {
+        shutdown();
+    }
+
     boolean release(PooledConnection conn);
 
     Promise<PooledConnection> acquire(EventLoop eventLoop);
@@ -60,4 +64,5 @@ public interface ClientChannelManager
     int getConnsInUse();
 
     ConnectionPoolConfig getConfig();
+
 }

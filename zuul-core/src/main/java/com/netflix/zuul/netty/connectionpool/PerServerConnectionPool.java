@@ -29,7 +29,9 @@ import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -77,6 +79,8 @@ public class PerServerConnectionPool implements IConnectionPool
      */
     private final AtomicInteger connCreationsInProgress;
 
+    private volatile boolean draining;
+
     public PerServerConnectionPool(
             DiscoveryResult server,
             SocketAddress serverAddr,
@@ -87,7 +91,8 @@ public class PerServerConnectionPool implements IConnectionPool
             Counter createNewConnCounter,
             Counter createConnSucceededCounter,
             Counter createConnFailedCounter,
-            Counter requestConnCounter, Counter reuseConnCounter,
+            Counter requestConnCounter,
+            Counter reuseConnCounter,
             Counter connTakenFromPoolIsNotOpen,
             Counter closeAboveHighWaterMarkCounter,
             Counter maxConnsPerHostExceededCounter,
@@ -130,7 +135,7 @@ public class PerServerConnectionPool implements IConnectionPool
     @Override
     public boolean isAvailable()
     {
-        return true;
+        return !draining;
     }
 
     /** function to run when a connection is acquired before returning it to caller. */
@@ -140,7 +145,7 @@ public class PerServerConnectionPool implements IConnectionPool
         removeIdleStateHandler(conn);
 
         conn.setInUse();
-        if (LOG.isDebugEnabled()) LOG.debug("PooledConnection acquired: {}", conn.toString());
+        LOG.debug("PooledConnection acquired: {}", conn);
     }
 
     protected void removeIdleStateHandler(PooledConnection conn) {
@@ -150,6 +155,11 @@ public class PerServerConnectionPool implements IConnectionPool
     @Override
     public Promise<PooledConnection> acquire(
             EventLoop eventLoop, CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr) {
+
+        if(draining) {
+            throw new IllegalStateException("Attempt to acquire connection while draining");
+        }
+
         requestConnCounter.increment();
         server.incrementActiveRequestsCount();
         
@@ -314,6 +324,12 @@ public class PerServerConnectionPool implements IConnectionPool
             return false;
         }
 
+        if(draining) {
+            LOG.debug("[{}] closing released connection during drain", conn.getChannel().id());
+            conn.getChannel().close();
+            return false;
+        }
+
         // Get the eventloop for this channel.
         EventLoop eventLoop = conn.getChannel().eventLoop();
         Deque<PooledConnection> connections = getPoolForEventLoop(eventLoop);
@@ -356,7 +372,7 @@ public class PerServerConnectionPool implements IConnectionPool
         // Get the eventloop for this channel.
         EventLoop eventLoop = conn.getChannel().eventLoop();
 
-        // Attempt to return connection to the pool.
+        // Attempt to remove connection from the pool.
         Deque<PooledConnection> connections = getPoolForEventLoop(eventLoop);
         if (connections.remove(conn)) {
             conn.setInPool(false);
@@ -379,6 +395,16 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     @Override
+    public void drain() {
+        if(draining) {
+            throw new IllegalStateException("Already draining");
+        }
+
+        draining = true;
+        connectionsPerEventLoop.forEach((eventLoop,v) -> drainIdleConnectionsOnEventLoop(eventLoop));
+    }
+
+    @Override
     public int getConnsInPool() {
         return connsInPool.get();
     }
@@ -397,5 +423,29 @@ public class PerServerConnectionPool implements IConnectionPool
             return null;
         }
     }
+
+    /**
+     * Closes idle connections in the connection pool for a given EventLoop. The closing is performed on the EventLoop
+     * thread since the connection pool is not thread safe.
+     *
+     * @param eventLoop - the event loop to drain
+     */
+    void drainIdleConnectionsOnEventLoop(EventLoop eventLoop) {
+        eventLoop.execute(() -> {
+            Deque<PooledConnection> connections = connectionsPerEventLoop.get(eventLoop);
+            if(connections == null) {
+                return;
+            }
+
+            for(PooledConnection connection : connections) {
+                //any connections in the Deque are idle since they are removed in tryGettingFromConnectionPool()
+                connection.setInPool(false);
+                LOG.debug("Closing connection {}", connection);
+                connection.close();
+                connsInPool.decrementAndGet();
+            }
+        });
+    }
+
 
 }
