@@ -86,7 +86,7 @@ subprojects {
 }
 
 dependencies {
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.15.1"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.15.2"))
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
