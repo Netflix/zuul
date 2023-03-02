@@ -3,7 +3,7 @@ plugins {
     id 'com.netflix.nebula.netflixoss' version '11.1.1'
     id "com.google.osdetector" version "1.7.3"
     id "me.champeau.jmh" version "0.7.0"
-    id "org.openrewrite.rewrite" version "5.36.0"
+    id "org.openrewrite.rewrite" version "5.37.0"
 }
 
 ext.githubProjectName = rootProject.name
