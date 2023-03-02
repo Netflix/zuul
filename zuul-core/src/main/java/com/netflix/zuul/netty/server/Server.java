@@ -253,12 +253,6 @@ public class Server
         }
     }
 
-    @VisibleForTesting
-    public void gracefullyShutdownConnections()
-    {
-        clientConnectionsShutdown.gracefullyShutdownClientChannels();
-    }
-
     private ChannelFuture setupServerBootstrap(
             NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
         ServerBootstrap serverBootstrap =
