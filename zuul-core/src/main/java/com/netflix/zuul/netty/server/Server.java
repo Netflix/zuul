@@ -435,7 +435,7 @@ public class Server
             // NOTE: ClientConnectionsShutdown can also be configured to gracefully close connections when the
             // discovery status changes to DOWN. So if it has been configured that way, then this will be an additional
             // call to gracefullyShutdownClientChannels(), which will be a noop.
-            clientConnectionsShutdown.gracefullyShutdownClientChannels();
+            clientConnectionsShutdown.gracefullyShutdownClientChannels().syncUninterruptibly();
 
             LOG.info("Shutting down event loops");
             List<EventLoopGroup> allEventLoopGroups = new ArrayList<>();
