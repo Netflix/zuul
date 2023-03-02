@@ -17,15 +17,12 @@
 package com.netflix.zuul.netty.server;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import com.google.common.reflect.Reflection;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
@@ -36,21 +33,19 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Promise;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,7 +65,7 @@ class ClientConnectionsShutdownTest {
     private static LocalAddress LOCAL_ADDRESS;
     private static DefaultEventLoopGroup SERVER_EVENT_LOOP;
     private static DefaultEventLoopGroup CLIENT_EVENT_LOOP;
-    private static ExecutorService EXECUTOR;
+    private static DefaultEventLoop EVENT_LOOP;
 
     @BeforeAll
     static void staticSetup() throws InterruptedException {
@@ -89,35 +84,27 @@ class ClientConnectionsShutdownTest {
                                                                });
 
         serverBootstrap.bind().sync();
-        EXECUTOR = Executors.newSingleThreadExecutor();
+        EVENT_LOOP = new DefaultEventLoop(Executors.newSingleThreadExecutor());
     }
 
     @AfterAll
     static void staticCleanup() {
         CLIENT_EVENT_LOOP.shutdownGracefully();
         SERVER_EVENT_LOOP.shutdownGracefully();
+        EVENT_LOOP.shutdownGracefully();
     }
 
     private ChannelGroup channels;
     private ClientConnectionsShutdown shutdown;
-    private CountDownLatch latch;
-    private AtomicReference<Boolean> awaitEscapeHatch;
 
     @BeforeEach
     void setup() {
-        latch = new CountDownLatch(1);
-        awaitEscapeHatch = new AtomicReference<>();
-
-        channels = spy(new DefaultChannelGroup(SERVER_EVENT_LOOP.next()));
-        doAnswer(invocation -> {
-            ChannelGroupFuture future = (ChannelGroupFuture) invocation.callRealMethod();
-            return testGroupFuture(future);
-        }).when(channels).newCloseFuture();
-
-        shutdown = new ClientConnectionsShutdown(channels, null, null);
+        channels = new DefaultChannelGroup(EVENT_LOOP);
+        shutdown = new ClientConnectionsShutdown(channels, EVENT_LOOP, null);
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void discoveryShutdown() {
         String configName = "server.outofservice.connections.shutdown";
         AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
@@ -131,20 +118,20 @@ class ClientConnectionsShutdownTest {
                     EurekaEventListener.class);
             shutdown = spy(new ClientConnectionsShutdown(channels, executor, eureka));
             verify(eureka).registerEventListener(captor.capture());
-            doNothing().when(shutdown).gracefullyShutdownClientChannels();
+            doReturn(executor.newPromise()).when(shutdown).gracefullyShutdownClientChannels();
 
             EurekaEventListener listener = captor.getValue();
 
             listener.onEvent(new StatusChangeEvent(InstanceStatus.UP, InstanceStatus.DOWN));
-            verify(executor).schedule(ArgumentMatchers.isA(Runnable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
+            verify(executor).schedule(ArgumentMatchers.isA(Callable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
 
             Mockito.reset(executor);
             listener.onEvent(new StatusChangeEvent(InstanceStatus.UP, InstanceStatus.OUT_OF_SERVICE));
-            verify(executor).schedule(ArgumentMatchers.isA(Runnable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
+            verify(executor).schedule(ArgumentMatchers.isA(Callable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
 
             Mockito.reset(executor);
             listener.onEvent(new StatusChangeEvent(InstanceStatus.STARTING, InstanceStatus.OUT_OF_SERVICE));
-            verify(executor, never()).schedule(ArgumentMatchers.isA(Runnable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
+            verify(executor, never()).schedule(ArgumentMatchers.isA(Callable.class), anyLong(), eq(TimeUnit.MILLISECONDS));
         } finally {
             configuration.setProperty(configName, "false");
         }
@@ -153,31 +140,42 @@ class ClientConnectionsShutdownTest {
     @Test
     void allConnectionsGracefullyClosed() throws Exception {
         createChannels(100);
-        Future<?> gracefulShutdown = EXECUTOR.submit(() -> shutdown.gracefullyShutdownClientChannels());
-        awaitNewCloseAwait();
+        Promise<Void> promise = shutdown.gracefullyShutdownClientChannels();
+        Promise<Object> testPromise = EVENT_LOOP.newPromise();
+
+        promise.addListener(future -> {
+           if(future.isSuccess()) {
+               testPromise.setSuccess(null);
+           } else {
+               testPromise.setFailure(future.cause());
+           }
+        });
+
         channels.forEach(Channel::close);
-        gracefulShutdown.get(5, TimeUnit.SECONDS);
+        testPromise.await(10, TimeUnit.SECONDS);
         assertTrue(channels.isEmpty());
     }
 
     @Test
     void connectionNeedsToBeForceClosed() throws Exception {
-        createChannels(10);
+        String configName = "server.outofservice.close.timeout";
+        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
 
-        awaitEscapeHatch.set(false);
-        Future<?> gracefulShutdown = EXECUTOR.submit(() -> shutdown.gracefullyShutdownClientChannels());
-        awaitNewCloseAwait();
+        try {
+            configuration.setProperty(configName, "0");
+            createChannels(10);
+            shutdown.gracefullyShutdownClientChannels().await(10, TimeUnit.SECONDS);
 
-        gracefulShutdown.get(10, TimeUnit.SECONDS);
-        assertTrue(channels.isEmpty(), "All channels in group should have been force closed");
+            assertTrue(channels.isEmpty(), "All channels in group should have been force closed after the timeout was triggered");
+        } finally {
+            configuration.setProperty(configName, "30");
+        }
     }
 
     private void createChannels(int numChannels) throws InterruptedException {
         ChannelInitializer<LocalChannel> initializer = new ChannelInitializer<LocalChannel>() {
             @Override
-            protected void initChannel(LocalChannel ch) {
-
-            }
+            protected void initChannel(LocalChannel ch) {}
         };
 
         for (int i = 0; i < numChannels; ++i) {
@@ -191,28 +189,6 @@ class ClientConnectionsShutdownTest {
 
             channels.add(connect.channel());
         }
-    }
-
-    private void awaitNewCloseAwait() throws InterruptedException {
-        if(!latch.await(5, TimeUnit.SECONDS)) {
-            fail();
-        }
-    }
-
-    /**
-     * Creates a proxy that delegates calls to a proper {@link ChannelGroupFuture}. The method {@link ChannelGroupFuture#await(long, TimeUnit)}
-     * has a synchronization aid and can have its behavior modified
-     */
-    private ChannelGroupFuture testGroupFuture(ChannelGroupFuture delegate) {
-        return Reflection.newProxy(ChannelGroupFuture.class, (proxy, method, args) -> {
-            if(method.getName().equals("await") && args.length == 2) {
-                latch.countDown();
-                if(awaitEscapeHatch.get() != null) {
-                    return awaitEscapeHatch.get();
-                }
-            }
-            return method.invoke(delegate, args);
-        });
     }
 
 }

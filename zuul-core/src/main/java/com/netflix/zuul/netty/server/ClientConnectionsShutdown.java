@@ -28,6 +28,8 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Promise;
+import io.netty.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,7 @@ public class ClientConnectionsShutdown {
             "server.outofservice.connections.shutdown", false);
     private static final DynamicIntProperty DELAY_AFTER_OUT_OF_SERVICE_MS =
             new DynamicIntProperty("server.outofservice.connections.delay", 2000);
+    private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT = new DynamicIntProperty("server.outofservice.close.timeout", 30);
 
     private final ChannelGroup channels;
     private final EventExecutor executor;
@@ -84,39 +87,35 @@ public class ClientConnectionsShutdown {
         });
     }
 
-    /**
-     * Note this blocks until all the channels have finished closing.
-     */
-    public void gracefullyShutdownClientChannels() {
-        LOG.warn("Gracefully shutting down all client channels");
-        try {
-            // Mark all active connections to be closed after next response sent.
-            LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
+    public Promise<Void> gracefullyShutdownClientChannels() {
+        // Mark all active connections to be closed after next response sent.
+        LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
 
-            //racy situation if new connections are still coming in, but any channels created after newCloseFuture will
-            //be closed during the force close stage
-            ChannelGroupFuture closeFuture = channels.newCloseFuture();
-            for (Channel channel : channels) {
-                ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
-                ChannelPromise closePromise = channel.pipeline().newPromise();
-                channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
-            }
-
-            // Wait for all the attempts to close connections gracefully, or max of 30 secs
-            if(closeFuture.await(30, TimeUnit.SECONDS)) {
-                LOG.info("All connections closed within timeout");
-                return;
-            }
-
-            LOG.warn("Closing remaining {} active client channels.", channels.size());
-            // Close all the remaining active connections.
-            if(!channels.close().await(5, TimeUnit.SECONDS)) {
-                LOG.warn("Timeout waiting for remaining connections to close");
-            }
-        } catch (InterruptedException ie) {
-            LOG.warn("Interrupted while shutting down client channels");
-        } catch (Exception e) {
-            LOG.error("Unexpected exception during graceful shutdown", e);
+        //racy situation if new connections are still coming in, but any channels created after newCloseFuture will
+        //be closed during the force close stage
+        ChannelGroupFuture closeFuture = channels.newCloseFuture();
+        for (Channel channel : channels) {
+            ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
+            ChannelPromise closePromise = channel.pipeline().newPromise();
+            channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
         }
+
+        Promise<Void> promise = executor.newPromise();
+
+        ScheduledFuture<?> timeoutTask = executor.schedule(() -> {
+            LOG.warn("Force closing remaining {} active client channels.", channels.size());
+            channels.close();
+        }, GRACEFUL_CLOSE_TIMEOUT.get(), TimeUnit.SECONDS);
+
+        closeFuture.addListener(future -> {
+            if (!timeoutTask.isDone()) {
+                //close happened before the timeout
+                LOG.info("All connections closed within timeout");
+                timeoutTask.cancel(false);
+            }
+            promise.setSuccess(null);
+        });
+
+        return promise;
     }
 }
