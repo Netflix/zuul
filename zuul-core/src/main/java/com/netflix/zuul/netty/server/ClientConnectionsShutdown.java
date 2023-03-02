@@ -110,7 +110,6 @@ public class ClientConnectionsShutdown {
         closeFuture.addListener(future -> {
             if (!timeoutTask.isDone()) {
                 //close happened before the timeout
-                LOG.info("All connections closed within timeout");
                 timeoutTask.cancel(false);
             }
             promise.setSuccess(null);
