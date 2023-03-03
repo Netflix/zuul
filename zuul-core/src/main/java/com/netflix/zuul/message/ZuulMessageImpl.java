@@ -212,11 +212,12 @@ public class ZuulMessageImpl implements ZuulMessage
     public void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter) {
         //Loop optimized for the common case: Most filters' processContentChunk() return
         // original chunk passed in as is without any processing
+        final String filterName = filter.filterName();
         for (int i=0; i < bodyChunks.size(); i++) {
             final HttpContent origChunk = bodyChunks.get(i);
-            ByteBufUtil.touch(origChunk, "ZuulMessage processing chunk, filter: " + filter.filterName());
+            ByteBufUtil.touch(origChunk, "ZuulMessage processing chunk, filter: ", filterName);
             final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
-            ByteBufUtil.touch(filteredChunk, "ZuulMessage processing filteredChunk, filter: " + filter.filterName());
+            ByteBufUtil.touch(filteredChunk, "ZuulMessage processing filteredChunk, filter: ", filterName);
             if ((filteredChunk != null) && (filteredChunk != origChunk)) {
                 //filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
