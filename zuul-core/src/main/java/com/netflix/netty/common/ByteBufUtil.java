@@ -16,8 +16,6 @@
 
 package com.netflix.netty.common;
 
-import static io.netty.util.ResourceLeakDetector.Level.ADVANCED;
-import static io.netty.util.ResourceLeakDetector.Level.PARANOID;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.ResourceLeakDetector;
@@ -45,4 +43,9 @@ public class ByteBufUtil {
         }
     }
 
+    public static void touch(ReferenceCounted byteBuf, String hint, String filterName) {
+        if (isAdvancedLeakDetection) {
+            byteBuf.touch(hint + filterName);
+        }
+    }
 }
