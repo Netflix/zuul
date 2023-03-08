@@ -79,7 +79,7 @@ public class ClientConnectionsShutdown {
 
                     // Schedule to gracefully close all the client connections.
                     if (ENABLED.get()) {
-                        executor.schedule(this::gracefullyShutdownClientChannels, DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
+                        executor.schedule(() -> gracefullyShutdownClientChannels(false), DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
                                 TimeUnit.MILLISECONDS);
                     }
                 }
@@ -88,6 +88,10 @@ public class ClientConnectionsShutdown {
     }
 
     public Promise<Void> gracefullyShutdownClientChannels() {
+        return gracefullyShutdownClientChannels(true);
+    }
+
+    Promise<Void> gracefullyShutdownClientChannels(boolean forceCloseAfterTimeout) {
         // Mark all active connections to be closed after next response sent.
         LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
 
@@ -101,20 +105,28 @@ public class ClientConnectionsShutdown {
         }
 
         Promise<Void> promise = executor.newPromise();
-
-        ScheduledFuture<?> timeoutTask = executor.schedule(() -> {
-            LOG.warn("Force closing remaining {} active client channels.", channels.size());
-            channels.close();
-        }, GRACEFUL_CLOSE_TIMEOUT.get(), TimeUnit.SECONDS);
+        Runnable cancelTimeoutTask;
+        if(forceCloseAfterTimeout) {
+            ScheduledFuture<?> timeoutTask = executor.schedule(() -> {
+                LOG.warn("Force closing remaining {} active client channels.", channels.size());
+                channels.close();
+            }, GRACEFUL_CLOSE_TIMEOUT.get(), TimeUnit.SECONDS);
+            cancelTimeoutTask = () -> {
+                if (!timeoutTask.isDone()) {
+                    //close happened before the timeout
+                    timeoutTask.cancel(false);
+                }
+            };
+        } else {
+            cancelTimeoutTask = () -> {};
+        }
 
         closeFuture.addListener(future -> {
-            if (!timeoutTask.isDone()) {
-                //close happened before the timeout
-                timeoutTask.cancel(false);
-            }
+            cancelTimeoutTask.run();
             promise.setSuccess(null);
         });
 
         return promise;
     }
+
 }

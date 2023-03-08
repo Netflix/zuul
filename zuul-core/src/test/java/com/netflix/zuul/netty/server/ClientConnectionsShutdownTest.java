@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -167,6 +168,28 @@ class ClientConnectionsShutdownTest {
             shutdown.gracefullyShutdownClientChannels().await(10, TimeUnit.SECONDS);
 
             assertTrue(channels.isEmpty(), "All channels in group should have been force closed after the timeout was triggered");
+        } finally {
+            configuration.setProperty(configName, "30");
+        }
+    }
+
+    @Test
+    void connectionsNotForceClosed() throws Exception {
+        String configName = "server.outofservice.close.timeout";
+        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
+
+        DefaultEventLoop eventLoop = spy(EVENT_LOOP);
+        shutdown = new ClientConnectionsShutdown(channels, eventLoop, null);
+
+        try {
+            configuration.setProperty(configName, "0");
+            createChannels(10);
+            Promise<Void> promise = shutdown.gracefullyShutdownClientChannels(false);
+            verify(eventLoop, never()).schedule(isA(Runnable.class), anyLong(), isA(TimeUnit.class));
+            channels.forEach(Channel::close);
+
+            promise.await(10, TimeUnit.SECONDS);
+            assertTrue(channels.isEmpty(), "All channels in group should have been closed");
         } finally {
             configuration.setProperty(configName, "30");
         }
