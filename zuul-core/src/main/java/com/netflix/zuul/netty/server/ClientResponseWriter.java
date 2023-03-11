@@ -183,6 +183,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         final DefaultHttpResponse nativeResponse = new DefaultHttpResponse(responseHttpVersion,
                 HttpResponseStatus.valueOf(zuulResp.getStatus()), false, false);
 
+        zuulResponse.getContext().set(CommonContextKeys.NETTY_HTTP_RESPONSE, nativeResponse);
+
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         final HttpHeaders nativeHeaders = nativeResponse.headers();
         for (Header entry : zuulResp.getHeaders().entries()) {
