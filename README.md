@@ -55,7 +55,7 @@ https://jhipster.github.io/
 
 Info and examples from various projects:
 
-https://spring.io/guides/gs/routing-and-filtering/
+https://cloud.spring.io/spring-cloud-netflix/multi/multi__router_and_filter_zuul
 
 http://www.baeldung.com/spring-rest-with-zuul-proxy
 
