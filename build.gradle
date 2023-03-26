@@ -1,3 +1,10 @@
+buildscript {
+    dependencies {
+        classpath ('com.fasterxml.jackson:jackson-bom:2.9.10.+') {
+            force true
+        }
+    }
+}
 
 plugins {
     id 'com.netflix.nebula.netflixoss' version '11.3.0'
