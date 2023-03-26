@@ -1,7 +1,7 @@
 buildscript {
     dependencies {
-        classpath ('com.fasterxml.jackson:jackson-bom:2.9.10.+') {
-            force true
+        classpath ('com.fasterxml.jackson:jackson-bom:') version {
+            strictly('2.9.10.+')
         }
     }
 }
