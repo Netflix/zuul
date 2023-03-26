@@ -1,6 +1,13 @@
+buildscript {
+    dependencies {
+        classpath ('com.fasterxml.jackson:jackson-bom:2.9.10.+') {
+            force true
+        }
+    }
+}
 
 plugins {
-    id 'com.netflix.nebula.netflixoss' version '11.1.1'
+    id 'com.netflix.nebula.netflixoss' version '11.3.0'
     id "com.google.osdetector" version "1.7.3"
     id "me.champeau.jmh" version "0.7.0"
     id "org.openrewrite.rewrite" version "5.38.1"
