@@ -331,6 +331,25 @@ class IntegrationTest {
         response.close();
     }
 
+    @ParameterizedTest
+    @MethodSource("arguments")
+    void blockRequestWithMultipleHostHeaders(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(
+                get(anyUrl())
+                        .willReturn(aResponse().withStatus(200)));
+
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get()
+                .addHeader("Host", "aaa.example.com")
+                .addHeader("Host", "aaa.foobar.com")
+                .build();
+        Response response = okHttp.newCall(request).execute();
+        assertThat(response.code()).isEqualTo(500);
+        verify(0, anyRequestedFor(anyUrl()));
+        response.close();
+    }
+
+
     @Test
     void deflateOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
