@@ -1,0 +1,25 @@
+name: benchmark
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  JDK: '17'
+  DISTRIBUTION: 'zulu'
+  GRADLE_COMMAND: './gradlew --no-daemon'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK ${{ env.JDK }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JDK }}
+          distribution: ${{ env.DISTRIBUTION }}
+      - name: JMH
+        run: ${{ env.GRADLE_COMMAND }} clean :zuul-core:jmh
