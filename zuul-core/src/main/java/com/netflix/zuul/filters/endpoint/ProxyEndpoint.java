@@ -241,6 +241,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return origCh;
     }
 
+    private void releasePartialResponse(HttpResponse partialResponse) {
+        if (partialResponse != null && ReferenceCountUtil.refCnt(partialResponse) > 0) {
+            ReferenceCountUtil.safeRelease(partialResponse);
+        }
+    }
+
     public void finish(boolean error) {
         final Channel origCh = unlinkFromOrigin();
 
@@ -721,6 +727,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             methodBinding.bind(() -> processResponseFromOrigin(originResponse));
         } catch (Exception ex) {
             unlinkFromOrigin();
+            releasePartialResponse(originResponse);
             LOG.error("Error in responseFromOrigin", ex);
             channelCtx.fireExceptionCaught(ex);
         }
@@ -855,6 +862,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //detach from current origin.
             unlinkFromOrigin();
+            releasePartialResponse(originResponse);
 
             // ensure body reader indexes are reset so retry is able to access the body buffer
             // otherwise when the body is read by netty (in writeBufferedBodyContent) the body will appear empty
