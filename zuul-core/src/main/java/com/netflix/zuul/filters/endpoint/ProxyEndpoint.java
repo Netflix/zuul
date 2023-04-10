@@ -95,6 +95,8 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
+import io.netty.util.ResourceLeakDetectorFactory;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -239,6 +241,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             originConn = null;
         }
         return origCh;
+    }
+
+    private void releasePartialResponse(HttpResponse partialResponse) {
+        if (partialResponse != null && ReferenceCountUtil.refCnt(partialResponse) > 0) {
+            ReferenceCountUtil.safeRelease(partialResponse);
+        }
     }
 
     public void finish(boolean error) {
@@ -718,9 +726,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         try (TaskCloseable ignore = PerfMark.traceTask("ProxyEndpoint.responseFromOrigin")) {
             PerfMark.attachTag("uuid", zuulRequest, r -> r.getContext().getUUID());
             PerfMark.attachTag("path", zuulRequest, HttpRequestInfo::getPath);
+            ByteBufUtil.touch(originResponse, "ProxyEndpoint handling response from origin, request: ", zuulRequest);
             methodBinding.bind(() -> processResponseFromOrigin(originResponse));
         } catch (Exception ex) {
             unlinkFromOrigin();
+            releasePartialResponse(originResponse);
             LOG.error("Error in responseFromOrigin", ex);
             channelCtx.fireExceptionCaught(ex);
         }
@@ -749,6 +759,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             currentRequestAttempt.complete(respStatus, duration, null);
         }
         // separate nfstatus for 404 so that we can notify origins
+        ByteBufUtil.touch(originResponse, "ProxyEndpoint handling successful response, request: ", zuulRequest);
         final StatusCategory statusCategory = respStatus == 404 ? SUCCESS_NOT_FOUND : SUCCESS;
         zuulResponse = buildZuulHttpResponse(originResponse, statusCategory, context.getError());
         invokeNext(zuulResponse);
@@ -780,6 +791,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         channelCtx.channel().attr(ATTR_ZUUL_RESP).set(zuulResponse);
 
         if (httpResponse instanceof DefaultFullHttpResponse) {
+            ByteBufUtil.touch(httpResponse, "ProxyEndpoint converting Netty response to Zuul response, request: ",
+                    zuulRequest);
             final ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
             zuulResponse.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
@@ -854,7 +867,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     respStatus, attemptNum, origin.getMaxRetriesForRequest(context),
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //detach from current origin.
+            ByteBufUtil.touch(originResponse, "ProxyEndpoint handling non-success retry, request: ", zuulRequest);
             unlinkFromOrigin();
+            releasePartialResponse(originResponse);
 
             // ensure body reader indexes are reset so retry is able to access the body buffer
             // otherwise when the body is read by netty (in writeBufferedBodyContent) the body will appear empty
@@ -870,6 +885,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     respStatus, attemptNum, origin.getMaxRetriesForRequest(zuulCtx),
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //This is a final response after all retries that will go to the client
+            ByteBufUtil.touch(originResponse, "ProxyEndpoint handling non-success response, request: ", zuulRequest);
             zuulResponse = buildZuulHttpResponse(originResponse, statusCategory, obe);
             invokeNext(zuulResponse);
         }

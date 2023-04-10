@@ -17,6 +17,8 @@
 package com.netflix.netty.common;
 
 import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.ResourceLeakDetector;
 
@@ -46,6 +48,12 @@ public class ByteBufUtil {
     public static void touch(ReferenceCounted byteBuf, String hint, String filterName) {
         if (isAdvancedLeakDetection) {
             byteBuf.touch(hint + filterName);
+        }
+    }
+
+    public static void touch(HttpResponse originResponse, String hint, ZuulMessage msg) {
+        if (isAdvancedLeakDetection && originResponse instanceof ReferenceCounted) {
+            ((ReferenceCounted) originResponse).touch(hint + msg);
         }
     }
 }
