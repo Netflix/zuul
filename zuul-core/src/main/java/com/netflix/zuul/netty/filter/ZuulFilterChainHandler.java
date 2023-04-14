@@ -57,7 +57,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     private final ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain;
     private HttpRequestMessage zuulRequest;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulFilterChainHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZuulFilterChainHandler.class);
 
 
     public ZuulFilterChainHandler(ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
@@ -81,7 +81,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             requestFilterChain.filter(zuulRequest, (HttpContent) msg);
         }
         else {
-            LOG.debug("Received unrecognized message type. {}", msg.getClass().getName());
+            logger.debug("Received unrecognized message type. {}", msg.getClass().getName());
             ReferenceCountUtil.release(msg);
         }
     }
@@ -157,11 +157,11 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOG.error("zuul filter chain handler caught exception. cause={}", String.valueOf(cause), cause);
-        if (zuulRequest != null && !isClientChannelClosed(cause)) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable throwable) throws Exception {
+        logger.error("zuul filter chain handler caught exception.", throwable);
+        if (zuulRequest != null && !isClientChannelClosed(throwable)) {
             final SessionContext zuulCtx = zuulRequest.getContext();
-            zuulCtx.setError(cause);
+            zuulCtx.setError(throwable);
             zuulCtx.setShouldSendErrorResponse(true);
             sendResponse(FAILURE_LOCAL, 500, ctx);
         } else {
@@ -176,7 +176,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     private boolean isClientChannelClosed(Throwable cause) {
         if (cause instanceof ClosedChannelException ||
                 cause instanceof Errors.NativeIoException) {
-            LOG.error("ZuulFilterChainHandler::isClientChannelClosed - IO Exception");
+            logger.error("ZuulFilterChainHandler::isClientChannelClosed - IO Exception");
             return true;
         }
         return false;
