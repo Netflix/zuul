@@ -18,6 +18,8 @@ package com.netflix.zuul.spring;
 
 import com.netflix.zuul.FilterFactory;
 import com.netflix.zuul.filters.ZuulFilter;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.support.GenericApplicationContext;
@@ -36,6 +38,10 @@ public class SpringFilterFactory implements FilterFactory {
 
     @Override
     public ZuulFilter<?, ?> newInstance(Class<?> clazz) {
+        if(!ZuulFilter.class.isAssignableFrom(Objects.requireNonNull(clazz))) {
+            throw new IllegalArgumentException(clazz + "is not a ZuulFilter");
+        }
+
         if(!context.containsBeanDefinition(clazz.getCanonicalName())) {
             AbstractBeanDefinition definition = BeanDefinitionBuilder.rootBeanDefinition(clazz)
                                                                      .getBeanDefinition();

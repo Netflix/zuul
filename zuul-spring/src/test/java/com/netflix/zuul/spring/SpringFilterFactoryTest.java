@@ -26,6 +26,7 @@ import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,12 @@ class SpringFilterFactoryTest {
         assertTrue(zuulFilter1.shouldFilter(null));
         ZuulMessage first = zuulFilter1.applyAsync(null).toBlocking().first();
         assertNotNull(first);
+    }
+
+    @Test
+    public void createFilterWrongType() {
+        Assertions.assertThrows(NullPointerException.class, () -> factory.newInstance(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> factory.newInstance(String.class));
     }
 
     @Filter(order = 1, type = FilterType.INBOUND)
