@@ -1,7 +1,7 @@
 plugins {
     id 'com.netflix.nebula.netflixoss' version '11.3.1'
     id "com.google.osdetector" version "1.7.3"
-    id "me.champeau.jmh" version "0.7.0"
+    id "me.champeau.jmh" version "0.7.1"
     id "org.openrewrite.rewrite" version "5.39.4"
 }
 
