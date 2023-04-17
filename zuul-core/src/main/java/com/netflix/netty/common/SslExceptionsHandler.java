@@ -46,7 +46,7 @@ public class SslExceptionsHandler extends ChannelInboundHandlerAdapter {
         // We intentionally avoid propagating this up the pipeline, to avoid verbose disk logging.
         if (cause.getCause() instanceof SSLHandshakeException) {
             logger.debug("SSL handshake failed on channel {}", ctx.channel(), cause);
-            registry.counter("server.ssl.exception.swallowed", "cause", "SSLHandshakeException");
+            registry.counter("server.ssl.exception.swallowed", "cause", "SSLHandshakeException").increment();
         } else {
             super.exceptionCaught(ctx, cause);
         }
