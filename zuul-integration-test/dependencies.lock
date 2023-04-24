@@ -574,7 +574,7 @@
             "project": true
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
@@ -1004,7 +1004,7 @@
             "project": true
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
@@ -1193,7 +1193,7 @@
             "project": true
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.10.0"
+            "locked": "4.11.0"
         },
         "commons-configuration:commons-configuration": {
             "firstLevelTransitive": [
