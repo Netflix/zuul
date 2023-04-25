@@ -42,7 +42,6 @@ public class ZuulMessageImpl implements ZuulMessage
 {
     protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
             "zuul.message.body.max.size", 25 * 1000 * 1024);
-    private static final Charset CS_UTF8 = Charset.forName("UTF-8");
 
     protected final SessionContext context;
     protected Headers headers;
@@ -118,9 +117,9 @@ public class ZuulMessageImpl implements ZuulMessage
     public void setBodyAsText(String bodyText) {
         disposeBufferedBody();
         if (! Strings.isNullOrEmpty(bodyText)) {
-            final ByteBuf content = Unpooled.copiedBuffer(bodyText.getBytes(Charsets.UTF_8));
-            bufferBodyContents(new DefaultLastHttpContent(content));
-            setContentLength(bodyText.getBytes(CS_UTF8).length);
+            byte[] bytes = bodyText.getBytes(Charsets.UTF_8);
+            bufferBodyContents(new DefaultLastHttpContent(Unpooled.wrappedBuffer(bytes)));
+            setContentLength(bytes.length);
         } else {
             bufferBodyContents(new DefaultLastHttpContent());
             setContentLength(0);
