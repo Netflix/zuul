@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server.ssl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.passport.CurrentPassport;
@@ -33,6 +34,8 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,11 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<SslHandshakeInfo> ATTR_SSL_INFO = AttributeKey.newInstance("_ssl_handshake_info");
     private static final Logger logger = LoggerFactory.getLogger(SslHandshakeInfoHandler.class);
 
+    // extracts reason string from SSL errors formatted in the open ssl style
+    // error:[error code]:[library name]:OPENSSL_internal:[reason string]
+    // see https://github.com/google/boringssl/blob/d206f3db6ac2b74e8949ddd9947b94a5424d6a1d/include/openssl/err.h#L231
+    private static final Pattern OPEN_SSL_PATTERN = Pattern.compile("OPENSSL_internal:(.+)");
+
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
 
@@ -62,7 +70,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
     @VisibleForTesting
     SslHandshakeInfoHandler() {
-        spectatorRegistry = null;
+        spectatorRegistry = new NoopRegistry();
         isSSlFromIntermediary = false;
     }
 
@@ -121,14 +129,16 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         // This can happen if the ClientHello is sent followed  by a RST packet, before we can respond.
                         logger.debug("Client terminated handshake early., client_ip = {}, channel_info = {}", clientIP, ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else {
-                        String msg = "Unsuccessful SSL Handshake: " + sslEvent
-                                + ", client_ip = " + clientIP
-                                + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel())
-                                + ", error = " + cause;
-                        if (cause instanceof ClosedChannelException) {
-                            logger.debug(msg);
-                        } else {
-                            logger.debug(msg, cause);
+                        if(logger.isDebugEnabled()) {
+                            String msg = "Unsuccessful SSL Handshake: " + sslEvent
+                                    + ", client_ip = " + clientIP
+                                    + ", channel_info = " + ChannelUtils.channelInfoForLogging(ctx.channel())
+                                    + ", error = " + cause;
+                            if (cause instanceof ClosedChannelException) {
+                                logger.debug(msg);
+                            } else {
+                                logger.debug(msg, cause);
+                            }
                         }
                         incrementCounters(sslEvent, null);
                     }
@@ -170,31 +180,33 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
     private void incrementCounters(
             SslHandshakeCompletionEvent sslHandshakeCompletionEvent, SslHandshakeInfo handshakeInfo) {
-        if (spectatorRegistry == null) {
-            // May be null for testing.
-            return;
-        }
         try {
             if (sslHandshakeCompletionEvent.isSuccess()) {
                 String proto = handshakeInfo.getProtocol().length() > 0 ? handshakeInfo.getProtocol() : "unknown";
                 String ciphsuite =
                         handshakeInfo.getCipherSuite().length() > 0 ? handshakeInfo.getCipherSuite() : "unknown";
-                spectatorRegistry.counter("server.ssl.handshake",
-                        "success", String.valueOf(sslHandshakeCompletionEvent.isSuccess()),
-                        "protocol", String.valueOf(proto),
-                        "ciphersuite", String.valueOf(ciphsuite),
-                        "clientauth", String.valueOf(handshakeInfo.getClientAuthRequirement())
-                )
-                        .increment();
+                spectatorRegistry.counter("server.ssl.handshake", "success", "true",
+                                         "protocol", proto, "ciphersuite", ciphsuite,
+                                         "clientauth", String.valueOf(handshakeInfo.getClientAuthRequirement())
+                                 ).increment();
             } else {
-                spectatorRegistry.counter("server.ssl.handshake",
-                        "success", String.valueOf(sslHandshakeCompletionEvent.isSuccess()),
-                        "failure_cause", String.valueOf(sslHandshakeCompletionEvent.cause())
-                )
-                        .increment();
+                spectatorRegistry.counter("server.ssl.handshake", "success", "false",
+                                         "failure_cause", getFailureCause(sslHandshakeCompletionEvent.cause())
+                                 ).increment();
             }
         } catch (Exception e) {
-            logger.error("Error incrememting counters for SSL handshake!", e);
+            logger.error("Error incrementing counters for SSL handshake!", e);
         }
+    }
+
+    @VisibleForTesting
+    String getFailureCause(Throwable throwable) {
+        String message = throwable.getMessage();
+        if(message == null) {
+            return throwable.toString();
+        }
+
+        Matcher matcher = OPEN_SSL_PATTERN.matcher(message);
+        return matcher.find() ? matcher.group(1) : message;
     }
 }
