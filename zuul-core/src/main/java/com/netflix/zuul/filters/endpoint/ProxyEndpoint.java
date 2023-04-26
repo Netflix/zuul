@@ -34,9 +34,7 @@ import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.config.CachedDynamicLongProperty;
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Counter;
@@ -48,6 +46,7 @@ import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
+import com.netflix.zuul.exception.RequestExpiredException;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
@@ -95,8 +94,6 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.ReferenceCounted;
-import io.netty.util.ResourceLeakDetectorFactory;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -172,7 +169,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     private static final Set<HeaderName> RESPONSE_HEADERS_TO_REMOVE = Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     public static final String POOLED_ORIGIN_CONNECTION_KEY =    "_origin_pooled_conn";
-    private static final Logger LOG = LoggerFactory.getLogger(ProxyEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProxyEndpoint.class);
     private static final Counter NO_RETRY_INCOMPLETE_BODY = SpectatorUtils.newCounter("zuul.no.retry","incomplete_body");
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry","resp_started");
 
@@ -332,7 +329,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             methodBinding.bind(() -> filterResponse(zuulResponse));
         } catch (Exception ex) {
             unlinkFromOrigin();
-            LOG.error("Error in invokeNext resp", ex);
+            logger.error("Error in invokeNext resp", ex);
             channelCtx.fireExceptionCaught(ex);
         }
     }
@@ -352,7 +349,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         } catch (Exception ex) {
             ByteBufUtil.touch(chunk, "ProxyEndpoint exception processing chunk from origin, request: ", zuulRequest);
             unlinkFromOrigin();
-            LOG.error("Error in invokeNext content", ex);
+            logger.error("Error in invokeNext content", ex);
             channelCtx.fireExceptionCaught(ex);
         }
     }
@@ -450,9 +447,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             } else {
                 promise.addListener(this);
             }
-        }
-        catch (Exception ex) {
-            LOG.error("Error while connecting to origin, UUID {} {}", context.getUUID(), ex);
+        } catch (Exception ex) {
+            if (ex instanceof RequestExpiredException) {
+                logger.debug("Request deadline expired while connecting to origin, UUID {}", context.getUUID(), ex);
+            } else {
+                logger.error("Error while connecting to origin, UUID {} {}", context.getUUID(), ex);
+            }
             storeAndLogOriginRequestInfo();
             if (promise != null && ! promise.isDone()) {
                 promise.setFailure(ex);
@@ -498,7 +498,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 }
             });
         } catch (Throwable ex) {
-            LOG.error("Uncaught error in operationComplete(). Closing the server channel now. {}"
+            logger.error("Uncaught error in operationComplete(). Closing the server channel now. {}"
                     , ChannelUtils.channelInfoForLogging(channelCtx.channel()), ex);
 
             unlinkFromOrigin();
@@ -512,7 +512,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         passport.add(ORIGIN_CONN_ACQUIRE_END);
 
         if (context.isCancelled()) {
-            LOG.info("Client cancelled after successful origin connect: {}", conn.getChannel());
+            logger.info("Client cancelled after successful origin connect: {}", conn.getChannel());
 
             // conn isn't actually busy so we can put it in the pool
             conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
@@ -616,15 +616,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // Be cautious about how much we log about errors from origins, as it can have perf implications at high rps.
             if (zuulCtx.isInBrownoutMode()) {
                 // Don't include the stacktrace or the channel info.
-                LOG.warn("{}, origin = {}: {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex));
+                logger.warn("{}, origin = {}: {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex));
             } else {
                 final String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
-                if (LOG.isInfoEnabled()) {
+                if (logger.isInfoEnabled()) {
                     // Include the stacktrace.
-                    LOG.warn("{}, origin = {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), origChInfo, ex);
+                    logger.warn("{}, origin = {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), origChInfo, ex);
                 }
                 else {
-                    LOG.warn("{}, origin = {}, {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex), origChInfo);
+                    logger.warn("{}, origin = {}, {}, origin channel info = {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex), origChInfo);
                 }
             }
 
@@ -676,7 +676,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private void handleError(final Throwable cause) {
         final ZuulException ze = (cause instanceof  ZuulException) ?
                 (ZuulException) cause : requestAttemptFactory.mapNettyToOutboundException(cause, context);
-        LOG.debug("Proxy endpoint failed.", cause);
+        logger.debug("Proxy endpoint failed.", cause);
         if (! startedSendingResponseToClient) {
             startedSendingResponseToClient = true;
             zuulResponse = new HttpResponseMessageImpl(context, zuulRequest, ze.getStatusCode());
@@ -731,7 +731,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         } catch (Exception ex) {
             unlinkFromOrigin();
             releasePartialResponse(originResponse);
-            LOG.error("Error in responseFromOrigin", ex);
+            logger.error("Error in responseFromOrigin", ex);
             channelCtx.fireExceptionCaught(ex);
         }
     }
@@ -863,7 +863,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 new ClientException(niwsErrorType));
 
         if ((isBelowRetryLimit()) && (isRetryable5xxResponse(zuulRequest, originResponse))) {
-            LOG.debug("Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+            logger.debug("Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
                     respStatus, attemptNum, origin.getMaxRetriesForRequest(context),
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //detach from current origin.
@@ -881,7 +881,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             proxyRequestToOrigin();
         } else {
             SessionContext zuulCtx = context;
-            LOG.info("Sending error to client: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+            logger.info("Sending error to client: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
                     respStatus, attemptNum, origin.getMaxRetriesForRequest(zuulCtx),
                     startedSendingResponseToClient, zuulRequest.hasCompleteBody(), zuulRequest.getMethod());
             //This is a final response after all retries that will go to the client
@@ -968,7 +968,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                         }
                     }
                 } catch (UnsupportedEncodingException e) {
-                    LOG.error("Error decoding url query param - {}", paramString, e);
+                    logger.error("Error decoding url query param - {}", paramString, e);
                 }
             } else {
                 modifiedPath = uri;
@@ -1057,7 +1057,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (origin == null) {
             // If no pre-registered and configured RestClient found for this VIP, then register one using default NIWS
             // properties.
-            LOG.warn("Attempting to register RestClient for client that has not been configured. originName={}, uri={}",
+            logger.warn("Attempting to register RestClient for client that has not been configured. originName={}, uri={}",
                     originName, uri);
             origin = originManager.createOrigin(originName, uri, ctx);
         }
