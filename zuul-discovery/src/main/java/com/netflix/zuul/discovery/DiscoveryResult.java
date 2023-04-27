@@ -61,7 +61,12 @@ public final class DiscoveryResult implements ResolverResult {
      */
     public DiscoveryResult(DiscoveryEnabledServer server) {
         this.server = server;
-        this.serverStats = new ServerStats();
+        this.serverStats = new ServerStats() {
+            @Override
+            public String toString() {
+                return "no stats configured for server";
+            }
+        };
     }
 
     /**

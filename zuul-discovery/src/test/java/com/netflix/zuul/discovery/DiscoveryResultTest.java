@@ -40,6 +40,11 @@ class DiscoveryResultTest {
     }
 
     @Test
+    void serverStatsForEmptySentinel() {
+        Truth.assertThat(DiscoveryResult.EMPTY.getServerStats().toString()).isEqualTo("no stats configured for server");
+    }
+
+    @Test
     void hostAndPortForNullServer() {
         final DiscoveryResult discoveryResult = new DiscoveryResult(null);
 
