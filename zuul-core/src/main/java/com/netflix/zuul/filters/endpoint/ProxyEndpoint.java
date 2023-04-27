@@ -451,7 +451,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             if (ex instanceof RequestExpiredException) {
                 logger.debug("Request deadline expired while connecting to origin, UUID {}", context.getUUID(), ex);
             } else {
-                logger.error("Error while connecting to origin, UUID {} {}", context.getUUID(), ex);
+                logger.error("Error while connecting to origin, UUID {}", context.getUUID(), ex);
             }
             storeAndLogOriginRequestInfo();
             if (promise != null && ! promise.isDone()) {

@@ -59,7 +59,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
 
     private volatile ProxyEndpoint edgeProxy;
 
-    private static final Logger LOG = LoggerFactory.getLogger(OriginResponseReceiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(OriginResponseReceiver.class);
     private static final AttributeKey<Throwable> SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE = AttributeKey.newInstance("_ssl_handshake_from_origin_throwable");
     public static final String CHANNEL_HANDLER_NAME = "_origin_response_receiver";
 
@@ -114,7 +114,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (evt instanceof CompleteEvent) {
             final CompleteReason reason = ((CompleteEvent) evt).getReason();
             if ((reason != SESSION_COMPLETE) && (edgeProxy != null)) {
-                LOG.error("Origin request completed with reason other than COMPLETE: {}, {}",
+                logger.error("Origin request completed with reason other than COMPLETE: {}, {}",
                         reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
                 final ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
                 edgeProxy.errorFromOrigin(ze);
@@ -135,7 +135,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         }
         else if (evt instanceof IdleStateEvent) {
             if (edgeProxy != null) {
-                LOG.error("Origin request received IDLE event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+                logger.error("Origin request received IDLE event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
                 edgeProxy.errorFromOrigin(new OutboundException(READ_TIMEOUT, edgeProxy.getRequestAttempts()));
             }
             super.userEventTriggered(ctx, evt);
@@ -211,7 +211,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                         // Set the specific SSL handshake error if the handlers have already caught them
                         ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(null);
                         fireWriteError("request headers", cause, ctx);
-                        LOG.debug("SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ", future.cause());
+                        logger.debug("SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ", future.cause());
                     } else {
                         fireWriteError("request headers", future.cause(), ctx);
                     }
@@ -261,12 +261,15 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (edgeProxy != null) {
-            LOG.error("Error from Origin connection", cause);
             if (cause instanceof ReadTimeoutException) {
                 edgeProxy.getPassport().add(PassportState.ORIGIN_CH_READ_TIMEOUT);
+                logger.debug("read timeout on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
             }
             else if (cause instanceof IOException) {
                 edgeProxy.getPassport().add(PassportState.ORIGIN_CH_IO_EX);
+                logger.debug("I/O error on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
+            } else {
+                logger.error("Error from Origin connection:", cause);
             }
             edgeProxy.errorFromOrigin(cause);
         }
@@ -276,7 +279,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (edgeProxy != null) {
-            LOG.debug("Origin channel inactive. channel-info={}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+            logger.debug("Origin channel inactive. channel-info={}", ChannelUtils.channelInfoForLogging(ctx.channel()));
             OriginConnectException ex = new OriginConnectException("Origin server inactive", RESET_CONNECTION);
             edgeProxy.errorFromOrigin(ex);
         }
