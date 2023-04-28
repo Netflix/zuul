@@ -78,7 +78,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     //data
     private HttpResponseMessage zuulResponse;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientResponseWriter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientResponseWriter.class);
 
     public ClientResponseWriter(RequestCompleteHandler requestCompleteHandler) {
         this(requestCompleteHandler, NOOP_REGISTRY);
@@ -129,7 +129,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                     }
                     else {
                         responseBeforeReceivedLastContentCounter.increment();
-                        LOG.warn("Writing response to client channel before have received the LastContent of request! {}, {}", zuulResponse.getInboundRequest().getInfoForLogging(), ChannelUtils.channelInfoForLogging(channel));
+                        logger.warn("Writing response to client channel before have received the LastContent of request! {}, {}", zuulResponse.getInboundRequest().getInfoForLogging(), ChannelUtils.channelInfoForLogging(channel));
                     }
                 }
 
@@ -246,7 +246,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             }
             else {
                 if (isHandlingRequest) {
-                    LOG.debug("Received complete event while still handling the request. With reason: {} -- {}", reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    logger.debug("Received complete event while still handling the request. With reason: {} -- {}", reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
                 }
                 ctx.close();
             }
@@ -254,10 +254,10 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             isHandlingRequest = false;
         }
         else if (evt instanceof IdleStateEvent) {
-            LOG.debug("Received IdleStateEvent.");
+            logger.debug("Received IdleStateEvent.");
         }
         else {
-            LOG.debug("ClientResponseWriter Received event {}", evt);
+            logger.debug("ClientResponseWriter Received event {}", evt);
         }
     }
 
@@ -274,7 +274,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             }
         }
         catch (Throwable ex) {
-            LOG.error("Error in RequestCompleteHandler.", ex);
+            logger.error("Error in RequestCompleteHandler.", ex);
         }
     }
 
@@ -285,20 +285,18 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         int status = 500;
-        final String errorMsg = "ClientResponseWriter caught exception in client connection pipeline: " +
-                ChannelUtils.channelInfoForLogging(ctx.channel());
 
         if (cause instanceof ZuulException) {
             final ZuulException ze = (ZuulException) cause;
             status = ze.getStatusCode();
-            LOG.error(errorMsg, cause);
+            logger.error("Exception caught in ClientResponseWriter for channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
         }
         else if (cause instanceof ReadTimeoutException) {
-            LOG.error("{}, Read timeout fired", errorMsg);
+            logger.debug("Read timeout for channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
             status = 504;
         }
         else {
-            LOG.error(errorMsg, cause);
+            logger.error("Exception caught in ClientResponseWriter: ", cause);
         }
 
         if (isHandlingRequest && !startedSendingResponseToClient && ctx.channel().isActive()) {
