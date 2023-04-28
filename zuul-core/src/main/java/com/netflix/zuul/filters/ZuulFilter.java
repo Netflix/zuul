@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 /**
- * BAse interface for ZuulFilters
+ * Base interface for ZuulFilters
  *
  * @author Mikey Cohen
  *         Date: 10/27/11
