@@ -69,7 +69,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                 {
                     switch (hapm.proxiedProtocol()) {
                         case UNKNOWN:
-                            throw new IllegalArgumentException("unknown proxy protocl" + destinationAddress);
+                            throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
                         case TCP4:
                         case TCP6:
                             InetSocketAddress inetAddr = new InetSocketAddress(
@@ -109,7 +109,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                 {
                     switch (hapm.proxiedProtocol()) {
                         case UNKNOWN:
-                            throw new IllegalArgumentException("unknown proxy protocl" + sourceAddress);
+                            throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
                         case TCP4:
                         case TCP6:
                             InetSocketAddress inetAddr;

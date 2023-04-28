@@ -179,7 +179,7 @@ public class StatsManager {
     }
 
     /**
-     * helper method to create new monitor, place into map, and register wtih Epic, if necessary
+     * helper method to create new monitor, place into map, and register with Epic, if necessary
      */
     protected void incrementNamedCountingMonitor(String name, ConcurrentMap<String, NamedCountingMonitor> map) {
         NamedCountingMonitor monitor = map.get(name);
