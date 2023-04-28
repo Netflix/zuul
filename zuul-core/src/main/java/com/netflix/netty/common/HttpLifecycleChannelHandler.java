@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * Time: 4:09 PM
  */
 public abstract class HttpLifecycleChannelHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpLifecycleChannelHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpLifecycleChannelHandler.class);
 
     public static final AttributeKey<HttpRequest> ATTR_HTTP_REQ = AttributeKey.newInstance("_http_request");
     public static final AttributeKey<HttpResponse> ATTR_HTTP_RESP = AttributeKey.newInstance("_http_response");
@@ -57,7 +57,7 @@ public abstract class HttpLifecycleChannelHandler {
         if (state == State.STARTED) {
             // This could potentially happen if a bad client sends a 2nd request on the same connection
             // without waiting for the response from the first. And we don't support HTTP Pipelining.
-            LOG.error("Received a http request on connection where we already have a request being processed. Closing the connection now. channel = {}", channel.id().asLongText());
+            logger.debug("Received a http request on connection where we already have a request being processed. Closing the connection now. channel = {}", channel.id().asLongText());
             channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
             channel.close();
             return false;
