@@ -68,6 +68,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
@@ -294,6 +295,7 @@ class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
+        verify(2, getRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
@@ -310,6 +312,7 @@ class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
+        verify(1, getRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
