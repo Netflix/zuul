@@ -16,6 +16,13 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
+import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
@@ -49,16 +56,8 @@ import io.netty.handler.codec.http2.HttpConversionUtil;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.ReferenceCountUtil;
-import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
 
 /**
  * Created by saroskar on 2/26/17.
@@ -119,20 +118,14 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             channel.attr(ATTR_ZUUL_RESP).set(zuulResponse);
 
             if (channel.isActive()) {
-
                 // Track if this is happening.
-                if (! ClientRequestReceiver.isLastContentReceivedForChannel(channel)) {
-
-                    StatusCategory status = StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
-                    if (ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT.equals(status)) {
-                        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because the connection will have to be discarded anyway.
-                    }
-                    else {
-                        responseBeforeReceivedLastContentCounter.increment();
-                        logger.warn("Writing response to client channel before have received the LastContent of request! {}, {}", zuulResponse.getInboundRequest().getInfoForLogging(), ChannelUtils.channelInfoForLogging(channel));
-                    }
+                if (!ClientRequestReceiver.isLastContentReceivedForChannel(channel) && !shouldAllowPreemptiveResponse(channel)) {
+                    responseBeforeReceivedLastContentCounter.increment();
+                    logger.warn(
+                            "Writing response to client channel before have received the LastContent of request! {}, {}",
+                            zuulResponse.getInboundRequest().getInfoForLogging(),
+                            ChannelUtils.channelInfoForLogging(channel));
                 }
-
                 // Write out and flush the response to the client channel.
                 channel.write(buildHttpResponse(zuulResponse));
                 writeBufferedBodyContent(zuulResponse, channel);
@@ -156,6 +149,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             ReferenceCountUtil.release(msg);
             throw new ZuulException("Received invalid message from origin", true);
         }
+    }
+
+    protected boolean shouldAllowPreemptiveResponse(Channel channel) {
+        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because the connection will have to be discarded anyway.
+        StatusCategory status = StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
+        return status == ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
     }
 
     protected boolean skipProcessing(HttpResponseMessage resp) {
