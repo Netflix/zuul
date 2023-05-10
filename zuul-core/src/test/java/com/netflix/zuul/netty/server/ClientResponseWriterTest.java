@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ClientResponseWriterTest {
 
     @Test
-    public void exemptClientTimeoutResponseBeforeRequestRead() {
+    void exemptClientTimeoutResponseBeforeRequestRead() {
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
         final EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -32,7 +32,7 @@ class ClientResponseWriterTest {
     }
 
     @Test
-    public void flagResponseBeforeRequestRead() {
+    void flagResponseBeforeRequestRead() {
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
         final EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -45,7 +45,7 @@ class ClientResponseWriterTest {
     }
 
     @Test
-    public void allowExtensionForPremptingResponse() {
+    void allowExtensionForPremptingResponse() {
 
         final ZuulStatusCategory customStatus = ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler()) {
