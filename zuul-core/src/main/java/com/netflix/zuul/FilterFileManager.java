@@ -55,15 +55,12 @@ public class FilterFileManager {
 
     private final FilterFileManagerConfig config;
     private final FilterLoader filterLoader;
-    private final ExecutorService processFilesService;
+    private ExecutorService processFilesService;
 
     @Inject
     public FilterFileManager(FilterFileManagerConfig config, FilterLoader filterLoader) {
         this.config = config;
         this.filterLoader = filterLoader;
-        ThreadFactory tf =
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FilterFileManager_ProcessFiles-%d").build();
-        this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), tf);
     }
 
     /**
@@ -72,10 +69,16 @@ public class FilterFileManager {
      * @throws Exception
      */
     @Inject
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
+        if(!config.enabled) {
+            return;
+        }
+
         long startTime = System.currentTimeMillis();
-        
+        ThreadFactory tf =
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FilterFileManager_ProcessFiles-%d").build();
+        this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), tf);
+
         filterLoader.putFiltersForClasses(config.getClassNames());
         manageFiles();
         startPoller();
@@ -200,12 +203,18 @@ public class FilterFileManager {
         private String[] classNames;
         private int pollingIntervalSeconds;
         private FilenameFilter filenameFilter;
+        boolean enabled;
 
         public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
+            this(directories, classNames, pollingIntervalSeconds, filenameFilter, true);
+        }
+
+        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter, boolean enabled) {
             this.directories = directories;
             this.classNames = classNames;
             this.pollingIntervalSeconds = pollingIntervalSeconds;
             this.filenameFilter = filenameFilter;
+            this.enabled = enabled;
         }
 
         public String[] getDirectories() {
