@@ -144,6 +144,7 @@ public class Server
      * EventLoopConfig)}
      * instead.
      */
+    @SuppressWarnings("rawtypes")
     @Deprecated
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
@@ -157,7 +158,7 @@ public class Server
      * EventLoopConfig)}
      * instead.
      */
-    @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
+    @SuppressWarnings({"unchecked", "rawtypes"}) // Channel init map has the wrong generics and we can't fix without api breakage.
     @Deprecated
     public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
                   ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
