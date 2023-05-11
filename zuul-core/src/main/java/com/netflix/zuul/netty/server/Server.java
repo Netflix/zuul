@@ -120,7 +120,7 @@ public class Server
 
     private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
-    private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
+    private final Thread jvmShutdownHook;
     private final Registry registry;
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
@@ -177,19 +177,26 @@ public class Server
         this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
         this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
+        this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
+
+    public Server(Registry registry, ServerStatusManager serverStatusManager,
+            Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
+            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
+            EventLoopConfig eventLoopConfig, Thread jvmShutdownHook) {
+        this.registry = Objects.requireNonNull(registry);
+        this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
+        this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
+        this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
+        this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
+        this.jvmShutdownHook = jvmShutdownHook;
+    }
+
 
     public void stop() {
         LOG.info("Shutting down Zuul.");
         serverGroup.stop();
-
-        // remove the shutdown hook that was added when the proxy was started, since it has now been stopped
-        try {
-            Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
-        } catch (IllegalStateException e) {
-            // This can happen if the VM is already shutting down
-            LOG.debug("Failed to remove shutdown hook", e);
-        }
         LOG.info("Completed zuul shutdown.");
     }
 
@@ -317,7 +324,6 @@ public class Server
         private final int acceptorThreads;
         private final int workerThreads;
         private final EventLoopGroupMetrics eventLoopGroupMetrics;
-        private final Thread jvmShutdownHook = new Thread(this::stop, "Zuul-ServerGroup-JVM-shutdown-hook");
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
@@ -337,8 +343,6 @@ public class Server
                     LOG.error("Uncaught throwable", e);
                 }
             });
-
-            Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
         private void initializeTransport()
@@ -445,12 +449,6 @@ public class Server
                 } catch (InterruptedException ie) {
                     LOG.warn("Interrupted while shutting down event loop");
                 }
-            }
-            try {
-                Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
-            } catch (IllegalStateException e) {
-                // This can happen if the VM is already shutting down
-                LOG.debug("Failed to remove shutdown hook", e);
             }
 
             stopped = true;
