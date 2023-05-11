@@ -200,8 +200,11 @@ public class Server
         LOG.info("Completed zuul shutdown.");
     }
 
-    public void start()
-    {
+    public void start() {
+        if(jvmShutdownHook != null) {
+            Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
+        }
+
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
