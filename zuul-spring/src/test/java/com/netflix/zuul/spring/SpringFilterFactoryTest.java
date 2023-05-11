@@ -18,6 +18,7 @@ package com.netflix.zuul.spring;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.spectator.api.Registry;
@@ -28,7 +29,6 @@ import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +66,8 @@ class SpringFilterFactoryTest {
 
     @Test
     void createFilterWrongType() {
-        Assertions.assertThrows(NullPointerException.class, () -> factory.newInstance(null));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> factory.newInstance(String.class));
+        assertThrows(NullPointerException.class, () -> factory.newInstance(null));
+        assertThrows(IllegalArgumentException.class, () -> factory.newInstance(String.class));
     }
 
     @Filter(order = 1, type = FilterType.INBOUND)
