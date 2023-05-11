@@ -40,7 +40,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -161,7 +161,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -308,7 +308,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -447,10 +447,10 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "1.7.36"
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "3.0.5"
+            "locked": "2.7.11"
         }
     },
     "runtimeClasspath": {
@@ -522,7 +522,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -684,7 +684,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -762,10 +762,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.7"
+            "locked": "1.7.36"
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "3.0.5"
+            "locked": "2.7.11"
         }
     },
     "testRuntimeClasspath": {
@@ -837,7 +837,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.3"
+            "locked": "1.6.4"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -970,10 +970,10 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "1.7.36"
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "3.0.5"
+            "locked": "2.7.11"
         }
     }
 }

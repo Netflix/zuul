@@ -1,8 +1,5 @@
 apply plugin: "java-library"
 
-sourceCompatibility = 17
-targetCompatibility = 17
-
 configurations.configureEach {
     exclude group: 'ch.qos.logback', module: 'logback-classic'
     exclude group: 'ch.qos.logback', module: 'logback-core'
@@ -20,7 +17,7 @@ dependencies {
     testImplementation libraries.jupiterMockito
     testImplementation libraries.mockito
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.0.5'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.+'
 }
 
 
