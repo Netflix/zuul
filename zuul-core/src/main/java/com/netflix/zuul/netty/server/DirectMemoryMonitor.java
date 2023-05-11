@@ -43,14 +43,13 @@ public final class DirectMemoryMonitor {
     private static final String PROP_PREFIX = "zuul.directmemory";
     private static final DynamicIntProperty TASK_DELAY_PROP = new DynamicIntProperty(PROP_PREFIX + ".task.delay", 10);
 
-    // TODO(carl-mastrangelo): this should be passed in as a dependency, so it can be shutdown and waited on for
-    //    termination.
-    private final ScheduledExecutorService service =
-            Executors.newSingleThreadScheduledExecutor(
-                    new ThreadFactoryBuilder().setDaemon(true).setNameFormat("dmm-%d").build());
+    private final ScheduledExecutorService service;
 
     @Inject
     public DirectMemoryMonitor(Registry registry) {
+        service = Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("dmm-%d").build());
+
         PolledMeter.using(registry)
                    .withName(PROP_PREFIX + ".reserved")
                    .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
@@ -63,6 +62,11 @@ public final class DirectMemoryMonitor {
                    .scheduleOn(service)
                    .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getMaxMemory);
 
+    }
+
+    public DirectMemoryMonitor() {
+        //no-op constructor
+        this.service = null;
     }
 
     private static double getReservedMemory(Object discard) {
