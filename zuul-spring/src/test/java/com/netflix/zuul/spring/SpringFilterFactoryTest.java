@@ -19,6 +19,8 @@ package com.netflix.zuul.spring;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.FilterType;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import rx.Observable;
 
 /**
@@ -40,11 +43,17 @@ import rx.Observable;
 @SpringBootTest(classes = ZuulSpringAutoConfiguration.class)
 class SpringFilterFactoryTest {
 
+    @MockBean
+    private Registry registry;
+
+    @MockBean
+    private ApplicationInfoManager manager;
+
     @Autowired
     private SpringFilterFactory factory;
 
     @Test
-    public void createFilter() {
+    void createFilter() {
         ZuulFilter<?, ?> zuulFilter1 = factory.newInstance(TestFilter.class);
         ZuulFilter<?, ?> zuulFilter2 = factory.newInstance(TestFilter.class);
 
@@ -56,13 +65,14 @@ class SpringFilterFactoryTest {
     }
 
     @Test
-    public void createFilterWrongType() {
+    void createFilterWrongType() {
         Assertions.assertThrows(NullPointerException.class, () -> factory.newInstance(null));
         Assertions.assertThrows(IllegalArgumentException.class, () -> factory.newInstance(String.class));
     }
 
     @Filter(order = 1, type = FilterType.INBOUND)
     public static class TestFilter extends BaseFilter<HttpRequestMessage, HttpResponseMessage> {
+
         @Override
         public boolean shouldFilter(HttpRequestMessage msg) {
             return true;

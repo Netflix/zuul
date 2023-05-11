@@ -16,9 +16,18 @@
 
 package com.netflix.zuul.spring;
 
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
+import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.DynamicCodeCompiler;
 import com.netflix.zuul.FilterFactory;
+import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
+import java.io.File;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
@@ -28,8 +37,45 @@ import org.springframework.context.support.GenericApplicationContext;
 @AutoConfiguration
 public class ZuulSpringAutoConfiguration {
 
-    @Bean(name = "zuul-spring-filter-factory")
-    public FilterFactory getFilterFactory(GenericApplicationContext context) {
+    @Bean
+    @Primary
+    public FilterFactory zuulSpringGetFilterFactory(GenericApplicationContext context) {
         return new SpringFilterFactory(context);
     }
+
+    @Bean
+    @ConditionalOnMissingBean(FilterFileManagerConfig.class)
+    public FilterFileManagerConfig zuulSpringGetEmptyFilterFileManagerConfig() {
+        return new FilterFileManagerConfig(new String[0], new String[0], Integer.MAX_VALUE, (a,b) -> false, false);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ServerStatusManager.class)
+    public ServerStatusManager zuulSpringGetServerStatusManager(ApplicationInfoManager applicationInfoManager) {
+        return new ServerStatusManager(applicationInfoManager);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(EventLoopGroupMetrics.class)
+    public EventLoopGroupMetrics zuulSpringGetEventLoopGroupMetrics(Registry registry) {
+        return new EventLoopGroupMetrics(registry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(DynamicCodeCompiler.class)
+    public DynamicCodeCompiler zuulSpringGetNoOpDynamicCodeCompiler() {
+        return new DynamicCodeCompiler() {
+            @Override
+            public Class<?> compile(String sCode, String sName) {
+                return null;
+            }
+
+            @Override
+            public Class<?> compile(File file) {
+                return null;
+            }
+        };
+    }
+
+
 }
