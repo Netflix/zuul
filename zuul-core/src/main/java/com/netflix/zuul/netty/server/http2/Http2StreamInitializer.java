@@ -47,7 +47,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
     private final Http2MetricsChannelHandlers http2MetricsChannelHandlers;
-    private final Http2ConnectionCloseHandler connectionCloseHandler;
+    private final Http2ConnectionExpiryHandler connectionCloseHandler;
     private final Http2ConnectionExpiryHandler connectionExpiryHandler;
 
     public Http2StreamInitializer(Channel parent, Consumer<ChannelPipeline> addHttpHandlerFn,
@@ -59,8 +59,8 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
         this.addHttpHandlerFn = addHttpHandlerFn;
 
         this.http2MetricsChannelHandlers = http2MetricsChannelHandlers;
-        this.connectionCloseHandler = connectionCloseHandler;
-        this.connectionExpiryHandler = connectionExpiryHandler;
+        this.connectionCloseHandler = connectionCloseHandler.clone();
+        this.connectionExpiryHandler = connectionExpiryHandler.clone();
     }
 
     @Override
@@ -116,5 +116,15 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter
     protected void copyAttrFromParentChannel(Channel parent, Channel child, AttributeKey key)
     {
         child.attr(key).set(parent.attr(key).get());
+    }
+
+    public Http2StreamInitializer clone() {
+        try {
+            // call clone in Object.
+            return (Http2StreamInitializer) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 }

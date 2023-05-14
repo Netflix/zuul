@@ -243,4 +243,14 @@ public final class DiscoveryResult implements ResolverResult {
         return server.equals(other.server);
     }
 
+    public DiscoveryResult clone() {
+        try {
+            // call clone in Object.
+            return (DiscoveryResult) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
+    }
+
 }

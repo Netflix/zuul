@@ -159,7 +159,7 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
 
         @Override
         public boolean equals(Object object) {
-            return false;
+            return this == object;
         }
     }
 

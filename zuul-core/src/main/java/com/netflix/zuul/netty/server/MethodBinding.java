@@ -29,7 +29,7 @@ public class MethodBinding<T> {
     private final BiConsumer<Runnable, T> boundMethod;
     private final Callable<T> bindingContextExtractor;
 
-    public static MethodBinding<?> NO_OP_BINDING = new MethodBinding<>((r, t) -> {}, () -> null);
+    public final static MethodBinding<?> NO_OP_BINDING = new MethodBinding<>((r, t) -> {}, () -> null);
 
     public MethodBinding(BiConsumer<Runnable, T> boundMethod, Callable<T> bindingContextExtractor) {
         this.boundMethod = boundMethod;

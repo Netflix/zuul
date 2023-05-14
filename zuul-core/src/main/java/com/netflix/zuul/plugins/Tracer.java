@@ -36,7 +36,7 @@ public class Tracer extends TracerFactory {
         return new SpectatorTracer(name);
     }
 
-    class SpectatorTracer implements com.netflix.zuul.monitoring.Tracer {
+    static class SpectatorTracer implements com.netflix.zuul.monitoring.Tracer {
 
         private String name;
         private final long start;

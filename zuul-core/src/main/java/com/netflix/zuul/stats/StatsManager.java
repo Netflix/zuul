@@ -72,7 +72,7 @@ public class StatsManager {
             new ConcurrentHashMap<String, NamedCountingMonitor>();
 
 
-    protected static StatsManager INSTANCE = new StatsManager();
+    protected final static StatsManager INSTANCE = new StatsManager();
 
     public static StatsManager getManager() {
         return INSTANCE;
@@ -132,7 +132,7 @@ public class StatsManager {
      *
      * @param req
      */
-    public void collectRequestStats(HttpRequestInfo req) {
+    public void collectRequestStats(HttpRequestInfo req) throws CloneNotSupportedException {
         // ipv4/ipv6 tracking
         String clientIp;
         final String xForwardedFor = req.getHeaders().getFirst(X_FORWARDED_FOR_HEADER);
@@ -181,7 +181,7 @@ public class StatsManager {
     /**
      * helper method to create new monitor, place into map, and register with Epic, if necessary
      */
-    protected void incrementNamedCountingMonitor(String name, ConcurrentMap<String, NamedCountingMonitor> map) {
+    protected void incrementNamedCountingMonitor(String name, ConcurrentMap<String, NamedCountingMonitor> map) throws CloneNotSupportedException {
         NamedCountingMonitor monitor = map.get(name);
         if (monitor == null) {
             monitor = new NamedCountingMonitor(name);
@@ -198,7 +198,7 @@ public class StatsManager {
      * @param route
      * @param statusCode
      */
-    public void collectRouteStats(String route, int statusCode) {
+    public void collectRouteStats(String route, int statusCode) throws CloneNotSupportedException {
 
         // increments 200, 301, 401, 503, etc. status counters
         final String preciseStatusString = String.format("status_%d", statusCode);

@@ -16,6 +16,8 @@
 package com.netflix.zuul.netty.server.push;
 
 
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
+
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +66,16 @@ public class PushConnectionRegistry {
 
     public int size() {
         return clientPushConnectionMap.size();
+    }
+
+    public PushConnectionRegistry clone() {
+        try {
+            // call clone in Object.
+            return (PushConnectionRegistry) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 
 }

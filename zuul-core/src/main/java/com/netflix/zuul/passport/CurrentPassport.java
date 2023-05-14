@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Sets;
 import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -526,4 +527,15 @@ class CountingCurrentPassport extends CurrentPassport
                 break;
         }
     }
+    public CurrentPassport clone() {
+        try {
+            // call clone in Object.
+            return (CurrentPassport) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
+    }
+
+
 }

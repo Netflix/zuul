@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common;
 
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.util.HttpUtils;
@@ -236,6 +237,15 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler
         else {
             HttpChannelFlags.CLOSING.set(parentChannel);
             return false;
+        }
+    }
+    public Http2ConnectionExpiryHandler clone() {
+        try {
+            // call clone in Object.
+            return (Http2ConnectionExpiryHandler) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this.clone();
         }
     }
 }

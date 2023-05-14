@@ -63,17 +63,17 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public SessionContext getContext() {
-        return context;
+        return context.clone();
     }
 
     @Override
     public Headers getHeaders() {
-        return headers;
+        return headers.clone();
     }
 
     @Override
     public void setHeaders(Headers newHeaders) {
-        this.headers = newHeaders;
+        this.headers = newHeaders.clone();
     }
 
     @Override

@@ -24,6 +24,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
@@ -539,5 +540,15 @@ public class Server
             LOG.debug("KQueue is unavailable, skipping", KQueue.unavailabilityCause());
         }
         return available;
+    }
+
+    public Server clone() {
+        try {
+            // call clone in Object.
+            return (Server) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 }

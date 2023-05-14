@@ -99,7 +99,7 @@ public class PerServerConnectionPool implements IConnectionPool
             Timer connEstablishTimer,
             AtomicInteger connsInPool,
             AtomicInteger connsInUse) {
-        this.server = server;
+        this.server = server.clone();
         // Note: child classes can sometimes connect to different addresses than
         this.serverAddr = Objects.requireNonNull(serverAddr, "serverAddr");
         this.connectionFactory = connectionFactory;

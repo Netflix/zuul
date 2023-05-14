@@ -263,7 +263,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public String getPath() {
-        if (message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI) == Boolean.TRUE) {
+        if (message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI).equals(Boolean.TRUE)) {
             return decodedPath;
         }
         return path;
@@ -278,7 +278,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public HttpQueryParams getQueryParams() {
-        return queryParams;
+        return queryParams.clone();
     }
 
     @Override
@@ -453,7 +453,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public void setQueryParams(HttpQueryParams queryParams)
     {
         immutableCheck();
-        this.queryParams = queryParams;
+        this.queryParams = queryParams.clone();
     }
 
     @Override

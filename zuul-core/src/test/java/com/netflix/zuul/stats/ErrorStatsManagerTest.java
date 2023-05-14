@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ErrorStatsManagerTest {
 
     @Test
-    void testPutStats() {
+    void testPutStats() throws CloneNotSupportedException {
         ErrorStatsManager sm = new ErrorStatsManager();
         assertNotNull(sm);
         sm.putStats("test", "cause");
@@ -44,7 +44,7 @@ class ErrorStatsManagerTest {
     }
 
     @Test
-    void testGetStats() {
+    void testGetStats() throws CloneNotSupportedException {
         ErrorStatsManager sm = new ErrorStatsManager();
         assertNotNull(sm);
         sm.putStats("test", "cause");

@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common;
 
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
@@ -38,5 +39,15 @@ public class Http2ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandl
     protected boolean isResponseHeaders(Object msg)
     {
         return msg instanceof Http2HeadersFrame;
+    }
+
+    public Http2ConnectionExpiryHandler clone() {
+        try {
+            // call clone in Object.
+            return (Http2ConnectionExpiryHandler) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
     }
 }

@@ -111,7 +111,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             }
 
             startedSendingResponseToClient = true;
-            zuulResponse = resp;
+            zuulResponse = (HttpResponseMessage) resp.clone();
             if ("close".equalsIgnoreCase(zuulResponse.getHeaders().getFirst("Connection"))) {
                 closeConnection = true;
             }

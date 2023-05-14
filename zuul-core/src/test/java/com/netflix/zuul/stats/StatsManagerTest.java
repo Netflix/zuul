@@ -34,7 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class StatsManagerTest {
 
     @Test
-    void testCollectRouteStats() {
+    void testCollectRouteStats() throws CloneNotSupportedException {
         String route = "test";
         int status = 500;
 
@@ -57,7 +57,7 @@ class StatsManagerTest {
     }
 
     @Test
-    void testGetRouteStatusCodeMonitor() {
+    void testGetRouteStatusCodeMonitor() throws CloneNotSupportedException {
         StatsManager sm = StatsManager.getManager();
         assertNotNull(sm);
         sm.collectRouteStats("test", 500);
@@ -65,7 +65,7 @@ class StatsManagerTest {
     }
 
     @Test
-    void testCollectRequestStats() {
+    void testCollectRequestStats() throws CloneNotSupportedException {
         final String host = "api.netflix.com";
         final String proto = "https";
 

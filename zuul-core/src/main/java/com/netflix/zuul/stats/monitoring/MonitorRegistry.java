@@ -37,8 +37,8 @@ public class MonitorRegistry {
 
 
 
-    public static MonitorRegistry getInstance() {
-        return instance;
+    public static MonitorRegistry getInstance() throws CloneNotSupportedException {
+        return (MonitorRegistry) instance.clone();
     }
 
     public void registerObject(NamedCount monitorObj) {

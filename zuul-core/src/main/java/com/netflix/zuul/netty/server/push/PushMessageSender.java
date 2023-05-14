@@ -26,6 +26,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 import com.google.common.base.Strings;
+import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -67,7 +68,7 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
 
     @Inject
     public PushMessageSender(PushConnectionRegistry pushConnectionRegistry) {
-        this.pushConnectionRegistry = pushConnectionRegistry;
+        this.pushConnectionRegistry = pushConnectionRegistry.clone();
     }
 
 
@@ -209,7 +210,15 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
 
     protected abstract PushUserAuth getPushUserAuth(FullHttpRequest request);
 
-
+    public PushMessageSender clone() {
+        try {
+            // call clone in Object.
+            return (PushMessageSender) super.clone();
+        } catch (CloneNotSupportedException e) {
+            System.out.println("Cloning not allowed.");
+            return this;
+        }
+    }
 
 
 

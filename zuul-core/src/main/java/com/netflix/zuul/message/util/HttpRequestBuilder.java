@@ -54,7 +54,7 @@ public final class HttpRequestBuilder {
     private boolean isBuilt;
 
     public HttpRequestBuilder(SessionContext context) {
-        sessionContext = Objects.requireNonNull(context);
+        sessionContext = Objects.requireNonNull(context).clone();
         protocol = HttpVersion.HTTP_1_1.text();
         method = "get";
         path = "/";
@@ -81,7 +81,7 @@ public final class HttpRequestBuilder {
     }
 
     public HttpRequestBuilder withHeaders(Headers requestHeaders) {
-        headers = Objects.requireNonNull(requestHeaders);
+        headers = Objects.requireNonNull(requestHeaders).clone();
         return this;
     }
 
