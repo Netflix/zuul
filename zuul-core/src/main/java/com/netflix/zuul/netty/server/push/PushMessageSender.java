@@ -55,7 +55,6 @@ import org.slf4j.LoggerFactory;
  * Author: Susheel Aroskar
  * Date: 5/14/18
  */
-@Singleton
 @ChannelHandler.Sharable
 public abstract class PushMessageSender  extends SimpleChannelInboundHandler<FullHttpRequest> {
 
