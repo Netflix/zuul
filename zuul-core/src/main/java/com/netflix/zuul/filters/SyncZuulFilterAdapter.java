@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
-
 import static com.netflix.zuul.filters.FilterSyncType.SYNC;
 import static com.netflix.zuul.filters.FilterType.ENDPOINT;
 
@@ -42,7 +40,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public boolean isDisabled() {
-        return false;
+        return deny();
     }
 
     @Override
@@ -63,7 +61,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public boolean overrideStopFilterProcessing() {
-        return false;
+        return deny();
     }
 
     @Override
@@ -94,5 +92,9 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
     @Override
     public void decrementConcurrency() {
         //NOOP for sync filters
+    }
+
+    private boolean deny() {
+        return false;
     }
 }

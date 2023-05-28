@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats.status;
 
 import com.netflix.zuul.context.CommonContextKeys;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * Time: 2:48 PM
  */
 public class StatusCategoryUtils {
+
     private static final Logger LOG = LoggerFactory.getLogger(StatusCategoryUtils.class);
 
     public static StatusCategory getStatusCategory(ZuulMessage msg) {
@@ -63,8 +63,7 @@ public class StatusCategoryUtils {
         return (status < 100 || status >= 500);
     }
 
-    public static void storeStatusCategoryIfNotAlreadyFailure(
-            final SessionContext context, final StatusCategory statusCategory) {
+    public static void storeStatusCategoryIfNotAlreadyFailure(final SessionContext context, final StatusCategory statusCategory) {
         if (statusCategory != null) {
             final StatusCategory nfs = context.get(CommonContextKeys.STATUS_CATGEORY);
             if (nfs == null || nfs.getGroup().getId() == ZuulStatusCategoryGroup.SUCCESS.getId()) {

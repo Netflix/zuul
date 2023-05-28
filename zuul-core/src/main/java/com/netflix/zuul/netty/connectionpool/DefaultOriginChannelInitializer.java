@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.netty.common.HttpClientLifecycleChannelHandler;
@@ -29,7 +28,6 @@ import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
-
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
 /**
@@ -41,11 +39,17 @@ import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODE
 public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
     public static final String ORIGIN_NETTY_LOGGER = "originNettyLogger";
+
     public static final String CONNECTION_POOL_HANDLER = "connectionPoolHandler";
+
     private final ConnectionPoolConfig connectionPoolConfig;
+
     private final SslContext sslContext;
+
     protected final ConnectionPoolHandler connectionPoolHandler;
+
     protected final HttpMetricsChannelHandler httpMetricsHandler;
+
     protected final LoggingHandler nettyLogger;
 
     public DefaultOriginChannelInitializer(ConnectionPoolConfig connPoolConfig, Registry spectatorRegistry) {
@@ -60,21 +64,12 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
-
         pipeline.addLast(new PassportStateOriginHandler.InboundHandler());
         pipeline.addLast(new PassportStateOriginHandler.OutboundHandler());
-
         if (connectionPoolConfig.isSecure()) {
             pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
         }
-
-        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
-                BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
-                BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),
-                BaseZuulChannelInitializer.MAX_CHUNK_SIZE.get(),
-                false,
-                false
-        ));
+        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(), BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(), BaseZuulChannelInitializer.MAX_CHUNK_SIZE.get(), false, false));
         pipeline.addLast(new PassportStateHttpClientHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpClientHandler.OutboundHandler());
         pipeline.addLast(ORIGIN_NETTY_LOGGER, nettyLogger);
@@ -112,4 +107,3 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         return httpMetricsHandler;
     }
 }
-

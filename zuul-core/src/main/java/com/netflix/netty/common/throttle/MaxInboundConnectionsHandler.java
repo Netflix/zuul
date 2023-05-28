@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.throttle;
 
 import com.netflix.spectator.api.Counter;
@@ -28,7 +27,6 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -36,31 +34,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * When a connection is throttled, the channel is closed, and then a CONNECTION_THROTTLED_EVENT event is fired
  * not notify any other interested handlers.
- *
  */
 @ChannelHandler.Sharable
-public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
-{
+public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
+
     public static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
 
     private final static AtomicInteger connections = new AtomicInteger(0);
+
     private final Counter connectionThrottled;
+
     private final int maxConnections;
 
-    public MaxInboundConnectionsHandler(Registry registry, String metricId, int maxConnections)
-    {
+    public MaxInboundConnectionsHandler(Registry registry, String metricId, int maxConnections) {
         this.maxConnections = maxConnections;
         this.connectionThrottled = registry.counter("server.connections.throttled", "id", metricId);
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
         if (maxConnections > 0) {
             int currentCount = connections.getAndIncrement();
-
             if (currentCount + 1 > maxConnections) {
                 LOG.warn("Throttling incoming connection as above configured max connections threshold of {}", maxConnections);
                 Channel channel = ctx.channel();
@@ -70,29 +66,24 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
                 connectionThrottled.increment();
             }
         }
-
         super.channelActive(ctx);
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (ctx.channel().attr(ATTR_CH_THROTTLED).get() != null) {
             // Discard this msg as channel is in process of being closed.
             ReferenceCountUtil.safeRelease(msg);
-        }
-        else {
+        } else {
             super.channelRead(ctx, msg);
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (maxConnections > 0) {
             connections.decrementAndGet();
         }
-
         super.channelInactive(ctx);
     }
 }

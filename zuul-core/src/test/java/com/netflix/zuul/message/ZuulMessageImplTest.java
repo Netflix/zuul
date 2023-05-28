@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
@@ -24,12 +23,13 @@ import io.netty.handler.codec.http.HttpContent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ZuulMessageImplTest {
+
     private static final String TEXT1 = "Hello World!";
+
     private static final String TEXT2 = "Goodbye World!";
 
     @Test
@@ -38,18 +38,14 @@ class ZuulMessageImplTest {
         ctx1.set("k1", "v1");
         Headers headers1 = new Headers();
         headers1.set("k1", "v1");
-
         ZuulMessage msg1 = new ZuulMessageImpl(ctx1, headers1);
         ZuulMessage msg2 = msg1.clone();
-
         assertEquals(msg1.getBodyAsText(), msg2.getBodyAsText());
         assertEquals(msg1.getHeaders(), msg2.getHeaders());
         assertEquals(msg1.getContext(), msg2.getContext());
-
         // Verify that values of the 2 messages are decoupled.
         msg1.getHeaders().set("k1", "v_new");
         msg1.getContext().set("k1", "v_new");
-
         assertEquals("v1", msg2.getHeaders().getFirst("k1"));
         assertEquals("v1", msg2.getContext().get("k1"));
     }
@@ -136,7 +132,6 @@ class ZuulMessageImplTest {
         assertEquals(TEXT1, body);
         assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
         assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
-
         msg.setBodyAsText(TEXT2);
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
@@ -156,7 +151,6 @@ class ZuulMessageImplTest {
         assertEquals(TEXT1, body);
         assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
         assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
-
         msg.setBody(TEXT2.getBytes());
         body = new String(msg.getBody());
         assertTrue(msg.hasBody());
@@ -171,15 +165,12 @@ class ZuulMessageImplTest {
         final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
         msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
-
         // replicate what happens in nettys tls channel writer which moves the reader index on the contained ByteBuf
         for (HttpContent c : msg.getBodyContents()) {
             c.content().readerIndex(c.content().capacity());
         }
-
         assertArrayEquals(new byte[0], msg.getBody(), "body should be empty as readerIndex at end of buffers");
         msg.resetBodyReader();
         assertEquals("Hello World!", new String(msg.getBody()));
     }
-
 }

@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
@@ -44,22 +42,17 @@ class BaseZuulChannelInitializerTest {
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
-        channelDependencies.set(
-                ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
-        channelDependencies.set(
-                ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-        BaseZuulChannelInitializer init =
-                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
+        BaseZuulChannelInitializer init = new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
-                    @Override
-                    protected void initChannel(Channel ch) {
-                    }
-                };
+            @Override
+            protected void initChannel(Channel ch) {
+            }
+        };
         EmbeddedChannel channel = new EmbeddedChannel();
-
         init.addTcpRelatedHandlers(channel.pipeline());
-
         assertNotNull(channel.pipeline().context(SourceAddressChannelHandler.class));
         assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
         assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
@@ -72,22 +65,17 @@ class BaseZuulChannelInitializerTest {
         channelConfig.set(CommonChannelConfigKeys.withProxyProtocol, true);
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
-        channelDependencies.set(
-                ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
-        channelDependencies.set(
-                ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-        BaseZuulChannelInitializer init =
-                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
+        BaseZuulChannelInitializer init = new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
-                    @Override
-                    protected void initChannel(Channel ch) {
-                    }
-                };
+            @Override
+            protected void initChannel(Channel ch) {
+            }
+        };
         EmbeddedChannel channel = new EmbeddedChannel();
-
         init.addTcpRelatedHandlers(channel.pipeline());
-
         assertNotNull(channel.pipeline().context(SourceAddressChannelHandler.class));
         assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
         assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
@@ -99,25 +87,18 @@ class BaseZuulChannelInitializerTest {
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
         channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
-        channelDependencies.set(
-                ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
-        channelDependencies.set(
-                ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
-
+        channelDependencies.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-        BaseZuulChannelInitializer init =
-                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
+        BaseZuulChannelInitializer init = new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
-                    @Override
-                    protected void initChannel(Channel ch) {
-                    }
-                };
+            @Override
+            protected void initChannel(Channel ch) {
+            }
+        };
         EmbeddedChannel channel = new EmbeddedChannel();
-
         init.addPassportHandler(channel.pipeline());
-
         assertNotNull(channel.pipeline().context(ServerStateHandler.InboundHandler.class));
         assertNotNull(channel.pipeline().context(ServerStateHandler.OutboundHandler.class));
-
     }
 }

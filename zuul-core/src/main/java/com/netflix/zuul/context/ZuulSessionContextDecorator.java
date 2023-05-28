@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.context;
 
 import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
@@ -24,7 +23,6 @@ import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -49,38 +47,25 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
     @Override
     public SessionContext decorate(SessionContext ctx) {
         // TODO split out commons parts from BaseSessionContextDecorator
-
         ChannelHandlerContext nettyCtx = (ChannelHandlerContext) ctx.get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT);
         if (nettyCtx == null) {
             return null;
         }
-
         Channel channel = nettyCtx.channel();
-
         // set injected origin manager
         ctx.put(CommonContextKeys.ORIGIN_MANAGER, originManager);
-
         // TODO
-/*        // The throttle result info.
+        /*        // The throttle result info.
         ThrottleResult throttleResult = channel.attr(HttpRequestThrottleChannelHandler.ATTR_THROTTLE_RESULT).get();
         ctx.set(CommonContextKeys.THROTTLE_RESULT, throttleResult);*/
-
         // Add a container for request attempts info.
         ctx.put(CommonContextKeys.REQUEST_ATTEMPTS, new RequestAttempts());
-
         // Providers for getting the size of read/written request and response body sizes from channel.
-        ctx.put(
-                CommonContextKeys.REQ_BODY_SIZE_PROVIDER,
-                HttpBodySizeRecordingChannelHandler.getCurrentInboundBodySize(channel));
-        ctx.put(
-                CommonContextKeys.RESP_BODY_SIZE_PROVIDER,
-                HttpBodySizeRecordingChannelHandler.getCurrentOutboundBodySize(channel));
-
+        ctx.put(CommonContextKeys.REQ_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentInboundBodySize(channel));
+        ctx.put(CommonContextKeys.RESP_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentOutboundBodySize(channel));
         CurrentPassport passport = CurrentPassport.fromChannel(channel);
         ctx.put(CommonContextKeys.PASSPORT, passport);
-
         ctx.setUUID(UUID_FACTORY.generateRandomUuid().toString());
-
         return ctx;
     }
 }

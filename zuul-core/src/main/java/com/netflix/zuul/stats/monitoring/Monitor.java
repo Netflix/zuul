@@ -22,6 +22,7 @@ package com.netflix.zuul.stats.monitoring;
  * Time: 4:33 PM
  */
 public interface Monitor {
+
     /**
      * Implement this to add this Counter to a Registry
      * @param monitorObj

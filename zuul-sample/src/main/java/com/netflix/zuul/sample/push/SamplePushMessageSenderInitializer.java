@@ -40,5 +40,4 @@ public class SamplePushMessageSenderInitializer extends PushMessageSenderInitial
     protected PushMessageSender getPushMessageSender(PushConnectionRegistry pushConnectionRegistry) {
         return pushMessageSender;
     }
-
 }

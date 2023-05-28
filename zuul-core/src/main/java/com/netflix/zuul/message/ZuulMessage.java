@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
@@ -21,7 +20,6 @@ import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 import javax.annotation.Nullable;
-
 
 /**
  * Represents a message that propagates through the Zuul filter chain.

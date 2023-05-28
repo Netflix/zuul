@@ -26,6 +26,7 @@ public class MonitoringHelper {
     }
 
     private static final class TracerFactoryImpl extends TracerFactory {
+
         @Override
         public Tracer startMicroTracer(String name) {
             return new TracerImpl();
@@ -33,11 +34,13 @@ public class MonitoringHelper {
     }
 
     private static final class TracerImpl implements Tracer {
-        @Override
-        public void setName(String name) {}
 
         @Override
-        public void stopAndLog() {}
+        public void setName(String name) {
+        }
+
+        @Override
+        public void stopAndLog() {
+        }
     }
-
 }

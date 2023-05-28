@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message.http;
 
 import io.netty.handler.codec.http.Cookie;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,13 +26,13 @@ import java.util.Map;
  * Date: 6/18/15
  * Time: 12:04 AM
  */
-public class Cookies
-{
+public class Cookies {
+
     private Map<String, List<Cookie>> map = new HashMap<>();
+
     private List<Cookie> all = new ArrayList<>();
 
-    public void add(Cookie cookie)
-    {
+    public void add(Cookie cookie) {
         List<Cookie> existing = map.get(cookie.getName());
         if (existing == null) {
             existing = new ArrayList<>();
@@ -44,18 +42,15 @@ public class Cookies
         all.add(cookie);
     }
 
-    public List<Cookie> getAll()
-    {
+    public List<Cookie> getAll() {
         return all;
     }
 
-    public List<Cookie> get(String name)
-    {
+    public List<Cookie> get(String name) {
         return map.get(name);
     }
 
-    public Cookie getFirst(String name)
-    {
+    public Cookie getFirst(String name) {
         List<Cookie> found = map.get(name);
         if (found == null || found.size() == 0) {
             return null;
@@ -63,8 +58,7 @@ public class Cookies
         return found.get(0);
     }
 
-    public String getFirstValue(String name)
-    {
+    public String getFirstValue(String name) {
         Cookie c = getFirst(name);
         String value;
         if (c != null) {

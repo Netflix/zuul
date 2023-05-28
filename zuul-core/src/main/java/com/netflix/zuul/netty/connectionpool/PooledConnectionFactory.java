@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import io.netty.channel.Channel;
@@ -23,7 +22,7 @@ import io.netty.channel.Channel;
  * Date: 7/9/16
  * Time: 2:25 PM
  */
-public interface PooledConnectionFactory
-{
+public interface PooledConnectionFactory {
+
     PooledConnection create(Channel ch);
 }

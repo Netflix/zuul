@@ -22,6 +22,8 @@ package com.netflix.zuul.stats.monitoring;
  * Time: 4:33 PM
  */
 public interface NamedCount {
+
     String getName();
+
     long getCount();
 }

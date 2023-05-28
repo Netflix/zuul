@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -26,63 +24,58 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Date: 2/7/17
  * Time: 3:18 PM
  */
-public class EventLoopMetrics implements EventLoopGroupMetrics.EventLoopInfo
-{
+public class EventLoopMetrics implements EventLoopGroupMetrics.EventLoopInfo {
+
     private final String name;
+
     public final AtomicInteger currentRequests = new AtomicInteger(0);
+
     public final AtomicInteger currentConnections = new AtomicInteger(0);
 
     private final Registry registry;
+
     private final Id currentRequestsId;
+
     private final Id currentConnectionsId;
 
-    public EventLoopMetrics(Registry registry, String eventLoopName)
-    {
+    public EventLoopMetrics(Registry registry, String eventLoopName) {
         this.name = eventLoopName;
-
         this.registry = registry;
         this.currentRequestsId = this.registry.createId("server.eventloop.http.requests.current");
         this.currentConnectionsId = this.registry.createId("server.eventloop.connections.current");
     }
 
     @Override
-    public int currentConnectionsCount()
-    {
+    public int currentConnectionsCount() {
         return currentConnections.get();
     }
 
     @Override
-    public int currentHttpRequestsCount()
-    {
+    public int currentHttpRequestsCount() {
         return currentRequests.get();
     }
 
-    public void incrementCurrentRequests()
-    {
+    public void incrementCurrentRequests() {
         int value = this.currentRequests.incrementAndGet();
         updateGauge(currentRequestsId, value);
     }
 
-    public void decrementCurrentRequests()
-    {
+    public void decrementCurrentRequests() {
         int value = this.currentRequests.decrementAndGet();
         updateGauge(currentRequestsId, value);
     }
 
-    public void incrementCurrentConnections()
-    {
+    public void incrementCurrentConnections() {
         int value = this.currentConnections.incrementAndGet();
         updateGauge(currentConnectionsId, value);
     }
 
-    public void decrementCurrentConnections()
-    {
+    public void decrementCurrentConnections() {
         int value = this.currentConnections.decrementAndGet();
         updateGauge(currentConnectionsId, value);
     }
 
-    private void updateGauge(Id gaugeId, int value)
-    {
+    private void updateGauge(Id gaugeId, int value) {
         registry.gauge(gaugeId.withTag("eventloop", name)).set(value);
     }
 }

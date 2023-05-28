@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.origins;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.SessionContext;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> {
 
     private final Registry registry;
+
     private final ConcurrentHashMap<OriginName, BasicNettyOrigin> originMappings;
 
     @Inject
@@ -48,8 +47,7 @@ public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> 
     }
 
     @Override
-    public BasicNettyOrigin createOrigin(
-            OriginName originName, String uri, SessionContext ctx) {
+    public BasicNettyOrigin createOrigin(OriginName originName, String uri, SessionContext ctx) {
         return new BasicNettyOrigin(originName, registry);
     }
 }

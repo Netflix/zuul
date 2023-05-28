@@ -16,7 +16,6 @@
 package com.netflix.zuul.context;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.context.SessionContext.Key;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,6 @@ class SessionContextTest {
         context.put(key1, "bar");
         Key<String> key2 = SessionContext.newKey("foo");
         context.put(key2, "baz");
-
         Truth.assertThat(context.keys()).containsExactly(key1, key2);
     }
 
@@ -53,7 +51,6 @@ class SessionContextTest {
     void putFailsOnNull() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
-
         assertThrows(NullPointerException.class, () -> context.put(key, null));
     }
 
@@ -63,7 +60,6 @@ class SessionContextTest {
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
         context.put(key, "baz");
-
         assertEquals("baz", context.get(key));
         Truth.assertThat(context.keys()).containsExactly(key);
     }
@@ -72,7 +68,6 @@ class SessionContextTest {
     void getReturnsNull() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
-
         assertNull(context.get(key));
     }
 
@@ -80,7 +75,6 @@ class SessionContextTest {
     void getOrDefault_picksDefault() {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
-
         assertEquals("bar", context.getOrDefault(key, "bar"));
     }
 
@@ -89,7 +83,6 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
-
         assertThrows(NullPointerException.class, () -> context.getOrDefault(key, null));
     }
 
@@ -98,9 +91,7 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
-
         Truth.assertThat(context.get(key)).isEqualTo("bar");
-
         String val = context.remove(key);
         Truth.assertThat(context.get(key)).isNull();
         Truth.assertThat(val).isEqualTo("bar");

@@ -13,19 +13,20 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message;
 
 /**
  * Represents a single header from a {@link Headers} object.
  */
 public final class Header {
+
     private final HeaderName name;
+
     private final String value;
 
-    public Header(HeaderName name, String value)
-    {
-        if (name == null) throw new NullPointerException("Header name cannot be null!");
+    public Header(HeaderName name, String value) {
+        if (name == null)
+            throw new NullPointerException("Header name cannot be null!");
         this.name = name;
         this.value = value;
     }
@@ -50,9 +51,7 @@ public final class Header {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
         Header header = (Header) o;
-
         if (!name.equals(header.name)) {
             return false;
         }

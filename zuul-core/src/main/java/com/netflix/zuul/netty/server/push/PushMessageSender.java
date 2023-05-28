@@ -24,7 +24,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
-
 import com.google.common.base.Strings;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -39,10 +38,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.ReferenceCountUtil;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,22 +53,20 @@ import org.slf4j.LoggerFactory;
  * Date: 5/14/18
  */
 @ChannelHandler.Sharable
-public abstract class PushMessageSender  extends SimpleChannelInboundHandler<FullHttpRequest> {
+public abstract class PushMessageSender extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private final PushConnectionRegistry pushConnectionRegistry;
 
     public static final String SECURE_TOKEN_HEADER_NAME = "X-Zuul.push.secure.token";
-    private static final Logger logger = LoggerFactory.getLogger(PushMessageSender.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(PushMessageSender.class);
 
     @Inject
     public PushMessageSender(PushConnectionRegistry pushConnectionRegistry) {
         this.pushConnectionRegistry = pushConnectionRegistry;
     }
 
-
-    private void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponseStatus status,
-                                  PushUserAuth userAuth) {
+    private void sendHttpResponse(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
         final FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
         final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
@@ -90,62 +85,51 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
         return secureToken.equals(conn.getSecureToken());
     }
 
-
-        @Override
+    @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) throws Exception {
         if (!request.decoderResult().isSuccess()) {
             sendHttpResponse(ctx, request, BAD_REQUEST, null);
             return;
         }
-
         final String path = request.uri();
         if (path == null) {
             sendHttpResponse(ctx, request, BAD_REQUEST, null);
             return;
         }
-
         if (path.endsWith("/push")) {
             logPushAttempt();
-
             final HttpMethod method = request.method();
             if ((method != HttpMethod.POST) && (method != HttpMethod.GET)) {
                 sendHttpResponse(ctx, request, METHOD_NOT_ALLOWED, null);
                 return;
             }
-
-
             final PushUserAuth userAuth = getPushUserAuth(request);
             if (!userAuth.isSuccess()) {
                 sendHttpResponse(ctx, request, UNAUTHORIZED, userAuth);
                 logNoIdentity();
                 return;
             }
-
             final PushConnection pushConn = pushConnectionRegistry.get(userAuth.getClientIdentity());
             if (pushConn == null) {
                 sendHttpResponse(ctx, request, NOT_FOUND, userAuth);
                 logClientNotConnected();
                 return;
             }
-
-            if (! verifySecureToken(request, pushConn)) {
+            if (!verifySecureToken(request, pushConn)) {
                 sendHttpResponse(ctx, request, FORBIDDEN, userAuth);
                 logSecurityTokenVerificationFail();
                 return;
             }
-
             if (method == HttpMethod.GET) {
                 //client only checking if particular CID + ESN is connected to this instance
                 sendHttpResponse(ctx, request, OK, userAuth);
                 return;
             }
-
             if (pushConn.isRateLimited()) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.SERVICE_UNAVAILABLE, userAuth);
                 logRateLimited();
                 return;
             }
-
             final ByteBuf body = request.content().retain();
             if (body.readableBytes() <= 0) {
                 sendHttpResponse(ctx, request, NO_CONTENT, userAuth);
@@ -154,7 +138,6 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
                 ReferenceCountUtil.release(body);
                 return;
             }
-
             final ChannelFuture clientFuture = pushConn.sendPushMessage(body);
             clientFuture.addListener(cf -> {
                 HttpResponseStatus status;
@@ -167,8 +150,7 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
                 }
                 sendHttpResponse(ctx, request, status, userAuth);
             });
-        }
-        else {
+        } else {
             //Last handler in the chain
             sendHttpResponse(ctx, request, BAD_REQUEST, null);
         }
@@ -207,9 +189,4 @@ public abstract class PushMessageSender  extends SimpleChannelInboundHandler<Ful
     }
 
     protected abstract PushUserAuth getPushUserAuth(FullHttpRequest request);
-
-
-
-
-
 }

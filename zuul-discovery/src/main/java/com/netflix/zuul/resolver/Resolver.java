@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.resolver;
 
 /**
@@ -25,7 +24,6 @@ package com.netflix.zuul.resolver;
 public interface Resolver<T> {
 
     /**
-     *
      * @param key unique identifier that may be used by certain resolvers as part of lookup. Implementations
      *            can narrow this down to be nullable.
      * @return the result of a resolver lookup

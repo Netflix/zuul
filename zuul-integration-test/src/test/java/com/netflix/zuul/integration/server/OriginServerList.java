@@ -13,24 +13,22 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.netflix.loadbalancer.ConfigurationBasedServerList;
 import com.netflix.loadbalancer.Server;
-
 import java.util.List;
-
 import static com.netflix.zuul.integration.server.TestUtil.makeDiscoveryEnabledServer;
 
 public class OriginServerList extends ConfigurationBasedServerList {
+
     @Override
     protected List<Server> derive(String value) {
         List<Server> list = Lists.newArrayList();
         if (!Strings.isNullOrEmpty(value)) {
-            for (String s: value.split(",")) {
+            for (String s : value.split(",")) {
                 String[] hostAndPort = s.split(":");
                 String host = hostAndPort[0];
                 int port = Integer.parseInt(hostAndPort[1]);

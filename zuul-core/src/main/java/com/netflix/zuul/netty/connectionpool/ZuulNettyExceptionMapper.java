@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 /**
@@ -21,7 +20,5 @@ package com.netflix.zuul.netty.connectionpool;
  * Date: 7/13/16
  * Time: 6:02 PM
  */
-public class ZuulNettyExceptionMapper
-{
-
+public class ZuulNettyExceptionMapper {
 }

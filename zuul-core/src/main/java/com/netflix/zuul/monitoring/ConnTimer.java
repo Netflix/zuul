@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.monitoring;
 
 import com.netflix.config.DynamicBooleanProperty;
@@ -37,20 +36,23 @@ import javax.annotation.Nullable;
  */
 public final class ConnTimer {
 
-    private static final DynamicBooleanProperty PRECISE_TIMING =
-            new DynamicBooleanProperty("zuul.conn.precise_timing", false);
+    private static final DynamicBooleanProperty PRECISE_TIMING = new DynamicBooleanProperty("zuul.conn.precise_timing", false);
 
     private static final AttributeKey<ConnTimer> CONN_TIMER = AttributeKey.newInstance("zuul.conntimer");
 
     private static final Duration MIN_CONN_TIMING = Duration.ofNanos(1024);
+
     private static final Duration MAX_CONN_TIMING = Duration.ofDays(366);
 
     private static final Attrs EMPTY = Attrs.newInstance();
 
     private final Registry registry;
+
     private final Channel chan;
+
     // TODO(carl-mastrangelo): make this changeable.
     private final Id metricBase;
+
     @Nullable
     private final Id preciseMetricBase;
 
@@ -98,13 +100,10 @@ public final class ConnTimer {
         Objects.requireNonNull(now);
         Objects.requireNonNull(event);
         Objects.requireNonNull(extraDimensions);
-
         Attrs connDims = chan.attr(Server.CONN_DIMENSIONS).get();
         Map<String, String> dimTags = new HashMap<>(connDims.size() + extraDimensions.size());
-
         connDims.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
         extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
-
         // Note: this is effectively O(n^2) because it will be called for each event in the connection
         // setup.  It should be bounded to at most 10 or so.
         timings.forEach((from, stamp) -> {
@@ -114,14 +113,9 @@ public final class ConnTimer {
                 // it.
                 return;
             }
-            registry.timer(buildId(metricBase, from, event, dimTags))
-                    .record(durationNanos, TimeUnit.NANOSECONDS);
+            registry.timer(buildId(metricBase, from, event, dimTags)).record(durationNanos, TimeUnit.NANOSECONDS);
             if (preciseMetricBase != null) {
-                PercentileTimer.builder(registry)
-                        .withId(buildId(preciseMetricBase, from, event, dimTags))
-                        .withRange(MIN_CONN_TIMING, MAX_CONN_TIMING)
-                        .build()
-                        .record(durationNanos, TimeUnit.NANOSECONDS);
+                PercentileTimer.builder(registry).withId(buildId(preciseMetricBase, from, event, dimTags)).withRange(MIN_CONN_TIMING, MAX_CONN_TIMING).build().record(durationNanos, TimeUnit.NANOSECONDS);
             }
         });
         timings.put(event, now);

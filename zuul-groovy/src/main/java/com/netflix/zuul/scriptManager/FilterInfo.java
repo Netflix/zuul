@@ -16,7 +16,6 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.filters.FilterType;
-
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.concurrent.ThreadSafe;
@@ -25,32 +24,35 @@ import javax.annotation.concurrent.ThreadSafe;
  * Representation of a ZuulFilter for representing and storing in a database
  */
 @ThreadSafe
-public class FilterInfo implements  Comparable<FilterInfo>{
+public class FilterInfo implements Comparable<FilterInfo> {
 
     private final String filter_id;
+
     private final String filter_name;
+
     private final String filter_code;
+
     private final FilterType filter_type;
+
     private final String filter_disablePropertyName;
+
     private final String filter_order;
+
     private final String application_name;
+
     private int revision;
+
     private Date creationDate;
+
     /* using AtomicBoolean so we can pass it into EndpointScriptMonitor */
     private final AtomicBoolean isActive = new AtomicBoolean();
+
     private final AtomicBoolean isCanary = new AtomicBoolean();
 
     /**
      * Constructor
      */
-    public FilterInfo(
-            String filter_id,
-            String filter_code,
-            FilterType filter_type,
-            String filter_name,
-            String disablePropertyName,
-            String filter_order,
-            String application_name) {
+    public FilterInfo(String filter_id, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.filter_code = filter_code;
         this.filter_type = filter_type;
@@ -63,7 +65,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return the filter name; the class name of the filter
      */
     public String getFilterName() {
@@ -77,7 +78,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     public String getFilterCode() {
         return filter_code;
     }
-
 
     /**
      * @return the name of the property to disable the filter.
@@ -93,19 +93,9 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return filter_type;
     }
 
-
     @Override
     public String toString() {
-        return "FilterInfo{" +
-                "filter_id='" + filter_id + '\'' +
-                ", filter_name='" + filter_name + '\'' +
-                ", filter_type='" + filter_type + '\'' +
-                ", revision=" + revision +
-                ", creationDate=" + creationDate +
-                ", isActive=" + isActive +
-                ", isCanary=" + isCanary +
-                ", application_name=" + application_name +
-                '}';
+        return "FilterInfo{" + "filter_id='" + filter_id + '\'' + ", filter_name='" + filter_name + '\'' + ", filter_type='" + filter_type + '\'' + ", revision=" + revision + ", creationDate=" + creationDate + ", isActive=" + isActive + ", isCanary=" + isCanary + ", application_name=" + application_name + '}';
     }
 
     /**
@@ -116,18 +106,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return application_name;
     }
 
-    public FilterInfo(
-            String filter_id,
-            int revision,
-            Date creationDate,
-            boolean isActive,
-            boolean isCanary,
-            String filter_code,
-            FilterType filter_type,
-            String filter_name,
-            String disablePropertyName,
-            String filter_order,
-            String application_name) {
+    public FilterInfo(String filter_id, int revision, Date creationDate, boolean isActive, boolean isCanary, String filter_code, FilterType filter_type, String filter_name, String disablePropertyName, String filter_order, String application_name) {
         this.filter_id = filter_id;
         this.revision = revision;
         this.creationDate = creationDate;
@@ -139,11 +118,9 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         this.filter_order = filter_order;
         this.filter_disablePropertyName = disablePropertyName;
         this.application_name = application_name;
-
     }
 
     /**
-     *
      * @return the revision of this filter
      */
     public int getRevision() {
@@ -151,7 +128,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return creation date
      */
     public Date getCreationDate() {
@@ -159,7 +135,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return true if this filter is active
      */
     public boolean isActive() {
@@ -167,7 +142,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return true if this filter should be active a "canary" cluster. A "canary" cluster is a separate cluster
      * where filters may be tested before going to the full production cluster.
      */
@@ -175,9 +149,7 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return isCanary.get();
     }
 
-
     /**
-     *
      * @return unique key for the filter
      */
     public String getFilterID() {
@@ -185,7 +157,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     }
 
     /**
-     *
      * @return the filter order
      */
     public String getFilterOrder() {
@@ -202,20 +173,27 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         FilterInfo that = (FilterInfo) o;
-
-        if (revision != that.revision) return false;
-        if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null) return false;
-        if (filter_code != null ? !filter_code.equals(that.filter_code) : that.filter_code != null) return false;
-        if (filter_id != null ? !filter_id.equals(that.filter_id) : that.filter_id != null) return false;
-        if (filter_name != null ? !filter_name.equals(that.filter_name) : that.filter_name != null) return false;
-        if (filter_type != null ? !filter_type.equals(that.filter_type) : that.filter_type != null) return false;
-        if (isActive != null ? !(isActive.get() == that.isActive.get()) : that.isActive != null) return false;
-        if (isCanary != null ? !(isCanary.get() == that.isCanary.get()) : that.isCanary != null) return false;
-
+        if (revision != that.revision)
+            return false;
+        if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null)
+            return false;
+        if (filter_code != null ? !filter_code.equals(that.filter_code) : that.filter_code != null)
+            return false;
+        if (filter_id != null ? !filter_id.equals(that.filter_id) : that.filter_id != null)
+            return false;
+        if (filter_name != null ? !filter_name.equals(that.filter_name) : that.filter_name != null)
+            return false;
+        if (filter_type != null ? !filter_type.equals(that.filter_type) : that.filter_type != null)
+            return false;
+        if (isActive != null ? !(isActive.get() == that.isActive.get()) : that.isActive != null)
+            return false;
+        if (isCanary != null ? !(isCanary.get() == that.isCanary.get()) : that.isCanary != null)
+            return false;
         return true;
     }
 
@@ -234,10 +212,9 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     @Override
     public int compareTo(FilterInfo filterInfo) {
-        if(filterInfo.getFilterName().equals(this.getFilterName())){
+        if (filterInfo.getFilterName().equals(this.getFilterName())) {
             return filterInfo.creationDate.compareTo(getCreationDate());
         }
         return filterInfo.getFilterName().compareTo(this.getFilterName());
     }
-
 }

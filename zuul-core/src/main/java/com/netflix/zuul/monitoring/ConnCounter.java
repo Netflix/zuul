@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.monitoring;
 
 import com.netflix.spectator.api.Gauge;
@@ -39,6 +38,7 @@ public final class ConnCounter {
     private static final AttributeKey<ConnCounter> CONN_COUNTER = AttributeKey.newInstance("zuul.conncounter");
 
     private static final int LOCK_COUNT = 256;
+
     private static final int LOCK_MASK = LOCK_COUNT - 1;
 
     private static final Attrs EMPTY = Attrs.newInstance();
@@ -58,7 +58,9 @@ public final class ConnCounter {
     }
 
     private final Registry registry;
+
     private final Channel chan;
+
     private final Id metricBase;
 
     private String lastCountKey;
@@ -105,15 +107,12 @@ public final class ConnCounter {
         }
         Attrs connDims = chan.attr(Server.CONN_DIMENSIONS).get();
         Map<String, String> dimTags = new HashMap<>(connDims.size() + extraDimensions.size());
-
         connDims.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
         extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
-
         dimTags.put("from", lastCountKey != null ? lastCountKey : "nascent");
         lastCountKey = event;
         Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);
         Gauge gauge = registry.gauge(id);
-
         synchronized (getLock(id)) {
             double current = gauge.value();
             gauge.set(Double.isNaN(current) ? 1 : current + 1);
@@ -136,8 +135,7 @@ public final class ConnCounter {
         synchronized (getLock(gauge.id())) {
             // Noop gauges break this assertion in tests, but the type is package private.   Check to make sure
             // the gauge has a value, or by implementation cannot have a value.
-            assert !Double.isNaN(gauge.value())
-                    || gauge.getClass().getName().equals("com.netflix.spectator.api.NoopGauge");
+            assert !Double.isNaN(gauge.value()) || gauge.getClass().getName().equals("com.netflix.spectator.api.NoopGauge");
             gauge.set(gauge.value() - 1);
         }
     }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.client.config.IClientConfig;
@@ -29,45 +28,43 @@ import java.util.Objects;
 public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
+
     private static final int DEFAULT_CONNECT_TIMEOUT = 500;
+
     private static final int DEFAULT_IDLE_TIMEOUT = 60000;
+
     private static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
 
     private final OriginName originName;
+
     private final IClientConfig clientConfig;
 
     private final CachedDynamicIntProperty MAX_REQUESTS_PER_CONNECTION;
+
     private final CachedDynamicIntProperty PER_SERVER_WATERLINE;
 
     private final CachedDynamicBooleanProperty SOCKET_KEEP_ALIVE;
-    private final CachedDynamicBooleanProperty TCP_NO_DELAY;
-    private final CachedDynamicIntProperty WRITE_BUFFER_HIGH_WATER_MARK;
-    private final CachedDynamicIntProperty WRITE_BUFFER_LOW_WATER_MARK;
-    private final CachedDynamicBooleanProperty AUTO_READ;
 
+    private final CachedDynamicBooleanProperty TCP_NO_DELAY;
+
+    private final CachedDynamicIntProperty WRITE_BUFFER_HIGH_WATER_MARK;
+
+    private final CachedDynamicIntProperty WRITE_BUFFER_LOW_WATER_MARK;
+
+    private final CachedDynamicBooleanProperty AUTO_READ;
 
     public ConnectionPoolConfigImpl(final OriginName originName, IClientConfig clientConfig) {
         this.originName = Objects.requireNonNull(originName, "originName");
         String niwsClientName = originName.getNiwsClientName();
         this.clientConfig = clientConfig;
-
-        this.MAX_REQUESTS_PER_CONNECTION =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.maxRequestsPerConnection", 1000);
-
+        this.MAX_REQUESTS_PER_CONNECTION = new CachedDynamicIntProperty(niwsClientName + ".netty.client.maxRequestsPerConnection", 1000);
         // NOTE that the each eventloop has it's own connection pool per host, and this is applied per event-loop.
-        this.PER_SERVER_WATERLINE =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.perServerWaterline", 4);
-
-        this.SOCKET_KEEP_ALIVE =
-                new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
-        this.TCP_NO_DELAY =
-                new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
-
+        this.PER_SERVER_WATERLINE = new CachedDynamicIntProperty(niwsClientName + ".netty.client.perServerWaterline", 4);
+        this.SOCKET_KEEP_ALIVE = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
+        this.TCP_NO_DELAY = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
         //TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
-        this.WRITE_BUFFER_HIGH_WATER_MARK =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferHighWaterMark", 32 * 1024);
-        this.WRITE_BUFFER_LOW_WATER_MARK =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferLowWaterMark", 8 * 1024);
+        this.WRITE_BUFFER_HIGH_WATER_MARK = new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferHighWaterMark", 32 * 1024);
+        this.WRITE_BUFFER_LOW_WATER_MARK = new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferLowWaterMark", 8 * 1024);
         this.AUTO_READ = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.AutoRead", false);
     }
 
@@ -87,14 +84,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     }
 
     @Override
-    public int maxConnectionsPerHost()
-    {
+    public int maxConnectionsPerHost() {
         return clientConfig.getPropertyAsInteger(IClientConfigKey.Keys.MaxConnectionsPerHost, DEFAULT_MAX_CONNS_PER_HOST);
     }
 
     @Override
-    public int perServerWaterline()
-    {
+    public int perServerWaterline() {
         return PER_SERVER_WATERLINE.get();
     }
 
@@ -139,15 +134,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     }
 
     @Override
-    public boolean isSecure()
-    {
+    public boolean isSecure() {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.IsSecure, false);
     }
 
     @Override
-    public boolean useIPAddrForServer()
-    {
+    public boolean useIPAddrForServer() {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.UseIPAddrForServer, true);
     }
-
 }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.channel.config;
 
 /**
@@ -21,19 +20,18 @@ package com.netflix.netty.common.channel.config;
  * Date: 2/8/17
  * Time: 6:17 PM
  */
-public class ChannelConfigKey<T>
-{
+public class ChannelConfigKey<T> {
+
     private final String key;
+
     private final T defaultValue;
 
-    public ChannelConfigKey(String key, T defaultValue)
-    {
+    public ChannelConfigKey(String key, T defaultValue) {
         this.key = key;
         this.defaultValue = defaultValue;
     }
 
-    public ChannelConfigKey(String key)
-    {
+    public ChannelConfigKey(String key) {
         this.key = key;
         this.defaultValue = null;
     }
@@ -42,22 +40,16 @@ public class ChannelConfigKey<T>
         return key;
     }
 
-    public T defaultValue()
-    {
+    public T defaultValue() {
         return defaultValue;
     }
 
-    public boolean hasDefaultValue()
-    {
+    public boolean hasDefaultValue() {
         return defaultValue != null;
     }
 
     @Override
-    public String toString()
-    {
-        return "ChannelConfigKey{" +
-                "key='" + key + '\'' +
-                ", defaultValue=" + defaultValue +
-                '}';
+    public String toString() {
+        return "ChannelConfigKey{" + "key='" + key + '\'' + ", defaultValue=" + defaultValue + '}';
     }
 }

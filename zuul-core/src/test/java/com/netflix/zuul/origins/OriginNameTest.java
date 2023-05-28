@@ -13,37 +13,31 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
-
 package com.netflix.zuul.origins;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import org.junit.jupiter.api.Test;
 
 class OriginNameTest {
+
     @Test
     void getAuthority() {
         OriginName trusted = OriginName.fromVipAndApp("woodly-doodly", "westerndigital");
-
         assertEquals("westerndigital", trusted.getAuthority());
     }
 
     @Test
     void getMetrics() {
         OriginName trusted = OriginName.fromVipAndApp("WOODLY-doodly", "westerndigital");
-
         assertEquals("woodly-doodly", trusted.getMetricId());
         assertEquals("WOODLY-doodly", trusted.getNiwsClientName());
     }
-
 
     @Test
     void equals() {
         OriginName name1 = OriginName.fromVipAndApp("woodly-doodly", "westerndigital");
         OriginName name2 = OriginName.fromVipAndApp("woodly-doodly", "westerndigital", "woodly-doodly");
-
         assertEquals(name1, name2);
         assertEquals(name1.hashCode(), name2.hashCode());
     }
@@ -53,7 +47,6 @@ class OriginNameTest {
     void equals_legacy_niws() {
         OriginName name1 = OriginName.fromVip("woodly-doodly", "westerndigital");
         OriginName name2 = OriginName.fromVipAndApp("woodly-doodly", "woodly", "westerndigital");
-
         assertEquals(name1, name2);
         assertEquals(name1.hashCode(), name2.hashCode());
     }
@@ -62,7 +55,6 @@ class OriginNameTest {
     void equals_legacy() {
         OriginName name1 = OriginName.fromVip("woodly-doodly");
         OriginName name2 = OriginName.fromVipAndApp("woodly-doodly", "woodly", "woodly-doodly");
-
         assertEquals(name1, name2);
         assertEquals(name1.hashCode(), name2.hashCode());
     }

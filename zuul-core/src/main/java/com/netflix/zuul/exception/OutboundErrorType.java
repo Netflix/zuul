@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.exception;
 
 import com.netflix.client.ClientException;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
-
 import static com.netflix.client.ClientException.ErrorType.CLIENT_THROTTLED;
 import static com.netflix.client.ClientException.ErrorType.CONNECT_EXCEPTION;
 import static com.netflix.client.ClientException.ErrorType.GENERAL;
@@ -59,7 +57,9 @@ public enum OutboundErrorType implements ErrorType {
     private static final String NAME_PREFIX = "ORIGIN_";
 
     private final int statusCodeToReturn;
+
     private final StatusCategory statusCategory;
+
     private final ClientException.ErrorType clientErrorType;
 
     OutboundErrorType(int statusCodeToReturn, StatusCategory statusCategory, ClientException.ErrorType clientErrorType) {
@@ -82,7 +82,6 @@ public enum OutboundErrorType implements ErrorType {
     public ClientException.ErrorType getClientErrorType() {
         return clientErrorType;
     }
-
 
     @Override
     public String toString() {

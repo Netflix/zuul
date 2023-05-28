@@ -13,11 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server;
 
 public class HeaderNames {
-    private HeaderNames() { }
+
+    private HeaderNames() {
+    }
 
     public static final String REQUEST_ID = "request-id";
 }

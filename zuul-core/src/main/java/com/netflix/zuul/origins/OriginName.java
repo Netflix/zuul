@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.util.VipUtils;
@@ -40,6 +39,7 @@ import java.util.Objects;
  * in metrics.
  */
 public final class OriginName {
+
     /**
      * The NIWS client name of the origin.  This is typically used in metrics and for configuration of NIWS
      * {@link com.netflix.client.config.IClientConfig} objects.
@@ -56,6 +56,7 @@ public final class OriginName {
      * The target to connect to, used for name resolution.  This is typically the VIP.
      */
     private final String target;
+
     /**
      * The authority of this origin.  Usually this is the Application name of origin.  It is primarily
      * used for establishing a secure connection, as well as logging.
@@ -138,9 +139,7 @@ public final class OriginName {
             return false;
         }
         OriginName that = (OriginName) o;
-        return Objects.equals(niwsClientName, that.niwsClientName)
-                && Objects.equals(target, that.target)
-                && Objects.equals(authority, that.authority);
+        return Objects.equals(niwsClientName, that.niwsClientName) && Objects.equals(target, that.target) && Objects.equals(authority, that.authority);
     }
 
     @Override
@@ -150,10 +149,6 @@ public final class OriginName {
 
     @Override
     public String toString() {
-        return "OriginName{" +
-                "niwsClientName='" + niwsClientName + '\'' +
-                ", target='" + target + '\'' +
-                ", authority='" + authority + '\'' +
-                '}';
+        return "OriginName{" + "niwsClientName='" + niwsClientName + '\'' + ", target='" + target + '\'' + ", authority='" + authority + '\'' + '}';
     }
 }

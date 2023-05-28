@@ -13,12 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
-
 package com.netflix.zuul.netty.server.http2;
 
 import static com.google.common.truth.Truth.assertThat;
-
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -38,13 +35,10 @@ class Http2ContentLengthEnforcingHandlerTest {
     void failsOnMultipleContentLength() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
-
-        HttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
         chan.writeInbound(req);
-
         Object out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
     }
@@ -53,14 +47,11 @@ class Http2ContentLengthEnforcingHandlerTest {
     void failsOnMixedContentLengthAndChunked() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
-
-        HttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "identity, chunked");
         req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "fzip");
         chan.writeInbound(req);
-
         Object out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
     }
@@ -69,26 +60,17 @@ class Http2ContentLengthEnforcingHandlerTest {
     void failsOnShortContentLength() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
-
-        DefaultHttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         chan.writeInbound(req);
-
         Object out = chan.readOutbound();
         assertThat(out).isNull();
-
-        DefaultHttpContent content =
-                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
+        DefaultHttpContent content = new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
         chan.writeInbound(content);
-
         out = chan.readOutbound();
         assertThat(out).isNull();
-
-        DefaultHttpContent content2 =
-                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
+        DefaultHttpContent content2 = new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
         chan.writeInbound(content2);
-
         out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
     }
@@ -97,27 +79,18 @@ class Http2ContentLengthEnforcingHandlerTest {
     void failsOnShortContent() {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
-
-        DefaultHttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
         chan.writeInbound(req);
-
         Object out = chan.readOutbound();
         assertThat(out).isNull();
-
-        DefaultHttpContent content =
-                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
+        DefaultHttpContent content = new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
         chan.writeInbound(content);
-
         out = chan.readOutbound();
         assertThat(out).isNull();
-
         DefaultHttpContent content2 = new DefaultLastHttpContent();
         chan.writeInbound(content2);
-
         out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
     }
-
 }

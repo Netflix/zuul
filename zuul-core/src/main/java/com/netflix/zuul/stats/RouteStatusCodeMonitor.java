@@ -31,9 +31,12 @@ import javax.annotation.Nullable;
  * Time: 3:04 PM
  */
 public class RouteStatusCodeMonitor implements NamedCount {
+
     private final String routeCode;
+
     @VisibleForTesting
     final String route;
+
     private final int statusCode;
 
     private final AtomicLong count = new AtomicLong();
@@ -46,25 +49,22 @@ public class RouteStatusCodeMonitor implements NamedCount {
         this.statusCode = statusCode;
         this.routeCode = route + "_" + statusCode;
         Registry registry = Spectator.globalRegistry();
-        PolledMeter.using(registry)
-                .withId(registry.createId("zuul.RouteStatusCodeMonitor", "ID", routeCode))
-                .monitorValue(this, RouteStatusCodeMonitor::getCount);
+        PolledMeter.using(registry).withId(registry.createId("zuul.RouteStatusCodeMonitor", "ID", routeCode)).monitorValue(this, RouteStatusCodeMonitor::getCount);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         RouteStatusCodeMonitor statsData = (RouteStatusCodeMonitor) o;
-
         if (statusCode != statsData.statusCode) {
             return false;
         }
         if (!Objects.equals(route, statsData.route)) {
             return false;
         }
-
         return true;
     }
 

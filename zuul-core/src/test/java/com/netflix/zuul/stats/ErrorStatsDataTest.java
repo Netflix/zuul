@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,14 +36,12 @@ class ErrorStatsDataTest {
         assertEquals(2, sd.getCount());
     }
 
-
     @Test
     void testEquals() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
         ErrorStatsData sd1 = new ErrorStatsData("route", "test");
         ErrorStatsData sd2 = new ErrorStatsData("route", "test1");
         ErrorStatsData sd3 = new ErrorStatsData("route", "test");
-
         assertEquals(sd, sd1);
         assertEquals(sd1, sd);
         assertEquals(sd, sd);

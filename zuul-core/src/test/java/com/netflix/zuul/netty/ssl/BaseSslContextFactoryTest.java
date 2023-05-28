@@ -13,19 +13,17 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.ssl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import io.netty.handler.ssl.SslProvider;
 import org.junit.jupiter.api.Test;
-
 
 /**
  * Tests for {@link BaseSslContextFactory}.
  */
 class BaseSslContextFactoryTest {
+
     @Test
     void testDefaultSslProviderIsOpenSsl() {
         assertEquals(SslProvider.OPENSSL, BaseSslContextFactory.chooseSslProvider());

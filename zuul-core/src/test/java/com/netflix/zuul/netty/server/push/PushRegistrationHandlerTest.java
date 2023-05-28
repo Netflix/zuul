@@ -73,8 +73,11 @@ class PushRegistrationHandlerTest {
     private Channel channel;
 
     private PushConnectionRegistry registry;
+
     private PushRegistrationHandler handler;
+
     private DefaultEventLoop eventLoopSpy;
+
     private TestAuth successfulAuth;
 
     @BeforeAll
@@ -93,7 +96,6 @@ class PushRegistrationHandlerTest {
         registry = new PushConnectionRegistry();
         handler = new PushRegistrationHandler(registry, PushProtocol.WEBSOCKET);
         successfulAuth = new TestAuth(true);
-
         eventLoopSpy = spy(new DefaultEventLoop(EXECUTOR));
         doReturn(eventLoopSpy).when(context).executor();
         doReturn(channelFuture).when(context).writeAndFlush(writeCaptor.capture());
@@ -104,10 +106,8 @@ class PushRegistrationHandlerTest {
     @Test
     void closeIfNotAuthenticated() throws Exception {
         doHandshakeComplete();
-
         Runnable scheduledTask = scheduledCaptor.getValue();
         scheduledTask.run();
-
         validateConnectionClosed(1000, "Server closed connection");
     }
 
@@ -131,7 +131,6 @@ class PushRegistrationHandlerTest {
         authenticateChannel();
         verify(eventLoopSpy).schedule(scheduledCaptor.capture(), anyLong(), eq(TimeUnit.SECONDS));
         Runnable requestClientToClose = scheduledCaptor.getValue();
-
         requestClientToClose.run();
         validateConnectionClosed(1000, "Server closed connection");
     }
@@ -143,7 +142,6 @@ class PushRegistrationHandlerTest {
         authenticateChannel();
         verify(eventLoopSpy).schedule(scheduledCaptor.capture(), anyLong(), eq(TimeUnit.SECONDS));
         Runnable requestClientToClose = scheduledCaptor.getValue();
-
         int taskListSize = handler.getScheduledFutures().size();
         doReturn(true).when(channel).isActive();
         requestClientToClose.run();
@@ -159,9 +157,7 @@ class PushRegistrationHandlerTest {
         doHandshakeComplete();
         TestAuth testAuth = new TestAuth(true);
         authenticateChannel();
-
         List<ScheduledFuture<?>> copyOfFutures = new ArrayList<>(handler.getScheduledFutures());
-
         handler.channelInactive(context);
         assertNull(registry.get(testAuth.getClientIdentity()));
         assertTrue(handler.getScheduledFutures().isEmpty());
@@ -191,7 +187,6 @@ class PushRegistrationHandlerTest {
         verify(channelFuture).addListener(ChannelFutureListener.CLOSE);
     }
 
-
     private static class TestAuth implements PushUserAuth {
 
         private final boolean success;
@@ -215,5 +210,4 @@ class PushRegistrationHandlerTest {
             return "whatever";
         }
     }
-
 }

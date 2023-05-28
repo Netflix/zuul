@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,7 +62,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-
 /**
  * @author Justin Guerra
  * @since 2/24/23
@@ -71,50 +69,63 @@ import org.mockito.MockitoAnnotations;
 class PerServerConnectionPoolTest {
 
     private static LocalAddress LOCAL_ADDRESS;
+
     private static DefaultEventLoopGroup ORIGIN_EVENT_LOOP_GROUP;
+
     private static DefaultEventLoopGroup CLIENT_EVENT_LOOP_GROUP;
+
     private static EventLoop CLIENT_EVENT_LOOP;
+
     private static Class<? extends Channel> PREVIOUS_CHANNEL_TYPE;
 
     @Mock
     private ClientChannelManager channelManager;
 
     private Registry registry;
+
     private DiscoveryResult discoveryResult;
+
     private DefaultClientConfigImpl clientConfig;
+
     private ConnectionPoolConfig connectionPoolConfig;
+
     private PerServerConnectionPool pool;
 
     private Counter createNewConnCounter;
+
     private Counter createConnSucceededCounter;
+
     private Counter createConnFailedCounter;
+
     private Counter requestConnCounter;
+
     private Counter reuseConnCounter;
+
     private Counter connTakenFromPoolIsNotOpen;
+
     private Counter closeAboveHighWaterMarkCounter;
+
     private Counter maxConnsPerHostExceededCounter;
+
     private Timer connEstablishTimer;
+
     private AtomicInteger connsInPool;
+
     private AtomicInteger connsInUse;
 
     @BeforeAll
     @SuppressWarnings("deprecation")
     static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
-
         CLIENT_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
         CLIENT_EVENT_LOOP = CLIENT_EVENT_LOOP_GROUP.next();
-
         ORIGIN_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
-        ServerBootstrap bootstrap = new ServerBootstrap().group(ORIGIN_EVENT_LOOP_GROUP)
-                .localAddress(LOCAL_ADDRESS)
-                .channel(LocalServerChannel.class)
-                .childHandler(new ChannelInitializer<LocalChannel>() {
-                    @Override
-                    protected void initChannel(LocalChannel ch) {
-                    }
-                });
+        ServerBootstrap bootstrap = new ServerBootstrap().group(ORIGIN_EVENT_LOOP_GROUP).localAddress(LOCAL_ADDRESS).channel(LocalServerChannel.class).childHandler(new ChannelInitializer<LocalChannel>() {
 
+            @Override
+            protected void initChannel(LocalChannel ch) {
+            }
+        });
         bootstrap.bind().sync();
         PREVIOUS_CHANNEL_TYPE = Server.defaultOutboundChannelType.getAndSet(LocalChannel.class);
     }
@@ -124,7 +135,6 @@ class PerServerConnectionPoolTest {
     static void staticCleanup() {
         ORIGIN_EVENT_LOOP_GROUP.shutdownGracefully();
         CLIENT_EVENT_LOOP_GROUP.shutdownGracefully();
-
         if (PREVIOUS_CHANNEL_TYPE != null) {
             Server.defaultOutboundChannelType.set(PREVIOUS_CHANNEL_TYPE);
         }
@@ -133,10 +143,7 @@ class PerServerConnectionPoolTest {
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
-
         registry = new DefaultRegistry();
-
-
         int index = 0;
         createNewConnCounter = registry.counter("fake_counter" + index++);
         createConnSucceededCounter = registry.counter("fake_counter" + index++);
@@ -149,45 +156,27 @@ class PerServerConnectionPoolTest {
         connEstablishTimer = registry.timer("fake_timer");
         connsInPool = new AtomicInteger();
         connsInUse = new AtomicInteger();
-
         OriginName originName = OriginName.fromVipAndApp("whatever", "whatever-secure");
-
-        InstanceInfo instanceInfo = Builder.newBuilder()
-                .setIPAddr("175.45.176.0")
-                .setPort(7001)
-                .setAppName("whatever")
-                .build();
+        InstanceInfo instanceInfo = Builder.newBuilder().setIPAddr("175.45.176.0").setPort(7001).setAppName("whatever").build();
         discoveryResult = DiscoveryResult.from(instanceInfo, true);
-
         clientConfig = new DefaultClientConfigImpl();
         connectionPoolConfig = spy(new ConnectionPoolConfigImpl(originName, clientConfig));
+        NettyClientConnectionFactory nettyConnectionFactory = new NettyClientConnectionFactory(connectionPoolConfig, new ChannelInitializer<Channel>() {
 
-        NettyClientConnectionFactory nettyConnectionFactory = new NettyClientConnectionFactory(connectionPoolConfig,
-                new ChannelInitializer<Channel>() {
-                    @Override
-                    protected void initChannel(Channel ch) {
-                    }
-                });
-
+            @Override
+            protected void initChannel(Channel ch) {
+            }
+        });
         PooledConnectionFactory pooledConnectionFactory = this::newPooledConnection;
-
-        pool = new PerServerConnectionPool(discoveryResult, LOCAL_ADDRESS, nettyConnectionFactory,
-                pooledConnectionFactory,
-                connectionPoolConfig, clientConfig,
-                createNewConnCounter, createConnSucceededCounter, createConnFailedCounter, requestConnCounter,
-                reuseConnCounter, connTakenFromPoolIsNotOpen, closeAboveHighWaterMarkCounter,
-                maxConnsPerHostExceededCounter, connEstablishTimer, connsInPool, connsInUse);
+        pool = new PerServerConnectionPool(discoveryResult, LOCAL_ADDRESS, nettyConnectionFactory, pooledConnectionFactory, connectionPoolConfig, clientConfig, createNewConnCounter, createConnSucceededCounter, createConnFailedCounter, requestConnCounter, reuseConnCounter, connTakenFromPoolIsNotOpen, closeAboveHighWaterMarkCounter, maxConnsPerHostExceededCounter, connEstablishTimer, connsInPool, connsInUse);
     }
 
     @Test
     void acquireNewConnectionHitsMaxConnections() {
         CurrentPassport currentPassport = CurrentPassport.create();
-
         clientConfig.set(Keys.MaxConnectionsPerHost, 1);
         discoveryResult.incrementOpenConnectionsCount();
-
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
-
         assertFalse(promise.isSuccess());
         assertTrue(promise.cause() instanceof OriginConnectException);
         assertEquals(1, maxConnsPerHostExceededCounter.count());
@@ -197,7 +186,6 @@ class PerServerConnectionPoolTest {
     void acquireNewConnection() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
-
         PooledConnection connection = promise.sync().get();
         assertEquals(1, requestConnCounter.count());
         assertEquals(1, createNewConnCounter.count());
@@ -205,7 +193,6 @@ class PerServerConnectionPoolTest {
         assertNotNull(currentPassport.findState(PassportState.ORIGIN_CH_CONNECTED));
         assertEquals(1, createConnSucceededCounter.count());
         assertEquals(1, connsInUse.get());
-
         //check state on PooledConnection - not all thread safe
         CLIENT_EVENT_LOOP.submit(() -> {
             checkChannelState(connection, currentPassport, 1);
@@ -216,24 +203,17 @@ class PerServerConnectionPoolTest {
     void acquireConnectionFromPoolAndRelease() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
-
         PooledConnection connection = promise.sync().get();
-
         CLIENT_EVENT_LOOP.submit(() -> {
             pool.release(connection);
         }).sync();
-
         assertEquals(1, connsInPool.get());
-
         CurrentPassport newPassport = CurrentPassport.create();
         Promise<PooledConnection> secondPromise = pool.acquire(CLIENT_EVENT_LOOP, newPassport, new AtomicReference<>());
-
         PooledConnection connection2 = secondPromise.sync().get();
         assertEquals(connection, connection2);
         assertEquals(2, requestConnCounter.count());
         assertEquals(0, connsInPool.get());
-
-
         CLIENT_EVENT_LOOP.submit(() -> {
             checkChannelState(connection, newPassport, 2);
         }).sync();
@@ -243,20 +223,15 @@ class PerServerConnectionPoolTest {
     void releaseFromPoolButAlreadyClosed() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
-
         PooledConnection connection = promise.sync().get();
-
         CLIENT_EVENT_LOOP.submit(() -> {
             pool.release(connection);
         }).sync();
-
         //make the connection invalid
         connection.getChannel().deregister().sync();
-
         CurrentPassport newPassport = CurrentPassport.create();
         Promise<PooledConnection> secondPromise = pool.acquire(CLIENT_EVENT_LOOP, newPassport, new AtomicReference<>());
         PooledConnection connection2 = secondPromise.sync().get();
-
         assertNotEquals(connection, connection2);
         assertEquals(1, connTakenFromPoolIsNotOpen.count());
         assertEquals(0, connsInPool.get());
@@ -266,12 +241,9 @@ class PerServerConnectionPoolTest {
     @Test
     void releaseFromPoolAboveHighWaterMark() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
-
         AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
         String propertyName = "whatever.netty.client.perServerWaterline";
-
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
-
         PooledConnection connection = promise.sync().get();
         try {
             configuration.setProperty(propertyName, 0);
@@ -289,16 +261,13 @@ class PerServerConnectionPoolTest {
     @Test
     void releaseFromPoolWhileDraining() throws InterruptedException, ExecutionException {
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, CurrentPassport.create(), new AtomicReference<>());
-
         PooledConnection connection = promise.sync().get();
         pool.drain();
-
         CLIENT_EVENT_LOOP.submit(() -> {
             assertFalse(connection.isInPool());
             assertTrue(connection.getChannel().isActive(), "connection was incorrectly closed during the drain");
             pool.release(connection);
         }).sync();
-
         assertTrue(connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS), "connection should have been closed after release");
     }
 
@@ -313,20 +282,15 @@ class PerServerConnectionPoolTest {
     void gracefulDrain() {
         EmbeddedChannel channel1 = new EmbeddedChannel();
         EmbeddedChannel channel2 = new EmbeddedChannel();
-
         PooledConnection connection1 = newPooledConnection(channel1);
         PooledConnection connection2 = newPooledConnection(channel2);
-
-
         Deque<PooledConnection> connections = pool.getPoolForEventLoop(channel1.eventLoop());
         connections.add(connection1);
         connections.add(connection2);
         connsInPool.set(2);
-
         assertEquals(2, connsInPool.get());
         pool.drainIdleConnectionsOnEventLoop(channel1.eventLoop());
         channel1.runPendingTasks();
-
         assertEquals(0, connsInPool.get());
         assertTrue(connection1.getChannel().closeFuture().isSuccess());
         assertTrue(connection2.getChannel().closeFuture().isSuccess());
@@ -342,8 +306,6 @@ class PerServerConnectionPoolTest {
     }
 
     private PooledConnection newPooledConnection(Channel ch) {
-        return new PooledConnection(ch, discoveryResult,
-                channelManager, registry.counter("fake_close_counter"), registry.counter("fake_close_wrt_counter"));
+        return new PooledConnection(ch, discoveryResult, channelManager, registry.counter("fake_close_counter"), registry.counter("fake_close_wrt_counter"));
     }
-
 }

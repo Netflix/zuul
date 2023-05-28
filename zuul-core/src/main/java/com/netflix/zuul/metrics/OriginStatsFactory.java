@@ -20,7 +20,7 @@ package com.netflix.zuul.metrics;
  * Date: 3/20/15
  * Time: 6:14 PM
  */
-public interface OriginStatsFactory
-{
+public interface OriginStatsFactory {
+
     public OriginStats create(String name);
 }

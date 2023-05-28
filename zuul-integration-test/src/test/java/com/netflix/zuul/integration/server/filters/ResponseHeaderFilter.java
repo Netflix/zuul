@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server.filters;
 
 import com.netflix.zuul.Filter;
@@ -21,11 +20,11 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpOutboundFilter;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import rx.Observable;
-
 import static com.netflix.zuul.integration.server.HeaderNames.REQUEST_ID;
 
 @Filter(order = 400, type = FilterType.OUTBOUND)
 public class ResponseHeaderFilter extends HttpOutboundFilter {
+
     @Override
     public boolean shouldFilter(HttpResponseMessage msg) {
         return true;

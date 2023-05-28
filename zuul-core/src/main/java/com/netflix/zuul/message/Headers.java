@@ -16,7 +16,6 @@
 package com.netflix.zuul.message;
 
 import static java.util.Objects.requireNonNull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
@@ -42,10 +41,13 @@ import javax.annotation.Nullable;
  * variants and cache the HeaderName instances somewhere, to avoid case-insensitive String comparisons.
  */
 public final class Headers {
+
     private static final int ABSENT = -1;
 
     private final List<String> originalNames;
+
     private final List<String> names;
+
     private final List<String> values;
 
     private static final Counter invalidHeaderCounter = Spectator.globalRegistry().counter("zuul.header.invalid.char");
@@ -255,7 +257,8 @@ public final class Headers {
             originalName(i, originalName);
             i++;
         }
-        clearMatchingStartingAt(i, normalName, /* removed= */ null);
+        clearMatchingStartingAt(i, normalName, /* removed= */
+        null);
     }
 
     /**
@@ -492,7 +495,7 @@ public final class Headers {
      */
     public Set<HeaderName> keySet() {
         Set<HeaderName> headerNames = new LinkedHashSet<>(size());
-        for (int i = 0 ; i < size(); i++) {
+        for (int i = 0; i < size(); i++) {
             HeaderName headerName = new HeaderName(originalName(i), name(i));
             // We actually do need to check contains before adding to the set because the original name may change.
             // In this case, the first name wins.
@@ -577,7 +580,6 @@ public final class Headers {
             return false;
         }
         Headers other = (Headers) obj;
-
         return asMap().equals(other.asMap());
     }
 
@@ -659,8 +661,7 @@ public final class Headers {
             int pos = findInvalid(value);
             if (pos != ABSENT) {
                 invalidHeaderCounter.increment();
-                throw new ZuulException("Invalid header field: char " + (int) value.charAt(pos) + " in string " + value
-                        + " does not comply with RFC 7230");
+                throw new ZuulException("Invalid header field: char " + (int) value.charAt(pos) + " in string " + value + " does not comply with RFC 7230");
             }
         }
         return value;

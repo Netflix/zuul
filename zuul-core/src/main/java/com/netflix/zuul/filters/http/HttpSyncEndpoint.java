@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.http;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
@@ -34,23 +33,21 @@ import rx.Subscriber;
  * Date: 6/16/15
  * Time: 12:23 AM
  */
-public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage> implements SyncZuulFilter<HttpRequestMessage, HttpResponseMessage>
-{
+public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, HttpResponseMessage> implements SyncZuulFilter<HttpRequestMessage, HttpResponseMessage> {
+
     // Feature flag for enabling this while we get some real data for the impact.
     private static final CachedDynamicBooleanProperty WAIT_FOR_LASTCONTENT = new CachedDynamicBooleanProperty("zuul.endpoint.sync.wait_for_lastcontent", true);
 
     private static final String KEY_FOR_SUBSCRIBER = "_HttpSyncEndpoint_subscriber";
 
     @Override
-    public HttpResponseMessage getDefaultOutput(HttpRequestMessage request)
-    {
+    public HttpResponseMessage getDefaultOutput(HttpRequestMessage request) {
         return HttpResponseMessageImpl.defaultErrorResponse(request);
     }
 
     @Override
-    public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input)
-    {
-        if (WAIT_FOR_LASTCONTENT.get() && ! input.hasCompleteBody()) {
+    public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input) {
+        if (WAIT_FOR_LASTCONTENT.get() && !input.hasCompleteBody()) {
             // Return an observable that won't complete until after we have received the LastContent from client (ie. that we've
             // received the whole request body), so that we can't potentially corrupt the clients' http state on this connection.
             return Observable.create(subscriber -> {
@@ -58,15 +55,13 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
                 ResponseState state = new ResponseState(response, subscriber);
                 input.getContext().set(KEY_FOR_SUBSCRIBER, state);
             });
-        }
-        else {
+        } else {
             return Observable.just(this.apply(input));
         }
     }
 
     @Override
-    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk)
-    {
+    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
         // Only call onNext() after we've received the LastContent of request from client.
         if (chunk instanceof LastHttpContent) {
             ResponseState state = (ResponseState) zuulMessage.getContext().get(KEY_FOR_SUBSCRIBER);
@@ -89,13 +84,13 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
         //NOOP, since this is supposed to be a SYNC filter in spirit
     }
 
-    private static class ResponseState
-    {
+    private static class ResponseState {
+
         final ZuulMessage response;
+
         final Subscriber subscriber;
 
-        public ResponseState(ZuulMessage response, Subscriber subscriber)
-        {
+        public ResponseState(ZuulMessage response, Subscriber subscriber) {
             this.response = response;
             this.subscriber = subscriber;
         }

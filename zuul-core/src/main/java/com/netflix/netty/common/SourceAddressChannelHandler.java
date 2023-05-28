@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -22,7 +21,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
-
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -49,15 +47,13 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
     /**
      * Indicates the destination address received from Proxy Protocol. Not set otherwise
      */
-    public static final AttributeKey<InetSocketAddress> ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS =
-            AttributeKey.newInstance("_proxy_protocol_destination_address");
+    public static final AttributeKey<InetSocketAddress> ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS = AttributeKey.newInstance("_proxy_protocol_destination_address");
 
     /**
      * Use {@link #ATTR_REMOTE_ADDR} instead.
      */
     @Deprecated
-    public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR =
-            AttributeKey.newInstance("_source_inet_addr");
+    public static final AttributeKey<InetSocketAddress> ATTR_SOURCE_INET_ADDR = AttributeKey.newInstance("_source_inet_addr");
 
     /**
      * The host address of the source.   This is derived from {@link #ATTR_REMOTE_ADDR}.   If the address is an IPv6
@@ -75,8 +71,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
      * Use {@link #ATTR_LOCAL_ADDR} instead.
      */
     @Deprecated
-    public static final AttributeKey<InetSocketAddress> ATTR_LOCAL_INET_ADDR =
-            AttributeKey.newInstance("_local_inet_addr");
+    public static final AttributeKey<InetSocketAddress> ATTR_LOCAL_INET_ADDR = AttributeKey.newInstance("_local_inet_addr");
 
     /**
      * The local address of this channel.  This is derived from {@code channel.localAddress()}, or from the Proxy
@@ -94,8 +89,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
      * @deprecated Use {@code channel.localAddress()}  instead.
      */
     @Deprecated
-    public static final AttributeKey<String> ATTR_SERVER_LOCAL_ADDRESS =
-            AttributeKey.newInstance("_server_local_address");
+    public static final AttributeKey<String> ATTR_SERVER_LOCAL_ADDRESS = AttributeKey.newInstance("_server_local_address");
 
     /**
      * The port number of the local socket, or {@code -1} if not appropriate.  This is not overwritten by the Proxy
@@ -120,7 +114,6 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
         // Proxy Protocol (via the LB), so set local server's address, port explicitly
         ctx.channel().attr(ATTR_SERVER_LOCAL_ADDRESS).setIfAbsent(localAddress.getAddress().getHostAddress());
         ctx.channel().attr(ATTR_SERVER_LOCAL_PORT).setIfAbsent(localAddress.getPort());
-
         super.channelActive(ctx);
     }
 

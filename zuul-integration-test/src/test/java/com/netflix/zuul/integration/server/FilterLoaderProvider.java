@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server;
 
 import com.google.inject.Provider;
@@ -26,13 +25,11 @@ import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedInboundFilte
 import com.netflix.zuul.integration.server.filters.RequestHeaderFilter;
 import com.netflix.zuul.integration.server.filters.ResponseHeaderFilter;
 import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedOutboundFilter;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class FilterLoaderProvider
-    implements Provider<FilterLoader> {
+public class FilterLoaderProvider implements Provider<FilterLoader> {
 
     private static final Set<? extends Class<? extends ZuulFilter<?, ?>>> FILTER_TYPES;
 
@@ -43,14 +40,11 @@ public class FilterLoaderProvider
         classes.add(RequestHeaderFilter.class);
         classes.add(ResponseHeaderFilter.class);
         classes.add(NeedsBodyBufferedOutboundFilter.class);
-
         FILTER_TYPES = Collections.unmodifiableSet(classes);
     }
 
     public FilterLoader get() {
-        StaticFilterLoader loader = new StaticFilterLoader(
-                new DefaultFilterFactory(),
-                FILTER_TYPES);
+        StaticFilterLoader loader = new StaticFilterLoader(new DefaultFilterFactory(), FILTER_TYPES);
         return loader;
     }
 }

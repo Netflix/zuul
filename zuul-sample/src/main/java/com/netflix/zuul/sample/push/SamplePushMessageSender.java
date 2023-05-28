@@ -43,8 +43,5 @@ public class SamplePushMessageSender extends PushMessageSender {
             return new SamplePushUserAuth(HttpResponseStatus.UNAUTHORIZED.code());
         }
         return new SamplePushUserAuth(cid);
-
     }
-
 }
-

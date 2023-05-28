@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -38,12 +37,10 @@ class ClientResponseWriterTest {
     void exemptClientTimeoutResponseBeforeRequestRead() {
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
         final EmbeddedChannel channel = new EmbeddedChannel();
-
         final SessionContext context = new SessionContext();
         context.put(CommonContextKeys.STATUS_CATGEORY, ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
-
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isTrue();
     }
 
@@ -51,34 +48,29 @@ class ClientResponseWriterTest {
     void flagResponseBeforeRequestRead() {
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
         final EmbeddedChannel channel = new EmbeddedChannel();
-
         final SessionContext context = new SessionContext();
         context.put(CommonContextKeys.STATUS_CATGEORY, ZuulStatusCategory.FAILURE_LOCAL);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
-
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isFalse();
     }
 
     @Test
     void allowExtensionForPremptingResponse() {
-
         final ZuulStatusCategory customStatus = ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler()) {
+
             @Override
             protected boolean shouldAllowPreemptiveResponse(Channel channel) {
-                StatusCategory status = StatusCategoryUtils.getStatusCategory(
-                        ClientRequestReceiver.getRequestFromChannel(channel));
+                StatusCategory status = StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
                 return status == customStatus;
             }
         };
-
         final EmbeddedChannel channel = new EmbeddedChannel();
         final SessionContext context = new SessionContext();
         context.put(CommonContextKeys.STATUS_CATGEORY, customStatus);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
-
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isTrue();
     }
 }

@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.insights;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
@@ -34,9 +32,13 @@ import org.junit.jupiter.api.Test;
 class ServerStateHandlerTest {
 
     private Registry registry;
+
     private Id currentConnsId;
+
     private Id connectsId;
+
     private Id errorsId;
+
     private Id closesId;
 
     final String listener = "test-conn-throttled";
@@ -52,25 +54,19 @@ class ServerStateHandlerTest {
 
     @Test
     void verifyConnMetrics() {
-
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
-
         final Counter connects = (Counter) registry.get(connectsId);
         final Counter closes = (Counter) registry.get(closesId);
         final Counter errors = (Counter) registry.get(errorsId);
-
         // Connects X 3
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
-
         assertEquals(3, connects.count());
-
         // Closes X 1
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
-
         assertEquals(3, connects.count());
         assertEquals(1, closes.count());
         assertEquals(0, errors.count());
@@ -78,13 +74,10 @@ class ServerStateHandlerTest {
 
     @Test
     void setPassportStateOnConnect() {
-
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
-
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
-
         assertEquals(PassportState.SERVER_CH_ACTIVE, CurrentPassport.fromChannel(channel).getState());
     }
 
@@ -93,10 +86,7 @@ class ServerStateHandlerTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
-
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
-
         assertEquals(PassportState.SERVER_CH_INACTIVE, CurrentPassport.fromChannel(channel).getState());
     }
-
 }

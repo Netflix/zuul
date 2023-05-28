@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 /**
@@ -31,10 +30,10 @@ public enum FilterCategory {
     ORIGIN("origin", "Origin connectivity filters"),
     OBSERVABILITY("observability", "Filters providing observability features"),
     OVERLOAD("overload", "Filters to respond on the server being in an overloaded state such as brownout"),
-    ROUTING("routing", "Filters which make routing decisions"),
-    ;
-    
+    ROUTING("routing", "Filters which make routing decisions");
+
     private final String code;
+
     private final String description;
 
     FilterCategory(String code, String description) {
@@ -43,7 +42,7 @@ public enum FilterCategory {
     }
 
     public String getCode() {
-        return code;
+        return getResult();
     }
 
     public String getDescription() {
@@ -52,6 +51,10 @@ public enum FilterCategory {
 
     @Override
     public String toString() {
+        return getResult();
+    }
+
+    private String getResult() {
         return code;
     }
 }

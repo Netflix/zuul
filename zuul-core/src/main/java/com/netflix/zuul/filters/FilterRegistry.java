@@ -19,6 +19,7 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 public interface FilterRegistry {
+
     @Nullable
     ZuulFilter<?, ?> get(String key);
 

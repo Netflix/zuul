@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.http2;
 
 import io.netty.buffer.ByteBuf;
@@ -33,6 +32,7 @@ import java.util.List;
  * This class is only suitable for use on HTTP/2 child channels.
  */
 public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHandlerAdapter {
+
     private static final long UNSET_CONTENT_LENGTH = -1;
 
     private long expectedContentLength = UNSET_CONTENT_LENGTH;
@@ -85,13 +85,11 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
                 return;
             }
         }
-        if (msg instanceof LastHttpContent) {
-            if (hasContentLength() && seenContentLength != expectedContentLength) {
-                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            }
+        if (msg instanceof LastHttpContent && hasContentLength() && seenContentLength != expectedContentLength) {
+            // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+            ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+            ReferenceCountUtil.safeRelease(msg);
+            return;
         }
         super.channelRead(ctx, msg);
     }

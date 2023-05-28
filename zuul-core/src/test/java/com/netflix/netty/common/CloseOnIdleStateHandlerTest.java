@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -31,7 +29,9 @@ import org.junit.jupiter.api.Test;
 class CloseOnIdleStateHandlerTest {
 
     private Registry registry = new DefaultRegistry();
+
     private Id counterId;
+
     private final String listener = "test-idle-state";
 
     @BeforeEach
@@ -44,9 +44,7 @@ class CloseOnIdleStateHandlerTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new CloseOnIdleStateHandler(registry, listener));
-
         channel.pipeline().context(DummyChannelHandler.class).fireUserEventTriggered(ALL_IDLE_STATE_EVENT);
-
         final Counter idleTimeouts = (Counter) registry.get(counterId);
         assertEquals(1, idleTimeouts.count());
     }

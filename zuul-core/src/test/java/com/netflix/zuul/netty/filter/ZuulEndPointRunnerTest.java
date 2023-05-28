@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.filter;
 
 import com.netflix.spectator.api.NoopRegistry;
@@ -33,15 +32,12 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.mockito.ArgumentCaptor;
 import rx.Observable;
-
 import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
 import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
 import static com.netflix.zuul.netty.filter.ZuulEndPointRunner.DEFAULT_ERROR_ENDPOINT;
@@ -52,28 +48,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ZuulEndPointRunnerTest {
+
     private static final String BASIC_ENDPOINT = "basicEndpoint";
+
     private ZuulEndPointRunner endpointRunner;
+
     private FilterUsageNotifier usageNotifier;
+
     private FilterLoader filterLoader;
+
     private FilterRunner filterRunner;
+
     private Registry registry;
+
     private HttpRequestMessageImpl request;
 
     @BeforeEach
     void beforeEachTest() {
         usageNotifier = mock(FilterUsageNotifier.class);
-
         filterLoader = mock(FilterLoader.class);
-        when(filterLoader.getFilterByNameAndType(DEFAULT_ERROR_ENDPOINT.get(), FilterType.ENDPOINT))
-                .thenReturn(new ErrorEndpoint());
-        when(filterLoader.getFilterByNameAndType(BASIC_ENDPOINT, FilterType.ENDPOINT))
-                .thenReturn(new BasicEndpoint());
-
+        when(filterLoader.getFilterByNameAndType(DEFAULT_ERROR_ENDPOINT.get(), FilterType.ENDPOINT)).thenReturn(new ErrorEndpoint());
+        when(filterLoader.getFilterByNameAndType(BASIC_ENDPOINT, FilterType.ENDPOINT)).thenReturn(new BasicEndpoint());
         filterRunner = mock(FilterRunner.class);
         registry = new NoopRegistry();
         endpointRunner = new ZuulEndPointRunner(usageNotifier, filterLoader, filterRunner, registry);
-
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
@@ -91,7 +89,6 @@ class ZuulEndPointRunnerTest {
         endpointRunner.filter(request);
         final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter = request.getContext().get(ZUUL_ENDPOINT);
         assertTrue(filter instanceof BasicEndpoint);
-
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
         final HttpResponseMessage capturedResponseMessage = captor.getValue();
@@ -107,7 +104,6 @@ class ZuulEndPointRunnerTest {
         endpointRunner.filter(request);
         final ZuulFilter filter = request.getContext().get(ZUUL_ENDPOINT);
         assertTrue(filter instanceof ErrorEndpoint);
-
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
         final HttpResponseMessage capturedResponseMessage = captor.getValue();
@@ -118,6 +114,7 @@ class ZuulEndPointRunnerTest {
 
     @Filter(order = 10, type = FilterType.ENDPOINT)
     static class ErrorEndpoint extends Endpoint {
+
         @Override
         public FilterCategory category() {
             return super.category();

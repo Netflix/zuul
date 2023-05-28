@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 import io.netty.channel.ChannelHandler;
@@ -28,25 +27,23 @@ import io.netty.handler.codec.http.LastHttpContent;
 /**
  * @author michaels
  */
-public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler
-{
+public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler {
+
     public static final ChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
+
     public static final ChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
 
     @ChannelHandler.Sharable
-    private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
+    private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
+
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             if (msg instanceof HttpResponse) {
                 ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
             }
-
             try {
                 super.channelRead(ctx, msg);
-            }
-            finally {
+            } finally {
                 if (msg instanceof LastHttpContent) {
                     fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
                 }
@@ -54,60 +51,47 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             try {
                 super.channelInactive(ctx);
-            }
-            finally {
+            } finally {
                 fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
             }
         }
-
     }
 
     @ChannelHandler.Sharable
-    private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
+    private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
+
         @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             if (msg instanceof HttpRequest) {
                 fireStartEvent(ctx, (HttpRequest) msg);
             }
-
             super.write(ctx, msg, promise);
         }
 
         @Override
-        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
+        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
-
             super.disconnect(ctx, promise);
         }
 
         @Override
-        public void deregister(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
+        public void deregister(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             fireCompleteEventIfNotAlready(ctx, CompleteReason.DEREGISTER);
-
             super.deregister(ctx, promise);
         }
 
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-        {
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             super.exceptionCaught(ctx, cause);
-
             fireCompleteEventIfNotAlready(ctx, CompleteReason.EXCEPTION);
         }
 
         @Override
-        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
+        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
-
             super.close(ctx, promise);
         }
     }

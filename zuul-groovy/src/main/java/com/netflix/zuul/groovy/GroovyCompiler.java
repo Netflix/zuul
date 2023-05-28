@@ -13,14 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.DynamicCodeCompiler;
 import groovy.lang.GroovyClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -37,7 +35,6 @@ public class GroovyCompiler implements DynamicCodeCompiler {
 
     /**
      * Compiles Groovy code and returns the Class of the compiles code.
-     *
      */
     public Class<?> compile(String sCode, String sName) {
         GroovyClassLoader loader = getGroovyClassLoader();
@@ -55,7 +52,6 @@ public class GroovyCompiler implements DynamicCodeCompiler {
 
     /**
      * Compiles groovy class from a file
-     *
      */
     public Class<?> compile(File file) throws IOException {
         GroovyClassLoader loader = getGroovyClassLoader();
@@ -63,4 +59,3 @@ public class GroovyCompiler implements DynamicCodeCompiler {
         return groovyClass;
     }
 }
-

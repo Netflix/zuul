@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.ssl;
 
 import com.google.errorprone.annotations.ForOverride;
@@ -56,10 +55,10 @@ import org.slf4j.LoggerFactory;
  * Time: 4:00 PM
  */
 public class BaseSslContextFactory implements SslContextFactory {
+
     private static final Logger LOG = LoggerFactory.getLogger(BaseSslContextFactory.class);
 
-    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL =
-            new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
+    private static final DynamicBooleanProperty ALLOW_USE_OPENSSL = new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
 
     static {
         // Install BouncyCastle provider.
@@ -67,6 +66,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     }
 
     protected final Registry spectatorRegistry;
+
     protected final ServerSslConfig serverSslConfig;
 
     public BaseSslContextFactory(Registry spectatorRegistry, ServerSslConfig serverSslConfig) {
@@ -79,23 +79,13 @@ public class BaseSslContextFactory implements SslContextFactory {
         try {
             ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
-
             LOG.debug("Using SslProvider of type {}", sslProvider.name());
-
-            SslContextBuilder builder = newBuilderForServer()
-                    .ciphers(getCiphers(), getCiphersFilter())
-                    .sessionTimeout(serverSslConfig.getSessionTimeout())
-                    .sslProvider(sslProvider);
-
+            SslContextBuilder builder = newBuilderForServer().ciphers(getCiphers(), getCiphersFilter()).sessionTimeout(serverSslConfig.getSessionTimeout()).sslProvider(sslProvider);
             if (serverSslConfig.getClientAuth() != null && trustedCerts != null && !trustedCerts.isEmpty()) {
-                builder = builder
-                        .trustManager(trustedCerts.toArray(new X509Certificate[0]))
-                        .clientAuth(serverSslConfig.getClientAuth());
+                builder = builder.trustManager(trustedCerts.toArray(new X509Certificate[0])).clientAuth(serverSslConfig.getClientAuth());
             }
-
             return builder;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error configuring SslContext!", e);
         }
     }
@@ -108,7 +98,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     protected SslContextBuilder newBuilderForServer() throws IOException {
         LOG.debug("Using certChainFile {}", serverSslConfig.getCertChainFile());
         try (InputStream keyInput = getKeyInputStream();
-                InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile())) {
+            InputStream certChainInput = new FileInputStream(serverSslConfig.getCertChainFile())) {
             return SslContextBuilder.forServer(certChainInput, keyInput);
         }
     }
@@ -122,7 +112,6 @@ public class BaseSslContextFactory implements SslContextFactory {
         // Setup metrics tracking the OpenSSL stats.
         if (sslContext instanceof ReferenceCountedOpenSslContext) {
             OpenSslSessionStats stats = ((ReferenceCountedOpenSslContext) sslContext).sessionContext().stats();
-
             openSslStatGauge(stats, sslContextId, "accept", OpenSslSessionStats::accept);
             openSslStatGauge(stats, sslContextId, "accept_good", OpenSslSessionStats::acceptGood);
             openSslStatGauge(stats, sslContextId, "accept_renegotiate", OpenSslSessionStats::acceptRenegotiate);
@@ -142,9 +131,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         }
     }
 
-    private void openSslStatGauge(
-            OpenSslSessionStats stats, String sslContextId, String statName,
-            ToDoubleFunction<OpenSslSessionStats> value) {
+    private void openSslStatGauge(OpenSslSessionStats stats, String sslContextId, String statName, ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
         PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
         LOG.debug("Registered spectator gauge - {}", id.name());
@@ -155,8 +142,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         SslProvider sslProvider;
         if (ALLOW_USE_OPENSSL.get() && OpenSsl.isAvailable() && SslProvider.isAlpnSupported(SslProvider.OPENSSL)) {
             sslProvider = SslProvider.OPENSSL;
-        }
-        else {
+        } else {
             sslProvider = SslProvider.JDK;
         }
         return sslProvider;
@@ -181,46 +167,36 @@ public class BaseSslContextFactory implements SslContextFactory {
 
     protected ArrayList<X509Certificate> getTrustedX509Certificates() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
-
         // Add the certificates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
         if (serverSslConfig.getClientAuth() == ClientAuth.REQUIRE || serverSslConfig.getClientAuth() == ClientAuth.OPTIONAL) {
             // Get the encrypted bytes of the truststore password.
             byte[] trustStorePwdBytes;
             if (serverSslConfig.getClientAuthTrustStorePassword() != null) {
                 trustStorePwdBytes = Base64.getDecoder().decode(serverSslConfig.getClientAuthTrustStorePassword());
-            }
-            else if (serverSslConfig.getClientAuthTrustStorePasswordFile() != null) {
+            } else if (serverSslConfig.getClientAuthTrustStorePasswordFile() != null) {
                 trustStorePwdBytes = Files.readAllBytes(serverSslConfig.getClientAuthTrustStorePasswordFile().toPath());
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Must specify either ClientAuthTrustStorePassword or ClientAuthTrustStorePasswordFile!");
             }
-
             // Decrypt the truststore password.
             String trustStorePassword = getTruststorePassword(trustStorePwdBytes);
-
             boolean dumpDecryptedTrustStorePassword = false;
             if (dumpDecryptedTrustStorePassword) {
                 LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
-
             final KeyStore trustStore = KeyStore.getInstance("JKS");
-            trustStore.load(new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
-                    trustStorePassword.toCharArray());
-
+            trustStore.load(new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()), trustStorePassword.toCharArray());
             Enumeration<String> aliases = trustStore.aliases();
             while (aliases.hasMoreElements()) {
                 X509Certificate cert = (X509Certificate) trustStore.getCertificate(aliases.nextElement());
                 trustedCerts.add(cert);
             }
         }
-
         return trustedCerts;
     }
 
     /**
      * Can be overridden to implement your own decryption scheme.
-     *
      */
     protected String getTruststorePassword(byte[] trustStorePwdBytes) {
         return new String(trustStorePwdBytes).trim();

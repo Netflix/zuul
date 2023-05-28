@@ -30,6 +30,6 @@ public class AmazonInfoHolder {
         return INFO;
     }
 
-    private AmazonInfoHolder() {}
-
+    private AmazonInfoHolder() {
+    }
 }

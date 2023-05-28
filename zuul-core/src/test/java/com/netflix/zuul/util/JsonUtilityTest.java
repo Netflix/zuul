@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,15 +27,12 @@ import org.junit.jupiter.api.Test;
 class JsonUtilityTest {
 
     // I'm using LinkedHashMap in the testing so I get consistent ordering for the expected results
-
     @Test
     void testSimpleOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\"}";
-
         assertEquals(expected, json);
     }
 
@@ -46,10 +41,8 @@ class JsonUtilityTest {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
         jsonData.put("myKey2", "myValue2");
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myKey2\":\"myValue2\"}";
-
         assertEquals(expected, json);
     }
 
@@ -57,15 +50,11 @@ class JsonUtilityTest {
     void testNestedMapOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
-
         Map<String, Object> jsonData2 = new LinkedHashMap<String, Object>();
         jsonData2.put("myNestedKey", "myNestedValue");
-
         jsonData.put("myNestedData", jsonData2);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myNestedData\":{\"myNestedKey\":\"myNestedValue\"}}";
-
         assertEquals(expected, json);
     }
 
@@ -73,40 +62,32 @@ class JsonUtilityTest {
     void testNestedMapTwo() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
-
         Map<String, Object> jsonData2 = new LinkedHashMap<String, Object>();
         jsonData2.put("myNestedKey", "myNestedValue");
         jsonData2.put("myNestedKey2", "myNestedValue2");
-
         jsonData.put("myNestedData", jsonData2);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myNestedData\":{\"myNestedKey\":\"myNestedValue\",\"myNestedKey2\":\"myNestedValue2\"}}";
-
         assertEquals(expected, json);
     }
 
     @Test
     void testArrayOne() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
-        int[] numbers = {1, 2, 3, 4};
+        int[] numbers = { 1, 2, 3, 4 };
         jsonData.put("myKey", numbers);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[1,2,3,4]}";
-
         assertEquals(expected, json);
     }
 
     @Test
     void testArrayTwo() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
-        String[] values = {"one", "two", "three", "four"};
+        String[] values = { "one", "two", "three", "four" };
         jsonData.put("myKey", values);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[\"one\",\"two\",\"three\",\"four\"]}";
-
         assertEquals(expected, json);
     }
 
@@ -119,10 +100,8 @@ class JsonUtilityTest {
         values.add("three");
         values.add("four");
         jsonData.put("myKey", values);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[\"one\",\"two\",\"three\",\"four\"]}";
-
         assertEquals(expected, json);
     }
 
@@ -130,20 +109,16 @@ class JsonUtilityTest {
     void testMapAndList() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         jsonData.put("myKey", "myValue");
-        int[] numbers = {1, 2, 3, 4};
+        int[] numbers = { 1, 2, 3, 4 };
         jsonData.put("myNumbers", numbers);
-
         Map<String, Object> jsonData2 = new LinkedHashMap<String, Object>();
         jsonData2.put("myNestedKey", "myNestedValue");
         jsonData2.put("myNestedKey2", "myNestedValue2");
-        String[] values = {"one", "two", "three", "four"};
+        String[] values = { "one", "two", "three", "four" };
         jsonData2.put("myStringNumbers", values);
-
         jsonData.put("myNestedData", jsonData2);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myNumbers\":[1,2,3,4],\"myNestedData\":{\"myNestedKey\":\"myNestedValue\",\"myNestedKey2\":\"myNestedValue2\",\"myStringNumbers\":[\"one\",\"two\",\"three\",\"four\"]}}";
-
         assertEquals(expected, json);
     }
 
@@ -151,22 +126,17 @@ class JsonUtilityTest {
     void testArrayOfMaps() {
         Map<String, Object> jsonData = new LinkedHashMap<String, Object>();
         ArrayList<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
-
         Map<String, Object> message1 = new LinkedHashMap<String, Object>();
         message1.put("a", "valueA1");
         message1.put("b", "valueB1");
         messages.add(message1);
-
         Map<String, Object> message2 = new LinkedHashMap<String, Object>();
         message2.put("a", "valueA2");
         message2.put("b", "valueB2");
         messages.add(message2);
-
         jsonData.put("messages", messages);
-
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"messages\":[{\"a\":\"valueA1\",\"b\":\"valueB1\"},{\"a\":\"valueA2\",\"b\":\"valueB2\"}]}";
-
         assertEquals(expected, json);
     }
 }

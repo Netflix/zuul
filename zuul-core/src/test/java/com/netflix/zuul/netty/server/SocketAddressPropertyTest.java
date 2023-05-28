@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.ANY;
@@ -23,7 +22,6 @@ import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV4_
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV6_ANY;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV6_LOCAL;
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.netflix.zuul.netty.server.SocketAddressProperty.BindType;
 import io.netty.channel.unix.DomainSocketAddress;
 import java.net.Inet4Address;
@@ -38,7 +36,6 @@ class SocketAddressPropertyTest {
     @Test
     void defaultValueWorks() {
         SocketAddressProperty prop = new SocketAddressProperty("com.netflix.zuul.netty.server.testprop", "=7001");
-
         SocketAddress address = prop.getValue();
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
@@ -49,7 +46,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("ANY=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -59,7 +55,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_blank() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -69,7 +64,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_ipv4Any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV4_ANY=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -81,7 +75,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_ipv6Any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV6_ANY=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -93,7 +86,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_anyLocal() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("ANY_LOCAL=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -104,7 +96,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_ipv4Local() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV4_LOCAL=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -116,7 +107,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_ipv6Local() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV6_LOCAL=7001");
-
         assertEquals(InetSocketAddress.class, address.getClass());
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
         assertEquals(7001, inetSocketAddress.getPort());
@@ -128,7 +118,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_uds() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("UDS=/var/run/zuul.sock");
-
         assertEquals(DomainSocketAddress.class, address.getClass());
         DomainSocketAddress domainSocketAddress = (DomainSocketAddress) address;
         assertEquals("/var/run/zuul.sock", domainSocketAddress.path());
@@ -137,7 +126,6 @@ class SocketAddressPropertyTest {
     @Test
     void bindTypeWorks_udsWithEquals() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("UDS=/var/run/zuul=.sock");
-
         assertEquals(DomainSocketAddress.class, address.getClass());
         DomainSocketAddress domainSocketAddress = (DomainSocketAddress) address;
         assertEquals("/var/run/zuul=.sock", domainSocketAddress.path());

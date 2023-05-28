@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -52,6 +51,7 @@ import javax.annotation.Nullable;
 public final class SocketAddressProperty extends StringDerivedProperty<SocketAddress> {
 
     public enum BindType {
+
         /**
          * Supports any IP stack, for a given port.  This is the default behaviour.  This also indicates that the
          * caller doesn't prefer a given IP stack.
@@ -60,11 +60,11 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
         /**
          * Binds on IPv4 {@code 0.0.0.0} address.
          */
-        IPV4_ANY(() -> InetAddress.getByAddress("0.0.0.0", new byte[] {0, 0, 0, 0})),
+        IPV4_ANY(() -> InetAddress.getByAddress("0.0.0.0", new byte[] { 0, 0, 0, 0 })),
         /**
          * Binds on IPv6 {@code ::} address.
          */
-        IPV6_ANY(() -> InetAddress.getByAddress("::", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})),
+        IPV6_ANY(() -> InetAddress.getByAddress("::", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })),
         /**
          * Binds on any local address. This indicates that the caller doesn't prefer a given IP stack.
          */
@@ -72,17 +72,15 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
         /**
          * Binds on the IPv4 {@code 127.0.0.1} localhost address.
          */
-        IPV4_LOCAL(() -> InetAddress.getByAddress("localhost", new byte[] {127, 0, 0, 1})),
+        IPV4_LOCAL(() -> InetAddress.getByAddress("localhost", new byte[] { 127, 0, 0, 1 })),
         /**
          * Binds on the IPv6 {@code ::1} localhost address.
          */
-        IPV6_LOCAL(() ->
-                InetAddress.getByAddress("localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1})),
+        IPV6_LOCAL(() -> InetAddress.getByAddress("localhost", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 })),
         /**
          * Binds on the Unix Domain Socket path.
          */
-        UDS,
-        ;
+        UDS;
 
         @Nullable
         private final Supplier<? extends InetAddress> addressSupplier;
@@ -112,7 +110,6 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
             if (input == null || input.isEmpty()) {
                 throw new IllegalArgumentException("Invalid address");
             }
-
             int equalsPosition = input.indexOf('=');
             if (equalsPosition == -1) {
                 throw new IllegalArgumentException("Invalid address " + input);
@@ -122,13 +119,19 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
             String rawAddress = input.substring(equalsPosition + 1);
             int port;
             parsePort: {
-                switch (bindType) {
-                    case ANY: // fallthrough
-                    case IPV4_ANY: // fallthrough
-                    case IPV6_ANY: // fallthrough
-                    case ANY_LOCAL: // fallthrough
-                    case IPV4_LOCAL: // fallthrough
-                    case IPV6_LOCAL: // fallthrough
+                switch(bindType) {
+                    // fallthrough
+                    case ANY:
+                    // fallthrough
+                    case IPV4_ANY:
+                    // fallthrough
+                    case IPV6_ANY:
+                    // fallthrough
+                    case ANY_LOCAL:
+                    // fallthrough
+                    case IPV4_LOCAL:
+                    case // fallthrough
+                    IPV6_LOCAL:
                         try {
                             port = Integer.parseInt(rawAddress);
                         } catch (NumberFormatException e) {
@@ -141,15 +144,19 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
                 }
                 throw new AssertionError("Missed cased: " + bindType);
             }
-
-            switch (bindType) {
+            switch(bindType) {
                 case ANY:
                     return new InetSocketAddress(port);
-                case IPV4_ANY: // fallthrough
-                case IPV6_ANY: // fallthrough
-                case ANY_LOCAL: // fallthrough
-                case IPV4_LOCAL: // fallthrough
-                case IPV6_LOCAL: // fallthrough
+                // fallthrough
+                case IPV4_ANY:
+                // fallthrough
+                case IPV6_ANY:
+                // fallthrough
+                case ANY_LOCAL:
+                // fallthrough
+                case IPV4_LOCAL:
+                case // fallthrough
+                IPV6_LOCAL:
                     return new InetSocketAddress(bindType.addressSupplier.get(), port);
                 case UDS:
                     return new DomainSocketAddress(rawAddress);

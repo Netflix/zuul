@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.passport;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -26,7 +25,6 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -42,34 +40,32 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public class CurrentPassport {
 
-public class CurrentPassport
-{
     private static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);
 
-    private static final CachedDynamicBooleanProperty COUNT_STATES = new CachedDynamicBooleanProperty(
-            "zuul.passport.count.enabled", false);
+    private static final CachedDynamicBooleanProperty COUNT_STATES = new CachedDynamicBooleanProperty("zuul.passport.count.enabled", false);
 
     public static final AttributeKey<CurrentPassport> CHANNEL_ATTR = AttributeKey.newInstance("_current_passport");
+
     private static final Ticker SYSTEM_TICKER = Ticker.systemTicker();
-    private static final Set<PassportState> CONTENT_STATES = Sets.newHashSet(
-            PassportState.IN_REQ_CONTENT_RECEIVED,
-            PassportState.IN_RESP_CONTENT_RECEIVED,
-            PassportState.OUT_REQ_CONTENT_SENDING,
-            PassportState.OUT_REQ_CONTENT_SENT,
-            PassportState.OUT_RESP_CONTENT_SENDING,
-            PassportState.OUT_RESP_CONTENT_SENT
-    );
-    private static final CachedDynamicBooleanProperty CONTENT_STATE_ENABLED = new CachedDynamicBooleanProperty(
-            "zuul.passport.state.content.enabled", false);
+
+    private static final Set<PassportState> CONTENT_STATES = Sets.newHashSet(PassportState.IN_REQ_CONTENT_RECEIVED, PassportState.IN_RESP_CONTENT_RECEIVED, PassportState.OUT_REQ_CONTENT_SENDING, PassportState.OUT_REQ_CONTENT_SENT, PassportState.OUT_RESP_CONTENT_SENDING, PassportState.OUT_RESP_CONTENT_SENT);
+
+    private static final CachedDynamicBooleanProperty CONTENT_STATE_ENABLED = new CachedDynamicBooleanProperty("zuul.passport.state.content.enabled", false);
 
     private final Ticker ticker;
+
     private final LinkedList<PassportItem> history;
+
     private final HashSet<PassportState> statesAdded;
+
     private final long creationTimeSinceEpochMs;
 
     private final IntrospectiveReentrantLock historyLock = new IntrospectiveReentrantLock();
+
     private final Unlocker unlocker = new Unlocker();
+
     private final class Unlocker implements AutoCloseable {
 
         @Override
@@ -77,6 +73,7 @@ public class CurrentPassport
             historyLock.unlock();
         }
     }
+
     private final static class IntrospectiveReentrantLock extends ReentrantLock {
 
         @Override
@@ -90,11 +87,7 @@ public class CurrentPassport
         if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !(locked = historyLock.tryLock())) {
             Thread owner = historyLock.getOwner();
             String ownerStack = String.valueOf(owner != null ? Arrays.asList(owner.getStackTrace()) : historyLock);
-            logger.warn(
-                    "CurrentPassport already locked!, other={}, self={}",
-                    ownerStack,
-                    Thread.currentThread(),
-                    new ConcurrentModificationException());
+            logger.warn("CurrentPassport already locked!, other={}, self={}", ownerStack, Thread.currentThread(), new ConcurrentModificationException());
         }
         if (!locked) {
             historyLock.lock();
@@ -102,42 +95,36 @@ public class CurrentPassport
         return unlocker;
     }
 
-    CurrentPassport()
-    {
+    CurrentPassport() {
         this(SYSTEM_TICKER);
     }
 
     @VisibleForTesting
-    public CurrentPassport(Ticker ticker)
-    {
+    public CurrentPassport(Ticker ticker) {
         this.ticker = ticker;
         this.history = new LinkedList<>();
         this.statesAdded = new HashSet<>();
         this.creationTimeSinceEpochMs = System.currentTimeMillis();
     }
 
-    public static CurrentPassport create()
-    {
+    public static CurrentPassport create() {
         if (COUNT_STATES.get()) {
             return new CountingCurrentPassport();
         }
         return new CurrentPassport();
     }
 
-    public static CurrentPassport fromSessionContext(SessionContext ctx)
-    {
+    public static CurrentPassport fromSessionContext(SessionContext ctx) {
         return ctx.get(CommonContextKeys.PASSPORT);
     }
 
-    public static CurrentPassport createForChannel(Channel ch)
-    {
+    public static CurrentPassport createForChannel(Channel ch) {
         CurrentPassport passport = create();
         passport.setOnChannel(ch);
         return passport;
     }
 
-    public static CurrentPassport fromChannel(Channel ch)
-    {
+    public static CurrentPassport fromChannel(Channel ch) {
         CurrentPassport passport = fromChannelOrNull(ch);
         if (passport == null) {
             passport = create();
@@ -146,11 +133,9 @@ public class CurrentPassport
         return passport;
     }
 
-    public static CurrentPassport fromChannelOrNull(Channel ch)
-    {
+    public static CurrentPassport fromChannelOrNull(Channel ch) {
         return ch.attr(CHANNEL_ATTR).get();
     }
-
 
     public void setOnChannel(Channel ch) {
         ch.attr(CHANNEL_ATTR).set(this);
@@ -161,45 +146,38 @@ public class CurrentPassport
     }
 
     public PassportState getState() {
-        try (Unlocker ignored = lock()){
+        try (Unlocker ignored = lock()) {
             PassportItem passportItem = history.peekLast();
             return passportItem != null ? passportItem.getState() : null;
         }
     }
 
     @VisibleForTesting
-    public LinkedList<PassportItem> getHistory()
-    {
+    public LinkedList<PassportItem> getHistory() {
         try (Unlocker ignored = lock()) {
             // best effort, but doesn't actually protect anything
             return history;
         }
     }
 
-    public void add(PassportState state)
-    {
-        if (! CONTENT_STATE_ENABLED.get()) {
-            if (CONTENT_STATES.contains(state)) {
-                // Discard.
-                return;
-            }
+    public void add(PassportState state) {
+        if (!CONTENT_STATE_ENABLED.get() && CONTENT_STATES.contains(state)) {
+            // Discard.
+            return;
         }
-
         try (Unlocker ignored = lock()) {
             history.addLast(new PassportItem(state, now()));
         }
         statesAdded.add(state);
     }
 
-    public void addIfNotAlready(PassportState state)
-    {
-        if (! statesAdded.contains(state)) {
+    public void addIfNotAlready(PassportState state) {
+        if (!statesAdded.contains(state)) {
             add(state);
         }
     }
 
-    public long calculateTimeBetweenFirstAnd(PassportState endState)
-    {
+    public long calculateTimeBetweenFirstAnd(PassportState endState) {
         long startTime = firstTime();
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
@@ -214,66 +192,55 @@ public class CurrentPassport
     /**
      * NOTE: This is NOT nanos since epoch. It's just since an arbitrary point in time. So only use relatively.
      */
-    public long firstTime()
-    {
+    public long firstTime() {
         try (Unlocker ignored = lock()) {
             return history.getFirst().getTime();
         }
     }
 
-    public long creationTimeSinceEpochMs()
-    {
+    public long creationTimeSinceEpochMs() {
         return creationTimeSinceEpochMs;
     }
 
-    public long calculateTimeBetween(StartAndEnd sae)
-    {
+    public long calculateTimeBetween(StartAndEnd sae) {
         if (sae.startNotFound() || sae.endNotFound()) {
             return 0;
         }
         return sae.endTime - sae.startTime;
     }
 
-    public long calculateTimeBetweenButIfNoEndThenUseNow(StartAndEnd sae)
-    {
+    public long calculateTimeBetweenButIfNoEndThenUseNow(StartAndEnd sae) {
         if (sae.startNotFound()) {
             return 0;
         }
-
         // If no end state found, then default to now.
         if (sae.endNotFound()) {
             sae.endTime = now();
         }
-
         return sae.endTime - sae.startTime;
     }
 
-    public StartAndEnd findStartAndEndStates(PassportState startState, PassportState endState)
-    {
+    public StartAndEnd findStartAndEndStates(PassportState startState, PassportState endState) {
         StartAndEnd sae = new StartAndEnd();
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
                 if (item.getState() == startState) {
                     sae.startTime = item.getTime();
-                }
-                else if (item.getState() == endState) {
+                } else if (item.getState() == endState) {
                     sae.endTime = item.getTime();
                 }
             }
         }
-
         return sae;
     }
 
-    public StartAndEnd findFirstStartAndLastEndStates(PassportState startState, PassportState endState)
-    {
+    public StartAndEnd findFirstStartAndLastEndStates(PassportState startState, PassportState endState) {
         StartAndEnd sae = new StartAndEnd();
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
                 if (sae.startNotFound() && item.getState() == startState) {
                     sae.startTime = item.getTime();
-                }
-                else if (item.getState() == endState) {
+                } else if (item.getState() == endState) {
                     sae.endTime = item.getTime();
                 }
             }
@@ -281,8 +248,7 @@ public class CurrentPassport
         return sae;
     }
 
-    public StartAndEnd findLastStartAndFirstEndStates(PassportState startState, PassportState endState)
-    {
+    public StartAndEnd findLastStartAndFirstEndStates(PassportState startState, PassportState endState) {
         StartAndEnd sae = new StartAndEnd();
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
@@ -295,36 +261,28 @@ public class CurrentPassport
         }
         return sae;
     }
-    
-    public List<StartAndEnd> findEachPairOf(PassportState startState, PassportState endState)
-    {
+
+    public List<StartAndEnd> findEachPairOf(PassportState startState, PassportState endState) {
         ArrayList<StartAndEnd> items = new ArrayList<>();
-
         StartAndEnd currentPair = null;
-
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
-
                 if (item.getState() == startState) {
                     if (currentPair == null) {
                         currentPair = new StartAndEnd();
                         currentPair.startTime = item.getTime();
                     }
-                } else if (item.getState() == endState) {
-                    if (currentPair != null) {
-                        currentPair.endTime = item.getTime();
-                        items.add(currentPair);
-                        currentPair = null;
-                    }
+                } else if (item.getState() == endState && currentPair != null) {
+                    currentPair.endTime = item.getTime();
+                    items.add(currentPair);
+                    currentPair = null;
                 }
             }
         }
-        
         return items;
     }
 
-    public PassportItem findState(PassportState state)
-    {
+    public PassportItem findState(PassportState state) {
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
                 if (item.getState() == state) {
@@ -335,8 +293,7 @@ public class CurrentPassport
         return null;
     }
 
-    public PassportItem findStateBackwards(PassportState state)
-    {
+    public PassportItem findStateBackwards(PassportState state) {
         try (Unlocker ignored = lock()) {
             Iterator itr = history.descendingIterator();
             while (itr.hasNext()) {
@@ -349,8 +306,7 @@ public class CurrentPassport
         return null;
     }
 
-    public List<PassportItem> findStates(PassportState state)
-    {
+    public List<PassportItem> findStates(PassportState state) {
         ArrayList<PassportItem> items = new ArrayList<>();
         try (Unlocker ignored = lock()) {
             for (PassportItem item : history) {
@@ -362,8 +318,7 @@ public class CurrentPassport
         return items;
     }
 
-    public List<Long> findTimes(PassportState state)
-    {
+    public List<Long> findTimes(PassportState state) {
         long startTick = firstTime();
         ArrayList<Long> items = new ArrayList<>();
         try (Unlocker ignored = lock()) {
@@ -376,46 +331,37 @@ public class CurrentPassport
         return items;
     }
 
-    public boolean wasProxyAttempt()
-    {
+    public boolean wasProxyAttempt() {
         // If an attempt was made to send outbound request headers on this session, then assume it was an
         // attempt to proxy.
         return findState(PassportState.OUT_REQ_HEADERS_SENDING) != null;
     }
-    
-    private long now()
-    {
+
+    private long now() {
         return ticker.read();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         try (Unlocker ignored = lock()) {
             long startTime = history.size() > 0 ? firstTime() : 0;
             long now = now();
-
             StringBuilder sb = new StringBuilder();
             sb.append("CurrentPassport {");
             sb.append("start_ms=").append(creationTimeSinceEpochMs()).append(", ");
-
             sb.append('[');
             for (PassportItem item : history) {
-                sb.append('+').append(item.getTime() - startTime).append('=').append(item.getState().name())
-                        .append(", ");
+                sb.append('+').append(item.getTime() - startTime).append('=').append(item.getState().name()).append(", ");
             }
             sb.append('+').append(now - startTime).append('=').append("NOW");
             sb.append(']');
-
             sb.append('}');
-
             return sb.toString();
         }
     }
 
     @VisibleForTesting
-    public static CurrentPassport parseFromToString(String text)
-    {
+    public static CurrentPassport parseFromToString(String text) {
         CurrentPassport passport = null;
         Pattern ptn = Pattern.compile("CurrentPassport \\{start_ms=\\d+, \\[(.*)\\]\\}");
         Pattern ptnState = Pattern.compile("^\\+(\\d+)=(.+)$");
@@ -445,61 +391,59 @@ public class CurrentPassport
         return passport;
     }
 
-    private static class MockTicker extends Ticker
-    {
+    private static class MockTicker extends Ticker {
+
         private long now = -1;
 
         @Override
-        public long read()
-        {
+        public long read() {
             if (now == -1) {
                 throw new IllegalStateException();
             }
             return now;
         }
 
-        public void setNow(long now)
-        {
+        public void setNow(long now) {
             this.now = now;
         }
     }
 }
 
-class CountingCurrentPassport extends CurrentPassport
-{
+class CountingCurrentPassport extends CurrentPassport {
+
     private final static Counter IN_REQ_HEADERS_RECEIVED_CNT = createCounter("in_req_hdrs_rec");
+
     private final static Counter IN_REQ_LAST_CONTENT_RECEIVED_CNT = createCounter("in_req_last_cont_rec");
 
     private final static Counter IN_RESP_HEADERS_RECEIVED_CNT = createCounter("in_resp_hdrs_rec");
+
     private final static Counter IN_RESP_LAST_CONTENT_RECEIVED_CNT = createCounter("in_resp_last_cont_rec");
 
     private final static Counter OUT_REQ_HEADERS_SENT_CNT = createCounter("out_req_hdrs_sent");
+
     private final static Counter OUT_REQ_LAST_CONTENT_SENT_CNT = createCounter("out_req_last_cont_sent");
 
     private final static Counter OUT_RESP_HEADERS_SENT_CNT = createCounter("out_resp_hdrs_sent");
+
     private final static Counter OUT_RESP_LAST_CONTENT_SENT_CNT = createCounter("out_resp_last_cont_sent");
 
-    private static Counter createCounter(String name)
-    {
+    private static Counter createCounter(String name) {
         return Spectator.globalRegistry().counter("zuul.passport." + name);
     }
 
-    public CountingCurrentPassport()
-    {
+    public CountingCurrentPassport() {
         super();
         incrementStateCounter(getState());
     }
 
     @Override
-    public void add(PassportState state)
-    {
+    public void add(PassportState state) {
         super.add(state);
         incrementStateCounter(state);
     }
 
-    private void incrementStateCounter(PassportState state)
-    {
-        switch (state) {
+    private void incrementStateCounter(PassportState state) {
+        switch(state) {
             case IN_REQ_HEADERS_RECEIVED:
                 IN_REQ_HEADERS_RECEIVED_CNT.increment();
                 break;

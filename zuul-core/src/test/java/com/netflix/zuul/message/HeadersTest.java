@@ -13,14 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.exception.ZuulException;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +39,6 @@ class HeadersTest {
         headers.set("Content-Length", "5");
         Headers headers2 = Headers.copyOf(headers);
         headers2.add("Via", "duct");
-
         Truth.assertThat(headers.getAll("Via")).isEmpty();
         Truth.assertThat(headers2.size()).isEqualTo(2);
         Truth.assertThat(headers2.getAll("Content-Length")).containsExactly("5");
@@ -54,7 +50,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst("cOOkIE")).isEqualTo("this=that");
     }
 
@@ -64,7 +59,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst(new HeaderName("cOOkIE"))).isEqualTo("this=that");
     }
 
@@ -74,7 +68,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst("Date")).isNull();
     }
 
@@ -84,7 +77,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst(new HeaderName("Date"))).isNull();
     }
 
@@ -94,7 +86,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst("Date", "tuesday")).isEqualTo("tuesday");
     }
 
@@ -104,7 +95,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getFirst(new HeaderName("Date"), "tuesday")).isEqualTo("tuesday");
     }
 
@@ -115,12 +105,8 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=Frazzle");
         Map<String, List<String>> result = new LinkedHashMap<>();
-
         headers.forEachNormalised((k, v) -> result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
-
-        Truth.assertThat(result).containsExactly(
-                "via", Collections.singletonList("duct"),
-                "cookie", Arrays.asList("this=that", "frizzle=Frazzle")).inOrder();
+        Truth.assertThat(result).containsExactly("via", Collections.singletonList("duct"), "cookie", Arrays.asList("this=that", "frizzle=Frazzle")).inOrder();
     }
 
     @Test
@@ -129,7 +115,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Truth.assertThat(headers.getAll("CookiE")).containsExactly("this=that", "frizzle=frazzle").inOrder();
     }
 
@@ -139,9 +124,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
-        Truth.assertThat(headers.getAll(new HeaderName("CookiE")))
-                .containsExactly("this=that", "frizzle=frazzle").inOrder();
+        Truth.assertThat(headers.getAll(new HeaderName("CookiE"))).containsExactly("this=that", "frizzle=frazzle").inOrder();
     }
 
     @Test
@@ -150,9 +133,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.set("cookIe", "dilly=dally");
-
         Truth.assertThat(headers.getAll("CookiE")).containsExactly("dilly=dally");
         Truth.assertThat(headers.size()).isEqualTo(2);
     }
@@ -163,9 +144,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.set(new HeaderName("cookIe"), "dilly=dally");
-
         Truth.assertThat(headers.getAll("CookiE")).containsExactly("dilly=dally");
         Truth.assertThat(headers.size()).isEqualTo(2);
     }
@@ -176,9 +155,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.set("cookIe", null);
-
         Truth.assertThat(headers.getAll("CookiE")).isEmpty();
         Truth.assertThat(headers.size()).isEqualTo(1);
     }
@@ -189,9 +166,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.set(new HeaderName("cookIe"), null);
-
         Truth.assertThat(headers.getAll("CookiE")).isEmpty();
         Truth.assertThat(headers.size()).isEqualTo(1);
     }
@@ -202,9 +177,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfValid("cookIe", null);
-
         Truth.assertThat(headers.getAll("CookiE")).isEmpty();
         Truth.assertThat(headers.size()).isEqualTo(1);
     }
@@ -215,9 +188,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfValid(new HeaderName("cookIe"), null);
-
         Truth.assertThat(headers.getAll("CookiE")).isEmpty();
         Truth.assertThat(headers.size()).isEqualTo(1);
     }
@@ -228,11 +199,9 @@ class HeadersTest {
         headers.add("X-Valid-K1", "abc-xyz");
         headers.add("X-Valid-K2", "def-xyz");
         headers.add("X-Valid-K3", "xyz-xyz");
-
         headers.setIfValid("X-Valid-K1", "abc\r\n-xy\r\nz");
         headers.setIfValid("X-Valid-K2", "abc\r-xy\rz");
         headers.setIfValid("X-Valid-K3", "abc\n-xy\nz");
-
         Truth.assertThat(headers.getAll("X-Valid-K1")).containsExactly("abc-xyz");
         Truth.assertThat(headers.getAll("X-Valid-K2")).containsExactly("def-xyz");
         Truth.assertThat(headers.getAll("X-Valid-K3")).containsExactly("xyz-xyz");
@@ -245,11 +214,9 @@ class HeadersTest {
         headers.add("X-Valid-K1", "abc-xyz");
         headers.add("X-Valid-K2", "def-xyz");
         headers.add("X-Valid-K3", "xyz-xyz");
-
         headers.setIfValid(new HeaderName("X-Valid-K1"), "abc\r\n-xy\r\nz");
         headers.setIfValid(new HeaderName("X-Valid-K2"), "abc\r-xy\rz");
         headers.setIfValid(new HeaderName("X-Valid-K3"), "abc\n-xy\nz");
-
         Truth.assertThat(headers.getAll("X-Valid-K1")).containsExactly("abc-xyz");
         Truth.assertThat(headers.getAll("X-Valid-K2")).containsExactly("def-xyz");
         Truth.assertThat(headers.getAll("X-Valid-K3")).containsExactly("xyz-xyz");
@@ -260,11 +227,9 @@ class HeadersTest {
     void setIfValidIgnoresInvalidKey() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
-
         headers.setIfValid("X-K\r\ney-1", "abc-def");
         headers.setIfValid("X-K\ney-2", "def-xyz");
         headers.setIfValid("X-K\rey-3", "xyz-xyz");
-
         Truth.assertThat(headers.getAll("X-Valid-K1")).containsExactly("abc-xyz");
         Truth.assertThat(headers.getAll("X-K\r\ney-1")).isEmpty();
         Truth.assertThat(headers.getAll("X-K\ney-2")).isEmpty();
@@ -276,11 +241,9 @@ class HeadersTest {
     void setIfValidIgnoresInvalidKey_headerName() {
         Headers headers = new Headers();
         headers.add("X-Valid-K1", "abc-xyz");
-
         headers.setIfValid(new HeaderName("X-K\r\ney-1"), "abc-def");
         headers.setIfValid(new HeaderName("X-K\ney-2"), "def-xyz");
         headers.setIfValid(new HeaderName("X-K\rey-3"), "xyz-xyz");
-
         Truth.assertThat(headers.getAll("X-Valid-K1")).containsExactly("abc-xyz");
         Truth.assertThat(headers.getAll("X-K\r\ney-1")).isEmpty();
         Truth.assertThat(headers.getAll("X-K\ney-2")).isEmpty();
@@ -294,9 +257,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfAbsent("cookIe", "dilly=dally");
-
         Truth.assertThat(headers.getAll("CookiE")).containsExactly("this=that", "frizzle=frazzle").inOrder();
     }
 
@@ -306,9 +267,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfAbsent(new HeaderName("cookIe"), "dilly=dally");
-
         Truth.assertThat(headers.getAll("CookiE")).containsExactly("this=that", "frizzle=frazzle").inOrder();
     }
 
@@ -318,7 +277,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         assertThrows(NullPointerException.class, () -> headers.setIfAbsent("cookIe", null));
     }
 
@@ -328,7 +286,6 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         assertThrows(NullPointerException.class, () -> headers.setIfAbsent(new HeaderName("cookIe"), null));
     }
 
@@ -338,9 +295,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfAbsent("X-Netflix-Awesome", "true");
-
         Truth.assertThat(headers.getAll("X-netflix-Awesome")).containsExactly("true");
     }
 
@@ -350,9 +305,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfAbsent(new HeaderName("X-Netflix-Awesome"), "true");
-
         Truth.assertThat(headers.getAll("X-netflix-Awesome")).containsExactly("true");
     }
 
@@ -362,10 +315,8 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.setIfAbsentAndValid("X-Netflix-Awesome", "true");
         headers.setIfAbsentAndValid("X-Netflix-Awesome", "True");
-
         Truth.assertThat(headers.getAll("X-netflix-Awesome")).containsExactly("true");
         Truth.assertThat(headers.size()).isEqualTo(4);
     }
@@ -374,11 +325,9 @@ class HeadersTest {
     void setIfAbsentAndValidIgnoresInvalidValues() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
-
         headers.setIfAbsentAndValid("X-Invalid-K1", "abc\r\nxy\r\nz");
         headers.setIfAbsentAndValid("X-Invalid-K2", "abc\rxy\rz");
         headers.setIfAbsentAndValid("X-Invalid-K3", "abc\nxy\nz");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct");
         Truth.assertThat(headers.getAll("X-Invalid-K1")).isEmpty();
         Truth.assertThat(headers.getAll("X-Invalid-K2")).isEmpty();
@@ -392,9 +341,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.add("via", "con Dios");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct", "con Dios").inOrder();
     }
 
@@ -404,9 +351,7 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         headers.add(new HeaderName("via"), "con Dios");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct", "con Dios").inOrder();
     }
 
@@ -416,7 +361,6 @@ class HeadersTest {
         headers.addIfValid("Via", "duct");
         headers.addIfValid("Cookie", "abc=def");
         headers.addIfValid("cookie", "uvw=xyz");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct");
         Truth.assertThat(headers.getAll("Cookie")).containsExactly("abc=def", "uvw=xyz").inOrder();
         Truth.assertThat(headers.size()).isEqualTo(3);
@@ -428,7 +372,6 @@ class HeadersTest {
         headers.addIfValid("Via", "duct");
         headers.addIfValid("Cookie", "abc=def");
         headers.addIfValid(new HeaderName("cookie"), "uvw=xyz");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct");
         Truth.assertThat(headers.getAll("Cookie")).containsExactly("abc=def", "uvw=xyz").inOrder();
         Truth.assertThat(headers.size()).isEqualTo(3);
@@ -442,7 +385,6 @@ class HeadersTest {
         headers.addIfValid("X-Invalid-K1", "abc\r\nxy\r\nz");
         headers.addIfValid("X-Invalid-K2", "abc\rxy\rz");
         headers.addIfValid("X-Invalid-K3", "abc\nxy\nz");
-
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct");
         Truth.assertThat(headers.getAll("Cookie")).containsExactly("abc=def");
         Truth.assertThat(headers.getAll("X-Invalid-K1")).isEmpty();
@@ -457,19 +399,15 @@ class HeadersTest {
         headers.add("Via", "duct");
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
-
         Headers other = new Headers();
         other.add("cookie", "a=b");
         other.add("via", "com");
-
         headers.putAll(other);
-
         // Only check the order per field, not for the entire set.
         Truth.assertThat(headers.getAll("Via")).containsExactly("duct", "com").inOrder();
         Truth.assertThat(headers.getAll("coOkiE")).containsExactly("this=that", "frizzle=frazzle", "a=b").inOrder();
         Truth.assertThat(headers.size()).isEqualTo(5);
     }
-
 
     @Test
     void remove() {
@@ -478,9 +416,7 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         List<String> removed = headers.remove("Cookie");
-
         Truth.assertThat(headers.getAll("Cookie")).isEmpty();
         Truth.assertThat(headers.getAll("Soup")).containsExactly("salad");
         Truth.assertThat(headers.size()).isEqualTo(2);
@@ -494,9 +430,7 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         List<String> removed = headers.remove(new HeaderName("Cookie"));
-
         Truth.assertThat(headers.getAll("Cookie")).isEmpty();
         Truth.assertThat(headers.getAll("Soup")).containsExactly("salad");
         Truth.assertThat(headers.size()).isEqualTo(2);
@@ -510,9 +444,7 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         List<String> removed = headers.remove("Monkey");
-
         Truth.assertThat(headers.getAll("Cookie")).isNotEmpty();
         Truth.assertThat(headers.getAll("Soup")).containsExactly("salad");
         Truth.assertThat(headers.size()).isEqualTo(4);
@@ -526,9 +458,7 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("Cookie", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         List<String> removed = headers.remove(new HeaderName("Monkey"));
-
         Truth.assertThat(headers.getAll("Cookie")).isNotEmpty();
         Truth.assertThat(headers.getAll("Soup")).containsExactly("salad");
         Truth.assertThat(headers.size()).isEqualTo(4);
@@ -542,9 +472,7 @@ class HeadersTest {
         headers.add("Cookie", "this=that");
         headers.add("COOkie", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         boolean removed = headers.removeIf(entry -> entry.getKey().getName().equals("Cookie"));
-
         assertTrue(removed);
         Truth.assertThat(headers.getAll("cOoKie")).containsExactly("frizzle=frazzle");
         Truth.assertThat(headers.size()).isEqualTo(3);
@@ -557,11 +485,8 @@ class HeadersTest {
         headers.add("COOKie", "this=that");
         headers.add("cookIE", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         Set<HeaderName> keySet = headers.keySet();
-
-        Truth.assertThat(keySet)
-                .containsExactly(new HeaderName("COOKie"), new HeaderName("Soup"), new HeaderName("Via"));
+        Truth.assertThat(keySet).containsExactly(new HeaderName("COOKie"), new HeaderName("Soup"), new HeaderName("Via"));
         for (HeaderName headerName : keySet) {
             if (headerName.getName().equals("COOKie")) {
                 return;
@@ -577,7 +502,6 @@ class HeadersTest {
         headers.add("COOKie", "this=that");
         headers.add("cookIE", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         assertTrue(headers.contains("CoOkIe"));
         assertTrue(headers.contains(new HeaderName("CoOkIe")));
         assertTrue(headers.contains("cookie"));
@@ -588,7 +512,6 @@ class HeadersTest {
         assertTrue(headers.contains(new HeaderName("COOKIE")));
         assertFalse(headers.contains("Monkey"));
         assertFalse(headers.contains(new HeaderName("Monkey")));
-
         headers.remove("cookie");
         assertFalse(headers.contains("cookie"));
         assertFalse(headers.contains(new HeaderName("cookie")));
@@ -601,7 +524,6 @@ class HeadersTest {
         headers.add("COOKie", "this=that");
         headers.add("cookIE", "frizzle=frazzle");
         headers.add("Soup", "salad");
-
         // note the swapping of the two cookie casings.
         assertTrue(headers.contains("CoOkIe", "frizzle=frazzle"));
         assertTrue(headers.contains(new HeaderName("CoOkIe"), "frizzle=frazzle"));
@@ -614,7 +536,6 @@ class HeadersTest {
         Headers headers = new Headers();
         headers.set("Content-Length", "5");
         headers.set("content-length", "10");
-
         assertEquals("10", headers.getFirst("Content-Length"));
         assertEquals("10", headers.getFirst("content-length"));
         assertEquals(1, headers.getAll("content-length").size());
@@ -625,7 +546,6 @@ class HeadersTest {
         Headers headers = new Headers();
         headers.add("Content-Length", "5");
         headers.add("content-length", "10");
-
         List<String> values = headers.getAll("content-length");
         assertTrue(values.contains("10"));
         assertTrue(values.contains("5"));
@@ -637,7 +557,6 @@ class HeadersTest {
         Headers headers = new Headers();
         headers.set("Content-Length", "5");
         headers.setIfAbsent("content-length", "10");
-
         List<String> values = headers.getAll("content-length");
         assertEquals(1, values.size());
         assertEquals("5", values.get(0));
@@ -648,10 +567,8 @@ class HeadersTest {
         Headers headers = new Headers();
         headers.add("Content-Length", "5");
         headers.add("content-length", "10");
-
         Headers headers2 = new Headers();
         headers2.putAll(headers);
-
         List<String> values = headers2.getAll("content-length");
         assertTrue(values.contains("10"));
         assertTrue(values.contains("5"));
@@ -661,7 +578,6 @@ class HeadersTest {
     @Test
     void testSanitizeValues_CRLF() {
         Headers headers = new Headers();
-
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\r\nb\r\nc"));
         assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-break1", "a\r\nb\r\nc"));
     }
@@ -669,7 +585,6 @@ class HeadersTest {
     @Test
     void testSanitizeValues_LF() {
         Headers headers = new Headers();
-
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-break1", "a\nb\nc"));
         assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-break1", "a\nb\nc"));
     }
@@ -677,11 +592,9 @@ class HeadersTest {
     @Test
     void testSanitizeValues_ISO88591Value() {
         Headers headers = new Headers();
-
         headers.addAndValidate("x-test-ISO-8859-1", "P Venkmän");
         Truth.assertThat(headers.getAll("x-test-ISO-8859-1")).containsExactly("P Venkmän");
         Truth.assertThat(headers.size()).isEqualTo(1);
-
         headers.setAndValidate("x-test-ISO-8859-1", "Venkmän");
         Truth.assertThat(headers.getAll("x-test-ISO-8859-1")).containsExactly("Venkmän");
         Truth.assertThat(headers.size()).isEqualTo(1);
@@ -691,15 +604,15 @@ class HeadersTest {
     void testSanitizeValues_UTF8Value() {
         // Ideally Unicode characters should not appear in the Header values.
         Headers headers = new Headers();
-
-        String rawHeaderValue = "\u017d" + "\u0172" + "\u016e" + "\u013F"; //ŽŲŮĽ
+        //ŽŲŮĽ
+        String rawHeaderValue = "\u017d" + "\u0172" + "\u016e" + "\u013F";
         byte[] bytes = rawHeaderValue.getBytes(StandardCharsets.UTF_8);
         String utf8HeaderValue = new String(bytes, StandardCharsets.UTF_8);
         headers.addAndValidate("x-test-UTF8", utf8HeaderValue);
         Truth.assertThat(headers.getAll("x-test-UTF8")).containsExactly(utf8HeaderValue);
         Truth.assertThat(headers.size()).isEqualTo(1);
-
-        rawHeaderValue = "\u017d" + "\u0172" + "uuu" + "\u016e" + "\u013F"; //ŽŲuuuŮĽ
+        //ŽŲuuuŮĽ
+        rawHeaderValue = "\u017d" + "\u0172" + "uuu" + "\u016e" + "\u013F";
         bytes = rawHeaderValue.getBytes(StandardCharsets.UTF_8);
         utf8HeaderValue = new String(bytes, StandardCharsets.UTF_8);
         headers.setAndValidate("x-test-UTF8", utf8HeaderValue);
@@ -710,7 +623,6 @@ class HeadersTest {
     @Test
     void testSanitizeValues_addSetHeaderName() {
         Headers headers = new Headers();
-
         assertThrows(ZuulException.class, () -> headers.setAndValidate(new HeaderName("x-test-break1"), "a\nb\nc"));
         assertThrows(ZuulException.class, () -> headers.addAndValidate(new HeaderName("x-test-break2"), "a\r\nb\r\nc"));
     }
@@ -718,7 +630,6 @@ class HeadersTest {
     @Test
     void testSanitizeValues_nameCRLF() {
         Headers headers = new Headers();
-
         assertThrows(ZuulException.class, () -> headers.addAndValidate("x-test-br\r\neak1", "a\r\nb\r\nc"));
         assertThrows(ZuulException.class, () -> headers.setAndValidate("x-test-br\r\neak2", "a\r\nb\r\nc"));
     }

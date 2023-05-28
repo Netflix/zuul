@@ -13,15 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.status;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 
 /**
  * User: michaels@netflix.com
@@ -29,8 +26,8 @@ import javax.inject.Singleton;
  * Time: 3:37 PM
  */
 @Singleton
-public class ServerStatusManager
-{
+public class ServerStatusManager {
+
     private final ApplicationInfoManager applicationInfoManager;
 
     @Inject

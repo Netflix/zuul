@@ -20,7 +20,6 @@ import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -30,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NamedCountingMonitor implements NamedCount {
 
-
     private final String name;
 
     private final AtomicLong count = new AtomicLong();
@@ -38,9 +36,7 @@ public class NamedCountingMonitor implements NamedCount {
     public NamedCountingMonitor(String name) {
         this.name = name;
         Registry registry = Spectator.globalRegistry();
-        PolledMeter.using(registry)
-                .withId(registry.createId("zuul.ErrorStatsData", "ID", name))
-                .monitorValue(this, NamedCountingMonitor::getCount);
+        PolledMeter.using(registry).withId(registry.createId("zuul.ErrorStatsData", "ID", name)).monitorValue(this, NamedCountingMonitor::getCount);
     }
 
     /**
@@ -69,5 +65,4 @@ public class NamedCountingMonitor implements NamedCount {
     public long getCount() {
         return this.count.get();
     }
-
 }

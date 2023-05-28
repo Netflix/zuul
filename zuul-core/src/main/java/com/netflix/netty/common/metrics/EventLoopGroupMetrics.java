@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Registry;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.HashMap;
@@ -29,18 +27,18 @@ import java.util.Map;
  * Time: 3:17 PM
  */
 @Singleton
-public class EventLoopGroupMetrics
-{
+public class EventLoopGroupMetrics {
+
     private final ThreadLocal<EventLoopMetrics> metricsForCurrentThread;
+
     private final Map<Thread, EventLoopMetrics> byEventLoop = new HashMap<>();
+
     private final Registry registry;
 
     @Inject
-    public EventLoopGroupMetrics(Registry registry)
-    {
+    public EventLoopGroupMetrics(Registry registry) {
         this.registry = registry;
-        this.metricsForCurrentThread = ThreadLocal.withInitial(() ->
-        {
+        this.metricsForCurrentThread = ThreadLocal.withInitial(() -> {
             String name = nameForCurrentEventLoop();
             EventLoopMetrics metrics = new EventLoopMetrics(registry, name);
             byEventLoop.put(Thread.currentThread(), metrics);
@@ -48,45 +46,40 @@ public class EventLoopGroupMetrics
         });
     }
 
-    public Map<Thread, Integer> connectionsPerEventLoop()
-    {
+    public Map<Thread, Integer> connectionsPerEventLoop() {
         Map<Thread, Integer> map = new HashMap<>(byEventLoop.size());
-        for (Map.Entry<Thread, EventLoopMetrics> entry : byEventLoop.entrySet())
-        {
+        for (Map.Entry<Thread, EventLoopMetrics> entry : byEventLoop.entrySet()) {
             map.put(entry.getKey(), entry.getValue().currentConnectionsCount());
         }
         return map;
     }
 
-    public Map<Thread, Integer> httpRequestsPerEventLoop()
-    {
+    public Map<Thread, Integer> httpRequestsPerEventLoop() {
         Map<Thread, Integer> map = new HashMap<>(byEventLoop.size());
-        for (Map.Entry<Thread, EventLoopMetrics> entry : byEventLoop.entrySet())
-        {
+        for (Map.Entry<Thread, EventLoopMetrics> entry : byEventLoop.entrySet()) {
             map.put(entry.getKey(), entry.getValue().currentHttpRequestsCount());
         }
         return map;
     }
 
-    public EventLoopMetrics getForCurrentEventLoop()
-    {
+    public EventLoopMetrics getForCurrentEventLoop() {
         return metricsForCurrentThread.get();
     }
 
-    private static String nameForCurrentEventLoop()
-    {
+    private static String nameForCurrentEventLoop() {
         // We're relying on the knowledge that we name the eventloop threads consistently.
         String threadName = Thread.currentThread().getName();
-        String parts[] = threadName.split("-ClientToZuulWorker-");
+        String[] parts = threadName.split("-ClientToZuulWorker-");
         if (parts.length == 2) {
             return parts[1];
         }
         return threadName;
     }
 
-    interface EventLoopInfo
-    {
+    interface EventLoopInfo {
+
         int currentConnectionsCount();
+
         int currentHttpRequestsCount();
     }
 }

@@ -17,7 +17,6 @@ package com.netflix.zuul.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
 
 /**
@@ -45,7 +44,6 @@ public class JsonUtility {
         try {
             JsonDocument json = new JsonDocument();
             json.startGroup();
-
             for (String key : jsonData.keySet()) {
                 Object data = jsonData.get(key);
                 if (data instanceof Map) {
@@ -70,22 +68,19 @@ public class JsonUtility {
                     json.addValue(key, String.valueOf(data));
                 }
             }
-
             json.endGroup();
-
             logger.debug("created json from map => {}", json);
             return json.toString();
         } catch (Exception e) {
             logger.error("Could not create JSON from Map. ", e);
             return "{}";
         }
-
     }
 
     /*
      * return a string like: "one","two","three"
      */
-    private static String stringArrayFromObjectArray(Object data[]) {
+    private static String stringArrayFromObjectArray(Object[] data) {
         StringBuilder arrayAsString = new StringBuilder();
         for (Object o : data) {
             if (arrayAsString.length() > 0) {
@@ -103,6 +98,7 @@ public class JsonUtility {
     }
 
     private static class JsonDocument {
+
         StringBuilder json = new StringBuilder();
 
         private boolean newGroup = false;
@@ -140,12 +136,10 @@ public class JsonUtility {
         public String toString() {
             return json.toString();
         }
-
     }
 
     public static interface JsonCapableObject {
 
         public Map<String, Object> jsonMap();
-
     }
 }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.proxyprotocol;
 
 import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
@@ -55,23 +54,24 @@ class StripUntrustedProxyHeadersHandlerTest {
 
     @Mock
     private ChannelHandlerContext channelHandlerContext;
+
     @Mock
     private HttpRequest msg;
+
     private HttpHeaders headers;
+
     @Mock
     private Channel channel;
+
     @Mock
     private SslHandshakeInfo sslHandshakeInfo;
-
 
     @BeforeEach
     void before() {
         when(channelHandlerContext.channel()).thenReturn(channel);
-
         DefaultAttributeMap attributeMap = new DefaultAttributeMap();
         attributeMap.attr(ATTR_SSL_INFO).set(sslHandshakeInfo);
         when(channel.attr(any())).thenAnswer(arg -> attributeMap.attr((AttributeKey) arg.getArguments()[0]));
-
         headers = new DefaultHttpHeaders();
         when(msg.headers()).thenReturn(headers);
         headers.add(HttpHeaderNames.HOST, "netflix.com");
@@ -80,18 +80,14 @@ class StripUntrustedProxyHeadersHandlerTest {
     @Test
     void allow_never() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.NEVER);
-
         stripHandler.channelRead(channelHandlerContext, msg);
-
         verify(stripHandler).stripXFFHeaders(any());
     }
 
     @Test
     void allow_always() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.ALWAYS);
-
         stripHandler.channelRead(channelHandlerContext, msg);
-
         verify(stripHandler, never()).stripXFFHeaders(any());
         verify(stripHandler).checkBlacklist(any(), any());
     }
@@ -99,9 +95,7 @@ class StripUntrustedProxyHeadersHandlerTest {
     @Test
     void allow_mtls_noCert() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
-
         stripHandler.channelRead(channelHandlerContext, msg);
-
         verify(stripHandler).stripXFFHeaders(any());
     }
 
@@ -109,9 +103,7 @@ class StripUntrustedProxyHeadersHandlerTest {
     void allow_mtls_cert() throws Exception {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
         when(sslHandshakeInfo.getClientAuthRequirement()).thenReturn(ClientAuth.REQUIRE);
-
         stripHandler.channelRead(channelHandlerContext, msg);
-
         verify(stripHandler, never()).stripXFFHeaders(any());
         verify(stripHandler).checkBlacklist(any(), any());
     }
@@ -119,42 +111,33 @@ class StripUntrustedProxyHeadersHandlerTest {
     @Test
     void blacklist_noMatch() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
-
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.net"));
-
         verify(stripHandler, never()).stripXFFHeaders(any());
     }
 
     @Test
     void blacklist_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
-
         stripHandler.checkBlacklist(msg, ImmutableList.of("netflix.com"));
-
         verify(stripHandler).stripXFFHeaders(any());
     }
 
     @Test
     void blacklist_match_casing() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
-
         stripHandler.checkBlacklist(msg, ImmutableList.of("NeTfLiX.cOm"));
-
         verify(stripHandler).stripXFFHeaders(any());
     }
 
     @Test
     void strip_match() {
         StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
-
         headers.add("x-forwarded-for", "abcd");
         stripHandler.stripXFFHeaders(msg);
-
         assertFalse(headers.contains("x-forwarded-for"));
     }
 
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
         return spy(new StripUntrustedProxyHeadersHandler(allowWhen));
     }
-
 }

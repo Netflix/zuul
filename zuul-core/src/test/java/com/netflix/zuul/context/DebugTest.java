@@ -25,7 +25,6 @@ import static com.netflix.zuul.context.Debug.setDebugRequest;
 import static com.netflix.zuul.context.Debug.setDebugRouting;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
@@ -42,28 +41,25 @@ import org.junit.jupiter.api.Test;
 class DebugTest {
 
     private SessionContext ctx;
+
     private Headers headers;
+
     private HttpQueryParams params;
+
     private HttpRequestMessage request;
+
     private HttpResponseMessage response;
 
     @BeforeEach
     void setup() {
         ctx = new SessionContext();
-
         headers = new Headers();
         headers.add("lah", "deda");
-
         params = new HttpQueryParams();
         params.add("k1", "v1");
-
-        request = new HttpRequestBuilder(ctx).withMethod(HttpMethod.POST)
-                .withUri("/some/where")
-                .withHeaders(headers)
-                .withQueryParams(params).build();
+        request = new HttpRequestBuilder(ctx).withMethod(HttpMethod.POST).withUri("/some/where").withHeaders(headers).withQueryParams(params).build();
         request.setBodyAsText("some text");
         request.storeInboundRequest();
-
         response = new HttpResponseMessageImpl(ctx, headers, request, 200);
         response.setBodyAsText("response text");
     }
@@ -76,10 +72,8 @@ class DebugTest {
         setDebugRequest(ctx, true);
         assertTrue(debugRouting(ctx));
         assertTrue(debugRequest(ctx));
-
         addRoutingDebug(ctx, "test1");
         assertTrue(getRoutingDebug(ctx).contains("test1"));
-
         addRequestDebug(ctx, "test2");
         assertTrue(getRequestDebug(ctx).contains("test2"));
     }
@@ -89,12 +83,8 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
-                "REQUEST_INBOUND:: > HDR: Content-Length:13",
-                "REQUEST_INBOUND:: > HDR: lah:deda");
+        Truth.assertThat(debugLines).containsExactly("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", "REQUEST_INBOUND:: > HDR: Content-Length:13", "REQUEST_INBOUND:: > HDR: lah:deda");
     }
 
     @Test
@@ -102,12 +92,8 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugRequest(ctx, request, false).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
-                "REQUEST_OUTBOUND:: > HDR: Content-Length:13",
-                "REQUEST_OUTBOUND:: > HDR: lah:deda");
+        Truth.assertThat(debugLines).containsExactly("REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", "REQUEST_OUTBOUND:: > HDR: Content-Length:13", "REQUEST_OUTBOUND:: > HDR: lah:deda");
     }
 
     @Test
@@ -115,13 +101,8 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(false);
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
-                "REQUEST_INBOUND:: > HDR: Content-Length:13",
-                "REQUEST_INBOUND:: > HDR: lah:deda",
-                "REQUEST_INBOUND:: > BODY: some text");
+        Truth.assertThat(debugLines).containsExactly("REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1", "REQUEST_INBOUND:: > HDR: Content-Length:13", "REQUEST_INBOUND:: > HDR: lah:deda", "REQUEST_INBOUND:: > BODY: some text");
     }
 
     @Test
@@ -129,12 +110,8 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "RESPONSE_INBOUND:: < STATUS: 200",
-                "RESPONSE_INBOUND:: < HDR: Content-Length:13",
-                "RESPONSE_INBOUND:: < HDR: lah:deda");
+        Truth.assertThat(debugLines).containsExactly("RESPONSE_INBOUND:: < STATUS: 200", "RESPONSE_INBOUND:: < HDR: Content-Length:13", "RESPONSE_INBOUND:: < HDR: lah:deda");
     }
 
     @Test
@@ -142,12 +119,8 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(true);
         Debug.writeDebugResponse(ctx, response, false).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "RESPONSE_OUTBOUND:: < STATUS: 200",
-                "RESPONSE_OUTBOUND:: < HDR: Content-Length:13",
-                "RESPONSE_OUTBOUND:: < HDR: lah:deda");
+        Truth.assertThat(debugLines).containsExactly("RESPONSE_OUTBOUND:: < STATUS: 200", "RESPONSE_OUTBOUND:: < HDR: Content-Length:13", "RESPONSE_OUTBOUND:: < HDR: lah:deda");
     }
 
     @Test
@@ -155,22 +128,15 @@ class DebugTest {
         ctx.setDebugRequest(true);
         ctx.setDebugRequestHeadersOnly(false);
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
-
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines).containsExactly(
-                "RESPONSE_INBOUND:: < STATUS: 200",
-                "RESPONSE_INBOUND:: < HDR: Content-Length:13",
-                "RESPONSE_INBOUND:: < HDR: lah:deda",
-                "RESPONSE_INBOUND:: < BODY: response text");
+        Truth.assertThat(debugLines).containsExactly("RESPONSE_INBOUND:: < STATUS: 200", "RESPONSE_INBOUND:: < HDR: Content-Length:13", "RESPONSE_INBOUND:: < HDR: lah:deda", "RESPONSE_INBOUND:: < BODY: response text");
     }
 
     @Test
     void testNoCMEWhenComparingContexts() {
         final SessionContext context = new SessionContext();
         final SessionContext copy = new SessionContext();
-
         context.set("foo", "bar");
-
         Debug.compareContextState("testfilter", context, copy);
     }
 }

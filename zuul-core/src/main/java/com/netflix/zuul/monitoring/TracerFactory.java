@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.monitoring;
 
 /**
@@ -34,17 +33,16 @@ public abstract class TracerFactory {
         INSTANCE = f;
     }
 
-
     /**
-     * Returns the singleton TracerFactory 
+     * Returns the singleton TracerFactory
      *
      * @return a <code>TracerFactory</code> value
      */
     public static final TracerFactory instance() {
-        if(INSTANCE == null) throw new IllegalStateException(String.format("%s not initialized", TracerFactory.class.getSimpleName()));
+        if (INSTANCE == null)
+            throw new IllegalStateException(String.format("%s not initialized", TracerFactory.class.getSimpleName()));
         return INSTANCE;
     }
 
     public abstract Tracer startMicroTracer(String name);
-
 }

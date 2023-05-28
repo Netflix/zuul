@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.processor;
 
 import com.google.common.truth.Truth;
@@ -31,15 +30,7 @@ class FilterProcessorTest {
 
     @Test
     void allFilterClassedRecorded() throws Exception {
-        Collection<Class<ZuulFilter<?, ?>>> filters =
-                StaticFilterLoader.loadFilterTypesFromResources(getClass().getClassLoader());
-
-        Truth.assertThat(filters).containsExactly(
-                OuterClassFilter.class,
-                TopLevelFilter.class,
-                TopLevelFilter.StaticSubclassFilter.class,
-                TopLevelFilter.SubclassFilter.class,
-                OverrideFilter.class,
-                SubpackageFilter.class);
+        Collection<Class<ZuulFilter<?, ?>>> filters = StaticFilterLoader.loadFilterTypesFromResources(getClass().getClassLoader());
+        Truth.assertThat(filters).containsExactly(OuterClassFilter.class, TopLevelFilter.class, TopLevelFilter.StaticSubclassFilter.class, TopLevelFilter.SubclassFilter.class, OverrideFilter.class, SubpackageFilter.class);
     }
 }

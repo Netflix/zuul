@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.http2;
 
 import io.netty.channel.ChannelHandler;
@@ -30,22 +29,18 @@ import io.netty.handler.codec.http.HttpRequest;
  * stop doing this. Although potentially we _never_ want to pass these downstream to origins .... ?
  */
 @ChannelHandler.Sharable
-public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter
-{
+public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter {
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
-
             for (String name : req.headers().names()) {
                 if (name.startsWith("x-http2-")) {
                     req.headers().remove(name);
                 }
             }
         }
-
         super.channelRead(ctx, msg);
     }
 }
-

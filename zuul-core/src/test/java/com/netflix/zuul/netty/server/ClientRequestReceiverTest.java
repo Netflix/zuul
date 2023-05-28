@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
@@ -65,14 +63,12 @@ class ClientRequestReceiverTest {
         channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(hapmDestinationAddress);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
         assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
-        int destinationPort = ((InetSocketAddress) result.getContext()
-                .get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
+        int destinationPort = ((InetSocketAddress) result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
         assertEquals(444, destinationPort);
         assertEquals(444, result.getOriginalPort());
         channel.close();
@@ -80,75 +76,59 @@ class ClientRequestReceiverTest {
 
     @Test
     void parseUriFromNetty_relative() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
-
         channel.close();
     }
 
     @Test
     void parseUriFromNetty_absolute() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "https://www.netflix.com/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
-
         channel.close();
     }
 
     @Test
     void parseUriFromNetty_unknown() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    "asdf", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "asdf", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertEquals("asdf", result.getPath());
-
         channel.close();
     }
 
     @Test
     void parseQueryParamsWithEncodedCharsInURI() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                    "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
+            channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/foo/bar/somePath/%5E1.0.0?param1=foo&param2=bar&param3=baz", Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertEquals("foo", result.getQueryParams().getFirst("param1"));
         assertEquals("bar", result.getQueryParams().getFirst("param2"));
         assertEquals("baz", result.getQueryParams().getFirst("param3"));
-
         channel.close();
     }
 
@@ -158,7 +138,6 @@ class ClientRequestReceiverTest {
         EmbeddedChannel channel = new EmbeddedChannel(receiver);
         // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-
         int maxSize;
         // Figure out the max size, since it isn't public.
         {
@@ -168,7 +147,6 @@ class ClientRequestReceiverTest {
             maxSize = res.getMaxBodySize();
             res.disposeBufferedBody();
         }
-
         HttpRequestMessageImpl result;
         {
             ByteBuf buf = Unpooled.buffer(maxSize);
@@ -177,7 +155,6 @@ class ClientRequestReceiverTest {
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertNull(result.getContext().getError());
         assertFalse(result.getContext().shouldSendErrorResponse());
         channel.close();
@@ -189,7 +166,6 @@ class ClientRequestReceiverTest {
         EmbeddedChannel channel = new EmbeddedChannel(receiver);
         // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-
         int maxSize;
         // Figure out the max size, since it isn't public.
         {
@@ -199,7 +175,6 @@ class ClientRequestReceiverTest {
             maxSize = res.getMaxBodySize();
             res.disposeBufferedBody();
         }
-
         HttpRequestMessageImpl result;
         {
             ByteBuf buf = Unpooled.buffer(maxSize + 1);
@@ -208,7 +183,6 @@ class ClientRequestReceiverTest {
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-
         assertNotNull(result.getContext().getError());
         assertTrue(result.getContext().getError().getMessage().contains("too large"));
         assertTrue(result.getContext().shouldSendErrorResponse());
@@ -217,41 +191,30 @@ class ClientRequestReceiverTest {
 
     @Test
     void maxHeaderSizeExceeded_setBadRequestStatus() {
-
         int maxInitialLineLength = BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get();
         int maxHeaderSize = 10;
         int maxChunkSize = BaseZuulChannelInitializer.MAX_CHUNK_SIZE.get();
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
         PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
-
         // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        channel.pipeline().addLast(new HttpServerCodec(
-                maxInitialLineLength,
-                maxHeaderSize,
-                maxChunkSize,
-                false
-        ));
+        channel.pipeline().addLast(new HttpServerCodec(maxInitialLineLength, maxHeaderSize, maxChunkSize, false));
         channel.pipeline().addLast(receiver);
         channel.pipeline().addLast(loggingHandler);
-
         String str = "test-header-value";
         ByteBuf buf = Unpooled.buffer(1);
         HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", buf);
         for (int i = 0; i < 100; i++) {
             httpRequest.headers().add("test-header" + i, str);
         }
-
         channel.writeOutbound(httpRequest);
         ByteBuf byteBuf = channel.readOutbound();
         channel.writeInbound(byteBuf);
         channel.readInbound();
         channel.close();
-
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertEquals(
-                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(request.getContext()));
+        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(request.getContext()));
     }
 
     @Test
@@ -259,53 +222,39 @@ class ClientRequestReceiverTest {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
         PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
-
         // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.pipeline().addLast(new HttpServerCodec());
         channel.pipeline().addLast(receiver);
         channel.pipeline().addLast(loggingHandler);
-
         HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post");
         httpRequest.headers().add("Host", "foo.bar.com");
         httpRequest.headers().add("Host", "bar.foo.com");
-
         channel.writeOutbound(httpRequest);
         ByteBuf byteBuf = channel.readOutbound();
         channel.writeInbound(byteBuf);
         channel.readInbound();
         channel.close();
-
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         SessionContext context = request.getContext();
-        assertEquals(
-                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(context));
+        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(context));
         assertEquals("Multiple Host headers", context.getError().getMessage());
     }
 
     @Test
     void setStatusCategoryForHttpPipelining() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-
-        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                "?ELhAWDLM1hwm8bhU0UT4", Unpooled.buffer());
-
+        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "?ELhAWDLM1hwm8bhU0UT4", Unpooled.buffer());
         // Write the message and save a copy
         channel.writeInbound(request);
         final HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
-
         // Set the attr to emulate pipelining rejection
         channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
-
         // Fire completion event
-        channel.pipeline().fireUserEventTriggered(new CompleteEvent(CompleteReason.PIPELINE_REJECT, request,
-                new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST)));
+        channel.pipeline().fireUserEventTriggered(new CompleteEvent(CompleteReason.PIPELINE_REJECT, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST)));
         channel.close();
-
-        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT,
-                StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()));
+        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT, StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()));
     }
 
     @Test
@@ -313,33 +262,27 @@ class ClientRequestReceiverTest {
         ClientRequestReceiver receiver = new ClientRequestReceiver(null);
         EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
         PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
-
         // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         channel.pipeline().addLast(new HttpServerCodec());
         channel.pipeline().addLast(receiver);
         channel.pipeline().addLast(loggingHandler);
-
         HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post");
         httpRequest.headers().add("Header1", "Value1");
         httpRequest.headers().add("Header2", "Value2");
         httpRequest.headers().add("Duplicate", "Duplicate1");
         httpRequest.headers().add("Duplicate", "Duplicate2");
-
         channel.writeOutbound(httpRequest);
         ByteBuf byteBuf = channel.readOutbound();
         channel.writeInbound(byteBuf);
         channel.readInbound();
         channel.close();
-
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         Headers headers = request.getHeaders();
         assertEquals(4, headers.size());
         assertEquals("Value1", headers.getFirst("Header1"));
         assertEquals("Value2", headers.getFirst("Header2"));
-
         List<String> duplicates = headers.getAll("Duplicate");
         assertEquals(Arrays.asList("Duplicate1", "Duplicate2"), duplicates);
     }
 }
-

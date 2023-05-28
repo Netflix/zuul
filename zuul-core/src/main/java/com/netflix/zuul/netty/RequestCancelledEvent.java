@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty;
 
 /**
@@ -21,6 +20,5 @@ package com.netflix.zuul.netty;
  * Date: 4/13/17
  * Time: 6:09 PM
  */
-public class RequestCancelledEvent
-{
+public class RequestCancelledEvent {
 }

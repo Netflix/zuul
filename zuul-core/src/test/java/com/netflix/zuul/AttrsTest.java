@@ -13,16 +13,15 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.Attrs.Key;
 import org.junit.jupiter.api.Test;
 
 class AttrsTest {
+
     @Test
     void keysAreUnique() {
         Attrs attrs = Attrs.newInstance();
@@ -30,7 +29,6 @@ class AttrsTest {
         key1.put(attrs, "bar");
         Key<String> key2 = Attrs.newKey("foo");
         key2.put(attrs, "baz");
-
         Truth.assertThat(attrs.keySet()).containsExactly(key1, key2);
     }
 
@@ -43,7 +41,6 @@ class AttrsTest {
     void attrsPutFailsOnNull() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
-
         assertThrows(NullPointerException.class, () -> key.put(attrs, null));
     }
 
@@ -53,7 +50,6 @@ class AttrsTest {
         Key<String> key = Attrs.newKey("foo");
         key.put(attrs, "bar");
         key.put(attrs, "baz");
-
         assertEquals("baz", key.get(attrs));
         Truth.assertThat(attrs.keySet()).containsExactly(key);
     }
@@ -62,7 +58,6 @@ class AttrsTest {
     void getReturnsNull() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
-
         assertNull(key.get(attrs));
     }
 
@@ -70,7 +65,6 @@ class AttrsTest {
     void getOrDefault_picksDefault() {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
-
         assertEquals("bar", key.getOrDefault(attrs, "bar"));
     }
 
@@ -79,7 +73,6 @@ class AttrsTest {
         Attrs attrs = Attrs.newInstance();
         Key<String> key = Attrs.newKey("foo");
         key.put(attrs, "bar");
-
         assertThrows(NullPointerException.class, () -> key.getOrDefault(attrs, null));
     }
 }

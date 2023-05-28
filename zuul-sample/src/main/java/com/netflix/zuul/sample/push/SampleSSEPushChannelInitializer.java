@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.sample.push;
 
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -29,18 +28,14 @@ import io.netty.channel.group.ChannelGroup;
 public class SampleSSEPushChannelInitializer extends PushChannelInitializer {
 
     private final PushConnectionRegistry pushConnectionRegistry;
+
     private final PushAuthHandler pushAuthHandler;
 
-    public SampleSSEPushChannelInitializer(
-            String metricId,
-            ChannelConfig channelConfig,
-            ChannelConfig channelDependencies,
-            ChannelGroup channels) {
+    public SampleSSEPushChannelInitializer(String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
         pushAuthHandler = new SamplePushAuthHandler(PushProtocol.SSE.getPath());
     }
-
 
     @Override
     protected void addPushHandlers(final ChannelPipeline pipeline) {
@@ -48,5 +43,4 @@ public class SampleSSEPushChannelInitializer extends PushChannelInitializer {
         pipeline.addLast(new PushRegistrationHandler(pushConnectionRegistry, PushProtocol.SSE));
         pipeline.addLast(new SampleSSEPushClientProtocolHandler());
     }
-
 }

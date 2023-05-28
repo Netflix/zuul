@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Registry;
@@ -27,70 +26,56 @@ import io.netty.handler.codec.http2.Http2Frame;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 
-public class Http2MetricsChannelHandlers
-{
+public class Http2MetricsChannelHandlers {
+
     private final Inbound inbound;
+
     private final Outbound outbound;
-    
-    public Http2MetricsChannelHandlers(Registry registry, String metricPrefix, String metricId)
-    {
+
+    public Http2MetricsChannelHandlers(Registry registry, String metricPrefix, String metricId) {
         super();
         this.inbound = new Inbound(registry, metricId, metricPrefix);
         this.outbound = new Outbound(registry, metricId, metricPrefix);
     }
 
-    public Inbound inbound()
-    {
+    public Inbound inbound() {
         return inbound;
     }
 
-    public Outbound outbound()
-    {
+    public Outbound outbound() {
         return outbound;
     }
 
-    protected static void incrementErrorCounter(Registry registry, String counterName, String metricId, Http2Exception h2e)
-    {
+    protected static void incrementErrorCounter(Registry registry, String counterName, String metricId, Http2Exception h2e) {
         String h2Error = h2e.error() != null ? h2e.error().name() : "NA";
         String exceptionName = h2e.getClass().getSimpleName();
-
-        registry.counter(counterName,
-                    "id", metricId,
-                    "error", h2Error,
-                    "exception", exceptionName)
-                .increment();
+        registry.counter(counterName, "id", metricId, "error", h2Error, "exception", exceptionName).increment();
     }
 
-    protected static void incrementCounter(Registry registry, String counterName, String metricId, Http2Frame frame)
-    {
+    protected static void incrementCounter(Registry registry, String counterName, String metricId, Http2Frame frame) {
         long errorCode;
         if (frame instanceof Http2ResetFrame) {
             errorCode = ((Http2ResetFrame) frame).errorCode();
-        }
-        else if (frame instanceof Http2GoAwayFrame) {
+        } else if (frame instanceof Http2GoAwayFrame) {
             errorCode = ((Http2GoAwayFrame) frame).errorCode();
-        }
-        else {
+        } else {
             errorCode = -1;
         }
-
-        registry.counter(counterName,
-                "id", metricId,
-                "frame", frame.name(),
-                "error_code", Long.toString(errorCode))
-                .increment();
+        registry.counter(counterName, "id", metricId, "frame", frame.name(), "error_code", Long.toString(errorCode)).increment();
     }
 
     @ChannelHandler.Sharable
-    private static class Inbound extends ChannelInboundHandlerAdapter
-    {
+    private static class Inbound extends ChannelInboundHandlerAdapter {
+
         private final Registry registry;
+
         private final String metricId;
+
         private final String frameCounterName;
+
         private final String errorCounterName;
 
-        public Inbound(Registry registry, String metricId, String metricPrefix)
-        {
+        public Inbound(Registry registry, String metricId, String metricPrefix) {
             this.registry = registry;
             this.metricId = metricId;
             this.frameCounterName = metricPrefix + ".http2.frame.inbound";
@@ -98,42 +83,40 @@ public class Http2MetricsChannelHandlers
         }
 
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
                 if (msg instanceof Http2Frame) {
                     incrementCounter(registry, frameCounterName, metricId, (Http2Frame) msg);
                 }
-            }
-            finally {
+            } finally {
                 super.channelRead(ctx, msg);
             }
         }
 
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-        {
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             try {
                 if (cause instanceof Http2Exception) {
                     incrementErrorCounter(registry, errorCounterName, metricId, (Http2Exception) cause);
                 }
-            }
-            finally {
+            } finally {
                 super.exceptionCaught(ctx, cause);
             }
         }
     }
 
     @ChannelHandler.Sharable
-    private static class Outbound extends ChannelOutboundHandlerAdapter
-    {
+    private static class Outbound extends ChannelOutboundHandlerAdapter {
+
         private final Registry registry;
+
         private final String metricId;
+
         private final String frameCounterName;
+
         private final String errorCounterName;
 
-        public Outbound(Registry registry, String metricId, String metricPrefix)
-        {
+        public Outbound(Registry registry, String metricId, String metricPrefix) {
             this.registry = registry;
             this.metricId = metricId;
             this.frameCounterName = metricPrefix + ".http2.frame.outbound";
@@ -141,24 +124,20 @@ public class Http2MetricsChannelHandlers
         }
 
         @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             super.write(ctx, msg, promise);
-
             if (msg instanceof Http2Frame) {
                 incrementCounter(registry, frameCounterName, metricId, (Http2Frame) msg);
             }
         }
 
         @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-        {
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             try {
                 if (cause instanceof Http2Exception) {
                     incrementErrorCounter(registry, errorCounterName, metricId, (Http2Exception) cause);
                 }
-            }
-            finally {
+            } finally {
                 super.exceptionCaught(ctx, cause);
             }
         }

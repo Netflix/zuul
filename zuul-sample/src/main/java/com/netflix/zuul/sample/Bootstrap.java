@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.sample;
 
 import com.google.inject.Guice;
@@ -42,18 +41,14 @@ public class Bootstrap {
         long startNanos = System.nanoTime();
         logger.info("Zuul Sample: starting up.");
         int exitCode = 0;
-
         Server server = null;
-
         try {
             Injector injector = Guice.createInjector(new ZuulSampleModule());
             BaseServerStartup serverStartup = injector.getInstance(BaseServerStartup.class);
             server = serverStartup.server();
-
             server.start();
             long startupDuration = System.nanoTime() - startNanos;
-            logger.info(
-                    "Zuul Sample: finished startup. Duration = {}ms", TimeUnit.NANOSECONDS.toMillis(startupDuration));
+            logger.info("Zuul Sample: finished startup. Duration = {}ms", TimeUnit.NANOSECONDS.toMillis(startupDuration));
             server.awaitTermination();
         } catch (Throwable t) {
             // Don't use logger here, as we may be shutting down the JVM and the logs won't be printed.
@@ -62,13 +57,11 @@ public class Bootstrap {
             System.err.println("Zuul Sample: initialization failed. Forcing shutdown now.");
             System.err.println("###############");
             exitCode = 1;
-        }
-        finally {
+        } finally {
             // server shutdown
             if (server != null) {
                 server.stop();
             }
-
             System.exit(exitCode);
         }
     }
