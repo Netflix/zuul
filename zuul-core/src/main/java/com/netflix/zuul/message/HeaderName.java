@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message;
 
 import java.util.Locale;
@@ -26,8 +25,11 @@ import java.util.Locale;
  * Time: 1:07 PM
  */
 public final class HeaderName {
+
     private final String name;
+
     private final String normalised;
+
     private final int hashCode;
 
     public HeaderName(String name) {

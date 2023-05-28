@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
  * @since February 22, 2021
  */
 public abstract class BaseInjectionIntegTest {
+
     protected Injector injector = Guice.createInjector(new InitTestModule(), new ZuulFiltersModule());
 
     @BeforeEach

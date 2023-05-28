@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.message.ZuulMessage;
@@ -23,11 +22,13 @@ import com.netflix.zuul.message.ZuulMessage;
  * Date: 7/6/15
  * Time: 5:27 PM
  */
-public interface HttpResponseInfo extends ZuulMessage
-{
+public interface HttpResponseInfo extends ZuulMessage {
+
     int getStatus();
 
-    /** The immutable request that was originally received from client. */
+    /**
+     * The immutable request that was originally received from client.
+     */
     HttpRequestInfo getInboundRequest();
 
     @Override
@@ -37,5 +38,6 @@ public interface HttpResponseInfo extends ZuulMessage
     String getInfoForLogging();
 
     Cookies parseSetCookieHeader(String setCookieValue);
+
     boolean hasSetCookieWithName(String cookieName);
 }

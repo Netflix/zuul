@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.spectator.api.Counter;
@@ -29,7 +28,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
@@ -40,16 +38,20 @@ import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReaso
  * Time: 1:57 PM
  */
 @ChannelHandler.Sharable
-public class ConnectionPoolHandler extends ChannelDuplexHandler
-{
+public class ConnectionPoolHandler extends ChannelDuplexHandler {
+
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionPoolHandler.class);
 
     public static final String METRIC_PREFIX = "connectionpool";
-    
+
     private final OriginName originName;
+
     private final Counter idleCounter;
+
     private final Counter inactiveCounter;
+
     private final Counter errorCounter;
+
     private final Counter headerCloseCounter;
 
     public ConnectionPoolHandler(OriginName originName) {
@@ -67,14 +69,12 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // First let other handlers do their thing ...
         // super.userEventTriggered(ctx, evt);
-
         if (evt instanceof IdleStateEvent) {
             // Log some info about this.
             idleCounter.increment();
             final String msg = "Origin channel for origin - " + originName + " - idle timeout has fired. " + ChannelUtils.channelInfoForLogging(ctx.channel());
             closeConnection(ctx, msg);
-        }
-        else if (evt instanceof CompleteEvent) {
+        } else if (evt instanceof CompleteEvent) {
             // The HttpLifecycleChannelHandler instance will fire this event when either a response has finished being written, or
             // the channel is no longer active or disconnected.
             // Return the connection to pool.
@@ -84,8 +84,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                 final PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
                 if (conn != null) {
                     if ("close".equalsIgnoreCase(getConnectionHeader(completeEvt))) {
-                        final String msg = "Origin channel for origin - " + originName + " - completed because of expired keep-alive. "
-                                + ChannelUtils.channelInfoForLogging(ctx.channel());
+                        final String msg = "Origin channel for origin - " + originName + " - completed because of expired keep-alive. " + ChannelUtils.channelInfoForLogging(ctx.channel());
                         headerCloseCounter.increment();
                         closeConnection(ctx, msg);
                     } else {
@@ -94,8 +93,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                     }
                 }
             } else {
-                final String msg = "Origin channel for origin - " + originName + " - completed with reason "
-                        + reason.name() + ", " + ChannelUtils.channelInfoForLogging(ctx.channel());
+                final String msg = "Origin channel for origin - " + originName + " - completed with reason " + reason.name() + ", " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 closeConnection(ctx, msg);
             }
         }
@@ -105,11 +103,8 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //super.exceptionCaught(ctx, cause);
         errorCounter.increment();
-        final String mesg = "Exception on Origin channel for origin - " + originName + ". "
-                + ChannelUtils.channelInfoForLogging(ctx.channel()) + " - " +
-                cause.getClass().getCanonicalName() + ": " + cause.getMessage();
+        final String mesg = "Exception on Origin channel for origin - " + originName + ". " + ChannelUtils.channelInfoForLogging(ctx.channel()) + " - " + cause.getClass().getCanonicalName() + ": " + cause.getMessage();
         closeConnection(ctx, mesg);
-
         if (LOG.isDebugEnabled()) {
             LOG.debug(mesg, cause);
         }
@@ -119,8 +114,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         //super.channelInactive(ctx);
         inactiveCounter.increment();
-        final String msg = "Client channel for origin - " + originName + " - inactive event has fired. "
-                + ChannelUtils.channelInfoForLogging(ctx.channel());
+        final String msg = "Client channel for origin - " + originName + " - inactive event has fired. " + ChannelUtils.channelInfoForLogging(ctx.channel());
         closeConnection(ctx, msg);
     }
 
@@ -132,8 +126,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
                 LOG.debug(msg, conn);
             }
             flagCloseAndReleaseConnection(conn);
-        }
-        else {
+        } else {
             // If somehow we don't have a PooledConnection instance attached to this channel, then
             // close the channel directly.
             LOG.warn("{} But no PooledConnection attribute. So just closing Channel.", msg);
@@ -144,8 +137,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
     private void flagCloseAndReleaseConnection(PooledConnection pooledConnection) {
         if (pooledConnection.isInPool()) {
             pooledConnection.closeAndRemoveFromPool();
-        }
-        else {
+        } else {
             pooledConnection.flagShouldClose();
             pooledConnection.release();
         }
@@ -156,7 +148,6 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler
         if (response != null) {
             return response.headers().get(HttpHeaderNames.CONNECTION);
         }
-
         return null;
     }
 }

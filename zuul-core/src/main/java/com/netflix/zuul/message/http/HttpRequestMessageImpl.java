@@ -15,7 +15,6 @@
  */
 package com.netflix.zuul.message.http;
 
-
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
@@ -50,25 +49,23 @@ import org.slf4j.LoggerFactory;
  * Date: 2/24/15
  * Time: 10:54 AM
  */
-public class HttpRequestMessageImpl implements HttpRequestMessage
-{
+public class HttpRequestMessageImpl implements HttpRequestMessage {
+
     private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
 
-    private static final CachedDynamicBooleanProperty STRICT_HOST_HEADER_VALIDATION = new CachedDynamicBooleanProperty(
-            "zuul.HttpRequestMessage.host.header.strict.validation", true
-    );
+    private static final CachedDynamicBooleanProperty STRICT_HOST_HEADER_VALIDATION = new CachedDynamicBooleanProperty("zuul.HttpRequestMessage.host.header.strict.validation", true);
 
-    private static final CachedDynamicIntProperty MAX_BODY_SIZE_PROP = new CachedDynamicIntProperty(
-            "zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024
-    );
-    private static final CachedDynamicBooleanProperty CLEAN_COOKIES = new CachedDynamicBooleanProperty(
-            "zuul.HttpRequestMessage.cookies.clean", false
-    );
+    private static final CachedDynamicIntProperty MAX_BODY_SIZE_PROP = new CachedDynamicIntProperty("zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024);
 
-    /** ":::"-delimited list of regexes to strip out of the cookie headers. */
-    private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
-            new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
+    private static final CachedDynamicBooleanProperty CLEAN_COOKIES = new CachedDynamicBooleanProperty("zuul.HttpRequestMessage.cookies.clean", false);
+
+    /**
+     * ":::"-delimited list of regexes to strip out of the cookie headers.
+     */
+    private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP = new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
+
     private static final List<Pattern> RE_STRIP;
+
     static {
         RE_STRIP = new ArrayList<>();
         for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::")) {
@@ -77,50 +74,59 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     private static final String URI_SCHEME_SEP = "://";
+
     private static final String URI_SCHEME_HTTP = "http";
+
     private static final String URI_SCHEME_HTTPS = "https";
 
     private final boolean immutable;
+
     private ZuulMessage message;
+
     private String protocol;
+
     private String method;
+
     private String path;
+
     private String decodedPath;
+
     private HttpQueryParams queryParams;
+
     private String clientIp;
+
     private String scheme;
+
     private int port;
+
     private String serverName;
+
     private SocketAddress clientRemoteAddress;
 
     private HttpRequestInfo inboundRequest = null;
+
     private Cookies parsedCookies = null;
 
     // These attributes are populated only if immutable=true.
     private String reconstructedUri = null;
+
     private String pathAndQuery = null;
+
     private String infoForLogging = null;
 
     private static final SocketAddress UNDEFINED_CLIENT_DEST_ADDRESS = new SocketAddress() {
+
         @Override
         public String toString() {
             return "Undefined destination address.";
         }
     };
 
-    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
-                                  HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName)
-    {
-        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName,
-                UNDEFINED_CLIENT_DEST_ADDRESS, false);
+    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port, String serverName) {
+        this(context, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName, UNDEFINED_CLIENT_DEST_ADDRESS, false);
     }
 
-    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path,
-                                  HttpQueryParams queryParams, Headers headers, String clientIp, String scheme,
-                                  int port, String serverName, SocketAddress clientRemoteAddress,
-                                  boolean immutable)
-    {
+    public HttpRequestMessageImpl(SessionContext context, String protocol, String method, String path, HttpQueryParams queryParams, Headers headers, String clientIp, String scheme, int port, String serverName, SocketAddress clientRemoteAddress, boolean immutable) {
         this.immutable = immutable;
         this.message = new ZuulMessageImpl(context, headers);
         this.protocol = protocol;
@@ -142,28 +148,24 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         this.clientRemoteAddress = clientRemoteAddress;
     }
 
-    private void immutableCheck()
-    {
+    private void immutableCheck() {
         if (immutable) {
             throw new IllegalStateException("This HttpRequestMessageImpl is immutable. No mutating operations allowed!");
         }
     }
 
     @Override
-    public SessionContext getContext()
-    {
+    public SessionContext getContext() {
         return message.getContext();
     }
 
     @Override
-    public Headers getHeaders()
-    {
+    public Headers getHeaders() {
         return message.getHeaders();
     }
 
     @Override
-    public void setHeaders(Headers newHeaders)
-    {
+    public void setHeaders(Headers newHeaders) {
         immutableCheck();
         message.setHeaders(newHeaders);
     }
@@ -244,8 +246,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public void setProtocol(String protocol)
-    {
+    public void setProtocol(String protocol) {
         immutableCheck();
         this.protocol = protocol;
     }
@@ -254,9 +255,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     public String getMethod() {
         return method;
     }
+
     @Override
-    public void setMethod(String method)
-    {
+    public void setMethod(String method) {
         immutableCheck();
         this.method = method;
     }
@@ -268,9 +269,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         }
         return path;
     }
+
     @Override
-    public void setPath(String path)
-    {
+    public void setPath(String path) {
         immutableCheck();
         this.path = path;
         this.decodedPath = path;
@@ -282,26 +283,22 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getPathAndQuery()
-    {
+    public String getPathAndQuery() {
         // If this instance is immutable, then lazy-cache.
         if (immutable) {
             if (pathAndQuery == null) {
                 pathAndQuery = generatePathAndQuery();
             }
             return pathAndQuery;
-        }
-        else {
+        } else {
             return generatePathAndQuery();
         }
     }
 
-    protected String generatePathAndQuery()
-    {
+    protected String generatePathAndQuery() {
         if (queryParams != null && queryParams.entries().size() > 0) {
             return getPath() + "?" + queryParams.toEncodedString();
-        }
-        else {
+        } else {
             return getPath();
         }
     }
@@ -313,8 +310,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Deprecated
     @VisibleForTesting
-    void setClientIp(String clientIp)
-    {
+    void setClientIp(String clientIp) {
         immutableCheck();
         this.clientIp = clientIp;
     }
@@ -323,47 +319,42 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      * Note: this is meant to be used typically in cases where TLS termination happens on instance.
      * For CLB/ALB fronted traffic, consider using {@link #getOriginalScheme()} instead.
      */
-
     @Override
     public String getScheme() {
         return scheme;
     }
+
     @Override
-    public void setScheme(String scheme)
-    {
+    public void setScheme(String scheme) {
         immutableCheck();
         this.scheme = scheme;
     }
 
     @Override
-    public int getPort()
-    {
+    public int getPort() {
         return port;
     }
 
     @Deprecated
     @VisibleForTesting
-    void setPort(int port)
-    {
+    void setPort(int port) {
         immutableCheck();
         this.port = port;
     }
 
     @Override
-    public String getServerName()
-    {
+    public String getServerName() {
         return serverName;
     }
+
     @Override
-    public void setServerName(String serverName)
-    {
+    public void setServerName(String serverName) {
         immutableCheck();
         this.serverName = serverName;
     }
 
     @Override
-    public Cookies parseCookies()
-    {
+    public Cookies parseCookies() {
         if (parsedCookies == null) {
             parsedCookies = reParseCookies();
         }
@@ -371,34 +362,27 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public Cookies reParseCookies()
-    {
+    public Cookies reParseCookies() {
         Cookies cookies = new Cookies();
-        for (String aCookieHeader : getHeaders().getAll(HttpHeaderNames.COOKIE))
-        {
+        for (String aCookieHeader : getHeaders().getAll(HttpHeaderNames.COOKIE)) {
             try {
                 if (CLEAN_COOKIES.get()) {
                     aCookieHeader = cleanCookieHeader(aCookieHeader);
                 }
-
                 Set<Cookie> decoded = CookieDecoder.decode(aCookieHeader, false);
                 for (Cookie cookie : decoded) {
                     cookies.add(cookie);
                 }
+            } catch (Exception e) {
+                LOG.error("Error parsing request Cookie header. cookie={}, request-info={}", aCookieHeader, getInfoForLogging());
             }
-            catch (Exception e) {
-                LOG.error("Error parsing request Cookie header. cookie={}, request-info={}",
-                        aCookieHeader, getInfoForLogging());
-            }
-
         }
         parsedCookies = cookies;
         return cookies;
     }
 
     @VisibleForTesting
-    static String cleanCookieHeader(String cookie)
-    {
+    static String cleanCookieHeader(String cookie) {
         for (Pattern stripPtn : RE_STRIP) {
             Matcher matcher = stripPtn.matcher(cookie);
             if (matcher.find()) {
@@ -414,71 +398,52 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public ZuulMessage clone()
-    {
-        HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(),
-                protocol, method, path,
-                queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme,
-                port, serverName, clientRemoteAddress, immutable);
+    public ZuulMessage clone() {
+        HttpRequestMessageImpl clone = new HttpRequestMessageImpl(message.getContext().clone(), protocol, method, path, queryParams.clone(), Headers.copyOf(message.getHeaders()), clientIp, scheme, port, serverName, clientRemoteAddress, immutable);
         if (getInboundRequest() != null) {
             clone.inboundRequest = (HttpRequestInfo) getInboundRequest().clone();
         }
         return clone;
     }
 
-    protected HttpRequestInfo copyRequestInfo()
-    {
-
-        HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(),
-                protocol, method, path,
-                queryParams.immutableCopy(),  Headers.copyOf(message.getHeaders()), clientIp, scheme,
-                port, serverName, clientRemoteAddress, true);
+    protected HttpRequestInfo copyRequestInfo() {
+        HttpRequestMessageImpl req = new HttpRequestMessageImpl(message.getContext(), protocol, method, path, queryParams.immutableCopy(), Headers.copyOf(message.getHeaders()), clientIp, scheme, port, serverName, clientRemoteAddress, true);
         req.setHasBody(hasBody());
         return req;
     }
 
     @Override
-    public void storeInboundRequest()
-    {
+    public void storeInboundRequest() {
         inboundRequest = copyRequestInfo();
     }
 
     @Override
-    public HttpRequestInfo getInboundRequest()
-    {
+    public HttpRequestInfo getInboundRequest() {
         return inboundRequest;
     }
 
     @Override
-    public void setQueryParams(HttpQueryParams queryParams)
-    {
+    public void setQueryParams(HttpQueryParams queryParams) {
         immutableCheck();
         this.queryParams = queryParams;
     }
 
     @Override
-    public String getInfoForLogging()
-    {
+    public String getInfoForLogging() {
         // If this instance is immutable, then lazy-cache generating this info.
         if (immutable) {
             if (infoForLogging == null) {
                 infoForLogging = generateInfoForLogging();
             }
             return infoForLogging;
-        }
-        else {
+        } else {
             return generateInfoForLogging();
         }
     }
 
-    protected String generateInfoForLogging()
-    {
+    protected String generateInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
-        StringBuilder sb = new StringBuilder()
-                .append("uri=").append(req.reconstructURI())
-                .append(", method=").append(req.getMethod())
-                .append(", clientip=").append(HttpUtils.getClientIP(req))
-                ;
+        StringBuilder sb = new StringBuilder().append("uri=").append(req.reconstructURI()).append(", method=").append(req.getMethod()).append(", clientip=").append(HttpUtils.getClientIP(req));
         return sb.toString();
     }
 
@@ -511,8 +476,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getOriginalScheme()
-    {
+    public String getOriginalScheme() {
         String scheme = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO);
         if (scheme == null) {
             scheme = getScheme();
@@ -521,8 +485,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
     }
 
     @Override
-    public String getOriginalProtocol()
-    {
+    public String getOriginalProtocol() {
         String proto = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO_VERSION);
         if (proto == null) {
             proto = getProtocol();
@@ -548,7 +511,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         if (portStr != null && !portStr.isEmpty()) {
             return Integer.parseInt(portStr);
         }
-
         try {
             // Check if port was specified on a Host header.
             Pair<String, Integer> host = parseHostHeader(headers);
@@ -558,7 +520,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         } catch (URISyntaxException e) {
             LOG.debug("Invalid host header, falling back to serverPort", e);
         }
-
         return serverPort;
     }
 
@@ -584,22 +545,23 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
         if (host == null) {
             return new Pair<>(null, -1);
         }
-
         try {
             // attempt to use default URI parsing - this can fail when not strictly following RFC2396,
             // for example, having underscores in host names will fail parsing
-            URI uri = new URI(/* scheme= */ null, host, /* path= */ null, /* query= */ null, /* fragment= */ null);
+            URI uri = new URI(/* scheme= */
+            null, host, /* path= */
+            null, /* query= */
+            null, /* fragment= */
+            null);
             if (uri.getHost() != null) {
                 return new Pair<>(uri.getHost(), uri.getPort());
             }
         } catch (URISyntaxException e) {
             LOG.debug("URI parsing failed", e);
         }
-
         if (STRICT_HOST_HEADER_VALIDATION.get()) {
             throw new URISyntaxException(host, "Invalid host");
         }
-
         // fallback to using a colon split
         // valid IPv6 addresses would have been handled already so any colon is safely assumed a port separator
         String[] components = host.split(":");
@@ -607,7 +569,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
             // handle case with unbracketed IPv6 addresses
             return new Pair<>(null, -1);
         }
-
         String parsedHost = components[0];
         int parsedPort = -1;
         if (components.length > 1) {
@@ -627,47 +588,37 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
      * @return String
      */
     @Override
-    public String reconstructURI()
-    {
+    public String reconstructURI() {
         // If this instance is immutable, then lazy-cache reconstructing the uri.
         if (immutable) {
             if (reconstructedUri == null) {
                 reconstructedUri = _reconstructURI();
             }
             return reconstructedUri;
-        }
-        else {
+        } else {
             return _reconstructURI();
         }
     }
 
-    protected String _reconstructURI()
-    {
+    protected String _reconstructURI() {
         try {
             StringBuilder uri = new StringBuilder(100);
-
             String scheme = getOriginalScheme().toLowerCase();
             uri.append(scheme);
             uri.append(URI_SCHEME_SEP).append(getOriginalHost(getHeaders(), getServerName()));
-
             int port = getOriginalPort();
-            if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port)
-                    || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
+            if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port) || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
                 // Don't need to include port.
             } else {
                 uri.append(':').append(port);
             }
-
             uri.append(getPathAndQuery());
-
             return uri.toString();
-        }
-        catch (URISyntaxException e) {
+        } catch (URISyntaxException e) {
             // This is not really so bad, just debug log it and move on.
             LOG.debug("Error reconstructing request URI!", e);
             return "";
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.error("Error reconstructing request URI!", e);
             return "";
         }
@@ -675,22 +626,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage
 
     @Override
     public String toString() {
-        return "HttpRequestMessageImpl{" +
-                "immutable=" + immutable +
-                ", message=" + message +
-                ", protocol='" + protocol + '\'' +
-                ", method='" + method + '\'' +
-                ", path='" + path + '\'' +
-                ", queryParams=" + queryParams +
-                ", clientIp='" + clientIp + '\'' +
-                ", scheme='" + scheme + '\'' +
-                ", port=" + port +
-                ", serverName='" + serverName + '\'' +
-                ", inboundRequest=" + inboundRequest +
-                ", parsedCookies=" + parsedCookies +
-                ", reconstructedUri='" + reconstructedUri + '\'' +
-                ", pathAndQuery='" + pathAndQuery + '\'' +
-                ", infoForLogging='" + infoForLogging + '\'' +
-                '}';
+        return "HttpRequestMessageImpl{" + "immutable=" + immutable + ", message=" + message + ", protocol='" + protocol + '\'' + ", method='" + method + '\'' + ", path='" + path + '\'' + ", queryParams=" + queryParams + ", clientIp='" + clientIp + '\'' + ", scheme='" + scheme + '\'' + ", port=" + port + ", serverName='" + serverName + '\'' + ", inboundRequest=" + inboundRequest + ", parsedCookies=" + parsedCookies + ", reconstructedUri='" + reconstructedUri + '\'' + ", pathAndQuery='" + pathAndQuery + '\'' + ", infoForLogging='" + infoForLogging + '\'' + '}';
     }
 }

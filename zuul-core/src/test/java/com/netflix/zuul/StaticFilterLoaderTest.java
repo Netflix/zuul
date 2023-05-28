@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import com.google.common.collect.ImmutableSet;
@@ -33,14 +32,10 @@ class StaticFilterLoaderTest {
 
     @Test
     void getFiltersByType() {
-        StaticFilterLoader filterLoader =
-                new StaticFilterLoader(factory,
-                        ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
-
+        StaticFilterLoader filterLoader = new StaticFilterLoader(factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
         SortedSet<ZuulFilter<?, ?>> filters = filterLoader.getFiltersByType(FilterType.INBOUND);
         Truth.assertThat(filters).hasSize(3);
         List<ZuulFilter<?, ?>> filterList = new ArrayList<>(filters);
-
         Truth.assertThat(filterList.get(0)).isInstanceOf(DummyFilter1.class);
         Truth.assertThat(filterList.get(1)).isInstanceOf(DummyFilter2.class);
         Truth.assertThat(filterList.get(2)).isInstanceOf(DummyFilter22.class);
@@ -48,11 +43,8 @@ class StaticFilterLoaderTest {
 
     @Test
     void getFilterByNameAndType() {
-        StaticFilterLoader filterLoader =
-                new StaticFilterLoader(factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class));
-
+        StaticFilterLoader filterLoader = new StaticFilterLoader(factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class));
         ZuulFilter<?, ?> filter = filterLoader.getFilterByNameAndType("Robin", FilterType.INBOUND);
-
         Truth.assertThat(filter).isInstanceOf(DummyFilter2.class);
     }
 

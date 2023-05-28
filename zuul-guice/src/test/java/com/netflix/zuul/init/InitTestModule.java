@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.init;
 
 import com.google.inject.AbstractModule;
@@ -24,11 +23,11 @@ import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 
 public class InitTestModule extends AbstractModule {
+
     @Override
     protected void configure() {
         bind(AbstractConfiguration.class).toInstance(ConfigurationManager.getConfigInstance());
         bind(FilenameFilter.class).toInstance((dir, name) -> false);
         bind(Registry.class).to(NoopRegistry.class);
     }
-
 }

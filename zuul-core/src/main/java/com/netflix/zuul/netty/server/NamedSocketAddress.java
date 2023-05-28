@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import java.net.SocketAddress;
@@ -23,6 +22,7 @@ import javax.annotation.CheckReturnValue;
 public final class NamedSocketAddress extends SocketAddress {
 
     private final String name;
+
     private final SocketAddress delegate;
 
     public NamedSocketAddress(String name, SocketAddress delegate) {
@@ -45,10 +45,7 @@ public final class NamedSocketAddress extends SocketAddress {
 
     @Override
     public String toString() {
-        return "NamedSocketAddress{" +
-                "name='" + name + '\'' +
-                ", delegate=" + delegate +
-                '}';
+        return "NamedSocketAddress{" + "name='" + name + '\'' + ", delegate=" + delegate + '}';
     }
 
     @Override

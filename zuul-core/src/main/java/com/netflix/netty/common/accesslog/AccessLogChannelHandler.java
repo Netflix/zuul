@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.accesslog;
 
 import com.netflix.netty.common.SourceAddressChannelHandler;
@@ -28,7 +27,6 @@ import io.netty.util.AttributeKey;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 
 /**
@@ -37,22 +35,21 @@ import java.time.LocalDateTime;
  * Time: 3:51 PM
  */
 public final class AccessLogChannelHandler {
+
     private static final AttributeKey<RequestState> ATTR_REQ_STATE = AttributeKey.newInstance("_accesslog_requeststate");
 
     private static final Logger LOG = LoggerFactory.getLogger(AccessLogChannelHandler.class);
 
-    public static final class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
+    public static final class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter {
+
         private final AccessLogPublisher publisher;
 
-        public AccessLogInboundChannelHandler(AccessLogPublisher publisher)
-        {
+        public AccessLogInboundChannelHandler(AccessLogPublisher publisher) {
             this.publisher = publisher;
         }
 
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             if (msg instanceof HttpRequest) {
                 RequestState state = new RequestState();
                 state.request = (HttpRequest) msg;
@@ -60,73 +57,62 @@ public final class AccessLogChannelHandler {
                 state.requestBodySize = 0;
                 ctx.channel().attr(ATTR_REQ_STATE).set(state);
             }
-
             if (msg instanceof HttpContent) {
                 RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
-                if (state !=  null) {
+                if (state != null) {
                     state.requestBodySize += ((HttpContent) msg).content().readableBytes();
                 }
             }
-
             super.channelRead(ctx, msg);
         }
 
         @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-        {
-            if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent)
-            {
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
                 // Get the stored request, and remove the attr from channel to cleanup.
                 RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
                 ctx.channel().attr(ATTR_REQ_STATE).set(null);
-
                 // Response complete, so now write to access log.
                 long durationNs = System.nanoTime() - state.startTimeNs;
                 String remoteIp = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
                 Integer localPort = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
-
                 if (state.response == null) {
-                    LOG.debug("Response null in AccessLog, Complete reason={}, duration={}, url={}, method={}",
-                            ((HttpLifecycleChannelHandler.CompleteEvent)evt).getReason(),
-                            durationNs/(1000*1000), state.request != null ? state.request.uri() : "-",
-                            state.request != null ? state.request.method() : "-");
+                    LOG.debug("Response null in AccessLog, Complete reason={}, duration={}, url={}, method={}", ((HttpLifecycleChannelHandler.CompleteEvent) evt).getReason(), durationNs / (1000 * 1000), state.request != null ? state.request.uri() : "-", state.request != null ? state.request.method() : "-");
                 }
-
-                publisher.log(ctx.channel(), state.request, state.response, state.dateTime, localPort, remoteIp, durationNs,
-                        state.requestBodySize, state.responseBodySize);
+                publisher.log(ctx.channel(), state.request, state.response, state.dateTime, localPort, remoteIp, durationNs, state.requestBodySize, state.responseBodySize);
             }
-
             super.userEventTriggered(ctx, evt);
         }
     }
 
-    public static final class AccessLogOutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
-            RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
+    public static final class AccessLogOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
 
+        @Override
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+            RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
             if (msg instanceof HttpResponse) {
                 state.response = (HttpResponse) msg;
                 state.responseBodySize = 0;
             }
-
             if (msg instanceof HttpContent) {
                 state.responseBodySize += ((HttpContent) msg).content().readableBytes();
             }
-
             super.write(ctx, msg, promise);
         }
     }
 
-    private static class RequestState
-    {
+    private static class RequestState {
+
         LocalDateTime dateTime = LocalDateTime.now();
+
         HttpRequest request;
+
         HttpResponse response;
+
         long startTimeNs;
+
         int requestBodySize = 0;
+
         int responseBodySize = 0;
     }
 }

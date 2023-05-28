@@ -24,7 +24,6 @@ public interface Tracer {
 
     /**
      * Stops and Logs a time based tracer
-     *
      */
     void stopAndLog();
 
@@ -34,5 +33,4 @@ public interface Tracer {
      * @param name a <code>String</code> value
      */
     void setName(String name);
-
 }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.discovery;
 
 import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
@@ -41,6 +40,7 @@ import javax.annotation.Nullable;
 public class DynamicServerResolver implements Resolver<DiscoveryResult> {
 
     private final DynamicServerListLoadBalancer<?> loadBalancer;
+
     ResolverListener<DiscoveryResult> listener;
 
     public DynamicServerResolver(IClientConfig clientConfig, ResolverListener<DiscoveryResult> listener) {
@@ -52,7 +52,7 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
     @Override
     public DiscoveryResult resolve(@Nullable Object key) {
         final Server server = loadBalancer.chooseServer(key);
-        return server!= null ? new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()) : DiscoveryResult.EMPTY;
+        return server != null ? new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()) : DiscoveryResult.EMPTY;
     }
 
     @Override
@@ -67,11 +67,8 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
 
     private DynamicServerListLoadBalancer<?> createLoadBalancer(IClientConfig clientConfig) {
         //TODO(argha-c): Revisit this style of LB initialization post modularization. Ideally the LB should be pluggable.
-
         // Use a hard coded string for the LB default name to avoid a dependency on Ribbon classes.
-        String loadBalancerClassName =
-                clientConfig.get(NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
-
+        String loadBalancerClassName = clientConfig.get(NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
         DynamicServerListLoadBalancer<?> lb;
         try {
             Class<?> clazz = Class.forName(loadBalancerClassName);
@@ -81,7 +78,6 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
             Throwables.throwIfUnchecked(e);
             throw new IllegalStateException("Could not instantiate LoadBalancer " + loadBalancerClassName, e);
         }
-
         return lb;
     }
 
@@ -89,9 +85,7 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
     void onUpdate(List<Server> oldList, List<Server> newList) {
         Set<Server> oldSet = new HashSet<>(oldList);
         Set<Server> newSet = new HashSet<>(newList);
-        final List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream()
-                .map(server -> new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()))
-                .collect(Collectors.toList());
+        final List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream().map(server -> new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats())).collect(Collectors.toList());
         listener.onChange(discoveryResults);
     }
 }

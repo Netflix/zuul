@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.http2;
 
 import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
-
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
@@ -44,20 +42,24 @@ import java.util.function.Consumer;
  * Date: December 15, 2017
  */
 public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
+
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
 
     private static final DynamicHttp2FrameLogger FRAME_LOGGER = new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
 
     private final ChannelHandler http2StreamHandler;
+
     private final int maxConcurrentStreams;
+
     private final int initialWindowSize;
+
     private final long maxHeaderTableSize;
+
     private final long maxHeaderListSize;
+
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
-
-    public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig,
-                              Consumer<ChannelPipeline> addHttpHandlerFn) {
+    public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig, Consumer<ChannelPipeline> addHttpHandlerFn) {
         super(ApplicationProtocolNames.HTTP_1_1);
         this.http2StreamHandler = http2StreamHandler;
         this.maxConcurrentStreams = channelConfig.get(CommonChannelConfigKeys.maxConcurrentStreams);
@@ -79,33 +81,20 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
             configureHttp1(ctx.pipeline());
             return;
         }
-
         throw new IllegalStateException("unknown protocol: " + protocol);
     }
 
     private void configureHttp2(ChannelPipeline pipeline) {
-
         // setup the initial stream settings for the server to use.
-        Http2Settings settings = new Http2Settings()
-                .maxConcurrentStreams(maxConcurrentStreams)
-                .initialWindowSize(initialWindowSize)
-                .headerTableSize(maxHeaderTableSize)
-                .maxHeaderListSize(maxHeaderListSize);
-
-        Http2FrameCodec frameCodec = Http2FrameCodecBuilder.forServer()
-                .frameLogger(FRAME_LOGGER)
-                .initialSettings(settings)
-                .validateHeaders(true)
-                .build();
+        Http2Settings settings = new Http2Settings().maxConcurrentStreams(maxConcurrentStreams).initialWindowSize(initialWindowSize).headerTableSize(maxHeaderTableSize).maxHeaderListSize(maxHeaderListSize);
+        Http2FrameCodec frameCodec = Http2FrameCodecBuilder.forServer().frameLogger(FRAME_LOGGER).initialSettings(settings).validateHeaders(true).build();
         Http2Connection conn = frameCodec.connection();
         // Use the uniform byte distributor until https://github.com/netty/netty/issues/10525 is fixed.
-        conn.remote().flowController(
-                new DefaultHttp2RemoteFlowController(conn, new UniformStreamByteDistributor(conn)));
-
+        conn.remote().flowController(new DefaultHttp2RemoteFlowController(conn, new UniformStreamByteDistributor(conn)));
         Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
-
         // The frame codec MUST be in the pipeline.
-        pipeline.addBefore("codec_placeholder", /* name= */ null, frameCodec);
+        pipeline.addBefore("codec_placeholder", /* name= */
+        null, frameCodec);
         pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexHandler);
     }
 

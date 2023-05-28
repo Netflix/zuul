@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.endpoint;
 
 import com.netflix.appinfo.InstanceInfo;
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,17 +42,14 @@ import static org.mockito.Mockito.when;
 class ProxyEndpointTest {
 
     ProxyEndpoint proxyEndpoint;
+
     HttpRequestMessage request;
 
     @BeforeEach
     void setup() {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         NettyRequestAttemptFactory attemptFactory = mock(NettyRequestAttemptFactory.class);
-
-        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", null,
-                null,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), false);
-
+        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", null, null, "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), false);
         request.setBody("Hello There".getBytes());
         request.getContext().set(CommonContextKeys.ORIGIN_MANAGER, new BasicNettyOriginManager(Spectator.globalRegistry()));
         request.getContext().setRouteVIP("some-vip");
@@ -64,19 +59,13 @@ class ProxyEndpointTest {
 
     @Test
     void testRetryWillResetBodyReader() {
-
         assertEquals("Hello There", new String(request.getBody()));
-
         // move the body readerIndex to the end to mimic nettys behavior after writing to the origin channel
         request.getBodyContents().forEach((b) -> b.content().readerIndex(b.content().capacity()));
-
         HttpResponse response = mock(HttpResponse.class);
         when(response.status()).thenReturn(new HttpResponseStatus(503, "Retry"));
-
-        InstanceInfo instanceInfo =
-                InstanceInfo.Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
         DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, true);
-
         // when retrying a response, the request body reader should have it's indexes reset
         proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
         assertEquals("Hello There", new String(request.getBody()));

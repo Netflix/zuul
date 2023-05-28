@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import java.io.File;
-
 
 /**
  * Interface to generate Classes from source code
@@ -26,6 +24,7 @@ import java.io.File;
  * Time: 11:35 AM
  */
 public interface DynamicCodeCompiler {
+
     Class<?> compile(String sCode, String sName) throws Exception;
 
     Class<?> compile(File file) throws Exception;

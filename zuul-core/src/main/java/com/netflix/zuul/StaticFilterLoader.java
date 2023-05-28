@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import com.google.errorprone.annotations.DoNotCall;
@@ -55,11 +54,11 @@ public final class StaticFilterLoader implements FilterLoader {
     public static final String RESOURCE_NAME = "META-INF/zuul/allfilters";
 
     private final Map<FilterType, ? extends SortedSet<ZuulFilter<?, ?>>> filtersByType;
+
     private final Map<FilterType, ? extends Map<String, ZuulFilter<?, ?>>> filtersByTypeAndName;
 
     @Inject
-    public StaticFilterLoader(
-            FilterFactory filterFactory, Set<? extends Class<? extends ZuulFilter<?, ?>>> filterTypes) {
+    public StaticFilterLoader(FilterFactory filterFactory, Set<? extends Class<? extends ZuulFilter<?, ?>>> filterTypes) {
         Map<FilterType, SortedSet<ZuulFilter<?, ?>>> filtersByType = new EnumMap<>(FilterType.class);
         Map<FilterType, Map<String, ZuulFilter<?, ?>>> filtersByName = new EnumMap<>(FilterType.class);
         for (Class<? extends ZuulFilter<?, ?>> clz : filterTypes) {
@@ -84,13 +83,12 @@ public final class StaticFilterLoader implements FilterLoader {
         this.filtersByType = Collections.unmodifiableMap(filtersByType);
     }
 
-    public static Set<Class<ZuulFilter<?, ?>>> loadFilterTypesFromResources(ClassLoader loader)
-            throws IOException {
+    public static Set<Class<ZuulFilter<?, ?>>> loadFilterTypesFromResources(ClassLoader loader) throws IOException {
         Set<Class<ZuulFilter<?, ?>>> filterTypes = new LinkedHashSet<>();
         for (URL url : Collections.list(loader.getResources(RESOURCE_NAME))) {
             try (InputStream is = url.openStream();
-                    InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-                    BufferedReader br = new BufferedReader(isr)) {
+                InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+                BufferedReader br = new BufferedReader(isr)) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String trimmed = line.trim();
@@ -108,13 +106,11 @@ public final class StaticFilterLoader implements FilterLoader {
                             // compilation work later, at the cost of polluting the filter list.  It's a
                             // better experience to log a warning (and do a clean build), than to
                             // mysteriously classes.
-
                             logger.warn("Missing Filter", e);
                             continue;
                         }
                         @SuppressWarnings("unchecked")
-                        Class<ZuulFilter<?, ?>> filterClz =
-                                (Class<ZuulFilter<?, ?>>) clz.asSubclass(ZuulFilter.class);
+                        Class<ZuulFilter<?, ?>> filterClz = (Class<ZuulFilter<?, ?>>) clz.asSubclass(ZuulFilter.class);
                         filterTypes.add(filterClz);
                     }
                 }

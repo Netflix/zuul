@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import com.google.errorprone.annotations.ForOverride;
@@ -51,36 +50,42 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseServerStartup
-{
+public abstract class BaseServerStartup {
+
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
+
     protected final Registry registry;
-    @SuppressWarnings("unused") // force initialization
+
+    // force initialization
+    @SuppressWarnings("unused")
     protected final DirectMemoryMonitor directMemoryMonitor;
+
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
+
     protected final EurekaClient discoveryClient;
+
     protected final ApplicationInfoManager applicationInfoManager;
+
     protected final AccessLogPublisher accessLogPublisher;
+
     protected final SessionContextDecorator sessionCtxDecorator;
+
     protected final RequestCompleteHandler reqCompleteHandler;
+
     protected final FilterLoader filterLoader;
+
     protected final FilterUsageNotifier usageNotifier;
 
     private Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addrsToChannelInitializers;
+
     private ClientConnectionsShutdown clientConnectionsShutdown;
+
     private Server server;
 
-
     @Inject
-    public BaseServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
-                             SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
-                             RequestCompleteHandler reqCompleteHandler, Registry registry,
-                             DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
-                             EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
-                             AccessLogPublisher accessLogPublisher)
-    {
+    public BaseServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader, SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier, RequestCompleteHandler reqCompleteHandler, Registry registry, DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics, EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager, AccessLogPublisher accessLogPublisher) {
         this.serverStatusManager = serverStatusManager;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
@@ -94,27 +99,16 @@ public abstract class BaseServerStartup
         this.usageNotifier = usageNotifier;
     }
 
-    public Server server()
-    {
+    public Server server() {
         return server;
     }
 
     @Inject
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
         ChannelGroup clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-        clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
-                GlobalEventExecutor.INSTANCE, discoveryClient);
-
+        clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels, GlobalEventExecutor.INSTANCE, discoveryClient);
         addrsToChannelInitializers = chooseAddrsAndChannels(clientChannels);
-
-        server = new Server(
-                registry,
-                serverStatusManager,
-                addrsToChannelInitializers,
-                clientConnectionsShutdown,
-                eventLoopGroupMetrics,
-                new DefaultEventLoopConfig());
+        server = new Server(registry, serverStatusManager, addrsToChannelInitializers, clientConnectionsShutdown, eventLoopGroupMetrics, new DefaultEventLoopConfig());
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
@@ -128,12 +122,11 @@ public abstract class BaseServerStartup
 
     @ForOverride
     protected Map<NamedSocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
-        @SuppressWarnings("unchecked") // Channel init map has the wrong generics and we can't fix without api breakage.
-        Map<Integer, ChannelInitializer<?>> portMap =
-                (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
+        // Channel init map has the wrong generics and we can't fix without api breakage.
+        @SuppressWarnings("unchecked")
+        Map<Integer, ChannelInitializer<?>> portMap = (Map<Integer, ChannelInitializer<?>>) (Map) choosePortsAndChannels(clientChannels);
         return Server.convertPortMap(portMap);
     }
-
 
     protected ChannelConfig defaultChannelDependencies(String listenAddressName) {
         ChannelConfig channelDependencies = new ChannelConfig();
@@ -141,25 +134,19 @@ public abstract class BaseServerStartup
         return channelDependencies;
     }
 
-    protected void addChannelDependencies(
-            ChannelConfig channelDeps,
-            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
+    protected void addChannelDependencies(ChannelConfig channelDeps, @SuppressWarnings("unused") String listenAddressName) {
+        // listenAddressName is used by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
-
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
         channelDeps.set(ZuulDependencyKeys.serverStatusManager, serverStatusManager);
-
         channelDeps.set(ZuulDependencyKeys.accessLogPublisher, accessLogPublisher);
-
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
         final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
         channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
-
         channelDeps.set(ZuulDependencyKeys.eventLoopGroupMetrics, eventLoopGroupMetrics);
-
         channelDeps.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
         channelDeps.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
     }
@@ -182,13 +169,10 @@ public abstract class BaseServerStartup
         return value;
     }
 
-    public static boolean chooseBooleanChannelProperty(
-            String listenAddressName, String propertySuffix, boolean defaultValue) {
+    public static boolean chooseBooleanChannelProperty(String listenAddressName, String propertySuffix, boolean defaultValue) {
         String globalPropertyName = "server." + propertySuffix;
         String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
-
-        Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(
-                listenAddressPropertyName, null).get();
+        Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(listenAddressPropertyName, null).get();
         if (value == null) {
             value = new DynamicBooleanProperty(globalPropertyName, defaultValue).getDynamicProperty().getBoolean();
             if (value == null) {
@@ -200,76 +184,32 @@ public abstract class BaseServerStartup
 
     public static ChannelConfig defaultChannelConfig(String listenAddressName) {
         ChannelConfig config = new ChannelConfig();
-
-        config.add(new ChannelConfigValue<>(
-                CommonChannelConfigKeys.maxConnections,
-                chooseIntChannelProperty(
-                        listenAddressName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
-                chooseIntChannelProperty(listenAddressName, "connection.max.requests", 20000)));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "connection.max.requests.brownout",
-                        CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connectionExpiry,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "connection.expiry",
-                        CommonChannelConfigKeys.connectionExpiry.defaultValue())));
-        config.add(new ChannelConfigValue<>(
-                CommonChannelConfigKeys.httpRequestReadTimeout,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "http.request.read.timeout",
-                        CommonChannelConfigKeys.httpRequestReadTimeout.defaultValue())));
-
-        int connectionIdleTimeout = chooseIntChannelProperty(
-                listenAddressName, "connection.idle.timeout",
-                CommonChannelConfigKeys.idleTimeout.defaultValue());
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConnections, chooseIntChannelProperty(listenAddressName, "connection.max", CommonChannelConfigKeys.maxConnections.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection, chooseIntChannelProperty(listenAddressName, "connection.max.requests", 20000)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout, chooseIntChannelProperty(listenAddressName, "connection.max.requests.brownout", CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connectionExpiry, chooseIntChannelProperty(listenAddressName, "connection.expiry", CommonChannelConfigKeys.connectionExpiry.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.httpRequestReadTimeout, chooseIntChannelProperty(listenAddressName, "http.request.read.timeout", CommonChannelConfigKeys.httpRequestReadTimeout.defaultValue())));
+        int connectionIdleTimeout = chooseIntChannelProperty(listenAddressName, "connection.idle.timeout", CommonChannelConfigKeys.idleTimeout.defaultValue());
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.idleTimeout, connectionIdleTimeout));
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.serverTimeout, new ServerTimeout(connectionIdleTimeout)));
-
         // For security, default to NEVER allowing XFF/Proxy headers from client.
         config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.allowProxyHeadersWhen, StripUntrustedProxyHeadersHandler.AllowWhen.NEVER));
-
         config.set(CommonChannelConfigKeys.withProxyProtocol, true);
         config.set(CommonChannelConfigKeys.preferProxyProtocolForClientIp, true);
-
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connCloseDelay,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "connection.close.delay",
-                        CommonChannelConfigKeys.connCloseDelay.defaultValue())));
-
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.connCloseDelay, chooseIntChannelProperty(listenAddressName, "connection.close.delay", CommonChannelConfigKeys.connCloseDelay.defaultValue())));
         return config;
     }
 
     public static void addHttp2DefaultConfig(ChannelConfig config, String listenAddressName) {
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "http2.max.concurrent.streams",
-                        CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "http2.initialwindowsize",
-                        CommonChannelConfigKeys.initialWindowSize.defaultValue())));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize,
-                chooseIntChannelProperty(listenAddressName, "http2.maxheadertablesize", 65536)));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize,
-                chooseIntChannelProperty(listenAddressName, "http2.maxheaderlistsize", 32768)));
-
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams, chooseIntChannelProperty(listenAddressName, "http2.max.concurrent.streams", CommonChannelConfigKeys.maxConcurrentStreams.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize, chooseIntChannelProperty(listenAddressName, "http2.initialwindowsize", CommonChannelConfigKeys.initialWindowSize.defaultValue())));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize, chooseIntChannelProperty(listenAddressName, "http2.maxheadertablesize", 65536)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, chooseIntChannelProperty(listenAddressName, "http2.maxheaderlistsize", 32768)));
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection,
-                chooseIntChannelProperty(listenAddressName, "connection.max.requests", 4000)));
-
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2AllowGracefulDelayed,
-                chooseBooleanChannelProperty(listenAddressName, "connection.close.graceful.delayed.allow", true)));
-        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose,
-                chooseBooleanChannelProperty(listenAddressName, "connection.close.swallow.unknown.exceptions", false)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxRequestsPerConnection, chooseIntChannelProperty(listenAddressName, "connection.max.requests", 4000)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2AllowGracefulDelayed, chooseBooleanChannelProperty(listenAddressName, "connection.close.graceful.delayed.allow", true)));
+        config.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2SwallowUnknownExceptionsOnConnClose, chooseBooleanChannelProperty(listenAddressName, "connection.close.swallow.unknown.exceptions", false)));
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
@@ -311,8 +251,7 @@ public abstract class BaseServerStartup
         LOG.info(msg);
     }
 
-    protected final void logAddrConfigured(
-            SocketAddress socketAddress, @Nullable AsyncMapping<String, SslContext> sniMapping) {
+    protected final void logAddrConfigured(SocketAddress socketAddress, @Nullable AsyncMapping<String, SslContext> sniMapping) {
         String msg = "Configured address: " + socketAddress;
         if (sniMapping != null) {
             msg = msg + " with SNI config: " + sniMapping;

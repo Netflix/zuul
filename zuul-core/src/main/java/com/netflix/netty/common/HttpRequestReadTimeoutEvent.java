@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 /**
@@ -21,7 +20,7 @@ package com.netflix.netty.common;
  *
  * ie. time between receiving request headers and LastHttpContent of request body.
  */
-public class HttpRequestReadTimeoutEvent
-{
+public class HttpRequestReadTimeoutEvent {
+
     public static final HttpRequestReadTimeoutEvent INSTANCE = new HttpRequestReadTimeoutEvent();
 }

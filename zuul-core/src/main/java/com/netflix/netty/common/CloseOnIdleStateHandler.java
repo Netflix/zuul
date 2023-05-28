@@ -32,7 +32,6 @@ public class CloseOnIdleStateHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
-
         if (evt instanceof IdleStateEvent) {
             counter.increment();
             ctx.close();

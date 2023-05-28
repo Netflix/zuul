@@ -13,14 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -31,7 +29,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -41,7 +38,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +48,7 @@ import org.slf4j.LoggerFactory;
  * Tests for {@link Server}.
  */
 class ServerTest {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
     @BeforeEach
@@ -67,6 +64,7 @@ class ServerTest {
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
         final List<NioSocketChannel> nioChannels = Collections.synchronizedList(new ArrayList<NioSocketChannel>());
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
+
             @Override
             protected void initChannel(final Channel ch) {
                 LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
@@ -77,14 +75,12 @@ class ServerTest {
         };
         initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // The port to channel map keys on the port, post bind. This should be unique even if InetAddress is same
-        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress( 0)), init);
-        ClientConnectionsShutdown ccs =
-                new ClientConnectionsShutdown(
-                        new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
-                        GlobalEventExecutor.INSTANCE,
-                                /* discoveryClient= */ null);
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(0)), init);
+        ClientConnectionsShutdown ccs = new ClientConnectionsShutdown(new DefaultChannelGroup(GlobalEventExecutor.INSTANCE), GlobalEventExecutor.INSTANCE, /* discoveryClient= */
+        null);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
+
             @Override
             public int eventLoopCount() {
                 return 1;
@@ -97,7 +93,6 @@ class ServerTest {
         };
         Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
         s.start();
-
         List<NamedSocketAddress> addrs = s.getListeningAddresses();
         assertEquals(2, addrs.size());
         for (NamedSocketAddress address : addrs) {
@@ -106,15 +101,9 @@ class ServerTest {
             assertNotEquals(0, port);
             checkConnection(port);
         }
-
-        await()
-                .atMost(1, SECONDS)
-                .until(() -> nioChannels.size() == 2);
-
+        await().atMost(1, SECONDS).until(() -> nioChannels.size() == 2);
         s.stop();
-
         assertEquals(2, nioChannels.size());
-
         for (NioSocketChannel ch : nioChannels) {
             assertTrue(ch.isShutdown(), "isShutdown");
         }
@@ -136,8 +125,7 @@ class ServerTest {
         } finally {
             try {
                 sock.close();
-            }
-            catch (Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
     }

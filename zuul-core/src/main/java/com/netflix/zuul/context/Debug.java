@@ -34,6 +34,7 @@ import rx.Observable;
  * Time: 2:26 PM
  */
 public class Debug {
+
     private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
@@ -48,11 +49,9 @@ public class Debug {
         return ctx.debugRequestHeadersOnly();
     }
 
-
     public static void setDebugRouting(SessionContext ctx, boolean bDebug) {
         ctx.setDebugRouting(bDebug);
     }
-
 
     public static boolean debugRequest(SessionContext ctx) {
         return ctx.debugRequest();
@@ -67,12 +66,10 @@ public class Debug {
         rd.add(line);
     }
 
-    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix)
-    {
+    public static void addRequestDebugForMessage(SessionContext ctx, ZuulMessage message, String prefix) {
         for (Header header : message.getHeaders().entries()) {
             Debug.addRequestDebug(ctx, prefix + " " + header.getKey() + " " + header.getValue());
         }
-
         if (message.hasBody()) {
             String bodyStr = message.getBodyAsText();
             Debug.addRequestDebug(ctx, prefix + " " + bodyStr);
@@ -80,7 +77,6 @@ public class Debug {
     }
 
     /**
-     *
      * @return Returns the list of routiong debug messages
      */
     public static List<String> getRoutingDebug(SessionContext ctx) {
@@ -102,7 +98,6 @@ public class Debug {
     }
 
     /**
-     *
      * @return returns the list of request debug messages
      */
     public static List<String> getRequestDebug(SessionContext ctx) {
@@ -114,7 +109,6 @@ public class Debug {
         return rd;
     }
 
-
     /**
      * Adds debug details about changes that a given filter made to the request context.
      * @param filterName
@@ -122,10 +116,8 @@ public class Debug {
      */
     public static void compareContextState(String filterName, SessionContext context, SessionContext copy) {
         // TODO - only comparing Attributes. Need to compare the messages too.
-
         // Ensure that the routingDebug property already exists, otherwise we'll have a ConcurrentModificationException below
         getRoutingDebug(context);
-
         Iterator<String> it = context.keySet().iterator();
         String key = it.next();
         while (key != null) {
@@ -137,7 +129,7 @@ public class Debug {
                         addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                     } else if (oldValue != null && newValue != null) {
                         if (!(oldValue.equals(newValue))) {
-                            addRoutingDebug(context, "{" +filterName + "} changed " + key + "=" + newValue.toString());
+                            addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
                         }
                     }
                 }
@@ -148,67 +140,49 @@ public class Debug {
                 key = null;
             }
         }
-
     }
 
-    public static Observable<Boolean> writeDebugRequest(SessionContext context,
-                                                                HttpRequestInfo request, boolean isInbound)
-    {
+    public static Observable<Boolean> writeDebugRequest(SessionContext context, HttpRequestInfo request, boolean isInbound) {
         Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "REQUEST_INBOUND" : "REQUEST_OUTBOUND";
             String arrow = ">";
-
-            Debug.addRequestDebug(context, String.format("%s:: %s LINE: %s %s %s",
-                    prefix, arrow, request.getMethod().toUpperCase(), request.getPathAndQuery(), request.getProtocol()));
+            Debug.addRequestDebug(context, String.format("%s:: %s LINE: %s %s %s", prefix, arrow, request.getMethod().toUpperCase(), request.getPathAndQuery(), request.getProtocol()));
             obs = Debug.writeDebugMessage(context, request, prefix, arrow);
         }
-
         if (obs == null)
             obs = Observable.just(Boolean.FALSE);
-
         return obs;
     }
 
-    public static Observable<Boolean> writeDebugResponse(SessionContext context,
-                                                                  HttpResponseInfo response, boolean isInbound)
-    {
+    public static Observable<Boolean> writeDebugResponse(SessionContext context, HttpResponseInfo response, boolean isInbound) {
         Observable<Boolean> obs = null;
         if (Debug.debugRequest(context)) {
             String prefix = isInbound ? "RESPONSE_INBOUND" : "RESPONSE_OUTBOUND";
             String arrow = "<";
-
             Debug.addRequestDebug(context, String.format("%s:: %s STATUS: %s", prefix, arrow, response.getStatus()));
             obs = Debug.writeDebugMessage(context, response, prefix, arrow);
         }
-
         if (obs == null)
             obs = Observable.just(Boolean.FALSE);
-
         return obs;
     }
 
-    public static Observable<Boolean> writeDebugMessage(SessionContext context, ZuulMessage msg,
-                                                            String prefix, String arrow)
-    {
+    public static Observable<Boolean> writeDebugMessage(SessionContext context, ZuulMessage msg, String prefix, String arrow) {
         Observable<Boolean> obs = null;
-
         for (Header header : msg.getHeaders().entries()) {
             Debug.addRequestDebug(context, String.format("%s:: %s HDR: %s:%s", prefix, arrow, header.getKey(), header.getValue()));
         }
-
         // Capture the response body into a Byte array for later usage.
         if (msg.hasBody()) {
-            if (! Debug.debugRequestHeadersOnly(context)) {
+            if (!Debug.debugRequestHeadersOnly(context)) {
                 // Convert body to a String and add to debug log.
                 String body = msg.getBodyAsText();
                 Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
             }
         }
-
         if (obs == null)
             obs = Observable.just(Boolean.FALSE);
-
         return obs;
     }
 }

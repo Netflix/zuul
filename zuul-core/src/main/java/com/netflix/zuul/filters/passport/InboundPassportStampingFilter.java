@@ -13,14 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.passport;
 
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.passport.PassportState;
-
 import static com.netflix.zuul.filters.FilterType.INBOUND;
 
 /**
@@ -37,5 +35,4 @@ public final class InboundPassportStampingFilter extends PassportStampingFilter<
     public FilterType filterType() {
         return INBOUND;
     }
-
 }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.endpoint;
 
 import com.netflix.zuul.Filter;
@@ -32,6 +31,7 @@ import org.slf4j.LoggerFactory;
  */
 @Filter(order = 0, type = FilterType.ENDPOINT)
 public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> {
+
     private final String name;
 
     private static final Logger LOG = LoggerFactory.getLogger(MissingEndpointHandlingFilter.class);

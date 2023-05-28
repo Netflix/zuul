@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.processor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -48,7 +47,6 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
-
 @SupportedAnnotationTypes(FilterProcessor.FILTER_TYPE)
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public final class FilterProcessor extends AbstractProcessor {
@@ -59,15 +57,13 @@ public final class FilterProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Set<? extends Element> annotated =
-                roundEnv.getElementsAnnotatedWith(processingEnv.getElementUtils().getTypeElement(FILTER_TYPE));
+        Set<? extends Element> annotated = roundEnv.getElementsAnnotatedWith(processingEnv.getElementUtils().getTypeElement(FILTER_TYPE));
         for (Element el : annotated) {
             if (el.getModifiers().contains(Modifier.ABSTRACT)) {
                 continue;
             }
             annotatedElements.add(processingEnv.getElementUtils().getBinaryName((TypeElement) el).toString());
         }
-
         if (roundEnv.processingOver()) {
             try {
                 addNewClasses(processingEnv.getFiler(), annotatedElements);
@@ -86,7 +82,7 @@ public final class FilterProcessor extends AbstractProcessor {
         try {
             FileObject existingFilters = filer.getResource(StandardLocation.CLASS_OUTPUT, "", resourceName);
             try (InputStream is = existingFilters.openInputStream();
-                    InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
                 existing = readResourceFile(reader);
             }
         } catch (FileNotFoundException | NoSuchFileException e) {
@@ -94,7 +90,6 @@ public final class FilterProcessor extends AbstractProcessor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         int sizeBefore = existing.size();
         Set<String> existingSet = new LinkedHashSet<>(existing);
         List<String> newElements = new ArrayList<>(existingSet);
@@ -108,10 +103,9 @@ public final class FilterProcessor extends AbstractProcessor {
             return;
         }
         newElements.sort(String::compareTo);
-
         FileObject dest = filer.createResource(StandardLocation.CLASS_OUTPUT, "", resourceName);
         try (OutputStream os = dest.openOutputStream();
-                OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+            OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
             writeResourceFile(osw, newElements);
         }
     }

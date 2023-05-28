@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.throttle;
 
 import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -34,7 +32,9 @@ import org.junit.jupiter.api.Test;
 class MaxInboundConnectionsHandlerTest {
 
     private Registry registry = new DefaultRegistry();
+
     private String listener = "test-throttled";
+
     private Id counterId;
 
     @BeforeEach
@@ -44,20 +44,15 @@ class MaxInboundConnectionsHandlerTest {
 
     @Test
     void verifyPassportStateAndAttrs() {
-
         final EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, listener, 1));
-
         // Fire twice to increment current conns. count
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
-
         final Counter throttledCount = (Counter) registry.get(counterId);
-
         assertEquals(1, throttledCount.count());
         assertEquals(PassportState.SERVER_CH_THROTTLING, CurrentPassport.fromChannel(channel).getState());
         assertTrue(channel.attr(ATTR_CH_THROTTLED).get());
-
     }
 }

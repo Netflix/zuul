@@ -29,7 +29,6 @@ import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -41,6 +40,7 @@ import java.util.stream.Stream;
  * Time: 6:15 PM
  */
 public class ZuulFiltersModule extends AbstractModule {
+
     private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
 
     private static Predicate<String> blank = String::isEmpty;
@@ -48,55 +48,36 @@ public class ZuulFiltersModule extends AbstractModule {
     @Override
     protected void configure() {
         LOG.info("Starting Groovy Filter file manager");
-
         bind(FilterFactory.class).to(GuiceFilterFactory.class);
-
         bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
-
         LOG.info("Groovy Filter file manager started");
     }
 
     @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig(
-        AbstractConfiguration config, FilenameFilter filenameFilter) {
+    FilterFileManagerConfig provideFilterFileManagerConfig(AbstractConfiguration config, FilenameFilter filenameFilter) {
         // Get filter directories.
         String[] filterLocations = findFilterLocations(config);
         String[] filterClassNames = findClassNames(config);
-
         // Init the FilterStore.
-        FilterFileManagerConfig filterConfig =
-            new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
+        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
         return filterConfig;
     }
 
     // Get compiled filter classes to be found on classpath.
     @VisibleForTesting
     String[] findClassNames(AbstractConfiguration config) {
-
         // Find individually-specified filter classes.
         String[] filterClassNamesStrArray = config.getStringArray("zuul.filters.classes");
-        Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray)
-                .map(String::trim)
-                .filter(blank.negate());
-
+        Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray).map(String::trim).filter(blank.negate());
         // Find filter classes in specified packages.
         String[] packageNamesStrArray = config.getStringArray("zuul.filters.packages");
         ClassPath cp;
         try {
             cp = ClassPath.from(this.getClass().getClassLoader());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error attempting to read classpath to find filters!", e);
         }
-        Stream<String> packageStream = Arrays.stream(packageNamesStrArray)
-                .map(String::trim)
-                .filter(blank.negate())
-                .flatMap(packageName -> cp.getTopLevelClasses(packageName).stream())
-                .map(ClassPath.ClassInfo::load)
-                .filter(ZuulFilter.class::isAssignableFrom)
-                .map(Class::getCanonicalName);
-
-
+        Stream<String> packageStream = Arrays.stream(packageNamesStrArray).map(String::trim).filter(blank.negate()).flatMap(packageName -> cp.getTopLevelClasses(packageName).stream()).map(ClassPath.ClassInfo::load).filter(ZuulFilter.class::isAssignableFrom).map(Class::getCanonicalName);
         String[] filterClassNames = Stream.concat(classNameStream, packageStream).toArray(String[]::new);
         if (filterClassNames.length != 0) {
             LOG.info("Using filter classnames: ");
@@ -104,7 +85,6 @@ public class ZuulFiltersModule extends AbstractModule {
                 LOG.info("  {}", location);
             }
         }
-
         return filterClassNames;
     }
 
@@ -112,13 +92,9 @@ public class ZuulFiltersModule extends AbstractModule {
     String[] findFilterLocations(AbstractConfiguration config) {
         String[] locations = config.getStringArray("zuul.filters.locations");
         if (locations == null) {
-            locations = new String[]{"inbound", "outbound", "endpoint"};
+            locations = new String[] { "inbound", "outbound", "endpoint" };
         }
-        String[] filterLocations = Arrays.stream(locations)
-                .map(String::trim)
-                .filter(blank.negate())
-                .toArray(String[]::new);
-
+        String[] filterLocations = Arrays.stream(locations).map(String::trim).filter(blank.negate()).toArray(String[]::new);
         if (filterLocations.length != 0) {
             LOG.info("Using filter locations: ");
             for (String location : filterLocations) {

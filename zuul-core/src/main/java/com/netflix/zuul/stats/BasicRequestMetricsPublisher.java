@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats;
 
 import com.netflix.zuul.context.SessionContext;
@@ -23,11 +22,10 @@ import com.netflix.zuul.context.SessionContext;
  * Date: 6/4/15
  * Time: 4:22 PM
  */
-public class BasicRequestMetricsPublisher implements RequestMetricsPublisher
-{
+public class BasicRequestMetricsPublisher implements RequestMetricsPublisher {
+
     @Override
     public void collectAndPublish(SessionContext context) {
         // Record metrics here.
-
     }
 }

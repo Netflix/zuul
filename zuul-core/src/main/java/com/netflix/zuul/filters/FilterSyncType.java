@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters;
 
 /**
@@ -21,7 +20,7 @@ package com.netflix.zuul.filters;
  * Date: 11/13/15
  * Time: 9:13 PM
  */
-public enum FilterSyncType
-{
+public enum FilterSyncType {
+
     SYNC, ASYNC
 }

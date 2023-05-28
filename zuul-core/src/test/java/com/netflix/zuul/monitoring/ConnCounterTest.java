@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;
@@ -28,6 +26,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 
 class ConnCounterTest {
+
     @Test
     void record() {
         EmbeddedChannel chan = new EmbeddedChannel();
@@ -35,20 +34,16 @@ class ConnCounterTest {
         chan.attr(Server.CONN_DIMENSIONS).set(attrs);
         Registry registry = new DefaultRegistry();
         ConnCounter counter = ConnCounter.install(chan, registry, registry.createId("foo"));
-
         counter.increment("start");
         counter.increment("middle");
         Attrs.newKey("bar").put(attrs, "baz");
         counter.increment("end");
-
         Gauge meter1 = registry.gauge(registry.createId("foo.start", "from", "nascent"));
         assertNotNull(meter1);
         assertEquals(1, meter1.value(), 0);
-
         Gauge meter2 = registry.gauge(registry.createId("foo.middle", "from", "start"));
         assertNotNull(meter2);
         assertEquals(1, meter2.value(), 0);
-
         Gauge meter3 = registry.gauge(registry.createId("foo.end", "from", "middle", "bar", "baz"));
         assertNotNull(meter3);
         assertEquals(1, meter3.value(), 0);
@@ -60,14 +55,10 @@ class ConnCounterTest {
         Attrs attrs = Attrs.newInstance();
         channel.attr(Server.CONN_DIMENSIONS).set(attrs);
         Registry registry = new DefaultRegistry();
-
         ConnCounter.install(channel, registry, registry.createId("foo"));
-
         // Dedup increments
         ConnCounter.from(channel).increment("active");
         ConnCounter.from(channel).increment("active");
-
-
         assertEquals(1, ConnCounter.from(channel).getCurrentActiveConns(), 0);
     }
 }

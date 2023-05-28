@@ -21,9 +21,7 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Set;
-
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
@@ -35,11 +33,12 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private final String pushConnectionPath;
+
     private final String originDomain;
 
     public static final String NAME = "push_auth_handler";
-    private static Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
 
+    private static Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
 
     public PushAuthHandler(String pushConnectionPath, String originDomain) {
         this.pushConnectionPath = pushConnectionPath;
@@ -49,8 +48,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != OK) || (! HttpUtil.isKeepAlive(req)));
-        if (closeConn)  {
+        final boolean closeConn = ((status != OK) || (!HttpUtil.isKeepAlive(req)));
+        if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
         final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
@@ -65,12 +64,10 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
             sendHttpResponse(req, ctx, METHOD_NOT_ALLOWED);
             return;
         }
-
         final String path = req.uri();
         if ("/healthcheck".equals(path)) {
             sendHttpResponse(req, ctx, OK);
-        }
-        else if (pushConnectionPath.equals(path)) {
+        } else if (pushConnectionPath.equals(path)) {
             // CSRF protection
             if (isInvalidOrigin(req)) {
                 sendHttpResponse(req, ctx, BAD_REQUEST);
@@ -80,15 +77,15 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
             } else {
                 final PushUserAuth authEvent = doAuth(req);
                 if (authEvent.isSuccess()) {
-                    ctx.fireChannelRead(req.retain()); // continue with WebSocket upgrade handshake
+                    // continue with WebSocket upgrade handshake
+                    ctx.fireChannelRead(req.retain());
                     ctx.fireUserEventTriggered(authEvent);
                 } else {
                     logger.warn("Auth failed: {}", authEvent.statusCode());
                     sendHttpResponse(req, ctx, HttpResponseStatus.valueOf(authEvent.statusCode()));
                 }
             }
-        }
-        else {
+        } else {
             sendHttpResponse(req, ctx, NOT_FOUND);
         }
     }
@@ -111,7 +108,6 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         }
         return cookies;
     }
-
 
     /**
      * @return true if Auth credentials will be provided later, for example in first WebSocket frame sent

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.connectionpool;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -33,11 +32,13 @@ import org.slf4j.LoggerFactory;
  * Date: July 01, 2019
  */
 public final class ClientTimeoutHandler {
+
     private static final Logger LOG = LoggerFactory.getLogger(ClientTimeoutHandler.class);
 
     public static final AttributeKey<Duration> ORIGIN_RESPONSE_READ_TIMEOUT = AttributeKey.newInstance("originResponseReadTimeout");
 
     public static final class InboundHandler extends ChannelInboundHandlerAdapter {
+
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
@@ -45,14 +46,14 @@ public final class ClientTimeoutHandler {
                     LOG.debug("[{}] Removing read timeout handler", ctx.channel().id());
                     PooledConnection.getFromChannel(ctx.channel()).removeReadTimeoutHandler();
                 }
-            }
-            finally {
+            } finally {
                 super.channelRead(ctx, msg);
             }
         }
     }
 
     public static final class OutboundHandler extends ChannelOutboundHandlerAdapter {
+
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             try {
@@ -63,8 +64,7 @@ public final class ClientTimeoutHandler {
                         PooledConnection.getFromChannel(ctx.channel()).startReadTimeoutHandler(timeout);
                     });
                 }
-            }
-            finally {
+            } finally {
                 super.write(ctx, msg, promise);
             }
         }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server.filters;
 
 import com.netflix.zuul.Filter;
@@ -27,6 +26,7 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 
 @Filter(order = 0, type = FilterType.INBOUND)
 public class InboundRoutesFilter extends HttpInboundSyncFilter {
+
     @Override
     public int filterOrder() {
         return 0;
@@ -41,7 +41,6 @@ public class InboundRoutesFilter extends HttpInboundSyncFilter {
     public HttpRequestMessage apply(HttpRequestMessage input) {
         // uncomment this line to trigger a resource leak
         // ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer();
-
         SessionContext context = input.getContext();
         context.setEndpoint(ProxyEndpoint.class.getCanonicalName());
         context.setRouteVIP("api");

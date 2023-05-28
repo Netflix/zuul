@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,18 +31,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T> {
 
     private final AtomicInteger instancesLeakCounter;
+
     @VisibleForTesting
     final AtomicInteger leakCounter;
 
     public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval) {
         super(resourceType, samplingInterval);
-
         this.instancesLeakCounter = SpectatorUtils.newGauge("NettyLeakDetector_instances", resourceType.getSimpleName(), new AtomicInteger());
         this.leakCounter = SpectatorUtils.newGauge("NettyLeakDetector", resourceType.getSimpleName(), new AtomicInteger());
     }
 
-    public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval, long maxActive)
-    {
+    public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval, long maxActive) {
         this(resourceType, samplingInterval);
     }
 
@@ -73,8 +71,7 @@ public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T>
             if (f instanceof Map) {
                 ((Map) f).clear();
             }
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
             // do nothing
         }
     }

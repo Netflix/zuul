@@ -33,25 +33,17 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
      * Use {@link #PushChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
      */
     @Deprecated
-    public PushChannelInitializer(
-            int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+    public PushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         this(String.valueOf(port), channelConfig, channelDependencies, channels);
     }
 
-    protected PushChannelInitializer(
-            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+    protected PushChannelInitializer(String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
     }
 
     @Override
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
-        pipeline.addLast(
-                HTTP_CODEC_HANDLER_NAME,
-                new HttpServerCodec(
-                        MAX_INITIAL_LINE_LENGTH.get(),
-                        MAX_HEADER_SIZE.get(),
-                        MAX_CHUNK_SIZE.get(),
-                        false));
+        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpServerCodec(MAX_INITIAL_LINE_LENGTH.get(), MAX_HEADER_SIZE.get(), MAX_CHUNK_SIZE.get(), false));
         pipeline.addLast(new HttpObjectAggregator(8192));
     }
 

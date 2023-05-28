@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.integration.server.filters;
 
 import com.netflix.zuul.Filter;
@@ -21,7 +20,6 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import rx.Observable;
-
 import static com.netflix.zuul.integration.server.filters.BodyUtil.needsRequestBodyBuffering;
 
 @Filter(order = 20, type = FilterType.INBOUND)

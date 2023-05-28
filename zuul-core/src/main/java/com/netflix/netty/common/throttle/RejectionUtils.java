@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.throttle;
 
 import static com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION;
@@ -49,7 +48,6 @@ import javax.annotation.Nullable;
 public final class RejectionUtils {
 
     // TODO(carl-mastrangelo): add tests for this.
-
     public static final HttpResponseStatus REJECT_CLOSING_STATUS = new HttpResponseStatus(999, "Closing(Rejection)");
 
     /**
@@ -61,9 +59,7 @@ public final class RejectionUtils {
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
      */
-    public static void rejectByClosingConnection(
-            ChannelHandlerContext ctx, StatusCategory nfStatus, String reason, HttpRequest request,
-            @Nullable Integer injectedLatencyMillis) {
+    public static void rejectByClosingConnection(ChannelHandlerContext ctx, StatusCategory nfStatus, String reason, HttpRequest request, @Nullable Integer injectedLatencyMillis) {
         if (injectedLatencyMillis != null && injectedLatencyMillis > 0) {
             // Delay closing the connection for configured time.
             ctx.executor().schedule(() -> {
@@ -75,7 +71,6 @@ public final class RejectionUtils {
             CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_REJECTING);
             ctx.close();
         }
-
         // Notify other handlers that we've rejected this request.
         notifyHandlers(ctx, nfStatus, REJECT_CLOSING_STATUS, reason, request);
     }
@@ -93,14 +88,10 @@ public final class RejectionUtils {
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
      * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
-    public static void sendRejectionResponse(
-            ChannelHandlerContext ctx, StatusCategory nfStatus, String reason, HttpRequest request,
-            @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody,
-            Map<String, String> rejectionHeaders) {
+    public static void sendRejectionResponse(ChannelHandlerContext ctx, StatusCategory nfStatus, String reason, HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody, Map<String, String> rejectionHeaders) {
         boolean shouldClose = closeConnectionAfterReject(ctx.channel());
         // Write out a rejection response message.
         FullHttpResponse response = createRejectionResponse(rejectedCode, rejectedBody, shouldClose, rejectionHeaders);
-
         if (injectedLatencyMillis != null && injectedLatencyMillis > 0) {
             // Delay writing the response for configured time.
             ctx.executor().schedule(() -> {
@@ -112,7 +103,6 @@ public final class RejectionUtils {
             CurrentPassport.fromChannel(ctx.channel()).add(PassportState.IN_REQ_REJECTED);
             ctx.writeAndFlush(response);
         }
-
         // Notify other handlers that we've rejected this request.
         notifyHandlers(ctx, nfStatus, rejectedCode, reason, request);
     }
@@ -125,7 +115,6 @@ public final class RejectionUtils {
     public static void allowThenClose(ChannelHandlerContext ctx) {
         // Just flag this channel to be closed after response complete.
         ctx.channel().attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(ctx.newPromise());
-
         // And allow this request through without rejecting.
     }
 
@@ -144,17 +133,11 @@ public final class RejectionUtils {
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
      * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
-    public static void handleRejection(
-            ChannelHandlerContext ctx, Object msg, RejectionType rejectionType, StatusCategory nfStatus, String reason,
-            @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody,
-            Map<String, String> rejectionHeaders)
-            throws Exception {
-
+    public static void handleRejection(ChannelHandlerContext ctx, Object msg, RejectionType rejectionType, StatusCategory nfStatus, String reason, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody, Map<String, String> rejectionHeaders) throws Exception {
         boolean shouldDropMessage = false;
         if (rejectionType == RejectionType.REJECT || rejectionType == RejectionType.CLOSE) {
             shouldDropMessage = true;
         }
-
         boolean shouldRejectNow = false;
         if (rejectionType == RejectionType.REJECT && msg instanceof LastHttpContent) {
             shouldRejectNow = true;
@@ -163,21 +146,17 @@ public final class RejectionUtils {
         } else if (rejectionType == RejectionType.ALLOW_THEN_CLOSE && msg instanceof HttpRequest) {
             shouldRejectNow = true;
         }
-
         if (shouldRejectNow) {
             // Send a rejection response.
             HttpRequest request = msg instanceof HttpRequest ? (HttpRequest) msg : null;
-            reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
-                    rejectionHeaders);
+            reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody, rejectionHeaders);
         }
-
         if (shouldDropMessage) {
             ReferenceCountUtil.safeRelease(msg);
         } else {
             ctx.fireChannelRead(msg);
         }
     }
-
 
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
@@ -192,12 +171,8 @@ public final class RejectionUtils {
      * @param rejectedCode the HTTP code to send back to the client.
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
      */
-    public static void reject(
-            ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason,
-            HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode,
-            String rejectedBody) {
-        reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
-                Collections.emptyMap());
+    public static void reject(ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason, HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody) {
+        reject(ctx, rejectionType, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody, Collections.emptyMap());
     }
 
     /**
@@ -214,15 +189,10 @@ public final class RejectionUtils {
      * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
      * @param rejectionHeaders additional HTTP headers to add to the rejection response
      */
-    public static void reject(
-            ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason,
-            HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode,
-            String rejectedBody, Map<String, String> rejectionHeaders) {
-        switch (rejectionType) {
+    public static void reject(ChannelHandlerContext ctx, RejectionType rejectionType, StatusCategory nfStatus, String reason, HttpRequest request, @Nullable Integer injectedLatencyMillis, HttpResponseStatus rejectedCode, String rejectedBody, Map<String, String> rejectionHeaders) {
+        switch(rejectionType) {
             case REJECT:
-                sendRejectionResponse(
-                        ctx, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody,
-                        rejectionHeaders);
+                sendRejectionResponse(ctx, nfStatus, reason, request, injectedLatencyMillis, rejectedCode, rejectedBody, rejectionHeaders);
                 return;
             case CLOSE:
                 rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
@@ -234,9 +204,7 @@ public final class RejectionUtils {
         throw new AssertionError("Bad rejection type: " + rejectionType);
     }
 
-    private static void notifyHandlers(
-            ChannelHandlerContext ctx, StatusCategory nfStatus, HttpResponseStatus status, String reason,
-            HttpRequest request) {
+    private static void notifyHandlers(ChannelHandlerContext ctx, StatusCategory nfStatus, HttpResponseStatus status, String reason, HttpRequest request) {
         RequestRejectedEvent event = new RequestRejectedEvent(request, nfStatus, status, reason);
         // Send this from the beginning of the pipeline, as it may be sent from the ClientRequestReceiver.
         ctx.pipeline().fireUserEventTriggered(event);
@@ -250,9 +218,7 @@ public final class RejectionUtils {
         }
     }
 
-    private static FullHttpResponse createRejectionResponse(
-            HttpResponseStatus status, String plaintextMessage, boolean closeConnection,
-            Map<String, String> rejectionHeaders) {
+    private static FullHttpResponse createRejectionResponse(HttpResponseStatus status, String plaintextMessage, boolean closeConnection, Map<String, String> rejectionHeaders) {
         ByteBuf body = Unpooled.wrappedBuffer(plaintextMessage.getBytes(StandardCharsets.UTF_8));
         int length = body.readableBytes();
         DefaultHttpHeaders headers = new DefaultHttpHeaders();
@@ -262,9 +228,9 @@ public final class RejectionUtils {
             headers.set(HttpHeaderNames.CONNECTION, "close");
         }
         rejectionHeaders.forEach(headers::add);
-
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, body, headers, EmptyHttpHeaders.INSTANCE);
     }
 
-    private RejectionUtils() {}
+    private RejectionUtils() {
+    }
 }

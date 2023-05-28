@@ -16,7 +16,6 @@
 package com.netflix.zuul;
 
 import static java.util.Objects.requireNonNull;
-
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import java.io.File;
@@ -29,6 +28,7 @@ import java.util.SortedSet;
  * It also holds ZuulFilters by filterType.
  */
 public interface FilterLoader {
+
     /**
      * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
      * a true response means that it was successful.
@@ -48,7 +48,6 @@ public interface FilterLoader {
      */
     List<ZuulFilter<?, ?>> putFiltersForClasses(String[] classNames) throws Exception;
 
-
     ZuulFilter<?, ?> putFilterForClassName(String className) throws Exception;
 
     /**
@@ -58,11 +57,7 @@ public interface FilterLoader {
 
     ZuulFilter<?, ?> getFilterByNameAndType(String name, FilterType type);
 
-    Comparator<ZuulFilter<?, ?>> FILTER_COMPARATOR =
-            Comparator.<ZuulFilter<?, ?>>comparingInt(ZuulFilter::filterOrder).thenComparing(ZuulFilter::filterName);
+    Comparator<ZuulFilter<?, ?>> FILTER_COMPARATOR = Comparator.<ZuulFilter<?, ?>>comparingInt(ZuulFilter::filterOrder).thenComparing(ZuulFilter::filterName);
 
-    Comparator<Class<? extends ZuulFilter<?, ?>>> FILTER_CLASS_COMPARATOR =
-            Comparator.<Class<? extends ZuulFilter<?, ?>>>comparingInt(
-                    c ->  requireNonNull(c.getAnnotation(Filter.class), () -> "missing annotation: " + c).order())
-                    .thenComparing(Class::getName);
+    Comparator<Class<? extends ZuulFilter<?, ?>>> FILTER_CLASS_COMPARATOR = Comparator.<Class<? extends ZuulFilter<?, ?>>>comparingInt(c -> requireNonNull(c.getAnnotation(Filter.class), () -> "missing annotation: " + c).order()).thenComparing(Class::getName);
 }

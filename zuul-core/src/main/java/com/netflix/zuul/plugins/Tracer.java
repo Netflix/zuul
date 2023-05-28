@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 public class Tracer extends TracerFactory {
 
     @Override
-
     public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
         return new SpectatorTracer(name);
     }
@@ -39,6 +38,7 @@ public class Tracer extends TracerFactory {
     class SpectatorTracer implements com.netflix.zuul.monitoring.Tracer {
 
         private String name;
+
         private final long start;
 
         private SpectatorTracer(String name) {
@@ -48,8 +48,7 @@ public class Tracer extends TracerFactory {
 
         @Override
         public void stopAndLog() {
-            Spectator.globalRegistry().timer(name, "hostname", getHostName(), "ip", getIp())
-                    .record(System.nanoTime() - start, TimeUnit.NANOSECONDS);
+            Spectator.globalRegistry().timer(name, "hostname", getHostName(), "ip", getIp()).record(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         }
 
         @Override

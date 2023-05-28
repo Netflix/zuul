@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,23 +35,15 @@ class StatsManagerTest {
     void testCollectRouteStats() {
         String route = "test";
         int status = 500;
-
         StatsManager sm = StatsManager.getManager();
         assertNotNull(sm);
-
         // 1st request
         sm.collectRouteStats(route, status);
-
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
         assertNotNull(routeStatusMap);
-
-
         RouteStatusCodeMonitor routeStatusMonitor = routeStatusMap.get(status);
-
-
         // 2nd request
         sm.collectRouteStats(route, status);
-
     }
 
     @Test
@@ -68,23 +58,18 @@ class StatsManagerTest {
     void testCollectRequestStats() {
         final String host = "api.netflix.com";
         final String proto = "https";
-
         final HttpRequestInfo req = Mockito.mock(HttpRequestInfo.class);
         Headers headers = new Headers();
         when(req.getHeaders()).thenReturn(headers);
         headers.set(StatsManager.HOST_HEADER, host);
         headers.set(StatsManager.X_FORWARDED_PROTO_HEADER, proto);
         when(req.getClientIp()).thenReturn("127.0.0.1");
-
         final StatsManager sm = StatsManager.getManager();
         sm.collectRequestStats(req);
-
         final NamedCountingMonitor hostMonitor = sm.getHostMonitor(host);
         assertNotNull(hostMonitor, "hostMonitor should not be null");
-
         final NamedCountingMonitor protoMonitor = sm.getProtocolMonitor(proto);
         assertNotNull(protoMonitor, "protoMonitor should not be null");
-
         assertEquals(1, hostMonitor.getCount());
         assertEquals(1, protoMonitor.getCount());
     }

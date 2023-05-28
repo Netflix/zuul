@@ -13,19 +13,17 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-
 import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link VipUtils}.
  */
 class VipUtilsTest {
+
     @Test
     void testGetVIPPrefix() {
         assertThrows(NullPointerException.class, () -> {

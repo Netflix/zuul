@@ -25,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -40,16 +39,16 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import rx.Observable;
 
-
 class ZuulFilterChainRunnerTest {
+
     private HttpRequestMessage request;
+
     private HttpResponseMessage response;
 
     @BeforeEach
@@ -68,22 +67,13 @@ class ZuulFilterChainRunnerTest {
     void testInboundFilterChain() {
         final SimpleInboundFilter inbound1 = spy(new SimpleInboundFilter(true));
         final SimpleInboundFilter inbound2 = spy(new SimpleInboundFilter(false));
-
-        final ZuulFilter[] filters = new ZuulFilter[]{inbound1, inbound2};
-
+        final ZuulFilter[] filters = new ZuulFilter[] { inbound1, inbound2 };
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);
-
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
-                filters,
-                notifier,
-                registry);
-
+        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
         runner.filter(request);
-
         verify(inbound1, times(1)).applyAsync(eq(request));
         verify(inbound2, never()).applyAsync(eq(request));
-
         verify(notifier).notify(eq(inbound1), eq(ExecutionStatus.SUCCESS));
         verify(notifier).notify(eq(inbound2), eq(ExecutionStatus.SKIPPED));
         verifyNoMoreInteractions(notifier);
@@ -93,28 +83,20 @@ class ZuulFilterChainRunnerTest {
     void testOutboundFilterChain() {
         final SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
         final SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(false));
-
-        final ZuulFilter[] filters = new ZuulFilter[]{outbound1, outbound2};
-
+        final ZuulFilter[] filters = new ZuulFilter[] { outbound1, outbound2 };
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);
-
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
-                filters,
-                notifier,
-                registry);
-
+        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
         runner.filter(response);
-
         verify(outbound1, times(1)).applyAsync(any());
         verify(outbound2, never()).applyAsync(any());
-
         verify(notifier).notify(eq(outbound1), eq(ExecutionStatus.SUCCESS));
         verify(notifier).notify(eq(outbound2), eq(ExecutionStatus.SKIPPED));
         verifyNoMoreInteractions(notifier);
     }
 
     class SimpleInboundFilter extends HttpInboundFilter {
+
         private final boolean shouldFilter;
 
         public SimpleInboundFilter(final boolean shouldFilter) {
@@ -143,6 +125,7 @@ class ZuulFilterChainRunnerTest {
     }
 
     class SimpleOutboundFilter extends HttpOutboundFilter {
+
         private final boolean shouldFilter;
 
         public SimpleOutboundFilter(final boolean shouldFilter) {
@@ -169,6 +152,4 @@ class ZuulFilterChainRunnerTest {
             return this.shouldFilter;
         }
     }
-
 }
-

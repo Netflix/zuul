@@ -35,24 +35,25 @@ import org.slf4j.LoggerFactory;
  * Date: 2/24/15
  * Time: 10:54 AM
  */
-public class HttpResponseMessageImpl implements HttpResponseMessage
-{
-    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
+public class HttpResponseMessageImpl implements HttpResponseMessage {
+
+    private static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty("zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
+
     private static final Logger LOG = LoggerFactory.getLogger(HttpResponseMessageImpl.class);
 
     private ZuulMessage message;
+
     private HttpRequestMessage outboundRequest;
+
     private int status;
+
     private HttpResponseInfo inboundResponse = null;
 
-    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status)
-    {
+    public HttpResponseMessageImpl(SessionContext context, HttpRequestMessage request, int status) {
         this(context, new Headers(), request, status);
     }
 
-    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status)
-    {
+    public HttpResponseMessageImpl(SessionContext context, Headers headers, HttpRequestMessage request, int status) {
         this.message = new ZuulMessageImpl(context, headers);
         this.outboundRequest = request;
         if (this.outboundRequest.getInboundRequest() == null) {
@@ -61,28 +62,24 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
         this.status = status;
     }
 
-    public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request)
-    {
+    public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request) {
         final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }
 
     @Override
-    public Headers getHeaders()
-    {
+    public Headers getHeaders() {
         return message.getHeaders();
     }
 
     @Override
-    public SessionContext getContext()
-    {
+    public SessionContext getContext() {
         return message.getContext();
     }
 
     @Override
-    public void setHeaders(Headers newHeaders)
-    {
+    public void setHeaders(Headers newHeaders) {
         message.setHeaders(newHeaders);
     }
 
@@ -170,6 +167,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     public int getStatus() {
         return status;
     }
+
     @Override
     public void setStatus(int status) {
         this.status = status;
@@ -181,8 +179,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public Cookies parseSetCookieHeader(String setCookieValue)
-    {
+    public Cookies parseSetCookieHeader(String setCookieValue) {
         Cookies cookies = new Cookies();
         for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
             cookies.add(cookie);
@@ -191,8 +188,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public boolean hasSetCookieWithName(String cookieName)
-    {
+    public boolean hasSetCookieWithName(String cookieName) {
         boolean has = false;
         for (String setCookieValue : getHeaders().getAll(HttpHeaderNames.SET_COOKIE)) {
             for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
@@ -206,31 +202,26 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public boolean removeExistingSetCookie(String cookieName)
-    {
+    public boolean removeExistingSetCookie(String cookieName) {
         String cookieNamePrefix = cookieName + "=";
         boolean dirty = false;
         Headers filtered = new Headers();
         for (Header hdr : getHeaders().entries()) {
             if (HttpHeaderNames.SET_COOKIE.equals(hdr.getName())) {
                 String value = hdr.getValue();
-
                 // Strip out this set-cookie as requested.
                 if (value.startsWith(cookieNamePrefix)) {
                     // Don't copy it.
                     dirty = true;
-                }
-                else {
+                } else {
                     // Copy all other headers.
                     filtered.add(hdr.getName(), hdr.getValue());
                 }
-            }
-            else {
+            } else {
                 // Copy all other headers.
                 filtered.add(hdr.getName(), hdr.getValue());
             }
         }
-
         if (dirty) {
             setHeaders(filtered);
         }
@@ -238,70 +229,50 @@ public class HttpResponseMessageImpl implements HttpResponseMessage
     }
 
     @Override
-    public void addSetCookie(Cookie cookie)
-    {
+    public void addSetCookie(Cookie cookie) {
         getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
-    public void setSetCookie(Cookie cookie)
-    {
+    public void setSetCookie(Cookie cookie) {
         getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
     }
 
     @Override
-    public ZuulMessage clone()
-    {
+    public ZuulMessage clone() {
         // TODO - not sure if should be cloning the outbound request object here or not....
-        HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
-                Headers.copyOf(getHeaders()),
-                getOutboundRequest(), getStatus());
+        HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(), Headers.copyOf(getHeaders()), getOutboundRequest(), getStatus());
         if (getInboundResponse() != null) {
             clone.inboundResponse = (HttpResponseInfo) getInboundResponse().clone();
         }
         return clone;
     }
 
-    protected HttpResponseInfo copyResponseInfo()
-    {
-        HttpResponseMessageImpl response =
-                new HttpResponseMessageImpl(
-                        getContext(),
-                        Headers.copyOf(getHeaders()),
-                        getOutboundRequest(),
-                        getStatus());
+    protected HttpResponseInfo copyResponseInfo() {
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(getContext(), Headers.copyOf(getHeaders()), getOutboundRequest(), getStatus());
         response.setHasBody(hasBody());
         return response;
     }
 
     @Override
     public String toString() {
-        return "HttpResponseMessageImpl{" +
-                "message=" + message +
-                ", outboundRequest=" + outboundRequest +
-                ", status=" + status +
-                ", inboundResponse=" + inboundResponse +
-                '}';
+        return "HttpResponseMessageImpl{" + "message=" + message + ", outboundRequest=" + outboundRequest + ", status=" + status + ", inboundResponse=" + inboundResponse + '}';
     }
 
     @Override
-    public void storeInboundResponse()
-    {
+    public void storeInboundResponse() {
         inboundResponse = copyResponseInfo();
     }
 
     @Override
-    public HttpResponseInfo getInboundResponse()
-    {
+    public HttpResponseInfo getInboundResponse() {
         return inboundResponse;
     }
 
     @Override
     public String getInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? getOutboundRequest() : getInboundRequest();
-        StringBuilder sb = new StringBuilder()
-            .append(req.getInfoForLogging())
-            .append(",proxy-status=").append(getStatus());
+        StringBuilder sb = new StringBuilder().append(req.getInfoForLogging()).append(",proxy-status=").append(getStatus());
         return sb.toString();
     }
 }

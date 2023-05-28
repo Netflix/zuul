@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
@@ -28,6 +26,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 
 class ConnTimerTest {
+
     @Test
     void record() {
         EmbeddedChannel chan = new EmbeddedChannel();
@@ -35,24 +34,17 @@ class ConnTimerTest {
         chan.attr(Server.CONN_DIMENSIONS).set(attrs);
         Registry registry = new DefaultRegistry();
         ConnTimer timer = ConnTimer.install(chan, registry, registry.createId("foo"));
-
         timer.record(1000L, "start");
         timer.record(2000L, "middle");
         Attrs.newKey("bar").put(attrs, "baz");
         timer.record(4000L, "end");
-
-        PercentileTimer meter1 =
-                PercentileTimer.get(registry, registry.createId("foo.start-middle"));
+        PercentileTimer meter1 = PercentileTimer.get(registry, registry.createId("foo.start-middle"));
         assertNotNull(meter1);
         assertEquals(1000L, meter1.totalTime());
-
-        PercentileTimer meter2 =
-                PercentileTimer.get(registry, registry.createId("foo.middle-end", "bar", "baz"));
+        PercentileTimer meter2 = PercentileTimer.get(registry, registry.createId("foo.middle-end", "bar", "baz"));
         assertNotNull(meter2);
         assertEquals(2000L, meter2.totalTime());
-
-        PercentileTimer meter3 =
-                PercentileTimer.get(registry, registry.createId("foo.start-end", "bar", "baz"));
+        PercentileTimer meter3 = PercentileTimer.get(registry, registry.createId("foo.start-end", "bar", "baz"));
         assertNotNull(meter3);
         assertEquals(3000L, meter3.totalTime());
     }

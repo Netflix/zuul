@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 import com.netflix.zuul.message.ZuulMessage;
@@ -30,8 +29,7 @@ import io.netty.util.ResourceLeakDetector;
  */
 public class ByteBufUtil {
 
-    private static final boolean isAdvancedLeakDetection =
-            ResourceLeakDetector.getLevel().ordinal() >= ResourceLeakDetector.Level.ADVANCED.ordinal();
+    private static final boolean isAdvancedLeakDetection = ResourceLeakDetector.getLevel().ordinal() >= ResourceLeakDetector.Level.ADVANCED.ordinal();
 
     public static void touch(ReferenceCounted byteBuf, String hint, ZuulMessage msg) {
         if (isAdvancedLeakDetection) {

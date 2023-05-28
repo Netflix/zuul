@@ -13,11 +13,9 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.guice;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.google.inject.Inject;
 import com.netflix.zuul.BaseInjectionIntegTest;
 import org.junit.jupiter.api.Test;
@@ -30,15 +28,12 @@ class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
     @Test
     void ctorInjection() throws Exception {
         TestGuiceConstructorFilter filter = (TestGuiceConstructorFilter) filterFactory.newInstance(TestGuiceConstructorFilter.class);
-
         assertNotNull(filter.injector);
     }
 
     @Test
     void fieldInjection() throws Exception {
         TestGuiceFieldFilter filter = (TestGuiceFieldFilter) filterFactory.newInstance(TestGuiceFieldFilter.class);
-
         assertNotNull(filter.injector);
     }
-
 }

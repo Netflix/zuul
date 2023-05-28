@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats.status;
 
 /**
@@ -23,8 +22,8 @@ package com.netflix.zuul.stats.status;
  * Date: December 20, 2017
  */
 public enum ZuulStatusCategoryGroup implements StatusCategoryGroup {
-    SUCCESS(1),
-    FAILURE(2);
+
+    SUCCESS(1), FAILURE(2);
 
     private final int id;
 

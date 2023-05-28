@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
-
 import static com.netflix.zuul.filters.FilterSyncType.SYNC;
 import static com.netflix.zuul.filters.FilterType.ENDPOINT;
 

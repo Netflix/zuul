@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterRegistry;
@@ -35,12 +34,17 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 public final class DynamicFilterLoader implements FilterLoader {
+
     private static final Logger LOG = LoggerFactory.getLogger(DynamicFilterLoader.class);
 
     private final ConcurrentMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
+
     private final ConcurrentMap<String, String> filterClassCode = new ConcurrentHashMap<>();
+
     private final ConcurrentMap<String, String> filterCheck = new ConcurrentHashMap<>();
+
     private final ConcurrentMap<FilterType, SortedSet<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
+
     private final ConcurrentMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private final FilterRegistry filterRegistry;
@@ -50,10 +54,7 @@ public final class DynamicFilterLoader implements FilterLoader {
     private final FilterFactory filterFactory;
 
     @Inject
-    public DynamicFilterLoader(
-            FilterRegistry filterRegistry,
-            DynamicCodeCompiler compiler,
-            FilterFactory filterFactory) {
+    public DynamicFilterLoader(FilterRegistry filterRegistry, DynamicCodeCompiler compiler, FilterFactory filterFactory) {
         this.filterRegistry = filterRegistry;
         this.compiler = compiler;
         this.filterFactory = filterFactory;
@@ -112,8 +113,7 @@ public final class DynamicFilterLoader implements FilterLoader {
         }
         try {
             String sName = file.getAbsolutePath();
-            if (filterClassLastModified.get(sName) != null
-                    && (file.lastModified() != filterClassLastModified.get(sName))) {
+            if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
                 LOG.debug("reloading filter {}", sName);
                 filterRegistry.remove(sName);
             }
@@ -130,7 +130,6 @@ public final class DynamicFilterLoader implements FilterLoader {
             LOG.error("Error loading filter! Continuing. file={}", file, e);
             return false;
         }
-
         return false;
     }
 
@@ -141,12 +140,11 @@ public final class DynamicFilterLoader implements FilterLoader {
         }
         SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filter.filterType());
         if (set != null) {
-            hashFiltersByType.remove(filter.filterType()); //rebuild this list
+            //rebuild this list
+            hashFiltersByType.remove(filter.filterType());
         }
-
         String nameAndType = filter.filterType() + ":" + filter.filterName();
         filtersByNameAndType.put(nameAndType, filter);
-
         filterRegistry.put(filterName, filter);
         filterClassLastModified.put(filterName, lastModified);
     }
@@ -186,16 +184,14 @@ public final class DynamicFilterLoader implements FilterLoader {
     @Override
     public SortedSet<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType) {
         SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filterType);
-        if (set != null) return set;
-
+        if (set != null)
+            return set;
         set = new TreeSet<>(FILTER_COMPARATOR);
-
         for (ZuulFilter<?, ?> filter : filterRegistry.getAllFilters()) {
             if (filter.filterType().equals(filterType)) {
                 set.add(filter);
             }
         }
-
         hashFiltersByType.putIfAbsent(filterType, set);
         return Collections.unmodifiableSortedSet(set);
     }
@@ -205,7 +201,6 @@ public final class DynamicFilterLoader implements FilterLoader {
         if (name == null || type == null) {
             return null;
         }
-
         String nameAndType = type + ":" + name;
         return filtersByNameAndType.get(nameAndType);
     }

@@ -13,20 +13,19 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.stats.status.StatusCategory;
 import java.util.Objects;
 
-public abstract class OriginThrottledException extends ZuulException
-{
+public abstract class OriginThrottledException extends ZuulException {
+
     private final OriginName originName;
+
     private final StatusCategory statusCategory;
 
-    public OriginThrottledException(OriginName originName, String msg, StatusCategory statusCategory)
-    {
+    public OriginThrottledException(OriginName originName, String msg, StatusCategory statusCategory) {
         // Ensure this exception does not fill its stacktrace as causes too much load.
         super(msg + ", origin=" + originName, true);
         this.originName = Objects.requireNonNull(originName, "originName");
@@ -38,8 +37,7 @@ public abstract class OriginThrottledException extends ZuulException
         return originName;
     }
 
-    public StatusCategory getStatusCategory()
-    {
+    public StatusCategory getStatusCategory() {
         return statusCategory;
     }
 }

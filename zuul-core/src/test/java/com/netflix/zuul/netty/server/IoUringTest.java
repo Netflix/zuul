@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -32,13 +30,11 @@ import io.netty.incubator.channel.uring.IOUring;
 import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
-
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -58,7 +54,9 @@ import static org.awaitility.Awaitility.await;
  */
 @Disabled
 class IoUringTest {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
+
     private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
 
     @BeforeEach
@@ -72,7 +70,6 @@ class IoUringTest {
     void testIoUringServer() throws Exception {
         LOGGER.info("IOUring.isAvailable: {}", IOUring.isAvailable());
         LOGGER.info("IS_OS_LINUX: {}", IS_OS_LINUX);
-
         if (IS_OS_LINUX) {
             exerciseIoUringServer();
         }
@@ -80,14 +77,11 @@ class IoUringTest {
 
     private void exerciseIoUringServer() throws Exception {
         IOUring.ensureAvailability();
-
         ServerStatusManager ssm = mock(ServerStatusManager.class);
-
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
-
         final List<IOUringSocketChannel> ioUringChannels = Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
-
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
+
             @Override
             protected void initChannel(Channel ch) {
                 LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
@@ -98,15 +92,12 @@ class IoUringTest {
         };
         initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // The port to channel map keys on the port, post bind. This should be unique even if InetAddress is same
-        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress( 0)), init);
-
-        ClientConnectionsShutdown ccs =
-                new ClientConnectionsShutdown(
-                        new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
-                        GlobalEventExecutor.INSTANCE,
-                                /* discoveryClient= */ null);
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(0)), init);
+        ClientConnectionsShutdown ccs = new ClientConnectionsShutdown(new DefaultChannelGroup(GlobalEventExecutor.INSTANCE), GlobalEventExecutor.INSTANCE, /* discoveryClient= */
+        null);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
+
             @Override
             public int eventLoopCount() {
                 return 1;
@@ -119,25 +110,17 @@ class IoUringTest {
         };
         Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
         s.start();
-
         List<NamedSocketAddress> addresses = s.getListeningAddresses();
         assertEquals(2, addresses.size());
-
         addresses.forEach(address -> {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
             InetSocketAddress inetAddress = ((InetSocketAddress) address.unwrap());
             assertNotEquals(0, inetAddress.getPort());
             checkConnection(inetAddress.getPort());
         });
-
-        await()
-                .atMost(1, SECONDS)
-                .until(() -> ioUringChannels.size() == 2);
-
+        await().atMost(1, SECONDS).until(() -> ioUringChannels.size() == 2);
         s.stop();
-
         assertEquals(2, ioUringChannels.size());
-
         for (IOUringSocketChannel ch : ioUringChannels) {
             assertTrue(ch.isShutdown(), "isShutdown");
         }
@@ -160,8 +143,7 @@ class IoUringTest {
         } finally {
             try {
                 sock.close();
-            }
-            catch (Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
     }

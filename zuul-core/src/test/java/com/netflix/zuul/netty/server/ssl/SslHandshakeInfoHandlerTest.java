@@ -13,13 +13,11 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.ssl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.netflix.spectator.api.NoopRegistry;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,13 +44,11 @@ class SslHandshakeInfoHandlerTest {
         EmbeddedChannel clientChannel = new EmbeddedChannel();
         SSLEngine clientEngine = SslContextBuilder.forClient().build().newEngine(clientChannel.alloc());
         clientChannel.pipeline().addLast(new SslHandler(clientEngine));
-
         EmbeddedChannel serverChannel = new EmbeddedChannel();
         SelfSignedCertificate cert = new SelfSignedCertificate("localhorse");
-        SSLEngine serverEngine = SslContextBuilder.forServer(cert.key(), cert.cert()).build()
-                .newEngine(serverChannel.alloc());
-
+        SSLEngine serverEngine = SslContextBuilder.forServer(cert.key(), cert.cert()).build().newEngine(serverChannel.alloc());
         serverChannel.pipeline().addLast(new ChannelOutboundHandlerAdapter() {
+
             @Override
             public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
                 // Simulate an early closure form the client.
@@ -62,13 +58,10 @@ class SslHandshakeInfoHandlerTest {
         });
         serverChannel.pipeline().addLast(new SslHandler(serverEngine));
         serverChannel.pipeline().addLast(new SslHandshakeInfoHandler());
-
         Object clientHello = clientChannel.readOutbound();
         assertNotNull(clientHello);
         ReferenceCountUtil.retain(clientHello);
-
         serverChannel.writeInbound(clientHello);
-
         // Assert that the handler removes itself from the pipeline, since it was torn down.
         assertNull(serverChannel.pipeline().context(SslHandshakeInfoHandler.class));
     }
@@ -76,16 +69,11 @@ class SslHandshakeInfoHandlerTest {
     @Test
     void getFailureCauses() {
         SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler();
-
         RuntimeException noMessage = new RuntimeException();
         assertEquals(noMessage.toString(), handler.getFailureCause(noMessage));
-
         RuntimeException withMessage = new RuntimeException("some unexpected message");
         assertEquals("some unexpected message", handler.getFailureCause(withMessage));
-
-        RuntimeException openSslMessage = new RuntimeException(
-                "javax.net.ssl.SSLHandshakeException: error:1000008e:SSL routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
-
+        RuntimeException openSslMessage = new RuntimeException("javax.net.ssl.SSLHandshakeException: error:1000008e:SSL routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
         assertEquals("DIGEST_CHECK_FAILED", handler.getFailureCause(openSslMessage));
     }
 }

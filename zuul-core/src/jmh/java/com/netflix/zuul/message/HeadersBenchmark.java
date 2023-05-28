@@ -29,20 +29,22 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
-
 @State(Scope.Thread)
 public class HeadersBenchmark {
 
     @State(Scope.Thread)
     public static class AddHeaders {
-        @Param({"0", "1", "5", "10", "30"})
+
+        @Param({ "0", "1", "5", "10", "30" })
         public int count;
 
-        @Param({"10"})
+        @Param({ "10" })
         public int nameLength;
 
         private String[] stringNames;
+
         private HeaderName[] names;
+
         private String[] values;
 
         @Setup
@@ -84,18 +86,21 @@ public class HeadersBenchmark {
         }
     }
 
-
     @State(Scope.Thread)
     public static class GetSetHeaders {
-        @Param({"1", "5", "10", "30"})
+
+        @Param({ "1", "5", "10", "30" })
         public int count;
 
-        @Param({"10"})
+        @Param({ "10" })
         public int nameLength;
 
         private String[] stringNames;
+
         private HeaderName[] names;
+
         private String[] values;
+
         Headers headers;
 
         @Setup
@@ -152,9 +157,6 @@ public class HeadersBenchmark {
                 blackhole.consume(header);
             }
         }
-
-
-
     }
 
     @Benchmark
@@ -163,5 +165,4 @@ public class HeadersBenchmark {
     public Headers newHeaders() {
         return new Headers();
     }
-
 }

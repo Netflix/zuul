@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.http2;
 
 import io.netty.channel.ChannelHandler;
@@ -25,14 +24,17 @@ import io.netty.channel.ChannelHandlerContext;
  * Author: Arthur Gonigberg
  * Date: December 15, 2017
  */
-public class DummyChannelHandler implements ChannelHandler
-{
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {}
+public class DummyChannelHandler implements ChannelHandler {
 
     @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {}
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {}
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    }
 }

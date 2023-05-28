@@ -13,16 +13,13 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.origins;
-
 
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 
-public class OriginConcurrencyExceededException extends OriginThrottledException
-{
-    public OriginConcurrencyExceededException(OriginName originName)
-    {
+public class OriginConcurrencyExceededException extends OriginThrottledException {
+
+    public OriginConcurrencyExceededException(OriginName originName) {
         super(originName, "Max concurrent requests on origin exceeded", ZuulStatusCategory.FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY);
     }
 }

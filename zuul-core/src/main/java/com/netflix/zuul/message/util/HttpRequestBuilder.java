@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.message.util;
 
 import com.netflix.zuul.context.SessionContext;
@@ -26,31 +25,42 @@ import io.netty.handler.codec.http.HttpVersion;
 import java.util.Objects;
 
 /**
- * Builder for a zuul http request. *exclusively* for use in unit tests.
+ *  Builder for a zuul http request. *exclusively* for use in unit tests.
  *
- * For default values initialized in the constructor:
- * <pre>
- * {@code new HttpRequestBuilder(context).withDefaults();}
- *</pre>
- *
- * For overrides :
- * <pre>
- * {@code new HttpRequestBuilder(context).withHeaders(httpHeaders).withQueryParams(requestParams).build();}
+ *  For default values initialized in the constructor:
+ *  <pre>
+ *  {@code new HttpRequestBuilder(context).withDefaults();}
  * </pre>
- * @author Argha C
- * @since 5/11/21
+ *
+ *  For overrides :
+ *  <pre>
+ *  {@code new HttpRequestBuilder(context).withHeaders(httpHeaders).withQueryParams(requestParams).build();}
+ *  </pre>
+ *  @author Argha C
+ *  @since 5/11/21
  */
 public final class HttpRequestBuilder {
+
     private SessionContext sessionContext;
+
     private String protocol;
+
     private String method;
+
     private String path;
+
     private HttpQueryParams queryParams;
+
     private Headers headers;
+
     private String clientIp;
+
     private String scheme;
+
     private int port;
+
     private String serverName;
+
     private boolean isBuilt;
 
     public HttpRequestBuilder(SessionContext context) {
@@ -86,7 +96,7 @@ public final class HttpRequestBuilder {
     }
 
     public HttpRequestBuilder withQueryParams(HttpQueryParams requestParams) {
-        this.queryParams =  Objects.requireNonNull(requestParams);
+        this.queryParams = Objects.requireNonNull(requestParams);
         return this;
     }
 
@@ -110,7 +120,6 @@ public final class HttpRequestBuilder {
             throw new IllegalStateException("Builder must only be invoked once!");
         }
         isBuilt = true;
-        return new HttpRequestMessageImpl(sessionContext, protocol, method, path, queryParams, headers, clientIp, scheme, port,
-                serverName);
+        return new HttpRequestMessageImpl(sessionContext, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName);
     }
 }

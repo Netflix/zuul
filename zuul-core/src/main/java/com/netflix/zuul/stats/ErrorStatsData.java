@@ -19,7 +19,6 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -30,9 +29,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * Time: 4:16 PM
  */
 public class ErrorStatsData implements NamedCount {
+
     private final String id;
 
     private final String errorCause;
+
     private final AtomicLong count = new AtomicLong();
 
     /**
@@ -41,27 +42,23 @@ public class ErrorStatsData implements NamedCount {
      * @param cause
      */
     public ErrorStatsData(String route, String cause) {
-        if(null == route || "".equals(route)){
+        if (null == route || "".equals(route)) {
             route = "UNKNOWN";
         }
         id = route + "_" + cause;
-
         this.errorCause = cause;
         Registry registry = Spectator.globalRegistry();
-        PolledMeter.using(registry)
-                .withId(registry.createId("zuul.ErrorStatsData", "ID", id))
-                .monitorValue(this, ErrorStatsData::getCount);
+        PolledMeter.using(registry).withId(registry.createId("zuul.ErrorStatsData", "ID", id)).monitorValue(this, ErrorStatsData::getCount);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         ErrorStatsData that = (ErrorStatsData) o;
-
         return !(errorCause != null ? !errorCause.equals(that.errorCause) : that.errorCause != null);
-
     }
 
     @Override

@@ -13,22 +13,17 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.ssl;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Arrays;
 import java.util.List;
-
 import com.netflix.spectator.api.DefaultRegistry;
 import io.netty.handler.ssl.OpenSslClientContext;
 import io.netty.handler.ssl.SslContext;
 import org.junit.jupiter.api.Test;
-
 import javax.net.ssl.SSLSessionContext;
-
 
 /**
  * Tests for {@link ClientSslContextFactory}.
@@ -38,14 +33,12 @@ class ClientSslContextFactoryTest {
     @Test
     void enableTls13() {
         String[] protos = ClientSslContextFactory.maybeAddTls13(true, "TLSv1.2");
-
         assertEquals(Arrays.asList("TLSv1.3", "TLSv1.2"), Arrays.asList(protos));
     }
 
     @Test
     void disableTls13() {
         String[] protos = ClientSslContextFactory.maybeAddTls13(false, "TLSv1.2");
-
         assertEquals(Arrays.asList("TLSv1.2"), Arrays.asList(protos));
     }
 

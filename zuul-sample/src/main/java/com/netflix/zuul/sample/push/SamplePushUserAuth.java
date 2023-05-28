@@ -24,6 +24,7 @@ import com.netflix.zuul.netty.server.push.PushUserAuth;
 public class SamplePushUserAuth implements PushUserAuth {
 
     private String customerId;
+
     private int statusCode;
 
     private SamplePushUserAuth(String customerId, int statusCode) {

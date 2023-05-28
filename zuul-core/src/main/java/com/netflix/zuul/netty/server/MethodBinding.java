@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server;
 
 import java.util.concurrent.Callable;
@@ -26,10 +25,13 @@ import java.util.function.BiConsumer;
  * Date: November 29, 2017
  */
 public class MethodBinding<T> {
+
     private final BiConsumer<Runnable, T> boundMethod;
+
     private final Callable<T> bindingContextExtractor;
 
-    public static MethodBinding<?> NO_OP_BINDING = new MethodBinding<>((r, t) -> {}, () -> null);
+    public static MethodBinding<?> NO_OP_BINDING = new MethodBinding<>((r, t) -> {
+    }, () -> null);
 
     public MethodBinding(BiConsumer<Runnable, T> boundMethod, Callable<T> bindingContextExtractor) {
         this.boundMethod = boundMethod;
@@ -40,8 +42,7 @@ public class MethodBinding<T> {
         T bindingContext = bindingContextExtractor.call();
         if (bindingContext == null) {
             method.run();
-        }
-        else {
+        } else {
             boundMethod.accept(method, bindingContext);
         }
     }

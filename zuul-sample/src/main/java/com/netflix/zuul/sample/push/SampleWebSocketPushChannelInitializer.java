@@ -30,10 +30,10 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
 public class SampleWebSocketPushChannelInitializer extends PushChannelInitializer {
 
     private final PushConnectionRegistry pushConnectionRegistry;
+
     private final PushAuthHandler pushAuthHandler;
 
-    public SampleWebSocketPushChannelInitializer(
-            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+    public SampleWebSocketPushChannelInitializer(String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
         pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
         pushAuthHandler = new SamplePushAuthHandler(PushProtocol.WEBSOCKET.getPath());

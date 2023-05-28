@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.metrics;
 
 import io.netty.channel.ChannelHandler;
@@ -27,65 +26,56 @@ import com.netflix.netty.common.HttpLifecycleChannelHandler;
  * Date: 2/6/17
  * Time: 2:21 PM
  */
+public class PerEventLoopMetricsChannelHandler {
 
-public class PerEventLoopMetricsChannelHandler
-{
     private static final AttributeKey<Object> ATTR_REQ_INFLIGHT = AttributeKey.newInstance("_eventloop_metrics_inflight");
+
     private static final Object INFLIGHT = "eventloop_is_inflight";
 
     private final EventLoopGroupMetrics groupMetrics;
 
-    public PerEventLoopMetricsChannelHandler(EventLoopGroupMetrics groupMetrics)
-    {
+    public PerEventLoopMetricsChannelHandler(EventLoopGroupMetrics groupMetrics) {
         this.groupMetrics = groupMetrics;
     }
 
     @ChannelHandler.Sharable
-    public class Connections extends ChannelInboundHandlerAdapter
-    {
+    public class Connections extends ChannelInboundHandlerAdapter {
+
         @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
             groupMetrics.getForCurrentEventLoop().incrementCurrentConnections();
             super.channelActive(ctx);
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             try {
                 super.channelInactive(ctx);
-            }
-            finally {
+            } finally {
                 groupMetrics.getForCurrentEventLoop().decrementCurrentConnections();
             }
         }
     }
 
     @ChannelHandler.Sharable
-    public class HttpRequests extends ChannelInboundHandlerAdapter
-    {
+    public class HttpRequests extends ChannelInboundHandlerAdapter {
+
         @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-        {
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
                 incrementCurrentRequestsInFlight(ctx);
-            }
-            else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+            } else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
                 decrementCurrentRequestsIfOneInflight(ctx);
             }
-
             super.userEventTriggered(ctx, evt);
         }
 
-        private void incrementCurrentRequestsInFlight(ChannelHandlerContext ctx)
-        {
+        private void incrementCurrentRequestsInFlight(ChannelHandlerContext ctx) {
             groupMetrics.getForCurrentEventLoop().incrementCurrentRequests();
             ctx.channel().attr(ATTR_REQ_INFLIGHT).set(INFLIGHT);
         }
 
-        private void decrementCurrentRequestsIfOneInflight(ChannelHandlerContext ctx)
-        {
+        private void decrementCurrentRequestsIfOneInflight(ChannelHandlerContext ctx) {
             if (ctx.channel().attr(ATTR_REQ_INFLIGHT).getAndSet(null) != null) {
                 groupMetrics.getForCurrentEventLoop().decrementCurrentRequests();
             }

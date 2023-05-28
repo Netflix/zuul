@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.filters.processor;
 
 import com.netflix.zuul.Filter;
@@ -26,23 +25,31 @@ import com.netflix.zuul.filters.FilterType;
 final class TopLevelFilter extends TestFilter {
 
     @Filter(order = 21, type = FilterType.INBOUND)
-    static final class StaticSubclassFilter extends TestFilter {}
+    static final class StaticSubclassFilter extends TestFilter {
+    }
 
-    @SuppressWarnings("unused") // This should be ignored by the processor, since it is abstract
+    // This should be ignored by the processor, since it is abstract
+    @SuppressWarnings("unused")
     @Filter(order = 22, type = FilterType.INBOUND)
-    static abstract class AbstractSubclassFilter extends TestFilter {}
+    static abstract class AbstractSubclassFilter extends TestFilter {
+    }
 
-    @SuppressWarnings("InnerClassMayBeStatic") // The purpose of this test
+    // The purpose of this test
+    @SuppressWarnings("InnerClassMayBeStatic")
     @Filter(order = 23, type = FilterType.INBOUND)
-    final class SubclassFilter extends TestFilter {}
+    final class SubclassFilter extends TestFilter {
+    }
 
     static {
         // This should be ignored by the processor, since it is private.
         // See https://bugs.openjdk.java.net/browse/JDK-6587158
         @SuppressWarnings("unused")
         @Filter(order = 23, type = FilterType.INBOUND)
-        final class MethodClassFilter {}
+        final class MethodClassFilter {
+        }
     }
 }
+
 @Filter(order = 24, type = FilterType.INBOUND)
-final class OuterClassFilter extends TestFilter {}
+final class OuterClassFilter extends TestFilter {
+}

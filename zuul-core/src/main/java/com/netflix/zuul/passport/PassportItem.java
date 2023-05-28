@@ -13,33 +13,29 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.passport;
 
-public class PassportItem
-{
+public class PassportItem {
+
     private final long time;
+
     private final PassportState state;
 
-    public PassportItem(PassportState state, long time)
-    {
+    public PassportItem(PassportState state, long time) {
         this.time = time;
         this.state = state;
     }
 
-    public long getTime()
-    {
+    public long getTime() {
         return time;
     }
 
-    public PassportState getState()
-    {
+    public PassportState getState() {
         return state;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return time + "=" + state;
     }
 }

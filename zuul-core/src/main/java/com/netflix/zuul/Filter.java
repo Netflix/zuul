@@ -13,14 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -31,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Identifies a {@link ZuulFilter}.
  */
-@Target({TYPE})
+@Target({ TYPE })
 @Retention(RUNTIME)
 @Documented
 public @interface Filter {
@@ -56,10 +54,11 @@ public @interface Filter {
      */
     FilterSyncType sync() default FilterSyncType.SYNC;
 
-    @Target({PACKAGE})
+    @Target({ PACKAGE })
     @Retention(CLASS)
     @Documented
     @interface FilterPackageName {
+
         String value();
     }
 
@@ -70,10 +69,11 @@ public @interface Filter {
      * this annotation should be used on homogeneous filter types.  Additionally, this should not be applied to endpoint
      * filters.
      */
-    @Target({TYPE})
+    @Target({ TYPE })
     @Retention(RUNTIME)
     @Documented
     @interface ApplyAfter {
+
         Class<? extends ZuulFilter<?, ?>>[] value();
     }
 
@@ -89,10 +89,11 @@ public @interface Filter {
      *
      * @see ApplyAfter
      */
-    @Target({TYPE})
+    @Target({ TYPE })
     @Retention(RUNTIME)
     @Documented
     @interface ApplyBefore {
+
         Class<? extends ZuulFilter<?, ?>>[] value();
     }
 }

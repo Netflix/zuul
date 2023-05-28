@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.sample;
 
 import com.google.inject.AbstractModule;
@@ -52,42 +51,39 @@ import org.apache.commons.configuration.AbstractConfiguration;
  * Date: November 20, 2017
  */
 public class ZuulSampleModule extends AbstractModule {
+
     @Override
     protected void configure() {
         try {
-          ConfigurationManager.loadCascadedPropertiesFromResources("application");
+            ConfigurationManager.loadCascadedPropertiesFromResources("application");
         } catch (Exception ex) {
-          throw new RuntimeException("Error loading configuration: " + ex.getMessage(), ex);
+            throw new RuntimeException("Error loading configuration: " + ex.getMessage(), ex);
         }
-
         bind(AbstractConfiguration.class).toInstance(ConfigurationManager.getConfigInstance());
         bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
         bind(FilenameFilter.class).to(GroovyFileFilter.class);
-
         install(new EurekaModule());
-
         // sample specific bindings
         bind(BaseServerStartup.class).to(SampleServerStartup.class);
-
         // use provided basic netty origin manager
         bind(OriginManager.class).to(BasicNettyOriginManager.class);
-
         // zuul filter loading
         install(new ZuulFiltersModule());
         bind(FilterLoader.class).to(DynamicFilterLoader.class);
         bind(FilterRegistry.class).to(MutableFilterRegistry.class);
         bind(FilterFileManager.class).asEagerSingleton();
-
-
         // general server bindings
-        bind(ServerStatusManager.class); // health/discovery status
-        bind(SessionContextDecorator.class).to(ZuulSessionContextDecorator.class); // decorate new sessions when requests come in
-        bind(Registry.class).to(DefaultRegistry.class); // atlas metrics registry
-        bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class); // metrics post-request completion
-        bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class); // timings publisher
-
+        // health/discovery status
+        bind(ServerStatusManager.class);
+        // decorate new sessions when requests come in
+        bind(SessionContextDecorator.class).to(ZuulSessionContextDecorator.class);
+        // atlas metrics registry
+        bind(Registry.class).to(DefaultRegistry.class);
+        // metrics post-request completion
+        bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class);
+        // timings publisher
+        bind(RequestMetricsPublisher.class).to(BasicRequestMetricsPublisher.class);
         // access logger, including request ID generator
-        bind(AccessLogPublisher.class).toInstance(new AccessLogPublisher("ACCESS",
-                (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel).getContext().getUUID()));
+        bind(AccessLogPublisher.class).toInstance(new AccessLogPublisher("ACCESS", (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel).getContext().getUUID()));
     }
 }

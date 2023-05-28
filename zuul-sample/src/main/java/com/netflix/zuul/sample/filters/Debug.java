@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.sample.filters;
 
 import com.netflix.zuul.Filter;
@@ -30,6 +29,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  */
 @Filter(order = 20)
 public class Debug extends HttpInboundSyncFilter {
+
     @Override
     public int filterOrder() {
         return 20;
@@ -44,7 +44,6 @@ public class Debug extends HttpInboundSyncFilter {
     public HttpRequestMessage apply(HttpRequestMessage request) {
         request.getContext().setDebugRequest(true);
         request.getContext().setDebugRouting(true);
-
         return request;
     }
 }

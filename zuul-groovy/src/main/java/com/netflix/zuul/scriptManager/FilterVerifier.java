@@ -29,6 +29,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
  *         Time: 7:12 PM
  */
 public class FilterVerifier {
+
     @VisibleForTesting
     static final FilterVerifier INSTANCE = new FilterVerifier();
 
@@ -44,16 +45,12 @@ public class FilterVerifier {
      *
      * @return a FilterInfo object representing that code
      */
-    public FilterInfo verifyFilter(String sFilterCode)
-            throws CompilationFailedException, IllegalAccessException, InstantiationException {
+    public FilterInfo verifyFilter(String sFilterCode) throws CompilationFailedException, IllegalAccessException, InstantiationException {
         Class<?> groovyClass = compileGroovy(sFilterCode);
         Object instance = instantiateClass(groovyClass);
         checkZuulFilterInstance(instance);
         BaseFilter filter = (BaseFilter) instance;
-
-
         String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
-
         return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" + filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
     }
 
@@ -69,13 +66,9 @@ public class FilterVerifier {
 
     /**
      * compiles the Groovy source code
-     *
      */
-    public Class<?> compileGroovy(String sFilterCode)
-            throws CompilationFailedException {
+    public Class<?> compileGroovy(String sFilterCode) throws CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);
     }
 }
-
-

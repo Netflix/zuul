@@ -22,7 +22,6 @@ package com.netflix.zuul.discovery;
  * Wraps the result of a resolution attempt.
  * At this time, it doesn't encapsulate a collection of instances, but ideally should.
  */
-
 public interface ResolverResult {
 
     //TODO(argha-c): This should ideally model returning a collection of host/port pairs.

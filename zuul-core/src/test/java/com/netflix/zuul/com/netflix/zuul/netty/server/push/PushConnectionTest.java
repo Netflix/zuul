@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.com.netflix.zuul.netty.server.push;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.netflix.zuul.netty.server.push.PushConnection;
 import com.netflix.zuul.netty.server.push.PushProtocol;
 import org.junit.jupiter.api.Test;
@@ -80,6 +78,4 @@ class PushConnectionTest {
         assertFalse(conn.isRateLimited());
         assertTrue(conn.isRateLimited());
     }
-
-
 }

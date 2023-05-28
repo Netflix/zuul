@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import com.netflix.spectator.api.Registry;
@@ -24,7 +23,9 @@ import javax.inject.Inject;
  * Publishes a counter metric for each filter on each use.
  */
 public class BasicFilterUsageNotifier implements FilterUsageNotifier {
+
     private static final String METRIC_PREFIX = "zuul.filter-";
+
     private final Registry registry;
 
     @Inject
@@ -34,10 +35,6 @@ public class BasicFilterUsageNotifier implements FilterUsageNotifier {
 
     @Override
     public void notify(ZuulFilter<?, ?> filter, ExecutionStatus status) {
-        registry.counter(
-                "zuul.filter-" + filter.getClass().getSimpleName(),
-                "status", status.name(),
-                "filtertype", filter.filterType().toString()).increment();
+        registry.counter("zuul.filter-" + filter.getClass().getSimpleName(), "status", status.name(), "filtertype", filter.filterType().toString()).increment();
     }
 }
-

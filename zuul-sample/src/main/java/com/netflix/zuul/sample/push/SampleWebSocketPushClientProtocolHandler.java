@@ -34,35 +34,29 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
-            if (! isAuthenticated()) {
+            if (!isAuthenticated()) {
                 // Do not entertain ANY message from unauthenticated client
                 PushProtocol.WEBSOCKET.sendErrorAndClose(ctx, 1007, "Missing authentication");
-            }
-            else if (msg instanceof PingWebSocketFrame) {
+            } else if (msg instanceof PingWebSocketFrame) {
                 logger.debug("received ping frame");
                 ctx.writeAndFlush(new PongWebSocketFrame());
-            }
-            else if (msg instanceof CloseWebSocketFrame) {
+            } else if (msg instanceof CloseWebSocketFrame) {
                 logger.debug("received close frame");
                 ctx.close();
-            }
-            else if (msg instanceof TextWebSocketFrame) {
+            } else if (msg instanceof TextWebSocketFrame) {
                 final TextWebSocketFrame tf = (TextWebSocketFrame) msg;
                 final String text = tf.text();
                 logger.debug("received test frame: {}", text);
-                if (text != null && text.startsWith("ECHO ")) { //echo protocol
+                if (text != null && text.startsWith("ECHO ")) {
+                    //echo protocol
                     ctx.channel().writeAndFlush(tf.copy());
                 }
-            }
-            else if (msg instanceof BinaryWebSocketFrame) {
+            } else if (msg instanceof BinaryWebSocketFrame) {
                 logger.debug("received binary frame");
                 PushProtocol.WEBSOCKET.sendErrorAndClose(ctx, 1003, "Binary WebSocket frames not supported");
             }
-        }
-        finally {
+        } finally {
             ReferenceCountUtil.release(msg);
         }
     }
-
-
 }

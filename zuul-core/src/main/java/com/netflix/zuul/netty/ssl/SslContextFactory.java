@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.ssl;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -27,11 +25,15 @@ import java.util.List;
  * Date: 11/8/16
  * Time: 1:01 PM
  */
-public interface SslContextFactory
-{
+public interface SslContextFactory {
+
     SslContextBuilder createBuilderForServer();
+
     String[] getProtocols();
+
     List<String> getCiphers() throws NoSuchAlgorithmException;
+
     void enableSessionTickets(SslContext sslContext);
+
     void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId);
 }

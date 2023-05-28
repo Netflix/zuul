@@ -26,5 +26,6 @@ import com.netflix.zuul.filters.ZuulFilter;
  * Time: 9:55 PM
  */
 public interface FilterUsageNotifier {
+
     void notify(ZuulFilter<?, ?> filter, ExecutionStatus status);
 }

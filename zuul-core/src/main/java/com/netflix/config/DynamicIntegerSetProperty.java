@@ -13,13 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.config;
 
 import java.util.Set;
 
-public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer>
-{
+public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer> {
+
     public DynamicIntegerSetProperty(String propName, String defaultValue) {
         super(propName, defaultValue);
     }

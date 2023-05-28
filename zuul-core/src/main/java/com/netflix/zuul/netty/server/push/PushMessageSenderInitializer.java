@@ -42,5 +42,4 @@ public abstract class PushMessageSenderInitializer extends ChannelInitializer<Ch
     }
 
     protected abstract PushMessageSender getPushMessageSender(PushConnectionRegistry pushConnectionRegistry);
-
 }

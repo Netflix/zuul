@@ -24,7 +24,8 @@ package com.netflix.zuul.stats.monitoring;
  */
 public class MonitorRegistry {
 
-    private static  final MonitorRegistry instance = new MonitorRegistry();
+    private static final MonitorRegistry instance = new MonitorRegistry();
+
     private Monitor publisher;
 
     /**
@@ -35,13 +36,12 @@ public class MonitorRegistry {
         this.publisher = publisher;
     }
 
-
-
     public static MonitorRegistry getInstance() {
         return instance;
     }
 
     public void registerObject(NamedCount monitorObj) {
-      if(publisher != null) publisher.register(monitorObj);
+        if (publisher != null)
+            publisher.register(monitorObj);
     }
 }

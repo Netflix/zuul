@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.netty.server.http2;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -37,7 +35,6 @@ import org.junit.jupiter.api.Test;
  * @author Argha C
  * @since November 18, 2020
  */
-
 class Http2OrHttpHandlerTest {
 
     @Test
@@ -46,29 +43,17 @@ class Http2OrHttpHandlerTest {
         final NoopRegistry registry = new NoopRegistry();
         final ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
-
         Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
-        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(100, 100,
-                20 * 60 * 1000);
-        Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry, "server",
-                "http2-443");
-        final Http2OrHttpHandler http2OrHttpHandler = new Http2OrHttpHandler(
-                new Http2StreamInitializer(channel, (x) -> {
-                }, http2MetricsChannelHandlers, connectionCloseHandler, connectionExpiryHandler),
-                channelConfig,
-                cp -> {
-                });
-
+        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(100, 100, 20 * 60 * 1000);
+        Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry, "server", "http2-443");
+        final Http2OrHttpHandler http2OrHttpHandler = new Http2OrHttpHandler(new Http2StreamInitializer(channel, (x) -> {
+        }, http2MetricsChannelHandlers, connectionCloseHandler, connectionExpiryHandler), channelConfig, cp -> {
+        });
         channel.pipeline().addLast("codec_placeholder", new DummyChannelHandler());
         channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
-
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
-
-        assertThat(channel.pipeline().get(Http2FrameCodec.class.getSimpleName() + "#0"))
-                .isInstanceOf(Http2FrameCodec.class);
-        assertThat(channel.pipeline().get(BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME))
-                .isInstanceOf(Http2MultiplexHandler.class);
+        assertThat(channel.pipeline().get(Http2FrameCodec.class.getSimpleName() + "#0")).isInstanceOf(Http2FrameCodec.class);
+        assertThat(channel.pipeline().get(BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME)).isInstanceOf(Http2MultiplexHandler.class);
         assertEquals("HTTP/2", channel.attr(Http2OrHttpHandler.PROTOCOL_NAME).get());
     }
-
 }

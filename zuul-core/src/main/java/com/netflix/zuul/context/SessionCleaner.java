@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.context;
 
 import rx.Observable;
@@ -23,7 +22,7 @@ import rx.Observable;
  * Date: 8/3/15
  * Time: 12:30 PM
  */
-public interface SessionCleaner
-{
+public interface SessionCleaner {
+
     Observable<Void> cleanup(SessionContext context);
 }

@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 /**
@@ -21,6 +20,5 @@ package com.netflix.netty.common;
  * Date: 5/24/16
  * Time: 1:04 PM
  */
-public class RequestResponseCompleteEvent
-{
+public class RequestResponseCompleteEvent {
 }

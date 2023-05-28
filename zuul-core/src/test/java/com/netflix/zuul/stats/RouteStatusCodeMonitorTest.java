@@ -13,18 +13,17 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.stats;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link RouteStatusCodeMonitor}.
  */
 class RouteStatusCodeMonitorTest {
+
     @Test
     void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
@@ -41,7 +40,6 @@ class RouteStatusCodeMonitorTest {
         RouteStatusCodeMonitor sd1 = new RouteStatusCodeMonitor("test", 200);
         RouteStatusCodeMonitor sd2 = new RouteStatusCodeMonitor("test1", 200);
         RouteStatusCodeMonitor sd3 = new RouteStatusCodeMonitor("test", 201);
-
         assertEquals(sd, sd1);
         assertEquals(sd1, sd);
         assertEquals(sd, sd);

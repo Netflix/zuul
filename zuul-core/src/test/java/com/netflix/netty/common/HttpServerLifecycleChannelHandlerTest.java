@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT;
@@ -54,47 +53,37 @@ class HttpServerLifecycleChannelHandlerTest {
 
     @Test
     void completionEventReasonIsUpdatedOnPipelineReject() {
-
         final EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
         final AssertReasonHandler reasonHandler = new AssertReasonHandler();
         channel.pipeline().addLast(reasonHandler);
-
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
         // emulate pipeline rejection
         channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
         // Fire close
         channel.pipeline().close();
-
         Truth.assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.PIPELINE_REJECT);
     }
 
     @Test
     void completionEventReasonIsCloseByDefault() {
-
         final EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
         final AssertReasonHandler reasonHandler = new AssertReasonHandler();
         channel.pipeline().addLast(reasonHandler);
-
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
         // Fire close
         channel.pipeline().close();
-
         Truth.assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.CLOSE);
     }
 
     @Test
     void pipelineRejectReleasesIfNeeded() {
-
         EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleInboundChannelHandler());
-
         ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer();
         try {
             Truth.assertThat(buffer.refCnt()).isEqualTo(1);
-            FullHttpRequest httpRequest = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/whatever", buffer);
+            FullHttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/whatever", buffer);
             channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
             channel.writeInbound(httpRequest);
-
             Truth.assertThat(channel.attr(ATTR_HTTP_PIPELINE_REJECT).get()).isEqualTo(Boolean.TRUE);
             Truth.assertThat(buffer.refCnt()).isEqualTo(0);
         } finally {

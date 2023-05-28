@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.netty.common.proxyprotocol;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -30,7 +29,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AsciiString;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -38,44 +36,33 @@ import java.util.List;
  * Strip out any X-Forwarded-* headers from inbound http requests if connection is not trusted.
  */
 @ChannelHandler.Sharable
-public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdapter
-{
-    private static final DynamicStringListProperty XFF_BLACKLIST =
-            new DynamicStringListProperty("zuul.proxy.headers.host.blacklist", "");
+public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdapter {
+
+    private static final DynamicStringListProperty XFF_BLACKLIST = new DynamicStringListProperty("zuul.proxy.headers.host.blacklist", "");
 
     public enum AllowWhen {
-        ALWAYS,
-        MUTUAL_SSL_AUTH,
-        NEVER
+
+        ALWAYS, MUTUAL_SSL_AUTH, NEVER
     }
 
-    private static final Collection<AsciiString> HEADERS_TO_STRIP = Sets.newHashSet(
-            new AsciiString("x-forwarded-for"),
-            new AsciiString("x-forwarded-port"),
-            new AsciiString("x-forwarded-proto"),
-            new AsciiString("x-forwarded-proto-version"),
-            new AsciiString("x-real-ip")
-    );
+    private static final Collection<AsciiString> HEADERS_TO_STRIP = Sets.newHashSet(new AsciiString("x-forwarded-for"), new AsciiString("x-forwarded-port"), new AsciiString("x-forwarded-proto"), new AsciiString("x-forwarded-proto-version"), new AsciiString("x-real-ip"));
 
     private final AllowWhen allowWhen;
 
-    public StripUntrustedProxyHeadersHandler(AllowWhen allowWhen)
-    {
+    public StripUntrustedProxyHeadersHandler(AllowWhen allowWhen) {
         this.allowWhen = allowWhen;
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
-
-            switch (allowWhen) {
+            switch(allowWhen) {
                 case NEVER:
                     stripXFFHeaders(req);
                     break;
                 case MUTUAL_SSL_AUTH:
-                    if (! connectionIsUsingMutualSSLWithAuthEnforced(ctx.channel())) {
+                    if (!connectionIsUsingMutualSSLWithAuthEnforced(ctx.channel())) {
                         stripXFFHeaders(req);
                     } else {
                         checkBlacklist(req, XFF_BLACKLIST.get());
@@ -89,13 +76,11 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
                     stripXFFHeaders(req);
             }
         }
-
         super.channelRead(ctx, msg);
     }
 
     @VisibleForTesting
-    boolean connectionIsUsingMutualSSLWithAuthEnforced(Channel ch)
-    {
+    boolean connectionIsUsingMutualSSLWithAuthEnforced(Channel ch) {
         boolean is = false;
         SslHandshakeInfo sslHandshakeInfo = ch.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
         if (sslHandshakeInfo != null) {
@@ -107,8 +92,7 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
     }
 
     @VisibleForTesting
-    void stripXFFHeaders(HttpRequest req)
-    {
+    void stripXFFHeaders(HttpRequest req) {
         HttpHeaders headers = req.headers();
         for (AsciiString headerName : HEADERS_TO_STRIP) {
             headers.remove(headerName);

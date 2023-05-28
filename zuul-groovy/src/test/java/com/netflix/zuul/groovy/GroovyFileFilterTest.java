@@ -13,12 +13,10 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.groovy;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +27,8 @@ class GroovyFileFilterTest {
 
     @Test
     void testGroovyFileFilter() {
-
         GroovyFileFilter filter = new GroovyFileFilter();
-
-        assertFalse(filter.accept(new File("/"),"file.mikey"));
-        assertTrue(filter.accept(new File("/"),"file.groovy"));
+        assertFalse(filter.accept(new File("/"), "file.mikey"));
+        assertTrue(filter.accept(new File("/"), "file.groovy"));
     }
 }

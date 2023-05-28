@@ -13,7 +13,6 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul.discovery;
 
 import com.google.common.collect.ImmutableList;
@@ -30,10 +29,8 @@ import org.junit.jupiter.api.Test;
 
 class DynamicServerResolverTest {
 
-
     @Test
     void verifyListenerUpdates() {
-
         class CustomListener implements ResolverListener<DiscoveryResult> {
 
             private List<DiscoveryResult> resultSet = Lists.newArrayList();
@@ -47,40 +44,25 @@ class DynamicServerResolverTest {
                 return resultSet;
             }
         }
-
         final CustomListener listener = new CustomListener();
         final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), listener);
-
-        final InstanceInfo first = Builder.newBuilder()
-                .setAppName("zuul-discovery-1")
-                .setHostName("zuul-discovery-1")
-                .setIPAddr("100.10.10.1")
-                .setPort(443)
-                .build();
-        final InstanceInfo second = Builder.newBuilder()
-                .setAppName("zuul-discovery-2")
-                .setHostName("zuul-discovery-2")
-                .setIPAddr("100.10.10.2")
-                .setPort(443)
-                .build();
+        final InstanceInfo first = Builder.newBuilder().setAppName("zuul-discovery-1").setHostName("zuul-discovery-1").setIPAddr("100.10.10.1").setPort(443).build();
+        final InstanceInfo second = Builder.newBuilder().setAppName("zuul-discovery-2").setHostName("zuul-discovery-2").setIPAddr("100.10.10.2").setPort(443).build();
         final DiscoveryEnabledServer server1 = new DiscoveryEnabledServer(first, true);
         final DiscoveryEnabledServer server2 = new DiscoveryEnabledServer(second, true);
-
         resolver.onUpdate(ImmutableList.of(server1, server2), ImmutableList.of());
-
         Truth.assertThat(listener.updatedList()).containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
     }
 
     @Test
     void properSentinelValueWhenServersUnavailable() {
         final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), new ResolverListener<DiscoveryResult>() {
+
             @Override
             public void onChange(List<DiscoveryResult> removedSet) {
             }
         });
-
         final DiscoveryResult nonExistentServer = resolver.resolve(null);
-
         Truth.assertThat(nonExistentServer).isSameInstanceAs(DiscoveryResult.EMPTY);
         Truth.assertThat(nonExistentServer.getHost()).isEqualTo("undefined");
         Truth.assertThat(nonExistentServer.getPort()).isEqualTo(-1);

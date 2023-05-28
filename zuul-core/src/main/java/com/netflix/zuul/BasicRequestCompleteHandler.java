@@ -13,14 +13,12 @@
  *      See the License for the specific language governing permissions and
  *      limitations under the License.
  */
-
 package com.netflix.zuul;
 
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
-
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
@@ -29,17 +27,15 @@ import javax.inject.Inject;
  * Date: 6/4/15
  * Time: 4:26 PM
  */
-public class BasicRequestCompleteHandler implements RequestCompleteHandler
-{
+public class BasicRequestCompleteHandler implements RequestCompleteHandler {
+
     @Inject
     @Nullable
     private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
-    public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response)
-    {
+    public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response) {
         SessionContext context = inboundRequest.getContext();
-
         // Publish request-level metrics.
         if (requestMetricsPublisher != null) {
             requestMetricsPublisher.collectAndPublish(context);
