@@ -67,13 +67,8 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
             } finally {
                 if (msg instanceof LastHttpContent) {
                     boolean dontFireCompleteYet = false;
-                    if (msg instanceof HttpResponse) {
-                        // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to client
-                        // that it can continue sending the initial request body.
-                        // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd response.
-                        if (((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
-                            dontFireCompleteYet = true;
-                        }
+                    if (msg instanceof HttpResponse && ((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
+                        dontFireCompleteYet = true;
                     }
                     if (!dontFireCompleteYet)
                         if (promise.isDone()) {

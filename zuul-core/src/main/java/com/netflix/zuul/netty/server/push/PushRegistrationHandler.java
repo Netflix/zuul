@@ -79,17 +79,15 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void tearDown() {
-        if (!destroyed.getAndSet(true)) {
-            if (authEvent != null) {
-                // We should only remove the PushConnection entry from the registry if it's still this pushConnection.
-                String clientID = authEvent.getClientIdentity();
-                PushConnection savedPushConnection = pushConnectionRegistry.get(clientID);
-                if (savedPushConnection != null && savedPushConnection == pushConnection) {
-                    pushConnectionRegistry.remove(authEvent.getClientIdentity());
-                    logger.debug("Removed connection from registry for {}", authEvent);
-                }
-                logger.debug("Closing connection for {}", authEvent);
+        if (!destroyed.getAndSet(true) && authEvent != null) {
+            // We should only remove the PushConnection entry from the registry if it's still this pushConnection.
+            String clientID = authEvent.getClientIdentity();
+            PushConnection savedPushConnection = pushConnectionRegistry.get(clientID);
+            if (savedPushConnection != null && savedPushConnection == pushConnection) {
+                pushConnectionRegistry.remove(authEvent.getClientIdentity());
+                logger.debug("Removed connection from registry for {}", authEvent);
             }
+            logger.debug("Closing connection for {}", authEvent);
         }
         scheduledFutures.forEach(f -> f.cancel(false));
         scheduledFutures.clear();

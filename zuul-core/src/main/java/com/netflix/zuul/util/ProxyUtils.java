@@ -74,11 +74,8 @@ public class ProxyUtils {
             // If this proxy header already exists (possibly due to an upstream ELB or reverse proxy
             // setting it) then keep that value.
             String existingValue = headers.getFirst(name);
-            if (existingValue == null) {
-                // Otherwise set new value.
-                if (latestValue != null) {
-                    headers.set(name, latestValue);
-                }
+            if (existingValue == null && latestValue != null) {
+                headers.set(name, latestValue);
             }
         }
     }

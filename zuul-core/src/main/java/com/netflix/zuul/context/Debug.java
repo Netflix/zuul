@@ -127,10 +127,8 @@ public class Debug {
                 if (!(newValue instanceof ReferenceCounted) && !(oldValue instanceof ReferenceCounted)) {
                     if (oldValue == null && newValue != null) {
                         addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
-                    } else if (oldValue != null && newValue != null) {
-                        if (!(oldValue.equals(newValue))) {
-                            addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
-                        }
+                    } else if (oldValue != null && newValue != null && !(oldValue.equals(newValue))) {
+                        addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
                     }
                 }
             }
@@ -174,12 +172,10 @@ public class Debug {
             Debug.addRequestDebug(context, String.format("%s:: %s HDR: %s:%s", prefix, arrow, header.getKey(), header.getValue()));
         }
         // Capture the response body into a Byte array for later usage.
-        if (msg.hasBody()) {
-            if (!Debug.debugRequestHeadersOnly(context)) {
-                // Convert body to a String and add to debug log.
-                String body = msg.getBodyAsText();
-                Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
-            }
+        if (msg.hasBody() && !Debug.debugRequestHeadersOnly(context)) {
+            // Convert body to a String and add to debug log.
+            String body = msg.getBodyAsText();
+            Debug.addRequestDebug(context, String.format("%s:: %s BODY: %s", prefix, arrow, body));
         }
         if (obs == null)
             obs = Observable.just(Boolean.FALSE);

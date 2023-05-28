@@ -71,12 +71,8 @@ public class ClientConnectionsShutdown {
             if (event instanceof StatusChangeEvent) {
                 StatusChangeEvent sce = (StatusChangeEvent) event;
                 LOG.info("Received {}", sce);
-                if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN)) {
-                    // TODO - Also should stop accepting any new client connections now too?
-                    // Schedule to gracefully close all the client connections.
-                    if (ENABLED.get()) {
-                        executor.schedule(() -> gracefullyShutdownClientChannels(false), DELAY_AFTER_OUT_OF_SERVICE_MS.get(), TimeUnit.MILLISECONDS);
-                    }
+                if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN) && ENABLED.get()) {
+                    executor.schedule(() -> gracefullyShutdownClientChannels(false), DELAY_AFTER_OUT_OF_SERVICE_MS.get(), TimeUnit.MILLISECONDS);
                 }
             }
         });

@@ -101,10 +101,8 @@ public class HttpQueryParams implements Cloneable {
      */
     public String getFirst(String name) {
         List<String> values = delegate.get(name);
-        if (values != null) {
-            if (values.size() > 0) {
-                return values.get(0);
-            }
+        if (values != null && values.size() > 0) {
+            return values.get(0);
         }
         return null;
     }

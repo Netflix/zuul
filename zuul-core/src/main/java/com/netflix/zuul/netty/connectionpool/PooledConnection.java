@@ -182,10 +182,8 @@ public class PooledConnection {
         if (released) {
             return true;
         }
-        if (isActive()) {
-            if (connectionState != ConnectionState.WRITE_READY) {
-                closeWrtBusyConnCounter.increment();
-            }
+        if (isActive() && connectionState != ConnectionState.WRITE_READY) {
+            closeWrtBusyConnCounter.increment();
         }
         if (!isShouldClose() && connectionState != ConnectionState.WRITE_READY) {
             CurrentPassport passport = CurrentPassport.fromChannel(channel);

@@ -200,14 +200,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
             if (reason != SESSION_COMPLETE && zuulRequest != null) {
                 final SessionContext zuulCtx = zuulRequest.getContext();
-                if (clientRequest != null) {
-                    if (LOG.isInfoEnabled()) {
-                        // With http/2, the netty codec closes/completes the stream immediately after writing the lastcontent
-                        // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up state. But
-                        // thats ok, so don't log in that case.
-                        if (!"HTTP/2".equals(zuulRequest.getProtocol())) {
-                            LOG.debug("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(), zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
-                        }
+                if (clientRequest != null && LOG.isInfoEnabled()) {
+                    // With http/2, the netty codec closes/completes the stream immediately after writing the lastcontent
+                    // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up state. But
+                    // thats ok, so don't log in that case.
+                    if (!"HTTP/2".equals(zuulRequest.getProtocol())) {
+                        LOG.debug("Client {} request UUID {} to {} completed with reason = {}, {}", clientRequest.method(), zuulCtx.getUUID(), clientRequest.uri(), reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
                     }
                 }
                 if (zuulCtx.debugRequest()) {

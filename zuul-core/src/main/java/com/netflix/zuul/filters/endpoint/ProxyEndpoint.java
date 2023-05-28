@@ -268,10 +268,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             origin.recordProxyRequestEnd();
             concurrentReqCount--;
         }
-        if (currentRequestStat != null) {
-            if (error)
-                currentRequestStat.generalError();
-        }
+        if (currentRequestStat != null && error)
+            currentRequestStat.generalError();
         // Publish each of the request stats (ie. one for each attempt).
         if (!requestStats.isEmpty()) {
             int indexFinal = requestStats.size() - 1;

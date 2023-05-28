@@ -229,10 +229,8 @@ public class StatsManager {
         RouteStatusCodeMonitor sd = statsMap.get(statusCode);
         if (sd == null) {
             //don't register only 404 status codes (these are garbage endpoints)
-            if (statusCode == 404) {
-                if (statsMap.size() == 0) {
-                    return;
-                }
+            if (statusCode == 404 && statsMap.size() == 0) {
+                return;
             }
             sd = new RouteStatusCodeMonitor(route, statusCode);
             RouteStatusCodeMonitor sd1 = statsMap.putIfAbsent(statusCode, sd);

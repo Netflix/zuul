@@ -51,13 +51,11 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
         super.write(ctx, msg, promise);
         // Close the connection immediately after LastContent is written, rather than
         // waiting until the graceful-delay is up if this flag is set.
-        if (msg instanceof LastHttpContent) {
-            if (closePromise != null) {
-                promise.addListener(future -> {
-                    ConnectionCloseType type = ConnectionCloseType.fromChannel(ctx.channel());
-                    closeChannel(ctx, type, closePromise);
-                });
-            }
+        if (msg instanceof LastHttpContent && closePromise != null) {
+            promise.addListener(future -> {
+                ConnectionCloseType type = ConnectionCloseType.fromChannel(ctx.channel());
+                closeChannel(ctx, type, closePromise);
+            });
         }
     }
 

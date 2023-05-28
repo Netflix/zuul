@@ -85,13 +85,11 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
                 return;
             }
         }
-        if (msg instanceof LastHttpContent) {
-            if (hasContentLength() && seenContentLength != expectedContentLength) {
-                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            }
+        if (msg instanceof LastHttpContent && hasContentLength() && seenContentLength != expectedContentLength) {
+            // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+            ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+            ReferenceCountUtil.safeRelease(msg);
+            return;
         }
         super.channelRead(ctx, msg);
     }

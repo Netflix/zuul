@@ -83,10 +83,8 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
     boolean connectionIsUsingMutualSSLWithAuthEnforced(Channel ch) {
         boolean is = false;
         SslHandshakeInfo sslHandshakeInfo = ch.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
-        if (sslHandshakeInfo != null) {
-            if (sslHandshakeInfo.getClientAuthRequirement() == ClientAuth.REQUIRE) {
-                is = true;
-            }
+        if (sslHandshakeInfo != null && sslHandshakeInfo.getClientAuthRequirement() == ClientAuth.REQUIRE) {
+            is = true;
         }
         return is;
     }

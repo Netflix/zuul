@@ -161,11 +161,9 @@ public class CurrentPassport {
     }
 
     public void add(PassportState state) {
-        if (!CONTENT_STATE_ENABLED.get()) {
-            if (CONTENT_STATES.contains(state)) {
-                // Discard.
-                return;
-            }
+        if (!CONTENT_STATE_ENABLED.get() && CONTENT_STATES.contains(state)) {
+            // Discard.
+            return;
         }
         try (Unlocker ignored = lock()) {
             history.addLast(new PassportItem(state, now()));
@@ -274,12 +272,10 @@ public class CurrentPassport {
                         currentPair = new StartAndEnd();
                         currentPair.startTime = item.getTime();
                     }
-                } else if (item.getState() == endState) {
-                    if (currentPair != null) {
-                        currentPair.endTime = item.getTime();
-                        items.add(currentPair);
-                        currentPair = null;
-                    }
+                } else if (item.getState() == endState && currentPair != null) {
+                    currentPair.endTime = item.getTime();
+                    items.add(currentPair);
+                    currentPair = null;
                 }
             }
         }

@@ -88,18 +88,14 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter {
         }
         // Some logging of session states if certain criteria match:
         if (LOG.isInfoEnabled()) {
-            if (passport.wasProxyAttempt()) {
-                if (passport.findStateBackwards(PassportState.OUT_RESP_LAST_CONTENT_SENDING) == null) {
-                    incompleteProxySessionCounter.increment();
-                    LOG.info("Incorrect final state! toplevelid = {}, {}", topLevelRequestId, ChannelUtils.channelInfoForLogging(channel));
-                }
+            if (passport.wasProxyAttempt() && passport.findStateBackwards(PassportState.OUT_RESP_LAST_CONTENT_SENDING) == null) {
+                incompleteProxySessionCounter.increment();
+                LOG.info("Incorrect final state! toplevelid = {}, {}", topLevelRequestId, ChannelUtils.channelInfoForLogging(channel));
             }
-            if (!passport.wasProxyAttempt()) {
-                if (ctx != null && !isHealthcheckRequest(request)) {
-                    // Why did we fail to attempt to proxy this request?
-                    RequestAttempts attempts = RequestAttempts.getFromSessionContext(ctx);
-                    LOG.debug("State after complete. , context-error = {}, current-http-reqs = {}, toplevelid = {}, req = {}, attempts = {}, passport = {}", String.valueOf(ctx.getError()), HttpMetricsChannelHandler.getInflightRequestCountFromChannel(channel), topLevelRequestId, request.getInfoForLogging(), String.valueOf(attempts), String.valueOf(passport));
-                }
+            if (!passport.wasProxyAttempt() && ctx != null && !isHealthcheckRequest(request)) {
+                // Why did we fail to attempt to proxy this request?
+                RequestAttempts attempts = RequestAttempts.getFromSessionContext(ctx);
+                LOG.debug("State after complete. , context-error = {}, current-http-reqs = {}, toplevelid = {}, req = {}, attempts = {}, passport = {}", String.valueOf(ctx.getError()), HttpMetricsChannelHandler.getInflightRequestCountFromChannel(channel), topLevelRequestId, request.getInfoForLogging(), String.valueOf(attempts), String.valueOf(passport));
             }
             StartAndEnd inReqToOutResp = passport.findFirstStartAndLastEndStates(PassportState.IN_REQ_HEADERS_RECEIVED, PassportState.OUT_REQ_LAST_CONTENT_SENT);
             if (passport.calculateTimeBetween(inReqToOutResp) > WARN_REQ_PROCESSING_TIME_NS.get()) {
