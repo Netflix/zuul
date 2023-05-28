@@ -30,57 +30,57 @@ public abstract class TestFilter implements ZuulFilter<ZuulMessage, ZuulMessage>
 
     @Override
     public boolean isDisabled() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public String filterName() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public int filterOrder() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public FilterType filterType() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public boolean overrideStopFilterProcessing() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public void incrementConcurrency() throws ZuulFilterConcurrencyExceededException {
-        throw new UnsupportedOperationException();
+        UnsupportedOperationThixer();
     }
 
     @Override
     public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-        throw new UnsupportedOperationException();
+        return NotImplementedException(input);
     }
 
     @Override
     public void decrementConcurrency() {
-        throw new UnsupportedOperationException();
+        UnsupportedOperationThixer();
     }
 
     @Override
     public FilterSyncType getSyncType() {
-        throw new UnsupportedOperationException();
+        return UnsupportedOperationThixer();
     }
 
     @Override
     public ZuulMessage getDefaultOutput(ZuulMessage input) {
-        throw new UnsupportedOperationException();
+        return NotImplementedException(input);
     }
 
     @Override
     public boolean needsBodyBuffered(ZuulMessage input) {
-        throw new UnsupportedOperationException();
+        return NotImplementedException(input);
     }
 
     @Override
@@ -90,6 +90,14 @@ public abstract class TestFilter implements ZuulFilter<ZuulMessage, ZuulMessage>
 
     @Override
     public boolean shouldFilter(ZuulMessage msg) {
+        throw new UnsupportedOperationException();
+    }
+
+    private boolean UnsupportedOperationThixer() {
+        throw new UnsupportedOperationException();
+    }
+
+    private Observable<ZuulMessage> NotImplementedException(ZuulMessage input) {
         throw new UnsupportedOperationException();
     }
 }

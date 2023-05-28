@@ -194,12 +194,12 @@ public class BasicNettyOrigin implements NettyOrigin {
     /* Not required for basic operation */
     @Override
     public double getErrorPercentage() {
-        return 0;
+        return zeroReturnValue();
     }
 
     @Override
     public double getErrorAllPercentage() {
-        return 0;
+        return zeroReturnValue();
     }
 
     @Override
@@ -228,5 +228,9 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public void recordSuccessResponse() {
+    }
+
+    private double zeroReturnValue() {
+        return 0;
     }
 }

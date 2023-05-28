@@ -326,7 +326,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     @Override
     public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
-        return null;
+        return generateNames(input);
     }
 
     public void invokeNext(final HttpResponseMessage zuulResponse) {
@@ -963,8 +963,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      */
     @Nullable
     protected OriginName injectCustomOriginName(HttpRequestMessage request) {
-        // override for custom vip injection
-        return null;
+        return generateNames(request);
     }
 
     private NettyOrigin getOrCreateOrigin(OriginManager<NettyOrigin> originManager, OriginName originName, String uri, SessionContext ctx) {
@@ -998,5 +997,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     @ForOverride
     protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
         return new OriginTimeoutManager(origin);
+    }
+
+    private HttpResponseMessage generateNames(final HttpRequestMessage input) {
+        return null;
     }
 }

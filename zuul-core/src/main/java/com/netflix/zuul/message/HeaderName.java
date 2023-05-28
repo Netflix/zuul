@@ -51,7 +51,7 @@ public final class HeaderName {
      * Gets the original, non-normalized name for this header.
      */
     public String getName() {
-        return name;
+        return getValue();
     }
 
     public String getNormalised() {
@@ -81,6 +81,10 @@ public final class HeaderName {
 
     @Override
     public String toString() {
+        return getValue();
+    }
+
+    private String getValue() {
         return name;
     }
 }

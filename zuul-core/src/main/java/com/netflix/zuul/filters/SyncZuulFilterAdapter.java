@@ -40,7 +40,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public boolean isDisabled() {
-        return false;
+        return deny();
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public boolean overrideStopFilterProcessing() {
-        return false;
+        return deny();
     }
 
     @Override
@@ -92,5 +92,9 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
     @Override
     public void decrementConcurrency() {
         //NOOP for sync filters
+    }
+
+    private boolean deny() {
+        return false;
     }
 }

@@ -83,12 +83,12 @@ class ServerTest {
 
             @Override
             public int eventLoopCount() {
-                return 1;
+                return one();
             }
 
             @Override
             public int acceptorCount() {
-                return 1;
+                return one();
             }
         };
         Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
@@ -128,5 +128,9 @@ class ServerTest {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private int one() {
+        return 1;
     }
 }

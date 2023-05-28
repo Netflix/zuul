@@ -42,7 +42,7 @@ public enum FilterCategory {
     }
 
     public String getCode() {
-        return code;
+        return getResult();
     }
 
     public String getDescription() {
@@ -51,6 +51,10 @@ public enum FilterCategory {
 
     @Override
     public String toString() {
+        return getResult();
+    }
+
+    private String getResult() {
         return code;
     }
 }
