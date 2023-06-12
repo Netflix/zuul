@@ -82,7 +82,7 @@ public class SampleServerStartup extends BaseServerStartup {
                                AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry,
                                SamplePushMessageSenderInitializer pushSenderInitializer) {
         super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
-                directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
+                directMemoryMonitor, eventLoopGroupMetrics, new DefaultEventLoopConfig(), discoveryClient, applicationInfoManager,
                 accessLogPublisher);
         this.pushConnectionRegistry = pushConnectionRegistry;
         this.pushSenderInitializer = pushSenderInitializer;

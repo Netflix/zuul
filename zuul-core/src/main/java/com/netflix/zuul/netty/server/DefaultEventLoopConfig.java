@@ -19,6 +19,10 @@ import com.netflix.config.DynamicIntProperty;
 
 import javax.inject.Singleton;
 
+/**
+ * Event loop configuration for the Zuul server.
+ * By default, it configures a single acceptor thread with workers = logical cores available.
+ */
 @Singleton
 public class DefaultEventLoopConfig implements EventLoopConfig
 {

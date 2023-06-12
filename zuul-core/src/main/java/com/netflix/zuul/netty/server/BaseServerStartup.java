@@ -60,6 +60,7 @@ public abstract class BaseServerStartup
     @SuppressWarnings("unused") // force initialization
     protected final DirectMemoryMonitor directMemoryMonitor;
     protected final EventLoopGroupMetrics eventLoopGroupMetrics;
+    protected final EventLoopConfig eventLoopConfig;
     protected final EurekaClient discoveryClient;
     protected final ApplicationInfoManager applicationInfoManager;
     protected final AccessLogPublisher accessLogPublisher;
@@ -75,16 +76,18 @@ public abstract class BaseServerStartup
 
     @Inject
     public BaseServerStartup(ServerStatusManager serverStatusManager, FilterLoader filterLoader,
-                             SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
-                             RequestCompleteHandler reqCompleteHandler, Registry registry,
-                             DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
-                             EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
-                             AccessLogPublisher accessLogPublisher)
+            SessionContextDecorator sessionCtxDecorator, FilterUsageNotifier usageNotifier,
+            RequestCompleteHandler reqCompleteHandler, Registry registry,
+            DirectMemoryMonitor directMemoryMonitor, EventLoopGroupMetrics eventLoopGroupMetrics,
+            EventLoopConfig eventLoopConfig, EurekaClient discoveryClient,
+            ApplicationInfoManager applicationInfoManager,
+            AccessLogPublisher accessLogPublisher)
     {
         this.serverStatusManager = serverStatusManager;
         this.registry = registry;
         this.directMemoryMonitor = directMemoryMonitor;
         this.eventLoopGroupMetrics = eventLoopGroupMetrics;
+        this.eventLoopConfig = eventLoopConfig;
         this.discoveryClient = discoveryClient;
         this.applicationInfoManager = applicationInfoManager;
         this.accessLogPublisher = accessLogPublisher;
@@ -114,7 +117,7 @@ public abstract class BaseServerStartup
                 addrsToChannelInitializers,
                 clientConnectionsShutdown,
                 eventLoopGroupMetrics,
-                new DefaultEventLoopConfig());
+                eventLoopConfig);
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7

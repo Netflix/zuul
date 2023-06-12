@@ -75,7 +75,7 @@ public class ServerStartup extends BaseServerStartup {
                          EurekaClient discoveryClient, ApplicationInfoManager applicationInfoManager,
                          AccessLogPublisher accessLogPublisher, PushConnectionRegistry pushConnectionRegistry) {
         super(serverStatusManager, filterLoader, sessionCtxDecorator, usageNotifier, reqCompleteHandler, registry,
-                directMemoryMonitor, eventLoopGroupMetrics, discoveryClient, applicationInfoManager,
+                directMemoryMonitor, eventLoopGroupMetrics, new DefaultEventLoopConfig(), discoveryClient, applicationInfoManager,
                 accessLogPublisher);
         this.pushConnectionRegistry = pushConnectionRegistry;
         // this.pushSenderInitializer = pushSenderInitializer;
