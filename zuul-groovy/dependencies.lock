@@ -103,7 +103,7 @@
             "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -224,7 +224,7 @@
             "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.36"
@@ -425,7 +425,7 @@
             "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0-M1"
@@ -639,7 +639,7 @@
             "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -756,7 +756,7 @@
             "locked": "1.3.8"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0-M1"
@@ -966,7 +966,7 @@
             "locked": "1.70"
         },
         "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.17"
+            "locked": "3.0.18"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0-M1"
