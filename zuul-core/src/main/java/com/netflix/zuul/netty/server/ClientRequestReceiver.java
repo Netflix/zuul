@@ -115,7 +115,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     public static boolean isLastContentReceivedForChannel(Channel ch) {
         Boolean value = ch.attr(ATTR_LAST_CONTENT_RECEIVED).get();
-        return value == null ? false : value.booleanValue();
+        return value == null ? false : value;
     }
 
     @Override

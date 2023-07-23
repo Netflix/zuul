@@ -75,7 +75,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
         final HttpRequestInfo request = response.getInboundRequest();
         final Boolean overrideIsGzipRequested = (Boolean) response.getContext().get(CommonContextKeys.OVERRIDE_GZIP_REQUESTED);
         final boolean isGzipRequested = (overrideIsGzipRequested == null) ?
-                HttpUtils.acceptsGzip(request.getHeaders()) :  overrideIsGzipRequested.booleanValue();
+                HttpUtils.acceptsGzip(request.getHeaders()) : overrideIsGzipRequested;
 
         // Check the headers to see if response is already gzipped.
         final Headers respHeaders = response.getHeaders();
@@ -97,7 +97,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter
     boolean isRightSizeForGzip(HttpResponseMessage response) {
         final Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
         //bodySize == null is chunked encoding which is eligible for gzip compression
-        return (bodySize == null) || (bodySize.intValue() >= MIN_BODY_SIZE_FOR_GZIP.get());
+        return (bodySize == null) || (bodySize >= MIN_BODY_SIZE_FOR_GZIP.get());
     }
 
     @Override

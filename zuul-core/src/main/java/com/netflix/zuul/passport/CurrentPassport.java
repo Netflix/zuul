@@ -431,11 +431,11 @@ public class CurrentPassport
                         String stateName = stateMatch.group(2);
                         if (stateName.equals("NOW")) {
                             long startTime = passport.history.size() > 0 ? passport.firstTime() : 0;
-                            long now = Long.valueOf(stateMatch.group(1)) + startTime;
+                            long now = Long.parseLong(stateMatch.group(1)) + startTime;
                             ticker.setNow(now);
                         } else {
                             PassportState state = PassportState.valueOf(stateName);
-                            PassportItem item = new PassportItem(state, Long.valueOf(stateMatch.group(1)));
+                            PassportItem item = new PassportItem(state, Long.parseLong(stateMatch.group(1)));
                             passport.history.add(item);
                         }
                     }

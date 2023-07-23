@@ -120,7 +120,7 @@ public class HttpUtils
     public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg)
     {
         final Integer contentLengthVal = getContentLengthIfPresent(msg);
-        return (contentLengthVal != null) && (contentLengthVal.intValue() > 0);
+        return (contentLengthVal != null) && (contentLengthVal > 0);
     }
 
     public static Integer getContentLengthIfPresent(ZuulMessage msg)

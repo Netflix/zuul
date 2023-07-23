@@ -77,10 +77,10 @@ public class AccessLogPublisher
         requestId = requestId != null ? requestId : "-";
 
         // Convert duration to microseconds.
-        String durationStr = (durationNs != null && durationNs.longValue() > 0) ? String.valueOf(durationNs / 1000) : "-";
+        String durationStr = (durationNs != null && durationNs > 0) ? String.valueOf(durationNs / 1000) : "-";
 
-        String requestBodySizeStr = (requestBodySize != null && requestBodySize.intValue() > 0) ? requestBodySize.toString() : "-";
-        String responseBodySizeStr = (responseBodySize != null && responseBodySize.intValue() > 0) ? responseBodySize.toString() : "-";
+        String requestBodySizeStr = (requestBodySize != null && requestBodySize > 0) ? requestBodySize.toString() : "-";
+        String responseBodySizeStr = (responseBodySize != null && responseBodySize > 0) ? responseBodySize.toString() : "-";
 
 
         // Build the line.

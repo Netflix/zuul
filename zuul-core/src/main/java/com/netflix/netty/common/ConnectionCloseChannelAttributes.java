@@ -32,13 +32,13 @@ public class ConnectionCloseChannelAttributes
     {
         ChannelConfig channelConfig = channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).get();
         Integer gracefulCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
-        return gracefulCloseDelay == null ? 0 : gracefulCloseDelay.intValue();
+        return gracefulCloseDelay == null ? 0 : gracefulCloseDelay;
     }
 
     public static boolean allowGracefulDelayed(Channel channel)
     {
         ChannelConfig channelConfig = channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).get();
         Boolean value = channelConfig.get(CommonChannelConfigKeys.http2AllowGracefulDelayed);
-        return value == null ? false : value.booleanValue();
+        return value == null ? false : value;
     }
 }
