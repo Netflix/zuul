@@ -25,13 +25,13 @@
     },
     "rewrite": {
         "org.openrewrite.recipe:rewrite-logging-frameworks": {
-            "locked": "2.0.1"
+            "locked": "2.0.2"
         },
         "org.openrewrite.recipe:rewrite-recipe-bom": {
-            "locked": "2.0.1"
+            "locked": "2.1.0"
         },
         "org.openrewrite.recipe:rewrite-testing-frameworks": {
-            "locked": "2.0.1"
+            "locked": "2.0.7"
         }
     }
 }
