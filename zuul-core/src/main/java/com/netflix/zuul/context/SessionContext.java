@@ -249,7 +249,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     public boolean getBoolean(String key, boolean defaultResponse) {
         Boolean b = (Boolean) get(key);
         if (b != null) {
-            return b.booleanValue();
+            return b;
         }
         return defaultResponse;
     }
