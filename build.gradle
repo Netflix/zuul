@@ -63,7 +63,7 @@ subprojects {
 
     ext {
         libraries = [
-                guava: "com.google.guava:guava:31.1-jre",
+                guava: "com.google.guava:guava:32.1.2-jre",
                 okhttp: 'com.squareup.okhttp3:okhttp:4.11.0',
                 jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.+',
                 jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.+',
