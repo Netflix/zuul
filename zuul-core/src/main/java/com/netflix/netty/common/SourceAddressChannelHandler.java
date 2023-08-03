@@ -100,10 +100,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
     /**
      * The port number of the local socket, or {@code -1} if not appropriate.  This is not overwritten by the Proxy
      * Protocol message if present.
-     *
-     * @deprecated Use {@code channel.localAddress()}  instead.
      */
-    @Deprecated
     public static final AttributeKey<Integer> ATTR_SERVER_LOCAL_PORT = AttributeKey.newInstance("_server_local_port");
 
     @Override
