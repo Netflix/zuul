@@ -16,13 +16,14 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
@@ -38,20 +39,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ElbProxyProtocolChannelHandlerTest {
 
-    @Mock
     private Registry registry;
-    @Mock
-    private Counter counter;
-
+    
     @BeforeEach
     void setup() {
-        when(registry.counter("zuul.hapm.failure")).thenReturn(counter);
+        registry = new DefaultRegistry();
     }
 
     @Test
@@ -59,6 +56,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, false));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -84,6 +83,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -103,6 +104,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         //Note that the bytes aren't prefixed by PROXY, as required by the spec
@@ -129,6 +132,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        final int port = 7007;
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         //Note that the bytes aren't prefixed by PROXY, as required by the spec
@@ -140,7 +145,8 @@ class ElbProxyProtocolChannelHandlerTest {
         assertEquals(dropped, buf);
         buf.release();
 
-        verify(counter, times(1)).increment();
+        final Counter counter = registry.counter("zuul.hapm.decode", "success", "false", "port", String.valueOf(port));
+        assertEquals(1, counter.count());
     }
 
     @Disabled
@@ -149,6 +155,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf1 = Unpooled.wrappedBuffer(
@@ -173,6 +181,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -202,6 +212,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
@@ -233,6 +245,8 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(7007);
+
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(
