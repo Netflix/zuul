@@ -84,13 +84,13 @@
     },
     "jmh": {
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.36"
+            "locked": "1.37"
         }
     },
     "jmhCompileClasspath": {
@@ -173,13 +173,13 @@
             "locked": "1.70"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -316,13 +316,13 @@
             "locked": "4.11.0"
         },
         "org.openjdk.jmh:jmh-core": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-annprocess": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.openjdk.jmh:jmh-generator-bytecode": {
-            "locked": "1.36"
+            "locked": "1.37"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
