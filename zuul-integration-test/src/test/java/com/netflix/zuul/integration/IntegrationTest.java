@@ -279,6 +279,7 @@ class IntegrationTest {
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
+        verify(2, getRequestedFor(anyUrl()));
     }
 
     @ParameterizedTest
