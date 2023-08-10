@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PooledConnection {
 
-    protected static final AttributeKey<PooledConnection> CHANNEL_ATTR = AttributeKey.newInstance("_pooled_connection");
+    public static final AttributeKey<PooledConnection> CHANNEL_ATTR = AttributeKey.newInstance("_pooled_connection");
     public static final String READ_TIMEOUT_HANDLER_NAME = "readTimeoutHandler";
 
     private final DiscoveryResult server;
