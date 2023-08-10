@@ -23,8 +23,10 @@ import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -49,7 +51,7 @@ import org.slf4j.LoggerFactory;
 public class PerServerConnectionPool implements IConnectionPool
 {
     private static final Logger LOG = LoggerFactory.getLogger(PerServerConnectionPool.class);
-
+    public static final AttributeKey<IConnectionPool> CHANNEL_ATTR = AttributeKey.newInstance("_connection_pool");
     private final ConcurrentHashMap<EventLoop, Deque<PooledConnection>> connectionsPerEventLoop =
             new ConcurrentHashMap<>();
     protected final PooledConnectionFactory pooledConnectionFactory;
@@ -277,7 +279,7 @@ public class PerServerConnectionPool implements IConnectionPool
     }
 
     protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, SocketAddress serverAddr) {
-        return connectionFactory.connect(eventLoop, serverAddr, passport);
+        return connectionFactory.connect(eventLoop, serverAddr, passport, this);
     }
 
     protected void handleConnectCompletion(
@@ -287,7 +289,6 @@ public class PerServerConnectionPool implements IConnectionPool
         if (cf.isSuccess()) {
             
             passport.add(PassportState.ORIGIN_CH_CONNECTED);
-            
             server.incrementOpenConnectionsCount();
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
