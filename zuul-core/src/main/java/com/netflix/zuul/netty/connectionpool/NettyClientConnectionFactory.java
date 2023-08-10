@@ -43,7 +43,7 @@ public final class NettyClientConnectionFactory {
         this.channelInitializer = channelInitializer;
     }
 
-    public ChannelFuture connect(final EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport) {
+    public ChannelFuture connect(final EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport, IConnectionPool pool) {
         Objects.requireNonNull(socketAddress, "socketAddress");
         if (socketAddress instanceof InetSocketAddress) {
             // This should be checked by the ClientConnectionManager
@@ -54,6 +54,7 @@ public final class NettyClientConnectionFactory {
                 .handler(channelInitializer)
                 .group(eventLoop)
                 .attr(CurrentPassport.CHANNEL_ATTR, passport)
+                .attr(PerServerConnectionPool.CHANNEL_ATTR, pool)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connPoolConfig.getConnectTimeout())
                 .option(ChannelOption.SO_KEEPALIVE, connPoolConfig.getTcpKeepAlive())
                 .option(ChannelOption.TCP_NODELAY, connPoolConfig.getTcpNoDelay())
