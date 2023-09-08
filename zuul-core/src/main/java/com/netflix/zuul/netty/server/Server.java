@@ -269,20 +269,14 @@ public class Server
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
-        // Choose socket options.
-        Map<ChannelOption<?>, Object> channelOptions = new HashMap<>();
-        channelOptions.put(ChannelOption.SO_BACKLOG, 128);
-        channelOptions.put(ChannelOption.SO_LINGER, -1);
-        channelOptions.put(ChannelOption.TCP_NODELAY, true);
-        channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
-
         LOG.info("Proxy listening with {}", serverGroup.channelType);
         serverBootstrap.channel(serverGroup.channelType);
 
-        // Apply socket options.
-        for (Map.Entry<ChannelOption<?>, ?> optionEntry : channelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
-        }
+        serverBootstrap.option(ChannelOption.SO_BACKLOG, 128);
+        serverBootstrap.childOption(ChannelOption.SO_LINGER, -1);
+        serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
+        serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+
         // Apply transport specific socket options.
         for (Map.Entry<ChannelOption<?>, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
             serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
