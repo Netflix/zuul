@@ -157,7 +157,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         // Choose StatusCategory based on the ErrorType.
         final ErrorType et = requestAttemptFactory.mapNettyToOutboundErrorType(throwable);
         final StatusCategory nfs = et.getStatusCategory();
-        zuulCtx.put(CommonContextKeys.STATUS_CATGEORY, nfs);
+        zuulCtx.put(CommonContextKeys.STATUS_CATEGORY, nfs);
         zuulCtx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, nfs);
 
         zuulCtx.setError(throwable);
