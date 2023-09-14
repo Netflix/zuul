@@ -102,8 +102,6 @@ rewrite {
     failOnDryRunResults = true
     activeRecipe("org.openrewrite.java.testing.junit5.JUnit5BestPractices")
     activeRecipe("org.openrewrite.java.logging.slf4j.Slf4jBestPractices")
-    //activeRecipe("org.openrewrite.staticanalysis.NeedBraces")
-//    activeRecipe("org.openrewrite.staticanalysis.MissingOverrideAnnotation")
 
     exclusion(
             // Exclude all groovy files
