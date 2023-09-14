@@ -30,11 +30,9 @@ import io.netty.handler.codec.http.HttpRequest;
  * stop doing this. Although potentially we _never_ want to pass these downstream to origins .... ?
  */
 @ChannelHandler.Sharable
-public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter
-{
+public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter {
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
 
@@ -48,4 +46,3 @@ public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter
         super.channelRead(ctx, msg);
     }
 }
-

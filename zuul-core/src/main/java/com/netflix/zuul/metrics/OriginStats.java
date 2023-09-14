@@ -20,8 +20,8 @@ package com.netflix.zuul.metrics;
  * Date: 3/20/15
  * Time: 5:55 PM
  */
-public interface OriginStats
-{
+public interface OriginStats {
     public void started();
+
     public void completed(boolean success, long totalTimeMS);
 }

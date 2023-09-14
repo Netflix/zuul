@@ -26,7 +26,8 @@ public class ZuulConstants {
     public static final String DEFAULT_NFASTYANAX_WRITECONSISTENCY = "default.nfastyanax.writeConsistency";
     public static final String DEFAULT_NFASTYANAX_SOCKETTIMEOUT = "default.nfastyanax.socketTimeout";
     public static final String DEFAULT_NFASTYANAX_MAXCONNSPERHOST = "default.nfastyanax.maxConnsPerHost";
-    public static final String DEFAULT_NFASTYANAX_MAXTIMEOUTWHENEXHAUSTED = "default.nfastyanax.maxTimeoutWhenExhausted";
+    public static final String DEFAULT_NFASTYANAX_MAXTIMEOUTWHENEXHAUSTED =
+            "default.nfastyanax.maxTimeoutWhenExhausted";
     public static final String DEFAULT_NFASTYANAX_MAXFAILOVERCOUNT = "default.nfastyanax.maxFailoverCount";
     public static final String DEFAULT_NFASTYANAX_FAILOVERWAITTIME = "default.nfastyanax.failoverWaitTime";
     public static final String ZUUL_CASSANDRA_KEYSPACE = "zuul.cassandra.keyspace";
@@ -47,7 +48,6 @@ public class ZuulConstants {
     public static final String ZUUL_FILTER_CUSTOM_PATH = "zuul.filter.custom.path";
     public static final String ZUUL_FILTER_ADMIN_ENABLED = "zuul.filter.admin.enabled";
     public static final String ZUUL_FILTER_ADMIN_REDIRECT = "zuul.filter.admin.redirect.path";
-
 
     public static final String ZUUL_DEBUG_REQUEST = "zuul.debug.request";
     public static final String ZUUL_DEBUG_PARAMETER = "zuul.debug.parameter";
@@ -72,5 +72,4 @@ public class ZuulConstants {
     private ZuulConstants() {
         throw new AssertionError("Must not instantiate constant utility class");
     }
-
 }

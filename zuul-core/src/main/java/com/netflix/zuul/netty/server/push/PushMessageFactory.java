@@ -25,8 +25,6 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public abstract class PushMessageFactory {
 
-
-
     public final void sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText) {
         ctx.writeAndFlush(serverClosingConnectionMessage(statusCode, reasonText))
                 .addListener(ChannelFutureListener.CLOSE);
@@ -42,5 +40,4 @@ public abstract class PushMessageFactory {
      * Message server sends to the client just before it force closes connection from its side
      */
     protected abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
-
 }

@@ -22,10 +22,11 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
-import org.junit.jupiter.api.Test;
 
 class StaticFilterLoaderTest {
 
@@ -33,9 +34,8 @@ class StaticFilterLoaderTest {
 
     @Test
     void getFiltersByType() {
-        StaticFilterLoader filterLoader =
-                new StaticFilterLoader(factory,
-                        ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
+        StaticFilterLoader filterLoader = new StaticFilterLoader(
+                factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
 
         SortedSet<ZuulFilter<?, ?>> filters = filterLoader.getFiltersByType(FilterType.INBOUND);
         Truth.assertThat(filters).hasSize(3);

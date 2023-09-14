@@ -16,10 +16,10 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.netty.common.channel.config.ChannelConfig;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
-import com.netflix.netty.common.channel.config.ChannelConfig;
 
 /**
  * User: Mike Smith
@@ -29,10 +29,7 @@ import com.netflix.netty.common.channel.config.ChannelConfig;
 public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
 
     public ZuulServerChannelInitializer(
-            String metricId,
-            ChannelConfig channelConfig,
-            ChannelConfig channelDependencies,
-            ChannelGroup channels) {
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
     }
 
@@ -41,16 +38,12 @@ public class ZuulServerChannelInitializer extends BaseZuulChannelInitializer {
      */
     @Deprecated
     public ZuulServerChannelInitializer(
-            int port,
-            ChannelConfig channelConfig,
-            ChannelConfig channelDependencies,
-            ChannelGroup channels) {
+            int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         this(String.valueOf(port), channelConfig, channelDependencies, channels);
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception
-    {
+    protected void initChannel(Channel ch) throws Exception {
         // Configure our pipeline of ChannelHandlerS.
         ChannelPipeline pipeline = ch.pipeline();
 

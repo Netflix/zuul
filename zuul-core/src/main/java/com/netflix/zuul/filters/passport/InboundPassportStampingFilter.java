@@ -37,5 +37,4 @@ public final class InboundPassportStampingFilter extends PassportStampingFilter<
     public FilterType filterType() {
         return INBOUND;
     }
-
 }

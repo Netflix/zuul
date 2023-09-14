@@ -31,8 +31,10 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -47,8 +49,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToDoubleFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -88,14 +88,12 @@ public class BaseSslContextFactory implements SslContextFactory {
                     .sslProvider(sslProvider);
 
             if (serverSslConfig.getClientAuth() != null && trustedCerts != null && !trustedCerts.isEmpty()) {
-                builder = builder
-                        .trustManager(trustedCerts.toArray(new X509Certificate[0]))
+                builder = builder.trustManager(trustedCerts.toArray(new X509Certificate[0]))
                         .clientAuth(serverSslConfig.getClientAuth());
             }
 
             return builder;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error configuring SslContext!", e);
         }
     }
@@ -118,10 +116,13 @@ public class BaseSslContextFactory implements SslContextFactory {
         // TODO
     }
 
+    @Override
     public void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId) {
         // Setup metrics tracking the OpenSSL stats.
         if (sslContext instanceof ReferenceCountedOpenSslContext) {
-            OpenSslSessionStats stats = ((ReferenceCountedOpenSslContext) sslContext).sessionContext().stats();
+            OpenSslSessionStats stats = ((ReferenceCountedOpenSslContext) sslContext)
+                    .sessionContext()
+                    .stats();
 
             openSslStatGauge(stats, sslContextId, "accept", OpenSslSessionStats::accept);
             openSslStatGauge(stats, sslContextId, "accept_good", OpenSslSessionStats::acceptGood);
@@ -143,7 +144,9 @@ public class BaseSslContextFactory implements SslContextFactory {
     }
 
     private void openSslStatGauge(
-            OpenSslSessionStats stats, String sslContextId, String statName,
+            OpenSslSessionStats stats,
+            String sslContextId,
+            String statName,
             ToDoubleFunction<OpenSslSessionStats> value) {
         Id id = spectatorRegistry.createId("server.ssl.stats", "id", sslContextId, "stat", statName);
         PolledMeter.using(spectatorRegistry).withId(id).monitorValue(stats, value);
@@ -155,8 +158,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         SslProvider sslProvider;
         if (ALLOW_USE_OPENSSL.get() && OpenSsl.isAvailable() && SslProvider.isAlpnSupported(SslProvider.OPENSSL)) {
             sslProvider = SslProvider.OPENSSL;
-        }
-        else {
+        } else {
             sslProvider = SslProvider.JDK;
         }
         return sslProvider;
@@ -171,6 +173,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         return serverSslConfig.getProtocols();
     }
 
+    @Override
     public List<String> getCiphers() throws NoSuchAlgorithmException {
         return serverSslConfig.getCiphers();
     }
@@ -179,21 +182,23 @@ public class BaseSslContextFactory implements SslContextFactory {
         return SupportedCipherSuiteFilter.INSTANCE;
     }
 
-    protected ArrayList<X509Certificate> getTrustedX509Certificates() throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+    protected ArrayList<X509Certificate> getTrustedX509Certificates()
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
 
         // Add the certificates from the JKS truststore - ie. the CA's of the client cert that peer Zuul's will use.
-        if (serverSslConfig.getClientAuth() == ClientAuth.REQUIRE || serverSslConfig.getClientAuth() == ClientAuth.OPTIONAL) {
+        if (serverSslConfig.getClientAuth() == ClientAuth.REQUIRE
+                || serverSslConfig.getClientAuth() == ClientAuth.OPTIONAL) {
             // Get the encrypted bytes of the truststore password.
             byte[] trustStorePwdBytes;
             if (serverSslConfig.getClientAuthTrustStorePassword() != null) {
                 trustStorePwdBytes = Base64.getDecoder().decode(serverSslConfig.getClientAuthTrustStorePassword());
-            }
-            else if (serverSslConfig.getClientAuthTrustStorePasswordFile() != null) {
-                trustStorePwdBytes = Files.readAllBytes(serverSslConfig.getClientAuthTrustStorePasswordFile().toPath());
-            }
-            else {
-                throw new IllegalArgumentException("Must specify either ClientAuthTrustStorePassword or ClientAuthTrustStorePasswordFile!");
+            } else if (serverSslConfig.getClientAuthTrustStorePasswordFile() != null) {
+                trustStorePwdBytes = Files.readAllBytes(
+                        serverSslConfig.getClientAuthTrustStorePasswordFile().toPath());
+            } else {
+                throw new IllegalArgumentException(
+                        "Must specify either ClientAuthTrustStorePassword or ClientAuthTrustStorePasswordFile!");
             }
 
             // Decrypt the truststore password.
@@ -205,7 +210,8 @@ public class BaseSslContextFactory implements SslContextFactory {
             }
 
             final KeyStore trustStore = KeyStore.getInstance("JKS");
-            trustStore.load(new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
+            trustStore.load(
+                    new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
                     trustStorePassword.toCharArray());
 
             Enumeration<String> aliases = trustStore.aliases();

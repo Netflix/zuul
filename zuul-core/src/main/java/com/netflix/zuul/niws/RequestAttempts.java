@@ -21,10 +21,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -33,39 +33,32 @@ import java.util.ArrayList;
  * Date: 6/25/15
  * Time: 1:03 PM
  */
-public class RequestAttempts extends ArrayList<RequestAttempt>
-{
+public class RequestAttempts extends ArrayList<RequestAttempt> {
     private static final Logger LOG = LoggerFactory.getLogger(RequestAttempts.class);
     private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
 
-    public RequestAttempts()
-    {
+    public RequestAttempts() {
         super();
     }
 
     @Nullable
-    public RequestAttempt getFinalAttempt()
-    {
+    public RequestAttempt getFinalAttempt() {
         if (size() > 0) {
             return get(size() - 1);
-        }
-        else {
+        } else {
             return null;
         }
     }
 
-    public static RequestAttempts getFromSessionContext(SessionContext ctx)
-    {
+    public static RequestAttempts getFromSessionContext(SessionContext ctx) {
         return ctx.get(CommonContextKeys.REQUEST_ATTEMPTS);
     }
 
-    public static RequestAttempts parse(String attemptsJson) throws IOException
-    {
+    public static RequestAttempts parse(String attemptsJson) throws IOException {
         return JACKSON_MAPPER.readValue(attemptsJson, RequestAttempts.class);
     }
 
-    public String toJSON()
-    {
+    public String toJSON() {
         ArrayNode array = JACKSON_MAPPER.createArrayNode();
         for (RequestAttempt attempt : this) {
             array.add(attempt.toJsonNode());
@@ -73,19 +66,16 @@ public class RequestAttempts extends ArrayList<RequestAttempt>
 
         try {
             return JACKSON_MAPPER.writeValueAsString(array);
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Error serializing RequestAttempts!", e);
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         try {
             return toJSON();
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             LOG.error(e.getMessage(), e);
             return "";
         }

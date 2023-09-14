@@ -21,9 +21,10 @@ package com.netflix.zuul.filters;
  * Date: 11/13/15
  * Time: 7:50 PM
  */
-public enum FilterType
-{
-    INBOUND("in"), ENDPOINT("end"), OUTBOUND("out");
+public enum FilterType {
+    INBOUND("in"),
+    ENDPOINT("end"),
+    OUTBOUND("out");
 
     private final String shortName;
 
@@ -32,23 +33,21 @@ public enum FilterType
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return shortName;
     }
 
-    public static FilterType parse(String str)
-    {
+    public static FilterType parse(String str) {
         str = str.toLowerCase();
         switch (str) {
-        case "in":
-            return INBOUND;
-        case "out":
-            return OUTBOUND;
-        case "end":
-            return ENDPOINT;
-        default:
-            throw new IllegalArgumentException("Unknown filter type! type=" + String.valueOf(str));
+            case "in":
+                return INBOUND;
+            case "out":
+                return OUTBOUND;
+            case "end":
+                return ENDPOINT;
+            default:
+                throw new IllegalArgumentException("Unknown filter type! type=" + String.valueOf(str));
         }
     }
 }

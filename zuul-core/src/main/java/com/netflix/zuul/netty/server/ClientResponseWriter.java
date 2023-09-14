@@ -16,12 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.NoopRegistry;
@@ -59,6 +53,13 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
+import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+
 /**
  * Created by saroskar on 2/26/17.
  */
@@ -69,12 +70,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     private final RequestCompleteHandler requestCompleteHandler;
     private final Counter responseBeforeReceivedLastContentCounter;
 
-    //state
+    // state
     private boolean isHandlingRequest;
     private boolean startedSendingResponseToClient;
     private boolean closeConnection;
 
-    //data
+    // data
     private HttpResponseMessage zuulResponse;
 
     private static final Logger logger = LoggerFactory.getLogger(ClientResponseWriter.class);
@@ -85,7 +86,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
     public ClientResponseWriter(RequestCompleteHandler requestCompleteHandler, Registry registry) {
         this.requestCompleteHandler = requestCompleteHandler;
-        this.responseBeforeReceivedLastContentCounter = registry.counter("server.http.requests.responseBeforeReceivedLastContent");
+        this.responseBeforeReceivedLastContentCounter =
+                registry.counter("server.http.requests.responseBeforeReceivedLastContent");
     }
 
     @Override
@@ -99,14 +101,16 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            if ((! isHandlingRequest) || (startedSendingResponseToClient)) {
+            if ((!isHandlingRequest) || (startedSendingResponseToClient)) {
                 /* This can happen if we are already in the process of streaming response back to client OR NOT within active
-                   request/response cycle and something like IDLE or Request Read timeout occurs. In that case we have no way
-                   to recover other than closing the socket and cleaning up resources used by BOTH responses.
-                 */
+                  request/response cycle and something like IDLE or Request Read timeout occurs. In that case we have no way
+                  to recover other than closing the socket and cleaning up resources used by BOTH responses.
+                */
                 resp.disposeBufferedBody();
-                if (zuulResponse != null) zuulResponse.disposeBufferedBody();
-                ctx.close(); //This will trigger CompleteEvent if one is needed
+                if (zuulResponse != null) {
+                    zuulResponse.disposeBufferedBody();
+                }
+                ctx.close(); // This will trigger CompleteEvent if one is needed
                 return;
             }
 
@@ -119,7 +123,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
             if (channel.isActive()) {
                 // Track if this is happening.
-                if (!ClientRequestReceiver.isLastContentReceivedForChannel(channel) && !shouldAllowPreemptiveResponse(channel)) {
+                if (!ClientRequestReceiver.isLastContentReceivedForChannel(channel)
+                        && !shouldAllowPreemptiveResponse(channel)) {
                     responseBeforeReceivedLastContentCounter.increment();
                     logger.warn(
                             "Writing response to client channel before have received the LastContent of request! {}, {}",
@@ -134,8 +139,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 resp.disposeBufferedBody();
                 channel.close();
             }
-        }
-        else if (msg instanceof HttpContent) {
+        } else if (msg instanceof HttpContent) {
             final HttpContent chunk = (HttpContent) msg;
             if (channel.isActive()) {
                 channel.writeAndFlush(chunk);
@@ -143,17 +147,18 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 chunk.release();
                 channel.close();
             }
-        }
-        else {
-            //should never happen
+        } else {
+            // should never happen
             ReferenceCountUtil.release(msg);
             throw new ZuulException("Received invalid message from origin", true);
         }
     }
 
     protected boolean shouldAllowPreemptiveResponse(Channel channel) {
-        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because the connection will have to be discarded anyway.
-        StatusCategory status = StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
+        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because
+        // the connection will have to be discarded anyway.
+        StatusCategory status =
+                StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
         return status == ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
     }
 
@@ -172,15 +177,14 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         final String inboundProtocol = zuulRequest.getProtocol();
         if (inboundProtocol.startsWith("HTTP/1")) {
             responseHttpVersion = HttpVersion.valueOf(inboundProtocol);
-        }
-        else {
+        } else {
             // Default to 1.1. We do this to cope with HTTP/2 inbound requests.
             responseHttpVersion = HttpVersion.HTTP_1_1;
         }
 
         // Create the main http response to send, with body.
-        final DefaultHttpResponse nativeResponse = new DefaultHttpResponse(responseHttpVersion,
-                HttpResponseStatus.valueOf(zuulResp.getStatus()), false, false);
+        final DefaultHttpResponse nativeResponse = new DefaultHttpResponse(
+                responseHttpVersion, HttpResponseStatus.valueOf(zuulResp.getStatus()), false, false);
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         final HttpHeaders nativeHeaders = nativeResponse.headers();
@@ -189,7 +193,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         }
 
         // Netty does not automatically add Content-Length or Transfer-Encoding: chunked. So we add here if missing.
-        if (! HttpUtil.isContentLengthSet(nativeResponse) && ! HttpUtil.isTransferEncodingChunked(nativeResponse)) {
+        if (!HttpUtil.isContentLengthSet(nativeResponse) && !HttpUtil.isTransferEncodingChunked(nativeResponse)) {
             nativeResponse.headers().add(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
         }
 
@@ -217,8 +221,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             startedSendingResponseToClient = false;
             closeConnection = false;
             zuulResponse = null;
-        }
-        else if (evt instanceof CompleteEvent) {
+        } else if (evt instanceof CompleteEvent) {
             HttpResponse response = ((CompleteEvent) evt).getResponse();
             if (response != null) {
                 if ("close".equalsIgnoreCase(response.headers().get("Connection"))) {
@@ -233,29 +236,29 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             handleComplete(ctx.channel());
 
             // Choose to either close the connection, or prepare it for next use.
-            final CompleteEvent completeEvent = (CompleteEvent)evt;
+            final CompleteEvent completeEvent = (CompleteEvent) evt;
             final CompleteReason reason = completeEvent.getReason();
             if (reason == SESSION_COMPLETE || reason == INACTIVE) {
-                if (! closeConnection) {
-                    //Start reading next request over HTTP 1.1 persistent connection
+                if (!closeConnection) {
+                    // Start reading next request over HTTP 1.1 persistent connection
                     ctx.channel().read();
                 } else {
                     ctx.close();
                 }
-            }
-            else {
+            } else {
                 if (isHandlingRequest) {
-                    logger.debug("Received complete event while still handling the request. With reason: {} -- {}", reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    logger.debug(
+                            "Received complete event while still handling the request. With reason: {} -- {}",
+                            reason.name(),
+                            ChannelUtils.channelInfoForLogging(ctx.channel()));
                 }
                 ctx.close();
             }
 
             isHandlingRequest = false;
-        }
-        else if (evt instanceof IdleStateEvent) {
+        } else if (evt instanceof IdleStateEvent) {
             logger.debug("Received IdleStateEvent.");
-        }
-        else {
+        } else {
             logger.debug("ClientResponseWriter Received event {}", evt);
         }
     }
@@ -271,8 +274,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                     requestCompleteHandler.handle(zuulRequest.getInboundRequest(), zuulResponse);
                 }
             }
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             logger.error("Error in RequestCompleteHandler.", ex);
         }
     }
@@ -288,22 +290,24 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         if (cause instanceof ZuulException) {
             final ZuulException ze = (ZuulException) cause;
             status = ze.getStatusCode();
-            logger.error("Exception caught in ClientResponseWriter for channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
-        }
-        else if (cause instanceof ReadTimeoutException) {
+            logger.error(
+                    "Exception caught in ClientResponseWriter for channel {} ",
+                    ChannelUtils.channelInfoForLogging(ctx.channel()),
+                    cause);
+        } else if (cause instanceof ReadTimeoutException) {
             logger.debug("Read timeout for channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
             status = 504;
-        }
-        else {
+        } else {
             logger.error("Exception caught in ClientResponseWriter: ", cause);
         }
 
-        if (isHandlingRequest && !startedSendingResponseToClient && ctx.channel().isActive()) {
+        if (isHandlingRequest
+                && !startedSendingResponseToClient
+                && ctx.channel().isActive()) {
             final HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(status));
             ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
             startedSendingResponseToClient = true;
-        }
-        else {
+        } else {
             ctx.close();
         }
     }
@@ -313,5 +317,4 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         super.channelInactive(ctx);
         ctx.close();
     }
-
 }

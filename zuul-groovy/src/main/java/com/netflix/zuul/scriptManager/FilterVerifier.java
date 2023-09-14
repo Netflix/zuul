@@ -51,10 +51,17 @@ public class FilterVerifier {
         checkZuulFilterInstance(instance);
         BaseFilter filter = (BaseFilter) instance;
 
+        String filter_id = FilterInfo.buildFilterID(
+                ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
 
-        String filter_id = FilterInfo.buildFilterID(ZuulApplicationInfo.getApplicationName(), filter.filterType(), groovyClass.getSimpleName());
-
-        return new FilterInfo(filter_id, sFilterCode, filter.filterType(), groovyClass.getSimpleName(), filter.disablePropertyName(), "" + filter.filterOrder(), ZuulApplicationInfo.getApplicationName());
+        return new FilterInfo(
+                filter_id,
+                sFilterCode,
+                filter.filterType(),
+                groovyClass.getSimpleName(),
+                filter.disablePropertyName(),
+                "" + filter.filterOrder(),
+                ZuulApplicationInfo.getApplicationName());
     }
 
     Object instantiateClass(Class<?> groovyClass) throws InstantiationException, IllegalAccessException {
@@ -71,11 +78,8 @@ public class FilterVerifier {
      * compiles the Groovy source code
      *
      */
-    public Class<?> compileGroovy(String sFilterCode)
-            throws CompilationFailedException {
+    public Class<?> compileGroovy(String sFilterCode) throws CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);
     }
 }
-
-

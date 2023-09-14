@@ -14,10 +14,7 @@
  *      limitations under the License.
  */
 
-
 package com.netflix.zuul.netty.server.http2;
-
-import static com.google.common.truth.Truth.assertThat;
 
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -32,6 +29,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.junit.jupiter.api.Test;
 
+import static com.google.common.truth.Truth.assertThat;
+
 class Http2ContentLengthEnforcingHandlerTest {
 
     @Test
@@ -39,8 +38,7 @@ class Http2ContentLengthEnforcingHandlerTest {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
-        HttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
         chan.writeInbound(req);
@@ -54,8 +52,7 @@ class Http2ContentLengthEnforcingHandlerTest {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
-        HttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "identity, chunked");
         req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "fzip");
@@ -70,8 +67,7 @@ class Http2ContentLengthEnforcingHandlerTest {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
-        DefaultHttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
         chan.writeInbound(req);
 
@@ -98,8 +94,7 @@ class Http2ContentLengthEnforcingHandlerTest {
         EmbeddedChannel chan = new EmbeddedChannel();
         chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
 
-        DefaultHttpRequest req = new DefaultHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
         chan.writeInbound(req);
 
@@ -119,5 +114,4 @@ class Http2ContentLengthEnforcingHandlerTest {
         out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
     }
-
 }

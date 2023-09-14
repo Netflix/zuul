@@ -16,11 +16,12 @@
 
 package com.netflix.zuul.groovy;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link GroovyFileFilter}.
@@ -32,7 +33,7 @@ class GroovyFileFilterTest {
 
         GroovyFileFilter filter = new GroovyFileFilter();
 
-        assertFalse(filter.accept(new File("/"),"file.mikey"));
-        assertTrue(filter.accept(new File("/"),"file.groovy"));
+        assertFalse(filter.accept(new File("/"), "file.mikey"));
+        assertTrue(filter.accept(new File("/"), "file.groovy"));
     }
 }

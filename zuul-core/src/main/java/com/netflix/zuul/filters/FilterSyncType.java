@@ -21,7 +21,7 @@ package com.netflix.zuul.filters;
  * Date: 11/13/15
  * Time: 9:13 PM
  */
-public enum FilterSyncType
-{
-    SYNC, ASYNC
+public enum FilterSyncType {
+    SYNC,
+    ASYNC
 }

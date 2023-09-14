@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
@@ -33,6 +31,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Unit tests for {@link BaseZuulChannelInitializer}.
@@ -53,8 +53,7 @@ class BaseZuulChannelInitializerTest {
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
-                    protected void initChannel(Channel ch) {
-                    }
+                    protected void initChannel(Channel ch) {}
                 };
         EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -81,8 +80,7 @@ class BaseZuulChannelInitializerTest {
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
-                    protected void initChannel(Channel ch) {
-                    }
+                    protected void initChannel(Channel ch) {}
                 };
         EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -109,8 +107,7 @@ class BaseZuulChannelInitializerTest {
                 new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
 
                     @Override
-                    protected void initChannel(Channel ch) {
-                    }
+                    protected void initChannel(Channel ch) {}
                 };
         EmbeddedChannel channel = new EmbeddedChannel();
 
@@ -118,6 +115,5 @@ class BaseZuulChannelInitializerTest {
 
         assertNotNull(channel.pipeline().context(ServerStateHandler.InboundHandler.class));
         assertNotNull(channel.pipeline().context(ServerStateHandler.OutboundHandler.class));
-
     }
 }

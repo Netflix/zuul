@@ -50,7 +50,8 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
     public SessionContext decorate(SessionContext ctx) {
         // TODO split out commons parts from BaseSessionContextDecorator
 
-        ChannelHandlerContext nettyCtx = (ChannelHandlerContext) ctx.get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT);
+        ChannelHandlerContext nettyCtx =
+                (ChannelHandlerContext) ctx.get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT);
         if (nettyCtx == null) {
             return null;
         }
@@ -61,7 +62,7 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
         ctx.put(CommonContextKeys.ORIGIN_MANAGER, originManager);
 
         // TODO
-/*        // The throttle result info.
+        /*        // The throttle result info.
         ThrottleResult throttleResult = channel.attr(HttpRequestThrottleChannelHandler.ATTR_THROTTLE_RESULT).get();
         ctx.set(CommonContextKeys.THROTTLE_RESULT, throttleResult);*/
 

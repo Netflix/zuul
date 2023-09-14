@@ -17,6 +17,7 @@
 package com.netflix.zuul.discovery;
 
 import com.netflix.loadbalancer.Server;
+
 import java.util.Objects;
 
 /**
@@ -50,8 +51,9 @@ public final class NonDiscoveryServer implements ResolverResult {
     }
 
     private int validatePort(int port) {
-        if (port < 0 || port > 0xFFFF)
+        if (port < 0 || port > 0xFFFF) {
             throw new IllegalArgumentException("port out of range:" + port);
+        }
         return port;
     }
 }

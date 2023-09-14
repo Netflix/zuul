@@ -16,11 +16,8 @@
 
 package com.netflix.zuul.netty.insights;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
-import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.insights.ServerStateHandler.InboundHandler;
@@ -30,6 +27,8 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ServerStateHandlerTest {
 
@@ -85,7 +84,9 @@ class ServerStateHandlerTest {
 
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        assertEquals(PassportState.SERVER_CH_ACTIVE, CurrentPassport.fromChannel(channel).getState());
+        assertEquals(
+                PassportState.SERVER_CH_ACTIVE,
+                CurrentPassport.fromChannel(channel).getState());
     }
 
     @Test
@@ -96,7 +97,8 @@ class ServerStateHandlerTest {
 
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
 
-        assertEquals(PassportState.SERVER_CH_INACTIVE, CurrentPassport.fromChannel(channel).getState());
+        assertEquals(
+                PassportState.SERVER_CH_INACTIVE,
+                CurrentPassport.fromChannel(channel).getState());
     }
-
 }

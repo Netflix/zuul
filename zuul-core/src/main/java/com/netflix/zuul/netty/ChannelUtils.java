@@ -19,21 +19,19 @@ package com.netflix.zuul.netty;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.Channel;
 
-public class ChannelUtils
-{
-    public static String channelInfoForLogging(Channel ch)
-    {
+public class ChannelUtils {
+    public static String channelInfoForLogging(Channel ch) {
         if (ch == null) {
             return "null";
         }
-        
-        String channelInfo = ch.toString() 
+
+        String channelInfo = ch.toString()
                 + ", active=" + ch.isActive()
                 + ", open=" + ch.isOpen()
                 + ", registered=" + ch.isRegistered()
                 + ", writable=" + ch.isWritable()
                 + ", id=" + ch.id();
-        
+
         CurrentPassport passport = CurrentPassport.fromChannel(ch);
         return "Channel: " + channelInfo + ", Passport: " + String.valueOf(passport);
     }

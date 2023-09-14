@@ -27,16 +27,13 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
  * Time: 9:58 AM
  */
 @ChannelHandler.Sharable
-public class Http2ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler
-{
-    public Http2ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry)
-    {
+public class Http2ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler {
+    public Http2ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry) {
         super(ConnectionCloseType.DELAYED_GRACEFUL, maxRequestsUnderBrownout, maxRequests, maxExpiry);
     }
 
     @Override
-    protected boolean isResponseHeaders(Object msg)
-    {
+    protected boolean isResponseHeaders(Object msg) {
         return msg instanceof Http2HeadersFrame;
     }
 }

@@ -16,9 +16,6 @@
 
 package com.netflix.zuul.filters.common;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
@@ -29,15 +26,21 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.zip.GZIPInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.zip.GZIPInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GZipResponseFilterTest {
@@ -46,6 +49,7 @@ class GZipResponseFilterTest {
 
     @Mock
     private HttpRequestMessage request;
+
     @Mock
     private HttpRequestMessage originalRequest;
 
@@ -54,7 +58,7 @@ class GZipResponseFilterTest {
 
     @BeforeEach
     void setup() {
-        //when(request.getContext()).thenReturn(context);
+        // when(request.getContext()).thenReturn(context);
         when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
 
         filter = Mockito.spy(new GZipResponseFilter());
@@ -69,14 +73,16 @@ class GZipResponseFilterTest {
 
         byte[] originBody = "blah".getBytes();
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
-        Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); //Force GZip for small response
+        Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
         assertTrue(filter.shouldFilter(response));
 
         final HttpResponseMessage result = filter.apply(response);
-        final HttpContent hc1 = filter.processContentChunk(response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
+        final HttpContent hc1 = filter.processContentChunk(
+                response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
         final HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
-        final byte[] body = new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
+        final byte[] body =
+                new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
         final int hc1Len = hc1.content().readableBytes();
         final int hc2Len = hc2.content().readableBytes();
         hc1.content().readBytes(body, 0, hc1Len);
@@ -106,14 +112,16 @@ class GZipResponseFilterTest {
 
         byte[] originBody = "blah".getBytes();
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
-        Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); //Force GZip for small response
+        Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
         assertTrue(filter.shouldFilter(response));
 
         final HttpResponseMessage result = filter.apply(response);
-        final HttpContent hc1 = filter.processContentChunk(response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
+        final HttpContent hc1 = filter.processContentChunk(
+                response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
         final HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
-        final byte[] body = new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
+        final byte[] body =
+                new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
         final int hc1Len = hc1.content().readableBytes();
         final int hc2Len = hc2.content().readableBytes();
         hc1.content().readBytes(body, 0, hc1Len);

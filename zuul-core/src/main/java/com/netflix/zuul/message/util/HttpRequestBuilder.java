@@ -23,6 +23,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+
 import java.util.Objects;
 
 /**
@@ -86,7 +87,7 @@ public final class HttpRequestBuilder {
     }
 
     public HttpRequestBuilder withQueryParams(HttpQueryParams requestParams) {
-        this.queryParams =  Objects.requireNonNull(requestParams);
+        this.queryParams = Objects.requireNonNull(requestParams);
         return this;
     }
 
@@ -110,7 +111,7 @@ public final class HttpRequestBuilder {
             throw new IllegalStateException("Builder must only be invoked once!");
         }
         isBuilt = true;
-        return new HttpRequestMessageImpl(sessionContext, protocol, method, path, queryParams, headers, clientIp, scheme, port,
-                serverName);
+        return new HttpRequestMessageImpl(
+                sessionContext, protocol, method, path, queryParams, headers, clientIp, scheme, port, serverName);
     }
 }

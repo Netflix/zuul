@@ -18,6 +18,7 @@ package com.netflix.zuul.sample.push;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.netty.server.push.PushMessageSender;
 import com.netflix.zuul.netty.server.push.PushMessageSenderInitializer;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -40,5 +41,4 @@ public class SamplePushMessageSenderInitializer extends PushMessageSenderInitial
     protected PushMessageSender getPushMessageSender(PushConnectionRegistry pushConnectionRegistry) {
         return pushMessageSender;
     }
-
 }

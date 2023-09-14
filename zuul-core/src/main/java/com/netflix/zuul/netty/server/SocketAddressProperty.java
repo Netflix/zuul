@@ -19,13 +19,14 @@ package com.netflix.zuul.netty.server;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.config.StringDerivedProperty;
 import io.netty.channel.unix.DomainSocketAddress;
+
+import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 /**
  * This class expresses an address that Zuul can bind to.  Similar to {@link
@@ -121,7 +122,8 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
             BindType bindType = BindType.valueOf(rawBindType.toUpperCase(Locale.ROOT));
             String rawAddress = input.substring(equalsPosition + 1);
             int port;
-            parsePort: {
+            parsePort:
+            {
                 switch (bindType) {
                     case ANY: // fallthrough
                     case IPV4_ANY: // fallthrough

@@ -21,8 +21,7 @@ package com.netflix.zuul.exception;
  * Date: 10/20/11
  * Time: 4:33 PM
  */
-public class ZuulException extends RuntimeException
-{
+public class ZuulException extends RuntimeException {
     private String errorCause;
     private int statusCode = 500;
     private boolean shouldLogAsError = true;
@@ -48,12 +47,12 @@ public class ZuulException extends RuntimeException
     }
 
     public ZuulException(String sMessage, String errorCause, boolean noStackTrace) {
-        super(sMessage, null, noStackTrace, ! noStackTrace);
+        super(sMessage, null, noStackTrace, !noStackTrace);
         this.errorCause = errorCause;
     }
 
     public ZuulException(Throwable throwable, String sMessage, boolean noStackTrace) {
-        super(sMessage, throwable, noStackTrace, ! noStackTrace);
+        super(sMessage, throwable, noStackTrace, !noStackTrace);
         this.errorCause = "GENERAL";
     }
 
@@ -67,16 +66,15 @@ public class ZuulException extends RuntimeException
     }
 
     public ZuulException(String sMessage, boolean noStackTrace) {
-        super(sMessage, null, noStackTrace, ! noStackTrace);
+        super(sMessage, null, noStackTrace, !noStackTrace);
         this.errorCause = "GENERAL";
     }
 
-    public int getStatusCode()
-    {
+    public int getStatusCode() {
         return statusCode;
     }
-    public void setStatusCode(int statusCode)
-    {
+
+    public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 

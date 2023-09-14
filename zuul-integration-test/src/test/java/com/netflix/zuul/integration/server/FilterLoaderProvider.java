@@ -23,16 +23,15 @@ import com.netflix.zuul.StaticFilterLoader;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.integration.server.filters.InboundRoutesFilter;
 import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedInboundFilter;
+import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedOutboundFilter;
 import com.netflix.zuul.integration.server.filters.RequestHeaderFilter;
 import com.netflix.zuul.integration.server.filters.ResponseHeaderFilter;
-import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedOutboundFilter;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class FilterLoaderProvider
-    implements Provider<FilterLoader> {
+public class FilterLoaderProvider implements Provider<FilterLoader> {
 
     private static final Set<? extends Class<? extends ZuulFilter<?, ?>>> FILTER_TYPES;
 
@@ -47,10 +46,9 @@ public class FilterLoaderProvider
         FILTER_TYPES = Collections.unmodifiableSet(classes);
     }
 
+    @Override
     public FilterLoader get() {
-        StaticFilterLoader loader = new StaticFilterLoader(
-                new DefaultFilterFactory(),
-                FILTER_TYPES);
+        StaticFilterLoader loader = new StaticFilterLoader(new DefaultFilterFactory(), FILTER_TYPES);
         return loader;
     }
 }

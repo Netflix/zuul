@@ -56,11 +56,16 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
     @Override
     public boolean shouldFilter(HttpRequestMessage request) {
 
-        DynamicBooleanProperty debugFilterShutoff = new DynamicBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
+        DynamicBooleanProperty debugFilterShutoff =
+                new DynamicBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
-        if (debugFilterShutoff.get()) return false;
+        if (debugFilterShutoff.get()) {
+            return false;
+        }
 
-        if (isDisabled()) return false;
+        if (isDisabled()) {
+            return false;
+        }
 
         String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
         // dont' apply filter if it was already applied
@@ -68,7 +73,6 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
         return notAlreadyFiltered && patternMatches(request);
     }
-
 
     @Override
     public HttpRequestMessage apply(HttpRequestMessage request) {
@@ -89,7 +93,6 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
             ctx.setDebugRequest(true);
             ctx.set("zuulToZuul", true);
-
         }
         return request;
     }

@@ -18,8 +18,8 @@ package com.netflix.zuul.origins;
 
 import com.netflix.client.config.IClientConfig;
 import com.netflix.spectator.api.Registry;
-import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
@@ -39,25 +39,32 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface NettyOrigin extends InstrumentedOrigin {
 
-    Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
-                                              int attemptNumber, CurrentPassport passport,
-                                              AtomicReference<DiscoveryResult> chosenServer,
-                                              AtomicReference<? super InetAddress> chosenHostAddr);
+    Promise<PooledConnection> connectToOrigin(
+            final HttpRequestMessage zuulReq,
+            EventLoop eventLoop,
+            int attemptNumber,
+            CurrentPassport passport,
+            AtomicReference<DiscoveryResult> chosenServer,
+            AtomicReference<? super InetAddress> chosenHostAddr);
 
     int getMaxRetriesForRequest(SessionContext context);
 
     void onRequestExecutionStart(final HttpRequestMessage zuulReq);
 
-    void onRequestStartWithServer(final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, int attemptNum);
+    void onRequestStartWithServer(
+            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, int attemptNum);
 
-    void onRequestExceptionWithServer(final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult,
-                                      final int attemptNum, Throwable t);
+    void onRequestExceptionWithServer(
+            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, final int attemptNum, Throwable t);
 
-    void onRequestExecutionSuccess(final HttpRequestMessage zuulReq, final HttpResponseMessage zuulResp,
-                                   final DiscoveryResult discoveryResult, final int attemptNum);
+    void onRequestExecutionSuccess(
+            final HttpRequestMessage zuulReq,
+            final HttpResponseMessage zuulResp,
+            final DiscoveryResult discoveryResult,
+            final int attemptNum);
 
-    void onRequestExecutionFailed(final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult,
-                                  final int attemptNum, Throwable t);
+    void onRequestExecutionFailed(
+            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, final int attemptNum, Throwable t);
 
     void recordFinalError(final HttpRequestMessage requestMsg, final Throwable throwable);
 

@@ -16,13 +16,6 @@
 
 package com.netflix.zuul.netty.filter;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_CANCELLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL_IDLE_TIMEOUT;
 import com.google.common.base.Preconditions;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpRequestReadTimeoutEvent;
@@ -45,10 +38,19 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
-import java.nio.channels.ClosedChannelException;
-import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
+import java.nio.channels.ClosedChannelException;
+
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
+import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_CANCELLED;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_LOCAL_IDLE_TIMEOUT;
 
 /**
  * Created by saroskar on 5/18/17.
@@ -61,8 +63,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ZuulFilterChainHandler.class);
 
-
-    public ZuulFilterChainHandler(ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
+    public ZuulFilterChainHandler(
+            ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
             ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain) {
         this.requestFilterChain = Preconditions.checkNotNull(requestFilterChain, "request filter chain");
         this.responseFilterChain = Preconditions.checkNotNull(responseFilterChain, "response filter chain");
@@ -73,7 +75,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpRequestMessage) {
             zuulRequest = (HttpRequestMessage) msg;
 
-            //Replace NETTY_SERVER_CHANNEL_HANDLER_CONTEXT in SessionContext
+            // Replace NETTY_SERVER_CHANNEL_HANDLER_CONTEXT in SessionContext
             final SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, ctx);
 
@@ -81,7 +83,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         } else if ((msg instanceof HttpContent) && (zuulRequest != null)) {
             requestFilterChain.filter(zuulRequest, (HttpContent) msg);
         } else {
-            logger.debug("Received unrecognized message type. {}", msg.getClass().getName());
+            logger.debug(
+                    "Received unrecognized message type. {}", msg.getClass().getName());
             ReferenceCountUtil.release(msg);
         }
     }
@@ -98,8 +101,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         } else if (evt instanceof RequestCancelledEvent) {
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
-                StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulRequest.getContext(),
-                        FAILURE_CLIENT_CANCELLED);
+                StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(
+                        zuulRequest.getContext(), FAILURE_CLIENT_CANCELLED);
             }
             fireEndpointFinish(true, ctx);
             ctx.close();
@@ -143,12 +146,15 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     private void finishResponseFilters(ChannelHandlerContext ctx) {
         // check if there are any response filters awaiting a buffered body
         if (zuulRequest != null && responseFilterChain.isFilterAwaitingBody(zuulRequest.getContext())) {
-            HttpResponseMessage zuulResponse = ctx.channel().attr(ATTR_ZUUL_RESP).get();
+            HttpResponseMessage zuulResponse =
+                    ctx.channel().attr(ATTR_ZUUL_RESP).get();
             if (zuulResponse != null) {
                 // fire a last content into the filter chain to unblock any filters awaiting a buffered body
                 responseFilterChain.filter(zuulResponse, new DefaultLastHttpContent());
-                SpectatorUtils.newCounter("zuul.filterChain.bodyBuffer.hanging",
-                        zuulRequest.getContext().getRouteVIP()).increment();
+                SpectatorUtils.newCounter(
+                                "zuul.filterChain.bodyBuffer.hanging",
+                                zuulRequest.getContext().getRouteVIP())
+                        .increment();
             }
         }
     }
@@ -158,8 +164,10 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         if (cause instanceof SSLException) {
             logger.debug("SSL exception not handled in filter chain", cause);
         } else {
-            logger.error("zuul filter chain handler caught exception on channel: {}",
-                    ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
+            logger.error(
+                    "zuul filter chain handler caught exception on channel: {}",
+                    ChannelUtils.channelInfoForLogging(ctx.channel()),
+                    cause);
         }
         if (zuulRequest != null && !isClientChannelClosed(cause)) {
             final SessionContext zuulCtx = zuulRequest.getContext();
@@ -172,12 +180,10 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-
     // Race condition: channel.isActive() did not catch
     // channel close..resulting in an i/o exception
     private boolean isClientChannelClosed(Throwable cause) {
-        if (cause instanceof ClosedChannelException ||
-                cause instanceof Errors.NativeIoException) {
+        if (cause instanceof ClosedChannelException || cause instanceof Errors.NativeIoException) {
             logger.error("ZuulFilterChainHandler::isClientChannelClosed - IO Exception");
             return true;
         }

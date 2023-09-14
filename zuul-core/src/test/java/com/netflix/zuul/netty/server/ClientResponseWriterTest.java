@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.google.common.truth.Truth.assertThat;
 import com.netflix.zuul.BasicRequestCompleteHandler;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -30,6 +29,8 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static com.google.common.truth.Truth.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ClientResponseWriterTest {
@@ -67,8 +68,8 @@ class ClientResponseWriterTest {
         final ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler()) {
             @Override
             protected boolean shouldAllowPreemptiveResponse(Channel channel) {
-                StatusCategory status = StatusCategoryUtils.getStatusCategory(
-                        ClientRequestReceiver.getRequestFromChannel(channel));
+                StatusCategory status =
+                        StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
                 return status == customStatus;
             }
         };

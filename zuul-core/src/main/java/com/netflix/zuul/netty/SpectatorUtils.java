@@ -23,8 +23,7 @@ import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.Timer;
 
 public final class SpectatorUtils {
-    private SpectatorUtils() {
-    }
+    private SpectatorUtils() {}
 
     public static Counter newCounter(String name, String id) {
         return Spectator.globalRegistry().counter(name, "id", id);

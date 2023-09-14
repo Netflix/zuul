@@ -22,15 +22,13 @@ import com.netflix.appinfo.InstanceInfo;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
 /**
  * User: michaels@netflix.com
  * Date: 7/6/17
  * Time: 3:37 PM
  */
 @Singleton
-public class ServerStatusManager
-{
+public class ServerStatusManager {
     private final ApplicationInfoManager applicationInfoManager;
 
     @Inject

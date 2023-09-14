@@ -20,8 +20,8 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
-import javax.annotation.Nullable;
 
+import javax.annotation.Nullable;
 
 /**
  * Represents a message that propagates through the Zuul filter chain.

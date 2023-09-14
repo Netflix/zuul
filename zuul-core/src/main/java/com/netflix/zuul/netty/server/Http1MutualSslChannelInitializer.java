@@ -16,14 +16,14 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.netty.common.channel.config.ChannelConfig;
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
-import com.netflix.netty.common.channel.config.ChannelConfig;
-import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 
 import javax.net.ssl.SSLException;
 
@@ -32,8 +32,7 @@ import javax.net.ssl.SSLException;
  * Date: 1/31/17
  * Time: 11:43 PM
  */
-public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
-{
+public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer {
     private final SslContextFactory sslContextFactory;
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
@@ -43,18 +42,12 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
      */
     @Deprecated
     public Http1MutualSslChannelInitializer(
-            int port,
-            ChannelConfig channelConfig,
-            ChannelConfig channelDependencies,
-            ChannelGroup channels) {
+            int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         this(String.valueOf(port), channelConfig, channelDependencies, channels);
     }
 
     public Http1MutualSslChannelInitializer(
-            String metricId,
-            ChannelConfig channelConfig,
-            ChannelConfig channelDependencies,
-            ChannelGroup channels) {
+            String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
 
         this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
@@ -62,8 +55,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
         this.sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
         try {
             sslContext = sslContextFactory.createBuilderForServer().build();
-        }
-        catch (SSLException e) {
+        } catch (SSLException e) {
             throw new RuntimeException("Error configuring SslContext!", e);
         }
 
@@ -75,8 +67,7 @@ public class Http1MutualSslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception
-    {
+    protected void initChannel(Channel ch) throws Exception {
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(sslContextFactory.getProtocols());
 

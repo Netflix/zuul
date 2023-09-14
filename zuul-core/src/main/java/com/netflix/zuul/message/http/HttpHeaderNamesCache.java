@@ -25,24 +25,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: 8/5/15
  * Time: 1:08 PM
  */
-public class HttpHeaderNamesCache
-{
+public class HttpHeaderNamesCache {
     private final ConcurrentHashMap<String, HeaderName> cache;
     private final int maxSize;
 
-    public HttpHeaderNamesCache(int initialSize, int maxSize)
-    {
+    public HttpHeaderNamesCache(int initialSize, int maxSize) {
         this.cache = new ConcurrentHashMap<>(initialSize);
         this.maxSize = maxSize;
     }
 
-    public boolean isFull()
-    {
+    public boolean isFull() {
         return cache.size() >= maxSize;
     }
 
-    public HeaderName get(String name)
-    {
+    public HeaderName get(String name) {
         // Check in the static cache for this headername if available.
         // NOTE: we do this lookup case-sensitively, as doing case-INSENSITIVELY removes the purpose of
         // caching the object in the first place (ie. the expensive operation we want to avoid by caching
@@ -53,8 +49,7 @@ public class HttpHeaderNamesCache
             // too much if the cache overfills a bit.
             if (isFull()) {
                 hn = new HeaderName(name);
-            }
-            else {
+            } else {
                 hn = cache.computeIfAbsent(name, (newName) -> new HeaderName(newName));
             }
         }

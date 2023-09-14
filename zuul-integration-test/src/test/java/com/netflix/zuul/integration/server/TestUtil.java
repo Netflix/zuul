@@ -24,14 +24,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class TestUtil {
-    private TestUtil() { }
+    private TestUtil() {}
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     public static final String COMPRESSIBLE_CONTENT = "Hello Hello Hello Hello Hello";
     public static final String COMPRESSIBLE_CONTENT_TYPE = "text/plain";
 
-    public static DiscoveryEnabledServer makeDiscoveryEnabledServer(final String appName, final String ipAddress, final int port) {
+    public static DiscoveryEnabledServer makeDiscoveryEnabledServer(
+            final String appName, final String ipAddress, final int port) {
         InstanceInfo instanceInfo = new InstanceInfo(
                 UUID.randomUUID().toString(),
                 appName,
@@ -58,8 +59,7 @@ public class TestUtil {
                 null,
                 null,
                 null,
-                null
-        );
+                null);
         return new DiscoveryEnabledServer(instanceInfo, false, true);
     }
 }

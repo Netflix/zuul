@@ -15,17 +15,16 @@
  */
 package com.netflix.zuul.filters.http;
 
+import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.filters.BaseSyncFilter;
 
 /**
  * User: michaels@netflix.com
  * Date: 5/29/15
  * Time: 3:23 PM
  */
-public abstract class HttpOutboundSyncFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage>
-{
+public abstract class HttpOutboundSyncFilter extends BaseSyncFilter<HttpResponseMessage, HttpResponseMessage> {
     @Override
     public FilterType filterType() {
         return FilterType.OUTBOUND;

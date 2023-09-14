@@ -16,17 +16,18 @@
 
 package com.netflix.zuul;
 
+import com.netflix.zuul.filters.FilterSyncType;
+import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.ZuulFilter;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import com.netflix.zuul.filters.FilterSyncType;
-import com.netflix.zuul.filters.FilterType;
-import com.netflix.zuul.filters.ZuulFilter;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 
 /**
  * Identifies a {@link ZuulFilter}.

@@ -47,11 +47,7 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
         pipeline.addLast(
                 HTTP_CODEC_HANDLER_NAME,
-                new HttpServerCodec(
-                        MAX_INITIAL_LINE_LENGTH.get(),
-                        MAX_HEADER_SIZE.get(),
-                        MAX_CHUNK_SIZE.get(),
-                        false));
+                new HttpServerCodec(MAX_INITIAL_LINE_LENGTH.get(), MAX_HEADER_SIZE.get(), MAX_CHUNK_SIZE.get(), false));
         pipeline.addLast(new HttpObjectAggregator(8192));
     }
 

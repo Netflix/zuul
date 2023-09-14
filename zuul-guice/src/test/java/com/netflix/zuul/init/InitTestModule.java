@@ -20,8 +20,9 @@ import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
-import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
+
+import java.io.FilenameFilter;
 
 public class InitTestModule extends AbstractModule {
     @Override
@@ -30,5 +31,4 @@ public class InitTestModule extends AbstractModule {
         bind(FilenameFilter.class).toInstance((dir, name) -> false);
         bind(Registry.class).to(NoopRegistry.class);
     }
-
 }

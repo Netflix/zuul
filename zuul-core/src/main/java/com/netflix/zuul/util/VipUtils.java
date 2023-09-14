@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.util;
 
-public final class VipUtils
-{
+public final class VipUtils {
     public static String getVIPPrefix(String vipAddress) {
         for (int i = 0; i < vipAddress.length(); i++) {
             char c = vipAddress.charAt(i);

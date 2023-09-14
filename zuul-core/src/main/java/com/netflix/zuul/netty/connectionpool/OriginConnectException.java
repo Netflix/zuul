@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-
 import com.netflix.zuul.exception.ErrorType;
 
 /**
@@ -41,5 +40,4 @@ public class OriginConnectException extends Exception {
     public ErrorType getErrorType() {
         return errorType;
     }
-
 }

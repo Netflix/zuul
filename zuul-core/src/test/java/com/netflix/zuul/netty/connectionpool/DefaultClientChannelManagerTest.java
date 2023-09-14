@@ -16,19 +16,12 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import com.google.common.net.InetAddresses;
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.spectator.api.DefaultRegistry;
-import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.discovery.DynamicServerResolver;
@@ -38,17 +31,24 @@ import com.netflix.zuul.origins.OriginName;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.EventLoop;
-import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.Promise;
+import org.junit.jupiter.api.Test;
+
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link DefaultClientChannelManager}.  These tests don't use IPv6 addresses because {@link InstanceInfo} is
@@ -58,8 +58,11 @@ class DefaultClientChannelManagerTest {
 
     @Test
     void pickAddressInternal_discovery() {
-        InstanceInfo instanceInfo =
-                Builder.newBuilder().setAppName("app").setHostName("192.168.0.1").setPort(443).build();
+        InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("app")
+                .setHostName("192.168.0.1")
+                .setPort(443)
+                .build();
         DiscoveryResult s = DiscoveryResult.from(instanceInfo, true);
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
@@ -72,8 +75,11 @@ class DefaultClientChannelManagerTest {
 
     @Test
     void pickAddressInternal_discovery_unresolved() {
-        InstanceInfo instanceInfo =
-                Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
+        InstanceInfo instanceInfo = Builder.newBuilder()
+                .setAppName("app")
+                .setHostName("localhost")
+                .setPort(443)
+                .build();
         DiscoveryResult s = DiscoveryResult.from(instanceInfo, true);
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
@@ -118,13 +124,13 @@ class DefaultClientChannelManagerTest {
 
         when(resolver.resolve(any())).thenReturn(DiscoveryResult.EMPTY);
 
-        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
-                clientConfig, resolver, new DefaultRegistry());
+        final DefaultClientChannelManager clientChannelManager =
+                new DefaultClientChannelManager(originName, clientConfig, resolver, new DefaultRegistry());
 
         final AtomicReference<DiscoveryResult> serverRef = new AtomicReference<>();
 
-        final Promise<PooledConnection> promise = clientChannelManager
-                .acquire(new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
+        final Promise<PooledConnection> promise = clientChannelManager.acquire(
+                new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
         Truth.assertThat(promise.isSuccess()).isFalse();
         Truth.assertThat(serverRef.get()).isSameInstanceAs(DiscoveryResult.EMPTY);
@@ -139,19 +145,20 @@ class DefaultClientChannelManagerTest {
         final InstanceInfo instanceInfo = Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
-                .setPort(7777).build();
+                .setPort(7777)
+                .build();
         final DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, false);
 
         when(resolver.resolve(any())).thenReturn(discoveryResult);
 
-        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
-                clientConfig, resolver, new DefaultRegistry());
+        final DefaultClientChannelManager clientChannelManager =
+                new DefaultClientChannelManager(originName, clientConfig, resolver, new DefaultRegistry());
 
         final AtomicReference<DiscoveryResult> serverRef = new AtomicReference<>();
 
-        //TODO(argha-c) capture and assert on the promise once we have a dummy with ServerStats initialized
-        clientChannelManager
-                .acquire(new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
+        // TODO(argha-c) capture and assert on the promise once we have a dummy with ServerStats initialized
+        clientChannelManager.acquire(
+                new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
         Truth.assertThat(serverRef.get()).isSameInstanceAs(discoveryResult);
     }
@@ -180,8 +187,8 @@ class DefaultClientChannelManagerTest {
         when(resolver.hasServers()).thenReturn(true);
 
         final Registry registry = new DefaultRegistry();
-        final DefaultClientChannelManager clientChannelManager = new DefaultClientChannelManager(originName,
-                clientConfig, resolver, registry);
+        final DefaultClientChannelManager clientChannelManager =
+                new DefaultClientChannelManager(originName, clientConfig, resolver, registry);
 
         final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(10);
         final EventLoop eventLoop = eventLoopGroup.next();

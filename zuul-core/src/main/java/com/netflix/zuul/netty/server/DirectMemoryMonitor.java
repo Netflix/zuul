@@ -21,16 +21,14 @@ import com.netflix.config.DynamicIntProperty;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.patterns.PolledMeter;
 import io.netty.util.internal.PlatformDependent;
-import java.lang.reflect.Field;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -47,25 +45,26 @@ public final class DirectMemoryMonitor {
 
     @Inject
     public DirectMemoryMonitor(Registry registry) {
-        service = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("dmm-%d").build());
+        service = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("dmm-%d")
+                .build());
 
         PolledMeter.using(registry)
-                   .withName(PROP_PREFIX + ".reserved")
-                   .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
-                   .scheduleOn(service)
-                   .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getReservedMemory);
+                .withName(PROP_PREFIX + ".reserved")
+                .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
+                .scheduleOn(service)
+                .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getReservedMemory);
 
         PolledMeter.using(registry)
-                   .withName(PROP_PREFIX + ".max")
-                   .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
-                   .scheduleOn(service)
-                   .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getMaxMemory);
-
+                .withName(PROP_PREFIX + ".max")
+                .withDelay(Duration.ofSeconds(TASK_DELAY_PROP.get()))
+                .scheduleOn(service)
+                .monitorValue(DirectMemoryMonitor.class, DirectMemoryMonitor::getMaxMemory);
     }
 
     public DirectMemoryMonitor() {
-        //no-op constructor
+        // no-op constructor
         this.service = null;
     }
 

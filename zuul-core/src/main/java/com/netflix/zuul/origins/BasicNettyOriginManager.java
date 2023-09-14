@@ -48,8 +48,7 @@ public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> 
     }
 
     @Override
-    public BasicNettyOrigin createOrigin(
-            OriginName originName, String uri, SessionContext ctx) {
+    public BasicNettyOrigin createOrigin(OriginName originName, String uri, SessionContext ctx) {
         return new BasicNettyOrigin(originName, registry);
     }
 }

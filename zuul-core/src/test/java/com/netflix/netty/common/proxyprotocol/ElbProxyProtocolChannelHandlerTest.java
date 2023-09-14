@@ -16,10 +16,6 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
@@ -33,19 +29,25 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @ExtendWith(MockitoExtension.class)
 class ElbProxyProtocolChannelHandlerTest {
 
     private Registry registry;
-    
+
     @BeforeEach
     void setup() {
         registry = new DefaultRegistry();
@@ -70,8 +72,10 @@ class ElbProxyProtocolChannelHandlerTest {
 
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
         assertNull(channel.pipeline().context("HAProxyMessageChannelHandler"));
-        assertNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
-        assertNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
+        assertNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
@@ -108,7 +112,7 @@ class ElbProxyProtocolChannelHandlerTest {
 
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
-        //Note that the bytes aren't prefixed by PROXY, as required by the spec
+        // Note that the bytes aren't prefixed by PROXY, as required by the spec
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -119,8 +123,10 @@ class ElbProxyProtocolChannelHandlerTest {
 
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
         assertNull(channel.pipeline().context("HAProxyMessageChannelHandler"));
-        assertNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
-        assertNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
+        assertNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
         assertNull(channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
@@ -136,7 +142,7 @@ class ElbProxyProtocolChannelHandlerTest {
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
-        //Note that the bytes aren't prefixed by PROXY, as required by the spec
+        // Note that the bytes aren't prefixed by PROXY, as required by the spec
         ByteBuf buf = Unpooled.wrappedBuffer(
                 "TCP4 192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
@@ -159,11 +165,10 @@ class ElbProxyProtocolChannelHandlerTest {
 
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
-        ByteBuf buf1 = Unpooled.wrappedBuffer(
-                "PROXY TCP4".getBytes(StandardCharsets.US_ASCII));
+        ByteBuf buf1 = Unpooled.wrappedBuffer("PROXY TCP4".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf1);
-        ByteBuf buf2 = Unpooled.wrappedBuffer(
-                "192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        ByteBuf buf2 =
+                Unpooled.wrappedBuffer("192.168.0.1 124.123.111.111 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf2);
 
         Object msg = channel.readInbound();
@@ -195,15 +200,24 @@ class ElbProxyProtocolChannelHandlerTest {
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
         assertNull(channel.pipeline().context(HAProxyMessageChannelHandler.class));
-        assertEquals(HAProxyProtocolVersion.V1, channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
+        assertEquals(
+                HAProxyProtocolVersion.V1,
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
         // TODO(carl-mastrangelo): this check is in place, but it should be removed.  The message is not properly GC'd
         // in later versions of netty.
-        assertNotNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
-        assertEquals("124.123.111.111", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
-        assertEquals(new InetSocketAddress(InetAddresses.forString("124.123.111.111"), 443),
+        assertNotNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertEquals(
+                "124.123.111.111",
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("124.123.111.111"), 443),
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
-        assertEquals("192.168.0.1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
-        assertEquals(new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008),
+        assertEquals(
+                "192.168.0.1",
+                channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
+        assertEquals(
+                new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008),
                 channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
     }
 
@@ -216,8 +230,7 @@ class ElbProxyProtocolChannelHandlerTest {
 
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
-        ByteBuf buf = Unpooled.wrappedBuffer(
-                "PROXY TCP6 ::1 ::2 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
+        ByteBuf buf = Unpooled.wrappedBuffer("PROXY TCP6 ::1 ::2 10008 443\r\n".getBytes(StandardCharsets.US_ASCII));
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
@@ -226,15 +239,21 @@ class ElbProxyProtocolChannelHandlerTest {
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
         assertEquals(
-                HAProxyProtocolVersion.V1, channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
+                HAProxyProtocolVersion.V1,
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
         // TODO(carl-mastrangelo): this check is in place, but it should be removed.  The message is not properly GC'd
         // in later versions of netty.
-        assertNotNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
-        assertEquals("::2", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertNotNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertEquals(
+                "::2",
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
         assertEquals(
                 new InetSocketAddress(InetAddresses.forString("::2"), 443),
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
-        assertEquals("::1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
+        assertEquals(
+                "::1",
+                channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertEquals(
                 new InetSocketAddress(InetAddresses.forString("::1"), 10008),
                 channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());
@@ -249,10 +268,36 @@ class ElbProxyProtocolChannelHandlerTest {
 
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
-        ByteBuf buf = Unpooled.wrappedBuffer(
-                new byte[]{0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A, 0x21, 0x11, 0x00,
-                        0x0C, (byte) 0xC0, (byte) 0xA8, 0x00, 0x01, 0x7C, 0x7B, 0x6F, 0x6F, 0x27, 0x18, 0x01,
-                        (byte) 0xbb});
+        ByteBuf buf = Unpooled.wrappedBuffer(new byte[] {
+            0x0D,
+            0x0A,
+            0x0D,
+            0x0A,
+            0x00,
+            0x0D,
+            0x0A,
+            0x51,
+            0x55,
+            0x49,
+            0x54,
+            0x0A,
+            0x21,
+            0x11,
+            0x00,
+            0x0C,
+            (byte) 0xC0,
+            (byte) 0xA8,
+            0x00,
+            0x01,
+            0x7C,
+            0x7B,
+            0x6F,
+            0x6F,
+            0x27,
+            0x18,
+            0x01,
+            (byte) 0xbb
+        });
         channel.writeInbound(buf);
 
         Object dropped = channel.readInbound();
@@ -261,15 +306,21 @@ class ElbProxyProtocolChannelHandlerTest {
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
         assertEquals(
-                HAProxyProtocolVersion.V2, channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
+                HAProxyProtocolVersion.V2,
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get());
         // TODO(carl-mastrangelo): this check is in place, but it should be removed.  The message is not properly GC'd
         // in later versions of netty.
-        assertNotNull(channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
-        assertEquals("124.123.111.111", channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
+        assertNotNull(
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get());
+        assertEquals(
+                "124.123.111.111",
+                channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS).get());
         assertEquals(
                 new InetSocketAddress(InetAddresses.forString("124.123.111.111"), 443),
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get());
-        assertEquals("192.168.0.1", channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
+        assertEquals(
+                "192.168.0.1",
+                channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get());
         assertEquals(
                 new InetSocketAddress(InetAddresses.forString("192.168.0.1"), 10008),
                 channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get());

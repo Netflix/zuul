@@ -33,13 +33,13 @@ public class PushConnection {
     private final ChannelHandlerContext ctx;
     private String secureToken;
 
-    //Token bucket implementation state.
+    // Token bucket implementation state.
     private double tkBktAllowance;
     private long tkBktLastCheckTime;
-    public static final CachedDynamicIntProperty TOKEN_BUCKET_RATE = new CachedDynamicIntProperty("zuul.push.tokenBucket.rate", 3);
-    public static final CachedDynamicIntProperty TOKEN_BUCKET_WINDOW = new CachedDynamicIntProperty("zuul.push.tokenBucket.window.millis", 2000);
-
-
+    public static final CachedDynamicIntProperty TOKEN_BUCKET_RATE =
+            new CachedDynamicIntProperty("zuul.push.tokenBucket.rate", 3);
+    public static final CachedDynamicIntProperty TOKEN_BUCKET_WINDOW =
+            new CachedDynamicIntProperty("zuul.push.tokenBucket.window.millis", 2000);
 
     public PushConnection(PushProtocol pushProtocol, ChannelHandlerContext ctx) {
         this.pushProtocol = pushProtocol;
@@ -70,7 +70,7 @@ public class PushConnection {
         tkBktAllowance = tkBktAllowance + timePassed * (rate / window);
 
         if (tkBktAllowance > rate) {
-            tkBktAllowance = rate; //cap max to rate
+            tkBktAllowance = rate; // cap max to rate
         }
 
         if (tkBktAllowance < 1.0) {
@@ -92,5 +92,4 @@ public class PushConnection {
     public ChannelFuture sendPing() {
         return pushProtocol.sendPing(ctx);
     }
-
 }

@@ -21,8 +21,9 @@ import com.netflix.zuul.StaticFilterLoader;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.processor.override.SubpackageFilter;
 import com.netflix.zuul.filters.processor.subpackage.OverrideFilter;
-import java.util.Collection;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
 
 /**
  * Tests for {@link FilterProcessor}.
@@ -34,12 +35,13 @@ class FilterProcessorTest {
         Collection<Class<ZuulFilter<?, ?>>> filters =
                 StaticFilterLoader.loadFilterTypesFromResources(getClass().getClassLoader());
 
-        Truth.assertThat(filters).containsExactly(
-                OuterClassFilter.class,
-                TopLevelFilter.class,
-                TopLevelFilter.StaticSubclassFilter.class,
-                TopLevelFilter.SubclassFilter.class,
-                OverrideFilter.class,
-                SubpackageFilter.class);
+        Truth.assertThat(filters)
+                .containsExactly(
+                        OuterClassFilter.class,
+                        TopLevelFilter.class,
+                        TopLevelFilter.StaticSubclassFilter.class,
+                        TopLevelFilter.SubclassFilter.class,
+                        OverrideFilter.class,
+                        SubpackageFilter.class);
     }
 }

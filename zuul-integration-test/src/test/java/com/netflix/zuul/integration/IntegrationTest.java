@@ -64,9 +64,9 @@ import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -82,26 +82,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class IntegrationTest {
 
     static {
-        System.setProperty("io.netty.customResourceLeakDetector",
-            CustomLeakDetector.class.getCanonicalName());
+        System.setProperty("io.netty.customResourceLeakDetector", CustomLeakDetector.class.getCanonicalName());
     }
 
+    private static Bootstrap bootstrap;
+    private static final int ZUUL_SERVER_PORT = findAvailableTcpPort();
 
-    static private Bootstrap bootstrap;
-    static private final int ZUUL_SERVER_PORT = findAvailableTcpPort();
-
-    static private final Duration CLIENT_READ_TIMEOUT = Duration.ofMillis(3000);
-    static private final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
+    private static final Duration CLIENT_READ_TIMEOUT = Duration.ofMillis(3000);
+    private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String pathSegment;
     private WireMockRuntimeInfo wmRuntimeInfo;
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
-        .configureStaticDsl(true)
-        .options(wireMockConfig().dynamicPort())
-        .build();
-
+            .configureStaticDsl(true)
+            .options(wireMockConfig().dynamicPort())
+            .build();
 
     @BeforeAll
     static void beforeAll() {
@@ -127,7 +124,6 @@ class IntegrationTest {
         assertZeroLeaks();
     }
 
-
     @BeforeEach
     void beforeEachTest(final WireMockRuntimeInfo wmRuntimeInfo) {
         this.pathSegment = randomPathSegment();
@@ -136,24 +132,25 @@ class IntegrationTest {
 
     private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
         return new OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.MILLISECONDS)
-            .readTimeout(CLIENT_READ_TIMEOUT)
-            .followRedirects(false)
-            .followSslRedirects(false)
-            .retryOnConnectionFailure(false)
-            .protocols(Arrays.asList(protocols))
-            .build();
+                .connectTimeout(30, TimeUnit.MILLISECONDS)
+                .readTimeout(CLIENT_READ_TIMEOUT)
+                .followRedirects(false)
+                .followSslRedirects(false)
+                .retryOnConnectionFailure(false)
+                .protocols(Arrays.asList(protocols))
+                .build();
     }
 
-    private Request.Builder setupRequestBuilder(final boolean requestBodyBuffering, final boolean responseBodyBuffering) {
+    private Request.Builder setupRequestBuilder(
+            final boolean requestBodyBuffering, final boolean responseBodyBuffering) {
         final HttpUrl url = new HttpUrl.Builder()
-            .scheme("http")
-            .host("localhost")
-            .port(ZUUL_SERVER_PORT)
-            .addPathSegment(pathSegment)
-            .addQueryParameter("bufferRequestBody", "" + requestBodyBuffering)
-            .addQueryParameter("bufferResponseBody", "" + responseBodyBuffering)
-            .build();
+                .scheme("http")
+                .host("localhost")
+                .port(ZUUL_SERVER_PORT)
+                .addPathSegment(pathSegment)
+                .addQueryParameter("bufferRequestBody", "" + requestBodyBuffering)
+                .addQueryParameter("bufferResponseBody", "" + responseBodyBuffering)
+                .build();
         return new Request.Builder().url(url);
     }
 
@@ -163,10 +160,7 @@ class IntegrationTest {
             for (boolean requestBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
                 for (boolean responseBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
                     list.add(Arguments.of(
-                        protocol.name(),
-                        setupOkHttpClient(protocol),
-                        requestBodyBuffering,
-                        responseBodyBuffering));
+                            protocol.name(), setupOkHttpClient(protocol), requestBodyBuffering, responseBodyBuffering));
                 }
             }
         }
@@ -175,16 +169,19 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetHappyPath(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpGetHappyPath(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    ok()
-                        .withBody("hello world")));
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello world")));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("hello world");
@@ -193,17 +190,18 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpPostHappyPath(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpPostHappyPath(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            post(anyUrl())
-                .willReturn(
-                    ok()
-                        .withBody("Thank you next")));
+        wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
-            .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
-            .build();
+                .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(200);
         assertThat(response.body().string()).isEqualTo("Thank you next");
@@ -212,18 +210,19 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpPostWithInvalidHostHeader(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpPostWithInvalidHostHeader(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            post(anyUrl())
-                .willReturn(
-                    ok()
-                        .withBody("Thank you next")));
+        wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
-            .addHeader("Host", "_invalid_hostname_")
-            .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
-            .build();
+                .addHeader("Host", "_invalid_hostname_")
+                .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
 
@@ -232,16 +231,20 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetFailsDueToOriginReadTimeout(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpGetFailsDueToOriginReadTimeout(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    ok()
-                        .withFixedDelay((int) ORIGIN_READ_TIMEOUT.toMillis() + 50)
+        wireMock.register(get(anyUrl())
+                .willReturn(ok().withFixedDelay((int) ORIGIN_READ_TIMEOUT.toMillis() + 50)
                         .withBody("Slow poke")));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
@@ -250,15 +253,18 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetFailsDueToMalformedResponseChunk(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpGetFailsDueToMalformedResponseChunk(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
-                        .withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
+        wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
@@ -267,15 +273,18 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void zuulWillRetryHttpGetWhenOriginReturns500(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void zuulWillRetryHttpGetWhenOriginReturns500(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
-                        .withStatus(500)));
+        wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(500)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
@@ -284,15 +293,18 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void zuulWillRetryHttpGetWhenOriginReturns503(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void zuulWillRetryHttpGetWhenOriginReturns503(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
-                        .withStatus(503)));
+        wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(503)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(503);
         assertThat(response.body().string()).isEqualTo("");
@@ -301,15 +313,18 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGetReturnsStatus500DueToConnectionResetByPeer(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpGetReturnsStatus500DueToConnectionResetByPeer(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
-                        .withFault(Fault.CONNECTION_RESET_BY_PEER)));
+        wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
         assertThat(response.body().string()).isEqualTo("");
@@ -318,17 +333,22 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void httpGet_ServerChunkedDribbleDelay(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void httpGet_ServerChunkedDribbleDelay(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
                         .withStatus(200)
                         .withBody("Hello world, is anybody listening?")
                         .withChunkedDribbleDelay(10, (int) CLIENT_READ_TIMEOUT.toMillis() + 500)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get().build();
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
         Response response = okHttp.newCall(request).execute();
         final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
@@ -337,13 +357,17 @@ class IntegrationTest {
 
     @ParameterizedTest
     @MethodSource("arguments")
-    void blockRequestWithMultipleHostHeaders(final String description, final OkHttpClient okHttp, final boolean requestBodyBuffering, final boolean responseBodyBuffering) throws Exception {
+    void blockRequestWithMultipleHostHeaders(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-                get(anyUrl())
-                        .willReturn(aResponse().withStatus(200)));
+        wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(200)));
 
-        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering).get()
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
                 .addHeader("Host", "aaa.example.com")
                 .addHeader("Host", "aaa.foobar.com")
                 .build();
@@ -353,15 +377,12 @@ class IntegrationTest {
         response.close();
     }
 
-
     @Test
     void deflateOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(expectedResponseBody)
                         .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
@@ -389,10 +410,8 @@ class IntegrationTest {
     void gzipOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(expectedResponseBody)
                         .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
@@ -420,13 +439,11 @@ class IntegrationTest {
         Brotli.ensureAvailability();
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-                get(anyUrl())
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withBody(expectedResponseBody)
-                                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
 
         URL url = new URL(zuulBaseUri);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -441,8 +458,8 @@ class IntegrationTest {
         assertTrue(compressedData.length > 0);
         DirectDecompress decompressResult = DirectDecompress.decompress(compressedData);
         assertEquals(DecoderJNI.Status.DONE, decompressResult.getResultStatus());
-        assertEquals("Hello Hello Hello Hello Hello",
-                new String(decompressResult.getDecompressedData(), TestUtil.CHARSET));
+        assertEquals(
+                "Hello Hello Hello Hello Hello", new String(decompressResult.getDecompressedData(), TestUtil.CHARSET));
 
         inputStream.close();
         connection.disconnect();
@@ -452,10 +469,8 @@ class IntegrationTest {
     void noCompression() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
         final WireMock wireMock = wmRuntimeInfo.getWireMock();
-        wireMock.register(
-            get(anyUrl())
-                .willReturn(
-                    aResponse()
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(expectedResponseBody)
                         .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
@@ -488,8 +503,7 @@ class IntegrationTest {
         }
     }
 
-    static private void verifyResponseHeaders(final Response response) {
+    private static void verifyResponseHeaders(final Response response) {
         assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
     }
-
 }

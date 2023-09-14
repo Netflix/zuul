@@ -17,6 +17,8 @@
 package com.netflix.zuul;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -24,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 
 /**
  * A heterogeneous map of attributes.

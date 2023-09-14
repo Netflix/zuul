@@ -16,10 +16,6 @@
 
 package com.netflix.zuul.origins;
 
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
-
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -27,9 +23,9 @@ import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -44,11 +40,16 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
+
 import java.net.InetAddress;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
+import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
 
 /**
  * Netty Origin basic implementation that can be used for most apps, with the more complex methods having no-op
@@ -80,14 +81,12 @@ public class BasicNettyOrigin implements NettyOrigin {
 
         String niwsClientName = getName().getNiwsClientName();
         this.concurrentRequests =
-                SpectatorUtils.newGauge(
-                        "zuul.origin.concurrent.requests", niwsClientName, new AtomicInteger(0));
-        this.rejectedRequests =
-                SpectatorUtils.newCounter("zuul.origin.rejected.requests", niwsClientName);
+                SpectatorUtils.newGauge("zuul.origin.concurrent.requests", niwsClientName, new AtomicInteger(0));
+        this.rejectedRequests = SpectatorUtils.newCounter("zuul.origin.rejected.requests", niwsClientName);
         this.concurrencyMax =
                 new CachedDynamicIntProperty("zuul.origin." + niwsClientName + ".concurrency.max.requests", 200);
-        this.concurrencyProtectionEnabled =
-                new CachedDynamicBooleanProperty("zuul.origin." + niwsClientName + ".concurrency.protect.enabled", true);
+        this.concurrencyProtectionEnabled = new CachedDynamicBooleanProperty(
+                "zuul.origin." + niwsClientName + ".concurrency.protect.enabled", true);
     }
 
     protected IClientConfig setupClientConfig(OriginName originName) {
@@ -116,11 +115,16 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public Promise<PooledConnection> connectToOrigin(
-            HttpRequestMessage zuulReq, EventLoop eventLoop, int attemptNumber, CurrentPassport passport,
-            AtomicReference<DiscoveryResult> chosenServer, AtomicReference<? super InetAddress> chosenHostAddr) {
+            HttpRequestMessage zuulReq,
+            EventLoop eventLoop,
+            int attemptNumber,
+            CurrentPassport passport,
+            AtomicReference<DiscoveryResult> chosenServer,
+            AtomicReference<? super InetAddress> chosenHostAddr) {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
+    @Override
     public int getMaxRetriesForRequest(SessionContext context) {
         return config.get(CommonClientConfigKey.MaxAutoRetriesNextServer, 0);
     }
@@ -176,8 +180,7 @@ public class BasicNettyOrigin implements NettyOrigin {
             StatusCategory originNfs = SUCCESS;
             if (originStatusCode == 503) {
                 originNfs = FAILURE_ORIGIN_THROTTLED;
-            }
-            else if (StatusCategoryUtils.isResponseHttpErrorStatus(originStatusCode)) {
+            } else if (StatusCategoryUtils.isResponseHttpErrorStatus(originStatusCode)) {
                 originNfs = FAILURE_ORIGIN;
             }
             zuulCtx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, originNfs);
@@ -215,30 +218,29 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public void onRequestExecutionStart(HttpRequestMessage zuulReq) {
-    }
+    public void onRequestExecutionStart(HttpRequestMessage zuulReq) {}
 
     @Override
-    public void onRequestStartWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum) {
-    }
+    public void onRequestStartWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum) {}
 
     @Override
-    public void onRequestExceptionWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {
-    }
+    public void onRequestExceptionWithServer(
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {}
 
     @Override
-    public void onRequestExecutionSuccess(HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, DiscoveryResult discoveryResult, int attemptNum) {
-    }
+    public void onRequestExecutionSuccess(
+            HttpRequestMessage zuulReq,
+            HttpResponseMessage zuulResp,
+            DiscoveryResult discoveryResult,
+            int attemptNum) {}
 
     @Override
-    public void onRequestExecutionFailed(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {
-    }
+    public void onRequestExecutionFailed(
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t) {}
 
     @Override
-    public void adjustRetryPolicyIfNeeded(HttpRequestMessage zuulRequest) {
-    }
+    public void adjustRetryPolicyIfNeeded(HttpRequestMessage zuulRequest) {}
 
     @Override
-    public void recordSuccessResponse() {
-    }
+    public void recordSuccessResponse() {}
 }

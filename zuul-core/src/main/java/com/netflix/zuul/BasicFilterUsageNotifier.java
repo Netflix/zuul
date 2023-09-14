@@ -18,6 +18,7 @@ package com.netflix.zuul;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.filters.ZuulFilter;
+
 import javax.inject.Inject;
 
 /**
@@ -35,9 +36,11 @@ public class BasicFilterUsageNotifier implements FilterUsageNotifier {
     @Override
     public void notify(ZuulFilter<?, ?> filter, ExecutionStatus status) {
         registry.counter(
-                "zuul.filter-" + filter.getClass().getSimpleName(),
-                "status", status.name(),
-                "filtertype", filter.filterType().toString()).increment();
+                        "zuul.filter-" + filter.getClass().getSimpleName(),
+                        "status",
+                        status.name(),
+                        "filtertype",
+                        filter.filterType().toString())
+                .increment();
     }
 }
-

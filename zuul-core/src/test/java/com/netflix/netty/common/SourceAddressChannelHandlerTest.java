@@ -16,7 +16,9 @@
 
 package com.netflix.netty.common;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.AssumptionViolatedException;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -27,9 +29,10 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.AssumptionViolatedException;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link SourceAddressChannelHandler}.
@@ -39,7 +42,7 @@ class SourceAddressChannelHandlerTest {
     @Test
     void ipv6AddressScopeIdRemoved() throws Exception {
         Inet6Address address =
-                Inet6Address.getByAddress("localhost", new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, 2);
+                Inet6Address.getByAddress("localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, 2);
         assertEquals(2, address.getScopeId());
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
@@ -49,7 +52,7 @@ class SourceAddressChannelHandlerTest {
 
     @Test
     void ipv4AddressString() throws Exception {
-        InetAddress address = Inet4Address.getByAddress("localhost", new byte[]{127, 0, 0, 1});
+        InetAddress address = Inet4Address.getByAddress("localhost", new byte[] {127, 0, 0, 1});
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
 
@@ -70,7 +73,7 @@ class SourceAddressChannelHandlerTest {
         // Can't think of a reason why this would ever come up, but testing it just in case.
         // ::ffff:127.0.0.1
         Inet6Address address = Inet6Address.getByAddress(
-                "localhost", new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xFF, (byte) 0xFF, 127, 0, 0, 1}, -1);
+                "localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xFF, (byte) 0xFF, 127, 0, 0, 1}, -1);
         assertEquals(0, address.getScopeId());
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
@@ -83,13 +86,12 @@ class SourceAddressChannelHandlerTest {
         List<NetworkInterface> nics = Collections.list(NetworkInterface.getNetworkInterfaces());
         Assumptions.assumeTrue(!nics.isEmpty(), "No network interfaces");
 
-
         List<Throwable> failures = new ArrayList<>();
         for (NetworkInterface nic : nics) {
             Inet6Address address;
             try {
                 address = Inet6Address.getByAddress(
-                        "localhost", new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, nic);
+                        "localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, nic);
             } catch (UnknownHostException e) {
                 // skip, the nic doesn't match
                 failures.add(e);

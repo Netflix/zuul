@@ -23,11 +23,12 @@ import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A counter for connection stats.  Not thread-safe.
@@ -111,7 +112,9 @@ public final class ConnCounter {
 
         dimTags.put("from", lastCountKey != null ? lastCountKey : "nascent");
         lastCountKey = event;
-        Id id = registry.createId(metricBase.name() + '.' + event).withTags(metricBase.tags()).withTags(dimTags);
+        Id id = registry.createId(metricBase.name() + '.' + event)
+                .withTags(metricBase.tags())
+                .withTags(dimTags);
         Gauge gauge = registry.gauge(id);
 
         synchronized (getLock(id)) {

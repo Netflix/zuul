@@ -16,8 +16,8 @@
 
 package com.netflix.zuul.filters.passport;
 
-import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 
@@ -31,7 +31,7 @@ public abstract class PassportStampingFilter<T extends ZuulMessage> extends Sync
 
     public PassportStampingFilter(PassportState stamp) {
         this.stamp = stamp;
-        this.name = filterType().name()+"-"+stamp.name()+"-Filter";
+        this.name = filterType().name() + "-" + stamp.name() + "-Filter";
     }
 
     @Override
@@ -49,5 +49,4 @@ public abstract class PassportStampingFilter<T extends ZuulMessage> extends Sync
         CurrentPassport.fromSessionContext(input.getContext()).add(stamp);
         return input;
     }
-
 }

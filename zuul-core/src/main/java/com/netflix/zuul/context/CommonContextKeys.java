@@ -25,9 +25,10 @@ import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.stats.status.StatusCategory;
 import io.netty.channel.Channel;
+
+import javax.inject.Provider;
 import java.net.InetAddress;
 import java.util.Map;
-import javax.inject.Provider;
 
 /**
  * Common Context Keys
@@ -37,11 +38,10 @@ import javax.inject.Provider;
  */
 public class CommonContextKeys {
 
-    public static final SessionContext.Key<StatusCategory> STATUS_CATGEORY =
-            SessionContext.newKey("status_category");
+    public static final SessionContext.Key<StatusCategory> STATUS_CATGEORY = SessionContext.newKey("status_category");
     public static final SessionContext.Key<StatusCategory> ORIGIN_STATUS_CATEGORY =
             SessionContext.newKey("origin_status_category");
-    public static final SessionContext.Key<Integer>  ORIGIN_STATUS = SessionContext.newKey("origin_status");
+    public static final SessionContext.Key<Integer> ORIGIN_STATUS = SessionContext.newKey("origin_status");
     public static final SessionContext.Key<RequestAttempts> REQUEST_ATTEMPTS =
             SessionContext.newKey("request_attempts");
 

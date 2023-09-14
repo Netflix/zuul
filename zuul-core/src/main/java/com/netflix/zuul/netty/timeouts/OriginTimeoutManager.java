@@ -24,10 +24,11 @@ import com.netflix.config.DynamicLongProperty;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
+
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 
 /**
  * Origin Timeout Manager
@@ -44,8 +45,8 @@ public class OriginTimeoutManager {
     }
 
     @VisibleForTesting
-    static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS =
-            new DynamicLongProperty("zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
+    static final DynamicLongProperty MAX_OUTBOUND_READ_TIMEOUT_MS = new DynamicLongProperty(
+            "zuul.origin.readtimeout.max", Duration.ofSeconds(90).toMillis());
 
     /**
      * Derives the read timeout from the configuration.  This implementation prefers the longer of either the origin

@@ -25,8 +25,8 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.zuul.discovery.DiscoveryResult;
-import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.discovery.SimpleMetaInfo;
+import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
 
@@ -37,8 +37,7 @@ import javax.net.ssl.SSLHandshakeException;
  * Date: 9/2/14
  * Time: 2:52 PM
  */
-public class RequestAttempt
-{
+public class RequestAttempt {
     private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
 
     private int attempt;
@@ -59,9 +58,17 @@ public class RequestAttempt
     private int connectTimeout;
     private int maxRetries;
 
-    public RequestAttempt(int attemptNumber, InstanceInfo server, String targetVip, String chosenWarmupLB, int status, String error, String exceptionType,
-                          int readTimeout, int connectTimeout, int maxRetries)
-    {
+    public RequestAttempt(
+            int attemptNumber,
+            InstanceInfo server,
+            String targetVip,
+            String chosenWarmupLB,
+            int status,
+            String error,
+            String exceptionType,
+            int readTimeout,
+            int connectTimeout,
+            int maxRetries) {
         if (attemptNumber < 1) {
             throw new IllegalArgumentException("Attempt number must be greater than 0! - " + attemptNumber);
         }
@@ -81,7 +88,8 @@ public class RequestAttempt
             }
 
             if (server.getDataCenterInfo() instanceof AmazonInfo) {
-                this.availabilityZone = ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
+                this.availabilityZone =
+                        ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
 
                 // HACK - get region by just removing the last char from zone.
                 String az = getAvailabilityZone();
@@ -90,7 +98,7 @@ public class RequestAttempt
                 }
             }
         }
-        
+
         this.status = status;
         this.error = error;
         this.exceptionType = exceptionType;
@@ -99,7 +107,8 @@ public class RequestAttempt
         this.maxRetries = maxRetries;
     }
 
-    public RequestAttempt(final DiscoveryResult server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
+    public RequestAttempt(
+            final DiscoveryResult server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
         this.status = -1;
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;
@@ -118,8 +127,7 @@ public class RequestAttempt
                 this.vip = server.getTarget();
                 this.availabilityZone = server.getAvailabilityZone();
 
-            }
-            else {
+            } else {
                 SimpleMetaInfo metaInfo = server.getMetaInfo();
                 if (metaInfo != null) {
                     this.asg = metaInfo.getServerGroup();
@@ -138,27 +146,25 @@ public class RequestAttempt
         }
     }
 
-    private RequestAttempt() {
-    }
+    private RequestAttempt() {}
 
-    public void complete(int responseStatus, long durationMs, Throwable exception)
-    {
-        if (responseStatus > -1)
+    public void complete(int responseStatus, long durationMs, Throwable exception) {
+        if (responseStatus > -1) {
             setStatus(responseStatus);
+        }
 
         this.duration = durationMs;
 
-        if (exception != null)
+        if (exception != null) {
             setException(exception);
+        }
     }
 
-    public int getAttempt()
-    {
+    public int getAttempt() {
         return attempt;
     }
 
-    public String getVip()
-    {
+    public String getVip() {
         return vip;
     }
 
@@ -174,8 +180,7 @@ public class RequestAttempt
         return error;
     }
 
-    public String getApp()
-    {
+    public String getApp() {
         return app;
     }
 
@@ -195,8 +200,7 @@ public class RequestAttempt
         return port;
     }
 
-    public String getRegion()
-    {
+    public String getRegion() {
         return region;
     }
 
@@ -204,88 +208,71 @@ public class RequestAttempt
         return availabilityZone;
     }
 
-    public String getExceptionType()
-    {
+    public String getExceptionType() {
         return exceptionType;
     }
 
-    public long getReadTimeout()
-    {
+    public long getReadTimeout() {
         return readTimeout;
     }
 
-    public int getConnectTimeout()
-    {
+    public int getConnectTimeout() {
         return connectTimeout;
     }
 
-    public int getMaxRetries()
-    {
+    public int getMaxRetries() {
         return maxRetries;
     }
 
-    public void setStatus(int status)
-    {
+    public void setStatus(int status) {
         this.status = status;
     }
 
-    public void setError(String error)
-    {
+    public void setError(String error) {
         this.error = error;
     }
 
-    public void setExceptionType(String exceptionType)
-    {
+    public void setExceptionType(String exceptionType) {
         this.exceptionType = exceptionType;
     }
 
-    public void setApp(String app)
-    {
+    public void setApp(String app) {
         this.app = app;
     }
 
-    public void setAsg(String asg)
-    {
+    public void setAsg(String asg) {
         this.asg = asg;
     }
 
-    public void setInstanceId(String instanceId)
-    {
+    public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
 
-    public void setHost(String host)
-    {
+    public void setHost(String host) {
         this.host = host;
     }
 
-    public void setPort(int port)
-    {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public void setVip(String vip)
-    {
+    public void setVip(String vip) {
         this.vip = vip;
     }
 
-    public void setRegion(String region)
-    {
+    public void setRegion(String region) {
         this.region = region;
     }
 
-    public void setAvailabilityZone(String availabilityZone)
-    {
+    public void setAvailabilityZone(String availabilityZone) {
         this.availabilityZone = availabilityZone;
     }
 
-    public void setReadTimeout(long readTimeout)
-    {
+    public void setReadTimeout(long readTimeout) {
         this.readTimeout = readTimeout;
     }
 
-    public void setConnectTimeout(int connectTimeout)
-    {
+    public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
     }
 
@@ -294,35 +281,29 @@ public class RequestAttempt
             if (t instanceof ReadTimeoutException) {
                 error = "READ_TIMEOUT";
                 exceptionType = t.getClass().getSimpleName();
-            }
-            else if (t instanceof OriginConnectException) {
+            } else if (t instanceof OriginConnectException) {
                 OriginConnectException oce = (OriginConnectException) t;
                 if (oce.getErrorType() != null) {
                     error = oce.getErrorType().toString();
-                }
-                else {
+                } else {
                     error = "ORIGIN_CONNECT_ERROR";
                 }
 
                 final Throwable cause = t.getCause();
                 if (cause != null) {
                     exceptionType = t.getCause().getClass().getSimpleName();
-                }
-                else {
+                } else {
                     exceptionType = t.getClass().getSimpleName();
                 }
-            }
-            else if (t instanceof OutboundException) {
+            } else if (t instanceof OutboundException) {
                 OutboundException obe = (OutboundException) t;
                 error = obe.getOutboundErrorType().toString();
                 exceptionType = OutboundException.class.getSimpleName();
-            }
-            else if (t instanceof SSLHandshakeException) {
+            } else if (t instanceof SSLHandshakeException) {
                 error = t.getMessage();
                 exceptionType = t.getClass().getSimpleName();
                 cause = t.getCause().getMessage();
-            }
-            else {
+            } else {
                 error = t.getMessage();
                 exceptionType = t.getClass().getSimpleName();
                 cause = Throwables.getStackTraceAsString(t);
@@ -330,24 +311,20 @@ public class RequestAttempt
         }
     }
 
-    public void setMaxRetries(int maxRetries)
-    {
+    public void setMaxRetries(int maxRetries) {
         this.maxRetries = maxRetries;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         try {
             return JACKSON_MAPPER.writeValueAsString(toJsonNode());
-        }
-        catch (JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException("Error serializing RequestAttempt!", e);
         }
     }
 
-    public ObjectNode toJsonNode()
-    {
+    public ObjectNode toJsonNode() {
         ObjectNode root = JACKSON_MAPPER.createObjectNode();
         root.put("status", status);
         root.put("duration", duration);
@@ -370,8 +347,7 @@ public class RequestAttempt
         return root;
     }
 
-    private static ObjectNode putNullableAttribute(ObjectNode node, String name, String value)
-    {
+    private static ObjectNode putNullableAttribute(ObjectNode node, String name, String value) {
         if (value != null) {
             node.put(name, value);
         }

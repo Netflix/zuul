@@ -21,5 +21,4 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.processor.TestFilter;
 
 @Filter(order = 30, type = FilterType.INBOUND)
-public final class SubpackageFilter extends TestFilter {
-}
+public final class SubpackageFilter extends TestFilter {}

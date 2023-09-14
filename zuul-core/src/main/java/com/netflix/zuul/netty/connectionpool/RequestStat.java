@@ -16,8 +16,8 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
 
 /**
@@ -30,14 +30,12 @@ public interface RequestStat {
 
     String SESSION_CONTEXT_KEY = "niwsRequestStat";
 
-    static RequestStat putInSessionContext(RequestStat stat, SessionContext context)
-    {
+    static RequestStat putInSessionContext(RequestStat stat, SessionContext context) {
         context.put(SESSION_CONTEXT_KEY, stat);
         return stat;
     }
 
-    static RequestStat getFromSessionContext(SessionContext context)
-    {
+    static RequestStat getFromSessionContext(SessionContext context) {
         return (RequestStat) context.get(SESSION_CONTEXT_KEY);
     }
 

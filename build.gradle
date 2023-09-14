@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.36.0'
+    }
+}
+
 plugins {
     id 'com.netflix.nebula.netflixoss' version '11.3.2'
     id "com.google.osdetector" version "1.7.3"
@@ -32,6 +38,7 @@ subprojects {
     apply plugin: 'com.netflix.nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
+    apply plugin: 'com.palantir.java-format'
 
     license {
         ignoreFailures = false
@@ -86,6 +93,7 @@ subprojects {
 
 dependencies {
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.0.7")
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
@@ -94,6 +102,7 @@ rewrite {
     failOnDryRunResults = true
     activeRecipe("org.openrewrite.java.testing.junit5.JUnit5BestPractices")
     activeRecipe("org.openrewrite.java.logging.slf4j.Slf4jBestPractices")
+
     exclusion(
             // Exclude all groovy files
             "**/*.groovy")

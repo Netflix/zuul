@@ -16,13 +16,13 @@
 
 package com.netflix.zuul.origins;
 
-
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 
-public class OriginConcurrencyExceededException extends OriginThrottledException
-{
-    public OriginConcurrencyExceededException(OriginName originName)
-    {
-        super(originName, "Max concurrent requests on origin exceeded", ZuulStatusCategory.FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY);
+public class OriginConcurrencyExceededException extends OriginThrottledException {
+    public OriginConcurrencyExceededException(OriginName originName) {
+        super(
+                originName,
+                "Max concurrent requests on origin exceeded",
+                ZuulStatusCategory.FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY);
     }
 }

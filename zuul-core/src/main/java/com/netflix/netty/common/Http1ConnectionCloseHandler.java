@@ -34,16 +34,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Date: 2/8/17
  * Time: 2:03 PM
  */
-public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
-{
+public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(Http1ConnectionCloseHandler.class);
 
     private final AtomicBoolean requestInflight = new AtomicBoolean(Boolean.FALSE);
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-    {
-        ChannelPromise closePromise = ctx.channel().attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).get();
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        ChannelPromise closePromise = ctx.channel()
+                .attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE)
+                .get();
 
         if (msg instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) msg;
@@ -68,21 +68,18 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-    {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // Track when there's an inflight request.
         if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
             requestInflight.set(Boolean.TRUE);
-        }
-        else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+        } else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
             requestInflight.set(Boolean.FALSE);
         }
 
         super.userEventTriggered(ctx, evt);
     }
 
-    protected void closeChannel(ChannelHandlerContext ctx, ConnectionCloseType evt, ChannelPromise promise)
-    {
+    protected void closeChannel(ChannelHandlerContext ctx, ConnectionCloseType evt, ChannelPromise promise) {
         switch (evt) {
             case DELAYED_GRACEFUL:
                 gracefully(ctx, promise);
@@ -98,48 +95,51 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler
         }
     }
 
-    protected void gracefully(ChannelHandlerContext ctx, ChannelPromise promise)
-    {
+    protected void gracefully(ChannelHandlerContext ctx, ChannelPromise promise) {
         final Channel channel = ctx.channel();
         if (channel.isActive()) {
             final String channelId = channel.id().asShortText();
 
             // In gracefulCloseDelay secs time, go ahead and close the connection if it hasn't already been.
             int gracefulCloseDelay = ConnectionCloseChannelAttributes.gracefulCloseDelay(channel);
-            ctx.executor().schedule(() -> {
+            ctx.executor()
+                    .schedule(
+                            () -> {
 
-                // Check that the client hasn't already closed the connection.
-                if (channel.isActive()) {
+                                // Check that the client hasn't already closed the connection.
+                                if (channel.isActive()) {
 
-                    // If there is still an inflight request, then don't close the conn now. Instead assume that it will be closed
-                    // either after the response finally gets written (due to us having set the CLOSE_AFTER_RESPONSE flag), or when the IdleTimeout
-                    // for this conn fires.
-                    if (requestInflight.get()) {
-                        LOG.debug("gracefully: firing graceful_shutdown event to close connection, but request still inflight, so leaving. channel={}", channelId);
-                    }
-                    else {
-                        LOG.debug("gracefully: firing graceful_shutdown event to close connection. channel={}", channelId);
-                        ctx.close(promise);
-                    }
-                }
-                else {
-                    LOG.debug("gracefully: connection already closed. channel={}", channelId);
-                    promise.setSuccess();
-                }
-
-            }, gracefulCloseDelay, TimeUnit.SECONDS);
-        }
-        else {
+                                    // If there is still an inflight request, then don't close the conn now. Instead
+                                    // assume that it will be closed
+                                    // either after the response finally gets written (due to us having set the
+                                    // CLOSE_AFTER_RESPONSE flag), or when the IdleTimeout
+                                    // for this conn fires.
+                                    if (requestInflight.get()) {
+                                        LOG.debug(
+                                                "gracefully: firing graceful_shutdown event to close connection, but request still inflight, so leaving. channel={}",
+                                                channelId);
+                                    } else {
+                                        LOG.debug(
+                                                "gracefully: firing graceful_shutdown event to close connection. channel={}",
+                                                channelId);
+                                        ctx.close(promise);
+                                    }
+                                } else {
+                                    LOG.debug("gracefully: connection already closed. channel={}", channelId);
+                                    promise.setSuccess();
+                                }
+                            },
+                            gracefulCloseDelay,
+                            TimeUnit.SECONDS);
+        } else {
             promise.setSuccess();
         }
     }
 
-    protected void immediately(ChannelHandlerContext ctx, ChannelPromise promise)
-    {
+    protected void immediately(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (ctx.channel().isActive()) {
             ctx.close(promise);
-        }
-        else {
+        } else {
             promise.setSuccess();
         }
     }

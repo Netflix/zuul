@@ -34,5 +34,4 @@ public interface Tracer {
      * @param name a <code>String</code> value
      */
     void setName(String name);
-
 }

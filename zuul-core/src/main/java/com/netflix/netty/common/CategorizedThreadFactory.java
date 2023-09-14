@@ -25,8 +25,7 @@ import java.util.concurrent.ThreadFactory;
  * Date: 6/8/16
  * Time: 11:49 AM
  */
-public class CategorizedThreadFactory implements ThreadFactory
-{
+public class CategorizedThreadFactory implements ThreadFactory {
     private String category;
     private int num = 0;
 
@@ -35,9 +34,9 @@ public class CategorizedThreadFactory implements ThreadFactory
         this.category = category;
     }
 
+    @Override
     public Thread newThread(final Runnable r) {
-        final FastThreadLocalThread t = new FastThreadLocalThread(r,
-                category + "-" + num++);
+        final FastThreadLocalThread t = new FastThreadLocalThread(r, category + "-" + num++);
         return t;
     }
 }

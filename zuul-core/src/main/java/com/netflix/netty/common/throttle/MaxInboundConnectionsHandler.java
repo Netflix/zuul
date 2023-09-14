@@ -39,30 +39,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 @ChannelHandler.Sharable
-public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
-{
+public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
     private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
 
-    private final static AtomicInteger connections = new AtomicInteger(0);
+    private static final AtomicInteger connections = new AtomicInteger(0);
     private final Counter connectionThrottled;
     private final int maxConnections;
 
-    public MaxInboundConnectionsHandler(Registry registry, String metricId, int maxConnections)
-    {
+    public MaxInboundConnectionsHandler(Registry registry, String metricId, int maxConnections) {
         this.maxConnections = maxConnections;
         this.connectionThrottled = registry.counter("server.connections.throttled", "id", metricId);
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
         if (maxConnections > 0) {
             int currentCount = connections.getAndIncrement();
 
             if (currentCount + 1 > maxConnections) {
-                LOG.warn("Throttling incoming connection as above configured max connections threshold of {}", maxConnections);
+                LOG.warn(
+                        "Throttling incoming connection as above configured max connections threshold of {}",
+                        maxConnections);
                 Channel channel = ctx.channel();
                 channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
                 CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
@@ -75,20 +74,17 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (ctx.channel().attr(ATTR_CH_THROTTLED).get() != null) {
             // Discard this msg as channel is in process of being closed.
             ReferenceCountUtil.safeRelease(msg);
-        }
-        else {
+        } else {
             super.channelRead(ctx, msg);
         }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception
-    {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (maxConnections > 0) {
             connections.decrementAndGet();
         }

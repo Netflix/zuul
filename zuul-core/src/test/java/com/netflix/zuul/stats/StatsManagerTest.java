@@ -16,16 +16,20 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestInfo;
-import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link StatsManager}.
@@ -47,13 +51,10 @@ class StatsManagerTest {
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
         assertNotNull(routeStatusMap);
 
-
         RouteStatusCodeMonitor routeStatusMonitor = routeStatusMap.get(status);
-
 
         // 2nd request
         sm.collectRouteStats(route, status);
-
     }
 
     @Test

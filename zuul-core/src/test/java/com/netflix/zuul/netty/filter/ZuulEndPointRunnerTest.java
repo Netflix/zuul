@@ -33,19 +33,20 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import rx.Observable;
 
 import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
 import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
 import static com.netflix.zuul.netty.filter.ZuulEndPointRunner.DEFAULT_ERROR_ENDPOINT;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -79,7 +80,17 @@ class ZuulEndPointRunnerTest {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         when(chc.executor()).thenReturn(ImmediateEventExecutor.INSTANCE);
         context.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
-        request = new HttpRequestMessageImpl(context, "http", "GET", "/foo/bar", new HttpQueryParams(), headers, "127.0.0.1", "http", 8080, "server123");
+        request = new HttpRequestMessageImpl(
+                context,
+                "http",
+                "GET",
+                "/foo/bar",
+                new HttpQueryParams(),
+                headers,
+                "127.0.0.1",
+                "http",
+                8080,
+                "server123");
         request.storeInboundRequest();
     }
 
@@ -89,7 +100,8 @@ class ZuulEndPointRunnerTest {
         request.getContext().setEndpoint(BASIC_ENDPOINT);
         assertNull(request.getContext().get(ZUUL_ENDPOINT));
         endpointRunner.filter(request);
-        final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter = request.getContext().get(ZUUL_ENDPOINT);
+        final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter =
+                request.getContext().get(ZUUL_ENDPOINT);
         assertTrue(filter instanceof BasicEndpoint);
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);

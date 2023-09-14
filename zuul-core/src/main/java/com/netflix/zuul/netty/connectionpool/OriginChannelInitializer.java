@@ -16,9 +16,9 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
-import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 
 /**
  * Origin Channel Initializer

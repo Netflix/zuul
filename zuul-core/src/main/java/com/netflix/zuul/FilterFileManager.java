@@ -17,6 +17,11 @@ package com.netflix.zuul;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.netflix.config.DynamicIntProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -29,10 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class manages the directory polling for changes and new Groovy filters.
@@ -47,8 +48,10 @@ import org.slf4j.LoggerFactory;
 public class FilterFileManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterFileManager.class);
-    private static final DynamicIntProperty FILE_PROCESSOR_THREADS = new DynamicIntProperty("zuul.filterloader.threads", 1);
-    private static final DynamicIntProperty FILE_PROCESSOR_TASKS_TIMEOUT_SECS = new DynamicIntProperty("zuul.filterloader.tasks.timeout", 120);
+    private static final DynamicIntProperty FILE_PROCESSOR_THREADS =
+            new DynamicIntProperty("zuul.filterloader.threads", 1);
+    private static final DynamicIntProperty FILE_PROCESSOR_TASKS_TIMEOUT_SECS =
+            new DynamicIntProperty("zuul.filterloader.tasks.timeout", 120);
 
     Thread poller;
     boolean bRunning = true;
@@ -70,19 +73,21 @@ public class FilterFileManager {
      */
     @Inject
     public void init() throws Exception {
-        if(!config.enabled) {
+        if (!config.enabled) {
             return;
         }
 
         long startTime = System.currentTimeMillis();
-        ThreadFactory tf =
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("FilterFileManager_ProcessFiles-%d").build();
+        ThreadFactory tf = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("FilterFileManager_ProcessFiles-%d")
+                .build();
         this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), tf);
 
         filterLoader.putFiltersForClasses(config.getClassNames());
         manageFiles();
         startPoller();
-        
+
         LOG.warn("Finished loading all zuul filters. Duration = {} ms.", (System.currentTimeMillis() - startTime));
     }
 
@@ -103,13 +108,13 @@ public class FilterFileManager {
                 setDaemon(true);
             }
 
+            @Override
             public void run() {
                 while (bRunning) {
                     try {
                         sleep(config.getPollingIntervalSeconds() * 1000);
                         manageFiles();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         LOG.error("Error checking and/or loading filter files from Poller thread.", e);
                     }
                 }
@@ -125,7 +130,7 @@ public class FilterFileManager {
      * @return a File representing the directory path
      */
     public File getDirectory(String sPath) {
-        File  directory = new File(sPath);
+        File directory = new File(sPath);
         if (!directory.isDirectory()) {
             URL resource = FilterFileManager.class.getClassLoader().getResource(sPath);
             try {
@@ -174,8 +179,7 @@ public class FilterFileManager {
             tasks.add(() -> {
                 try {
                     return filterLoader.putFilter(file);
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     LOG.error("Error loading groovy filter from disk! file = {}", String.valueOf(file), e);
                     return false;
                 }
@@ -184,32 +188,35 @@ public class FilterFileManager {
         processFilesService.invokeAll(tasks, FILE_PROCESSOR_TASKS_TIMEOUT_SECS.get(), TimeUnit.SECONDS);
     }
 
-    void manageFiles()
-    {
+    void manageFiles() {
         try {
             List<File> aFiles = getFiles();
             processGroovyFiles(aFiles);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             String msg = "Error updating groovy filters from disk!";
             LOG.error(msg, e);
             throw new RuntimeException(msg, e);
         }
     }
 
-    public static class FilterFileManagerConfig
-    {
+    public static class FilterFileManagerConfig {
         private String[] directories;
         private String[] classNames;
         private int pollingIntervalSeconds;
         private FilenameFilter filenameFilter;
         boolean enabled;
 
-        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
+        public FilterFileManagerConfig(
+                String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter) {
             this(directories, classNames, pollingIntervalSeconds, filenameFilter, true);
         }
 
-        public FilterFileManagerConfig(String[] directories, String[] classNames, int pollingIntervalSeconds, FilenameFilter filenameFilter, boolean enabled) {
+        public FilterFileManagerConfig(
+                String[] directories,
+                String[] classNames,
+                int pollingIntervalSeconds,
+                FilenameFilter filenameFilter,
+                boolean enabled) {
             this.directories = directories;
             this.classNames = classNames;
             this.pollingIntervalSeconds = pollingIntervalSeconds;
@@ -220,13 +227,15 @@ public class FilterFileManager {
         public String[] getDirectories() {
             return directories;
         }
-        public String[] getClassNames()
-        {
+
+        public String[] getClassNames() {
             return classNames;
         }
+
         public int getPollingIntervalSeconds() {
             return pollingIntervalSeconds;
         }
+
         public FilenameFilter getFilenameFilter() {
             return filenameFilter;
         }

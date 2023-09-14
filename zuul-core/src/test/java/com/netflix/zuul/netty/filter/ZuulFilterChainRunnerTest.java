@@ -15,17 +15,6 @@
  */
 package com.netflix.zuul.netty.filter;
 
-import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
@@ -40,13 +29,22 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import rx.Observable;
 
+import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 class ZuulFilterChainRunnerTest {
     private HttpRequestMessage request;
@@ -59,7 +57,17 @@ class ZuulFilterChainRunnerTest {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         when(chc.executor()).thenReturn(ImmediateEventExecutor.INSTANCE);
         context.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
-        request = new HttpRequestMessageImpl(context, "http", "GET", "/foo/bar", new HttpQueryParams(), headers, "127.0.0.1", "http", 8080, "server123");
+        request = new HttpRequestMessageImpl(
+                context,
+                "http",
+                "GET",
+                "/foo/bar",
+                new HttpQueryParams(),
+                headers,
+                "127.0.0.1",
+                "http",
+                8080,
+                "server123");
         request.storeInboundRequest();
         response = new HttpResponseMessageImpl(context, request, 200);
     }
@@ -69,15 +77,12 @@ class ZuulFilterChainRunnerTest {
         final SimpleInboundFilter inbound1 = spy(new SimpleInboundFilter(true));
         final SimpleInboundFilter inbound2 = spy(new SimpleInboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[]{inbound1, inbound2};
+        final ZuulFilter[] filters = new ZuulFilter[] {inbound1, inbound2};
 
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);
 
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
-                filters,
-                notifier,
-                registry);
+        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
 
         runner.filter(request);
 
@@ -94,15 +99,12 @@ class ZuulFilterChainRunnerTest {
         final SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
         final SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[]{outbound1, outbound2};
+        final ZuulFilter[] filters = new ZuulFilter[] {outbound1, outbound2};
 
         final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         final Registry registry = mock(Registry.class);
 
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
-                filters,
-                notifier,
-                registry);
+        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
 
         runner.filter(response);
 
@@ -169,6 +171,4 @@ class ZuulFilterChainRunnerTest {
             return this.shouldFilter;
         }
     }
-
 }
-

@@ -16,9 +16,6 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
@@ -26,9 +23,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+import org.junit.jupiter.api.Test;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class HAProxyMessageChannelHandlerTest {
 
@@ -49,11 +50,12 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        InetSocketAddress destAddress = channel
-                .attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).get();
-
-        InetSocketAddress srcAddress = (InetSocketAddress) channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR)
+        InetSocketAddress destAddress = channel.attr(
+                        SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS)
                 .get();
+
+        InetSocketAddress srcAddress = (InetSocketAddress)
+                channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).get();
 
         assertEquals("124.123.111.111", destAddress.getHostString());
         assertEquals(443, destAddress.getPort());
