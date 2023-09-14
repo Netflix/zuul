@@ -42,4 +42,6 @@ public interface Resolver<T> {
      * hook to perform activities on shutdown
      */
     void shutdown();
+
+    default void setListener(ResolverListener<T> listener) {    }
 }

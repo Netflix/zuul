@@ -63,7 +63,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     public static final String METRIC_PREFIX = "connectionpool";
 
-    private final Resolver <? extends DiscoveryResult> dynamicServerResolver;
+    private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
     private final Registry spectatorRegistry;
@@ -100,8 +100,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     public DefaultClientChannelManager(
             OriginName originName, IClientConfig clientConfig, Registry spectatorRegistry) {
+        this(originName, clientConfig, new DynamicServerResolver(clientConfig), spectatorRegistry);
+    }
+
+    public DefaultClientChannelManager(
+            OriginName originName, IClientConfig clientConfig,
+            Resolver<DiscoveryResult> resolver, Registry spectatorRegistry) {
         this.originName = Objects.requireNonNull(originName, "originName");
-        this.dynamicServerResolver = new DynamicServerResolver(clientConfig, new ServerPoolListener());
+        this.dynamicServerResolver = resolver;
 
         String metricId = originName.getMetricId();
 
@@ -130,43 +136,10 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", metricId, new AtomicInteger());
     }
 
-    @VisibleForTesting
-    public DefaultClientChannelManager(
-            OriginName originName, IClientConfig clientConfig,
-            Resolver<? extends DiscoveryResult> resolver, Registry spectatorRegistry) {
-        this.originName = Objects.requireNonNull(originName, "originName");
-        this.dynamicServerResolver = resolver;
-
-        String metricId = originName.getMetricId();
-
-        this.clientConfig = clientConfig;
-        this.spectatorRegistry = spectatorRegistry;
-        this.perServerPools = new ConcurrentHashMap<>(200);
-
-        this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
-
-        this.createNewConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create", metricId);
-        this.createConnSucceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_success", metricId);
-        this.createConnFailedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_create_fail", metricId);
-
-        this.closeConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_close", metricId);
-        this.closeAbovePoolHighWaterMarkCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeAbovePoolHighWaterMark", metricId);
-        this.closeExpiredConnLifetimeCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "__closeExpiredConnLifetime", metricId);
-        this.requestConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_request", metricId);
-        this.reuseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_reuse", metricId);
-        this.releaseConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_release", metricId);
-        this.alreadyClosedCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_alreadyClosed", metricId);
-        this.connTakenFromPoolIsNotOpen = SpectatorUtils.newCounter(METRIC_PREFIX + "_fromPoolIsClosed", metricId);
-        this.maxConnsPerHostExceededCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_maxConnsPerHostExceeded", metricId);
-        this.closeWrtBusyConnCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_closeWrtBusyConnCounter", metricId);
-        this.connEstablishTimer = PercentileTimer.get(spectatorRegistry, spectatorRegistry.createId(METRIC_PREFIX + "_createTiming", "id", metricId));
-        this.connsInPool = SpectatorUtils.newGauge(METRIC_PREFIX + "_inPool", metricId, new AtomicInteger());
-        this.connsInUse = SpectatorUtils.newGauge(METRIC_PREFIX + "_inUse", metricId, new AtomicInteger());
-    }
-
     @Override
     public void init()
     {
+        dynamicServerResolver.setListener(new ServerPoolListener());
         // Load channel initializer and conn factory.
         // We don't do this within the constructor because some subclass may not be initialized until post-construct.
         this.channelInitializer = createChannelInitializer(clientConfig, connPoolConfig, spectatorRegistry);
@@ -413,7 +386,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     final class ServerPoolListener implements ResolverListener<DiscoveryResult> {
-
         @Override
         public void onChange(List<DiscoveryResult> removedSet) {
             if (!removedSet.isEmpty()) {
@@ -427,7 +399,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 }
             }
         }
-
     }
 
     @Override
@@ -477,4 +448,5 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
         return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
     }
+
 }
