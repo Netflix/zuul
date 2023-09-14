@@ -22,6 +22,7 @@ import com.netflix.zuul.netty.server.push.PushUserAuth;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+
 import javax.inject.Singleton;
 
 /**
@@ -43,8 +44,5 @@ public class SamplePushMessageSender extends PushMessageSender {
             return new SamplePushUserAuth(HttpResponseStatus.UNAUTHORIZED.code());
         }
         return new SamplePushUserAuth(cid);
-
     }
-
 }
-

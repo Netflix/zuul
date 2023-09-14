@@ -23,10 +23,11 @@ import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.loadbalancer.LoadBalancerStats;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+
+import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import javax.annotation.Nullable;
 
 /**
  * @author Argha C
@@ -42,11 +43,13 @@ public final class DiscoveryResult implements ResolverResult {
      * This exists to allow for a semblance of type safety, and encourages avoiding null checks on the underlying Server,
      * thus representing a sentinel value for an empty resolution result.
      */
-    public static final DiscoveryResult EMPTY =
-            DiscoveryResult.from(InstanceInfo.Builder.newBuilder()
-                                .setAppName("undefined")
-                                .setHostName("undefined")
-                                .setPort(-1).build(), false);
+    public static final DiscoveryResult EMPTY = DiscoveryResult.from(
+            InstanceInfo.Builder.newBuilder()
+                    .setAppName("undefined")
+                    .setHostName("undefined")
+                    .setPort(-1)
+                    .build(),
+            false);
 
     public DiscoveryResult(DiscoveryEnabledServer server, LoadBalancerStats lbStats) {
         this.server = server;
@@ -126,7 +129,6 @@ public final class DiscoveryResult implements ResolverResult {
         }
     }
 
-
     public SimpleMetaInfo getMetaInfo() {
         return new SimpleMetaInfo(server.getMetaInfo());
     }
@@ -153,7 +155,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     @VisibleForTesting
-    ServerStats getServerStats(){
+    ServerStats getServerStats() {
         return this.serverStats;
     }
 
@@ -226,7 +228,6 @@ public final class DiscoveryResult implements ResolverResult {
         return Objects.hashCode(server);
     }
 
-
     /**
      * Two instances are deemed identical if they wrap the same underlying discovery server instance.
      */
@@ -242,5 +243,4 @@ public final class DiscoveryResult implements ResolverResult {
         final DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }
-
 }

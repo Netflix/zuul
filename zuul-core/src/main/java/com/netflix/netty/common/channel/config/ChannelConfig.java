@@ -23,32 +23,26 @@ import java.util.HashMap;
  * Date: 2/8/17
  * Time: 6:43 PM
  */
-public class ChannelConfig implements Cloneable
-{
+public class ChannelConfig implements Cloneable {
     private final HashMap<ChannelConfigKey, ChannelConfigValue> parameters;
 
-    public ChannelConfig()
-    {
+    public ChannelConfig() {
         parameters = new HashMap<>();
     }
 
-    public ChannelConfig(HashMap<ChannelConfigKey, ChannelConfigValue> parameters)
-    {
+    public ChannelConfig(HashMap<ChannelConfigKey, ChannelConfigValue> parameters) {
         this.parameters = (HashMap<ChannelConfigKey, ChannelConfigValue>) parameters.clone();
     }
 
-    public void add(ChannelConfigValue param)
-    {
+    public void add(ChannelConfigValue param) {
         this.parameters.put(param.key(), param);
     }
 
-    public <T> void set(ChannelConfigKey<T> key, T value)
-    {
+    public <T> void set(ChannelConfigKey<T> key, T value) {
         this.parameters.put(key, new ChannelConfigValue<>(key, value));
     }
 
-    public <T> T get(ChannelConfigKey<T> key)
-    {
+    public <T> T get(ChannelConfigKey<T> key) {
         ChannelConfigValue<T> ccv = parameters.get(key);
         T value = ccv == null ? null : (T) ccv.value();
 
@@ -59,19 +53,16 @@ public class ChannelConfig implements Cloneable
         return value;
     }
 
-    public <T> ChannelConfigValue<T> getConfig(ChannelConfigKey<T> key)
-    {
+    public <T> ChannelConfigValue<T> getConfig(ChannelConfigKey<T> key) {
         return (ChannelConfigValue<T>) parameters.get(key);
     }
 
-    public <T> boolean contains(ChannelConfigKey<T> key)
-    {
+    public <T> boolean contains(ChannelConfigKey<T> key) {
         return parameters.containsKey(key);
     }
 
     @Override
-    public ChannelConfig clone()
-    {
+    public ChannelConfig clone() {
         return new ChannelConfig(parameters);
     }
 }

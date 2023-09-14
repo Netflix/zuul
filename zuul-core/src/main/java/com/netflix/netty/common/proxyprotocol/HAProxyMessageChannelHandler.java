@@ -28,6 +28,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.util.AttributeKey;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
@@ -37,7 +38,6 @@ import java.net.SocketAddress;
  * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass it any further along the pipeline.
  * Use in conjunction with HAProxyMessageDecoder if proxy protocol is enabled on the ELB.
  */
-
 public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAdapter {
 
     public static final AttributeKey<HAProxyMessage> ATTR_HAPROXY_MESSAGE =
@@ -47,8 +47,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
     @VisibleForTesting
     static final Attrs.Key<Integer> HAPM_DEST_PORT = Attrs.newKey("hapm_port");
+
     @VisibleForTesting
     static final Attrs.Key<String> HAPM_DEST_IP_VERSION = Attrs.newKey("hapm_dst_ipproto");
+
     @VisibleForTesting
     static final Attrs.Key<String> HAPM_SRC_IP_VERSION = Attrs.newKey("hapm_src_ipproto");
 
@@ -75,9 +77,12 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                             InetSocketAddress inetAddr = new InetSocketAddress(
                                     InetAddresses.forString(destinationAddress), hapm.destinationPort());
                             addr = inetAddr;
-                            // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_LOCAL_ADDR could be PPv2 or not
-                            channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS).set(inetAddr);
-                            Attrs attrs = ctx.channel().attr(Server.CONN_DIMENSIONS).get();
+                            // setting PPv2 explicitly because SourceAddressChannelHandler.ATTR_LOCAL_ADDR could be PPv2
+                            // or not
+                            channel.attr(SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS)
+                                    .set(inetAddr);
+                            Attrs attrs =
+                                    ctx.channel().attr(Server.CONN_DIMENSIONS).get();
                             if (inetAddr.getAddress() instanceof Inet4Address) {
                                 HAPM_DEST_IP_VERSION.put(attrs, "v4");
                             } else if (inetAddr.getAddress() instanceof Inet6Address) {
@@ -113,9 +118,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                         case TCP4:
                         case TCP6:
                             InetSocketAddress inetAddr;
-                            addr = inetAddr = new InetSocketAddress(
-                                    InetAddresses.forString(sourceAddress), hapm.sourcePort());
-                            Attrs attrs = ctx.channel().attr(Server.CONN_DIMENSIONS).get();
+                            addr = inetAddr =
+                                    new InetSocketAddress(InetAddresses.forString(sourceAddress), hapm.sourcePort());
+                            Attrs attrs =
+                                    ctx.channel().attr(Server.CONN_DIMENSIONS).get();
                             if (inetAddr.getAddress() instanceof Inet4Address) {
                                 HAPM_SRC_IP_VERSION.put(attrs, "v4");
                             } else if (inetAddr.getAddress() instanceof Inet6Address) {

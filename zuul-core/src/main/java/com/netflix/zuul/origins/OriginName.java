@@ -17,6 +17,7 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.util.VipUtils;
+
 import java.util.Locale;
 import java.util.Objects;
 
@@ -150,10 +151,9 @@ public final class OriginName {
 
     @Override
     public String toString() {
-        return "OriginName{" +
-                "niwsClientName='" + niwsClientName + '\'' +
-                ", target='" + target + '\'' +
-                ", authority='" + authority + '\'' +
-                '}';
+        return "OriginName{" + "niwsClientName='"
+                + niwsClientName + '\'' + ", target='"
+                + target + '\'' + ", authority='"
+                + authority + '\'' + '}';
     }
 }

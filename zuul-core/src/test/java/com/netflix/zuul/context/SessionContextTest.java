@@ -15,13 +15,15 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.context.SessionContext.Key;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class SessionContextTest {

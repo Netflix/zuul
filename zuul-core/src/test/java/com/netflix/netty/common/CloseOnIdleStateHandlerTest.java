@@ -16,9 +16,6 @@
 
 package com.netflix.netty.common;
 
-import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -27,6 +24,9 @@ import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CloseOnIdleStateHandlerTest {
 

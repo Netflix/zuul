@@ -17,7 +17,6 @@
 package com.netflix.netty.common;
 
 import com.netflix.zuul.message.ZuulMessage;
-import com.netflix.zuul.message.http.HttpRequestMessage;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.ResourceLeakDetector;

@@ -14,13 +14,12 @@
  *      limitations under the License.
  */
 
-
 package com.netflix.zuul.origins;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.Test;
 
 class OriginNameTest {
     @Test
@@ -37,7 +36,6 @@ class OriginNameTest {
         assertEquals("woodly-doodly", trusted.getMetricId());
         assertEquals("WOODLY-doodly", trusted.getNiwsClientName());
     }
-
 
     @Test
     void equals() {

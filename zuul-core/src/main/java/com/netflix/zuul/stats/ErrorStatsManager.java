@@ -27,8 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 4:16 PM
  */
 public class ErrorStatsManager {
-    ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>> routeMap = new ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>>();
-    final static ErrorStatsManager INSTANCE = new ErrorStatsManager();
+    ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>> routeMap =
+            new ConcurrentHashMap<String, ConcurrentHashMap<String, ErrorStatsData>>();
+    static final ErrorStatsManager INSTANCE = new ErrorStatsManager();
 
     /**
      *
@@ -37,7 +38,6 @@ public class ErrorStatsManager {
     public static ErrorStatsManager getManager() {
         return INSTANCE;
     }
-
 
     /**
      *
@@ -81,12 +81,5 @@ public class ErrorStatsManager {
         sd.update();
     }
 
-
-
-    public static class UnitTest {
-
-    }
-
-
+    public static class UnitTest {}
 }
-

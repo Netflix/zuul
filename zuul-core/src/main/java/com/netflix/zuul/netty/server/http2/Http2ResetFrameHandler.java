@@ -29,17 +29,14 @@ import io.netty.util.ReferenceCountUtil;
  * Time: 6:02 PM
  */
 @ChannelHandler.Sharable
-public class Http2ResetFrameHandler extends ChannelInboundHandlerAdapter
-{
+public class Http2ResetFrameHandler extends ChannelInboundHandlerAdapter {
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2ResetFrame) {
             // Inform zuul to cancel the request.
             ctx.fireUserEventTriggered(new RequestCancelledEvent());
             ReferenceCountUtil.safeRelease(msg);
-        }
-        else {
+        } else {
             super.channelRead(ctx, msg);
         }
     }

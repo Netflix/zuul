@@ -33,8 +33,8 @@ class PushAuthHandlerTest {
     void testIsInvalidOrigin() {
         ZuulPushAuthHandlerTest authHandler = new ZuulPushAuthHandlerTest();
 
-        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST,
-                "/ws", Unpooled.buffer());
+        final DefaultFullHttpRequest request =
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/ws", Unpooled.buffer());
 
         // Invalid input
         assertTrue(authHandler.isInvalidOrigin(request));

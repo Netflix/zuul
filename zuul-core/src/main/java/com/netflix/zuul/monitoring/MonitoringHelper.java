@@ -39,5 +39,4 @@ public class MonitoringHelper {
         @Override
         public void stopAndLog() {}
     }
-
 }

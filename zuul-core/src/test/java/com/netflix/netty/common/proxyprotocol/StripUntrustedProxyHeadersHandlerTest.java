@@ -16,13 +16,6 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler.AllowWhen;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
@@ -43,6 +36,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 /**
  * Strip Untrusted Proxy Headers Handler Test
  *
@@ -55,14 +56,17 @@ class StripUntrustedProxyHeadersHandlerTest {
 
     @Mock
     private ChannelHandlerContext channelHandlerContext;
+
     @Mock
     private HttpRequest msg;
+
     private HttpHeaders headers;
+
     @Mock
     private Channel channel;
+
     @Mock
     private SslHandshakeInfo sslHandshakeInfo;
-
 
     @BeforeEach
     void before() {
@@ -156,5 +160,4 @@ class StripUntrustedProxyHeadersHandlerTest {
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
         return spy(new StripUntrustedProxyHeadersHandler(allowWhen));
     }
-
 }

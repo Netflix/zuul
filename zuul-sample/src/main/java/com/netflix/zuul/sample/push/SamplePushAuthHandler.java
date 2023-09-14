@@ -52,7 +52,7 @@ public class SamplePushAuthHandler extends PushAuthHandler {
     protected PushUserAuth doAuth(FullHttpRequest req) {
         final Cookies cookies = parseCookies(req);
         for (final Cookie c : cookies.getAll()) {
-            if(c.getName().equals("userAuthCookie")) {
+            if (c.getName().equals("userAuthCookie")) {
                 final String customerId = c.getValue();
                 if (!Strings.isNullOrEmpty(customerId)) {
                     return new SamplePushUserAuth(customerId);
@@ -61,5 +61,4 @@ public class SamplePushAuthHandler extends PushAuthHandler {
         }
         return new SamplePushUserAuth(HttpResponseStatus.UNAUTHORIZED.code());
     }
-
 }

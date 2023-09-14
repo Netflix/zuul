@@ -19,6 +19,11 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -28,10 +33,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 public final class DynamicFilterLoader implements FilterLoader {
@@ -51,9 +52,7 @@ public final class DynamicFilterLoader implements FilterLoader {
 
     @Inject
     public DynamicFilterLoader(
-            FilterRegistry filterRegistry,
-            DynamicCodeCompiler compiler,
-            FilterFactory filterFactory) {
+            FilterRegistry filterRegistry, DynamicCodeCompiler compiler, FilterFactory filterFactory) {
         this.filterRegistry = filterRegistry;
         this.compiler = compiler;
         this.filterFactory = filterFactory;
@@ -141,7 +140,7 @@ public final class DynamicFilterLoader implements FilterLoader {
         }
         SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filter.filterType());
         if (set != null) {
-            hashFiltersByType.remove(filter.filterType()); //rebuild this list
+            hashFiltersByType.remove(filter.filterType()); // rebuild this list
         }
 
         String nameAndType = filter.filterType() + ":" + filter.filterName();

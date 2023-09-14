@@ -18,12 +18,12 @@ package com.netflix.zuul.netty.server;
 
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
-import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
-import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
+import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
+import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
 
 /**
  * Created by saroskar on 1/18/17.
@@ -60,7 +60,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     private volatile ProxyEndpoint edgeProxy;
 
     private static final Logger logger = LoggerFactory.getLogger(OriginResponseReceiver.class);
-    private static final AttributeKey<Throwable> SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE = AttributeKey.newInstance("_ssl_handshake_from_origin_throwable");
+    private static final AttributeKey<Throwable> SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE =
+            AttributeKey.newInstance("_ssl_handshake_from_origin_throwable");
     public static final String CHANNEL_HANDLER_NAME = "_origin_response_receiver";
 
     public OriginResponseReceiver(final ProxyEndpoint edgeProxy) {
@@ -70,7 +71,6 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     public void unlinkFromClientRequest() {
         edgeProxy = null;
     }
-
 
     @Override
     public final void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -83,13 +83,12 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
-            } else if (ReferenceCountUtil.refCnt(msg) > 0){
+            } else if (ReferenceCountUtil.refCnt(msg) > 0) {
                 // this handles the case of a DefaultFullHttpResponse that could have content that needs to be released
                 ReferenceCountUtil.safeRelease(msg);
             }
             ctx.channel().read();
-        }
-        else if (msg instanceof HttpContent) {
+        } else if (msg instanceof HttpContent) {
             final HttpContent chunk = (HttpContent) msg;
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
@@ -97,9 +96,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 ReferenceCountUtil.safeRelease(chunk);
             }
             ctx.channel().read();
-        }
-        else {
-            //should never happen
+        } else {
+            // should never happen
             ReferenceCountUtil.release(msg);
             final Exception error = new IllegalStateException("Received invalid message from origin");
             if (edgeProxy != null) {
@@ -114,8 +112,10 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (evt instanceof CompleteEvent) {
             final CompleteReason reason = ((CompleteEvent) evt).getReason();
             if ((reason != SESSION_COMPLETE) && (edgeProxy != null)) {
-                logger.error("Origin request completed with reason other than COMPLETE: {}, {}",
-                        reason.name(), ChannelUtils.channelInfoForLogging(ctx.channel()));
+                logger.error(
+                        "Origin request completed with reason other than COMPLETE: {}, {}",
+                        reason.name(),
+                        ChannelUtils.channelInfoForLogging(ctx.channel()));
                 final ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
                 edgeProxy.errorFromOrigin(ze);
             }
@@ -124,23 +124,20 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             // See channelWrite() where these vars are first set onto the channel.
             try {
                 super.userEventTriggered(ctx, evt);
-            }
-            finally {
+            } finally {
                 postCompleteHook(ctx, evt);
             }
-        }
-        else if (evt instanceof SslHandshakeCompletionEvent && !((SslHandshakeCompletionEvent) evt).isSuccess()) {
+        } else if (evt instanceof SslHandshakeCompletionEvent && !((SslHandshakeCompletionEvent) evt).isSuccess()) {
             Throwable cause = ((SslHandshakeCompletionEvent) evt).cause();
             ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(cause);
-        }
-        else if (evt instanceof IdleStateEvent) {
+        } else if (evt instanceof IdleStateEvent) {
             if (edgeProxy != null) {
-                logger.error("Origin request received IDLE event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+                logger.error(
+                        "Origin request received IDLE event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
                 edgeProxy.errorFromOrigin(new OutboundException(READ_TIMEOUT, edgeProxy.getRequestAttempts()));
             }
             super.userEventTriggered(ctx, evt);
-        }
-        else {
+        } else {
             super.userEventTriggered(ctx, evt);
         }
     }
@@ -152,8 +149,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
      * @param evt - netty event
      * @throws Exception
      */
-    protected void postCompleteHook(ChannelHandlerContext ctx, Object evt) throws Exception {
-    }
+    protected void postCompleteHook(ChannelHandlerContext ctx, Object evt) throws Exception {}
 
     private HttpRequest buildOriginHttpRequest(final HttpRequestMessage zuulRequest) {
         final String method = zuulRequest.getMethod().toUpperCase();
@@ -161,7 +157,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
 
         customRequestProcessing(zuulRequest);
 
-        final DefaultHttpRequest nettyReq = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
+        final DefaultHttpRequest nettyReq =
+                new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
         // Copy headers across.
         for (final Header h : zuulRequest.getHeaders().entries()) {
             nettyReq.headers().add(h.getKey(), h.getValue());
@@ -175,17 +172,16 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
      *
      * @param headers
      */
-    protected void customRequestProcessing(HttpRequestMessage headers) {
-    }
+    protected void customRequestProcessing(HttpRequestMessage headers) {}
 
     private static String pathAndQueryString(HttpRequestMessage request) {
         // parsing the params cleans up any empty/null params using the logic of the HttpQueryParams class
-        final HttpQueryParams cleanParams = HttpQueryParams.parse(request.getQueryParams().toEncodedString());
+        final HttpQueryParams cleanParams =
+                HttpQueryParams.parse(request.getQueryParams().toEncodedString());
         final String cleanQueryStr = cleanParams.toEncodedString();
         if (cleanQueryStr == null || cleanQueryStr.isEmpty()) {
             return request.getPath();
-        }
-        else {
+        } else {
             return request.getPath() + "?" + cleanParams.toEncodedString();
         }
     }
@@ -206,12 +202,18 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (msg instanceof HttpRequestMessage) {
             promise.addListener((future) -> {
                 if (!future.isSuccess()) {
-                    Throwable cause = ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).get();
+                    Throwable cause = ctx.channel()
+                            .attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE)
+                            .get();
                     if (cause != null) {
                         // Set the specific SSL handshake error if the handlers have already caught them
-                        ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(null);
+                        ctx.channel()
+                                .attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE)
+                                .set(null);
                         fireWriteError("request headers", cause, ctx);
-                        logger.debug("SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ", future.cause());
+                        logger.debug(
+                                "SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ",
+                                future.cause());
                     } else {
                         fireWriteError("request headers", future.cause(), ctx);
                     }
@@ -222,17 +224,15 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             preWriteHook(ctx, zuulReq);
 
             super.write(ctx, buildOriginHttpRequest(zuulReq), promise);
-        }
-        else if (msg instanceof HttpContent) {
+        } else if (msg instanceof HttpContent) {
             promise.addListener((future) -> {
                 if (!future.isSuccess()) {
                     fireWriteError("request content chunk", future.cause(), ctx);
                 }
             });
             super.write(ctx, msg, promise);
-        }
-        else {
-            //should never happen
+        } else {
+            // should never happen
             ReferenceCountUtil.release(msg);
             throw new ZuulException("Received invalid message from client", true);
         }
@@ -244,8 +244,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
      * @param ctx     channel handler context
      * @param zuulReq request message to modify
      */
-    protected void preWriteHook(ChannelHandlerContext ctx, HttpRequestMessage zuulReq) {
-    }
+    protected void preWriteHook(ChannelHandlerContext ctx, HttpRequestMessage zuulReq) {}
 
     private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) throws Exception {
         String errMesg = "Error while proxying " + requestPart + " to origin ";
@@ -263,11 +262,12 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (edgeProxy != null) {
             if (cause instanceof ReadTimeoutException) {
                 edgeProxy.getPassport().add(PassportState.ORIGIN_CH_READ_TIMEOUT);
-                logger.debug("read timeout on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
-            }
-            else if (cause instanceof IOException) {
+                logger.debug(
+                        "read timeout on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
+            } else if (cause instanceof IOException) {
                 edgeProxy.getPassport().add(PassportState.ORIGIN_CH_IO_EX);
-                logger.debug("I/O error on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
+                logger.debug(
+                        "I/O error on origin channel {} ", ChannelUtils.channelInfoForLogging(ctx.channel()), cause);
             } else {
                 logger.error("Error from Origin connection:", cause);
             }
@@ -286,5 +286,4 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         super.channelInactive(ctx);
         ctx.close();
     }
-
 }

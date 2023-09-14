@@ -23,12 +23,12 @@ import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.http.HttpHeaderNames;
-import io.netty.buffer.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,10 +38,9 @@ import java.util.List;
  * Date: 2/20/15
  * Time: 3:10 PM
  */
-public class ZuulMessageImpl implements ZuulMessage
-{
-    protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
-            "zuul.message.body.max.size", 25 * 1000 * 1024);
+public class ZuulMessageImpl implements ZuulMessage {
+    protected static final DynamicIntProperty MAX_BODY_SIZE_PROP =
+            DynamicPropertyFactory.getInstance().getIntProperty("zuul.message.body.max.size", 25 * 1000 * 1024);
 
     protected final SessionContext context;
     protected Headers headers;
@@ -49,7 +48,6 @@ public class ZuulMessageImpl implements ZuulMessage
     private boolean hasBody;
     private boolean bodyBufferedCompletely;
     private List<HttpContent> bodyChunks;
-
 
     public ZuulMessageImpl(SessionContext context) {
         this(context, new Headers());
@@ -81,7 +79,6 @@ public class ZuulMessageImpl implements ZuulMessage
         return MAX_BODY_SIZE_PROP.get();
     }
 
-
     @Override
     public void setHasBody(boolean hasBody) {
         this.hasBody = hasBody;
@@ -102,7 +99,7 @@ public class ZuulMessageImpl implements ZuulMessage
         setHasBody(true);
         ByteBufUtil.touch(chunk, "ZuulMessage buffering body content.");
         bodyChunks.add(chunk);
-        if (chunk instanceof  LastHttpContent) {
+        if (chunk instanceof LastHttpContent) {
             ByteBufUtil.touch(chunk, "ZuulMessage buffering body content complete.");
             bodyBufferedCompletely = true;
         }
@@ -116,7 +113,7 @@ public class ZuulMessageImpl implements ZuulMessage
     @Override
     public void setBodyAsText(String bodyText) {
         disposeBufferedBody();
-        if (! Strings.isNullOrEmpty(bodyText)) {
+        if (!Strings.isNullOrEmpty(bodyText)) {
             byte[] bytes = bodyText.getBytes(Charsets.UTF_8);
             bufferBodyContents(new DefaultLastHttpContent(Unpooled.wrappedBuffer(bytes)));
             setContentLength(bytes.length);
@@ -189,7 +186,7 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public boolean finishBufferedBodyIfIncomplete() {
-        if (! bodyBufferedCompletely) {
+        if (!bodyBufferedCompletely) {
             bufferBodyContents(new DefaultLastHttpContent());
             return true;
         }
@@ -209,16 +206,16 @@ public class ZuulMessageImpl implements ZuulMessage
 
     @Override
     public void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter) {
-        //Loop optimized for the common case: Most filters' processContentChunk() return
+        // Loop optimized for the common case: Most filters' processContentChunk() return
         // original chunk passed in as is without any processing
         final String filterName = filter.filterName();
-        for (int i=0; i < bodyChunks.size(); i++) {
+        for (int i = 0; i < bodyChunks.size(); i++) {
             final HttpContent origChunk = bodyChunks.get(i);
             ByteBufUtil.touch(origChunk, "ZuulMessage processing chunk, filter: ", filterName);
             final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
             ByteBufUtil.touch(filteredChunk, "ZuulMessage processing filteredChunk, filter: ", filterName);
             if ((filteredChunk != null) && (filteredChunk != origChunk)) {
-                //filter actually did some processing, set the new chunk in and release the old chunk.
+                // filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
                 final int refCnt = origChunk.refCnt();
                 if (refCnt > 0) {

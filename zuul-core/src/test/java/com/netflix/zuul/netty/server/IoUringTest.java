@@ -16,10 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -32,30 +28,40 @@ import io.netty.incubator.channel.uring.IOUring;
 import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
-
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 /*
 
-      Goals of this test:
-      1) verify that the server starts
-      2) verify that the server is listening on 2 ports
-      3) verify that the correct number of IOUringSocketChannel's are initialized
-      4) verify that the server stops
+     Goals of this test:
+     1) verify that the server starts
+     2) verify that the server is listening on 2 ports
+     3) verify that the correct number of IOUringSocketChannel's are initialized
+     4) verify that the server stops
 
- */
+*/
 @Disabled
 class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
@@ -85,7 +91,8 @@ class IoUringTest {
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
 
-        final List<IOUringSocketChannel> ioUringChannels = Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
+        final List<IOUringSocketChannel> ioUringChannels =
+                Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
 
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
@@ -98,13 +105,12 @@ class IoUringTest {
         };
         initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
         // The port to channel map keys on the port, post bind. This should be unique even if InetAddress is same
-        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress( 0)), init);
+        initializers.put(new NamedSocketAddress("test2", new InetSocketAddress(0)), init);
 
-        ClientConnectionsShutdown ccs =
-                new ClientConnectionsShutdown(
-                        new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
-                        GlobalEventExecutor.INSTANCE,
-                                /* discoveryClient= */ null);
+        ClientConnectionsShutdown ccs = new ClientConnectionsShutdown(
+                new DefaultChannelGroup(GlobalEventExecutor.INSTANCE),
+                GlobalEventExecutor.INSTANCE,
+                /* discoveryClient= */ null);
         EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
         EventLoopConfig elc = new EventLoopConfig() {
             @Override
@@ -130,9 +136,7 @@ class IoUringTest {
             checkConnection(inetAddress.getPort());
         });
 
-        await()
-                .atMost(1, SECONDS)
-                .until(() -> ioUringChannels.size() == 2);
+        await().atMost(1, SECONDS).until(() -> ioUringChannels.size() == 2);
 
         s.stop();
 
@@ -160,8 +164,7 @@ class IoUringTest {
         } finally {
             try {
                 sock.close();
-            }
-            catch (Exception ignored) {
+            } catch (Exception ignored) {
             }
         }
     }

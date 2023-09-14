@@ -32,8 +32,7 @@ import java.util.zip.GZIPOutputStream;
  * Date: 5/10/16
  * Time: 12:31 PM
  */
-public class Gzipper
-{
+public class Gzipper {
     private final ByteArrayOutputStream baos;
     private final GZIPOutputStream gzos;
 
@@ -41,8 +40,7 @@ public class Gzipper
         try {
             baos = new ByteArrayOutputStream(256);
             gzos = new GZIPOutputStream(baos, true);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error finalizing the GzipOutputstream", e);
         }
     }
@@ -67,11 +65,9 @@ public class Gzipper
         try {
             write(chunk.content());
             gzos.flush();
-        }
-        catch(IOException ioEx) {
+        } catch (IOException ioEx) {
             throw new ZuulException(ioEx, "Error Gzipping response content chunk", true);
-        }
-        finally {
+        } finally {
             chunk.release();
         }
     }
@@ -81,8 +77,7 @@ public class Gzipper
             gzos.finish();
             gzos.flush();
             gzos.close();
-        }
-        catch (IOException ioEx) {
+        } catch (IOException ioEx) {
             throw new ZuulException(ioEx, "Error finalizing the GzipOutputStream", true);
         }
     }
@@ -92,5 +87,4 @@ public class Gzipper
         baos.reset();
         return copy;
     }
-
 }

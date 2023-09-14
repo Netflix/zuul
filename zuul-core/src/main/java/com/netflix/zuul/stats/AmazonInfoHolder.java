@@ -31,5 +31,4 @@ public class AmazonInfoHolder {
     }
 
     private AmazonInfoHolder() {}
-
 }

@@ -15,11 +15,12 @@
  */
 package com.netflix.zuul.context;
 
-
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
@@ -44,8 +43,9 @@ import javax.annotation.Nullable;
  * Time: 6:45 PM
  */
 public final class SessionContext extends HashMap<String, Object> implements Cloneable {
-    private static final int INITIAL_SIZE =
-            DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60).get();
+    private static final int INITIAL_SIZE = DynamicPropertyFactory.getInstance()
+            .getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60)
+            .get();
 
     private boolean brownoutMode = false;
     private boolean shouldStopFilterProcessing = false;
@@ -105,8 +105,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         }
     }
 
-    public SessionContext()
-    {
+    public SessionContext() {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
         super(INITIAL_SIZE);
@@ -221,14 +220,12 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Makes a copy of the RequestContext. This is used for debugging.
      */
     @Override
-    public SessionContext clone()
-    {
+    public SessionContext clone() {
         // TODO(carl-mastrangelo): copy over the type safe keys
         return (SessionContext) super.clone();
     }
 
-    public String getString(String key)
-    {
+    public String getString(String key) {
         return (String) get(key);
     }
 
@@ -273,18 +270,18 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         }
     }
 
-    public String getUUID()
-    {
+    public String getUUID() {
         return getString(KEY_UUID);
     }
-    public void setUUID(String uuid)
-    {
+
+    public void setUUID(String uuid) {
         set(KEY_UUID, uuid);
     }
 
     public void setStaticResponse(HttpResponseMessage response) {
         set(KEY_STATIC_RESPONSE, response);
     }
+
     public HttpResponseMessage getStaticResponse() {
         return (HttpResponseMessage) get(KEY_STATIC_RESPONSE);
     }
@@ -295,7 +292,6 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     public Throwable getError() {
         return (Throwable) get("_error");
-
     }
 
     /**
@@ -303,12 +299,12 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     public void setError(Throwable th) {
         put("_error", th);
-
     }
 
     public String getErrorEndpoint() {
         return (String) get("_error-endpoint");
     }
+
     public void setErrorEndpoint(String name) {
         put("_error-endpoint", name);
     }
@@ -390,7 +386,13 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         if (sb.length() > 0) {
             sb.append(", ");
         }
-        sb.append(name).append('[').append(status).append(']').append('[').append(time).append("ms]");
+        sb.append(name)
+                .append('[')
+                .append(status)
+                .append(']')
+                .append('[')
+                .append(time)
+                .append("ms]");
     }
 
     /**
@@ -413,7 +415,6 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         this.shouldSendErrorResponse = should;
     }
 
-
     public boolean errorResponseSent() {
         return this.errorResponseSent;
     }
@@ -422,19 +423,16 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         this.errorResponseSent = should;
     }
 
-
     /**
      * This can be used by filters for flagging if the server is getting overloaded, and then choose
      * to disable/sample/rate-limit some optional features.
      *
      */
-    public boolean isInBrownoutMode()
-    {
+    public boolean isInBrownoutMode() {
         return brownoutMode;
     }
 
-    public void setInBrownoutMode()
-    {
+    public void setInBrownoutMode() {
         this.brownoutMode = true;
     }
 
@@ -465,13 +463,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         set(KEY_VIP, sVip);
     }
 
-    public void setEndpoint(String endpoint)
-    {
+    public void setEndpoint(String endpoint) {
         put(KEY_ENDPOINT, endpoint);
     }
 
-    public String getEndpoint()
-    {
+    public String getEndpoint() {
         return (String) get(KEY_ENDPOINT);
     }
 
@@ -487,13 +483,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         return (List<FilterError>) get(KEY_FILTER_ERRORS);
     }
 
-    public void setOriginReportedDuration(int duration)
-    {
+    public void setOriginReportedDuration(int duration) {
         put("_originReportedDuration", duration);
     }
 
-    public int getOriginReportedDuration()
-    {
+    public int getOriginReportedDuration() {
         Object value = get("_originReportedDuration");
         if (value != null) {
             return (Integer) value;

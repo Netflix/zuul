@@ -25,11 +25,11 @@ import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.guice.GuiceFilterFactory;
-import java.io.FilenameFilter;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -58,14 +58,14 @@ public class ZuulFiltersModule extends AbstractModule {
 
     @Provides
     FilterFileManagerConfig provideFilterFileManagerConfig(
-        AbstractConfiguration config, FilenameFilter filenameFilter) {
+            AbstractConfiguration config, FilenameFilter filenameFilter) {
         // Get filter directories.
         String[] filterLocations = findFilterLocations(config);
         String[] filterClassNames = findClassNames(config);
 
         // Init the FilterStore.
         FilterFileManagerConfig filterConfig =
-            new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
+                new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
         return filterConfig;
     }
 
@@ -75,17 +75,15 @@ public class ZuulFiltersModule extends AbstractModule {
 
         // Find individually-specified filter classes.
         String[] filterClassNamesStrArray = config.getStringArray("zuul.filters.classes");
-        Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray)
-                .map(String::trim)
-                .filter(blank.negate());
+        Stream<String> classNameStream =
+                Arrays.stream(filterClassNamesStrArray).map(String::trim).filter(blank.negate());
 
         // Find filter classes in specified packages.
         String[] packageNamesStrArray = config.getStringArray("zuul.filters.packages");
         ClassPath cp;
         try {
             cp = ClassPath.from(this.getClass().getClassLoader());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error attempting to read classpath to find filters!", e);
         }
         Stream<String> packageStream = Arrays.stream(packageNamesStrArray)
@@ -96,8 +94,8 @@ public class ZuulFiltersModule extends AbstractModule {
                 .filter(ZuulFilter.class::isAssignableFrom)
                 .map(Class::getCanonicalName);
 
-
-        String[] filterClassNames = Stream.concat(classNameStream, packageStream).toArray(String[]::new);
+        String[] filterClassNames =
+                Stream.concat(classNameStream, packageStream).toArray(String[]::new);
         if (filterClassNames.length != 0) {
             LOG.info("Using filter classnames: ");
             for (String location : filterClassNames) {
@@ -112,7 +110,7 @@ public class ZuulFiltersModule extends AbstractModule {
     String[] findFilterLocations(AbstractConfiguration config) {
         String[] locations = config.getStringArray("zuul.filters.locations");
         if (locations == null) {
-            locations = new String[]{"inbound", "outbound", "endpoint"};
+            locations = new String[] {"inbound", "outbound", "endpoint"};
         }
         String[] filterLocations = Arrays.stream(locations)
                 .map(String::trim)

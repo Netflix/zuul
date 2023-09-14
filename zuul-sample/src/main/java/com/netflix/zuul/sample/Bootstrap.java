@@ -20,9 +20,10 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.Server;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Bootstrap
@@ -62,8 +63,7 @@ public class Bootstrap {
             System.err.println("Zuul Sample: initialization failed. Forcing shutdown now.");
             System.err.println("###############");
             exitCode = 1;
-        }
-        finally {
+        } finally {
             // server shutdown
             if (server != null) {
                 server.stop();

@@ -15,10 +15,6 @@
  */
 package com.netflix.zuul.message;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Mode;
@@ -29,6 +25,10 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 @State(Scope.Thread)
 public class HeadersBenchmark {
@@ -51,7 +51,9 @@ public class HeadersBenchmark {
             names = new HeaderName[stringNames.length];
             values = new String[stringNames.length];
             for (int i = 0; i < stringNames.length; i++) {
-                UUID uuid = new UUID(ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
+                UUID uuid = new UUID(
+                        ThreadLocalRandom.current().nextLong(),
+                        ThreadLocalRandom.current().nextLong());
                 String name = uuid.toString();
                 assert name.length() >= nameLength;
                 name = name.substring(0, nameLength);
@@ -84,7 +86,6 @@ public class HeadersBenchmark {
         }
     }
 
-
     @State(Scope.Thread)
     public static class GetSetHeaders {
         @Param({"1", "5", "10", "30"})
@@ -105,7 +106,9 @@ public class HeadersBenchmark {
             names = new HeaderName[stringNames.length];
             values = new String[stringNames.length];
             for (int i = 0; i < stringNames.length; i++) {
-                UUID uuid = new UUID(ThreadLocalRandom.current().nextLong(), ThreadLocalRandom.current().nextLong());
+                UUID uuid = new UUID(
+                        ThreadLocalRandom.current().nextLong(),
+                        ThreadLocalRandom.current().nextLong());
                 String name = uuid.toString();
                 assert name.length() >= nameLength;
                 name = name.substring(0, nameLength);
@@ -152,9 +155,6 @@ public class HeadersBenchmark {
                 blackhole.consume(header);
             }
         }
-
-
-
     }
 
     @Benchmark
@@ -163,5 +163,4 @@ public class HeadersBenchmark {
     public Headers newHeaders() {
         return new Headers();
     }
-
 }

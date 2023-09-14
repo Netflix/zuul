@@ -30,7 +30,7 @@ public class OriginServerList extends ConfigurationBasedServerList {
     protected List<Server> derive(String value) {
         List<Server> list = Lists.newArrayList();
         if (!Strings.isNullOrEmpty(value)) {
-            for (String s: value.split(",")) {
+            for (String s : value.split(",")) {
                 String[] hostAndPort = s.split(":");
                 String host = hostAndPort[0];
                 int port = Integer.parseInt(hostAndPort[1]);

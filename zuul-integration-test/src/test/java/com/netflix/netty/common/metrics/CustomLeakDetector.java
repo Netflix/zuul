@@ -26,8 +26,8 @@ public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
 
     public static void assertZeroLeaks() {
         List<CustomLeakDetector> leaks = GLOBAL_REGISTRY.stream()
-                            .filter(detector -> detector.leakCounter.get() > 0)
-                            .collect(Collectors.toList());
+                .filter(detector -> detector.leakCounter.get() > 0)
+                .collect(Collectors.toList());
         assertTrue(leaks.isEmpty(), "LEAKS DETECTED: " + leaks);
     }
 
@@ -45,9 +45,6 @@ public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
 
     @Override
     public String toString() {
-        return "CustomLeakDetector: "
-                + this.resourceTypeName
-                + " leakCount="
-                + leakCounter.get();
+        return "CustomLeakDetector: " + this.resourceTypeName + " leakCount=" + leakCounter.get();
     }
 }

@@ -29,7 +29,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * User: Mike Smith Date: 9/24/16 Time: 2:41 PM
  */
@@ -74,9 +73,12 @@ public final class ServerStateHandler {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             connectionErrors.increment();
-            registry.counter("server.connection.exception.inbound",
-                    "handler", "ServerStateHandler.InboundHandler",
-                    "id", cause.getClass().getSimpleName())
+            registry.counter(
+                            "server.connection.exception.inbound",
+                            "handler",
+                            "ServerStateHandler.InboundHandler",
+                            "id",
+                            cause.getClass().getSimpleName())
                     .increment();
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             logger.info("Connection error on Inbound: {} ", cause);
@@ -122,9 +124,12 @@ public final class ServerStateHandler {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             if (cause instanceof Errors.NativeIoException) {
                 logger.debug("PassportStateServerHandler Outbound NativeIoException {}", cause);
-                registry.counter("server.connection.exception.outbound",
-                        "handler", "ServerStateHandler.OutboundHandler",
-                        "id", cause.getClass().getSimpleName())
+                registry.counter(
+                                "server.connection.exception.outbound",
+                                "handler",
+                                "ServerStateHandler.OutboundHandler",
+                                "id",
+                                cause.getClass().getSimpleName())
                         .increment();
 
             } else {

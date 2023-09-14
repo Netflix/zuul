@@ -21,7 +21,6 @@ package com.netflix.netty.common;
  *
  * ie. time between receiving request headers and LastHttpContent of request body.
  */
-public class HttpRequestReadTimeoutEvent
-{
+public class HttpRequestReadTimeoutEvent {
     public static final HttpRequestReadTimeoutEvent INSTANCE = new HttpRequestReadTimeoutEvent();
 }

@@ -16,10 +16,6 @@
 
 package com.netflix.netty.common.throttle;
 
-import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -30,6 +26,10 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MaxInboundConnectionsHandlerTest {
 
@@ -56,8 +56,9 @@ class MaxInboundConnectionsHandlerTest {
         final Counter throttledCount = (Counter) registry.get(counterId);
 
         assertEquals(1, throttledCount.count());
-        assertEquals(PassportState.SERVER_CH_THROTTLING, CurrentPassport.fromChannel(channel).getState());
+        assertEquals(
+                PassportState.SERVER_CH_THROTTLING,
+                CurrentPassport.fromChannel(channel).getState());
         assertTrue(channel.attr(ATTR_CH_THROTTLED).get());
-
     }
 }

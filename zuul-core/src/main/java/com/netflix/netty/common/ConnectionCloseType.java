@@ -23,13 +23,14 @@ import io.netty.channel.Channel;
  * Date: 2/8/17
  * Time: 2:04 PM
  */
-public enum ConnectionCloseType
-{
-    IMMEDIATE, GRACEFUL, DELAYED_GRACEFUL;
+public enum ConnectionCloseType {
+    IMMEDIATE,
+    GRACEFUL,
+    DELAYED_GRACEFUL;
 
-    public static ConnectionCloseType fromChannel(Channel ch)
-    {
-        ConnectionCloseType type = ch.attr(ConnectionCloseChannelAttributes.CLOSE_TYPE).get();
+    public static ConnectionCloseType fromChannel(Channel ch) {
+        ConnectionCloseType type =
+                ch.attr(ConnectionCloseChannelAttributes.CLOSE_TYPE).get();
         if (type == null) {
             // Default to immediate.
             type = ConnectionCloseType.IMMEDIATE;
@@ -37,8 +38,7 @@ public enum ConnectionCloseType
         return type;
     }
 
-    public static void setForChannel(Channel ch, ConnectionCloseType type)
-    {
+    public static void setForChannel(Channel ch, ConnectionCloseType type) {
         ch.attr(ConnectionCloseChannelAttributes.CLOSE_TYPE).set(type);
     }
 }

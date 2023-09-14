@@ -18,8 +18,7 @@ package com.netflix.config;
 
 import java.util.Set;
 
-public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer>
-{
+public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer> {
     public DynamicIntegerSetProperty(String propName, String defaultValue) {
         super(propName, defaultValue);
     }

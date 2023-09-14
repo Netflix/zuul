@@ -15,12 +15,12 @@
  */
 package com.netflix.zuul.message;
 
-import static java.util.Objects.requireNonNull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.exception.ZuulException;
+
+import javax.annotation.Nullable;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +32,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are
@@ -48,7 +49,8 @@ public final class Headers {
     private final List<String> names;
     private final List<String> values;
 
-    private static final Counter invalidHeaderCounter = Spectator.globalRegistry().counter("zuul.header.invalid.char");
+    private static final Counter invalidHeaderCounter =
+            Spectator.globalRegistry().counter("zuul.header.invalid.char");
 
     public static Headers copyOf(Headers original) {
         return new Headers(requireNonNull(original, "original"));
@@ -492,7 +494,7 @@ public final class Headers {
      */
     public Set<HeaderName> keySet() {
         Set<HeaderName> headerNames = new LinkedHashSet<>(size());
-        for (int i = 0 ; i < size(); i++) {
+        for (int i = 0; i < size(); i++) {
             HeaderName headerName = new HeaderName(originalName(i), name(i));
             // We actually do need to check contains before adding to the set because the original name may change.
             // In this case, the first name wins.

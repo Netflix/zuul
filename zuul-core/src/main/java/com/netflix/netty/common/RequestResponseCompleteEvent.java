@@ -21,6 +21,4 @@ package com.netflix.netty.common;
  * Date: 5/24/16
  * Time: 1:04 PM
  */
-public class RequestResponseCompleteEvent
-{
-}
+public class RequestResponseCompleteEvent {}

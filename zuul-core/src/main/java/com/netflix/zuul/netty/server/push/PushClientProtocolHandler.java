@@ -27,7 +27,6 @@ public class PushClientProtocolHandler extends ChannelInboundHandlerAdapter {
 
     protected PushUserAuth authEvent;
 
-
     protected boolean isAuthenticated() {
         return (authEvent != null && authEvent.isSuccess());
     }
@@ -39,5 +38,4 @@ public class PushClientProtocolHandler extends ChannelInboundHandlerAdapter {
         }
         super.userEventTriggered(ctx, evt);
     }
-
 }

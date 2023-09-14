@@ -16,11 +16,11 @@
 
 package com.netflix.zuul.guice;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.google.inject.Inject;
 import com.netflix.zuul.BaseInjectionIntegTest;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
@@ -29,7 +29,8 @@ class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
     @Test
     void ctorInjection() throws Exception {
-        TestGuiceConstructorFilter filter = (TestGuiceConstructorFilter) filterFactory.newInstance(TestGuiceConstructorFilter.class);
+        TestGuiceConstructorFilter filter =
+                (TestGuiceConstructorFilter) filterFactory.newInstance(TestGuiceConstructorFilter.class);
 
         assertNotNull(filter.injector);
     }
@@ -40,5 +41,4 @@ class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 
         assertNotNull(filter.injector);
     }
-
 }

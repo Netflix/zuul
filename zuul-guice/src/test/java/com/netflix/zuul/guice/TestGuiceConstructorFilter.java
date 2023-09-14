@@ -20,6 +20,7 @@ import com.google.inject.Injector;
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.ZuulMessage;
+
 import javax.inject.Inject;
 
 public class TestGuiceConstructorFilter extends BaseSyncFilter {

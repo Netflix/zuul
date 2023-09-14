@@ -35,10 +35,9 @@ import static com.netflix.zuul.exception.OutboundErrorType.OTHER;
 import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
 import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
 
-
 public class NettyRequestAttemptFactory {
 
-    private final static Logger LOG = LoggerFactory.getLogger(NettyRequestAttemptFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NettyRequestAttemptFactory.class);
 
     public ErrorType mapNettyToOutboundErrorType(final Throwable t) {
         if (t instanceof ReadTimeoutException) {
@@ -57,8 +56,10 @@ public class NettyRequestAttemptFactory {
             return ((OutboundException) t).getOutboundErrorType();
         }
 
-        if (t instanceof Errors.NativeIoException && Errors.ERRNO_ECONNRESET_NEGATIVE == ((Errors.NativeIoException) t).expectedErr()) {
-            // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are overloaded.
+        if (t instanceof Errors.NativeIoException
+                && Errors.ERRNO_ECONNRESET_NEGATIVE == ((Errors.NativeIoException) t).expectedErr()) {
+            // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are
+            // overloaded.
             LOG.warn("ERRNO_ECONNRESET_NEGATIVE mapped to RESET_CONNECTION", t);
             return RESET_CONNECTION;
         }

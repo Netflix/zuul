@@ -16,7 +16,6 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Registry;
 import io.netty.buffer.ByteBuf;
@@ -25,6 +24,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ProtocolDetectionState;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Decides if we need to decode a HAProxyMessage. If so, adds the decoder followed by the handler.
@@ -48,13 +49,18 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (withProxyProtocol && isHAPMDetected(msg)) {
-            ctx.pipeline().addAfter(NAME, null, new HAProxyMessageChannelHandler())
+            ctx.pipeline()
+                    .addAfter(NAME, null, new HAProxyMessageChannelHandler())
                     .replace(this, null, new HAProxyMessageDecoder());
         } else {
             if (withProxyProtocol) {
-                final int port = ctx.channel().attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
-                // This likely means initialization was requested with proxy protocol, but we encountered a non-ppv2 message
-                registry.counter("zuul.hapm.decode", "success", "false", "port", String.valueOf(port)).increment();
+                final int port = ctx.channel()
+                        .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
+                        .get();
+                // This likely means initialization was requested with proxy protocol, but we encountered a non-ppv2
+                // message
+                registry.counter("zuul.hapm.decode", "success", "false", "port", String.valueOf(port))
+                        .increment();
             }
             ctx.pipeline().remove(this);
         }

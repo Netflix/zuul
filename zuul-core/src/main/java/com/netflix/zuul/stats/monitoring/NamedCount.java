@@ -23,5 +23,6 @@ package com.netflix.zuul.stats.monitoring;
  */
 public interface NamedCount {
     String getName();
+
     long getCount();
 }

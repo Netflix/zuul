@@ -15,14 +15,14 @@
  */
 package com.netflix.zuul.filters;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import com.netflix.zuul.message.ZuulMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing
@@ -32,8 +32,10 @@ class BaseFilterTest {
 
     @Mock
     private BaseFilter f1;
+
     @Mock
     private BaseFilter f2;
+
     @Mock
     private ZuulMessage req;
 
@@ -44,8 +46,7 @@ class BaseFilterTest {
 
     @Test
     void testShouldFilter() {
-        class TestZuulFilter extends BaseSyncFilter
-        {
+        class TestZuulFilter extends BaseSyncFilter {
             @Override
             public int filterOrder() {
                 return 0;

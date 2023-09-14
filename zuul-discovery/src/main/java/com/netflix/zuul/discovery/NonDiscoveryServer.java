@@ -17,6 +17,7 @@
 package com.netflix.zuul.discovery;
 
 import com.netflix.loadbalancer.Server;
+
 import java.util.Objects;
 
 /**

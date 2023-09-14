@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
-
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
@@ -35,7 +33,10 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AttributeKey;
+
 import java.util.function.Consumer;
+
+import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
 /**
  * Http2 Or Http Handler
@@ -46,7 +47,8 @@ import java.util.function.Consumer;
 public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
 
-    private static final DynamicHttp2FrameLogger FRAME_LOGGER = new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
+    private static final DynamicHttp2FrameLogger FRAME_LOGGER =
+            new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
 
     private final ChannelHandler http2StreamHandler;
     private final int maxConcurrentStreams;
@@ -55,9 +57,10 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     private final long maxHeaderListSize;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
-
-    public Http2OrHttpHandler(ChannelHandler http2StreamHandler, ChannelConfig channelConfig,
-                              Consumer<ChannelPipeline> addHttpHandlerFn) {
+    public Http2OrHttpHandler(
+            ChannelHandler http2StreamHandler,
+            ChannelConfig channelConfig,
+            Consumer<ChannelPipeline> addHttpHandlerFn) {
         super(ApplicationProtocolNames.HTTP_1_1);
         this.http2StreamHandler = http2StreamHandler;
         this.maxConcurrentStreams = channelConfig.get(CommonChannelConfigKeys.maxConcurrentStreams);
@@ -99,8 +102,8 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .build();
         Http2Connection conn = frameCodec.connection();
         // Use the uniform byte distributor until https://github.com/netty/netty/issues/10525 is fixed.
-        conn.remote().flowController(
-                new DefaultHttp2RemoteFlowController(conn, new UniformStreamByteDistributor(conn)));
+        conn.remote()
+                .flowController(new DefaultHttp2RemoteFlowController(conn, new UniformStreamByteDistributor(conn)));
 
         Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
 

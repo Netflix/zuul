@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NamedCountingMonitor implements NamedCount {
 
-
     private final String name;
 
     private final AtomicLong count = new AtomicLong();
@@ -69,5 +68,4 @@ public class NamedCountingMonitor implements NamedCount {
     public long getCount() {
         return this.count.get();
     }
-
 }

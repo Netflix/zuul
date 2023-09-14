@@ -15,21 +15,21 @@
  */
 package com.netflix.zuul;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.io.File;
-import java.io.FilenameFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for {@link FilterFileManager}.
@@ -38,10 +38,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class FilterFileManagerTest {
     @Mock
     private File nonGroovyFile;
+
     @Mock
     private File groovyFile;
+
     @Mock
     private File directory;
+
     @Mock
     private FilterLoader filterLoader;
 
@@ -52,12 +55,8 @@ class FilterFileManagerTest {
 
     @Test
     void testFileManagerInit() throws Exception {
-        FilterFileManager.FilterFileManagerConfig config =
-                new FilterFileManager.FilterFileManagerConfig(
-                        new String[]{"test", "test1"},
-                        new String[]{"com.netflix.blah.SomeFilter"},
-                        1,
-                        (dir, name) -> false);
+        FilterFileManager.FilterFileManagerConfig config = new FilterFileManager.FilterFileManagerConfig(
+                new String[] {"test", "test1"}, new String[] {"com.netflix.blah.SomeFilter"}, 1, (dir, name) -> false);
         FilterFileManager manager = new FilterFileManager(config, filterLoader);
 
         manager = spy(manager);

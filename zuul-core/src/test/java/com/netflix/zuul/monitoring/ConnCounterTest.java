@@ -16,9 +16,6 @@
 
 package com.netflix.zuul.monitoring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;
@@ -26,6 +23,9 @@ import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ConnCounterTest {
     @Test
@@ -66,7 +66,6 @@ class ConnCounterTest {
         // Dedup increments
         ConnCounter.from(channel).increment("active");
         ConnCounter.from(channel).increment("active");
-
 
         assertEquals(1, ConnCounter.from(channel).getCurrentActiveConns(), 0);
     }

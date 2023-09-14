@@ -22,6 +22,8 @@ package com.netflix.zuul.origins;
  */
 public interface Origin {
     OriginName getName();
+
     boolean isAvailable();
+
     boolean isCold();
 }

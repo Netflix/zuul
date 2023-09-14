@@ -21,6 +21,4 @@ package com.netflix.zuul.netty;
  * Date: 4/13/17
  * Time: 6:09 PM
  */
-public class RequestCancelledEvent
-{
-}
+public class RequestCancelledEvent {}

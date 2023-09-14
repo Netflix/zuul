@@ -17,15 +17,15 @@ package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.filters.FilterType;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
  */
 @ThreadSafe
-public class FilterInfo implements  Comparable<FilterInfo>{
+public class FilterInfo implements Comparable<FilterInfo> {
 
     private final String filter_id;
     private final String filter_name;
@@ -78,7 +78,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return filter_code;
     }
 
-
     /**
      * @return the name of the property to disable the filter.
      */
@@ -93,19 +92,17 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         return filter_type;
     }
 
-
     @Override
     public String toString() {
-        return "FilterInfo{" +
-                "filter_id='" + filter_id + '\'' +
-                ", filter_name='" + filter_name + '\'' +
-                ", filter_type='" + filter_type + '\'' +
-                ", revision=" + revision +
-                ", creationDate=" + creationDate +
-                ", isActive=" + isActive +
-                ", isCanary=" + isCanary +
-                ", application_name=" + application_name +
-                '}';
+        return "FilterInfo{" + "filter_id='"
+                + filter_id + '\'' + ", filter_name='"
+                + filter_name + '\'' + ", filter_type='"
+                + filter_type + '\'' + ", revision="
+                + revision + ", creationDate="
+                + creationDate + ", isActive="
+                + isActive + ", isCanary="
+                + isCanary + ", application_name="
+                + application_name + '}';
     }
 
     /**
@@ -139,7 +136,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
         this.filter_order = filter_order;
         this.filter_disablePropertyName = disablePropertyName;
         this.application_name = application_name;
-
     }
 
     /**
@@ -174,7 +170,6 @@ public class FilterInfo implements  Comparable<FilterInfo>{
     public boolean isCanary() {
         return isCanary.get();
     }
-
 
     /**
      *
@@ -254,10 +249,9 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     @Override
     public int compareTo(FilterInfo filterInfo) {
-        if(filterInfo.getFilterName().equals(this.getFilterName())){
+        if (filterInfo.getFilterName().equals(this.getFilterName())) {
             return filterInfo.creationDate.compareTo(getCreationDate());
         }
         return filterInfo.getFilterName().compareTo(this.getFilterName());
     }
-
 }

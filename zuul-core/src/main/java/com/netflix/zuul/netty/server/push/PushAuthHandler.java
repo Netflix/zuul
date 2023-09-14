@@ -17,14 +17,30 @@ package com.netflix.zuul.netty.server.push;
 
 import com.google.common.base.Strings;
 import com.netflix.zuul.message.http.Cookies;
-import io.netty.channel.*;
-import io.netty.handler.codec.http.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.CookieDecoder;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -40,7 +56,6 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public static final String NAME = "push_auth_handler";
     private static Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
 
-
     public PushAuthHandler(String pushConnectionPath, String originDomain) {
         this.pushConnectionPath = pushConnectionPath;
         this.originDomain = originDomain;
@@ -49,8 +64,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != OK) || (! HttpUtil.isKeepAlive(req)));
-        if (closeConn)  {
+        final boolean closeConn = ((status != OK) || (!HttpUtil.isKeepAlive(req)));
+        if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
         final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
@@ -69,8 +84,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         final String path = req.uri();
         if ("/healthcheck".equals(path)) {
             sendHttpResponse(req, ctx, OK);
-        }
-        else if (pushConnectionPath.equals(path)) {
+        } else if (pushConnectionPath.equals(path)) {
             // CSRF protection
             if (isInvalidOrigin(req)) {
                 sendHttpResponse(req, ctx, BAD_REQUEST);
@@ -87,8 +101,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
                     sendHttpResponse(req, ctx, HttpResponseStatus.valueOf(authEvent.statusCode()));
                 }
             }
-        }
-        else {
+        } else {
             sendHttpResponse(req, ctx, NOT_FOUND);
         }
     }
@@ -111,7 +124,6 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         }
         return cookies;
     }
-
 
     /**
      * @return true if Auth credentials will be provided later, for example in first WebSocket frame sent

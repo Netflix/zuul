@@ -23,7 +23,6 @@ import com.netflix.zuul.exception.OutboundErrorType;
 
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * @author michaels
  */

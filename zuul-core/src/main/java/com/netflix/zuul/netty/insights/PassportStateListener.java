@@ -21,33 +21,28 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public class PassportStateListener implements GenericFutureListener
-{
+public class PassportStateListener implements GenericFutureListener {
     private final CurrentPassport passport;
     private final PassportState successState;
     private final PassportState failState;
 
-    public PassportStateListener(CurrentPassport passport, PassportState successState)
-    {
+    public PassportStateListener(CurrentPassport passport, PassportState successState) {
         this.passport = passport;
         this.successState = successState;
         this.failState = null;
     }
-    
-    public PassportStateListener(CurrentPassport passport, PassportState successState, PassportState failState)
-    {
+
+    public PassportStateListener(CurrentPassport passport, PassportState successState, PassportState failState) {
         this.passport = passport;
         this.successState = successState;
         this.failState = failState;
     }
 
     @Override
-    public void operationComplete(Future future) throws Exception
-    {
+    public void operationComplete(Future future) throws Exception {
         if (future.isSuccess()) {
             passport.add(successState);
-        }
-        else {
+        } else {
             if (failState != null) {
                 // only capture a single failure state event,
                 // as sending content errors will fire for all content chunks,

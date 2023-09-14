@@ -51,5 +51,4 @@ public class ZuulHeaders {
     private ZuulHeaders() {
         throw new AssertionError("Must not instantiate constant utility class");
     }
-
 }

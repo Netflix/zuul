@@ -19,6 +19,7 @@ package com.netflix.zuul.guice;
 import com.google.inject.Injector;
 import com.netflix.zuul.FilterFactory;
 import com.netflix.zuul.filters.ZuulFilter;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

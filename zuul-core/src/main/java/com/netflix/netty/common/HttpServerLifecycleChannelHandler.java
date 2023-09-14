@@ -30,57 +30,50 @@ import io.netty.util.ReferenceCountUtil;
 /**
  * @author michaels
  */
-public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler
-{
-    public static final class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
+public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler {
+    public static final class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
         @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             if (msg instanceof HttpRequest) {
-                // Fire start event, and if that succeeded, then allow processing to 
+                // Fire start event, and if that succeeded, then allow processing to
                 // continue to next handler in pipeline.
                 if (fireStartEvent(ctx, (HttpRequest) msg)) {
                     super.channelRead(ctx, msg);
                 } else {
                     ReferenceCountUtil.release(msg);
                 }
-            }
-            else {
+            } else {
                 super.channelRead(ctx, msg);
             }
         }
 
         @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
             fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
 
             super.channelInactive(ctx);
         }
-
     }
 
-    public static final class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
+    public static final class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
         @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
+        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             if (msg instanceof HttpResponse) {
                 ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
             }
-            
+
             try {
                 super.write(ctx, msg, promise);
-            }
-            finally {
+            } finally {
                 if (msg instanceof LastHttpContent) {
 
                     boolean dontFireCompleteYet = false;
                     if (msg instanceof HttpResponse) {
-                        // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to client
+                        // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to
+                        // client
                         // that it can continue sending the initial request body.
-                        // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd response.
+                        // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd
+                        // response.
                         if (((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
                             dontFireCompleteYet = true;
                         }
@@ -100,25 +93,25 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
         }
 
         @Override
-        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
+        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
 
             super.disconnect(ctx, promise);
         }
 
         @Override
-        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
+        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
             addPassportState(ctx, PassportState.SERVER_CH_CLOSE);
             // This will likely expand based on more specific reasons for completion
-            if (ctx.channel().attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).get() == null) {
+            if (ctx.channel()
+                            .attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT)
+                            .get()
+                    == null) {
                 fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
             } else {
                 fireCompleteEventIfNotAlready(ctx, CompleteReason.PIPELINE_REJECT);
             }
             super.close(ctx, promise);
         }
-
     }
 }

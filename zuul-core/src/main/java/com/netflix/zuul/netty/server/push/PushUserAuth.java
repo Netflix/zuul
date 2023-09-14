@@ -22,5 +22,4 @@ public interface PushUserAuth {
     int statusCode();
 
     String getClientIdentity();
-
 }

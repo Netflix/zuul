@@ -34,9 +34,8 @@ public abstract class TracerFactory {
         INSTANCE = f;
     }
 
-
     /**
-     * Returns the singleton TracerFactory 
+     * Returns the singleton TracerFactory
      *
      * @return a <code>TracerFactory</code> value
      */
@@ -48,5 +47,4 @@ public abstract class TracerFactory {
     }
 
     public abstract Tracer startMicroTracer(String name);
-
 }

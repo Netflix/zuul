@@ -40,8 +40,7 @@ public class MethodBinding<T> {
         T bindingContext = bindingContextExtractor.call();
         if (bindingContext == null) {
             method.run();
-        }
-        else {
+        } else {
             boundMethod.accept(method, bindingContext);
         }
     }

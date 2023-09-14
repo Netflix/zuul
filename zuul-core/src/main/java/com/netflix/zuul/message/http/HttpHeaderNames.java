@@ -30,14 +30,12 @@ import com.netflix.zuul.message.HeaderName;
  * Date: 8/5/15
  * Time: 12:33 PM
  */
-public final class HttpHeaderNames
-{
-    private static final DynamicIntProperty MAX_CACHE_SIZE =
-            DynamicPropertyFactory.getInstance().getIntProperty("com.netflix.zuul.message.http.HttpHeaderNames.maxCacheSize", 30);
+public final class HttpHeaderNames {
+    private static final DynamicIntProperty MAX_CACHE_SIZE = DynamicPropertyFactory.getInstance()
+            .getIntProperty("com.netflix.zuul.message.http.HttpHeaderNames.maxCacheSize", 30);
 
     private static final HttpHeaderNamesCache HEADER_NAME_CACHE = new HttpHeaderNamesCache(100, MAX_CACHE_SIZE.get());
-    
-    
+
     public static final HeaderName COOKIE = HEADER_NAME_CACHE.get("Cookie");
     public static final HeaderName SET_COOKIE = HEADER_NAME_CACHE.get("Set-Cookie");
 
@@ -80,11 +78,14 @@ public final class HttpHeaderNames
     public static final HeaderName X_FORWARDED_PROTO_VERSION = HEADER_NAME_CACHE.get("X-Forwarded-Proto-Version");
 
     public static final HeaderName ACCESS_CONTROL_ALLOW_ORIGIN = HEADER_NAME_CACHE.get("Access-Control-Allow-Origin");
-    public static final HeaderName ACCESS_CONTROL_ALLOW_CREDENTIALS = HEADER_NAME_CACHE.get("Access-Control-Allow-Credentials");
+    public static final HeaderName ACCESS_CONTROL_ALLOW_CREDENTIALS =
+            HEADER_NAME_CACHE.get("Access-Control-Allow-Credentials");
     public static final HeaderName ACCESS_CONTROL_ALLOW_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Allow-Headers");
     public static final HeaderName ACCESS_CONTROL_ALLOW_METHODS = HEADER_NAME_CACHE.get("Access-Control-Allow-Methods");
-    public static final HeaderName ACCESS_CONTROL_REQUEST_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Request-Headers");
-    public static final HeaderName ACCESS_CONTROL_EXPOSE_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Expose-Headers");
+    public static final HeaderName ACCESS_CONTROL_REQUEST_HEADERS =
+            HEADER_NAME_CACHE.get("Access-Control-Request-Headers");
+    public static final HeaderName ACCESS_CONTROL_EXPOSE_HEADERS =
+            HEADER_NAME_CACHE.get("Access-Control-Expose-Headers");
     public static final HeaderName ACCESS_CONTROL_MAX_AGE_HEADERS = HEADER_NAME_CACHE.get("Access-Control-Max-Age");
     public static final HeaderName STRICT_TRANSPORT_SECURITY = HEADER_NAME_CACHE.get("Strict-Transport-Security");
     public static final HeaderName LINK = HEADER_NAME_CACHE.get("Link");
@@ -96,8 +97,7 @@ public final class HttpHeaderNames
      * @param name
      * @return HeaderName - never null.
      */
-    public static HeaderName get(String name)
-    {
+    public static HeaderName get(String name) {
         return HEADER_NAME_CACHE.get(name);
     }
 }

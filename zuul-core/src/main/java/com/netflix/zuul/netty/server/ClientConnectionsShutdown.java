@@ -30,9 +30,10 @@ import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: Change this class to be an instance per-port.
@@ -45,11 +46,12 @@ import org.slf4j.LoggerFactory;
 public class ClientConnectionsShutdown {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientConnectionsShutdown.class);
-    private static final DynamicBooleanProperty ENABLED = new DynamicBooleanProperty(
-            "server.outofservice.connections.shutdown", false);
+    private static final DynamicBooleanProperty ENABLED =
+            new DynamicBooleanProperty("server.outofservice.connections.shutdown", false);
     private static final DynamicIntProperty DELAY_AFTER_OUT_OF_SERVICE_MS =
             new DynamicIntProperty("server.outofservice.connections.delay", 2000);
-    private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT = new DynamicIntProperty("server.outofservice.close.timeout", 30);
+    private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT =
+            new DynamicIntProperty("server.outofservice.close.timeout", 30);
 
     private final ChannelGroup channels;
     private final EventExecutor executor;
@@ -74,12 +76,14 @@ public class ClientConnectionsShutdown {
 
                 if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP
                         && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE
-                        || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN)) {
+                                || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN)) {
                     // TODO - Also should stop accepting any new client connections now too?
 
                     // Schedule to gracefully close all the client connections.
                     if (ENABLED.get()) {
-                        executor.schedule(() -> gracefullyShutdownClientChannels(false), DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
+                        executor.schedule(
+                                () -> gracefullyShutdownClientChannels(false),
+                                DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
                                 TimeUnit.MILLISECONDS);
                     }
                 }
@@ -95,8 +99,8 @@ public class ClientConnectionsShutdown {
         // Mark all active connections to be closed after next response sent.
         LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
 
-        //racy situation if new connections are still coming in, but any channels created after newCloseFuture will
-        //be closed during the force close stage
+        // racy situation if new connections are still coming in, but any channels created after newCloseFuture will
+        // be closed during the force close stage
         ChannelGroupFuture closeFuture = channels.newCloseFuture();
         for (Channel channel : channels) {
             ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
@@ -106,14 +110,17 @@ public class ClientConnectionsShutdown {
 
         Promise<Void> promise = executor.newPromise();
         Runnable cancelTimeoutTask;
-        if(forceCloseAfterTimeout) {
-            ScheduledFuture<?> timeoutTask = executor.schedule(() -> {
-                LOG.warn("Force closing remaining {} active client channels.", channels.size());
-                channels.close();
-            }, GRACEFUL_CLOSE_TIMEOUT.get(), TimeUnit.SECONDS);
+        if (forceCloseAfterTimeout) {
+            ScheduledFuture<?> timeoutTask = executor.schedule(
+                    () -> {
+                        LOG.warn("Force closing remaining {} active client channels.", channels.size());
+                        channels.close();
+                    },
+                    GRACEFUL_CLOSE_TIMEOUT.get(),
+                    TimeUnit.SECONDS);
             cancelTimeoutTask = () -> {
                 if (!timeoutTask.isDone()) {
-                    //close happened before the timeout
+                    // close happened before the timeout
                     timeoutTask.cancel(false);
                 }
             };
@@ -128,5 +135,4 @@ public class ClientConnectionsShutdown {
 
         return promise;
     }
-
 }

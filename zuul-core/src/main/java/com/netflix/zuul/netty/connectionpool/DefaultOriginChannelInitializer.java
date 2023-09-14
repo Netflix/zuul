@@ -68,13 +68,14 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
             pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
         }
 
-        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpClientCodec(
-                BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
-                BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),
-                BaseZuulChannelInitializer.MAX_CHUNK_SIZE.get(),
-                false,
-                false
-        ));
+        pipeline.addLast(
+                HTTP_CODEC_HANDLER_NAME,
+                new HttpClientCodec(
+                        BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
+                        BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),
+                        BaseZuulChannelInitializer.MAX_CHUNK_SIZE.get(),
+                        false,
+                        false));
         pipeline.addLast(new PassportStateHttpClientHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpClientHandler.OutboundHandler());
         pipeline.addLast(ORIGIN_NETTY_LOGGER, nettyLogger);
@@ -105,11 +106,9 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
      *
      * @param pipeline the channel pipeline
      */
-    protected void addMethodBindingHandler(ChannelPipeline pipeline) {
-    }
+    protected void addMethodBindingHandler(ChannelPipeline pipeline) {}
 
     public HttpMetricsChannelHandler getHttpMetricsHandler() {
         return httpMetricsHandler;
     }
 }
-

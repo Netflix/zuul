@@ -31,7 +31,8 @@ import org.slf4j.LoggerFactory;
  * Created by saroskar on 2/13/17.
  */
 @Filter(order = 0, type = FilterType.ENDPOINT)
-public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> {
+public final class MissingEndpointHandlingFilter
+        extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> {
     private final String name;
 
     private static final Logger LOG = LoggerFactory.getLogger(MissingEndpointHandlingFilter.class);

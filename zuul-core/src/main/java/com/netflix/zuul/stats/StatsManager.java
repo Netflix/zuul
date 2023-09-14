@@ -36,16 +36,14 @@ import java.util.regex.Pattern;
  */
 public class StatsManager {
 
-
     private static final Logger LOG = LoggerFactory.getLogger(StatsManager.class);
-
 
     protected static final Pattern HEX_PATTERN = Pattern.compile("[0-9a-fA-F]+");
 
     // should match *.amazonaws.com, *.nflxvideo.net, or raw IP addresses.
     private static final Pattern HOST_PATTERN =
-            Pattern.compile("(?:(.+)\\.amazonaws\\.com)|((?:\\d{1,3}\\.?){4})|(ip-\\d+-\\d+-\\d+-\\d+)|" +
-                    "(?:(.+)\\.nflxvideo\\.net)|(?:(.+)\\.llnwd\\.net)|(?:(.+)\\.nflximg\\.com)");
+            Pattern.compile("(?:(.+)\\.amazonaws\\.com)|((?:\\d{1,3}\\.?){4})|(ip-\\d+-\\d+-\\d+-\\d+)|"
+                    + "(?:(.+)\\.nflxvideo\\.net)|(?:(.+)\\.llnwd\\.net)|(?:(.+)\\.nflximg\\.com)");
 
     @VisibleForTesting
     static final String HOST_HEADER = "host";
@@ -70,7 +68,6 @@ public class StatsManager {
 
     private final ConcurrentMap<String, NamedCountingMonitor> ipVersionCounterMap =
             new ConcurrentHashMap<String, NamedCountingMonitor>();
-
 
     protected static StatsManager INSTANCE = new StatsManager();
 
@@ -133,7 +130,6 @@ public class StatsManager {
     private static final String protocolKey(String proto) {
         return String.format("protocol_%s", proto);
     }
-
 
     /**
      * Collects counts statistics about the request: client ip address from the x-forwarded-for header;
@@ -256,7 +252,7 @@ public class StatsManager {
         }
         RouteStatusCodeMonitor sd = statsMap.get(statusCode);
         if (sd == null) {
-            //don't register only 404 status codes (these are garbage endpoints)
+            // don't register only 404 status codes (these are garbage endpoints)
             if (statusCode == 404) {
                 if (statsMap.size() == 0) {
                     return;

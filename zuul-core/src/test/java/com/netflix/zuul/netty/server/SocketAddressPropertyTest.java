@@ -16,22 +16,26 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.zuul.netty.server.SocketAddressProperty.BindType;
+import io.netty.channel.unix.DomainSocketAddress;
+import org.junit.jupiter.api.Test;
+
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Arrays;
+
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.ANY;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.ANY_LOCAL;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV4_ANY;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV4_LOCAL;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV6_ANY;
 import static com.netflix.zuul.netty.server.SocketAddressProperty.BindType.IPV6_LOCAL;
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.netflix.zuul.netty.server.SocketAddressProperty.BindType;
-import io.netty.channel.unix.DomainSocketAddress;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.Arrays;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SocketAddressPropertyTest {
 

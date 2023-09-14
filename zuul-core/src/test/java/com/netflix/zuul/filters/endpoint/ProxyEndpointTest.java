@@ -51,12 +51,23 @@ class ProxyEndpointTest {
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         NettyRequestAttemptFactory attemptFactory = mock(NettyRequestAttemptFactory.class);
 
-        request = new HttpRequestMessageImpl(new SessionContext(), "HTTP/1.1", "POST", "/some/where", null,
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
                 null,
-                "192.168.0.2", "https", 7002, "localhost", new LocalAddress("777"), false);
+                null,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new LocalAddress("777"),
+                false);
 
         request.setBody("Hello There".getBytes());
-        request.getContext().set(CommonContextKeys.ORIGIN_MANAGER, new BasicNettyOriginManager(Spectator.globalRegistry()));
+        request.getContext()
+                .set(CommonContextKeys.ORIGIN_MANAGER, new BasicNettyOriginManager(Spectator.globalRegistry()));
         request.getContext().setRouteVIP("some-vip");
         request.getContext().put(CommonContextKeys.PASSPORT, CurrentPassport.create());
         proxyEndpoint = new ProxyEndpoint(request, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory);
@@ -68,13 +79,17 @@ class ProxyEndpointTest {
         assertEquals("Hello There", new String(request.getBody()));
 
         // move the body readerIndex to the end to mimic nettys behavior after writing to the origin channel
-        request.getBodyContents().forEach((b) -> b.content().readerIndex(b.content().capacity()));
+        request.getBodyContents()
+                .forEach((b) -> b.content().readerIndex(b.content().capacity()));
 
         HttpResponse response = mock(HttpResponse.class);
         when(response.status()).thenReturn(new HttpResponseStatus(503, "Retry"));
 
-        InstanceInfo instanceInfo =
-                InstanceInfo.Builder.newBuilder().setAppName("app").setHostName("localhost").setPort(443).build();
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+                .setAppName("app")
+                .setHostName("localhost")
+                .setPort(443)
+                .build();
         DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, true);
 
         // when retrying a response, the request body reader should have it's indexes reset

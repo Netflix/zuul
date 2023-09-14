@@ -28,26 +28,26 @@ import java.util.regex.Pattern;
  * Date: 5/15/17
  * Time: 4:38 PM
  */
-public class PatternListStringProperty extends DerivedStringProperty<List<Pattern>>
-{
+public class PatternListStringProperty extends DerivedStringProperty<List<Pattern>> {
     private static final Logger LOG = LoggerFactory.getLogger(PatternListStringProperty.class);
 
-    public PatternListStringProperty(String name, String defaultValue)
-    {
+    public PatternListStringProperty(String name, String defaultValue) {
         super(name, defaultValue);
     }
 
     @Override
-    protected List<Pattern> derive(String value)
-    {
+    protected List<Pattern> derive(String value) {
         ArrayList<Pattern> ptns = new ArrayList<>();
         if (value != null) {
             for (String ptnTxt : value.split(",")) {
                 try {
                     ptns.add(Pattern.compile(ptnTxt.trim()));
-                }
-                catch (Exception e) {
-                    LOG.error("Error parsing regex pattern list from property! name = {}, value = {}, pattern = {}", String.valueOf(this.getName()), String.valueOf(this.getValue()), String.valueOf(value));
+                } catch (Exception e) {
+                    LOG.error(
+                            "Error parsing regex pattern list from property! name = {}, value = {}, pattern = {}",
+                            String.valueOf(this.getName()),
+                            String.valueOf(this.getValue()),
+                            String.valueOf(value));
                 }
             }
         }

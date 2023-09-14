@@ -27,11 +27,14 @@ import java.util.List;
  * Date: 11/8/16
  * Time: 1:01 PM
  */
-public interface SslContextFactory
-{
+public interface SslContextFactory {
     SslContextBuilder createBuilderForServer();
+
     String[] getProtocols();
+
     List<String> getCiphers() throws NoSuchAlgorithmException;
+
     void enableSessionTickets(SslContext sslContext);
+
     void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId);
 }

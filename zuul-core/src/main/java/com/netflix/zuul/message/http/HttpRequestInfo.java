@@ -18,6 +18,7 @@ package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
+
 import java.util.Optional;
 
 /**
@@ -25,8 +26,7 @@ import java.util.Optional;
  * Date: 7/15/15
  * Time: 1:18 PM
  */
-public interface HttpRequestInfo extends ZuulMessage
-{
+public interface HttpRequestInfo extends ZuulMessage {
     String getProtocol();
 
     String getMethod();

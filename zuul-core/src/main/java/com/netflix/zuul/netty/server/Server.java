@@ -16,8 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
@@ -65,6 +63,9 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
@@ -79,8 +80,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -90,8 +91,7 @@ import org.slf4j.LoggerFactory;
  * Date: 11/8/14
  * Time: 8:39 PM
  */
-public class Server
-{
+public class Server {
     /**
      * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
      * using the {@link #FORCE_NIO} property.
@@ -130,6 +130,7 @@ public class Server
      * Unlike the above, the socket addresses in this map are the *bound* addresses, rather than the requested ones.
      */
     private final Map<NamedSocketAddress, Channel> addressesToChannels = new LinkedHashMap<>();
+
     private final EventLoopConfig eventLoopConfig;
 
     /**
@@ -146,10 +147,16 @@ public class Server
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
-    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
-                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics)
-    {
-        this(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics,
+    public Server(
+            Map<Integer, ChannelInitializer> portsToChannelInitializers,
+            ServerStatusManager serverStatusManager,
+            ClientConnectionsShutdown clientConnectionsShutdown,
+            EventLoopGroupMetrics eventLoopGroupMetrics) {
+        this(
+                portsToChannelInitializers,
+                serverStatusManager,
+                clientConnectionsShutdown,
+                eventLoopGroupMetrics,
                 new DefaultEventLoopConfig());
     }
 
@@ -158,20 +165,31 @@ public class Server
      * EventLoopConfig)}
      * instead.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"}) // Channel init map has the wrong generics and we can't fix without api breakage.
+    @SuppressWarnings({"unchecked", "rawtypes"
+    }) // Channel init map has the wrong generics and we can't fix without api breakage.
     @Deprecated
-    public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager,
-                  ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
-                  EventLoopConfig eventLoopConfig) {
-        this(Spectator.globalRegistry(), serverStatusManager,
+    public Server(
+            Map<Integer, ChannelInitializer> portsToChannelInitializers,
+            ServerStatusManager serverStatusManager,
+            ClientConnectionsShutdown clientConnectionsShutdown,
+            EventLoopGroupMetrics eventLoopGroupMetrics,
+            EventLoopConfig eventLoopConfig) {
+        this(
+                Spectator.globalRegistry(),
+                serverStatusManager,
                 convertPortMap((Map<Integer, ChannelInitializer<?>>) (Map) portsToChannelInitializers),
-                clientConnectionsShutdown, eventLoopGroupMetrics, eventLoopConfig);
+                clientConnectionsShutdown,
+                eventLoopGroupMetrics,
+                eventLoopConfig);
     }
 
-    public Server(Registry registry, ServerStatusManager serverStatusManager,
-           Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
-           ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
-           EventLoopConfig eventLoopConfig) {
+    public Server(
+            Registry registry,
+            ServerStatusManager serverStatusManager,
+            Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
+            ClientConnectionsShutdown clientConnectionsShutdown,
+            EventLoopGroupMetrics eventLoopGroupMetrics,
+            EventLoopConfig eventLoopConfig) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
@@ -181,10 +199,14 @@ public class Server
         this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
 
-    public Server(Registry registry, ServerStatusManager serverStatusManager,
+    public Server(
+            Registry registry,
+            ServerStatusManager serverStatusManager,
             Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
-            ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics,
-            EventLoopConfig eventLoopConfig, Thread jvmShutdownHook) {
+            ClientConnectionsShutdown clientConnectionsShutdown,
+            EventLoopGroupMetrics eventLoopGroupMetrics,
+            EventLoopConfig eventLoopConfig,
+            Thread jvmShutdownHook) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
@@ -194,7 +216,6 @@ public class Server
         this.jvmShutdownHook = jvmShutdownHook;
     }
 
-
     public void stop() {
         LOG.info("Shutting down Zuul.");
         serverGroup.stop();
@@ -202,7 +223,7 @@ public class Server
     }
 
     public void start() {
-        if(jvmShutdownHook != null) {
+        if (jvmShutdownHook != null) {
             Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
@@ -213,8 +234,8 @@ public class Server
             List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
             // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry
-                    : addressesToInitializers.entrySet()) {
+            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry :
+                    addressesToInitializers.entrySet()) {
                 NamedSocketAddress requestedNamedAddr = entry.getKey();
                 ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
                 Channel chan = nettyServerFuture.channel();
@@ -228,14 +249,15 @@ public class Server
                 ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
                 if (alloc instanceof ByteBufAllocatorMetricProvider) {
                     ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
-                    PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                    PolledMeter.using(registry)
+                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
                             .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
-                    PolledMeter.using(registry).withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                    PolledMeter.using(registry)
+                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
                             .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
                 }
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
@@ -254,13 +276,12 @@ public class Server
     }
 
     @VisibleForTesting
-    public void waitForEachEventLoop() throws InterruptedException, ExecutionException
-    {
-        for (EventExecutor exec : serverGroup.clientToProxyWorkerPool)
-        {
+    public void waitForEachEventLoop() throws InterruptedException, ExecutionException {
+        for (EventExecutor exec : serverGroup.clientToProxyWorkerPool) {
             exec.submit(() -> {
-                // Do nothing.
-            }).get();
+                        // Do nothing.
+                    })
+                    .get();
         }
     }
 
@@ -311,14 +332,13 @@ public class Server
      * @param clientToProxyBossPool - acceptor pool
      * @param clientToProxyWorkerPool - worker pool
      */
-    public void postEventLoopCreationHook(EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {
+    public void postEventLoopCreationHook(
+            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {}
 
-    }
-
-    private final class ServerGroup
-    {
+    private final class ServerGroup {
         /** A name for this ServerGroup to use in naming threads. */
         private final String name;
+
         private final int acceptorThreads;
         private final int workerThreads;
         private final EventLoopGroupMetrics eventLoopGroupMetrics;
@@ -330,7 +350,8 @@ public class Server
 
         private volatile boolean stopped = false;
 
-        private ServerGroup(String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
+        private ServerGroup(
+                String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
             this.name = name;
             this.acceptorThreads = acceptorThreads;
             this.workerThreads = workerThreads;
@@ -343,8 +364,7 @@ public class Server
             });
         }
 
-        private void initializeTransport()
-        {
+        private void initializeTransport() {
             // TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
             EventExecutorChooserFactory chooserFactory;
             if (USE_LEASTCONNS_FOR_EVENTLOOPS.get()) {
@@ -363,34 +383,23 @@ public class Server
                 channelType = IOUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IOUringSocketChannel.class);
                 clientToProxyBossPool = new IOUringEventLoopGroup(
-                        acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new IOUringEventLoopGroup(
-                        workerThreads,
-                        workerExecutor);
+                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                clientToProxyWorkerPool = new IOUringEventLoopGroup(workerThreads, workerExecutor);
             } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
                 defaultOutboundChannelType.set(EpollSocketChannel.class);
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
                 clientToProxyBossPool = new EpollEventLoopGroup(
-                        acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
                 clientToProxyWorkerPool = new EpollEventLoopGroup(
-                        workerThreads,
-                        workerExecutor,
-                        chooserFactory,
-                        DefaultSelectStrategyFactory.INSTANCE);
+                        workerThreads, workerExecutor, chooserFactory, DefaultSelectStrategyFactory.INSTANCE);
             } else if (!useNio && kqueueIsAvailable()) {
                 channelType = KQueueServerSocketChannel.class;
                 defaultOutboundChannelType.set(KQueueSocketChannel.class);
                 clientToProxyBossPool = new KQueueEventLoopGroup(
-                        acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
                 clientToProxyWorkerPool = new KQueueEventLoopGroup(
-                        workerThreads,
-                        workerExecutor,
-                        chooserFactory,
-                        DefaultSelectStrategyFactory.INSTANCE);
+                        workerThreads, workerExecutor, chooserFactory, DefaultSelectStrategyFactory.INSTANCE);
             } else {
                 channelType = NioServerSocketChannel.class;
                 defaultOutboundChannelType.set(NioSocketChannel.class);
@@ -399,12 +408,10 @@ public class Server
                         workerExecutor,
                         chooserFactory,
                         SelectorProvider.provider(),
-                        DefaultSelectStrategyFactory.INSTANCE
-                );
+                        DefaultSelectStrategyFactory.INSTANCE);
                 elg.setIoRatio(90);
                 clientToProxyBossPool = new NioEventLoopGroup(
-                        acceptorThreads,
-                        new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
                 clientToProxyWorkerPool = elg;
             }
 
@@ -413,8 +420,7 @@ public class Server
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
         }
 
-        synchronized private void stop()
-        {
+        private synchronized void stop() {
             LOG.info("Shutting down");
             if (stopped) {
                 LOG.info("Already stopped");

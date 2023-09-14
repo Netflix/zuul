@@ -23,16 +23,13 @@ import io.netty.handler.codec.http.HttpResponse;
  * Date: 2/8/17
  * Time: 9:58 AM
  */
-public class Http1ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler
-{
-    public Http1ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry)
-    {
+public class Http1ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler {
+    public Http1ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry) {
         super(ConnectionCloseType.GRACEFUL, maxRequestsUnderBrownout, maxRequests, maxExpiry);
     }
 
     @Override
-    protected boolean isResponseHeaders(Object msg)
-    {
+    protected boolean isResponseHeaders(Object msg) {
         return msg instanceof HttpResponse;
     }
 }

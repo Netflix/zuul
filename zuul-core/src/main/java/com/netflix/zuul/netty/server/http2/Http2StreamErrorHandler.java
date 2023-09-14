@@ -22,7 +22,7 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 
-import static io.netty.handler.codec.http2.Http2Exception.*;
+import static io.netty.handler.codec.http2.Http2Exception.StreamException;
 
 /**
  * Author: Susheel Aroskar

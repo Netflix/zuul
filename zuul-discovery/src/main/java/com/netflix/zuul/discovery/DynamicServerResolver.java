@@ -65,7 +65,7 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
 
     @Override
     public void setListener(ResolverListener<DiscoveryResult> listener) {
-        if(this.listener != null) {
+        if (this.listener != null) {
             LOG.warn("Ignoring call to setListener, because a listener was already set");
             return;
         }
@@ -77,7 +77,9 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
     @Override
     public DiscoveryResult resolve(@Nullable Object key) {
         final Server server = loadBalancer.chooseServer(key);
-        return server!= null ? new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()) : DiscoveryResult.EMPTY;
+        return server != null
+                ? new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats())
+                : DiscoveryResult.EMPTY;
     }
 
     @Override
@@ -91,7 +93,8 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
     }
 
     private static DynamicServerListLoadBalancer<?> createLoadBalancer(IClientConfig clientConfig) {
-        //TODO(argha-c): Revisit this style of LB initialization post modularization. Ideally the LB should be pluggable.
+        // TODO(argha-c): Revisit this style of LB initialization post modularization. Ideally the LB should be
+        // pluggable.
 
         // Use a hard coded string for the LB default name to avoid a dependency on Ribbon classes.
         String loadBalancerClassName =
@@ -100,7 +103,9 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
         DynamicServerListLoadBalancer<?> lb;
         try {
             Class<?> clazz = Class.forName(loadBalancerClassName);
-            lb = clazz.asSubclass(DynamicServerListLoadBalancer.class).getConstructor().newInstance();
+            lb = clazz.asSubclass(DynamicServerListLoadBalancer.class)
+                    .getConstructor()
+                    .newInstance();
             lb.initWithNiwsConfig(clientConfig);
         } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
@@ -115,7 +120,8 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
         Set<Server> oldSet = new HashSet<>(oldList);
         Set<Server> newSet = new HashSet<>(newList);
         final List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream()
-                .map(server -> new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()))
+                .map(server ->
+                        new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()))
                 .collect(Collectors.toList());
         listener.onChange(discoveryResults);
     }

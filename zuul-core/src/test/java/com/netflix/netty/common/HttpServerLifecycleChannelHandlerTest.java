@@ -16,7 +16,6 @@
 
 package com.netflix.netty.common;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT;
 import com.google.common.truth.Truth;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
@@ -34,6 +33,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.junit.jupiter.api.Test;
+
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT;
 
 class HttpServerLifecycleChannelHandlerTest {
 
@@ -90,8 +91,8 @@ class HttpServerLifecycleChannelHandlerTest {
         ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer();
         try {
             Truth.assertThat(buffer.refCnt()).isEqualTo(1);
-            FullHttpRequest httpRequest = new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/whatever", buffer);
+            FullHttpRequest httpRequest =
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/whatever", buffer);
             channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
             channel.writeInbound(httpRequest);
 
