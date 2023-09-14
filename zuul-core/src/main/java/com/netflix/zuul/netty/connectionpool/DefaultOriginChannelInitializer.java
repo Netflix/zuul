@@ -108,6 +108,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
      */
     protected void addMethodBindingHandler(ChannelPipeline pipeline) {}
 
+    @Override
     public HttpMetricsChannelHandler getHttpMetricsHandler() {
         return httpMetricsHandler;
     }

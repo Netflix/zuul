@@ -37,6 +37,7 @@ public interface HttpRequestInfo extends ZuulMessage {
 
     String getPathAndQuery();
 
+    @Override
     Headers getHeaders();
 
     String getClientIp();
@@ -47,8 +48,10 @@ public interface HttpRequestInfo extends ZuulMessage {
 
     String getServerName();
 
+    @Override
     int getMaxBodySize();
 
+    @Override
     String getInfoForLogging();
 
     String getOriginalHost();

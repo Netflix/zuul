@@ -56,6 +56,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         return logger.isEnabled(level);
     }
 
+    @Override
     public void logData(
             Direction direction,
             ChannelHandlerContext ctx,
@@ -75,6 +76,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logHeaders(
             Direction direction,
             ChannelHandlerContext ctx,
@@ -87,6 +89,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logHeaders(
             Direction direction,
             ChannelHandlerContext ctx,
@@ -112,6 +115,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logPriority(
             Direction direction,
             ChannelHandlerContext ctx,
@@ -132,36 +136,42 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logRstStream(Direction direction, ChannelHandlerContext ctx, int streamId, long errorCode) {
         if (enabled()) {
             log(direction, "RST_STREAM", ctx, "streamId=%d, errorCode=%d", streamId, errorCode);
         }
     }
 
+    @Override
     public void logSettingsAck(Direction direction, ChannelHandlerContext ctx) {
         if (enabled()) {
             log(direction, "SETTINGS", ctx, "ack=true");
         }
     }
 
+    @Override
     public void logSettings(Direction direction, ChannelHandlerContext ctx, Http2Settings settings) {
         if (enabled()) {
             log(direction, "SETTINGS", ctx, "ack=false, settings=%s", settings);
         }
     }
 
+    @Override
     public void logPing(Direction direction, ChannelHandlerContext ctx, long data) {
         if (enabled()) {
             log(direction, "PING", ctx, "ack=false, length=%d", data);
         }
     }
 
+    @Override
     public void logPingAck(Direction direction, ChannelHandlerContext ctx, long data) {
         if (enabled()) {
             log(direction, "PING", ctx, "ack=true, length=%d", data);
         }
     }
 
+    @Override
     public void logPushPromise(
             Direction direction,
             ChannelHandlerContext ctx,
@@ -182,6 +192,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logGoAway(
             Direction direction, ChannelHandlerContext ctx, int lastStreamId, long errorCode, ByteBuf debugData) {
         if (enabled()) {
@@ -197,6 +208,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logWindowsUpdate(
             Direction direction, ChannelHandlerContext ctx, int streamId, int windowSizeIncrement) {
         if (enabled()) {
@@ -204,6 +216,7 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         }
     }
 
+    @Override
     public void logUnknownFrame(
             Direction direction,
             ChannelHandlerContext ctx,

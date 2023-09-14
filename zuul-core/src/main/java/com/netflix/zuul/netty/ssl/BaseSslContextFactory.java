@@ -116,6 +116,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         // TODO
     }
 
+    @Override
     public void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId) {
         // Setup metrics tracking the OpenSSL stats.
         if (sslContext instanceof ReferenceCountedOpenSslContext) {
@@ -172,6 +173,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         return serverSslConfig.getProtocols();
     }
 
+    @Override
     public List<String> getCiphers() throws NoSuchAlgorithmException {
         return serverSslConfig.getCiphers();
     }

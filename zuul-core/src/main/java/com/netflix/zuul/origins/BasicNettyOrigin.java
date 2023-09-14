@@ -124,6 +124,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         return clientChannelManager.acquire(eventLoop, null, passport, chosenServer, chosenHostAddr);
     }
 
+    @Override
     public int getMaxRetriesForRequest(SessionContext context) {
         return config.get(CommonClientConfigKey.MaxAutoRetriesNextServer, 0);
     }

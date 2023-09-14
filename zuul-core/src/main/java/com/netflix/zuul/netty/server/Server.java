@@ -358,6 +358,7 @@ public class Server {
             this.eventLoopGroupMetrics = eventLoopGroupMetrics;
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
                 public void uncaughtException(final Thread t, final Throwable e) {
                     LOG.error("Uncaught throwable", e);
                 }

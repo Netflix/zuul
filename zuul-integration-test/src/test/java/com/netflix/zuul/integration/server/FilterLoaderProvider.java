@@ -46,6 +46,7 @@ public class FilterLoaderProvider implements Provider<FilterLoader> {
         FILTER_TYPES = Collections.unmodifiableSet(classes);
     }
 
+    @Override
     public FilterLoader get() {
         StaticFilterLoader loader = new StaticFilterLoader(new DefaultFilterFactory(), FILTER_TYPES);
         return loader;

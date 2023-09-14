@@ -34,6 +34,7 @@ public class CategorizedThreadFactory implements ThreadFactory {
         this.category = category;
     }
 
+    @Override
     public Thread newThread(final Runnable r) {
         final FastThreadLocalThread t = new FastThreadLocalThread(r, category + "-" + num++);
         return t;

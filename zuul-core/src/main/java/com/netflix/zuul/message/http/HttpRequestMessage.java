@@ -34,6 +34,7 @@ public interface HttpRequestMessage extends HttpRequestInfo {
 
     void setServerName(String serverName);
 
+    @Override
     ZuulMessage clone();
 
     void storeInboundRequest();

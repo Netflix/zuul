@@ -65,6 +65,7 @@ public class NamedCountingMonitor implements NamedCount {
     /**
      * @return the current count
      */
+    @Override
     public long getCount() {
         return this.count.get();
     }

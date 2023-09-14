@@ -108,6 +108,7 @@ public class FilterFileManager {
                 setDaemon(true);
             }
 
+            @Override
             public void run() {
                 while (bRunning) {
                     try {

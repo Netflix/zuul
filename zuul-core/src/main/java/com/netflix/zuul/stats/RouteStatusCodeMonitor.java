@@ -87,6 +87,7 @@ public class RouteStatusCodeMonitor implements NamedCount {
         return routeCode;
     }
 
+    @Override
     public long getCount() {
         return count.get();
     }
