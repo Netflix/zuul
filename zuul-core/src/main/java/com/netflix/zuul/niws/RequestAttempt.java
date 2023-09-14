@@ -57,9 +57,10 @@ public class RequestAttempt
     private String availabilityZone;
     private long readTimeout;
     private int connectTimeout;
+    private int maxRetries;
 
     public RequestAttempt(int attemptNumber, InstanceInfo server, String targetVip, String chosenWarmupLB, int status, String error, String exceptionType,
-                          int readTimeout, int connectTimeout)
+                          int readTimeout, int connectTimeout, int maxRetries)
     {
         if (attemptNumber < 1) {
             throw new IllegalArgumentException("Attempt number must be greater than 0! - " + attemptNumber);
@@ -95,6 +96,7 @@ public class RequestAttempt
         this.exceptionType = exceptionType;
         this.readTimeout = readTimeout;
         this.connectTimeout = connectTimeout;
+        this.maxRetries = maxRetries;
     }
 
     public RequestAttempt(final DiscoveryResult server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
@@ -217,6 +219,11 @@ public class RequestAttempt
         return connectTimeout;
     }
 
+    public int getMaxRetries()
+    {
+        return maxRetries;
+    }
+
     public void setStatus(int status)
     {
         this.status = status;
@@ -321,6 +328,11 @@ public class RequestAttempt
                 cause = Throwables.getStackTraceAsString(t);
             }
         }
+    }
+
+    public void setMaxRetries(int maxRetries)
+    {
+        this.maxRetries = maxRetries;
     }
 
     @Override
