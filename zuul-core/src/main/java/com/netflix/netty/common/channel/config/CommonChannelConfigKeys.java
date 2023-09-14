@@ -59,7 +59,7 @@ public class CommonChannelConfigKeys
     /* The amount of time to wait before closing a connection that has the `Connection: Close` header, in seconds */
     public static final ChannelConfigKey<Integer> connCloseDelay = new ChannelConfigKey<>("connCloseDelay", 10);
     public static final ChannelConfigKey<Integer> maxHttp2HeaderTableSize = new ChannelConfigKey<>("maxHttp2HeaderTableSize", 4096);
-    public static final ChannelConfigKey<Integer> maxHttp2HeaderListSize = new ChannelConfigKey<>("maxHttp2HeaderListSize");
+    public static final ChannelConfigKey<Integer> maxHttp2HeaderListSize = new ChannelConfigKey<>("maxHttp2HeaderListSize", 4096);
     public static final ChannelConfigKey<Boolean> http2AllowGracefulDelayed = new ChannelConfigKey<>("http2AllowGracefulDelayed", true);
     public static final ChannelConfigKey<Boolean> http2SwallowUnknownExceptionsOnConnClose = new ChannelConfigKey<>("http2SwallowUnknownExceptionsOnConnClose", false);
 }
