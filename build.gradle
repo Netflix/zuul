@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.36.0'
+    }
+}
+
 plugins {
     id 'com.netflix.nebula.netflixoss' version '11.3.2'
     id "com.google.osdetector" version "1.7.3"
@@ -32,6 +38,7 @@ subprojects {
     apply plugin: 'com.netflix.nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
+    apply plugin: 'com.palantir.java-format'
 
     license {
         ignoreFailures = false
