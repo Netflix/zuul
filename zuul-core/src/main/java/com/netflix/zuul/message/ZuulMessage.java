@@ -141,7 +141,6 @@ public interface ZuulMessage extends Cloneable {
     /**
      * Returns a copy of this message.
      */
-    @Override
     ZuulMessage clone();
 
     /**
