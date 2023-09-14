@@ -86,7 +86,7 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
                         }
                     }
 
-                    if (!dontFireCompleteYet)
+                    if (!dontFireCompleteYet) {
                         if (promise.isDone()) {
                             fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
                         } else {
@@ -94,6 +94,7 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
                                 fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
                             });
                         }
+                    }
                 }
             }
         }

@@ -255,7 +255,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         if (currentRequestStat != null) {
-            if (error) currentRequestStat.generalError();
+            if (error) {
+                currentRequestStat.generalError();
+            }
         }
 
         // Publish each of the request stats (ie. one for each attempt).

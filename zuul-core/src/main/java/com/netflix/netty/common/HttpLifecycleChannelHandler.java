@@ -76,8 +76,9 @@ public abstract class HttpLifecycleChannelHandler {
         Attribute<State> attr = ctx.channel().attr(ATTR_STATE);
         State state = attr.get();
 
-        if (state == null || state != State.STARTED)
+        if (state == null || state != State.STARTED) {
             return false;
+        }
         
         attr.set(State.COMPLETED);
 

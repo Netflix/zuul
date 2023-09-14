@@ -42,6 +42,8 @@ public class MonitorRegistry {
     }
 
     public void registerObject(NamedCount monitorObj) {
-      if(publisher != null) publisher.register(monitorObj);
+        if (publisher != null) {
+            publisher.register(monitorObj);
+        }
     }
 }

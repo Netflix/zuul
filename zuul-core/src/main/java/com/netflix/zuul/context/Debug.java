@@ -164,8 +164,9 @@ public class Debug {
             obs = Debug.writeDebugMessage(context, request, prefix, arrow);
         }
 
-        if (obs == null)
+        if (obs == null) {
             obs = Observable.just(Boolean.FALSE);
+        }
 
         return obs;
     }
@@ -182,8 +183,9 @@ public class Debug {
             obs = Debug.writeDebugMessage(context, response, prefix, arrow);
         }
 
-        if (obs == null)
+        if (obs == null) {
             obs = Observable.just(Boolean.FALSE);
+        }
 
         return obs;
     }
@@ -206,8 +208,9 @@ public class Debug {
             }
         }
 
-        if (obs == null)
+        if (obs == null) {
             obs = Observable.just(Boolean.FALSE);
+        }
 
         return obs;
     }

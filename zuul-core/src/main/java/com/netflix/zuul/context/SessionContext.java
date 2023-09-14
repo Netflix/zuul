@@ -266,8 +266,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      *
      */
     public void set(String key, Object value) {
-        if (value != null) put(key, value);
-        else remove(key);
+        if (value != null) {
+            put(key, value);
+        } else {
+            remove(key);
+        }
     }
 
     public String getUUID()
@@ -384,7 +387,9 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     public void addFilterExecutionSummary(String name, String status, long time) {
         StringBuilder sb = getFilterExecutionSummary();
-        if (sb.length() > 0) sb.append(", ");
+        if (sb.length() > 0) {
+            sb.append(", ");
+        }
         sb.append(name).append('[').append(status).append(']').append('[').append(time).append("ms]");
     }
 

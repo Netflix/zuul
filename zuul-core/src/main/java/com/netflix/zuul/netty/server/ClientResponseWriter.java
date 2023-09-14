@@ -105,7 +105,9 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                    to recover other than closing the socket and cleaning up resources used by BOTH responses.
                  */
                 resp.disposeBufferedBody();
-                if (zuulResponse != null) zuulResponse.disposeBufferedBody();
+                if (zuulResponse != null) {
+                    zuulResponse.disposeBufferedBody();
+                }
                 ctx.close(); //This will trigger CompleteEvent if one is needed
                 return;
             }

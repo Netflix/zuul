@@ -143,13 +143,15 @@ public class RequestAttempt
 
     public void complete(int responseStatus, long durationMs, Throwable exception)
     {
-        if (responseStatus > -1)
+        if (responseStatus > -1) {
             setStatus(responseStatus);
+        }
 
         this.duration = durationMs;
 
-        if (exception != null)
+        if (exception != null) {
             setException(exception);
+        }
     }
 
     public int getAttempt()

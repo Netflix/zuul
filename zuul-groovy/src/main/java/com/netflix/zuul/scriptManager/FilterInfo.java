@@ -202,19 +202,39 @@ public class FilterInfo implements  Comparable<FilterInfo>{
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         FilterInfo that = (FilterInfo) o;
 
-        if (revision != that.revision) return false;
-        if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null) return false;
-        if (filter_code != null ? !filter_code.equals(that.filter_code) : that.filter_code != null) return false;
-        if (filter_id != null ? !filter_id.equals(that.filter_id) : that.filter_id != null) return false;
-        if (filter_name != null ? !filter_name.equals(that.filter_name) : that.filter_name != null) return false;
-        if (filter_type != null ? !filter_type.equals(that.filter_type) : that.filter_type != null) return false;
-        if (isActive != null ? !(isActive.get() == that.isActive.get()) : that.isActive != null) return false;
-        if (isCanary != null ? !(isCanary.get() == that.isCanary.get()) : that.isCanary != null) return false;
+        if (revision != that.revision) {
+            return false;
+        }
+        if (creationDate != null ? !creationDate.equals(that.creationDate) : that.creationDate != null) {
+            return false;
+        }
+        if (filter_code != null ? !filter_code.equals(that.filter_code) : that.filter_code != null) {
+            return false;
+        }
+        if (filter_id != null ? !filter_id.equals(that.filter_id) : that.filter_id != null) {
+            return false;
+        }
+        if (filter_name != null ? !filter_name.equals(that.filter_name) : that.filter_name != null) {
+            return false;
+        }
+        if (filter_type != null ? !filter_type.equals(that.filter_type) : that.filter_type != null) {
+            return false;
+        }
+        if (isActive != null ? !(isActive.get() == that.isActive.get()) : that.isActive != null) {
+            return false;
+        }
+        if (isCanary != null ? !(isCanary.get() == that.isCanary.get()) : that.isCanary != null) {
+            return false;
+        }
 
         return true;
     }

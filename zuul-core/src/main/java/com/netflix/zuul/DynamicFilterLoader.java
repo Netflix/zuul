@@ -186,7 +186,9 @@ public final class DynamicFilterLoader implements FilterLoader {
     @Override
     public SortedSet<ZuulFilter<?, ?>> getFiltersByType(FilterType filterType) {
         SortedSet<ZuulFilter<?, ?>> set = hashFiltersByType.get(filterType);
-        if (set != null) return set;
+        if (set != null) {
+            return set;
+        }
 
         set = new TreeSet<>(FILTER_COMPARATOR);
 

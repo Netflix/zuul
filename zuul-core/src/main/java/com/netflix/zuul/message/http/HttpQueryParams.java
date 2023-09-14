@@ -259,10 +259,12 @@ public class HttpQueryParams implements Cloneable
     @Override
     public boolean equals(Object obj)
     {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (! (obj instanceof HttpQueryParams))
+        }
+        if (!(obj instanceof HttpQueryParams)) {
             return false;
+        }
 
         HttpQueryParams hqp2 = (HttpQueryParams) obj;
         return Iterables.elementsEqual(delegate.entries(), hqp2.delegate.entries());

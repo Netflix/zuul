@@ -58,9 +58,13 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
         DynamicBooleanProperty debugFilterShutoff = new DynamicBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
-        if (debugFilterShutoff.get()) return false;
+        if (debugFilterShutoff.get()) {
+            return false;
+        }
 
-        if (isDisabled()) return false;
+        if (isDisabled()) {
+            return false;
+        }
 
         String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
         // dont' apply filter if it was already applied

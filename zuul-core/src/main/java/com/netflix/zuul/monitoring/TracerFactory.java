@@ -41,7 +41,9 @@ public abstract class TracerFactory {
      * @return a <code>TracerFactory</code> value
      */
     public static final TracerFactory instance() {
-        if(INSTANCE == null) throw new IllegalStateException(String.format("%s not initialized", TracerFactory.class.getSimpleName()));
+        if (INSTANCE == null) {
+            throw new IllegalStateException(String.format("%s not initialized", TracerFactory.class.getSimpleName()));
+        }
         return INSTANCE;
     }
 
