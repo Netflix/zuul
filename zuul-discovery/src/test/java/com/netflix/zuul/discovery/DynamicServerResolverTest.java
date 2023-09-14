@@ -49,7 +49,8 @@ class DynamicServerResolverTest {
         }
 
         final CustomListener listener = new CustomListener();
-        final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), listener);
+        final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
+        resolver.setListener(listener);
 
         final InstanceInfo first = Builder.newBuilder()
                 .setAppName("zuul-discovery-1")
@@ -73,11 +74,7 @@ class DynamicServerResolverTest {
 
     @Test
     void properSentinelValueWhenServersUnavailable() {
-        final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl(), new ResolverListener<DiscoveryResult>() {
-            @Override
-            public void onChange(List<DiscoveryResult> removedSet) {
-            }
-        });
+        final DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
 
         final DiscoveryResult nonExistentServer = resolver.resolve(null);
 
