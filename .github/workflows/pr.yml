@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: [8, 11, 17, 20, 21-ea]
+        java: [8, 11, 17, 21]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: ${{ matrix.java }}
           cache: 'gradle'
       - name: Build
