@@ -49,7 +49,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -176,7 +176,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -323,7 +323,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -537,7 +537,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -714,7 +714,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
@@ -870,7 +870,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.6.5"
+            "locked": "1.6.10"
         },
         "com.netflix.zuul:zuul-core": {
             "project": true
