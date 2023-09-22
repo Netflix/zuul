@@ -23,12 +23,20 @@
             "locked": "1.36"
         }
     },
+    "palantirJavaFormat": {
+        "com.palantir.javaformat:palantir-java-format": {
+            "locked": "2.36.0"
+        }
+    },
     "rewrite": {
         "org.openrewrite.recipe:rewrite-logging-frameworks": {
             "locked": "2.0.3"
         },
         "org.openrewrite.recipe:rewrite-recipe-bom": {
             "locked": "2.2.1"
+        },
+        "org.openrewrite.recipe:rewrite-static-analysis": {
+            "locked": "1.0.7"
         },
         "org.openrewrite.recipe:rewrite-testing-frameworks": {
             "locked": "2.0.10"

@@ -39,6 +39,12 @@
             ],
             "locked": "2.4.4"
         },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
+            "locked": "2.4.4"
+        },
         "com.netflix.spectator:spectator-api": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -157,6 +163,12 @@
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
             ],
             "locked": "2.4.4"
         },
@@ -695,6 +707,12 @@
         "com.netflix.ribbon:ribbon-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
+            ],
+            "locked": "2.4.4"
+        },
+        "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
             ],
             "locked": "2.4.4"
         },
