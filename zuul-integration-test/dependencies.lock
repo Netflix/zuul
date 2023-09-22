@@ -243,6 +243,9 @@
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
@@ -376,6 +379,9 @@
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
@@ -983,6 +989,9 @@
             "locked": "2.4.4"
         },
         "com.netflix.ribbon:ribbon-loadbalancer": {
+            "firstLevelTransitive": [
+                "com.netflix.zuul:zuul-discovery"
+            ],
             "locked": "2.4.4"
         },
         "com.netflix.spectator:spectator-api": {
