@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
@@ -63,9 +64,6 @@ import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
@@ -80,21 +78,19 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
  * NOTE: Shout-out to <a href="https://github.com/adamfisk/LittleProxy">LittleProxy</a> which was great as a reference.
- *
- * User: michaels
- * Date: 11/8/14
- * Time: 8:39 PM
+ * <p>
+ * User: michaels Date: 11/8/14 Time: 8:39 PM
  */
 public class Server {
+
     /**
-     * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by
-     * using the {@link #FORCE_NIO} property.
+     * This field is effectively a noop, as Epoll is enabled automatically if available.   This can be disabled by using
+     * the {@link #FORCE_NIO} property.
      */
     @Deprecated
     public static final DynamicBooleanProperty USE_EPOLL =
@@ -141,9 +137,9 @@ public class Server {
     public static final AtomicReference<Class<? extends Channel>> defaultOutboundChannelType = new AtomicReference<>();
 
     /**
-     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
-     * EventLoopConfig)}
-     * instead.
+     * Use
+     * {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)} instead.
      */
     @SuppressWarnings("rawtypes")
     @Deprecated
@@ -161,9 +157,9 @@ public class Server {
     }
 
     /**
-     * Use {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
-     * EventLoopConfig)}
-     * instead.
+     * Use
+     * {@link #Server(Registry, ServerStatusManager, Map, ClientConnectionsShutdown, EventLoopGroupMetrics,
+     * EventLoopConfig)} instead.
      */
     @SuppressWarnings({"unchecked", "rawtypes"
     }) // Channel init map has the wrong generics and we can't fix without api breakage.
@@ -298,6 +294,11 @@ public class Server {
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
+        if (epollIsAvailable()) {
+            LOG.info("******* Enabling IP_TRANSPARENT for epoll channel bound to {}", listenAddress);
+            serverBootstrap.childOption(EpollChannelOption.IP_TRANSPARENT, true);
+        }
+
         // Apply transport specific socket options.
         for (Map.Entry<ChannelOption<?>, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
             serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
@@ -329,14 +330,18 @@ public class Server {
     /**
      * Override for metrics or informational purposes
      *
-     * @param clientToProxyBossPool - acceptor pool
+     * @param clientToProxyBossPool   - acceptor pool
      * @param clientToProxyWorkerPool - worker pool
      */
     public void postEventLoopCreationHook(
-            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {}
+            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {
+    }
 
     private final class ServerGroup {
-        /** A name for this ServerGroup to use in naming threads. */
+
+        /**
+         * A name for this ServerGroup to use in naming threads.
+         */
         private final String name;
 
         private final int acceptorThreads;
