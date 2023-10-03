@@ -30,6 +30,7 @@ import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.channel.epoll.Epoll;
+import io.netty.incubator.channel.uring.IOUring;
 import io.netty.handler.codec.compression.Brotli;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
@@ -105,6 +106,8 @@ class IntegrationTest {
 
     @BeforeAll
     static void beforeAll() {
+        System.out.println("Epoll.isAvailable: " + Epoll.isAvailable());
+        System.out.println("IOUring.isAvailable: " + IOUring.isAvailable());
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 

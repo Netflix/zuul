@@ -594,6 +594,9 @@
             ],
             "locked": "1.10"
         },
+        "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
+            "locked": "0.0.23.Final"
+        },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1030,6 +1033,12 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
+        "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
+            "locked": "0.0.23.Final"
+        },
+        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
+            "locked": "0.0.23.Final"
+        },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1224,6 +1233,9 @@
                 "com.netflix.zuul:zuul-guice"
             ],
             "locked": "1.10"
+        },
+        "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
+            "locked": "0.0.23.Final"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "firstLevelTransitive": [
