@@ -29,6 +29,7 @@ import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
+import io.netty.channel.epoll.Epoll;
 import io.netty.handler.codec.compression.Brotli;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
@@ -43,6 +44,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -489,6 +492,12 @@ class IntegrationTest {
         assertEquals(expectedResponseBody, text);
         inputStream.close();
         connection.disconnect();
+    }
+
+    @Test
+    @EnabledOnOs(value = {OS.LINUX})
+    public void epollIsAvailableOnLinux() {
+        assertThat(Epoll.isAvailable()).isTrue();
     }
 
     private static String randomPathSegment() {

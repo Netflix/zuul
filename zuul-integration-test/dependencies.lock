@@ -311,6 +311,12 @@
             ],
             "locked": "4.1.99.Final"
         },
+        "io.netty:netty-transport-classes-epoll": {
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-native-epoll": {
+            "locked": "4.1.99.Final"
+        },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -445,6 +451,12 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-classes-epoll": {
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.99.Final"
         },
         "io.reactivex:rxjava": {
@@ -646,6 +658,9 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-classes-epoll": {
             "locked": "4.1.99.Final"
         },
         "io.netty:netty-transport-native-epoll": {
@@ -883,6 +898,9 @@
             ],
             "locked": "4.1.99.Final"
         },
+        "io.netty:netty-transport-classes-epoll": {
+            "locked": "4.1.99.Final"
+        },
         "io.netty:netty-transport-native-epoll": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1058,6 +1076,12 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-classes-epoll": {
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-native-epoll": {
             "locked": "4.1.99.Final"
         },
         "io.reactivex:rxjava": {
@@ -1268,6 +1292,9 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
+            "locked": "4.1.99.Final"
+        },
+        "io.netty:netty-transport-classes-epoll": {
             "locked": "4.1.99.Final"
         },
         "io.netty:netty-transport-native-epoll": {
