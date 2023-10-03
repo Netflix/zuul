@@ -29,7 +29,9 @@ import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
+import io.netty.channel.epoll.Epoll;
 import io.netty.handler.codec.compression.Brotli;
+import io.netty.incubator.channel.uring.IOUring;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -43,6 +45,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -102,11 +106,14 @@ class IntegrationTest {
 
     @BeforeAll
     static void beforeAll() {
+        System.out.println("Epoll.isAvailable: " + Epoll.isAvailable());
+        System.out.println("IOUring.isAvailable: " + IOUring.isAvailable());
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
@@ -489,6 +496,15 @@ class IntegrationTest {
         assertEquals(expectedResponseBody, text);
         inputStream.close();
         connection.disconnect();
+    }
+
+    @Test
+    @EnabledOnOs(value = {OS.LINUX})
+    void epollIsAvailableOnLinux() {
+        if (Epoll.unavailabilityCause() != null) {
+            Epoll.unavailabilityCause().printStackTrace();
+        }
+        assertThat(Epoll.isAvailable()).isTrue();
     }
 
     private static String randomPathSegment() {

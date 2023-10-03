@@ -5,6 +5,8 @@ dependencies {
     implementation project(":zuul-core"),
             project(":zuul-guice"),
             project(":zuul-discovery")
+
+    implementation "io.netty:netty-transport-classes-epoll"
     implementation "com.netflix.eureka:eureka-client:1.10.18"
     implementation "com.netflix.ribbon:ribbon-eureka:$versions_ribbon"
     implementation "com.netflix.ribbon:ribbon-loadbalancer:$versions_ribbon"
@@ -14,6 +16,8 @@ dependencies {
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
+    testImplementation "io.netty.incubator:netty-incubator-transport-classes-io_uring:${versions_netty_io_uring}"
+    testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
     testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
@@ -21,6 +25,7 @@ dependencies {
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-x86_64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-aarch64:$versions_brotli4j"
+    testRuntimeOnly "io.netty:netty-transport-native-epoll::linux-x86_64"
 }
 
 tasks.withType(Test).all {
