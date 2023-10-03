@@ -496,7 +496,7 @@ class IntegrationTest {
 
     @Test
     @EnabledOnOs(value = {OS.LINUX})
-    public void epollIsAvailableOnLinux() {
+    void epollIsAvailableOnLinux() {
         assertThat(Epoll.isAvailable()).isTrue();
     }
 
