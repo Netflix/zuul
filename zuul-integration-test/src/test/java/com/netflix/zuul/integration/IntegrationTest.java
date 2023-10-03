@@ -497,6 +497,9 @@ class IntegrationTest {
     @Test
     @EnabledOnOs(value = {OS.LINUX})
     void epollIsAvailableOnLinux() {
+        if (Epoll.unavailabilityCause() != null) {
+            Epoll.unavailabilityCause().printStackTrace();
+        }
         assertThat(Epoll.isAvailable()).isTrue();
     }
 
