@@ -30,8 +30,8 @@ import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.channel.epoll.Epoll;
-import io.netty.incubator.channel.uring.IOUring;
 import io.netty.handler.codec.compression.Brotli;
+import io.netty.incubator.channel.uring.IOUring;
 import io.netty.util.ResourceLeakDetector;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -113,10 +113,10 @@ class IntegrationTest {
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
-        config.setProperty("zuul.server.netty.socket.force_nio", "true");
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
