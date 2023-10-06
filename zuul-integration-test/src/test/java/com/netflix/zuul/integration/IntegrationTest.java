@@ -281,6 +281,7 @@ class IntegrationTest {
                 .build();
         Response response = okHttp.newCall(request).execute();
         final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        System.out.println("response.code=" + response.code());
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
