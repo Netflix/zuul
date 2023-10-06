@@ -214,8 +214,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         connsInUse.decrementAndGet();
 
         final DiscoveryResult discoveryResult = conn.getServer();
-        discoveryResult.decrementActiveRequestsCount();
-        discoveryResult.incrementNumRequests();
+        updateServerStatsOnRelease(conn);
 
         boolean released = false;
 
@@ -272,6 +271,12 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         return released;
+    }
+
+    protected void updateServerStatsOnRelease(final PooledConnection conn) {
+        final DiscoveryResult discoveryResult = conn.getServer();
+        discoveryResult.decrementActiveRequestsCount();
+        discoveryResult.incrementNumRequests();
     }
 
     protected void releaseHandlers(PooledConnection conn) {
