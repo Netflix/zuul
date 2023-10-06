@@ -158,7 +158,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         }
 
         requestConnCounter.increment();
-        server.incrementActiveRequestsCount();
+        updateServerStatsOnAcquire();
 
         Promise<PooledConnection> promise = eventLoop.newPromise();
 
@@ -178,6 +178,10 @@ public class PerServerConnectionPool implements IConnectionPool {
         }
 
         return promise;
+    }
+
+    protected void updateServerStatsOnAcquire() {
+        server.incrementActiveRequestsCount();
     }
 
     public PooledConnection tryGettingFromConnectionPool(EventLoop eventLoop) {
@@ -284,22 +288,26 @@ public class PerServerConnectionPool implements IConnectionPool {
     protected void handleConnectCompletion(
             ChannelFuture cf, Promise<PooledConnection> callerPromise, CurrentPassport passport) {
         connCreationsInProgress.decrementAndGet();
-
+        updateServerStatsOnConnectCompletion(cf);
         if (cf.isSuccess()) {
-
             passport.add(PassportState.ORIGIN_CH_CONNECTED);
-            server.incrementOpenConnectionsCount();
             createConnSucceededCounter.increment();
             connsInUse.incrementAndGet();
-
             createConnection(cf, callerPromise, passport);
+        } else {
+            createConnFailedCounter.increment();
+            callerPromise.setFailure(
+                    new OriginConnectException(cf.cause().getMessage(), cf.cause(), OutboundErrorType.CONNECT_ERROR));
+        }
+    }
+
+    protected void updateServerStatsOnConnectCompletion(ChannelFuture cf) {
+        if (cf.isSuccess()) {
+            server.incrementOpenConnectionsCount();
         } else {
             server.incrementSuccessiveConnectionFailureCount();
             server.addToFailureCount();
             server.decrementActiveRequestsCount();
-            createConnFailedCounter.increment();
-            callerPromise.setFailure(
-                    new OriginConnectException(cf.cause().getMessage(), cf.cause(), OutboundErrorType.CONNECT_ERROR));
         }
     }
 
