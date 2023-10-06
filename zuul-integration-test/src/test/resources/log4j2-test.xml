@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
  Copyright 2023 Netflix, Inc.
 
@@ -14,7 +15,6 @@
   limitations under the License.
 
 -->
-<?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="DEBUG">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
