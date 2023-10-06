@@ -15,7 +15,7 @@
   limitations under the License.
 
 -->
-<Configuration status="DEBUG">
+<Configuration status="warn">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
