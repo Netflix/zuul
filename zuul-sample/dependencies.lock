@@ -96,43 +96,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-haproxy": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
@@ -144,19 +144,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.perfmark:perfmark-api": {
             "firstLevelTransitive": [
@@ -273,43 +273,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -415,43 +415,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -591,43 +591,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-haproxy": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
@@ -639,19 +639,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.perfmark:perfmark-api": {
             "firstLevelTransitive": [
@@ -822,43 +822,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-haproxy": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
@@ -870,19 +870,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.perfmark:perfmark-api": {
             "firstLevelTransitive": [
@@ -1011,43 +1011,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.reactivex:rxjava": {
             "firstLevelTransitive": [
@@ -1181,43 +1181,43 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-buffer": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-haproxy": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-codec-http2": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-common": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-handler": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
@@ -1229,19 +1229,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-epoll": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "4.1.99.Final"
+            "locked": "4.1.100.Final"
         },
         "io.perfmark:perfmark-api": {
             "firstLevelTransitive": [
