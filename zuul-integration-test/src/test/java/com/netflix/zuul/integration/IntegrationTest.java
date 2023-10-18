@@ -19,6 +19,7 @@ package com.netflix.zuul.integration;
 import com.aayushatharva.brotli4j.decoder.DecoderJNI;
 import com.aayushatharva.brotli4j.decoder.DirectDecompress;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.Options;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -101,7 +102,7 @@ class IntegrationTest {
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .configureStaticDsl(true)
-            .options(wireMockConfig().dynamicPort())
+            .options(wireMockConfig().dynamicPort().useChunkedTransferEncoding(Options.ChunkedEncodingPolicy.ALWAYS))
             .build();
 
     @BeforeAll
