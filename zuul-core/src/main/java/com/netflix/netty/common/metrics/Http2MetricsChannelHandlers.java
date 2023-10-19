@@ -94,6 +94,17 @@ public class Http2MetricsChannelHandlers {
         }
 
         @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            try {
+                if (evt instanceof Http2Frame) {
+                    incrementCounter(registry, frameCounterName, metricId, (Http2Frame) evt);
+                }
+            } finally {
+                super.userEventTriggered(ctx, evt);
+            }
+        }
+
+        @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             try {
                 if (cause instanceof Http2Exception) {
