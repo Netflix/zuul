@@ -151,7 +151,8 @@ class ElbProxyProtocolChannelHandlerTest {
         assertEquals(dropped, buf);
         buf.release();
 
-        final Counter counter = registry.counter("zuul.hapm.decode", "success", "false", "port", String.valueOf(port));
+        final Counter counter = registry.counter(
+                "zuul.hapm.decode", "success", "false", "port", String.valueOf(port), "needs_more_data", "false");
         assertEquals(1, counter.count());
     }
 
@@ -179,6 +180,31 @@ class ElbProxyProtocolChannelHandlerTest {
 
         // The handler should remove itself.
         assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.class));
+    }
+
+    @Test
+    void tracksSplitMessage() {
+        EmbeddedChannel channel = new EmbeddedChannel();
+        // This is normally done by Server.
+        channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
+        int port = 7007;
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
+
+        channel.pipeline()
+                .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
+        ByteBuf buf1 = Unpooled.wrappedBuffer("PROXY TCP4".getBytes(StandardCharsets.US_ASCII));
+        channel.writeInbound(buf1);
+
+        Object msg = channel.readInbound();
+        assertEquals(buf1, msg);
+        buf1.release();
+
+        // The handler should remove itself.
+        assertNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.class));
+
+        Counter counter = registry.counter(
+                "zuul.hapm.decode", "success", "false", "port", String.valueOf(port), "needs_more_data", "true");
+        assertEquals(1, counter.count());
     }
 
     @Test
