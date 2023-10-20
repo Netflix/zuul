@@ -48,26 +48,39 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (withProxyProtocol && isHAPMDetected(msg)) {
+        if (!withProxyProtocol) {
+            ctx.pipeline().remove(this);
+            super.channelRead(ctx, msg);
+            return;
+        }
+
+        ProtocolDetectionState haProxyState = getDetectionState(msg);
+        if (haProxyState == ProtocolDetectionState.DETECTED) {
             ctx.pipeline()
                     .addAfter(NAME, null, new HAProxyMessageChannelHandler())
                     .replace(this, null, new HAProxyMessageDecoder());
         } else {
-            if (withProxyProtocol) {
-                final int port = ctx.channel()
-                        .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
-                        .get();
-                // This likely means initialization was requested with proxy protocol, but we encountered a non-ppv2
-                // message
-                registry.counter("zuul.hapm.decode", "success", "false", "port", String.valueOf(port))
-                        .increment();
-            }
+            final int port = ctx.channel()
+                    .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
+                    .get();
+
+            // This likely means initialization was requested with proxy protocol, but we encountered a non-ppv2
+            // message
+            registry.counter(
+                            "zuul.hapm.decode",
+                            "success",
+                            "false",
+                            "port",
+                            String.valueOf(port),
+                            "needs_more_data",
+                            String.valueOf(haProxyState == ProtocolDetectionState.NEEDS_MORE_DATA))
+                    .increment();
             ctx.pipeline().remove(this);
         }
         super.channelRead(ctx, msg);
     }
 
-    private boolean isHAPMDetected(Object msg) {
-        return HAProxyMessageDecoder.detectProtocol((ByteBuf) msg).state() == ProtocolDetectionState.DETECTED;
+    private ProtocolDetectionState getDetectionState(Object msg) {
+        return HAProxyMessageDecoder.detectProtocol((ByteBuf) msg).state();
     }
 }
