@@ -12,7 +12,7 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
 
     api "com.netflix.archaius:archaius-core:0.7.7"
-    api "com.netflix.spectator:spectator-api:1.6.10"
+    api "com.netflix.spectator:spectator-api:1.6.11"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
     api project(":zuul-discovery")
