@@ -64,7 +64,7 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
                     .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
                     .get();
 
-            String needsMoreData = haProxyState == ProtocolDetectionState.NEEDS_MORE_DATA ? "true" : "false";
+            String needsMoreData = String.valueOf(haProxyState == ProtocolDetectionState.NEEDS_MORE_DATA);
             // This likely means initialization was requested with proxy protocol, but we encountered a non-ppv2
             // message
             registry.counter(
