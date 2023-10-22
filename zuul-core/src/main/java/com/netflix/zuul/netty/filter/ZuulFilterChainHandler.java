@@ -150,11 +150,12 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
                 // fire a last content into the filter chain to unblock any filters awaiting a buffered body
                 responseFilterChain.filter(zuulResponse, new DefaultLastHttpContent());
                 System.out.println("xyz zuulRequest: " + zuulRequest);
-                SessionContext sessionContext = zuulRequest.getContext();
-                SpectatorUtils.newCounter(
-                                "zuul.filterChain.bodyBuffer.hanging",
-                                (sessionContext == null) ? "n/a" : sessionContext.getRouteVIP())
-                        .increment();
+                if (zuulRequest != null) {
+                    SpectatorUtils.newCounter(
+                                    "zuul.filterChain.bodyBuffer.hanging",
+                                    zuulRequest.getContext().getRouteVIP())
+                            .increment();
+                }
             }
         }
     }
