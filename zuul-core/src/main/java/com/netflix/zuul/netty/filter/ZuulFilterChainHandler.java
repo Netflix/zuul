@@ -148,7 +148,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             if (zuulResponse != null) {
                 // fire a last content into the filter chain to unblock any filters awaiting a buffered body
                 responseFilterChain.filter(zuulResponse, new DefaultLastHttpContent());
-                System.out.println("zuulRequest: " + zuulRequest);
+                System.out.println("xyz zuulRequest: " + zuulRequest);
                 SessionContext sessionContext = zuulRequest.getContext();
                 SpectatorUtils.newCounter(
                                 "zuul.filterChain.bodyBuffer.hanging",
