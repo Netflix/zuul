@@ -137,6 +137,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             final ProxyEndpoint edgeProxyEndpoint = (ProxyEndpoint) endpoint;
             edgeProxyEndpoint.finish(error);
         }
+        System.out.println("fireEndpointFinish: setting zuulRequest to null");
         zuulRequest = null;
     }
 
