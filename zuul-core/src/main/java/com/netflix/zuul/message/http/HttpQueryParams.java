@@ -116,6 +116,10 @@ public class HttpQueryParams implements Cloneable {
     }
 
     public List<String> get(String name) {
+        return delegate.get(name);
+    }
+
+    public List<String> getIgnoreCase(String name) {
         return delegate.get(name.toLowerCase());
     }
 
