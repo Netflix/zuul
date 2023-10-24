@@ -26,20 +26,13 @@ import io.netty.handler.codec.http.HttpServerCodec;
  * Date: 5/16/18
  */
 public abstract class PushMessageSenderInitializer extends ChannelInitializer<Channel> {
-
-    private final PushConnectionRegistry pushConnectionRegistry;
-
-    public PushMessageSenderInitializer(PushConnectionRegistry pushConnectionRegistry) {
-        this.pushConnectionRegistry = pushConnectionRegistry;
-    }
-
     @Override
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(65536));
-        pipeline.addLast(getPushMessageSender(pushConnectionRegistry));
+        addPushMessageHandlers(pipeline);
     }
 
-    protected abstract PushMessageSender getPushMessageSender(PushConnectionRegistry pushConnectionRegistry);
+    protected abstract void addPushMessageHandlers(final ChannelPipeline pipeline);
 }
