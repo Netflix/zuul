@@ -27,6 +27,7 @@
         </Root>
         <Logger name="org.apache" level="WARN"/>
         <Logger name="org.eclipse" level="WARN"/>
+        <Logger name="WireMock" level="WARN"/>
         <Logger name="zuul.server.nettylog" level="WARN"/>
         <Logger name="zuul.origin.nettylog" level="WARN"/>
     </Loggers>

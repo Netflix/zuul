@@ -19,6 +19,7 @@ package com.netflix.zuul.integration;
 import com.aayushatharva.brotli4j.decoder.DecoderJNI;
 import com.aayushatharva.brotli4j.decoder.DirectDecompress;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.Options;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -102,7 +103,10 @@ class IntegrationTest {
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .configureStaticDsl(true)
-            .options(wireMockConfig().dynamicPort().useChunkedTransferEncoding(Options.ChunkedEncodingPolicy.ALWAYS))
+            .options(wireMockConfig()
+                    .dynamicPort()
+                    .useChunkedTransferEncoding(Options.ChunkedEncodingPolicy.ALWAYS)
+                    .notifier(new Slf4jNotifier(true)))
             .build();
 
     @BeforeAll
@@ -492,6 +496,33 @@ class IntegrationTest {
         assertEquals(200, connection.getResponseCode());
         assertEquals("text/plain", connection.getHeaderField("Content-Type"));
         assertNull(connection.getHeaderField("Content-Encoding"));
+        byte[] data = IOUtils.toByteArray(inputStream);
+        String text = new String(data, TestUtil.CHARSET);
+        assertEquals(expectedResponseBody, text);
+        inputStream.close();
+        connection.disconnect();
+    }
+
+    @Test
+    void jumboOriginResponseShouldBeChunked() throws Exception {
+        final String expectedResponseBody = TestUtil.JUMBO_RESPONSE_BODY;
+        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+        wireMock.register(get(anyUrl())
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(expectedResponseBody)
+                        .withHeader("Content-Type", TestUtil.COMPRESSIBLE_CONTENT_TYPE)));
+
+        URL url = new URL(zuulBaseUri);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setAllowUserInteraction(false);
+        connection.setRequestProperty("Accept-Encoding", ""); // no compression
+        InputStream inputStream = connection.getInputStream();
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
+        assertNull(connection.getHeaderField("Content-Encoding"));
+        assertEquals("chunked", connection.getHeaderField("Transfer-Encoding"));
         byte[] data = IOUtils.toByteArray(inputStream);
         String text = new String(data, TestUtil.CHARSET);
         assertEquals(expectedResponseBody, text);
