@@ -104,6 +104,7 @@ class IntegrationTest {
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .configureStaticDsl(true)
             .options(wireMockConfig()
+                    .maxLoggedResponseSize(1000)
                     .dynamicPort()
                     .useChunkedTransferEncoding(Options.ChunkedEncodingPolicy.ALWAYS)
                     .notifier(new Slf4jNotifier(true)))
