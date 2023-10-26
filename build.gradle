@@ -16,7 +16,7 @@ ext.githubProjectName = rootProject.name
 
 idea {
     project {
-        languageLevel = '1.8'
+        languageLevel = '17'
     }
 }
 
@@ -53,7 +53,7 @@ subprojects {
 
     group = "com.netflix.${githubProjectName}"
 
-    sourceCompatibility = '1.8'
+    sourceCompatibility = '17'
 
     eclipse {
         classpath {
