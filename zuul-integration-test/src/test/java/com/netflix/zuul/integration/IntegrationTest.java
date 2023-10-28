@@ -138,9 +138,9 @@ class IntegrationTest {
     }
 
     @BeforeEach
-    void beforeEachTest(final WireMockRuntimeInfo wmRuntimeInfo) {
+    void beforeEachTest() {
         this.pathSegment = randomPathSegment();
-        this.wmRuntimeInfo = wmRuntimeInfo;
+        this.wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
     }
 
     private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {

@@ -492,23 +492,20 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.14.2"
+            "locked": "2.15.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.14.2"
-        },
-        "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.35.0"
+            "locked": "2.15.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "32.0.1-android"
+            "locked": "32.1.2-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -734,7 +731,10 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.7"
+        },
+        "org.wiremock:wiremock": {
+            "locked": "3.2.0"
         }
     },
     "runtimeClasspath": {
@@ -956,10 +956,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.14.2"
-        },
-        "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.35.0"
+            "locked": "2.15.2"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -1109,7 +1106,10 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.7"
+        },
+        "org.wiremock:wiremock": {
+            "locked": "3.2.0"
         }
     },
     "testRuntimeClasspath": {
@@ -1132,23 +1132,20 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.14.2"
+            "locked": "2.15.2"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.14.2"
-        },
-        "com.github.tomakehurst:wiremock-jre8": {
-            "locked": "2.35.0"
+            "locked": "2.15.2"
         },
         "com.google.guava:guava": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "32.0.1-android"
+            "locked": "32.1.2-jre"
         },
         "com.google.inject:guice": {
             "firstLevelTransitive": [
@@ -1368,7 +1365,10 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "1.7.36"
+            "locked": "2.0.7"
+        },
+        "org.wiremock:wiremock": {
+            "locked": "3.2.0"
         }
     }
 }
