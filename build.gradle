@@ -54,6 +54,13 @@ subprojects {
     group = "com.netflix.${githubProjectName}"
 
     sourceCompatibility = '17'
+    targetCompatibility = '17'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
 
     eclipse {
         classpath {
