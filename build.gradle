@@ -54,6 +54,7 @@ subprojects {
     group = "com.netflix.${githubProjectName}"
 
     sourceCompatibility = '17'
+    targetCompatibility = '17'
 
     eclipse {
         classpath {
