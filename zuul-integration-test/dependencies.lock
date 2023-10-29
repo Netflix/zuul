@@ -731,7 +731,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
@@ -1106,7 +1106,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
@@ -1365,7 +1365,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
