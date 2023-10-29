@@ -18,8 +18,9 @@ dependencies {
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
     testImplementation "io.netty.incubator:netty-incubator-transport-classes-io_uring:${versions_netty_io_uring}"
     testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+    testImplementation "org.slf4j:slf4j-api:2.0.9"
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.21.1'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.21.1'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"

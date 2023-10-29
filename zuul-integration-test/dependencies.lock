@@ -691,10 +691,10 @@
             "locked": "4.0.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.19.0"
+            "locked": "2.21.1"
         },
-        "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.19.0"
+        "org.apache.logging.log4j:log4j-slf4j2-impl": {
+            "locked": "2.21.1"
         },
         "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
@@ -731,7 +731,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
@@ -1106,7 +1106,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
@@ -1331,10 +1331,10 @@
             "locked": "4.0.1"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.19.0"
+            "locked": "2.21.1"
         },
-        "org.apache.logging.log4j:log4j-slf4j-impl": {
-            "locked": "2.19.0"
+        "org.apache.logging.log4j:log4j-slf4j2-impl": {
+            "locked": "2.21.1"
         },
         "org.bouncycastle:bcpkix-jdk15on": {
             "firstLevelTransitive": [
@@ -1365,7 +1365,7 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ],
-            "locked": "2.0.7"
+            "locked": "2.0.9"
         },
         "org.wiremock:wiremock": {
             "locked": "3.2.0"
