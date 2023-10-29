@@ -99,6 +99,7 @@ class IntegrationTest {
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String pathSegment;
     private WireMockRuntimeInfo wmRuntimeInfo;
+    private WireMock wireMock;
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -141,6 +142,7 @@ class IntegrationTest {
     void beforeEachTest() {
         this.pathSegment = randomPathSegment();
         this.wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
+        this.wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
     }
 
     private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
@@ -188,7 +190,6 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
 
         wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello world")));
 
@@ -209,7 +210,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -229,7 +230,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -250,7 +251,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(ok().withFixedDelay((int) ORIGIN_READ_TIMEOUT.toMillis() + 50)
                         .withBody("Slow poke")));
@@ -272,7 +273,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -292,7 +293,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(500)));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -312,7 +313,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(503)));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -332,7 +333,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -352,7 +353,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -376,7 +377,7 @@ class IntegrationTest {
             final boolean requestBodyBuffering,
             final boolean responseBodyBuffering)
             throws Exception {
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(200)));
 
         Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
@@ -393,7 +394,7 @@ class IntegrationTest {
     @Test
     void deflateOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -422,7 +423,7 @@ class IntegrationTest {
     @Test
     void gzipOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -451,7 +452,7 @@ class IntegrationTest {
     void brotliOnly() throws Throwable {
         Brotli.ensureAvailability();
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -481,7 +482,7 @@ class IntegrationTest {
     @Test
     void noCompression() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -507,7 +508,7 @@ class IntegrationTest {
     @Test
     void jumboOriginResponseShouldBeChunked() throws Exception {
         final String expectedResponseBody = TestUtil.JUMBO_RESPONSE_BODY;
-        final WireMock wireMock = wmRuntimeInfo.getWireMock();
+
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
                         .withStatus(200)
