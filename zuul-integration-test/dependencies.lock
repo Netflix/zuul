@@ -176,17 +176,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -696,17 +696,17 @@
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.21.1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"
@@ -928,17 +928,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -1336,17 +1336,17 @@
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.21.1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"

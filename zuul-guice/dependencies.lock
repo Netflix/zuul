@@ -430,17 +430,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"
@@ -647,17 +647,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -983,17 +983,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"

@@ -78,11 +78,11 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -178,11 +178,11 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.37"
@@ -306,11 +306,11 @@
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"
@@ -446,11 +446,11 @@
         "javax.inject:javax.inject": {
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [
@@ -547,11 +547,11 @@
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"
@@ -681,11 +681,11 @@
         "org.awaitility:awaitility": {
             "locked": "4.2.0"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcpkix-jdk18on": {
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
-            "locked": "1.70"
+        "org.bouncycastle:bcprov-jdk18on": {
+            "locked": "1.76"
         },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.10.0"

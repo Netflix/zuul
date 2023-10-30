@@ -424,17 +424,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.19"
@@ -638,17 +638,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.19"
@@ -971,17 +971,17 @@
             ],
             "locked": "1"
         },
-        "org.bouncycastle:bcpkix-jdk15on": {
+        "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
-        "org.bouncycastle:bcprov-jdk15on": {
+        "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.70"
+            "locked": "1.76"
         },
         "org.codehaus.groovy:groovy-all": {
             "locked": "3.0.19"
