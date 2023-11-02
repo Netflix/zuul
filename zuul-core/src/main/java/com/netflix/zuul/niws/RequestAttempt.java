@@ -31,6 +31,7 @@ import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.net.InetAddress;
 
 /**
  * User: michaels@netflix.com
@@ -51,6 +52,7 @@ public class RequestAttempt {
     private String instanceId;
     private String host;
     private int port;
+    private String ipAddress;
     private String vip;
     private String region;
     private String availabilityZone;
@@ -61,6 +63,7 @@ public class RequestAttempt {
     public RequestAttempt(
             int attemptNumber,
             InstanceInfo server,
+            InetAddress serverAddr,
             String targetVip,
             String chosenWarmupLB,
             int status,
@@ -99,6 +102,10 @@ public class RequestAttempt {
             }
         }
 
+        if (serverAddr != null) {
+            ipAddress = serverAddr.getHostAddress();
+        }
+
         this.status = status;
         this.error = error;
         this.exceptionType = exceptionType;
@@ -108,7 +115,11 @@ public class RequestAttempt {
     }
 
     public RequestAttempt(
-            final DiscoveryResult server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
+            final DiscoveryResult server,
+            InetAddress serverAddr,
+            final IClientConfig clientConfig,
+            int attemptNumber,
+            int readTimeout) {
         this.status = -1;
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;
@@ -139,6 +150,10 @@ public class RequestAttempt {
             if (availabilityZone != null && availabilityZone.length() > 0) {
                 region = availabilityZone.substring(0, availabilityZone.length() - 1);
             }
+        }
+
+        if (serverAddr != null) {
+            ipAddress = serverAddr.getHostAddress();
         }
 
         if (clientConfig != null) {
@@ -200,6 +215,10 @@ public class RequestAttempt {
         return port;
     }
 
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
     public String getRegion() {
         return region;
     }
@@ -254,6 +273,10 @@ public class RequestAttempt {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
     public void setVip(String vip) {
@@ -338,6 +361,11 @@ public class RequestAttempt {
         putNullableAttribute(root, "asg", asg);
         putNullableAttribute(root, "instanceId", instanceId);
         putNullableAttribute(root, "vip", vip);
+        putNullableAttribute(root, "ipAddress", ipAddress);
+
+        if (port > 0) {
+            root.put("port", port);
+        }
 
         if (status < 1) {
             root.put("readTimeout", readTimeout);

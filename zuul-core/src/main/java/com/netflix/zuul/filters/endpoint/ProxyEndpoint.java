@@ -454,7 +454,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                     zuulRequest, channelCtx.channel().eventLoop(), attemptNum, passport, chosenServer, chosenHostAddr);
 
             storeAndLogOriginRequestInfo();
-            currentRequestAttempt = origin.newRequestAttempt(chosenServer.get(), context, attemptNum);
+            currentRequestAttempt =
+                    origin.newRequestAttempt(chosenServer.get(), chosenHostAddr.get(), context, attemptNum);
             requestAttempts.add(currentRequestAttempt);
             passport.add(PassportState.ORIGIN_CONN_ACQUIRE_START);
 
