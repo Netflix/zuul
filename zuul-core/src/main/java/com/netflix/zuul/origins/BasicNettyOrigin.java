@@ -130,8 +130,10 @@ public class BasicNettyOrigin implements NettyOrigin {
     }
 
     @Override
-    public RequestAttempt newRequestAttempt(DiscoveryResult server, SessionContext zuulCtx, int attemptNum) {
-        return new RequestAttempt(server, config, attemptNum, config.get(CommonClientConfigKey.ReadTimeout));
+    public RequestAttempt newRequestAttempt(
+            DiscoveryResult server, InetAddress serverAddr, SessionContext zuulCtx, int attemptNum) {
+        return new RequestAttempt(
+                server, serverAddr, config, attemptNum, config.get(CommonClientConfigKey.ReadTimeout));
     }
 
     @Override

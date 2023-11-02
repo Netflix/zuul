@@ -70,7 +70,8 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     void recordFinalResponse(final HttpResponseMessage resp);
 
-    RequestAttempt newRequestAttempt(final DiscoveryResult server, final SessionContext zuulCtx, int attemptNum);
+    RequestAttempt newRequestAttempt(
+            final DiscoveryResult server, final InetAddress serverAddr, final SessionContext zuulCtx, int attemptNum);
 
     String getIpAddrFromServer(DiscoveryResult server);
 
