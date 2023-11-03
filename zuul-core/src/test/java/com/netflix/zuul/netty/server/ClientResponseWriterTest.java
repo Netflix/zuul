@@ -17,7 +17,6 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.zuul.BasicRequestCompleteHandler;
-import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
@@ -41,7 +40,7 @@ class ClientResponseWriterTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
 
         final SessionContext context = new SessionContext();
-        context.put(CommonContextKeys.STATUS_CATGEORY, ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT);
+        StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
@@ -54,7 +53,7 @@ class ClientResponseWriterTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
 
         final SessionContext context = new SessionContext();
-        context.put(CommonContextKeys.STATUS_CATGEORY, ZuulStatusCategory.FAILURE_LOCAL);
+        StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.FAILURE_LOCAL);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
@@ -76,7 +75,7 @@ class ClientResponseWriterTest {
 
         final EmbeddedChannel channel = new EmbeddedChannel();
         final SessionContext context = new SessionContext();
-        context.put(CommonContextKeys.STATUS_CATGEORY, customStatus);
+        StatusCategoryUtils.setStatusCategory(context, customStatus);
         final HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 

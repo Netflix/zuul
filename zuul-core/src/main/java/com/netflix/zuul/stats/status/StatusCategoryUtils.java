@@ -39,16 +39,20 @@ public class StatusCategoryUtils {
 
     @Nullable
     public static StatusCategory getStatusCategory(SessionContext ctx) {
-        return ctx.get(CommonContextKeys.STATUS_CATGEORY);
+        return ctx.get(CommonContextKeys.STATUS_CATEGORY);
     }
 
     public static void setStatusCategory(SessionContext ctx, StatusCategory statusCategory) {
-        ctx.put(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+        ctx.put(CommonContextKeys.STATUS_CATEGORY, statusCategory);
     }
 
     @Nullable
     public static StatusCategory getOriginStatusCategory(SessionContext ctx) {
         return ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
+    }
+
+    public static void setOriginStatusCategory(SessionContext ctx, StatusCategory statusCategory) {
+        ctx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, statusCategory);
     }
 
     public static boolean isResponseHttpErrorStatus(HttpResponseMessage response) {
@@ -67,9 +71,9 @@ public class StatusCategoryUtils {
     public static void storeStatusCategoryIfNotAlreadyFailure(
             final SessionContext context, final StatusCategory statusCategory) {
         if (statusCategory != null) {
-            final StatusCategory nfs = context.get(CommonContextKeys.STATUS_CATGEORY);
+            final StatusCategory nfs = getStatusCategory(context);
             if (nfs == null || nfs.getGroup().getId() == ZuulStatusCategoryGroup.SUCCESS.getId()) {
-                context.put(CommonContextKeys.STATUS_CATGEORY, statusCategory);
+                setStatusCategory(context, statusCategory);
             }
         }
     }
