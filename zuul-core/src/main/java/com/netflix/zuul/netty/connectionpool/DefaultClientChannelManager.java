@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DefaultClientChannelManager implements ClientChannelManager {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
 
-    public static final String METRIC_PREFIX = "connectionpool";
+    public static final String METRIC_PREFIX = "connectionpool_";
 
     private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
@@ -118,26 +118,26 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        this.createNewConnCounter = newCounter("_create");
-        this.createConnSucceededCounter = newCounter("_create_success");
-        this.createConnFailedCounter = newCounter("_create_fail");
+        this.createNewConnCounter = newCounter("create");
+        this.createConnSucceededCounter = newCounter("create_success");
+        this.createConnFailedCounter = newCounter("create_fail");
 
-        this.closeConnCounter = newCounter("_close");
-        this.closeAbovePoolHighWaterMarkCounter = newCounter("_closeAbovePoolHighWaterMark");
-        this.closeExpiredConnLifetimeCounter = newCounter("_closeExpiredConnLifetime");
-        this.requestConnCounter = newCounter("_request");
-        this.reuseConnCounter = newCounter("_reuse");
-        this.releaseConnCounter = newCounter("_release");
-        this.alreadyClosedCounter = newCounter("_alreadyClosed");
-        this.connTakenFromPoolIsNotOpen = newCounter("_fromPoolIsClosed");
-        this.maxConnsPerHostExceededCounter = newCounter("_maxConnsPerHostExceeded");
-        this.closeWrtBusyConnCounter = newCounter("_closeWrtBusyConnCounter");
-        this.circuitBreakerClose = newCounter("_closeCircuitBreaker");
+        this.closeConnCounter = newCounter("close");
+        this.closeAbovePoolHighWaterMarkCounter = newCounter("closeAbovePoolHighWaterMark");
+        this.closeExpiredConnLifetimeCounter = newCounter("closeExpiredConnLifetime");
+        this.requestConnCounter = newCounter("request");
+        this.reuseConnCounter = newCounter("reuse");
+        this.releaseConnCounter = newCounter("release");
+        this.alreadyClosedCounter = newCounter("alreadyClosed");
+        this.connTakenFromPoolIsNotOpen = newCounter("fromPoolIsClosed");
+        this.maxConnsPerHostExceededCounter = newCounter("maxConnsPerHostExceeded");
+        this.closeWrtBusyConnCounter = newCounter("closeWrtBusyConnCounter");
+        this.circuitBreakerClose = newCounter("closeCircuitBreaker");
 
         this.connEstablishTimer = PercentileTimer.get(
-                registry, registry.createId(METRIC_PREFIX + "_createTiming", "id", originName.getMetricId()));
-        this.connsInPool = newGauge("_inPool");
-        this.connsInUse = newGauge("_inUse");
+                registry, registry.createId(METRIC_PREFIX + "createTiming", "id", originName.getMetricId()));
+        this.connsInPool = newGauge("inPool");
+        this.connsInUse = newGauge("inUse");
     }
 
     @Override
