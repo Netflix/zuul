@@ -46,6 +46,10 @@ public class StatusCategoryUtils {
         ctx.put(CommonContextKeys.STATUS_CATEGORY, statusCategory);
     }
 
+    public static void clearStatusCategory(SessionContext ctx) {
+        ctx.remove(CommonContextKeys.STATUS_CATEGORY);
+    }
+
     @Nullable
     public static StatusCategory getOriginStatusCategory(SessionContext ctx) {
         return ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
@@ -53,6 +57,10 @@ public class StatusCategoryUtils {
 
     public static void setOriginStatusCategory(SessionContext ctx, StatusCategory statusCategory) {
         ctx.put(CommonContextKeys.ORIGIN_STATUS_CATEGORY, statusCategory);
+    }
+
+    public static void clearOriginStatusCategory(SessionContext ctx) {
+        ctx.remove(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
     }
 
     public static boolean isResponseHttpErrorStatus(HttpResponseMessage response) {
