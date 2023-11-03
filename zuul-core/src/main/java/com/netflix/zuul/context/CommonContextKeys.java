@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class CommonContextKeys {
 
-    public static final SessionContext.Key<StatusCategory> STATUS_CATGEORY = SessionContext.newKey("status_category");
+    public static final SessionContext.Key<StatusCategory> STATUS_CATEGORY = SessionContext.newKey("status_category");
     public static final SessionContext.Key<StatusCategory> ORIGIN_STATUS_CATEGORY =
             SessionContext.newKey("origin_status_category");
     public static final SessionContext.Key<Integer> ORIGIN_STATUS = SessionContext.newKey("origin_status");
