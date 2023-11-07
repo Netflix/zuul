@@ -54,11 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.INACTIVE;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Created by saroskar on 2/26/17.
@@ -119,7 +115,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             if ("close".equalsIgnoreCase(zuulResponse.getHeaders().getFirst("Connection"))) {
                 closeConnection = true;
             }
-            channel.attr(ATTR_ZUUL_RESP).set(zuulResponse);
+            channel.attr(ClientRequestReceiver.ATTR_ZUUL_RESP).set(zuulResponse);
 
             if (channel.isActive()) {
                 // Track if this is happening.
@@ -238,7 +234,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             // Choose to either close the connection, or prepare it for next use.
             final CompleteEvent completeEvent = (CompleteEvent) evt;
             final CompleteReason reason = completeEvent.getReason();
-            if (reason == SESSION_COMPLETE || reason == INACTIVE) {
+            if (reason == CompleteReason.SESSION_COMPLETE || reason == CompleteReason.INACTIVE) {
                 if (!closeConnection) {
                     // Start reading next request over HTTP 1.1 persistent connection
                     ctx.channel().read();
@@ -304,7 +300,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         if (isHandlingRequest
                 && !startedSendingResponseToClient
                 && ctx.channel().isActive()) {
-            final HttpResponse httpResponse = new DefaultFullHttpResponse(HTTP_1_1, HttpResponseStatus.valueOf(status));
+            final HttpResponse httpResponse =
+                    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status));
             ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
             startedSendingResponseToClient = true;
         } else {

@@ -32,16 +32,11 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Author: Susheel Aroskar
@@ -62,9 +57,9 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
-        FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
+        FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != OK) || (!HttpUtil.isKeepAlive(req)));
+        final boolean closeConn = ((status != HttpResponseStatus.OK) || (!HttpUtil.isKeepAlive(req)));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
@@ -77,17 +72,17 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     @Override
     protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         if (req.method() != HttpMethod.GET) {
-            sendHttpResponse(req, ctx, METHOD_NOT_ALLOWED);
+            sendHttpResponse(req, ctx, HttpResponseStatus.METHOD_NOT_ALLOWED);
             return;
         }
 
         final String path = req.uri();
         if ("/healthcheck".equals(path)) {
-            sendHttpResponse(req, ctx, OK);
+            sendHttpResponse(req, ctx, HttpResponseStatus.OK);
         } else if (pushConnectionPath.equals(path)) {
             // CSRF protection
             if (isInvalidOrigin(req)) {
-                sendHttpResponse(req, ctx, BAD_REQUEST);
+                sendHttpResponse(req, ctx, HttpResponseStatus.BAD_REQUEST);
             } else if (isDelayedAuth(req, ctx)) {
                 // client auth will happen later, continue with WebSocket upgrade handshake
                 ctx.fireChannelRead(req.retain());
@@ -102,7 +97,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
                 }
             }
         } else {
-            sendHttpResponse(req, ctx, NOT_FOUND);
+            sendHttpResponse(req, ctx, HttpResponseStatus.NOT_FOUND);
         }
     }
 

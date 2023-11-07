@@ -26,11 +26,10 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.util.AttributeKey;
+import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.logging.InternalLogLevel;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-
-import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 public class DynamicHttp2FrameLogger extends Http2FrameLogger {
     public static final AttributeKey<Object> ATTR_ENABLE = AttributeKey.valueOf("http2.frame.logger.enabled");
@@ -44,8 +43,8 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
 
     public DynamicHttp2FrameLogger(LogLevel level, Class<?> clazz) {
         super(level, clazz);
-        this.level = checkNotNull(level.toInternalLevel(), "level");
-        this.logger = checkNotNull(InternalLoggerFactory.getInstance(clazz), "logger");
+        this.level = ObjectUtil.checkNotNull(level.toInternalLevel(), "level");
+        this.logger = ObjectUtil.checkNotNull(InternalLoggerFactory.getInstance(clazz), "logger");
     }
 
     protected boolean enabled(ChannelHandlerContext ctx) {

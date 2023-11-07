@@ -38,6 +38,7 @@ import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
+import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 
@@ -46,10 +47,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
 
 /**
  * Netty Origin basic implementation that can be used for most apps, with the more complex methods having no-op
@@ -179,11 +176,11 @@ public class BasicNettyOrigin implements NettyOrigin {
             zuulCtx.put(CommonContextKeys.ORIGIN_STATUS, originStatusCode);
 
             // Mark origin StatusCategory based on http status code.
-            StatusCategory originNfs = SUCCESS;
+            StatusCategory originNfs = ZuulStatusCategory.SUCCESS;
             if (originStatusCode == 503) {
-                originNfs = FAILURE_ORIGIN_THROTTLED;
+                originNfs = ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
             } else if (StatusCategoryUtils.isResponseHttpErrorStatus(originStatusCode)) {
-                originNfs = FAILURE_ORIGIN;
+                originNfs = ZuulStatusCategory.FAILURE_ORIGIN;
             }
             StatusCategoryUtils.setOriginStatusCategory(zuulCtx, originNfs);
             // Choose the zuul StatusCategory based on the origin one...

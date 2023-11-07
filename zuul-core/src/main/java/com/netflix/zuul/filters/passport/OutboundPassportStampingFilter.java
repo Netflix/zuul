@@ -21,12 +21,10 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.passport.PassportState;
 
-import static com.netflix.zuul.filters.FilterType.OUTBOUND;
-
 /**
  * Created by saroskar on 3/14/17.
  */
-@Filter(order = 0, type = OUTBOUND)
+@Filter(order = 0, type = FilterType.OUTBOUND)
 public final class OutboundPassportStampingFilter extends PassportStampingFilter<HttpResponseMessage> {
 
     public OutboundPassportStampingFilter(PassportState stamp) {
@@ -35,6 +33,6 @@ public final class OutboundPassportStampingFilter extends PassportStampingFilter
 
     @Override
     public FilterType filterType() {
-        return OUTBOUND;
+        return FilterType.OUTBOUND;
     }
 }

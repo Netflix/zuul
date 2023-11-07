@@ -31,6 +31,7 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.server.http2.Http2OrHttpHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
@@ -74,8 +75,6 @@ import java.util.regex.Pattern;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
 
 /**
  * Created by saroskar on 1/6/17.
@@ -230,7 +229,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT);
             }
 
-            if (reason != SESSION_COMPLETE && zuulRequest != null) {
+            if (reason != CompleteReason.SESSION_COMPLETE && zuulRequest != null) {
                 final SessionContext zuulCtx = zuulRequest.getContext();
                 if (clientRequest != null) {
                     if (LOG.isInfoEnabled()) {
@@ -343,7 +342,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         // Decide if this is HTTP/1 or HTTP/2.
-        String protocol = channel.attr(PROTOCOL_NAME).get();
+        String protocol = channel.attr(Http2OrHttpHandler.PROTOCOL_NAME).get();
         if (protocol == null) {
             protocol = nativeRequest.protocolVersion().text();
         }

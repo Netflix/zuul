@@ -22,6 +22,7 @@ import com.netflix.zuul.Filter;
 import com.netflix.zuul.FilterCategory;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.FilterType;
@@ -40,9 +41,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import rx.Observable;
 
-import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
-import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
-import static com.netflix.zuul.netty.filter.ZuulEndPointRunner.DEFAULT_ERROR_ENDPOINT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -66,7 +64,7 @@ class ZuulEndPointRunnerTest {
         usageNotifier = mock(FilterUsageNotifier.class);
 
         filterLoader = mock(FilterLoader.class);
-        when(filterLoader.getFilterByNameAndType(DEFAULT_ERROR_ENDPOINT.get(), FilterType.ENDPOINT))
+        when(filterLoader.getFilterByNameAndType(ZuulEndPointRunner.DEFAULT_ERROR_ENDPOINT.get(), FilterType.ENDPOINT))
                 .thenReturn(new ErrorEndpoint());
         when(filterLoader.getFilterByNameAndType(BASIC_ENDPOINT, FilterType.ENDPOINT))
                 .thenReturn(new BasicEndpoint());
@@ -79,7 +77,7 @@ class ZuulEndPointRunnerTest {
         Headers headers = new Headers();
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         when(chc.executor()).thenReturn(ImmediateEventExecutor.INSTANCE);
-        context.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
+        context.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
         request = new HttpRequestMessageImpl(
                 context,
                 "http",
@@ -98,10 +96,10 @@ class ZuulEndPointRunnerTest {
     void nonErrorEndpoint() {
         request.getContext().setShouldSendErrorResponse(false);
         request.getContext().setEndpoint(BASIC_ENDPOINT);
-        assertNull(request.getContext().get(ZUUL_ENDPOINT));
+        assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
         endpointRunner.filter(request);
         final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter =
-                request.getContext().get(ZUUL_ENDPOINT);
+                request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
         assertTrue(filter instanceof BasicEndpoint);
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
@@ -115,9 +113,9 @@ class ZuulEndPointRunnerTest {
     @Test
     void errorEndpoint() {
         request.getContext().setShouldSendErrorResponse(true);
-        assertNull(request.getContext().get(ZUUL_ENDPOINT));
+        assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
         endpointRunner.filter(request);
-        final ZuulFilter filter = request.getContext().get(ZUUL_ENDPOINT);
+        final ZuulFilter filter = request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
         assertTrue(filter instanceof ErrorEndpoint);
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);

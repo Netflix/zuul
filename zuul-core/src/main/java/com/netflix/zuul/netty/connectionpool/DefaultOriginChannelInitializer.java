@@ -30,8 +30,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 
-import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
-
 /**
  * Default Origin Channel Initializer
  *
@@ -69,7 +67,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
         }
 
         pipeline.addLast(
-                HTTP_CODEC_HANDLER_NAME,
+                BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME,
                 new HttpClientCodec(
                         BaseZuulChannelInitializer.MAX_INITIAL_LINE_LENGTH.get(),
                         BaseZuulChannelInitializer.MAX_HEADER_SIZE.get(),

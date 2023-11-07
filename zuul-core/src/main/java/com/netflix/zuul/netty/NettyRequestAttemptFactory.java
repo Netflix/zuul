@@ -18,6 +18,7 @@ package com.netflix.zuul.netty;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ErrorType;
+import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.niws.RequestAttempts;
@@ -29,23 +30,17 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.channels.ClosedChannelException;
 
-import static com.netflix.zuul.exception.OutboundErrorType.NO_AVAILABLE_SERVERS;
-import static com.netflix.zuul.exception.OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED;
-import static com.netflix.zuul.exception.OutboundErrorType.OTHER;
-import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
-import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
-
 public class NettyRequestAttemptFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyRequestAttemptFactory.class);
 
     public ErrorType mapNettyToOutboundErrorType(final Throwable t) {
         if (t instanceof ReadTimeoutException) {
-            return READ_TIMEOUT;
+            return OutboundErrorType.READ_TIMEOUT;
         }
 
         if (t instanceof OriginConcurrencyExceededException) {
-            return ORIGIN_CONCURRENCY_EXCEEDED;
+            return OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED;
         }
 
         if (t instanceof OriginConnectException) {
@@ -61,20 +56,20 @@ public class NettyRequestAttemptFactory {
             // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are
             // overloaded.
             LOG.warn("ERRNO_ECONNRESET_NEGATIVE mapped to RESET_CONNECTION", t);
-            return RESET_CONNECTION;
+            return OutboundErrorType.RESET_CONNECTION;
         }
 
         if (t instanceof ClosedChannelException) {
-            return RESET_CONNECTION;
+            return OutboundErrorType.RESET_CONNECTION;
         }
 
         final Throwable cause = t.getCause();
         if (cause instanceof IllegalStateException && cause.getMessage().contains("server")) {
             LOG.warn("IllegalStateException mapped to NO_AVAILABLE_SERVERS", cause);
-            return NO_AVAILABLE_SERVERS;
+            return OutboundErrorType.NO_AVAILABLE_SERVERS;
         }
 
-        return OTHER;
+        return OutboundErrorType.OTHER;
     }
 
     public OutboundException mapNettyToOutboundException(final Throwable t, final SessionContext context) {
@@ -85,7 +80,7 @@ public class NettyRequestAttemptFactory {
         // Map this throwable to zuul's OutboundException.
         final ErrorType errorType = mapNettyToOutboundErrorType(t);
         final RequestAttempts attempts = RequestAttempts.getFromSessionContext(context);
-        if (errorType == OTHER) {
+        if (errorType == OutboundErrorType.OTHER) {
             return new OutboundException(errorType, attempts, t);
         }
         return new OutboundException(errorType, attempts);

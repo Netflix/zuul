@@ -52,9 +52,11 @@ import com.netflix.zuul.netty.NettyRequestAttemptFactory;
 import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.connectionpool.BasicRequestStat;
 import com.netflix.zuul.netty.connectionpool.ClientTimeoutHandler;
+import com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.connectionpool.RequestStat;
 import com.netflix.zuul.netty.filter.FilterRunner;
+import com.netflix.zuul.netty.server.ClientRequestReceiver;
 import com.netflix.zuul.netty.server.MethodBinding;
 import com.netflix.zuul.netty.server.OriginResponseReceiver;
 import com.netflix.zuul.netty.timeouts.OriginTimeoutManager;
@@ -102,18 +104,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.netflix.zuul.context.CommonContextKeys.ORIGIN_CHANNEL;
-import static com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER;
-import static com.netflix.zuul.netty.server.ClientRequestReceiver.ATTR_ZUUL_RESP;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_END;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_CONN_ACQUIRE_FAILED;
-import static com.netflix.zuul.passport.PassportState.ORIGIN_RETRY_START;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
-import static com.netflix.zuul.stats.status.ZuulStatusCategory.SUCCESS_NOT_FOUND;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -528,7 +518,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void onOriginConnectSucceeded(PooledConnection conn, Duration readTimeout) {
-        passport.add(ORIGIN_CONN_ACQUIRE_END);
+        passport.add(PassportState.ORIGIN_CONN_ACQUIRE_END);
 
         if (context.isCancelled()) {
             logger.info("Client cancelled after successful origin connect: {}", conn.getChannel());
@@ -546,7 +536,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void onOriginConnectFailed(Throwable cause) {
-        passport.add(ORIGIN_CONN_ACQUIRE_FAILED);
+        passport.add(PassportState.ORIGIN_CONN_ACQUIRE_FAILED);
         if (!context.isCancelled()) {
             errorFromOrigin(cause);
         }
@@ -559,7 +549,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // set read timeout on origin channel
         ch.attr(ClientTimeoutHandler.ORIGIN_RESPONSE_READ_TIMEOUT).set(readTimeout);
 
-        context.put(ORIGIN_CHANNEL, ch);
+        context.put(CommonContextKeys.ORIGIN_CHANNEL, ch);
         context.set(POOLED_ORIGIN_CONNECTION_KEY, conn);
 
         preWriteToOrigin(chosenServer.get(), zuulRequest);
@@ -567,7 +557,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         final ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
         pipeline.addBefore(
-                CONNECTION_POOL_HANDLER, OriginResponseReceiver.CHANNEL_HANDLER_NAME, originResponseReceiver);
+                DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER,
+                OriginResponseReceiver.CHANNEL_HANDLER_NAME,
+                originResponseReceiver);
 
         ch.write(zuulRequest);
         writeBufferedBodyContent(zuulRequest, ch);
@@ -678,7 +670,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             if ((isBelowRetryLimit()) && (isRetryable(err))) {
                 // retry request with different origin
-                passport.add(ORIGIN_RETRY_START);
+                passport.add(PassportState.ORIGIN_RETRY_START);
                 origin.adjustRetryPolicyIfNeeded(zuulRequest);
                 proxyRequestToOrigin();
             } else {
@@ -726,7 +718,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void handleNoOriginSelected() {
-        StatusCategoryUtils.setStatusCategory(context, SUCCESS_LOCAL_NO_ROUTE);
+        StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE);
         startedSendingResponseToClient = true;
         zuulResponse = new HttpResponseMessageImpl(context, zuulRequest, 404);
         zuulResponse.finishBufferedBodyIfIncomplete();
@@ -799,7 +791,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         // separate nfstatus for 404 so that we can notify origins
         ByteBufUtil.touch(originResponse, "ProxyEndpoint handling successful response, request: ", zuulRequest);
-        final StatusCategory statusCategory = respStatus == 404 ? SUCCESS_NOT_FOUND : SUCCESS;
+        final StatusCategory statusCategory =
+                respStatus == 404 ? ZuulStatusCategory.SUCCESS_NOT_FOUND : ZuulStatusCategory.SUCCESS;
         zuulResponse = buildZuulHttpResponse(originResponse, statusCategory, context.getError());
         invokeNext(zuulResponse);
     }
@@ -829,7 +822,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         // Store this original response info for future reference (ie. for metrics and access logging purposes).
         zuulResponse.storeInboundResponse();
-        channelCtx.channel().attr(ATTR_ZUUL_RESP).set(zuulResponse);
+        channelCtx.channel().attr(ClientRequestReceiver.ATTR_ZUUL_RESP).set(zuulResponse);
 
         if (httpResponse instanceof DefaultFullHttpResponse) {
             ByteBufUtil.touch(
@@ -874,7 +867,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         ClientException.ErrorType niwsErrorType;
 
         if (respStatus == 503) {
-            statusCategory = FAILURE_ORIGIN_THROTTLED;
+            statusCategory = ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED;
             niwsErrorType = ClientException.ErrorType.SERVER_THROTTLED;
             obe = new OutboundException(OutboundErrorType.SERVICE_UNAVAILABLE, requestAttempts);
             if (currentRequestStat != null) {
@@ -882,7 +875,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 currentRequestStat.serviceUnavailable();
             }
         } else {
-            statusCategory = FAILURE_ORIGIN;
+            statusCategory = ZuulStatusCategory.FAILURE_ORIGIN;
             niwsErrorType = ClientException.ErrorType.GENERAL;
             obe = new OutboundException(OutboundErrorType.ERROR_STATUS_RESPONSE, requestAttempts);
             if (currentRequestStat != null) {
@@ -923,7 +916,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             zuulRequest.resetBodyReader();
 
             // retry request with different origin
-            passport.add(ORIGIN_RETRY_START);
+            passport.add(PassportState.ORIGIN_RETRY_START);
             origin.adjustRetryPolicyIfNeeded(zuulRequest);
             proxyRequestToOrigin();
         } else {
@@ -1129,7 +1122,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             SessionContext context, HttpRequestMessage request, String restClientName, Origin primaryOrigin) {
         if (primaryOrigin == null) {
             // If no origin found then add specific error-cause metric tag, and throw an exception with 404 status.
-            StatusCategoryUtils.setStatusCategory(context, SUCCESS_LOCAL_NO_ROUTE);
+            StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE);
             String causeName = "RESTCLIENT_NOTFOUND";
             originNotFound(context, causeName);
             ZuulException ze = new ZuulException(

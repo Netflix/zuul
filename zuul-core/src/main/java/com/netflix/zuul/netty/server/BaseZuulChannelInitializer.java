@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.common.base.Preconditions;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
 import com.netflix.netty.common.Http1ConnectionCloseHandler;
@@ -55,6 +56,7 @@ import com.netflix.zuul.netty.insights.PassportLoggingHandler;
 import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
 import com.netflix.zuul.netty.insights.ServerStateHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
+import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -68,12 +70,6 @@ import io.netty.util.AttributeKey;
 
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_INBOUND_START;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_END;
-import static com.netflix.zuul.passport.PassportState.FILTERS_OUTBOUND_START;
 
 /**
  * User: Mike Smith
@@ -166,7 +162,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
         this.port = port;
-        checkNotNull(metricId, "metricId");
+        Preconditions.checkNotNull(metricId, "metricId");
         this.metricId = metricId;
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;
@@ -312,8 +308,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addZuulFilterChainHandler(final ChannelPipeline pipeline) {
         final ZuulFilter<HttpResponseMessage, HttpResponseMessage>[] responseFilters = getFilters(
-                new OutboundPassportStampingFilter(FILTERS_OUTBOUND_START),
-                new OutboundPassportStampingFilter(FILTERS_OUTBOUND_END));
+                new OutboundPassportStampingFilter(PassportState.FILTERS_OUTBOUND_START),
+                new OutboundPassportStampingFilter(PassportState.FILTERS_OUTBOUND_END));
 
         // response filter chain
         final ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain =
@@ -324,8 +320,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
                 getEndpointRunner(responseFilterChain, filterUsageNotifier, filterLoader);
 
         final ZuulFilter<HttpRequestMessage, HttpRequestMessage>[] requestFilters = getFilters(
-                new InboundPassportStampingFilter(FILTERS_INBOUND_START),
-                new InboundPassportStampingFilter(FILTERS_INBOUND_END));
+                new InboundPassportStampingFilter(PassportState.FILTERS_INBOUND_START),
+                new InboundPassportStampingFilter(PassportState.FILTERS_INBOUND_END));
 
         // request filter chain | end point | response filter chain
         final ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain =

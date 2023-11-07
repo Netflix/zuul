@@ -18,6 +18,7 @@ package com.netflix.zuul.netty.filter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import rx.Observable;
 
-import static com.netflix.zuul.context.CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -56,7 +56,7 @@ class ZuulFilterChainRunnerTest {
         Headers headers = new Headers();
         ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
         when(chc.executor()).thenReturn(ImmediateEventExecutor.INSTANCE);
-        context.put(NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
+        context.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
         request = new HttpRequestMessageImpl(
                 context,
                 "http",

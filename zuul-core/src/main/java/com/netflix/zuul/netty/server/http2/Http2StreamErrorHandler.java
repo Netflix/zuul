@@ -21,8 +21,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
-
-import static io.netty.handler.codec.http2.Http2Exception.StreamException;
+import io.netty.handler.codec.http2.Http2Exception;
 
 /**
  * Author: Susheel Aroskar
@@ -33,8 +32,8 @@ public class Http2StreamErrorHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if (cause instanceof StreamException) {
-            StreamException streamEx = (StreamException) cause;
+        if (cause instanceof Http2Exception.StreamException) {
+            Http2Exception.StreamException streamEx = (Http2Exception.StreamException) cause;
             ctx.writeAndFlush(new DefaultHttp2ResetFrame(streamEx.error()));
         } else if (cause instanceof DecoderException) {
             ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));

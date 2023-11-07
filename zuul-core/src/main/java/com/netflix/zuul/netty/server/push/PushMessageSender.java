@@ -28,21 +28,12 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
  * Serves "/push" URL that is used by the backend to POST push messages to a given Zuul instance. This URL handler
@@ -68,7 +59,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
 
     private void sendHttpResponse(
             ChannelHandlerContext ctx, FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
-        final FullHttpResponse resp = new DefaultFullHttpResponse(HTTP_1_1, status);
+        final FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
         final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
         if (!HttpUtil.isKeepAlive(request)) {
@@ -89,13 +80,13 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) throws Exception {
         if (!request.decoderResult().isSuccess()) {
-            sendHttpResponse(ctx, request, BAD_REQUEST, null);
+            sendHttpResponse(ctx, request, HttpResponseStatus.BAD_REQUEST, null);
             return;
         }
 
         final String path = request.uri();
         if (path == null) {
-            sendHttpResponse(ctx, request, BAD_REQUEST, null);
+            sendHttpResponse(ctx, request, HttpResponseStatus.BAD_REQUEST, null);
             return;
         }
 
@@ -104,33 +95,33 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
 
             final HttpMethod method = request.method();
             if ((method != HttpMethod.POST) && (method != HttpMethod.GET)) {
-                sendHttpResponse(ctx, request, METHOD_NOT_ALLOWED, null);
+                sendHttpResponse(ctx, request, HttpResponseStatus.METHOD_NOT_ALLOWED, null);
                 return;
             }
 
             final PushUserAuth userAuth = getPushUserAuth(request);
             if (!userAuth.isSuccess()) {
-                sendHttpResponse(ctx, request, UNAUTHORIZED, userAuth);
+                sendHttpResponse(ctx, request, HttpResponseStatus.UNAUTHORIZED, userAuth);
                 logNoIdentity();
                 return;
             }
 
             final PushConnection pushConn = pushConnectionRegistry.get(userAuth.getClientIdentity());
             if (pushConn == null) {
-                sendHttpResponse(ctx, request, NOT_FOUND, userAuth);
+                sendHttpResponse(ctx, request, HttpResponseStatus.NOT_FOUND, userAuth);
                 logClientNotConnected();
                 return;
             }
 
             if (!verifySecureToken(request, pushConn)) {
-                sendHttpResponse(ctx, request, FORBIDDEN, userAuth);
+                sendHttpResponse(ctx, request, HttpResponseStatus.FORBIDDEN, userAuth);
                 logSecurityTokenVerificationFail();
                 return;
             }
 
             if (method == HttpMethod.GET) {
                 // client only checking if particular CID + ESN is connected to this instance
-                sendHttpResponse(ctx, request, OK, userAuth);
+                sendHttpResponse(ctx, request, HttpResponseStatus.OK, userAuth);
                 return;
             }
 
@@ -142,7 +133,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
 
             final ByteBuf body = request.content().retain();
             if (body.readableBytes() <= 0) {
-                sendHttpResponse(ctx, request, NO_CONTENT, userAuth);
+                sendHttpResponse(ctx, request, HttpResponseStatus.NO_CONTENT, userAuth);
                 // Because we are not passing the body to the pushConn (who would normally handle destroying),
                 // we need to release it here.
                 ReferenceCountUtil.release(body);
@@ -154,16 +145,16 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
                 HttpResponseStatus status;
                 if (cf.isSuccess()) {
                     logPushSuccess();
-                    status = OK;
+                    status = HttpResponseStatus.OK;
                 } else {
                     logPushError(cf.cause());
-                    status = INTERNAL_SERVER_ERROR;
+                    status = HttpResponseStatus.INTERNAL_SERVER_ERROR;
                 }
                 sendHttpResponse(ctx, request, status, userAuth);
             });
         } else {
             // Last handler in the chain
-            sendHttpResponse(ctx, request, BAD_REQUEST, null);
+            sendHttpResponse(ctx, request, HttpResponseStatus.BAD_REQUEST, null);
         }
     }
 

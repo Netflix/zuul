@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer.ORIGIN_NETTY_LOGGER;
-
 /**
  * Created by saroskar on 3/15/16.
  */
@@ -219,7 +217,7 @@ public class PooledConnection {
         getChannel()
                 .pipeline()
                 .addBefore(
-                        ORIGIN_NETTY_LOGGER,
+                        DefaultOriginChannelInitializer.ORIGIN_NETTY_LOGGER,
                         READ_TIMEOUT_HANDLER_NAME,
                         new ReadTimeoutHandler(readTimeout.toMillis(), TimeUnit.MILLISECONDS));
     }

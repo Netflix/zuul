@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
 
 /**
  * User: michaels@netflix.com
@@ -79,7 +78,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
             // Return the connection to pool.
             CompleteEvent completeEvt = (CompleteEvent) evt;
             final CompleteReason reason = completeEvt.getReason();
-            if (reason == SESSION_COMPLETE) {
+            if (reason == CompleteReason.SESSION_COMPLETE) {
                 final PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
                 if (conn != null) {
                     if ("close".equalsIgnoreCase(getConnectionHeader(completeEvt))) {

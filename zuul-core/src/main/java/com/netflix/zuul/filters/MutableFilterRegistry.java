@@ -20,9 +20,8 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Objects.requireNonNull;
 
 @Singleton
 public final class MutableFilterRegistry implements FilterRegistry {
@@ -31,18 +30,18 @@ public final class MutableFilterRegistry implements FilterRegistry {
     @Nullable
     @Override
     public ZuulFilter<?, ?> remove(String key) {
-        return filters.remove(requireNonNull(key, "key"));
+        return filters.remove(Objects.requireNonNull(key, "key"));
     }
 
     @Override
     @Nullable
     public ZuulFilter<?, ?> get(String key) {
-        return filters.get(requireNonNull(key, "key"));
+        return filters.get(Objects.requireNonNull(key, "key"));
     }
 
     @Override
     public void put(String key, ZuulFilter<?, ?> filter) {
-        filters.putIfAbsent(requireNonNull(key, "key"), requireNonNull(filter, "filter"));
+        filters.putIfAbsent(Objects.requireNonNull(key, "key"), Objects.requireNonNull(filter, "filter"));
     }
 
     @Override
