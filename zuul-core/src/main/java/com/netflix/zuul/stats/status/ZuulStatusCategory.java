@@ -43,7 +43,7 @@ public enum ZuulStatusCategory implements StatusCategory {
     SUCCESS_NOT_FOUND(
             ZuulStatusCategoryGroup.SUCCESS,
             3,
-            "Successful with no resource found"), // This is set on for all 404 responses
+            "Successfully proxied, origin responded with no resource found"), // This is set on for all 404 responses
 
     SUCCESS_LOCAL_NOTSET(
             ZuulStatusCategoryGroup.SUCCESS,
