@@ -22,10 +22,10 @@ import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CloseOnIdleStateHandlerTest {
@@ -45,7 +45,9 @@ class CloseOnIdleStateHandlerTest {
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new CloseOnIdleStateHandler(registry, listener));
 
-        channel.pipeline().context(DummyChannelHandler.class).fireUserEventTriggered(ALL_IDLE_STATE_EVENT);
+        channel.pipeline()
+                .context(DummyChannelHandler.class)
+                .fireUserEventTriggered(IdleStateEvent.ALL_IDLE_STATE_EVENT);
 
         final Counter idleTimeouts = (Counter) registry.get(counterId);
         assertEquals(1, idleTimeouts.count());

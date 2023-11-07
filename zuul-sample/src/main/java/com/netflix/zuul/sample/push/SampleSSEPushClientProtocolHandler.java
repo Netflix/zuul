@@ -29,8 +29,7 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpResponseStatus;
-
-import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import io.netty.handler.codec.http.HttpVersion;
 
 /**
  * Created by saroskar on 10/10/16.
@@ -47,7 +46,7 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
             if ((req.method() == HttpMethod.GET) && (PushProtocol.SSE.getPath().equals(req.uri()))) {
                 ctx.pipeline().fireUserEventTriggered(PushProtocol.SSE.getHandshakeCompleteEvent());
 
-                final DefaultHttpResponse resp = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
+                final DefaultHttpResponse resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
                 final HttpHeaders headers = resp.headers();
                 headers.add("Connection", "keep-alive");
                 headers.add("Content-Type", "text/event-stream");
