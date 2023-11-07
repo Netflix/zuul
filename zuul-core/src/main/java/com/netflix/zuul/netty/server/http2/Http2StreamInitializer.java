@@ -33,8 +33,6 @@ import io.netty.util.AttributeKey;
 
 import java.util.function.Consumer;
 
-import static com.netflix.zuul.netty.server.http2.Http2OrHttpHandler.PROTOCOL_NAME;
-
 /**
  * TODO - can this be done when we create the Http2StreamChannelBootstrap instead now?
  */
@@ -98,7 +96,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
             SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
             SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
             SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
-            PROTOCOL_NAME,
+            Http2OrHttpHandler.PROTOCOL_NAME,
             SslHandshakeInfoHandler.ATTR_SSL_INFO,
             HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
             HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,

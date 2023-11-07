@@ -20,9 +20,6 @@ import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
-import static com.netflix.zuul.filters.FilterSyncType.SYNC;
-import static com.netflix.zuul.filters.FilterType.ENDPOINT;
-
 /**
  * Base class to help implement SyncZuulFilter. Note that the class BaseSyncFilter does exist but it derives from
  * BaseFilter which in turn creates a new instance of CachedDynamicBooleanProperty for "filterDisabled" every time you
@@ -59,7 +56,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public FilterType filterType() {
-        return ENDPOINT;
+        return FilterType.ENDPOINT;
     }
 
     @Override
@@ -74,7 +71,7 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
 
     @Override
     public FilterSyncType getSyncType() {
-        return SYNC;
+        return FilterSyncType.SYNC;
     }
 
     @Override

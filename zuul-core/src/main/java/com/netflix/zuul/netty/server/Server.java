@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.server;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
@@ -80,8 +81,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -192,10 +191,11 @@ public class Server {
             EventLoopConfig eventLoopConfig) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
-        this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
-        this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
-        this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
+        this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
+        this.clientConnectionsShutdown =
+                Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
+        this.eventLoopGroupMetrics = Preconditions.checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
         this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
 
@@ -209,10 +209,11 @@ public class Server {
             Thread jvmShutdownHook) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
-        this.serverStatusManager = checkNotNull(serverStatusManager, "serverStatusManager");
-        this.clientConnectionsShutdown = checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
-        this.eventLoopConfig = checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.eventLoopGroupMetrics = checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
+        this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
+        this.clientConnectionsShutdown =
+                Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
+        this.eventLoopGroupMetrics = Preconditions.checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
         this.jvmShutdownHook = jvmShutdownHook;
     }
 

@@ -17,6 +17,7 @@
 package com.netflix.netty.common.throttle;
 
 import com.netflix.netty.common.ConnectionCloseChannelAttributes;
+import com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import com.netflix.zuul.stats.status.StatusCategory;
@@ -41,8 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION;
 
 /**
  * A collection of rejection related utilities useful for failing requests. These are tightly coupled with the channel
@@ -304,9 +303,10 @@ public final class RejectionUtils {
     }
 
     private static boolean closeConnectionAfterReject(Channel channel) {
-        if (channel.hasAttr(ATTR_HAPROXY_VERSION)) {
+        if (channel.hasAttr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)) {
             return HAProxyProtocolVersion.V2
-                    == channel.attr(ATTR_HAPROXY_VERSION).get();
+                    == channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
+                            .get();
         } else {
             return false;
         }

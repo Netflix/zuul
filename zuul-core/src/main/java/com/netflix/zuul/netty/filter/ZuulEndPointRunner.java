@@ -23,6 +23,7 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.FilterType;
@@ -44,8 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
-
-import static com.netflix.zuul.context.CommonContextKeys.ZUUL_ENDPOINT;
 
 /**
  * This class is supposed to be thread safe and hence should not have any non final member variables
@@ -74,14 +73,14 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
     public static ZuulFilter<HttpRequestMessage, HttpResponseMessage> getEndpoint(
             @Nullable final HttpRequestMessage zuulReq) {
         if (zuulReq != null) {
-            return zuulReq.getContext().get(ZUUL_ENDPOINT);
+            return zuulReq.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
         }
         return null;
     }
 
     public static void setEndpoint(
             HttpRequestMessage zuulReq, ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint) {
-        zuulReq.getContext().put(ZUUL_ENDPOINT, endpoint);
+        zuulReq.getContext().put(CommonContextKeys.ZUUL_ENDPOINT, endpoint);
     }
 
     @Override

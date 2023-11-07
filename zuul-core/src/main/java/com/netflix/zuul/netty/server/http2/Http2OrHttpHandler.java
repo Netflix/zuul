@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server.http2;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
+import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -35,8 +36,6 @@ import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AttributeKey;
 
 import java.util.function.Consumer;
-
-import static com.netflix.zuul.netty.server.BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME;
 
 /**
  * Http2 Or Http Handler
@@ -109,7 +108,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
         // The frame codec MUST be in the pipeline.
         pipeline.addBefore("codec_placeholder", /* name= */ null, frameCodec);
-        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, multiplexHandler);
+        pipeline.replace("codec_placeholder", BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME, multiplexHandler);
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {

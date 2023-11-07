@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.server.ssl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.spectator.api.NoopRegistry;
@@ -43,8 +44,6 @@ import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 /**
  * Stores info about the client and server's SSL certificates in the context, after a successful handshake.
  * <p>
@@ -64,7 +63,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     private final boolean isSSlFromIntermediary;
 
     public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary) {
-        this.spectatorRegistry = checkNotNull(spectatorRegistry);
+        this.spectatorRegistry = Preconditions.checkNotNull(spectatorRegistry);
         this.isSSlFromIntermediary = isSSlFromIntermediary;
     }
 

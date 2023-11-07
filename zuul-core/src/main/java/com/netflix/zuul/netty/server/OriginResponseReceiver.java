@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
@@ -48,9 +49,6 @@ import java.io.IOException;
 
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE;
-import static com.netflix.zuul.exception.OutboundErrorType.READ_TIMEOUT;
-import static com.netflix.zuul.exception.OutboundErrorType.RESET_CONNECTION;
 
 /**
  * Created by saroskar on 1/18/17.
@@ -111,7 +109,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof CompleteEvent) {
             final CompleteReason reason = ((CompleteEvent) evt).getReason();
-            if ((reason != SESSION_COMPLETE) && (edgeProxy != null)) {
+            if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
                 logger.error(
                         "Origin request completed with reason other than COMPLETE: {}, {}",
                         reason.name(),
@@ -134,7 +132,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             if (edgeProxy != null) {
                 logger.error(
                         "Origin request received IDLE event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
-                edgeProxy.errorFromOrigin(new OutboundException(READ_TIMEOUT, edgeProxy.getRequestAttempts()));
+                edgeProxy.errorFromOrigin(
+                        new OutboundException(OutboundErrorType.READ_TIMEOUT, edgeProxy.getRequestAttempts()));
             }
             super.userEventTriggered(ctx, evt);
         } else {
@@ -280,7 +279,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         if (edgeProxy != null) {
             logger.debug("Origin channel inactive. channel-info={}", ChannelUtils.channelInfoForLogging(ctx.channel()));
-            OriginConnectException ex = new OriginConnectException("Origin server inactive", RESET_CONNECTION);
+            OriginConnectException ex =
+                    new OriginConnectException("Origin server inactive", OutboundErrorType.RESET_CONNECTION);
             edgeProxy.errorFromOrigin(ex);
         }
         super.channelInactive(ctx);
