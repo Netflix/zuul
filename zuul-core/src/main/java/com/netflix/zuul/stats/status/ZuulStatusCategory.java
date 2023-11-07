@@ -49,7 +49,7 @@ public enum ZuulStatusCategory implements StatusCategory {
             ZuulStatusCategoryGroup.SUCCESS,
             4,
             "Default status"), // This is set on the SessionContext as the default value.
-    SUCCESS_LOCAL_NO_ROUTE(ZuulStatusCategoryGroup.SUCCESS, 5, "Successful with no origin determined"),
+    SUCCESS_LOCAL_NO_ROUTE(ZuulStatusCategoryGroup.SUCCESS, 5, "Unable to determine an origin to handle request"),
 
     FAILURE_LOCAL(ZuulStatusCategoryGroup.FAILURE, 1, "Failed internally"),
     FAILURE_LOCAL_THROTTLED_ORIGIN_SERVER_MAXCONN(
