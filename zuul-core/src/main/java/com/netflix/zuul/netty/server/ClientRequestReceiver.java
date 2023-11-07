@@ -477,8 +477,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 || cause instanceof Errors.NativeIoException
                 || cause instanceof SSLException
                 || (cause.getCause() != null && cause.getCause() instanceof SSLException)
-                || (cause instanceof Http2Exception.StreamException
-                        && ((Http2Exception) cause).error() == Http2Error.INTERNAL_ERROR)) {
+                || isStreamCancelled(cause)) {
             LOG.debug("{} - client connection is closed.", errMesg);
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
@@ -489,5 +488,17 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             LOG.error(errMesg, cause);
             ctx.fireExceptionCaught(new ZuulException(cause, errMesg, true));
         }
+    }
+
+    private boolean isStreamCancelled(Throwable cause) {
+        // Detect if the stream is cancelled or closed.
+        // If the stream was closed before the write occured, then netty flags it with INTERNAL_ERROR code.
+        if (cause instanceof Http2Exception.StreamException) {
+            Http2Exception http2Exception = (Http2Exception) cause;
+            if (http2Exception.error() == Http2Error.INTERNAL_ERROR) {
+                return true;
+            }
+        }
+        return false;
     }
 }
