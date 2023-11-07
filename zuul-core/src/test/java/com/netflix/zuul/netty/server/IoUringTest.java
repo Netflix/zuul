@@ -44,8 +44,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -136,7 +136,7 @@ class IoUringTest {
             checkConnection(inetAddress.getPort());
         });
 
-        await().atMost(1, SECONDS).until(() -> ioUringChannels.size() == 2);
+        await().atMost(1, TimeUnit.SECONDS).until(() -> ioUringChannels.size() == 2);
 
         s.stop();
 
