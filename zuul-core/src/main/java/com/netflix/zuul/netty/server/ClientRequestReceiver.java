@@ -57,6 +57,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
@@ -474,7 +476,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         if (cause instanceof java.nio.channels.ClosedChannelException
                 || cause instanceof Errors.NativeIoException
                 || cause instanceof SSLException
-                || (cause.getCause() != null && cause.getCause() instanceof SSLException)) {
+                || (cause.getCause() != null && cause.getCause() instanceof SSLException)
+                || (cause instanceof Http2Exception.StreamException
+                        && ((Http2Exception) cause).error() == Http2Error.INTERNAL_ERROR)) {
             LOG.debug("{} - client connection is closed.", errMesg);
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
