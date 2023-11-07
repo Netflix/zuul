@@ -43,5 +43,5 @@ public interface Resolver<T> {
      */
     void shutdown();
 
-    default void setListener(ResolverListener<T> listener) {    }
+    default void setListener(ResolverListener<T> listener) {}
 }

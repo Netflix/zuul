@@ -23,8 +23,6 @@ import com.netflix.loadbalancer.Server;
 
 import java.util.List;
 
-import static com.netflix.zuul.integration.server.TestUtil.makeDiscoveryEnabledServer;
-
 public class OriginServerList extends ConfigurationBasedServerList {
     @Override
     protected List<Server> derive(String value) {
@@ -34,7 +32,7 @@ public class OriginServerList extends ConfigurationBasedServerList {
                 String[] hostAndPort = s.split(":");
                 String host = hostAndPort[0];
                 int port = Integer.parseInt(hostAndPort[1]);
-                list.add(makeDiscoveryEnabledServer("", host, port));
+                list.add(TestUtil.makeDiscoveryEnabledServer("", host, port));
             }
         }
         return list;

@@ -19,10 +19,9 @@ package com.netflix.zuul.integration.server.filters;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpOutboundFilter;
+import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import rx.Observable;
-
-import static com.netflix.zuul.integration.server.HeaderNames.REQUEST_ID;
 
 @Filter(order = 400, type = FilterType.OUTBOUND)
 public class ResponseHeaderFilter extends HttpOutboundFilter {
@@ -33,9 +32,9 @@ public class ResponseHeaderFilter extends HttpOutboundFilter {
 
     @Override
     public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response) {
-        final String requestId = response.getInboundRequest().getHeaders().getFirst(REQUEST_ID);
+        final String requestId = response.getInboundRequest().getHeaders().getFirst(HeaderNames.REQUEST_ID);
         if (requestId != null) {
-            response.getHeaders().set(REQUEST_ID, requestId);
+            response.getHeaders().set(HeaderNames.REQUEST_ID, requestId);
             response.storeInboundResponse();
         }
         return Observable.just(response);

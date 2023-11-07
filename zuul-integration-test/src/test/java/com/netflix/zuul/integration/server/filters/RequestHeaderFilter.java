@@ -19,12 +19,11 @@ package com.netflix.zuul.integration.server.filters;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
+import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import rx.Observable;
 
 import java.util.UUID;
-
-import static com.netflix.zuul.integration.server.HeaderNames.REQUEST_ID;
 
 @Filter(order = 10, type = FilterType.INBOUND)
 public class RequestHeaderFilter extends HttpInboundFilter {
@@ -35,7 +34,7 @@ public class RequestHeaderFilter extends HttpInboundFilter {
 
     @Override
     public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage request) {
-        request.getHeaders().set(REQUEST_ID, "RQ-" + UUID.randomUUID());
+        request.getHeaders().set(HeaderNames.REQUEST_ID, "RQ-" + UUID.randomUUID());
         request.storeInboundRequest();
         return Observable.just(request);
     }

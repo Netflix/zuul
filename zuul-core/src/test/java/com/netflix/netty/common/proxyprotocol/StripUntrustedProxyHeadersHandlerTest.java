@@ -19,6 +19,7 @@ package com.netflix.netty.common.proxyprotocol;
 import com.google.common.collect.ImmutableList;
 import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler.AllowWhen;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
+import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
@@ -36,7 +37,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import static com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler.ATTR_SSL_INFO;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -73,7 +73,7 @@ class StripUntrustedProxyHeadersHandlerTest {
         when(channelHandlerContext.channel()).thenReturn(channel);
 
         DefaultAttributeMap attributeMap = new DefaultAttributeMap();
-        attributeMap.attr(ATTR_SSL_INFO).set(sslHandshakeInfo);
+        attributeMap.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).set(sslHandshakeInfo);
         when(channel.attr(any())).thenAnswer(arg -> attributeMap.attr((AttributeKey) arg.getArguments()[0]));
 
         headers = new DefaultHttpHeaders();

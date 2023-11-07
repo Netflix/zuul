@@ -22,8 +22,6 @@ import com.netflix.zuul.filters.http.HttpOutboundFilter;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import rx.Observable;
 
-import static com.netflix.zuul.integration.server.filters.BodyUtil.needsResponseBodyBuffering;
-
 @Filter(order = 450, type = FilterType.OUTBOUND)
 public class NeedsBodyBufferedOutboundFilter extends HttpOutboundFilter {
     @Override
@@ -33,7 +31,7 @@ public class NeedsBodyBufferedOutboundFilter extends HttpOutboundFilter {
 
     @Override
     public boolean needsBodyBuffered(final HttpResponseMessage message) {
-        return needsResponseBodyBuffering(message.getOutboundRequest());
+        return BodyUtil.needsResponseBodyBuffering(message.getOutboundRequest());
     }
 
     @Override

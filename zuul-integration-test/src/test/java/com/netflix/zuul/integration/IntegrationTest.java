@@ -80,7 +80,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.google.common.truth.Truth.assertThat;
-import static com.netflix.netty.common.metrics.CustomLeakDetector.assertZeroLeaks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -127,7 +126,7 @@ class IntegrationTest {
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
-        assertZeroLeaks();
+        CustomLeakDetector.assertZeroLeaks();
     }
 
     @AfterAll
@@ -135,7 +134,7 @@ class IntegrationTest {
         if (bootstrap != null) {
             bootstrap.stop();
         }
-        assertZeroLeaks();
+        CustomLeakDetector.assertZeroLeaks();
     }
 
     @BeforeEach

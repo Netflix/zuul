@@ -34,8 +34,6 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.junit.jupiter.api.Test;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT;
-
 class HttpServerLifecycleChannelHandlerTest {
 
     final class AssertReasonHandler extends ChannelInboundHandlerAdapter {
@@ -62,7 +60,7 @@ class HttpServerLifecycleChannelHandlerTest {
 
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
         // emulate pipeline rejection
-        channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
+        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
         // Fire close
         channel.pipeline().close();
 
@@ -96,7 +94,9 @@ class HttpServerLifecycleChannelHandlerTest {
             channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
             channel.writeInbound(httpRequest);
 
-            Truth.assertThat(channel.attr(ATTR_HTTP_PIPELINE_REJECT).get()).isEqualTo(Boolean.TRUE);
+            Truth.assertThat(channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT)
+                            .get())
+                    .isEqualTo(Boolean.TRUE);
             Truth.assertThat(buffer.refCnt()).isEqualTo(0);
         } finally {
             if (buffer.refCnt() != 0) {

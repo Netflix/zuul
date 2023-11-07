@@ -27,7 +27,6 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.netflix.netty.common.throttle.MaxInboundConnectionsHandler.ATTR_CH_THROTTLED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -59,6 +58,6 @@ class MaxInboundConnectionsHandlerTest {
         assertEquals(
                 PassportState.SERVER_CH_THROTTLING,
                 CurrentPassport.fromChannel(channel).getState());
-        assertTrue(channel.attr(ATTR_CH_THROTTLED).get());
+        assertTrue(channel.attr(MaxInboundConnectionsHandler.ATTR_CH_THROTTLED).get());
     }
 }

@@ -48,7 +48,6 @@ public class ProxyUtils {
         REQ_HEADERS_TO_STRIP.add(
                 HttpHeaderNames
                         .CONTENT_LENGTH); // Because the httpclient library sets this itself, and doesn't like it if set
-                                          // by us.
         REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
         REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
         REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);

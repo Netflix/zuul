@@ -16,24 +16,25 @@
 
 package com.netflix.zuul.discovery;
 
-import static com.netflix.client.config.CommonClientConfigKey.NFLoadBalancerClassName;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.Resolver;
 import com.netflix.zuul.resolver.ResolverListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Argha C
@@ -97,8 +98,8 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
         // pluggable.
 
         // Use a hard coded string for the LB default name to avoid a dependency on Ribbon classes.
-        String loadBalancerClassName =
-                clientConfig.get(NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
+        String loadBalancerClassName = clientConfig.get(
+                CommonClientConfigKey.NFLoadBalancerClassName, "com.netflix.loadbalancer.ZoneAwareLoadBalancer");
 
         DynamicServerListLoadBalancer<?> lb;
         try {
