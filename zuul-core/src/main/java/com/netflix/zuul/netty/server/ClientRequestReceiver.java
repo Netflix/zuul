@@ -57,6 +57,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
@@ -474,7 +476,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         if (cause instanceof java.nio.channels.ClosedChannelException
                 || cause instanceof Errors.NativeIoException
                 || cause instanceof SSLException
-                || (cause.getCause() != null && cause.getCause() instanceof SSLException)) {
+                || (cause.getCause() != null && cause.getCause() instanceof SSLException)
+                || isStreamCancelled(cause)) {
             LOG.debug("{} - client connection is closed.", errMesg);
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
@@ -485,5 +488,17 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             LOG.error(errMesg, cause);
             ctx.fireExceptionCaught(new ZuulException(cause, errMesg, true));
         }
+    }
+
+    private boolean isStreamCancelled(Throwable cause) {
+        // Detect if the stream is cancelled or closed.
+        // If the stream was closed before the write occured, then netty flags it with INTERNAL_ERROR code.
+        if (cause instanceof Http2Exception.StreamException) {
+            Http2Exception http2Exception = (Http2Exception) cause;
+            if (http2Exception.error() == Http2Error.INTERNAL_ERROR) {
+                return true;
+            }
+        }
+        return false;
     }
 }
