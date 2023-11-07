@@ -27,5 +27,7 @@ public interface StatusCategory {
 
     StatusCategoryGroup getGroup();
 
+    String getReason();
+
     String name();
 }
