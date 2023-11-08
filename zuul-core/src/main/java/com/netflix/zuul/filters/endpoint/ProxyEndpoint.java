@@ -1122,7 +1122,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             SessionContext context, HttpRequestMessage request, String restClientName, Origin primaryOrigin) {
         if (primaryOrigin == null) {
             // If no origin found then add specific error-cause metric tag, and throw an exception with 404 status.
-            StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE);
+            StatusCategoryUtils.setStatusCategory(
+                    context,
+                    ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE,
+                    "Unable to find an origin client matching `" + restClientName + "` to handle request");
             String causeName = "RESTCLIENT_NOTFOUND";
             originNotFound(context, causeName);
             ZuulException ze = new ZuulException(
