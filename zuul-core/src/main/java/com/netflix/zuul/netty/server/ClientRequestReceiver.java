@@ -147,7 +147,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
                 StatusCategoryUtils.setStatusCategory(
-                        zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "Invalid request provided: Decode failure");
                 RejectionUtils.rejectByClosingConnection(
                         ctx,
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
@@ -163,7 +165,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 final ZuulException ze = new ZuulException(errorMsg);
                 ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
                 StatusCategoryUtils.setStatusCategory(
-                        zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "Invalid request provided: Request body size " + zuulRequest.getBodyLength()
+                                + " above limit of " + zuulRequest.getMaxBodySize());
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest
@@ -179,7 +184,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 final ZuulException ze = new ZuulException("Multiple Host headers");
                 ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 StatusCategoryUtils.setStatusCategory(
-                        zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "Invalid request provided: Multiple Host headers");
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             }

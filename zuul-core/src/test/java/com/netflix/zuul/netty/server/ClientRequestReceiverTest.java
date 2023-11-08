@@ -228,6 +228,9 @@ class ClientRequestReceiverTest {
         assertNotNull(result.getContext().getError());
         assertTrue(result.getContext().getError().getMessage().contains("too large"));
         assertTrue(result.getContext().shouldSendErrorResponse());
+        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(result));
+        assertTrue(StatusCategoryUtils.getStatusCategoryReason(result.getContext())
+                .startsWith("Invalid request provided: Request body size "));
         channel.close();
     }
 
@@ -264,6 +267,9 @@ class ClientRequestReceiverTest {
         assertEquals(
                 ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
                 StatusCategoryUtils.getStatusCategory(request.getContext()));
+        assertEquals(
+                "Invalid request provided: Decode failure",
+                StatusCategoryUtils.getStatusCategoryReason(request.getContext()));
     }
 
     @Test
@@ -292,6 +298,9 @@ class ClientRequestReceiverTest {
         SessionContext context = request.getContext();
         assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(context));
         assertEquals("Multiple Host headers", context.getError().getMessage());
+        assertEquals(
+                "Invalid request provided: Multiple Host headers",
+                StatusCategoryUtils.getStatusCategoryReason(context));
     }
 
     @Test
