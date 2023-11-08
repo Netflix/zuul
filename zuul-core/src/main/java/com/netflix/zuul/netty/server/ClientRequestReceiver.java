@@ -168,7 +168,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         zuulRequest.getContext(),
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
                         "Invalid request provided: Request body size " + zuulRequest.getBodyLength()
-                                + " above limit of " + zuulRequest.getMaxBodySize());
+                                + " is above limit of " + zuulRequest.getMaxBodySize());
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest
