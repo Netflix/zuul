@@ -82,16 +82,16 @@
             "locked": "2.4.4"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.6.0"
+            "locked": "5.7.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.36"
@@ -149,16 +149,16 @@
             "locked": "2.4.4"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.6.0"
+            "locked": "5.7.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
@@ -187,16 +187,16 @@
             "locked": "2.4.4"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.0"
+            "locked": "5.10.1"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.6.0"
+            "locked": "5.7.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36"
