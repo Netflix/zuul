@@ -95,7 +95,7 @@ class Http2OrHttpHandlerTest {
     void skipProtocolCloseHandler() throws Exception {
         EmbeddedChannel channel = new EmbeddedChannel();
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2HandleConnectionErrors, false));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2CatchConnectionErrors, false));
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
         Http2OrHttpHandler http2OrHttpHandler =

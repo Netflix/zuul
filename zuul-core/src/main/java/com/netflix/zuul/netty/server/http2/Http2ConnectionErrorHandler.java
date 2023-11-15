@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * sending of the go-away and closing the connection is handled by netty in {@link io.netty.handler.codec.http2.Http2ConnectionHandler}
  * onConnectionError
  *
- * See also, {@link com.netflix.netty.common.channel.config.CommonChannelConfigKeys#http2HandleConnectionErrors}
+ * See also, {@link com.netflix.netty.common.channel.config.CommonChannelConfigKeys#http2CatchConnectionErrors}
  * @author Justin Guerra
  * @since 11/14/23
  */
