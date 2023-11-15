@@ -24,7 +24,7 @@ public class Http2ProtocolErrorHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if(cause instanceof Http2Exception http2Exception && http2Exception.shutdownHint() == Http2Exception.ShutdownHint.HARD_SHUTDOWN) {
             LOG.debug("Http/2 protocol error. Closing connection", cause);
-            SpectatorUtils.newCounter("zuul.http2.protocol.close", http2Exception.getClass().getSimpleName()).increment();
+            SpectatorUtils.newCounter("server.connection.http2.protocol.exception", http2Exception.getClass().getSimpleName()).increment();
             ctx.writeAndFlush(new DefaultHttp2GoAwayFrame(http2Exception.error()))
                     .addListener(ChannelFutureListener.CLOSE);
         } else {
