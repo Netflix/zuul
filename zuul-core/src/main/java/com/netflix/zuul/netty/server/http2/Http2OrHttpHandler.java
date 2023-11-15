@@ -67,7 +67,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.initialWindowSize = channelConfig.get(CommonChannelConfigKeys.initialWindowSize);
         this.maxHeaderTableSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderTableSize);
         this.maxHeaderListSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderListSize);
-        this.closeOnCodecErrors = channelConfig.get(CommonChannelConfigKeys.http2CloseOnCodecErrors);
+        this.closeOnCodecErrors = channelConfig.get(CommonChannelConfigKeys.http2CloseOnProtocolErrors);
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 

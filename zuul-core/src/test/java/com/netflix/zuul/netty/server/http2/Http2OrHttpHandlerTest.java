@@ -24,6 +24,7 @@ import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
@@ -32,6 +33,8 @@ import org.junit.jupiter.api.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author Argha C
@@ -66,10 +69,42 @@ class Http2OrHttpHandlerTest {
 
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
 
-        assertThat(channel.pipeline().get(Http2FrameCodec.class.getSimpleName() + "#0"))
-                .isInstanceOf(Http2FrameCodec.class);
+        assertThat(channel.pipeline().get(Http2FrameCodec.class)).isInstanceOf(Http2FrameCodec.class);
         assertThat(channel.pipeline().get(BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME))
                 .isInstanceOf(Http2MultiplexHandler.class);
         assertEquals("HTTP/2", channel.attr(Http2OrHttpHandler.PROTOCOL_NAME).get());
+    }
+
+    @Test
+    void protocolCloseHandlerAddedByDefault() throws Exception {
+        EmbeddedChannel channel = new EmbeddedChannel();
+        ChannelConfig channelConfig = new ChannelConfig();
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
+
+        Http2OrHttpHandler http2OrHttpHandler =
+                new Http2OrHttpHandler(new ChannelInboundHandlerAdapter(), channelConfig, cp -> {});
+
+        channel.pipeline().addLast("codec_placeholder", new DummyChannelHandler());
+        channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
+
+        http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
+        assertNotNull(channel.pipeline().context(Http2ProtocolErrorHandler.class));
+    }
+
+    @Test
+    void skipProtocolCloseHandler() throws Exception {
+        EmbeddedChannel channel = new EmbeddedChannel();
+        ChannelConfig channelConfig = new ChannelConfig();
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2CloseOnProtocolErrors, false));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
+
+        Http2OrHttpHandler http2OrHttpHandler =
+                new Http2OrHttpHandler(new ChannelInboundHandlerAdapter(), channelConfig, cp -> {});
+
+        channel.pipeline().addLast("codec_placeholder", new DummyChannelHandler());
+        channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
+
+        http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
+        assertNull(channel.pipeline().context(Http2ProtocolErrorHandler.class));
     }
 }

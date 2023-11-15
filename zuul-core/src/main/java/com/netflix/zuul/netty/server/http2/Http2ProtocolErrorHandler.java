@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handles exceptions due to malformed http/2 requests by sending a go-away and closing the connection
  *
- * See {@link com.netflix.netty.common.channel.config.CommonChannelConfigKeys#http2CloseOnCodecErrors}
+ * See {@link com.netflix.netty.common.channel.config.CommonChannelConfigKeys#http2CloseOnProtocolErrors}
  * @author Justin Guerra
  * @since 11/14/23
  */
