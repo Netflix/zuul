@@ -77,6 +77,6 @@ public class CommonChannelConfigKeys {
             new ChannelConfigKey<>("http2AllowGracefulDelayed", true);
     public static final ChannelConfigKey<Boolean> http2SwallowUnknownExceptionsOnConnClose =
             new ChannelConfigKey<>("http2SwallowUnknownExceptionsOnConnClose", false);
-    public static final ChannelConfigKey<Boolean> http2CloseOnProtocolErrors =
-            new ChannelConfigKey<>("http2CloseOnProtocolErrors", true);
+    public static final ChannelConfigKey<Boolean> http2HandleConnectionErrors =
+            new ChannelConfigKey<>("http2HandleConnectionErrors", true);
 }

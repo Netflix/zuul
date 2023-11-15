@@ -88,14 +88,14 @@ class Http2OrHttpHandlerTest {
         channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
 
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
-        assertNotNull(channel.pipeline().context(Http2ProtocolErrorHandler.class));
+        assertNotNull(channel.pipeline().context(Http2ConnectionErrorHandler.class));
     }
 
     @Test
     void skipProtocolCloseHandler() throws Exception {
         EmbeddedChannel channel = new EmbeddedChannel();
         ChannelConfig channelConfig = new ChannelConfig();
-        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2CloseOnProtocolErrors, false));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2HandleConnectionErrors, false));
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
         Http2OrHttpHandler http2OrHttpHandler =
@@ -105,6 +105,6 @@ class Http2OrHttpHandlerTest {
         channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
 
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
-        assertNull(channel.pipeline().context(Http2ProtocolErrorHandler.class));
+        assertNull(channel.pipeline().context(Http2ConnectionErrorHandler.class));
     }
 }

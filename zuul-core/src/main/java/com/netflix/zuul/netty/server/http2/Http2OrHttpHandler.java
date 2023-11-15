@@ -67,7 +67,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.initialWindowSize = channelConfig.get(CommonChannelConfigKeys.initialWindowSize);
         this.maxHeaderTableSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderTableSize);
         this.maxHeaderListSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderListSize);
-        this.closeOnCodecErrors = channelConfig.get(CommonChannelConfigKeys.http2CloseOnProtocolErrors);
+        this.closeOnCodecErrors = channelConfig.get(CommonChannelConfigKeys.http2HandleConnectionErrors);
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 
@@ -109,11 +109,11 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         Http2MultiplexHandler multiplexHandler = new Http2MultiplexHandler(http2StreamHandler);
 
         // The frame codec MUST be in the pipeline.
-        pipeline.addBefore("codec_placeholder", "http2_frame_codec", frameCodec);
-        if (closeOnCodecErrors) {
-            pipeline.addAfter("http2_frame_codec", null, new Http2ProtocolErrorHandler());
-        }
+        pipeline.addBefore("codec_placeholder", null, frameCodec);
         pipeline.replace("codec_placeholder", BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME, multiplexHandler);
+        if (closeOnCodecErrors) {
+            pipeline.addLast(new Http2ConnectionErrorHandler());
+        }
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
