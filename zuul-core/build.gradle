@@ -8,7 +8,7 @@ dependencies {
     api libraries.slf4j
     implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.76'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
     api 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
 
     api "com.netflix.archaius:archaius-core:0.7.7"
