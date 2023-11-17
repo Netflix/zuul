@@ -566,10 +566,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         ch.flush();
 
         // Get ready to read origin's response
+        syncClientAndOriginChannels(channelCtx.channel(), ch);
         ch.read();
 
         originConn = conn;
         channelCtx.read();
+    }
+
+    protected void syncClientAndOriginChannels(Channel clientChannel, Channel originChannel) {
+        // Add override for custom syncing between client and origin channels.
     }
 
     protected OriginResponseReceiver getOriginResponseReceiver() {
