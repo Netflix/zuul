@@ -77,7 +77,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         }
     }
 
-    private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
