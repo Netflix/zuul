@@ -474,19 +474,19 @@
     },
     "jmhRuntimeClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-linux-aarch64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-linux-x86_64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-osx-aarch64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-osx-x86_64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -950,7 +950,7 @@
     },
     "testCompileClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
@@ -1114,19 +1114,19 @@
     },
     "testRuntimeClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-linux-aarch64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-linux-x86_64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-osx-aarch64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.aayushatharva.brotli4j:native-osx-x86_64": {
-            "locked": "1.12.0"
+            "locked": "1.13.0"
         },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
