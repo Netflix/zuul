@@ -90,7 +90,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -592,13 +592,13 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -839,7 +839,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -1031,10 +1031,10 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
@@ -1232,13 +1232,13 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-classes-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "firstLevelTransitive": [
