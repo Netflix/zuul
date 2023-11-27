@@ -37,7 +37,7 @@
             "project": true
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
@@ -137,7 +137,7 @@
             "project": true
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
@@ -259,7 +259,7 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
@@ -402,7 +402,7 @@
             "project": true
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
@@ -503,7 +503,7 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
@@ -634,7 +634,7 @@
             "locked": "1.10"
         },
         "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.23.Final"
+            "locked": "0.0.24.Final"
         },
         "io.netty:netty-bom": {
             "locked": "4.1.101.Final"
