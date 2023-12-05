@@ -76,7 +76,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         return (authEvent != null && authEvent.isSuccess());
     }
 
-    private void tearDown() {
+    protected void tearDown() {
         if (!destroyed.getAndSet(true)) {
             if (authEvent != null) {
                 // We should only remove the PushConnection entry from the registry if it's still this pushConnection.
