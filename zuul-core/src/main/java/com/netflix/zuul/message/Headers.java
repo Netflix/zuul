@@ -581,7 +581,10 @@ public final class Headers {
 
         return asMap().equals(other.asMap());
     }
-    /* asMap is an expensive function, use only when necessary. Avoid calling on a hot path. */
+    
+    /** 
+    * asMap is an expensive function, use only when necessary. Avoid calling on a hot path. 
+    */
     private Map<String, List<String>> asMap() {
         Map<String, List<String>> map = new LinkedHashMap<>(size());
         for (int i = 0; i < size(); i++) {
