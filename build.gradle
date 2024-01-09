@@ -100,7 +100,7 @@ subprojects {
 
 dependencies {
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
-    rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.0.7")
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.2.0")
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
