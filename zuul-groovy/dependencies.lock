@@ -7,7 +7,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -15,7 +15,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -23,7 +23,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.eureka:eureka-client",
@@ -31,7 +31,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -610,7 +610,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -618,7 +618,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -626,7 +626,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.eureka:eureka-client",
@@ -634,7 +634,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1224,7 +1224,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -1233,7 +1233,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -1243,7 +1243,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.archaius:archaius-core",
@@ -1252,7 +1252,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1762,13 +1762,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -2107,13 +2107,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.8.0",
+            "locked": "5.9.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.8.0"
+            "locked": "5.9.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -2218,7 +2218,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -2227,7 +2227,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -2237,7 +2237,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.archaius:archaius-core",
@@ -2246,7 +2246,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -3107,7 +3107,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -3115,7 +3115,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -3123,7 +3123,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.eureka:eureka-client",
@@ -3131,7 +3131,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.14.2",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -3453,13 +3453,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -3707,13 +3707,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.8.0",
+            "locked": "5.9.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.8.0"
+            "locked": "5.9.0"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -3763,7 +3763,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -3772,7 +3772,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -3782,7 +3782,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.archaius:archaius-core",
@@ -3791,7 +3791,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.16.0",
+            "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -4301,13 +4301,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.10",
+            "locked": "1.14.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -4634,13 +4634,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.8.0",
+            "locked": "5.9.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.8.0"
+            "locked": "5.9.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
