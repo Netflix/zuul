@@ -191,6 +191,10 @@ public class RequestAttempt {
         return this.duration;
     }
 
+    public String getCause() {
+        return cause;
+    }
+
     public String getError() {
         return error;
     }
@@ -304,22 +308,29 @@ public class RequestAttempt {
             if (t instanceof ReadTimeoutException) {
                 error = "READ_TIMEOUT";
                 exceptionType = t.getClass().getSimpleName();
-            } else if (t instanceof OriginConnectException) {
-                OriginConnectException oce = (OriginConnectException) t;
+            } else if (t instanceof OriginConnectException oce) {
                 if (oce.getErrorType() != null) {
                     error = oce.getErrorType().toString();
                 } else {
                     error = "ORIGIN_CONNECT_ERROR";
                 }
 
-                final Throwable cause = t.getCause();
-                if (cause != null) {
-                    exceptionType = t.getCause().getClass().getSimpleName();
-                } else {
-                    exceptionType = t.getClass().getSimpleName();
+                Throwable oceCause = oce.getCause();
+
+                // unwrap ssl handshake exceptions to emit the underlying handshake failure causes
+                if (oceCause instanceof SSLHandshakeException sslHandshakeException
+                        && sslHandshakeException.getCause() != null) {
+                    oceCause = sslHandshakeException.getCause();
                 }
-            } else if (t instanceof OutboundException) {
-                OutboundException obe = (OutboundException) t;
+
+                if (oceCause != null) {
+                    exceptionType = oce.getCause().getClass().getSimpleName();
+                    cause = oceCause.getMessage();
+                } else {
+                    exceptionType = oce.getClass().getSimpleName();
+                }
+
+            } else if (t instanceof OutboundException obe) {
                 error = obe.getOutboundErrorType().toString();
                 exceptionType = OutboundException.class.getSimpleName();
             } else if (t instanceof SSLHandshakeException) {
