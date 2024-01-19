@@ -40,6 +40,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
+import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.AfterAll;
@@ -49,6 +50,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.util.Deque;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -58,6 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -361,6 +364,37 @@ class PerServerConnectionPoolTest {
         assertEquals(0, connsInPool.get());
         assertTrue(connection1.getChannel().closeFuture().isSuccess());
         assertTrue(connection2.getChannel().closeFuture().isSuccess());
+    }
+
+    @Test
+    void handleConnectCompletionWithException() {
+
+        EmbeddedChannel channel = new EmbeddedChannel();
+        Promise<PooledConnection> promise = CLIENT_EVENT_LOOP.newPromise();
+        pool.handleConnectCompletion(
+                channel.newFailedFuture(new RuntimeException("runtime failure")), promise, CurrentPassport.create());
+
+        assertFalse(promise.isSuccess());
+        assertNotNull(promise.cause());
+        assertInstanceOf(OriginConnectException.class, promise.cause());
+        assertInstanceOf(RuntimeException.class, promise.cause().getCause(), "expect cause remains");
+    }
+
+    @Test
+    void handleConnectCompletionWithDecoderExceptionIsUnwrapped() {
+
+        EmbeddedChannel channel = new EmbeddedChannel();
+        Promise<PooledConnection> promise = CLIENT_EVENT_LOOP.newPromise();
+        pool.handleConnectCompletion(
+                channel.newFailedFuture(new DecoderException(new SSLHandshakeException("Invalid tls cert"))),
+                promise,
+                CurrentPassport.create());
+
+        assertFalse(promise.isSuccess());
+        assertNotNull(promise.cause());
+        assertInstanceOf(OriginConnectException.class, promise.cause());
+        assertInstanceOf(
+                SSLHandshakeException.class, promise.cause().getCause(), "expect decoder exception is unwrapped");
     }
 
     private void checkChannelState(PooledConnection connection, CurrentPassport passport, int expectedUsage) {

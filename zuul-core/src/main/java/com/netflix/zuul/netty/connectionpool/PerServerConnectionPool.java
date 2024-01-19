@@ -25,6 +25,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
+import io.netty.handler.codec.DecoderException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
@@ -296,8 +297,16 @@ public class PerServerConnectionPool implements IConnectionPool {
             createConnection(cf, callerPromise, passport);
         } else {
             createConnFailedCounter.increment();
-            callerPromise.setFailure(
-                    new OriginConnectException(cf.cause().getMessage(), cf.cause(), OutboundErrorType.CONNECT_ERROR));
+
+            // unwrap DecoderExceptions to get a better indication of why decoding failed
+            // as decoding failures are not indicative of actual connection causes
+            if (cf.cause() instanceof DecoderException de && de.getCause() != null) {
+                callerPromise.setFailure(new OriginConnectException(
+                        de.getCause().getMessage(), de.getCause(), OutboundErrorType.CONNECT_ERROR));
+            } else {
+                callerPromise.setFailure(new OriginConnectException(
+                        cf.cause().getMessage(), cf.cause(), OutboundErrorType.CONNECT_ERROR));
+            }
         }
     }
 
