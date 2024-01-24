@@ -30,7 +30,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
 import io.netty.util.AttributeKey;
-
 import java.util.function.Consumer;
 
 /**
@@ -38,6 +37,7 @@ import java.util.function.Consumer;
  */
 @ChannelHandler.Sharable
 public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
+
     private static final Http2StreamHeaderCleaner http2StreamHeaderCleaner = new Http2StreamHeaderCleaner();
     private static final Http2ResetFrameHandler http2ResetFrameHandler = new Http2ResetFrameHandler();
     private static final Http2StreamErrorHandler http2StreamErrorHandler = new Http2StreamErrorHandler();
@@ -66,7 +66,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         copyAttrsFromParentChannel(this.parent, ctx.channel());
-
+        addHttp2MetricsHandlers(ctx.pipeline());
         addHttp2StreamSpecificHandlers(ctx.pipeline());
         addHttpHandlerFn.accept(ctx.pipeline());
 
@@ -74,8 +74,6 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
     }
 
     protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline) {
-        pipeline.addLast("h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
-        pipeline.addLast("h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
         pipeline.addLast("h2_max_requests_per_conn", connectionExpiryHandler);
         pipeline.addLast("h2_conn_close", connectionCloseHandler);
 
@@ -86,21 +84,26 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
         pipeline.addLast(new Http2ContentLengthEnforcingHandler());
     }
 
+    protected void addHttp2MetricsHandlers(ChannelPipeline pipeline) {
+        pipeline.addLast("h2_metrics_inbound", http2MetricsChannelHandlers.inbound());
+        pipeline.addLast("h2_metrics_outbound", http2MetricsChannelHandlers.outbound());
+    }
+
     protected void copyAttrsFromParentChannel(Channel parent, Channel child) {
         AttributeKey[] attributesToCopy = {
-            SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
-            SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
-            SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS,
-            SourceAddressChannelHandler.ATTR_REMOTE_ADDR,
-            SourceAddressChannelHandler.ATTR_SOURCE_INET_ADDR,
-            SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
-            SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
-            SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
-            Http2OrHttpHandler.PROTOCOL_NAME,
-            SslHandshakeInfoHandler.ATTR_SSL_INFO,
-            HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
-            HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
-            BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
+                SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
+                SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
+                SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS,
+                SourceAddressChannelHandler.ATTR_REMOTE_ADDR,
+                SourceAddressChannelHandler.ATTR_SOURCE_INET_ADDR,
+                SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
+                SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
+                SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
+                Http2OrHttpHandler.PROTOCOL_NAME,
+                SslHandshakeInfoHandler.ATTR_SSL_INFO,
+                HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
+                HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
+                BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
         };
 
         for (AttributeKey key : attributesToCopy) {
