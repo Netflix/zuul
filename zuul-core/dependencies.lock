@@ -1546,13 +1546,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.9.0",
+            "locked": "5.10.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.9.0"
+            "locked": "5.10.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -2682,13 +2682,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.9.0",
+            "locked": "5.10.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.9.0"
+            "locked": "5.10.0"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -3339,13 +3339,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.9.0",
+            "locked": "5.10.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.9.0"
+            "locked": "5.10.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
