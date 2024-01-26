@@ -1061,11 +1061,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             return null;
         }
 
-        // make sure the restClientName will never be a raw VIP in cases where it's the fallback for another route
-        // assignment
-        String restClientVIP = primaryRoute;
-        boolean useFullName = context.getBoolean(CommonContextKeys.USE_FULL_VIP_NAME);
-        String restClientName = useFullName ? restClientVIP : VipUtils.getVIPPrefix(restClientVIP);
+        String restClientName = getClientName(context);
 
         NettyOrigin origin = null;
         // allow implementors to override the origin with custom injection logic
@@ -1075,7 +1071,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
         } else if (restClientName != null) {
             // This is the normal flow - that a RoutingFilter has assigned a route
-            OriginName originName = OriginName.fromVip(restClientVIP, restClientName);
+            OriginName originName = OriginName.fromVip(primaryRoute, restClientName);
             origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
         }
 
@@ -1092,6 +1088,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         return origin;
+    }
+
+    protected String getClientName(SessionContext context) {
+        // make sure the restClientName will never be a raw VIP in cases where it's the fallback for another route
+        // assignment
+        String restClientVIP = context.getRouteVIP();
+        boolean useFullName = context.getBoolean(CommonContextKeys.USE_FULL_VIP_NAME);
+        return useFullName ? restClientVIP : VipUtils.getVIPPrefix(restClientVIP);
     }
 
     /**
