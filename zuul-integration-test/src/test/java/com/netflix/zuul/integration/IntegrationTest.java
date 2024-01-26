@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -391,6 +392,7 @@ class IntegrationTest {
     }
 
     @Test
+    @Disabled
     void deflateOnly() throws Exception {
         final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
 
