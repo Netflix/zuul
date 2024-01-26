@@ -90,6 +90,12 @@ subprojects {
         ]
     }
 
+    tasks.withType(Test).all {
+        jvmArgs += [
+                "-Xcheck:jni"
+        ]
+    }
+
     test {
         useJUnitPlatform()
         testLogging {
