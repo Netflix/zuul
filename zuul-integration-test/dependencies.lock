@@ -1773,16 +1773,16 @@
             ]
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.11.0"
+            "locked": "4.12.0"
         },
         "com.squareup.okio:okio": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
         },
         "com.squareup.okio:okio-jvm": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okio:okio"
             ]
@@ -2418,28 +2418,27 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
-                "com.squareup.okhttp3:okhttp",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okio:okio-jvm",
                 "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okhttp3:okhttp",
                 "com.squareup.okio:okio-jvm"
@@ -3489,16 +3488,16 @@
             ]
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.11.0"
+            "locked": "4.12.0"
         },
         "com.squareup.okio:okio": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
         },
         "com.squareup.okio:okio-jvm": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okio:okio"
             ]
@@ -3971,28 +3970,27 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
-                "com.squareup.okhttp3:okhttp",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okio:okio-jvm",
                 "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okhttp3:okhttp",
                 "com.squareup.okio:okio-jvm"
@@ -4461,16 +4459,16 @@
             ]
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "4.11.0"
+            "locked": "4.12.0"
         },
         "com.squareup.okio:okio": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
         },
         "com.squareup.okio:okio-jvm": {
-            "locked": "3.2.0",
+            "locked": "3.6.0",
             "transitive": [
                 "com.squareup.okio:okio"
             ]
@@ -5099,28 +5097,27 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
-                "com.squareup.okhttp3:okhttp",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okio:okio-jvm",
                 "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.20",
+            "locked": "1.9.10",
             "transitive": [
                 "com.squareup.okhttp3:okhttp",
                 "com.squareup.okio:okio-jvm"
