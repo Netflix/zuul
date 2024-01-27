@@ -90,7 +90,7 @@ subprojects {
         ]
     }
 
-    tasks.withType(Test).all {
+    tasks.withType(Test).configureEach {
         jvmArgs += [
                 "-Xcheck:jni"
         ]
