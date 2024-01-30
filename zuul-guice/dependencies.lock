@@ -144,7 +144,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -550,7 +550,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1031,7 +1031,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1765,7 +1765,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2308,7 +2308,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2849,7 +2849,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5",
+            "locked": "1.7.6",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
