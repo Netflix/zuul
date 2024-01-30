@@ -8,7 +8,7 @@ plugins {
     id 'com.netflix.nebula.netflixoss' version '11.4.0'
     id "com.google.osdetector" version "1.7.3"
     id "me.champeau.jmh" version "0.7.2"
-    id "org.openrewrite.rewrite" version "6.3.0"
+    id "org.openrewrite.rewrite" version "6.8.1"
 }
 
 ext.githubProjectName = rootProject.name
@@ -105,10 +105,10 @@ subprojects {
 }
 
 dependencies {
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
-    rewrite("org.openrewrite.recipe:rewrite-static-analysis:1.2.0")
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.6.3"))
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis")
 }
 
 rewrite {
