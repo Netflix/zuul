@@ -19,7 +19,6 @@ package com.netflix.zuul.niws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Throwables;
 import com.netflix.appinfo.AmazonInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
@@ -340,7 +339,13 @@ public class RequestAttempt {
             } else {
                 error = t.getMessage();
                 exceptionType = t.getClass().getSimpleName();
-                cause = Throwables.getStackTraceAsString(t);
+
+                // for unexpected exceptions, just capture the first line of the stacktrace
+                // otherwise we risk large stacktraces in memory and metrics systems
+                StackTraceElement[] stackTraceElements = t.getStackTrace();
+                if (stackTraceElements.length > 0) {
+                    cause = stackTraceElements[0].toString();
+                }
             }
         }
     }
