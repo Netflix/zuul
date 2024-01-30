@@ -130,7 +130,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -587,7 +587,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -1125,7 +1125,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -1833,7 +1833,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -2327,7 +2327,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -2930,7 +2930,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.5"
+            "locked": "1.7.6"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true

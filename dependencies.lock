@@ -266,6 +266,7 @@
                 "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
                 "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.github.docker-java:docker-java-api",
                 "org.openrewrite:rewrite-groovy",
                 "org.openrewrite:rewrite-java",
                 "org.openrewrite:rewrite-maven",
@@ -379,37 +380,47 @@
                 "org.openrewrite:rewrite-maven"
             ]
         },
+        "com.github.docker-java:docker-java-api": {
+            "locked": "3.3.4",
+            "transitive": [
+                "org.testcontainers:testcontainers"
+            ]
+        },
+        "com.github.docker-java:docker-java-transport": {
+            "locked": "3.3.4",
+            "transitive": [
+                "com.github.docker-java:docker-java-transport-zerodep"
+            ]
+        },
+        "com.github.docker-java:docker-java-transport-zerodep": {
+            "locked": "3.3.4",
+            "transitive": [
+                "org.testcontainers:testcontainers"
+            ]
+        },
         "com.google.code.findbugs:jsr305": {
             "locked": "3.0.2",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.18.0",
+            "locked": "2.23.0",
             "transitive": [
                 "com.github.ben-manes.caffeine:caffeine",
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.1.2-jre",
+            "locked": "33.0.0-jre",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies"
-            ]
-        },
-        "com.google.guava:guava-parent": {
-            "locked": "32.1.2-jre",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -474,9 +485,16 @@
                 "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
             ]
         },
+        "junit:junit": {
+            "locked": "4.13.2",
+            "transitive": [
+                "org.testcontainers:testcontainers"
+            ]
+        },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
             "transitive": [
+                "com.github.docker-java:docker-java-transport-zerodep",
                 "net.java.dev.jna:jna-platform"
             ]
         },
@@ -498,7 +516,8 @@
         "org.apache.commons:commons-compress": {
             "locked": "1.25.0",
             "transitive": [
-                "org.openrewrite:rewrite-core"
+                "org.openrewrite:rewrite-core",
+                "org.testcontainers:testcontainers"
             ]
         },
         "org.apache.commons:commons-lang3": {
@@ -518,11 +537,10 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.33.0",
+            "locked": "3.41.0",
             "transitive": [
                 "com.github.ben-manes.caffeine:caffeine",
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "org.codehaus.groovy:groovy": {
@@ -542,6 +560,12 @@
             "locked": "5.0",
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis"
+            ]
+        },
+        "org.hamcrest:hamcrest-core": {
+            "locked": "1.3",
+            "transitive": [
+                "junit:junit"
             ]
         },
         "org.hdrhistogram:HdrHistogram": {
@@ -615,7 +639,8 @@
                 "org.openrewrite:rewrite-maven",
                 "org.openrewrite:rewrite-properties",
                 "org.openrewrite:rewrite-xml",
-                "org.openrewrite:rewrite-yaml"
+                "org.openrewrite:rewrite-yaml",
+                "org.rnorth.duct-tape:duct-tape"
             ]
         },
         "org.kohsuke:wordnet-random-name": {
@@ -631,44 +656,45 @@
             ]
         },
         "org.openrewrite.gradle.tooling:model": {
-            "locked": "1.1.4",
+            "locked": "1.5.1",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite:rewrite-gradle"
             ]
         },
         "org.openrewrite.meta:rewrite-analysis": {
-            "locked": "2.2.1",
+            "locked": "2.2.3",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-static-analysis"
             ]
         },
         "org.openrewrite.recipe:rewrite-java-dependencies": {
-            "locked": "1.0.8",
+            "locked": "1.4.0",
             "transitive": [
+                "org.openrewrite.recipe:rewrite-logging-frameworks",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-testing-frameworks"
             ]
         },
         "org.openrewrite.recipe:rewrite-logging-frameworks": {
-            "locked": "2.0.3",
+            "locked": "2.4.2",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom"
             ]
         },
         "org.openrewrite.recipe:rewrite-recipe-bom": {
-            "locked": "2.2.1"
+            "locked": "2.6.3"
         },
         "org.openrewrite.recipe:rewrite-static-analysis": {
-            "locked": "1.2.0",
+            "locked": "1.2.2",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-testing-frameworks"
             ]
         },
         "org.openrewrite.recipe:rewrite-testing-frameworks": {
-            "locked": "2.0.10",
+            "locked": "2.3.1",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom"
             ]
@@ -680,7 +706,7 @@
             ]
         },
         "org.openrewrite:rewrite-core": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-gradle",
@@ -694,7 +720,7 @@
             ]
         },
         "org.openrewrite:rewrite-gradle": {
-            "locked": "8.4.0",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
@@ -702,7 +728,7 @@
             ]
         },
         "org.openrewrite:rewrite-groovy": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
@@ -711,7 +737,7 @@
             ]
         },
         "org.openrewrite:rewrite-java": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-logging-frameworks",
@@ -727,14 +753,14 @@
             ]
         },
         "org.openrewrite:rewrite-java-11": {
-            "locked": "8.4.0",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom"
             ]
         },
         "org.openrewrite:rewrite-java-17": {
-            "locked": "8.4.0",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-logging-frameworks",
@@ -743,32 +769,31 @@
             ]
         },
         "org.openrewrite:rewrite-java-8": {
-            "locked": "8.4.0",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom"
             ]
         },
         "org.openrewrite:rewrite-kotlin": {
-            "locked": "1.9.1",
+            "locked": "1.11.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-static-analysis"
             ]
         },
         "org.openrewrite:rewrite-maven": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-java-dependencies",
-                "org.openrewrite.recipe:rewrite-logging-frameworks",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-testing-frameworks",
                 "org.openrewrite:rewrite-gradle"
             ]
         },
         "org.openrewrite:rewrite-properties": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-gradle",
@@ -776,13 +801,14 @@
             ]
         },
         "org.openrewrite:rewrite-templating": {
-            "locked": "1.4.1",
+            "locked": "1.4.4",
             "transitive": [
+                "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-static-analysis"
             ]
         },
         "org.openrewrite:rewrite-xml": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
@@ -791,7 +817,7 @@
             ]
         },
         "org.openrewrite:rewrite-yaml": {
-            "locked": "8.13.1",
+            "locked": "8.14.0",
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
@@ -828,6 +854,26 @@
             "transitive": [
                 "io.quarkus.gizmo:gizmo",
                 "org.openrewrite:rewrite-java"
+            ]
+        },
+        "org.rnorth.duct-tape:duct-tape": {
+            "locked": "1.0.8",
+            "transitive": [
+                "org.testcontainers:testcontainers"
+            ]
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.36",
+            "transitive": [
+                "com.github.docker-java:docker-java-api",
+                "com.github.docker-java:docker-java-transport-zerodep",
+                "org.testcontainers:testcontainers"
+            ]
+        },
+        "org.testcontainers:testcontainers": {
+            "locked": "1.19.3",
+            "transitive": [
+                "org.openrewrite.recipe:rewrite-testing-frameworks"
             ]
         },
         "org.xerial.snappy:snappy-java": {
