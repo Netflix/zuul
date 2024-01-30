@@ -108,6 +108,7 @@ dependencies {
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.6.3"))
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis")
 }
 
 rewrite {
