@@ -1595,7 +1595,6 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-infix"
@@ -1608,10 +1607,9 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.21.1",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
@@ -1622,7 +1620,7 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.1.2-jre",
+            "locked": "32.1.3-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -1635,12 +1633,6 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery",
                 "org.wiremock:wiremock"
-            ]
-        },
-        "com.google.guava:guava-parent": {
-            "locked": "32.1.2-jre",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -1835,7 +1827,7 @@
             ]
         },
         "commons-io:commons-io": {
-            "locked": "2.13.0",
+            "locked": "2.15.0",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
@@ -2232,10 +2224,9 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.37.0",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
@@ -2246,21 +2237,21 @@
             ]
         },
         "org.eclipse.jetty.http2:http2-common": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-hpack": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-common",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
@@ -2273,7 +2264,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-client",
                 "org.eclipse.jetty:jetty-bom",
@@ -2282,21 +2273,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-server",
                 "org.eclipse.jetty:jetty-bom",
@@ -2304,20 +2295,20 @@
             ]
         },
         "org.eclipse.jetty:jetty-bom": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-proxy"
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -2327,7 +2318,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-alpn-client",
@@ -2340,21 +2331,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-proxy": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-alpn-server",
@@ -2364,7 +2355,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp",
@@ -2372,14 +2363,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlets": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -2391,14 +2382,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-webapp": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-xml": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp"
@@ -2543,7 +2534,7 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.6",
             "transitive": [
                 "com.google.truth:truth",
                 "org.openjdk.jmh:jmh-generator-asm",
@@ -2593,7 +2584,7 @@
             ]
         },
         "org.wiremock:wiremock": {
-            "locked": "3.2.0"
+            "locked": "3.3.1"
         },
         "org.xmlunit:xmlunit-core": {
             "locked": "2.9.1",
@@ -3349,15 +3340,13 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.netflix.eureka:eureka-client"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.21.1",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
@@ -3368,18 +3357,12 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.1.2-jre",
+            "locked": "32.1.3-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
                 "com.netflix.servo:servo-core",
                 "org.wiremock:wiremock"
-            ]
-        },
-        "com.google.guava:guava-parent": {
-            "locked": "32.1.2-jre",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -3398,8 +3381,7 @@
         "com.google.j2objc:j2objc-annotations": {
             "locked": "2.8",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "com.google.truth:truth": {
@@ -3547,7 +3529,7 @@
             ]
         },
         "commons-io:commons-io": {
-            "locked": "2.13.0",
+            "locked": "2.15.0",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
@@ -3790,29 +3772,28 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.37.0",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
         "org.eclipse.jetty.http2:http2-common": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-hpack": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-common",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
@@ -3825,7 +3806,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-client",
                 "org.eclipse.jetty:jetty-bom",
@@ -3834,21 +3815,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-server",
                 "org.eclipse.jetty:jetty-bom",
@@ -3856,20 +3837,20 @@
             ]
         },
         "org.eclipse.jetty:jetty-bom": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-proxy"
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -3879,7 +3860,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-alpn-client",
@@ -3892,21 +3873,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-proxy": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-alpn-server",
@@ -3916,7 +3897,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp",
@@ -3924,14 +3905,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlets": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -3943,14 +3924,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-webapp": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-xml": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp"
@@ -4064,7 +4045,7 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.6",
             "transitive": [
                 "com.google.truth:truth",
                 "org.wiremock:wiremock"
@@ -4099,7 +4080,7 @@
             ]
         },
         "org.wiremock:wiremock": {
-            "locked": "3.2.0"
+            "locked": "3.3.1"
         },
         "org.xmlunit:xmlunit-core": {
             "locked": "2.9.1",
@@ -4281,7 +4262,6 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-infix"
@@ -4294,10 +4274,9 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.21.1",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
@@ -4308,7 +4287,7 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.1.2-jre",
+            "locked": "32.1.3-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -4321,12 +4300,6 @@
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery",
                 "org.wiremock:wiremock"
-            ]
-        },
-        "com.google.guava:guava-parent": {
-            "locked": "32.1.2-jre",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -4521,7 +4494,7 @@
             ]
         },
         "commons-io:commons-io": {
-            "locked": "2.13.0",
+            "locked": "2.15.0",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
@@ -4911,10 +4884,9 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.37.0",
             "transitive": [
                 "com.google.guava:guava",
-                "com.google.guava:guava-parent",
                 "com.google.truth:truth"
             ]
         },
@@ -4925,21 +4897,21 @@
             ]
         },
         "org.eclipse.jetty.http2:http2-common": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-hpack": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-common",
                 "org.eclipse.jetty:jetty-bom"
             ]
         },
         "org.eclipse.jetty.http2:http2-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
@@ -4952,7 +4924,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-client",
                 "org.eclipse.jetty:jetty-bom",
@@ -4961,21 +4933,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-java-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-alpn-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-alpn-java-server",
                 "org.eclipse.jetty:jetty-bom",
@@ -4983,20 +4955,20 @@
             ]
         },
         "org.eclipse.jetty:jetty-bom": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-client": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-proxy"
             ]
         },
         "org.eclipse.jetty:jetty-http": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -5006,7 +4978,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-io": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-alpn-client",
@@ -5019,21 +4991,21 @@
             ]
         },
         "org.eclipse.jetty:jetty-proxy": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-security": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-servlet"
             ]
         },
         "org.eclipse.jetty:jetty-server": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-server",
                 "org.eclipse.jetty:jetty-alpn-server",
@@ -5043,7 +5015,7 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlet": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp",
@@ -5051,14 +5023,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-servlets": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-util": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty.http2:http2-hpack",
                 "org.eclipse.jetty:jetty-bom",
@@ -5070,14 +5042,14 @@
             ]
         },
         "org.eclipse.jetty:jetty-webapp": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.wiremock:wiremock"
             ]
         },
         "org.eclipse.jetty:jetty-xml": {
-            "locked": "11.0.16",
+            "locked": "11.0.18",
             "transitive": [
                 "org.eclipse.jetty:jetty-bom",
                 "org.eclipse.jetty:jetty-webapp"
@@ -5198,7 +5170,7 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.6",
             "transitive": [
                 "com.google.truth:truth",
                 "org.wiremock:wiremock"
@@ -5247,7 +5219,7 @@
             ]
         },
         "org.wiremock:wiremock": {
-            "locked": "3.2.0"
+            "locked": "3.3.1"
         },
         "org.xmlunit:xmlunit-core": {
             "locked": "2.9.1",
