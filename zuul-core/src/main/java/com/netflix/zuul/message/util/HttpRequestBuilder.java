@@ -101,6 +101,11 @@ public final class HttpRequestBuilder {
         return this;
     }
 
+    public HttpRequestBuilder withPort(int port) {
+        this.port = port;
+        return this;
+    }
+
     /**
      * Used to build a request with overridden values
      *
