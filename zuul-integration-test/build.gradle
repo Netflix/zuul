@@ -7,7 +7,7 @@ dependencies {
             project(":zuul-discovery")
 
     implementation "io.netty:netty-transport-classes-epoll"
-    implementation "com.netflix.eureka:eureka-client:1.10.18"
+    implementation "com.netflix.eureka:eureka-client:2.0.1"
     implementation "com.netflix.ribbon:ribbon-eureka:$versions_ribbon"
     implementation "com.netflix.ribbon:ribbon-loadbalancer:$versions_ribbon"
     implementation 'commons-configuration:commons-configuration:1.10'

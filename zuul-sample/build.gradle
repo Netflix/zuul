@@ -6,7 +6,7 @@ dependencies {
     implementation project(":zuul-core"),
             project(":zuul-groovy"),
             project(":zuul-guice")
-    implementation "com.netflix.eureka:eureka-client:1.10.18"
+    implementation "com.netflix.eureka:eureka-client:2.0.1"
     implementation 'commons-configuration:commons-configuration:1.10'
     annotationProcessor project(":zuul-processor")
 

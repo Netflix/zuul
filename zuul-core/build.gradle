@@ -20,7 +20,7 @@ dependencies {
     api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
     api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
 
-    api "com.netflix.eureka:eureka-client:1.10.18"
+    api "com.netflix.eureka:eureka-client:2.0.1"
     api "io.reactivex:rxjava:1.3.8"
     api platform("io.netty:netty-bom:${versions_netty}")
 

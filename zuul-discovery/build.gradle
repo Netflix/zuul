@@ -11,7 +11,7 @@ dependencies {
     implementation "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
 
     // Eureka
-    implementation "com.netflix.eureka:eureka-client:1.10.18"
+    implementation "com.netflix.eureka:eureka-client:2.0.1"
 
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine,
