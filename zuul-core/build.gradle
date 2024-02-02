@@ -11,7 +11,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
     api 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
 
-    api "com.netflix.archaius:archaius-core:0.7.7"
+    api "com.netflix.archaius:archaius-core:0.7.10"
     api "com.netflix.spectator:spectator-api:latest.release"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
