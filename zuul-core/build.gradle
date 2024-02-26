@@ -41,10 +41,11 @@ dependencies {
     // We are using the long-form dependency syntax here because we want to
     // explicitly set the classifier. We do not have the version number so we can't use
     // Gradle's short-form dependency notation.
-    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "linux-x86_64" )
-    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "linux-aarch_64" )
-    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-x86_64" )
-    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-aarch_64" )
+    // TODO(gbunney): unpin tcnative version to inherit from netty-bom after 4.1.108.Final+ is released
+    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "linux-x86_64", version: "2.0.63.Final")
+    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "linux-aarch_64", version: "2.0.63.Final")
+    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-x86_64", version: "2.0.63.Final")
+    runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-aarch_64", version: "2.0.63.Final")
 
     implementation 'io.perfmark:perfmark-api:0.26.0'
     implementation 'javax.inject:javax.inject:1'

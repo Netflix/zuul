@@ -1292,13 +1292,13 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
@@ -2000,13 +2000,13 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
@@ -3097,13 +3097,13 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.61.Final",
+            "locked": "2.0.63.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
