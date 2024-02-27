@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.message.http;
 
-import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.cookie.Cookie;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,16 +29,11 @@ import java.util.Map;
  * Time: 12:04 AM
  */
 public class Cookies {
-    private Map<String, List<Cookie>> map = new HashMap<>();
-    private List<Cookie> all = new ArrayList<>();
+    private final Map<String, List<Cookie>> map = new HashMap<>();
+    private final List<Cookie> all = new ArrayList<>();
 
     public void add(Cookie cookie) {
-        List<Cookie> existing = map.get(cookie.getName());
-        if (existing == null) {
-            existing = new ArrayList<>();
-            map.put(cookie.getName(), existing);
-        }
-        existing.add(cookie);
+        map.computeIfAbsent(cookie.name(), k -> new ArrayList<>(1)).add(cookie);
         all.add(cookie);
     }
 
@@ -52,7 +47,7 @@ public class Cookies {
 
     public Cookie getFirst(String name) {
         List<Cookie> found = map.get(name);
-        if (found == null || found.size() == 0) {
+        if (found == null || found.isEmpty()) {
             return null;
         }
         return found.get(0);
@@ -62,7 +57,7 @@ public class Cookies {
         Cookie c = getFirst(name);
         String value;
         if (c != null) {
-            value = c.getValue();
+            value = c.value();
         } else {
             value = null;
         }
