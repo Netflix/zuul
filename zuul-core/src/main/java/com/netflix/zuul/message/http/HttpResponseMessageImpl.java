@@ -23,10 +23,10 @@ import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.ServerCookieEncoder;
+import io.netty.handler.codec.http.cookie.ClientCookieDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,24 +179,19 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
     @Override
     public Cookies parseSetCookieHeader(String setCookieValue) {
         Cookies cookies = new Cookies();
-        for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
-            cookies.add(cookie);
-        }
+        cookies.add(ClientCookieDecoder.STRICT.decode(setCookieValue));
         return cookies;
     }
 
     @Override
     public boolean hasSetCookieWithName(String cookieName) {
-        boolean has = false;
         for (String setCookieValue : getHeaders().getAll(HttpHeaderNames.SET_COOKIE)) {
-            for (Cookie cookie : CookieDecoder.decode(setCookieValue)) {
-                if (cookie.getName().equalsIgnoreCase(cookieName)) {
-                    has = true;
-                    break;
-                }
+            Cookie cookie = ClientCookieDecoder.STRICT.decode(setCookieValue);
+            if (cookie.name().equalsIgnoreCase(cookieName)) {
+                return true;
             }
         }
-        return has;
+        return false;
     }
 
     @Override
@@ -230,12 +225,12 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
 
     @Override
     public void addSetCookie(Cookie cookie) {
-        getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
+        getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
     }
 
     @Override
     public void setSetCookie(Cookie cookie) {
-        getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
+        getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
     }
 
     @Override
