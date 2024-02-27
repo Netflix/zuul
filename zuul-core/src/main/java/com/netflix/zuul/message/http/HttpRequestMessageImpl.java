@@ -27,9 +27,9 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.util.HttpUtils;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -389,7 +388,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
                     aCookieHeader = cleanCookieHeader(aCookieHeader);
                 }
 
-                Set<Cookie> decoded = CookieDecoder.decode(aCookieHeader, false);
+                List<Cookie> decoded = ServerCookieDecoder.LAX.decodeAll(aCookieHeader);
                 for (Cookie cookie : decoded) {
                     cookies.add(cookie);
                 }

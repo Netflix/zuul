@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.message.http;
 
-import io.netty.handler.codec.http.Cookie;
+import io.netty.handler.codec.http.cookie.Cookie;
 
 /**
  * User: Mike Smith

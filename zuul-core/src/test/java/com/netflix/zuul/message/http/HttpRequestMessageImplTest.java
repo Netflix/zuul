@@ -22,6 +22,7 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import io.netty.channel.local.LocalAddress;
+import io.netty.handler.codec.http.cookie.Cookie;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -790,5 +792,30 @@ class HttpRequestMessageImplTest {
                 true);
 
         assertEquals(message.getClientDestinationPort(), Optional.of(443));
+    }
+
+    @Test
+    public void duplicateCookieNames() {
+        Headers headers = new Headers();
+        headers.add("cookie", "k=v1;k=v2");
+        HttpRequestMessageImpl message = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                new HttpQueryParams(),
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new InetSocketAddress("api.netflix.com", 443),
+                true);
+        Cookies cookies = message.parseCookies();
+        assertEquals(2, cookies.getAll().size());
+        List<Cookie> kCookies = cookies.get("k");
+        assertEquals(2, kCookies.size());
+        assertEquals("v1", kCookies.get(0).value());
+        assertEquals("v2", kCookies.get(1).value());
     }
 }

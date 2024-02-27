@@ -22,8 +22,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.Cookie;
-import io.netty.handler.codec.http.CookieDecoder;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -33,10 +31,12 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Author: Susheel Aroskar
@@ -114,8 +114,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         final Cookies cookies = new Cookies();
         final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
-            final Set<Cookie> decoded = CookieDecoder.decode(cookieStr, false);
-            decoded.forEach(cookie -> cookies.add(cookie));
+            List<Cookie> decoded = ServerCookieDecoder.LAX.decodeAll(cookieStr);
+            decoded.forEach(cookies::add);
         }
         return cookies;
     }
