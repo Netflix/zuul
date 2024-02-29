@@ -45,8 +45,7 @@ public class Http2MetricsChannelHandlers {
         return outbound;
     }
 
-    protected static void incrementErrorCounter(
-            Registry registry, String counterName, String metricId, Http2Exception h2e) {
+    protected void incrementErrorCounter(Registry registry, String counterName, String metricId, Http2Exception h2e) {
         String h2Error = h2e.error() != null ? h2e.error().name() : "NA";
         String exceptionName = h2e.getClass().getSimpleName();
 
@@ -54,7 +53,7 @@ public class Http2MetricsChannelHandlers {
                 .increment();
     }
 
-    protected static void incrementCounter(Registry registry, String counterName, String metricId, Http2Frame frame) {
+    protected void incrementCounter(Registry registry, String counterName, String metricId, Http2Frame frame) {
         long errorCode;
         if (frame instanceof Http2ResetFrame) {
             errorCode = ((Http2ResetFrame) frame).errorCode();
@@ -69,7 +68,7 @@ public class Http2MetricsChannelHandlers {
     }
 
     @ChannelHandler.Sharable
-    private static class Inbound extends ChannelInboundHandlerAdapter {
+    private class Inbound extends ChannelInboundHandlerAdapter {
         private final Registry registry;
         private final String metricId;
         private final String frameCounterName;
@@ -117,7 +116,7 @@ public class Http2MetricsChannelHandlers {
     }
 
     @ChannelHandler.Sharable
-    private static class Outbound extends ChannelOutboundHandlerAdapter {
+    private class Outbound extends ChannelOutboundHandlerAdapter {
         private final Registry registry;
         private final String metricId;
         private final String frameCounterName;
