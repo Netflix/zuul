@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import rx.Observable;
 
 /**
  * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing class named BaseFilterTest.
@@ -79,12 +80,12 @@ class BaseFilterTest {
     @Test
     void validateDefaultConcurrencyLimit() {
         final int[] limit = {0};
-        class ConcInboundFilter extends BaseSyncFilter {
+        class ConcInboundFilter extends BaseFilter {
 
             @Override
-            public ZuulMessage apply(ZuulMessage input) {
+            public Observable applyAsync(ZuulMessage input) {
                 limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
-                return null;
+                return Observable.just("Done");
             }
 
             @Override
@@ -97,7 +98,7 @@ class BaseFilterTest {
                 return true;
             }
         }
-        new ConcInboundFilter().apply(new ZuulMessageImpl(new SessionContext(), new Headers()));
+        new ConcInboundFilter().applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()));
         Truth.assertThat(limit[0]).isEqualTo(4000);
     }
 
@@ -108,12 +109,12 @@ class BaseFilterTest {
         configuration.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
         final int[] limit = {0};
 
-        class ConcInboundFilter extends BaseSyncFilter {
+        class ConcInboundFilter extends BaseFilter {
 
             @Override
-            public ZuulMessage apply(ZuulMessage input) {
+            public Observable applyAsync(ZuulMessage input) {
                 limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
-                return null;
+                return Observable.just("Done");
             }
 
             @Override
@@ -126,7 +127,7 @@ class BaseFilterTest {
                 return true;
             }
         }
-        new ConcInboundFilter().apply(new ZuulMessageImpl(new SessionContext(), new Headers()));
+        new ConcInboundFilter().applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()));
         Truth.assertThat(limit[0]).isEqualTo(7000);
     }
 }
