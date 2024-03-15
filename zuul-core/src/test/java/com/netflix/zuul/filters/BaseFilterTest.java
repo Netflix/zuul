@@ -15,19 +15,24 @@
  */
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.message.ZuulMessage;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import com.google.common.truth.Truth;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
+import com.netflix.zuul.message.ZuulMessageImpl;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing
- * class named BaseFilterTest.
+ * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing class named BaseFilterTest.
  */
+@RunWith(MockitoJUnitRunner.class)
 class BaseFilterTest {
 
     @Mock
@@ -39,14 +44,10 @@ class BaseFilterTest {
     @Mock
     private ZuulMessage req;
 
-    @BeforeEach
-    void before() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
     void testShouldFilter() {
         class TestZuulFilter extends BaseSyncFilter {
+
             @Override
             public int filterOrder() {
                 return 0;
@@ -73,5 +74,59 @@ class BaseFilterTest {
 
         when(tf1.shouldFilter(req)).thenReturn(true);
         when(tf2.shouldFilter(req)).thenReturn(false);
+    }
+
+    @Test
+    void validateDefaultConcurrencyLimit() {
+        final int[] limit = {0};
+        class ConcInboundFilter extends BaseSyncFilter {
+
+            @Override
+            public ZuulMessage apply(ZuulMessage input) {
+                limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
+                return null;
+            }
+
+            @Override
+            public FilterType filterType() {
+                return FilterType.INBOUND;
+            }
+
+            @Override
+            public boolean shouldFilter(ZuulMessage msg) {
+                return true;
+            }
+        }
+        new ConcInboundFilter().apply(new ZuulMessageImpl(new SessionContext(), new Headers()));
+        Truth.assertThat(limit[0]).isEqualTo(4000);
+    }
+
+    @Test
+    void validateFilterConcurrencyLimitOverride() {
+        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
+        configuration.setProperty("zuul.filter.concurrency.limit.default", 7000);
+        configuration.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
+        final int[] limit = {0};
+
+        class ConcInboundFilter extends BaseSyncFilter {
+
+            @Override
+            public ZuulMessage apply(ZuulMessage input) {
+                limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
+                return null;
+            }
+
+            @Override
+            public FilterType filterType() {
+                return FilterType.INBOUND;
+            }
+
+            @Override
+            public boolean shouldFilter(ZuulMessage msg) {
+                return true;
+            }
+        }
+        new ConcInboundFilter().apply(new ZuulMessageImpl(new SessionContext(), new Headers()));
+        Truth.assertThat(limit[0]).isEqualTo(7000);
     }
 }
