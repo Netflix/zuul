@@ -24,6 +24,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,19 +32,19 @@ import org.mockito.junit.MockitoJUnitRunner;
 import rx.Observable;
 
 /**
- * Tests for {@link BaseFilter}.   Currently named BaseFilter2Test as there is an existing class named BaseFilterTest.
+ * Tests for {@link BaseFilter}
  */
 @RunWith(MockitoJUnitRunner.class)
 class BaseFilterTest {
 
     @Mock
-    private BaseFilter f1;
-
-    @Mock
-    private BaseFilter f2;
-
-    @Mock
     private ZuulMessage req;
+    private final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+
+    @BeforeEach
+    public void tearDown() {
+        config.clear();
+    }
 
     @Test
     void testShouldFilter() {
@@ -84,7 +85,7 @@ class BaseFilterTest {
 
             @Override
             public Observable applyAsync(ZuulMessage input) {
-                limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
+                limit[0] = calculateConcurency();
                 return Observable.just("Done");
             }
 
@@ -103,17 +104,16 @@ class BaseFilterTest {
     }
 
     @Test
-    void validateFilterConcurrencyLimitOverride() {
-        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
-        configuration.setProperty("zuul.filter.concurrency.limit.default", 7000);
-        configuration.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
+    void validateFilterGlobalConcurrencyLimitOverride() {
+        config.setProperty("zuul.filter.concurrency.limit.default", 7000);
+        config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
         final int[] limit = {0};
 
         class ConcInboundFilter extends BaseFilter {
 
             @Override
             public Observable applyAsync(ZuulMessage input) {
-                limit[0] = Math.max(filterConcurrencyCustom.get(), filterConcurrencyDefault.get());
+                limit[0] = calculateConcurency();
                 return Observable.just("Done");
             }
 
@@ -129,5 +129,33 @@ class BaseFilterTest {
         }
         new ConcInboundFilter().applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()));
         Truth.assertThat(limit[0]).isEqualTo(7000);
+    }
+
+    @Test
+    void validateFilterSpecificConcurrencyLimitOverride() {
+        config.setProperty("zuul.filter.concurrency.limit.default", 7000);
+        config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4300);
+        final int[] limit = {0};
+
+        class ConcInboundFilter extends BaseFilter {
+
+            @Override
+            public Observable applyAsync(ZuulMessage input) {
+                limit[0] = calculateConcurency();
+                return Observable.just("Done");
+            }
+
+            @Override
+            public FilterType filterType() {
+                return FilterType.INBOUND;
+            }
+
+            @Override
+            public boolean shouldFilter(ZuulMessage msg) {
+                return true;
+            }
+        }
+        new ConcInboundFilter().applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()));
+        Truth.assertThat(limit[0]).isEqualTo(4300);
     }
 }
