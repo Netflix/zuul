@@ -39,7 +39,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     /**
      * NOTE that each eventloop has its own connection pool per host, and this is applied per event-loop.
      */
-    private static final IClientConfigKey<Integer> PER_SERVER_WATERLINE =
+    public static final IClientConfigKey<Integer> PER_SERVER_WATERLINE =
             new CommonClientConfigKey<>("PerServerWaterline", DEFAULT_PER_SERVER_WATERLINE) {};
 
     private final OriginName originName;
