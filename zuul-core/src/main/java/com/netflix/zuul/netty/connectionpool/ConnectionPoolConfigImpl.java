@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.CachedDynamicBooleanProperty;
@@ -33,12 +34,18 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     private static final int DEFAULT_CONNECT_TIMEOUT = 500;
     private static final int DEFAULT_IDLE_TIMEOUT = 60000;
     private static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
+    private static final int DEFAULT_PER_SERVER_WATERLINE = 4;
+
+    /**
+     * NOTE that each eventloop has its own connection pool per host, and this is applied per event-loop.
+     */
+    public static final IClientConfigKey<Integer> PER_SERVER_WATERLINE =
+            new CommonClientConfigKey<>("PerServerWaterline", DEFAULT_PER_SERVER_WATERLINE) {};
 
     private final OriginName originName;
     private final IClientConfig clientConfig;
 
     private final CachedDynamicIntProperty MAX_REQUESTS_PER_CONNECTION;
-    private final CachedDynamicIntProperty PER_SERVER_WATERLINE;
 
     private final CachedDynamicBooleanProperty SOCKET_KEEP_ALIVE;
     private final CachedDynamicBooleanProperty TCP_NO_DELAY;
@@ -53,10 +60,6 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
         this.MAX_REQUESTS_PER_CONNECTION =
                 new CachedDynamicIntProperty(niwsClientName + ".netty.client.maxRequestsPerConnection", 1000);
-
-        // NOTE that the each eventloop has it's own connection pool per host, and this is applied per event-loop.
-        this.PER_SERVER_WATERLINE =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.perServerWaterline", 4);
 
         this.SOCKET_KEEP_ALIVE = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
         this.TCP_NO_DELAY = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
@@ -92,7 +95,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     @Override
     public int perServerWaterline() {
-        return PER_SERVER_WATERLINE.get();
+        return clientConfig.getPropertyAsInteger(PER_SERVER_WATERLINE, DEFAULT_PER_SERVER_WATERLINE);
     }
 
     @Override
