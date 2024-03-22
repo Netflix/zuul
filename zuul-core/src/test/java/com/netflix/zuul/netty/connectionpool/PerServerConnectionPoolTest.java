@@ -20,7 +20,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfigKey.Keys;
-import com.netflix.config.ConfigurationManager;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
@@ -42,7 +41,6 @@ import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.Promise;
-import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -290,27 +288,19 @@ class PerServerConnectionPoolTest {
     void releaseFromPoolAboveHighWaterMark() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
 
-        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
-        String propertyName = "whatever.netty.client.perServerWaterline";
-
+        clientConfig.set(ConnectionPoolConfigImpl.PER_SERVER_WATERLINE, 0);
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
 
         PooledConnection connection = promise.sync().get();
-        try {
-            configuration.setProperty(propertyName, 0);
-            CLIENT_EVENT_LOOP
-                    .submit(() -> {
-                        assertFalse(pool.release(connection));
-                        assertEquals(1, closeAboveHighWaterMarkCounter.count());
-                        assertFalse(connection.isInPool());
-                    })
-                    .sync();
-            assertTrue(
-                    connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS),
-                    "connection should have been closed");
-        } finally {
-            configuration.setProperty(propertyName, 4);
-        }
+        CLIENT_EVENT_LOOP
+                .submit(() -> {
+                    assertFalse(pool.release(connection));
+                    assertEquals(1, closeAboveHighWaterMarkCounter.count());
+                    assertFalse(connection.isInPool());
+                })
+                .sync();
+        assertTrue(
+                connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS), "connection should have been closed");
     }
 
     @Test
