@@ -115,13 +115,17 @@ public final class AccessLogChannelHandler {
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
 
-            if (msg instanceof HttpResponse) {
-                state.response = (HttpResponse) msg;
-                state.responseBodySize = 0;
-            }
+            if (null == state) {
+                LOG.warn("RequestState is null");
+            } else {
+                if (msg instanceof HttpResponse) {
+                    state.response = (HttpResponse) msg;
+                    state.responseBodySize = 0;
+                }
 
-            if (msg instanceof HttpContent) {
-                state.responseBodySize += ((HttpContent) msg).content().readableBytes();
+                if (msg instanceof HttpContent) {
+                    state.responseBodySize += ((HttpContent) msg).content().readableBytes();
+                }
             }
 
             super.write(ctx, msg, promise);
