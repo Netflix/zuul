@@ -58,7 +58,7 @@ class PushAuthHandlerTest {
         }
 
         @Override
-        protected PushUserAuth doAuth(FullHttpRequest req) {
+        protected PushUserAuth doAuth(FullHttpRequest req, ChannelHandlerContext ctx) {
             return null;
         }
     }
