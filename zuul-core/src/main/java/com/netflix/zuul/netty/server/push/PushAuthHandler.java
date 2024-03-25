@@ -87,7 +87,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
                 // client auth will happen later, continue with WebSocket upgrade handshake
                 ctx.fireChannelRead(req.retain());
             } else {
-                final PushUserAuth authEvent = doAuth(req);
+                final PushUserAuth authEvent = doAuth(req, ctx);
                 if (authEvent.isSuccess()) {
                     ctx.fireChannelRead(req.retain()); // continue with WebSocket upgrade handshake
                     ctx.fireUserEventTriggered(authEvent);
@@ -125,5 +125,5 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
      */
     protected abstract boolean isDelayedAuth(FullHttpRequest req, ChannelHandlerContext ctx);
 
-    protected abstract PushUserAuth doAuth(FullHttpRequest req);
+    protected abstract PushUserAuth doAuth(FullHttpRequest req, ChannelHandlerContext ctx);
 }

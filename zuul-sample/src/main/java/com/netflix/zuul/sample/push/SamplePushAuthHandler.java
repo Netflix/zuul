@@ -49,7 +49,7 @@ public class SamplePushAuthHandler extends PushAuthHandler {
     }
 
     @Override
-    protected PushUserAuth doAuth(FullHttpRequest req) {
+    protected PushUserAuth doAuth(FullHttpRequest req, ChannelHandlerContext ctx) {
         final Cookies cookies = parseCookies(req);
         for (final Cookie c : cookies.getAll()) {
             if (c.name().equals("userAuthCookie")) {
