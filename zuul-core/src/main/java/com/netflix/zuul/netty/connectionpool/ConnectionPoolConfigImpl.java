@@ -42,6 +42,9 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     public static final IClientConfigKey<Integer> PER_SERVER_WATERLINE =
             new CommonClientConfigKey<>("PerServerWaterline", DEFAULT_PER_SERVER_WATERLINE) {};
 
+    public static final IClientConfigKey<Boolean> CLOSE_ON_CIRCUIT_BREAKER =
+            new CommonClientConfigKey<>("CloseOnCircuitBreaker", true) {};
+
     private final OriginName originName;
     private final IClientConfig clientConfig;
 
@@ -147,5 +150,10 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     @Override
     public boolean useIPAddrForServer() {
         return clientConfig.getPropertyAsBoolean(IClientConfigKey.Keys.UseIPAddrForServer, true);
+    }
+
+    @Override
+    public boolean isCloseOnCircuitBreakerEnabled() {
+        return clientConfig.getPropertyAsBoolean(CLOSE_ON_CIRCUIT_BREAKER, true);
     }
 }

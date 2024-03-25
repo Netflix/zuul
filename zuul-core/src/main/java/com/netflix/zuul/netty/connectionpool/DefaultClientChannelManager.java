@@ -235,7 +235,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                         conn.getChannel().id());
             }
 
-        } else if (discoveryResult.isCircuitBreakerTripped()) {
+        } else if (connPoolConfig.isCloseOnCircuitBreakerEnabled() && discoveryResult.isCircuitBreakerTripped()) {
             LOG.debug(
                     "[{}] closing conn, server circuit breaker tripped",
                     conn.getChannel().id());
