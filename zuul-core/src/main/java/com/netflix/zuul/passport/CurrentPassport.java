@@ -400,7 +400,7 @@ public class CurrentPassport {
                     Matcher stateMatch = ptnState.matcher(stateStr);
                     if (stateMatch.matches()) {
                         String stateName = stateMatch.group(2);
-                        if (stateName.equals("NOW")) {
+                        if ("NOW".equals(stateName)) {
                             long startTime = passport.history.size() > 0 ? passport.firstTime() : 0;
                             long now = Long.parseLong(stateMatch.group(1)) + startTime;
                             ticker.setNow(now);
