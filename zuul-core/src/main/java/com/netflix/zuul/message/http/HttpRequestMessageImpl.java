@@ -64,6 +64,9 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
             new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
 
+    private static final CachedDynamicBooleanProperty CACHE_ORIGINAL_HOST =
+            new CachedDynamicBooleanProperty("zuul.HttpRequestMessage.original.host.cache", false);
+
     private static final List<Pattern> RE_STRIP;
 
     static {
@@ -97,6 +100,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private String reconstructedUri = null;
     private String pathAndQuery = null;
     private String infoForLogging = null;
+    private String originalHost = null;
 
     private static final SocketAddress UNDEFINED_CLIENT_DEST_ADDRESS = new SocketAddress() {
         @Override
@@ -510,10 +514,21 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     @Override
     public String getOriginalHost() {
         try {
-            return getOriginalHost(getHeaders(), getServerName());
+            if (!CACHE_ORIGINAL_HOST.get()) {
+                return generateOriginalHost(getHeaders(), getServerName());
+            }
+
+            if (originalHost == null) {
+                originalHost = generateOriginalHost(getHeaders(), getServerName());
+            }
+            return originalHost;
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    String generateOriginalHost(Headers headers, String serverName) throws URISyntaxException {
+        return getOriginalHost(headers, serverName);
     }
 
     @VisibleForTesting

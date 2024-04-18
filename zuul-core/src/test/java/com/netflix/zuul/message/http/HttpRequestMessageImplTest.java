@@ -306,6 +306,51 @@ class HttpRequestMessageImplTest {
     }
 
     @Test
+    void testGetOriginalHost_immutable() throws Exception {
+        config.setProperty("zuul.HttpRequestMessage.original.host.cache", true);
+
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "blah.netflix.com");
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                queryParams,
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new SocketAddress() {},
+                true);
+
+        // Check it's the same value 2nd time.
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                queryParams,
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new SocketAddress() {},
+                true);
+        request = spy(request);
+        when(request.generateOriginalHost(headers, "localhost")).thenReturn("testOriginalHost");
+        assertEquals("testOriginalHost", request.getOriginalHost());
+        assertEquals("testOriginalHost", request.getOriginalHost());
+        verify(request).generateOriginalHost(headers, "localhost");
+    }
+
+    @Test
     void testGetOriginalHost() {
         HttpQueryParams queryParams = new HttpQueryParams();
         Headers headers = new Headers();
