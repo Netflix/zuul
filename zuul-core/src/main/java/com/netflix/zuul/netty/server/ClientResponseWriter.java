@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.NoopRegistry;
@@ -269,6 +270,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 if ((requestCompleteHandler != null) && (zuulRequest != null)) {
                     requestCompleteHandler.handle(zuulRequest.getInboundRequest(), zuulResponse);
                 }
+                zuulResponse = null;
             }
         } catch (Throwable ex) {
             logger.error("Error in RequestCompleteHandler.", ex);
@@ -313,5 +315,10 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         ctx.close();
+    }
+
+    @VisibleForTesting
+    HttpResponseMessage getZuulResponse() {
+        return zuulResponse;
     }
 }

@@ -16,20 +16,37 @@
 
 package com.netflix.zuul.netty.server;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.zuul.BasicRequestCompleteHandler;
+import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.ReferenceCountUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class ClientResponseWriterTest {
@@ -80,5 +97,45 @@ class ClientResponseWriterTest {
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isTrue();
+    }
+
+    @Test
+    public void clearReferenceOnComplete() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+
+        AtomicReference<HttpResponse> nettyResp = new AtomicReference<>();
+        channel.pipeline().addFirst(new ChannelOutboundHandlerAdapter() {
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                if(msg instanceof HttpResponse response) {
+                    nettyResp.set(response);
+                }
+                ReferenceCountUtil.safeRelease(msg);
+            }
+        });
+
+
+        SessionContext ctx = new SessionContext();
+        HttpRequestMessage request = new HttpRequestBuilder(ctx).build();
+        request.storeInboundRequest();
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(ctx, request, 200);
+        response.setHeaders(new Headers());
+
+        channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
+        DefaultHttpRequest nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
+
+        channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
+        channel.writeInbound(response);
+
+        HttpResponseMessage zuulResponse = responseWriter.getZuulResponse();
+        assertNotNull(zuulResponse);
+        assertNotNull(nettyResp.get());
+
+        channel.pipeline()
+                .fireUserEventTriggered(new HttpLifecycleChannelHandler.CompleteEvent(
+                        HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE, null, nettyResp.get()));
+        assertNull(responseWriter.getZuulResponse());
     }
 }
