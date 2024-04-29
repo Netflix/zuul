@@ -64,9 +64,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
             new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
 
-    private static final CachedDynamicBooleanProperty CACHE_ORIGINAL_HOST =
-            new CachedDynamicBooleanProperty("zuul.HttpRequestMessage.original.host.cache", false);
-
     private static final List<Pattern> RE_STRIP;
 
     static {
@@ -514,21 +511,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     @Override
     public String getOriginalHost() {
         try {
-            if (!CACHE_ORIGINAL_HOST.get()) {
-                return generateOriginalHost(getHeaders(), getServerName());
-            }
-
             if (originalHost == null) {
-                originalHost = generateOriginalHost(getHeaders(), getServerName());
+                originalHost = getOriginalHost(getHeaders(), getServerName());
             }
             return originalHost;
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    String generateOriginalHost(Headers headers, String serverName) throws URISyntaxException {
-        return getOriginalHost(headers, serverName);
     }
 
     @VisibleForTesting
@@ -677,7 +666,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
             String scheme = getOriginalScheme().toLowerCase();
             uri.append(scheme);
-            uri.append(URI_SCHEME_SEP).append(getOriginalHost(getHeaders(), getServerName()));
+            uri.append(URI_SCHEME_SEP).append(getOriginalHost());
 
             int port = getOriginalPort();
             if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port) || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
@@ -689,7 +678,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
             uri.append(getPathAndQuery());
 
             return uri.toString();
-        } catch (URISyntaxException e) {
+        } catch (IllegalArgumentException e) {
             // This is not really so bad, just debug log it and move on.
             LOG.debug("Error reconstructing request URI!", e);
             return "";
