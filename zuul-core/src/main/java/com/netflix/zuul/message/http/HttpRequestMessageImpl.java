@@ -704,7 +704,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
                 + inboundRequest + ", parsedCookies="
                 + parsedCookies + ", reconstructedUri='"
                 + reconstructedUri + '\'' + ", pathAndQuery='"
-                + pathAndQuery + '\'' + "/ originalHost='"
+                + pathAndQuery + '\'' + ", originalHost='"
                 + originalHost + '\'' + ", infoForLogging='"
                 + infoForLogging + '\'' + '}';
     }
