@@ -306,6 +306,34 @@ class HttpRequestMessageImplTest {
     }
 
     @Test
+    void testGetOriginalHost_immutable() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "blah.netflix.com");
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                queryParams,
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new SocketAddress() {},
+                true);
+
+        // Check it's the same value 2nd time.
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+
+        // Update the Host header value and ensure the result didn't change.
+        headers.set("Host", "testOriginalHost2");
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+    }
+
+    @Test
     void testGetOriginalHost() {
         HttpQueryParams queryParams = new HttpQueryParams();
         Headers headers = new Headers();
