@@ -97,6 +97,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private String reconstructedUri = null;
     private String pathAndQuery = null;
     private String infoForLogging = null;
+    private String originalHost = null;
 
     private static final SocketAddress UNDEFINED_CLIENT_DEST_ADDRESS = new SocketAddress() {
         @Override
@@ -510,7 +511,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     @Override
     public String getOriginalHost() {
         try {
-            return getOriginalHost(getHeaders(), getServerName());
+            if (originalHost == null) {
+                originalHost = getOriginalHost(getHeaders(), getServerName());
+            }
+            return originalHost;
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(e);
         }
@@ -662,7 +666,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
             String scheme = getOriginalScheme().toLowerCase();
             uri.append(scheme);
-            uri.append(URI_SCHEME_SEP).append(getOriginalHost(getHeaders(), getServerName()));
+            uri.append(URI_SCHEME_SEP).append(getOriginalHost());
 
             int port = getOriginalPort();
             if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port) || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
@@ -674,7 +678,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
             uri.append(getPathAndQuery());
 
             return uri.toString();
-        } catch (URISyntaxException e) {
+        } catch (IllegalArgumentException e) {
             // This is not really so bad, just debug log it and move on.
             LOG.debug("Error reconstructing request URI!", e);
             return "";
@@ -700,7 +704,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
                 + inboundRequest + ", parsedCookies="
                 + parsedCookies + ", reconstructedUri='"
                 + reconstructedUri + '\'' + ", pathAndQuery='"
-                + pathAndQuery + '\'' + ", infoForLogging='"
+                + pathAndQuery + '\'' + "/ originalHost='"
+                + originalHost + '\'' + ", infoForLogging='"
                 + infoForLogging + '\'' + '}';
     }
 }
