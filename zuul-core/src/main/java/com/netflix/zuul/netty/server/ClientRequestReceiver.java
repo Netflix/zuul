@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.server;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
+import com.netflix.netty.common.throttle.ThrottlingContextData;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.Debug;
@@ -39,24 +40,10 @@ import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import com.netflix.zuul.util.HttpUtils;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.channel.unix.Errors;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultLastHttpContent;
-import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.util.AttributeKey;
@@ -151,11 +138,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
                         "Invalid request provided: Decode failure");
                 RejectionUtils.rejectByClosingConnection(
-                        ctx,
-                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                        "decodefailure",
-                        clientRequest,
-                        /* injectedLatencyMillis= */ null);
+                        /* injectedLatencyMillis= */ new ThrottlingContextData(
+                                ctx,
+                                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                                "decodefailure",
+                                clientRequest,
+                                null));
                 return;
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
@@ -172,9 +160,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 zuulRequest.getContext().setError(ze);
                 zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest
-                            .getHeaders()
-                            .getAll(HttpHeaderNames.HOST.toString())
-                            .size()
+                    .getHeaders()
+                    .getAll(HttpHeaderNames.HOST.toString())
+                    .size()
                     > 1) {
                 LOG.debug(
                         "Multiple Host headers. clientRequest = {} , uri = {}, info = {}",

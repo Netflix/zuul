@@ -26,21 +26,14 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.EmptyHttpHeaders;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
+
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * A collection of rejection related utilities useful for failing requests. These are tightly coupled with the channel
@@ -55,83 +48,65 @@ public final class RejectionUtils {
     /**
      * Closes the connection without sending a response, and fires a {@link RequestRejectedEvent} back up the pipeline.
      *
-     * @param nfStatus              the status to use for metric reporting
-     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
-     * @param request               the request that is being rejected.
-     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
-     *                              sent up the pipeline.
+     * @param throttlingContextData The ThrottlingContextData object
      */
     public static void rejectByClosingConnection(
-            ChannelHandlerContext ctx,
-            StatusCategory nfStatus,
-            String reason,
-            HttpRequest request,
-            @Nullable Integer injectedLatencyMillis) {
+            ThrottlingContextData throttlingContextData) {
 
         // Notify other handlers before closing the conn.
-        notifyHandlers(ctx, nfStatus, REJECT_CLOSING_STATUS, reason, request);
+        notifyHandlers(throttlingContextData.getCtx(), throttlingContextData.getNfStatus(), REJECT_CLOSING_STATUS, throttlingContextData.getReason(), throttlingContextData.getRequest());
 
-        if (injectedLatencyMillis != null && injectedLatencyMillis > 0) {
+        if (throttlingContextData.getInjectedLatencyMillis() != null && throttlingContextData.getInjectedLatencyMillis() > 0) {
             // Delay closing the connection for configured time.
-            ctx.executor()
+            throttlingContextData.getCtx().executor()
                     .schedule(
                             () -> {
-                                CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_REJECTING);
-                                ctx.close();
+                                CurrentPassport.fromChannel(throttlingContextData.getCtx().channel()).add(PassportState.SERVER_CH_REJECTING);
+                                throttlingContextData.getCtx().close();
                             },
-                            injectedLatencyMillis,
+                            throttlingContextData.getInjectedLatencyMillis(),
                             TimeUnit.MILLISECONDS);
         } else {
             // Close the connection immediately.
-            CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_REJECTING);
-            ctx.close();
+            CurrentPassport.fromChannel(throttlingContextData.getCtx().channel()).add(PassportState.SERVER_CH_REJECTING);
+            throttlingContextData.getCtx().close();
         }
     }
 
     /**
      * Sends a rejection response back to the client, and fires a {@link RequestRejectedEvent} back up the pipeline.
      *
-     * @param ctx                   the channel handler processing the request
-     * @param nfStatus              the status to use for metric reporting
-     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
-     * @param request               the request that is being rejected.
-     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
-     *                              sent up the pipeline.
      * @param rejectedCode          the HTTP code to send back to the client.
      * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
      * @param rejectionHeaders      additional HTTP headers to add to the rejection response
+     * @param throttlingContextData The ThrottlingContextData object
      */
     public static void sendRejectionResponse(
-            ChannelHandlerContext ctx,
-            StatusCategory nfStatus,
-            String reason,
-            HttpRequest request,
-            @Nullable Integer injectedLatencyMillis,
             HttpResponseStatus rejectedCode,
             String rejectedBody,
-            Map<String, String> rejectionHeaders) {
-        boolean shouldClose = closeConnectionAfterReject(ctx.channel());
+            Map<String, String> rejectionHeaders, ThrottlingContextData throttlingContextData) {
+        boolean shouldClose = closeConnectionAfterReject(throttlingContextData.getCtx().channel());
         // Write out a rejection response message.
         FullHttpResponse response = createRejectionResponse(rejectedCode, rejectedBody, shouldClose, rejectionHeaders);
 
-        if (injectedLatencyMillis != null && injectedLatencyMillis > 0) {
+        if (throttlingContextData.getInjectedLatencyMillis() != null && throttlingContextData.getInjectedLatencyMillis() > 0) {
             // Delay writing the response for configured time.
-            ctx.executor()
+            throttlingContextData.getCtx().executor()
                     .schedule(
                             () -> {
-                                CurrentPassport.fromChannel(ctx.channel()).add(PassportState.IN_REQ_REJECTED);
-                                ctx.writeAndFlush(response);
+                                CurrentPassport.fromChannel(throttlingContextData.getCtx().channel()).add(PassportState.IN_REQ_REJECTED);
+                                throttlingContextData.getCtx().writeAndFlush(response);
                             },
-                            injectedLatencyMillis,
+                            throttlingContextData.getInjectedLatencyMillis(),
                             TimeUnit.MILLISECONDS);
         } else {
             // Write the response immediately.
-            CurrentPassport.fromChannel(ctx.channel()).add(PassportState.IN_REQ_REJECTED);
-            ctx.writeAndFlush(response);
+            CurrentPassport.fromChannel(throttlingContextData.getCtx().channel()).add(PassportState.IN_REQ_REJECTED);
+            throttlingContextData.getCtx().writeAndFlush(response);
         }
 
         // Notify other handlers that we've rejected this request.
-        notifyHandlers(ctx, nfStatus, rejectedCode, reason, request);
+        notifyHandlers(throttlingContextData.getCtx(), throttlingContextData.getNfStatus(), rejectedCode, throttlingContextData.getReason(), throttlingContextData.getRequest());
     }
 
     /**
@@ -193,15 +168,15 @@ public final class RejectionUtils {
             // Send a rejection response.
             HttpRequest request = msg instanceof HttpRequest ? (HttpRequest) msg : null;
             reject(
-                    ctx,
                     rejectionType,
-                    nfStatus,
-                    reason,
-                    request,
-                    injectedLatencyMillis,
                     rejectedCode,
                     rejectedBody,
-                    rejectionHeaders);
+                    rejectionHeaders, new ThrottlingContextData(
+                            ctx,
+                            nfStatus,
+                            reason,
+                            request,
+                            injectedLatencyMillis));
         }
 
         if (shouldDropMessage) {
@@ -214,78 +189,58 @@ public final class RejectionUtils {
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
      *
-     * @param ctx                   the channel handler processing the request
      * @param rejectionType         the type of rejection
-     * @param nfStatus              the status to use for metric reporting
-     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
-     * @param request               the request that is being rejected.
-     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
-     *                              sent up the pipeline.
      * @param rejectedCode          the HTTP code to send back to the client.
      * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param throttlingContextData The ThrottlingContextData object
      */
     public static void reject(
-            ChannelHandlerContext ctx,
             RejectionType rejectionType,
-            StatusCategory nfStatus,
-            String reason,
-            HttpRequest request,
-            @Nullable Integer injectedLatencyMillis,
             HttpResponseStatus rejectedCode,
-            String rejectedBody) {
+            String rejectedBody, ThrottlingContextData throttlingContextData) {
         reject(
-                ctx,
                 rejectionType,
-                nfStatus,
-                reason,
-                request,
-                injectedLatencyMillis,
                 rejectedCode,
                 rejectedBody,
-                Collections.emptyMap());
+                Collections.emptyMap(), new ThrottlingContextData(
+                        throttlingContextData.getCtx(),
+                        throttlingContextData.getNfStatus(),
+                        throttlingContextData.getReason(),
+                        throttlingContextData.getRequest(),
+                        throttlingContextData.getInjectedLatencyMillis()));
     }
 
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
      *
-     * @param ctx                   the channel handler processing the request
      * @param rejectionType         the type of rejection
-     * @param nfStatus              the status to use for metric reporting
-     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
-     * @param request               the request that is being rejected.
-     * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
-     *                              sent up the pipeline.
      * @param rejectedCode          the HTTP code to send back to the client.
      * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
      * @param rejectionHeaders      additional HTTP headers to add to the rejection response
+     * @param throttlingContextData The ThrottlingContextData object
      */
     public static void reject(
-            ChannelHandlerContext ctx,
             RejectionType rejectionType,
-            StatusCategory nfStatus,
-            String reason,
-            HttpRequest request,
-            @Nullable Integer injectedLatencyMillis,
             HttpResponseStatus rejectedCode,
             String rejectedBody,
-            Map<String, String> rejectionHeaders) {
+            Map<String, String> rejectionHeaders, ThrottlingContextData throttlingContextData) {
         switch (rejectionType) {
             case REJECT:
                 sendRejectionResponse(
-                        ctx,
-                        nfStatus,
-                        reason,
-                        request,
-                        injectedLatencyMillis,
                         rejectedCode,
                         rejectedBody,
-                        rejectionHeaders);
+                        rejectionHeaders, new ThrottlingContextData(
+                                throttlingContextData.getCtx(),
+                                throttlingContextData.getNfStatus(),
+                                throttlingContextData.getReason(),
+                                throttlingContextData.getRequest(),
+                                throttlingContextData.getInjectedLatencyMillis()));
                 return;
             case CLOSE:
-                rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
+                rejectByClosingConnection(new ThrottlingContextData(throttlingContextData.getCtx(), throttlingContextData.getNfStatus(), throttlingContextData.getReason(), throttlingContextData.getRequest(), throttlingContextData.getInjectedLatencyMillis()));
                 return;
             case ALLOW_THEN_CLOSE:
-                allowThenClose(ctx);
+                allowThenClose(throttlingContextData.getCtx());
                 return;
         }
         throw new AssertionError("Bad rejection type: " + rejectionType);
