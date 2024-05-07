@@ -47,7 +47,8 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
             AttributeKey.newInstance("_haproxy_message");
     public static final AttributeKey<HAProxyProtocolVersion> ATTR_HAPROXY_VERSION =
             AttributeKey.newInstance("_haproxy_version");
-    static final AttributeKey<List<HAProxyTLV>> ATTR_HAPROXY_CUSTOM_TLVS = AttributeKey.newInstance("_haproxy_tlvs");
+    public static final AttributeKey<List<HAProxyTLV>> ATTR_HAPROXY_CUSTOM_TLVS = AttributeKey.newInstance(
+            "_haproxy_tlvs");
 
     @VisibleForTesting
     static final Attrs.Key<Integer> HAPM_DEST_PORT = Attrs.newKey("hapm_port");
