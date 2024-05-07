@@ -89,10 +89,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -104,6 +100,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -667,16 +666,19 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
-            final ClientException niwsEx = new ClientException(
-                    ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
             if (chosenServer.get() != DiscoveryResult.EMPTY) {
-                origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
+                origin.onRequestExceptionWithServer(
+                        zuulRequest, chosenServer.get(), attemptNum, newClientException(err));
             }
 
-            if ((isBelowRetryLimit()) && (isRetryable(err))) {
+            boolean retryable = isRetryable(err);
+            if (retryable) {
+                origin.adjustRetryPolicyIfNeeded(zuulRequest);
+            }
+
+            if (retryable && isBelowRetryLimit()) {
                 // retry request with different origin
                 passport.add(PassportState.ORIGIN_RETRY_START);
-                origin.adjustRetryPolicyIfNeeded(zuulRequest);
                 proxyRequestToOrigin();
             } else {
                 // Record the exception in context. An error filter should later run which can translate this into an
@@ -686,7 +688,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, err.getStatusCategory());
                 origin.recordFinalError(zuulRequest, ex);
-                origin.onRequestExecutionFailed(zuulRequest, chosenServer.get(), attemptNum - 1, niwsEx);
+                origin.onRequestExecutionFailed(
+                        zuulRequest, chosenServer.get(), attemptNum - 1, newClientException(err));
 
                 // Send error response to client
                 handleError(ex);
@@ -695,6 +698,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             // Use original origin returned exception
             handleError(ex);
         }
+    }
+
+    private static ClientException newClientException(ErrorType err) {
+        return new ClientException(
+                ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
     }
 
     protected void postErrorProcessing(
@@ -902,9 +910,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Flag this error with the ExecutionListener.
         origin.onRequestExceptionWithServer(zuulRequest, chosenServer, attemptNum, new ClientException(niwsErrorType));
 
-        if ((isBelowRetryLimit()) && (isRetryable5xxResponse(zuulRequest, originResponse))) {
+        boolean retryable5xxResponse = isRetryable5xxResponse(zuulRequest, originResponse);
+        if (retryable5xxResponse) {
+            origin.adjustRetryPolicyIfNeeded(zuulRequest);
+        }
+
+        if (retryable5xxResponse && isBelowRetryLimit()) {
             logger.debug(
-                    "Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+                    "Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={},"
+                            + " hasCompleteBody={}, method={}",
                     respStatus,
                     attemptNum,
                     origin.getMaxRetriesForRequest(context),
@@ -922,12 +936,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             // retry request with different origin
             passport.add(PassportState.ORIGIN_RETRY_START);
-            origin.adjustRetryPolicyIfNeeded(zuulRequest);
             proxyRequestToOrigin();
         } else {
             SessionContext zuulCtx = context;
             logger.info(
-                    "Sending error to client: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+                    "Sending error to client: status={}, attemptNum={}, maxRetries={},"
+                            + " startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
                     respStatus,
                     attemptNum,
                     origin.getMaxRetriesForRequest(zuulCtx),
