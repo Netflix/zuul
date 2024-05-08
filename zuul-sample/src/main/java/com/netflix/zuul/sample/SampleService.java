@@ -16,15 +16,14 @@
 
 package com.netflix.zuul.sample;
 
-import rx.Observable;
-
-import javax.inject.Singleton;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.inject.Singleton;
+import rx.Observable;
 
 /**
  * Sample Service for demonstration in SampleServiceFilter.
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: January 04, 2018
  */

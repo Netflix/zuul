@@ -18,7 +18,6 @@ package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

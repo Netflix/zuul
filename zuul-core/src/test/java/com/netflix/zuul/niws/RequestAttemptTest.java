@@ -16,21 +16,20 @@
 
 package com.netflix.zuul.niws;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.codec.http2.DefaultHttp2Connection;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Exception;
-import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.security.cert.CertificateException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import javax.net.ssl.SSLHandshakeException;
+import org.junit.jupiter.api.Test;
 
 public class RequestAttemptTest {
 
@@ -93,16 +92,16 @@ public class RequestAttemptTest {
 
         // mock a stacktrace to ensure we don't actually capture it completely
         when(h2Exception.getStackTrace()).thenReturn(new StackTraceElement[] {
-            new StackTraceElement(
-                    DefaultHttp2Connection.class.getCanonicalName(),
-                    "createStream",
-                    "DefaultHttp2Connection.java",
-                    772),
-            new StackTraceElement(
-                    DefaultHttp2Connection.class.getCanonicalName(),
-                    "checkNewStreamAllowed",
-                    "DefaultHttp2Connection.java",
-                    902)
+                new StackTraceElement(
+                        DefaultHttp2Connection.class.getCanonicalName(),
+                        "createStream",
+                        "DefaultHttp2Connection.java",
+                        772),
+                new StackTraceElement(
+                        DefaultHttp2Connection.class.getCanonicalName(),
+                        "checkNewStreamAllowed",
+                        "DefaultHttp2Connection.java",
+                        902)
         });
 
         RequestAttempt attempt = new RequestAttempt(1, null, null, "target", "chosen", 200, null, null, 0, 0, 0);

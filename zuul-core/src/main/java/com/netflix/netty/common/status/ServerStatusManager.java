@@ -18,7 +18,6 @@ package com.netflix.netty.common.status;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

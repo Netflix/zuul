@@ -17,7 +17,6 @@ package com.netflix.zuul.plugins;
 
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.monitoring.TracerFactory;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;

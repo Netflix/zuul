@@ -15,8 +15,8 @@
  */
 package com.netflix.zuul.filters;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
+import javax.annotation.Nullable;
 
 public interface FilterRegistry {
     @Nullable

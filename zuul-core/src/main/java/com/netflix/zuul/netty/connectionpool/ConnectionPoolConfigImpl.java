@@ -22,7 +22,6 @@ import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.zuul.origins.OriginName;
-
 import java.util.Objects;
 
 /**

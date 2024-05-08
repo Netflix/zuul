@@ -20,14 +20,13 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.zuul.netty.server.BaseServerStartup;
 import com.netflix.zuul.netty.server.Server;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Bootstrap
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 20, 2017
  */

@@ -30,7 +30,6 @@ import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import io.netty.channel.ChannelHandler;
-
 import javax.inject.Provider;
 
 /**

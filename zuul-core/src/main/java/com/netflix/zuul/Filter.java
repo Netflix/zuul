@@ -19,7 +19,6 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

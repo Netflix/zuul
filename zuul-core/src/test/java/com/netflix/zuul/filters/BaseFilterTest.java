@@ -17,6 +17,7 @@ package com.netflix.zuul.filters;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
 import com.google.common.truth.Truth;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.context.SessionContext;

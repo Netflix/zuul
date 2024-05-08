@@ -16,6 +16,10 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.zuul.BasicRequestCompleteHandler;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -38,15 +42,10 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class ClientResponseWriterTest {
@@ -108,13 +107,12 @@ class ClientResponseWriterTest {
         channel.pipeline().addFirst(new ChannelOutboundHandlerAdapter() {
             @Override
             public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-                if(msg instanceof HttpResponse response) {
+                if (msg instanceof HttpResponse response) {
                     nettyResp.set(response);
                 }
                 ReferenceCountUtil.safeRelease(msg);
             }
         });
-
 
         SessionContext ctx = new SessionContext();
         HttpRequestMessage request = new HttpRequestBuilder(ctx).build();

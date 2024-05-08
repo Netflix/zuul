@@ -16,12 +16,11 @@
 
 package com.netflix.zuul.groovy;
 
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.File;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link GroovyFileFilter}.
