@@ -25,15 +25,14 @@ import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.guice.GuiceFilterFactory;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com

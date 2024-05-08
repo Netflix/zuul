@@ -34,7 +34,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AttributeKey;
-
 import java.util.function.Consumer;
 
 /**

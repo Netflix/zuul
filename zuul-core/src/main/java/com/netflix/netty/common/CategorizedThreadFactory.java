@@ -17,7 +17,6 @@
 package com.netflix.netty.common;
 
 import io.netty.util.concurrent.FastThreadLocalThread;
-
 import java.util.concurrent.ThreadFactory;
 
 /**

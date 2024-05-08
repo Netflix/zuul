@@ -18,11 +18,10 @@ package com.netflix.zuul.integration.server;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 
 public class TestUtil {
     private TestUtil() {}

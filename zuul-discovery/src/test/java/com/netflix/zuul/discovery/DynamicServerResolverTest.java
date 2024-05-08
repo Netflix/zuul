@@ -24,9 +24,8 @@ import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.ResolverListener;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class DynamicServerResolverTest {
 

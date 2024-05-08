@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.init;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import com.netflix.zuul.init2.TestZuulFilter2;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.Test;
@@ -23,9 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ZuulFiltersModuleTest {
@@ -101,7 +101,7 @@ class ZuulFiltersModuleTest {
         Class<?> expectedClass2 = TestZuulFilter2.class;
 
         Mockito.when(configuration.getStringArray("zuul.filters.classes")).thenReturn(new String[] {
-            "com.netflix.zuul.init.TestZuulFilter", "com.netflix.zuul.init2.TestZuulFilter2"
+                "com.netflix.zuul.init.TestZuulFilter", "com.netflix.zuul.init2.TestZuulFilter2"
         });
         Mockito.when(configuration.getStringArray("zuul.filters.packages")).thenReturn(new String[0]);
 

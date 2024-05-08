@@ -20,7 +20,6 @@ import com.google.common.base.Stopwatch;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
 import com.netflix.zuul.exception.OutboundErrorType;
-
 import java.util.concurrent.TimeUnit;
 
 /**

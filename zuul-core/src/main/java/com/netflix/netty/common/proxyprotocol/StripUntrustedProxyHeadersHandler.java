@@ -30,7 +30,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AsciiString;
-
 import java.util.Collection;
 import java.util.List;
 

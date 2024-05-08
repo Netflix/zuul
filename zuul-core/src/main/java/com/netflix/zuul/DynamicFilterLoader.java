@@ -19,11 +19,6 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -33,6 +28,10 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public final class DynamicFilterLoader implements FilterLoader {

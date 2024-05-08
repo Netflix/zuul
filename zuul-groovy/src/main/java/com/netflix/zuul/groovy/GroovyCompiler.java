@@ -18,11 +18,10 @@ package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.DynamicCodeCompiler;
 import groovy.lang.GroovyClassLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Groovy code compiler
@@ -37,7 +36,6 @@ public class GroovyCompiler implements DynamicCodeCompiler {
 
     /**
      * Compiles Groovy code and returns the Class of the compiles code.
-     *
      */
     @Override
     public Class<?> compile(String sCode, String sName) {
@@ -56,7 +54,6 @@ public class GroovyCompiler implements DynamicCodeCompiler {
 
     /**
      * Compiles groovy class from a file
-     *
      */
     @Override
     public Class<?> compile(File file) throws IOException {

@@ -37,9 +37,8 @@ import com.netflix.zuul.origins.BasicNettyOriginManager;
 import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
-import org.apache.commons.configuration.AbstractConfiguration;
-
 import java.io.FilenameFilter;
+import org.apache.commons.configuration.AbstractConfiguration;
 
 public class ServerModule extends AbstractModule {
     @Override
@@ -79,7 +78,7 @@ public class ServerModule extends AbstractModule {
         bind(AccessLogPublisher.class)
                 .toInstance(new AccessLogPublisher(
                         "ACCESS", (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel)
-                                .getContext()
-                                .getUUID()));
+                        .getContext()
+                        .getUUID()));
     }
 }

@@ -16,20 +16,19 @@
 
 package com.netflix.zuul.stats;
 
-import com.netflix.zuul.message.Headers;
-import com.netflix.zuul.message.http.HttpRequestInfo;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.concurrent.ConcurrentHashMap;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
+
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpRequestInfo;
+import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link StatsManager}.

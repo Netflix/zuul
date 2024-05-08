@@ -67,7 +67,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
-
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 

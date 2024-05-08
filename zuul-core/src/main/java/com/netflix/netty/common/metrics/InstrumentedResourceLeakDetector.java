@@ -19,7 +19,6 @@ package com.netflix.netty.common.metrics;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.util.ResourceLeakDetector;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;

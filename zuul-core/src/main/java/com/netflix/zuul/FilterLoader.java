@@ -17,7 +17,6 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
-
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;

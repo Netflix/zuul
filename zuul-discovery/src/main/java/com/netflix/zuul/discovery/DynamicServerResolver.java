@@ -26,20 +26,19 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.Resolver;
 import com.netflix.zuul.resolver.ResolverListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Argha C
  * @since 2/25/21
- *
+ * <p>
  * Implements a resolver, wrapping a ribbon load-balancer.
  */
 public class DynamicServerResolver implements Resolver<DiscoveryResult> {
