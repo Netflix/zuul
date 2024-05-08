@@ -666,9 +666,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
+            final ClientException niwsEx = new ClientException(
+                    ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
             if (chosenServer.get() != DiscoveryResult.EMPTY) {
-                origin.onRequestExceptionWithServer(
-                        zuulRequest, chosenServer.get(), attemptNum, newClientException(err));
+                origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
             boolean retryable = isRetryable(err);
@@ -688,8 +689,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
                 StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, err.getStatusCategory());
                 origin.recordFinalError(zuulRequest, ex);
-                origin.onRequestExecutionFailed(
-                        zuulRequest, chosenServer.get(), attemptNum - 1, newClientException(err));
+                origin.onRequestExecutionFailed(zuulRequest, chosenServer.get(), attemptNum - 1, niwsEx);
 
                 // Send error response to client
                 handleError(ex);
@@ -1162,10 +1162,5 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     @ForOverride
     protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
         return new OriginTimeoutManager(origin);
-    }
-
-    private static ClientException newClientException(ErrorType err) {
-        return new ClientException(
-                ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
     }
 }
