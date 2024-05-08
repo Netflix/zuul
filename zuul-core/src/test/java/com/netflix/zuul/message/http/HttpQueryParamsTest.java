@@ -22,8 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class HttpQueryParamsTest {
@@ -145,5 +144,67 @@ class HttpQueryParamsTest {
         queryParams.add(camelCaseKey.toLowerCase(Locale.ROOT), "value");
 
         assertTrue(queryParams.containsIgnoreCase(camelCaseKey));
+    }
+
+    @Test
+    public void getReturnsValuesForExactKeyMatch() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("key", "value");
+        assertEquals("value", queryParams.get("key").get(0));
+    }
+
+    @Test
+    public void getReturnsEmptyListForNonExistentKey() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        assertTrue(queryParams.get("none").isEmpty());
+    }
+
+    @Test
+    public void getReturnsMultipleValuesForSameKey() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("key", "value1");
+        queryParams.add("key", "value2");
+        assertEquals(2, queryParams.get("key").size());
+    }
+
+    @Test
+    public void getReturnsCaseSensitive() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("KEY", "value");
+        assertTrue(queryParams.get("key").isEmpty());
+    }
+
+    @Test
+    public void getReturnsEmptyListForNullKey() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        assertTrue(queryParams.get(null).isEmpty());
+    }
+
+    @Test
+    public void getIgnoreCaseReturnsValuesForExactKeyMatch() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("key", "value");
+        assertEquals("value", queryParams.getIgnoreCase("key").get(0));
+    }
+
+    @Test
+    public void getIgnoreCaseReturnsEmptyListForNonExistentKey() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        assertTrue(queryParams.getIgnoreCase("nonExistentKey").isEmpty());
+    }
+
+    @Test
+    public void getIgnoreCaseReturnsMultipleValuesForSameKey() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("key", "value1");
+        queryParams.add("key", "value2");
+        assertEquals(2, queryParams.getIgnoreCase("KEY").size());
+    }
+
+    @Test
+    public void getIgnoreCaseReturnsCaseInsensitive() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        queryParams.add("key", "value");
+        assertTrue(queryParams.getIgnoreCase("KEY").get(0).equals("value"));
     }
 }
