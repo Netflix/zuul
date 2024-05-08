@@ -700,11 +700,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private static ClientException newClientException(ErrorType err) {
-        return new ClientException(
-                ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-    }
-
     protected void postErrorProcessing(
             Throwable ex, SessionContext zuulCtx, ErrorType err, DiscoveryResult chosenServer, int attemptNum) {
         // override for custom processing
@@ -1167,5 +1162,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     @ForOverride
     protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
         return new OriginTimeoutManager(origin);
+    }
+
+    private static ClientException newClientException(ErrorType err) {
+        return new ClientException(
+                ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
     }
 }
