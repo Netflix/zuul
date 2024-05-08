@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -30,11 +35,6 @@ import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import org.junit.jupiter.api.Test;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author Argha C

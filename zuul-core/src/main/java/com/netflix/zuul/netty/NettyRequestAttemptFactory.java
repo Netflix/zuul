@@ -25,10 +25,9 @@ import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.OriginConcurrencyExceededException;
 import io.netty.channel.unix.Errors;
 import io.netty.handler.timeout.ReadTimeoutException;
+import java.nio.channels.ClosedChannelException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.channels.ClosedChannelException;
 
 public class NettyRequestAttemptFactory {
 

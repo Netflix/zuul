@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.timeouts;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -23,16 +26,12 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Duration;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 /**
  * Origin Timeout Manager Test

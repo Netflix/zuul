@@ -15,19 +15,6 @@
  */
 package com.netflix.zuul.context;
 
-import com.google.common.truth.Truth;
-import com.netflix.zuul.message.Headers;
-import com.netflix.zuul.message.http.HttpQueryParams;
-import com.netflix.zuul.message.http.HttpRequestMessage;
-import com.netflix.zuul.message.http.HttpResponseMessage;
-import com.netflix.zuul.message.http.HttpResponseMessageImpl;
-import com.netflix.zuul.message.util.HttpRequestBuilder;
-import io.netty.handler.codec.http.HttpMethod;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static com.netflix.zuul.context.Debug.addRequestDebug;
 import static com.netflix.zuul.context.Debug.addRoutingDebug;
 import static com.netflix.zuul.context.Debug.debugRequest;
@@ -38,6 +25,18 @@ import static com.netflix.zuul.context.Debug.setDebugRequest;
 import static com.netflix.zuul.context.Debug.setDebugRouting;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.google.common.truth.Truth;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import com.netflix.zuul.message.util.HttpRequestBuilder;
+import io.netty.handler.codec.http.HttpMethod;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class DebugTest {
 

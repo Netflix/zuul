@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.SpectatorUtils;
@@ -28,9 +31,6 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
 /**
  * User: michaels@netflix.com

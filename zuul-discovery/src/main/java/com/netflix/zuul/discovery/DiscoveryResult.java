@@ -23,11 +23,10 @@ import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.loadbalancer.LoadBalancerStats;
 import com.netflix.loadbalancer.ServerStats;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-
-import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * @author Argha C
@@ -58,7 +57,6 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     /**
-     *
      * This solely exists to create a result object from incomplete InstanceInfo.
      * Usage of this for production code is strongly discouraged, since the underlying instances are prone to memory leaks
      */
@@ -73,8 +71,8 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     /**
-     *
      * This convenience method exists for usage in tests. For production usage, please use the constructor linked:
+     *
      * @see DiscoveryResult#DiscoveryResult(DiscoveryEnabledServer, LoadBalancerStats)
      */
     @VisibleForTesting

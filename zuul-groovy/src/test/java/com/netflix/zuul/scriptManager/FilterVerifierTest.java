@@ -16,14 +16,14 @@
 
 package com.netflix.zuul.scriptManager;
 
-import com.netflix.zuul.filters.FilterType;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.netflix.zuul.filters.FilterType;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link FilterVerifier}.

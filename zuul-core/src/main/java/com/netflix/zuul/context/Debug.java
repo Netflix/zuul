@@ -20,13 +20,12 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseInfo;
 import io.netty.util.ReferenceCounted;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import rx.Observable;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rx.Observable;
 
 /**
  * Simple wrapper class around the RequestContext for setting and managing Request level Debug data.

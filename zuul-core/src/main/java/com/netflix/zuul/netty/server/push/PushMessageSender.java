@@ -30,10 +30,9 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
 
 /**
  * Serves "/push" URL that is used by the backend to POST push messages to a given Zuul instance. This URL handler

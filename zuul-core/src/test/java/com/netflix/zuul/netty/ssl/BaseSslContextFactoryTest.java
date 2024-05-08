@@ -16,10 +16,10 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.netty.handler.ssl.SslProvider;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests for {@link BaseSslContextFactory}.

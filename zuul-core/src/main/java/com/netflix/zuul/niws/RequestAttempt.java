@@ -28,9 +28,8 @@ import com.netflix.zuul.discovery.SimpleMetaInfo;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.timeout.ReadTimeoutException;
-
-import javax.net.ssl.SSLHandshakeException;
 import java.net.InetAddress;
+import javax.net.ssl.SSLHandshakeException;
 
 /**
  * User: michaels@netflix.com

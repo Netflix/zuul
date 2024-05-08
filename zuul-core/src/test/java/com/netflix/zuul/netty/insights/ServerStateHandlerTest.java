@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.insights;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -27,8 +29,6 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ServerStateHandlerTest {
 

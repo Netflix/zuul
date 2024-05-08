@@ -31,9 +31,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +46,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToDoubleFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com

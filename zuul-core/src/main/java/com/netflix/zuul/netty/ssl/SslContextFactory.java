@@ -18,7 +18,6 @@ package com.netflix.zuul.netty.ssl;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 

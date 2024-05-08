@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.netflix.loadbalancer.ConfigurationBasedServerList;
 import com.netflix.loadbalancer.Server;
-
 import java.util.List;
 
 public class OriginServerList extends ConfigurationBasedServerList {

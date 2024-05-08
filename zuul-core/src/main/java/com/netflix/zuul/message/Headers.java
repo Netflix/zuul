@@ -19,8 +19,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.exception.ZuulException;
-
-import javax.annotation.Nullable;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 
 /**
  * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are

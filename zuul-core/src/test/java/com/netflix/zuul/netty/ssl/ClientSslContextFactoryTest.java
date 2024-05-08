@@ -16,17 +16,16 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.netflix.spectator.api.DefaultRegistry;
 import io.netty.handler.ssl.OpenSslClientContext;
 import io.netty.handler.ssl.SslContext;
-import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLSessionContext;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.net.ssl.SSLSessionContext;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for {@link ClientSslContextFactory}.

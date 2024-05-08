@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
@@ -63,10 +66,6 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
@@ -74,9 +73,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+import javax.net.ssl.SSLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by saroskar on 1/6/17.

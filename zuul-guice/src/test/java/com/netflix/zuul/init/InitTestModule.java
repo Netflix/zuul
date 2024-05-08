@@ -20,9 +20,8 @@ import com.google.inject.AbstractModule;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
-import org.apache.commons.configuration.AbstractConfiguration;
-
 import java.io.FilenameFilter;
+import org.apache.commons.configuration.AbstractConfiguration;
 
 public class InitTestModule extends AbstractModule {
     @Override

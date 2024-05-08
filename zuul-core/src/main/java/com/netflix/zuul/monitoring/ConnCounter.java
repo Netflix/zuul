@@ -23,12 +23,11 @@ import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A counter for connection stats.  Not thread-safe.

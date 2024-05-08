@@ -17,7 +17,6 @@
 package com.netflix.zuul.origins;
 
 import com.netflix.zuul.util.VipUtils;
-
 import java.util.Locale;
 import java.util.Objects;
 

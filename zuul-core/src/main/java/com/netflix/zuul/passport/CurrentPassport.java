@@ -26,9 +26,6 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -40,6 +37,8 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CurrentPassport {
     private static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);

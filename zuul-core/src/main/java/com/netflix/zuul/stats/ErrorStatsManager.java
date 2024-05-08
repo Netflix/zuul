@@ -16,7 +16,6 @@
 package com.netflix.zuul.stats;
 
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
