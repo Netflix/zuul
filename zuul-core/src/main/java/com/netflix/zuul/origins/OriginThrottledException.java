@@ -18,7 +18,6 @@ package com.netflix.zuul.origins;
 
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.stats.status.StatusCategory;
-
 import java.util.Objects;
 
 public abstract class OriginThrottledException extends ZuulException {

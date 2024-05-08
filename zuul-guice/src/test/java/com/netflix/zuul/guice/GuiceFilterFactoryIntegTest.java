@@ -16,11 +16,11 @@
 
 package com.netflix.zuul.guice;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.google.inject.Inject;
 import com.netflix.zuul.BaseInjectionIntegTest;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class GuiceFilterFactoryIntegTest extends BaseInjectionIntegTest {
 

@@ -16,7 +16,6 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.config.DynamicIntProperty;
-
 import javax.inject.Singleton;
 
 /**

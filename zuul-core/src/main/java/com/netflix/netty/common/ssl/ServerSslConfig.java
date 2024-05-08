@@ -18,13 +18,12 @@ package com.netflix.netty.common.ssl;
 
 import com.netflix.config.DynamicLongProperty;
 import io.netty.handler.ssl.ClientAuth;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * User: michaels@netflix.com

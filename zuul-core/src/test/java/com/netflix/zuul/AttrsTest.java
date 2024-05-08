@@ -16,13 +16,13 @@
 
 package com.netflix.zuul;
 
-import com.google.common.truth.Truth;
-import com.netflix.zuul.Attrs.Key;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.google.common.truth.Truth;
+import com.netflix.zuul.Attrs.Key;
+import org.junit.jupiter.api.Test;
 
 class AttrsTest {
     @Test

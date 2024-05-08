@@ -16,16 +16,15 @@
 
 package com.netflix.zuul.init;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.BaseInjectionIntegTest;
 import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
+import javax.inject.Inject;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ZuulFiltersModuleIntegTest extends BaseInjectionIntegTest {
 

@@ -18,7 +18,6 @@ package com.netflix.zuul;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.filters.ZuulFilter;
-
 import javax.inject.Inject;
 
 /**

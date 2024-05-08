@@ -42,13 +42,12 @@ import com.netflix.zuul.origins.BasicNettyOriginManager;
 import com.netflix.zuul.origins.OriginManager;
 import com.netflix.zuul.stats.BasicRequestMetricsPublisher;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
-import org.apache.commons.configuration.AbstractConfiguration;
-
 import java.io.FilenameFilter;
+import org.apache.commons.configuration.AbstractConfiguration;
 
 /**
  * Zuul Sample Module
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 20, 2017
  */
@@ -91,7 +90,7 @@ public class ZuulSampleModule extends AbstractModule {
         bind(AccessLogPublisher.class)
                 .toInstance(new AccessLogPublisher(
                         "ACCESS", (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel)
-                                .getContext()
-                                .getUUID()));
+                        .getContext()
+                        .getUUID()));
     }
 }

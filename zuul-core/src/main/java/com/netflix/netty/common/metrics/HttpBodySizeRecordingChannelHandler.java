@@ -25,7 +25,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.util.AttributeKey;
-
 import javax.inject.Provider;
 
 /**

@@ -16,6 +16,15 @@
 
 package com.netflix.zuul.sample.filters.outbound
 
+import static com.netflix.zuul.constants.ZuulHeaders.CONNECTION
+import static com.netflix.zuul.constants.ZuulHeaders.KEEP_ALIVE
+import static com.netflix.zuul.constants.ZuulHeaders.X_ORIGINATING_URL
+import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL
+import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_ERROR_CAUSE
+import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_INSTANCE
+import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_PROXY_ATTEMPTS
+import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_STATUS
+
 import com.netflix.config.DynamicBooleanProperty
 import com.netflix.zuul.context.Debug
 import com.netflix.zuul.context.SessionContext
@@ -29,8 +38,6 @@ import com.netflix.zuul.stats.status.StatusCategory
 import com.netflix.zuul.stats.status.StatusCategoryUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import static com.netflix.zuul.constants.ZuulHeaders.*
 
 /**
  *  Sample Response Filter - adding custom response headers for better analysis of how the request was proxied

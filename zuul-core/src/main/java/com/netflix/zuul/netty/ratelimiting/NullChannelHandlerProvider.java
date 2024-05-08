@@ -17,7 +17,6 @@
 package com.netflix.zuul.netty.ratelimiting;
 
 import io.netty.channel.ChannelHandler;
-
 import javax.inject.Provider;
 import javax.inject.Singleton;
 

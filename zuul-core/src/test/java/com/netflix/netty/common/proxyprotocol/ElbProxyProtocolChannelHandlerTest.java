@@ -16,6 +16,11 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
@@ -29,19 +34,13 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ElbProxyProtocolChannelHandlerTest {
@@ -295,34 +294,34 @@ class ElbProxyProtocolChannelHandlerTest {
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(new byte[] {
-            0x0D,
-            0x0A,
-            0x0D,
-            0x0A,
-            0x00,
-            0x0D,
-            0x0A,
-            0x51,
-            0x55,
-            0x49,
-            0x54,
-            0x0A,
-            0x21,
-            0x11,
-            0x00,
-            0x0C,
-            (byte) 0xC0,
-            (byte) 0xA8,
-            0x00,
-            0x01,
-            0x7C,
-            0x7B,
-            0x6F,
-            0x6F,
-            0x27,
-            0x18,
-            0x01,
-            (byte) 0xbb
+                0x0D,
+                0x0A,
+                0x0D,
+                0x0A,
+                0x00,
+                0x0D,
+                0x0A,
+                0x51,
+                0x55,
+                0x49,
+                0x54,
+                0x0A,
+                0x21,
+                0x11,
+                0x00,
+                0x0C,
+                (byte) 0xC0,
+                (byte) 0xA8,
+                0x00,
+                0x01,
+                0x7C,
+                0x7B,
+                0x6F,
+                0x6F,
+                0x27,
+                0x18,
+                0x01,
+                (byte) 0xbb
         });
         channel.writeInbound(buf);
 

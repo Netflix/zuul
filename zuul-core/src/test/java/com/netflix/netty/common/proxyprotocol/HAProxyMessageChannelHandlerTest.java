@@ -19,6 +19,7 @@ package com.netflix.netty.common.proxyprotocol;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
@@ -157,7 +158,6 @@ class HAProxyMessageChannelHandlerTest {
         Assert.assertEquals(nflxTLV.size(), 1);
         final String payload = nflxTLV.get(0).content().toString(StandardCharsets.UTF_8);
         assertThat(payload).isEqualTo("nflx.custom.tlv");
-
     }
 
     @Test
@@ -221,7 +221,6 @@ class HAProxyMessageChannelHandlerTest {
 
         final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
         assertThat(customTLV.isEmpty());
-
     }
 
     @Test
@@ -308,6 +307,5 @@ class HAProxyMessageChannelHandlerTest {
 
         final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
         assertThat(customTLV.isEmpty());
-
     }
 }

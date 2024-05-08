@@ -20,7 +20,6 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
-
 import javax.annotation.Nullable;
 
 /**

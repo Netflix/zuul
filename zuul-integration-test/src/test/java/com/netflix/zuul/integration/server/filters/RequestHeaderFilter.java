@@ -21,9 +21,8 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import rx.Observable;
-
 import java.util.UUID;
+import rx.Observable;
 
 @Filter(order = 10, type = FilterType.INBOUND)
 public class RequestHeaderFilter extends HttpInboundFilter {

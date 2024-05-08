@@ -16,25 +16,6 @@
 
 package com.netflix.zuul.message.http;
 
-import com.google.common.net.InetAddresses;
-import com.netflix.config.ConfigurationManager;
-import com.netflix.zuul.context.CommonContextKeys;
-import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.message.Headers;
-import io.netty.channel.local.LocalAddress;
-import io.netty.handler.codec.http.cookie.Cookie;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,6 +24,24 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.google.common.net.InetAddresses;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.zuul.context.CommonContextKeys;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
+import io.netty.channel.local.LocalAddress;
+import io.netty.handler.codec.http.cookie.Cookie;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class HttpRequestMessageImplTest {

@@ -18,14 +18,13 @@ package com.netflix.zuul.stats;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.stats.monitoring.MonitorRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * High level statistics counter manager to count stats on various aspects of  requests

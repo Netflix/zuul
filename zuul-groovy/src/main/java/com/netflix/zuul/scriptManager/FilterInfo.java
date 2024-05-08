@@ -16,10 +16,9 @@
 package com.netflix.zuul.scriptManager;
 
 import com.netflix.zuul.filters.FilterType;
-
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Representation of a ZuulFilter for representing and storing in a database
@@ -63,7 +62,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return the filter name; the class name of the filter
      */
     public String getFilterName() {
@@ -72,6 +70,7 @@ public class FilterInfo implements Comparable<FilterInfo> {
 
     /**
      * the Source code for the filter
+     *
      * @return the Source code for the filter
      */
     public String getFilterCode() {
@@ -139,7 +138,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return the revision of this filter
      */
     public int getRevision() {
@@ -147,7 +145,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return creation date
      */
     public Date getCreationDate() {
@@ -155,7 +152,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return true if this filter is active
      */
     public boolean isActive() {
@@ -163,7 +159,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return true if this filter should be active a "canary" cluster. A "canary" cluster is a separate cluster
      * where filters may be tested before going to the full production cluster.
      */
@@ -172,7 +167,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return unique key for the filter
      */
     public String getFilterID() {
@@ -180,7 +174,6 @@ public class FilterInfo implements Comparable<FilterInfo> {
     }
 
     /**
-     *
      * @return the filter order
      */
     public String getFilterOrder() {
@@ -189,6 +182,7 @@ public class FilterInfo implements Comparable<FilterInfo> {
 
     /**
      * builds the unique filter_id key
+     *
      * @return key is application_name:filter_name:filter_type
      */
     public static String buildFilterID(String application_name, FilterType filter_type, String filter_name) {

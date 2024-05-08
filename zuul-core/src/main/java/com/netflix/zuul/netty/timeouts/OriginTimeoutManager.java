@@ -24,11 +24,10 @@ import com.netflix.config.DynamicLongProperty;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
-
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * Origin Timeout Manager

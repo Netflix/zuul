@@ -20,10 +20,9 @@ import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javax.net.ssl.SSLHandshakeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLHandshakeException;
 
 /**
  * Swallow specific SSL related exceptions to avoid propagating deep stack traces up the pipeline.
