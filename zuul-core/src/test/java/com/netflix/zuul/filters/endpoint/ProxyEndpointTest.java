@@ -17,42 +17,81 @@
 package com.netflix.zuul.filters.endpoint;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.discovery.DiscoveryResult;
+import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
+import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
+import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.server.MethodBinding;
+import com.netflix.zuul.netty.timeouts.OriginTimeoutManager;
+import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
+import com.netflix.zuul.origins.NettyOrigin;
 import com.netflix.zuul.passport.CurrentPassport;
+import com.netflix.zuul.passport.PassportItem;
+import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.util.concurrent.Promise;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ProxyEndpointTest {
 
-    ProxyEndpoint proxyEndpoint;
-    HttpRequestMessage request;
+    @Mock
+    private ChannelHandlerContext chc;
+
+    @Mock
+    private NettyOrigin nettyOrigin;
+
+    @Mock
+    private OriginTimeoutManager timeoutManager;
+
+    @Mock
+    private NettyRequestAttemptFactory attemptFactory;
+
+    private ProxyEndpoint proxyEndpoint;
+    private SessionContext context;
+    private HttpRequestMessage request;
+    private HttpResponse response;
+    private CurrentPassport passport;
 
     @BeforeEach
     void setup() {
-        ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
-        NettyRequestAttemptFactory attemptFactory = mock(NettyRequestAttemptFactory.class);
+        EmbeddedChannel channel = new EmbeddedChannel();
+        doReturn(channel).when(chc).channel();
 
+        context = new SessionContext();
         request = new HttpRequestMessageImpl(
-                new SessionContext(),
+                context,
                 "HTTP/1.1",
                 "POST",
                 "/some/where",
@@ -64,13 +103,34 @@ class ProxyEndpointTest {
                 "localhost",
                 new LocalAddress("777"),
                 false);
+        request.storeInboundRequest();
 
         request.setBody("Hello There".getBytes());
-        request.getContext()
-                .set(CommonContextKeys.ORIGIN_MANAGER, new BasicNettyOriginManager(Spectator.globalRegistry()));
-        request.getContext().setRouteVIP("some-vip");
-        request.getContext().put(CommonContextKeys.PASSPORT, CurrentPassport.create());
-        proxyEndpoint = new ProxyEndpoint(request, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory);
+        BasicNettyOriginManager originManager = new BasicNettyOriginManager(Spectator.globalRegistry());
+
+        context.set(CommonContextKeys.ORIGIN_MANAGER, originManager);
+        context.setRouteVIP("some-vip");
+        passport = CurrentPassport.create();
+        context.put(CommonContextKeys.PASSPORT, passport);
+        context.put(CommonContextKeys.REQUEST_ATTEMPTS, new RequestAttempts());
+
+        Promise<PooledConnection> promise = channel.eventLoop().newPromise();
+        doReturn(promise).when(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
+
+        proxyEndpoint = spy(new ProxyEndpoint(request, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory) {
+            @Override
+            public NettyOrigin getOrigin(HttpRequestMessage request) {
+                return nettyOrigin;
+            }
+
+            @Override
+            protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
+                return timeoutManager;
+            }
+        });
+
+        doNothing().when(proxyEndpoint).operationComplete(any());
+        doNothing().when(proxyEndpoint).invokeNext((HttpResponseMessage) any());
     }
 
     @Test
@@ -82,18 +142,97 @@ class ProxyEndpointTest {
         request.getBodyContents()
                 .forEach((b) -> b.content().readerIndex(b.content().capacity()));
 
-        HttpResponse response = mock(HttpResponse.class);
-        when(response.status()).thenReturn(new HttpResponseStatus(503, "Retry"));
+        createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
 
+        DiscoveryResult discoveryResult = createDiscoveryResult();
+
+        // when retrying a response, the request body reader should have it's indexes reset
+        proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
+        assertEquals("Hello There", new String(request.getBody()));
+    }
+
+    @Test
+    void retryWhenNoAdjustment() {
+        createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
+
+        proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
+        verify(nettyOrigin).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
+    }
+
+    @Test
+    void testRetryAdjustsLimit() {
+        createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
+        disableRetriesOnAdjustment();
+
+        proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
+        validateNoRetry();
+    }
+
+    @Test
+    void noRetryAdjustmentOnNonRetriableStatusCode() {
+        createResponse(HttpResponseStatus.BAD_REQUEST);
+        proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
+        verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        validateNoRetry();
+    }
+
+    @Test
+    public void onErrorFromOriginNoRetryAdjustment() {
+        doReturn(OutboundErrorType.RESET_CONNECTION).when(attemptFactory).mapNettyToOutboundErrorType(any());
+        proxyEndpoint.errorFromOrigin(new RuntimeException());
+
+        verify(nettyOrigin).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
+    }
+
+    @Test
+    void onErrorFromOriginWithRetryAdjustment() {
+        doReturn(OutboundErrorType.RESET_CONNECTION).when(attemptFactory).mapNettyToOutboundErrorType(any());
+        disableRetriesOnAdjustment();
+
+        proxyEndpoint.errorFromOrigin(new RuntimeException());
+        validateNoRetry();
+    }
+
+    @Test
+    public void onErrorFromOriginNoRetryOnNonRetriableError() {
+        doReturn(OutboundErrorType.OTHER).when(attemptFactory).mapNettyToOutboundErrorType(any());
+        disableRetriesOnAdjustment();
+
+        proxyEndpoint.errorFromOrigin(new RuntimeException());
+        verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        validateNoRetry();
+    }
+
+    private void validateNoRetry() {
+        verify(nettyOrigin, never()).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
+        passport.getHistory().stream()
+                .map(PassportItem::getState)
+                .filter(s -> s == PassportState.ORIGIN_RETRY_START)
+                .findAny()
+                .ifPresent(s -> fail());
+    }
+
+    private void disableRetriesOnAdjustment() {
+        doAnswer(invocation -> {
+                    doReturn(-1).when(nettyOrigin).getMaxRetriesForRequest(context);
+                    return null;
+                })
+                .when(nettyOrigin)
+                .adjustRetryPolicyIfNeeded(request);
+    }
+
+    private static DiscoveryResult createDiscoveryResult() {
         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("app")
                 .setHostName("localhost")
                 .setPort(443)
                 .build();
-        DiscoveryResult discoveryResult = DiscoveryResult.from(instanceInfo, true);
+        return DiscoveryResult.from(instanceInfo, true);
+    }
 
-        // when retrying a response, the request body reader should have it's indexes reset
-        proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
-        assertEquals("Hello There", new String(request.getBody()));
+    private void createResponse(HttpResponseStatus status) {
+        response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
     }
 }
