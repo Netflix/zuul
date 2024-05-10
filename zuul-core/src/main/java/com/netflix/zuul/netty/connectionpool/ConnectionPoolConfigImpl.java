@@ -19,8 +19,6 @@ package com.netflix.zuul.netty.connectionpool;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.config.CachedDynamicBooleanProperty;
-import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.zuul.origins.OriginName;
 import java.util.Objects;
 
@@ -34,44 +32,42 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     private static final int DEFAULT_IDLE_TIMEOUT = 60000;
     private static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
     private static final int DEFAULT_PER_SERVER_WATERLINE = 4;
+    private static final int DEFAULT_MAX_REQUESTS_PER_CONNECTION = 1000;
+
+    // TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
+    private static final int DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK = 32 * 1024;
+    private static final int DEFAULT_WRITE_BUFFER_LOW_WATER_MARK = 8 * 1024;
 
     /**
      * NOTE that each eventloop has its own connection pool per host, and this is applied per event-loop.
      */
     public static final IClientConfigKey<Integer> PER_SERVER_WATERLINE =
-            new CommonClientConfigKey<>("PerServerWaterline", DEFAULT_PER_SERVER_WATERLINE) {};
+            new CommonClientConfigKey<>("PerServerWaterline") {};
 
     public static final IClientConfigKey<Boolean> CLOSE_ON_CIRCUIT_BREAKER =
-            new CommonClientConfigKey<>("CloseOnCircuitBreaker", true) {};
+            new CommonClientConfigKey<>("CloseOnCircuitBreaker") {};
+
+    public static final IClientConfigKey<Integer> MAX_REQUESTS_PER_CONNECTION =
+            new CommonClientConfigKey<>("maxRequestsPerConnection") {};
+
+    public static final IClientConfigKey<Boolean> TCP_KEEP_ALIVE = new CommonClientConfigKey<>("TcpKeepAlive") {};
+
+    public static final IClientConfigKey<Boolean> TCP_NO_DELAY = new CommonClientConfigKey<>("TcpKeepAlive") {};
+
+    public static final IClientConfigKey<Boolean> AUTO_READ = new CommonClientConfigKey<>("AutoRead") {};
+
+    public static final IClientConfigKey<Integer> WRITE_BUFFER_HIGH_WATER_MARK =
+            new CommonClientConfigKey<>("WriteBufferHighWaterMark") {};
+
+    public static final IClientConfigKey<Integer> WRITE_BUFFER_LOW_WATER_MARK =
+            new CommonClientConfigKey<>("WriteBufferLowWaterMark") {};
 
     private final OriginName originName;
     private final IClientConfig clientConfig;
 
-    private final CachedDynamicIntProperty MAX_REQUESTS_PER_CONNECTION;
-
-    private final CachedDynamicBooleanProperty SOCKET_KEEP_ALIVE;
-    private final CachedDynamicBooleanProperty TCP_NO_DELAY;
-    private final CachedDynamicIntProperty WRITE_BUFFER_HIGH_WATER_MARK;
-    private final CachedDynamicIntProperty WRITE_BUFFER_LOW_WATER_MARK;
-    private final CachedDynamicBooleanProperty AUTO_READ;
-
     public ConnectionPoolConfigImpl(final OriginName originName, IClientConfig clientConfig) {
         this.originName = Objects.requireNonNull(originName, "originName");
-        String niwsClientName = originName.getNiwsClientName();
         this.clientConfig = clientConfig;
-
-        this.MAX_REQUESTS_PER_CONNECTION =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.maxRequestsPerConnection", 1000);
-
-        this.SOCKET_KEEP_ALIVE = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpKeepAlive", false);
-        this.TCP_NO_DELAY = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.TcpNoDelay", false);
-
-        // TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
-        this.WRITE_BUFFER_HIGH_WATER_MARK =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferHighWaterMark", 32 * 1024);
-        this.WRITE_BUFFER_LOW_WATER_MARK =
-                new CachedDynamicIntProperty(niwsClientName + ".netty.client.WriteBufferLowWaterMark", 8 * 1024);
-        this.AUTO_READ = new CachedDynamicBooleanProperty(niwsClientName + ".netty.client.AutoRead", false);
     }
 
     @Override
@@ -86,7 +82,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     @Override
     public int getMaxRequestsPerConnection() {
-        return MAX_REQUESTS_PER_CONNECTION.get();
+        return clientConfig.getPropertyAsInteger(MAX_REQUESTS_PER_CONNECTION, DEFAULT_MAX_REQUESTS_PER_CONNECTION);
     }
 
     @Override
@@ -108,12 +104,12 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     @Override
     public boolean getTcpKeepAlive() {
-        return SOCKET_KEEP_ALIVE.get();
+        return clientConfig.getPropertyAsBoolean(TCP_KEEP_ALIVE, false);
     }
 
     @Override
     public boolean getTcpNoDelay() {
-        return TCP_NO_DELAY.get();
+        return clientConfig.getPropertyAsBoolean(TCP_NO_DELAY, false);
     }
 
     @Override
@@ -128,17 +124,17 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     @Override
     public int getNettyWriteBufferHighWaterMark() {
-        return WRITE_BUFFER_HIGH_WATER_MARK.get();
+        return clientConfig.getPropertyAsInteger(WRITE_BUFFER_HIGH_WATER_MARK, DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK);
     }
 
     @Override
     public int getNettyWriteBufferLowWaterMark() {
-        return WRITE_BUFFER_LOW_WATER_MARK.get();
+        return clientConfig.getPropertyAsInteger(WRITE_BUFFER_LOW_WATER_MARK, DEFAULT_WRITE_BUFFER_LOW_WATER_MARK);
     }
 
     @Override
     public boolean getNettyAutoRead() {
-        return AUTO_READ.get();
+        return clientConfig.getPropertyAsBoolean(AUTO_READ, false);
     }
 
     @Override
