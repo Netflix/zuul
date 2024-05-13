@@ -103,6 +103,7 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
                 SslHandshakeInfoHandler.ATTR_SSL_INFO,
                 HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
                 HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
+                HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS,
                 BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
         };
 
