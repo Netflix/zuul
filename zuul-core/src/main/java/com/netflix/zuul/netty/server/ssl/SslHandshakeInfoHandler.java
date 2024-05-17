@@ -23,6 +23,7 @@ import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.server.psk.TlsPskHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,15 +34,16 @@ import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Stores info about the client and server's SSL certificates in the context, after a successful handshake.
@@ -81,10 +83,13 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
                     CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_SSL_HANDSHAKE_COMPLETE);
 
-                    SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
-                    SSLSession session = sslhandler.engine().getSession();
+                    SSLSession session = getSSLSession(ctx);
+                    if (session == null) {
+                        logger.warn("Error getting the SSL handshake info. SSLSession is null");
+                        return;
+                    }
 
-                    ClientAuth clientAuth = whichClientAuthEnum(sslhandler);
+                    ClientAuth clientAuth = whichClientAuthEnum(ctx);
 
                     Certificate serverCert = null;
                     X509Certificate peerCert = null;
@@ -184,7 +189,24 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
         super.userEventTriggered(ctx, evt);
     }
 
-    private ClientAuth whichClientAuthEnum(SslHandler sslhandler) {
+    private SSLSession getSSLSession(ChannelHandlerContext ctx) {
+        SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
+        if (sslhandler != null) {
+            return sslhandler.engine().getSession();
+        }
+        TlsPskHandler tlsPskHandler = ctx.channel().pipeline().get(TlsPskHandler.class);
+        if (tlsPskHandler != null) {
+            return tlsPskHandler.getSession();
+        }
+        return null;
+    }
+
+    private ClientAuth whichClientAuthEnum(ChannelHandlerContext ctx) {
+        SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
+        if (sslhandler == null) {
+            return ClientAuth.NONE;
+        }
+
         ClientAuth clientAuth;
         if (sslhandler.engine().getNeedClientAuth()) {
             clientAuth = ClientAuth.REQUIRE;
