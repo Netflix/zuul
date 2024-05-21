@@ -16,10 +16,6 @@
 
 package com.netflix.zuul.netty.server.psk;
 
-import org.bouncycastle.tls.TlsPSKExternal;
-
-import java.util.Vector;
-
 public interface ExternalTlsPskProvider {
-    TlsPSKExternal provide(Vector clientPskIdentities);
+    byte[] provide(byte[] clientPskIdentity, byte[] clientRandom) throws PskCreationFailureException;
 }

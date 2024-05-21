@@ -28,18 +28,23 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.ReferenceCountUtil;
+import lombok.SneakyThrows;
 import org.bouncycastle.tls.AbstractTlsServer;
 import org.bouncycastle.tls.AlertDescription;
 import org.bouncycastle.tls.AlertLevel;
+import org.bouncycastle.tls.BasicTlsPSKExternal;
 import org.bouncycastle.tls.CipherSuite;
+import org.bouncycastle.tls.PRFAlgorithm;
 import org.bouncycastle.tls.ProtocolName;
 import org.bouncycastle.tls.ProtocolVersion;
+import org.bouncycastle.tls.PskIdentity;
 import org.bouncycastle.tls.TlsCredentials;
 import org.bouncycastle.tls.TlsFatalAlert;
 import org.bouncycastle.tls.TlsPSKExternal;
 import org.bouncycastle.tls.TlsServerProtocol;
 import org.bouncycastle.tls.TlsUtils;
 import org.bouncycastle.tls.crypto.TlsCrypto;
+import org.bouncycastle.tls.crypto.TlsSecret;
 import org.bouncycastle.tls.crypto.impl.jcajce.JcaTlsCryptoProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -291,8 +296,21 @@ public class TlsPskHandler extends ByteToMessageDecoder
         }
 
         @Override
+        @SneakyThrows // TODO: Ask BC folks to see if getExternalPSK can throw a checked exception
         public TlsPSKExternal getExternalPSK(Vector clientPskIdentities) {
-            return externalTlsPskProvider.provide(clientPskIdentities);
+            byte[] clientPskIdentity = ((PskIdentity)clientPskIdentities.get(0)).getIdentity();
+            byte[] psk;
+            try{
+                psk = externalTlsPskProvider.provide(clientPskIdentity, this.context.getSecurityParametersHandshake().getClientRandom());
+            }catch (PskCreationFailureException e) {
+                throw switch (e.getTlsAlertMessage()) {
+                    case unknown_psk_identity -> new TlsFatalAlert(AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
+                    case decrypt_error -> new TlsFatalAlert(AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
+                };
+            }
+            TlsSecret pskTlsSecret = getCrypto().createSecret(psk);
+            int prfAlgorithm = getPRFAlgorithm13(getSelectedCipherSuite());
+            return new BasicTlsPSKExternal(clientPskIdentity, pskTlsSecret, prfAlgorithm);
         }
 
         @Override
@@ -347,6 +365,18 @@ public class TlsPskHandler extends ByteToMessageDecoder
                 return protocolName.getUtf8Decoding();
             }
             return null;
+        }
+
+        private static int getPRFAlgorithm13(int cipherSuite) {
+            return switch (cipherSuite) {
+                case CipherSuite.TLS_AES_128_CCM_SHA256,
+                        CipherSuite.TLS_AES_128_CCM_8_SHA256,
+                        CipherSuite.TLS_AES_128_GCM_SHA256,
+                        CipherSuite.TLS_CHACHA20_POLY1305_SHA256 -> PRFAlgorithm.tls13_hkdf_sha256;
+                case CipherSuite.TLS_AES_256_GCM_SHA384 -> PRFAlgorithm.tls13_hkdf_sha384;
+                case CipherSuite.TLS_SM4_CCM_SM3, CipherSuite.TLS_SM4_GCM_SM3 -> PRFAlgorithm.tls13_hkdf_sm3;
+                default -> -1;
+            };
         }
     }
 

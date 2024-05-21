@@ -3,6 +3,9 @@ apply plugin: "java-library"
 
 dependencies {
 
+    compileOnly libraries.lombok
+    annotationProcessor(libraries.lombok)
+
     implementation libraries.guava
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
