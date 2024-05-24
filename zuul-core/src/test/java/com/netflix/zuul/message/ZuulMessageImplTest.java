@@ -16,8 +16,9 @@
 
 package com.netflix.zuul.message;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.netflix.zuul.context.SessionContext;
@@ -25,6 +26,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -179,8 +181,49 @@ class ZuulMessageImplTest {
             c.content().readerIndex(c.content().capacity());
         }
 
-        assertArrayEquals(new byte[0], msg.getBody(), "body should be empty as readerIndex at end of buffers");
+        for (HttpContent c : msg.getBodyContents()) {
+            assertFalse(c.content().isReadable());
+            assertEquals(0, c.content().readableBytes());
+        }
+
         msg.resetBodyReader();
-        assertEquals("Hello World!", new String(msg.getBody()));
+
+        for (HttpContent c : msg.getBodyContents()) {
+            assertTrue(c.content().isReadable());
+            assertTrue(c.content().readableBytes() > 0);
+        }
+    }
+
+    @Test
+    void testFetchingBodyReturnsEntireBuffer() {
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+
+        // move the reader indexes to the end of the content buffers
+        for (HttpContent c : msg.getBodyContents()) {
+            c.content().readerIndex(c.content().capacity());
+        }
+
+        // ensure body returns entire chunk content irregardless of reader index movement above
+        assertEquals(12, msg.getBodyLength());
+        assertEquals("Hello World!", new String(msg.getBody(), StandardCharsets.UTF_8));
+
+        // buffer more content and ensure body returns entire chunk content
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(" Bye".getBytes())));
+
+        assertEquals(16, msg.getBodyLength());
+        assertEquals("Hello World! Bye", new String(msg.getBody(), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void testFetchingEmptyBody() {
+        final ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        assertEquals(0, msg.getBodyLength());
+        assertNull(msg.getBody());
+
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("".getBytes())));
+        assertEquals(0, msg.getBodyLength());
+        assertEquals(0, msg.getBody().length);
     }
 }
