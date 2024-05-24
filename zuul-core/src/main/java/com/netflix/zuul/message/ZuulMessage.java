@@ -59,13 +59,15 @@ public interface ZuulMessage extends Cloneable {
     void setHasBody(boolean hasBody);
 
     /**
-     * Returns the message body.  If there is no message body, this returns {@code null}.
+     * Returns the message body.
+     * This is the entire buffered body, regardless of whether the underlying body chunks have been read or not.
+     * If there is no message body, this returns {@code null}.
      */
     @Nullable
     byte[] getBody();
 
     /**
-     * Returns the length of the message body, or {@code 0} if there isn't a message present.
+     * Returns the length of the entire buffered message body, or {@code 0} if there isn't a message present.
      */
     int getBodyLength();
 
