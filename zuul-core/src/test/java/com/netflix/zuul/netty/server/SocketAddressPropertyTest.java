@@ -162,4 +162,12 @@ class SocketAddressPropertyTest {
             assertTrue(exception.getMessage().contains("Port"));
         }
     }
+
+    @Test
+    public void failsOnBadAddress() throws Exception {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            SocketAddressProperty.Decoder.INSTANCE.apply("");
+        });
+        assertEquals("Invalid address", exception.getMessage());
+    }
 }
