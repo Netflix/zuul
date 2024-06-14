@@ -27,6 +27,7 @@ import io.netty.channel.ChannelOutboundHandler;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import lombok.SneakyThrows;
 import org.bouncycastle.tls.AbstractTlsServer;
@@ -73,6 +74,12 @@ public class TlsPskHandler extends ByteToMessageDecoder
             "TLS_AES_128_GCM_SHA256",
             CipherSuite.TLS_AES_256_GCM_SHA384,
             "TLS_AES_256_GCM_SHA384");
+
+    public static final AttributeKey<ClientPSKIdentityInfo> CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY =
+            AttributeKey.newInstance("_client_psk_identity_info");
+
+    public static final AttributeKey<Boolean> TLS_HANDSHAKE_USING_EXTERNAL_PSK =
+            AttributeKey.newInstance("_tls_handshake_using_external_psk");
 
     private final Registry registry;
     private final ExternalTlsPskProvider externalTlsPskProvider;
@@ -264,15 +271,17 @@ public class TlsPskHandler extends ByteToMessageDecoder
 
         @Override
         public void notifyHandshakeBeginning() throws IOException {
+            pskTimings.recordHandshakeStarting();
+            this.ctx.channel().attr(TLS_HANDSHAKE_USING_EXTERNAL_PSK).set(false);
             // TODO: sunnys - handshake timeouts
             super.notifyHandshakeBeginning();
-            pskTimings.recordHandshakeStarting();
         }
 
         @Override
         public void notifyHandshakeComplete() throws IOException {
-            super.notifyHandshakeComplete();
             pskTimings.recordHandshakeComplete();
+            this.ctx.channel().attr(TLS_HANDSHAKE_USING_EXTERNAL_PSK).set(true);
+            super.notifyHandshakeComplete();
             ctx.fireUserEventTriggered(SslHandshakeCompletionEvent.SUCCESS);
         }
 
@@ -301,6 +310,7 @@ public class TlsPskHandler extends ByteToMessageDecoder
             byte[] clientPskIdentity = ((PskIdentity)clientPskIdentities.get(0)).getIdentity();
             byte[] psk;
             try{
+                this.ctx.channel().attr(CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY).set(new ClientPSKIdentityInfo(clientPskIdentity));
                 psk = externalTlsPskProvider.provide(clientPskIdentity, this.context.getSecurityParametersHandshake().getClientRandom());
             }catch (PskCreationFailureException e) {
                 throw switch (e.getTlsAlertMessage()) {
