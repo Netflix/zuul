@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.util.concurrent.ScheduledFuture;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -179,6 +180,10 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         super.userEventTriggered(ctx, evt);
     }
 
+    protected int getKeepAliveInterval() {
+        return KEEP_ALIVE_INTERVAL.get();
+    }
+
     /**
      * Register authenticated client  - represented by PushAuthEvent - with PushConnectionRegistry of this instance.
      *
@@ -202,7 +207,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
         if (KEEP_ALIVE_ENABLED.get()) {
             scheduledFutures.add(ctx.executor()
                     .scheduleWithFixedDelay(
-                            this::keepAlive, KEEP_ALIVE_INTERVAL.get(), KEEP_ALIVE_INTERVAL.get(), TimeUnit.SECONDS));
+                            this::keepAlive, getKeepAliveInterval(), getKeepAliveInterval(), TimeUnit.SECONDS));
         }
     }
 
