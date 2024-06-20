@@ -16,18 +16,18 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import com.netflix.client.config.DefaultClientConfigImpl;
-import com.netflix.client.config.IClientConfigKey;
-import com.netflix.zuul.origins.OriginName;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.MAX_REQUESTS_PER_CONNECTION;
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.PER_SERVER_WATERLINE;
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.TCP_KEEP_ALIVE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.netflix.client.config.DefaultClientConfigImpl;
+import com.netflix.client.config.IClientConfigKey;
+import com.netflix.zuul.origins.OriginName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Justin Guerra
