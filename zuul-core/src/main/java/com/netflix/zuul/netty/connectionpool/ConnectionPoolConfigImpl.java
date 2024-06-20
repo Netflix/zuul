@@ -27,16 +27,16 @@ import java.util.Objects;
  */
 public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
-    private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
-    private static final int DEFAULT_CONNECT_TIMEOUT = 500;
-    private static final int DEFAULT_IDLE_TIMEOUT = 60000;
-    private static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
-    private static final int DEFAULT_PER_SERVER_WATERLINE = 4;
-    private static final int DEFAULT_MAX_REQUESTS_PER_CONNECTION = 1000;
+    static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
+    static final int DEFAULT_CONNECT_TIMEOUT = 500;
+    static final int DEFAULT_IDLE_TIMEOUT = 60000;
+    static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
+    static final int DEFAULT_PER_SERVER_WATERLINE = 4;
+    static final int DEFAULT_MAX_REQUESTS_PER_CONNECTION = 1000;
 
     // TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
-    private static final int DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK = 32 * 1024;
-    private static final int DEFAULT_WRITE_BUFFER_LOW_WATER_MARK = 8 * 1024;
+    static final int DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK = 32 * 1024;
+    static final int DEFAULT_WRITE_BUFFER_LOW_WATER_MARK = 8 * 1024;
 
     /**
      * NOTE that each eventloop has its own connection pool per host, and this is applied per event-loop.
