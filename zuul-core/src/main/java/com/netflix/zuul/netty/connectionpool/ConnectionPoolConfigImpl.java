@@ -48,7 +48,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
             new CommonClientConfigKey<>("CloseOnCircuitBreaker") {};
 
     public static final IClientConfigKey<Integer> MAX_REQUESTS_PER_CONNECTION =
-            new CommonClientConfigKey<>("maxRequestsPerConnection") {};
+            new CommonClientConfigKey<>("MaxRequestsPerConnection") {};
 
     public static final IClientConfigKey<Boolean> TCP_KEEP_ALIVE = new CommonClientConfigKey<>("TcpKeepAlive") {};
 
