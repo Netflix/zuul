@@ -20,6 +20,7 @@ import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import com.netflix.zuul.netty.server.psk.TlsPskHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -33,7 +34,9 @@ import io.netty.handler.codec.http2.UniformStreamByteDistributor;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
+import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
+
 import java.util.function.Consumer;
 
 /**
@@ -44,6 +47,8 @@ import java.util.function.Consumer;
  */
 public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
+
+    private static final String FALLBACK_APPLICATION_PROTOCOL = ApplicationProtocolNames.HTTP_1_1;
 
     private static final DynamicHttp2FrameLogger FRAME_LOGGER =
             new DynamicHttp2FrameLogger(LogLevel.DEBUG, Http2FrameCodec.class);
@@ -60,7 +65,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
             ChannelHandler http2StreamHandler,
             ChannelConfig channelConfig,
             Consumer<ChannelPipeline> addHttpHandlerFn) {
-        super(ApplicationProtocolNames.HTTP_1_1);
+        super(FALLBACK_APPLICATION_PROTOCOL);
         this.http2StreamHandler = http2StreamHandler;
         this.maxConcurrentStreams = channelConfig.get(CommonChannelConfigKeys.maxConcurrentStreams);
         this.initialWindowSize = channelConfig.get(CommonChannelConfigKeys.initialWindowSize);
@@ -68,6 +73,42 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.maxHeaderListSize = channelConfig.get(CommonChannelConfigKeys.maxHttp2HeaderListSize);
         this.catchConnectionErrors = channelConfig.get(CommonChannelConfigKeys.http2CatchConnectionErrors);
         this.addHttpHandlerFn = addHttpHandlerFn;
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof SslHandshakeCompletionEvent handshakeEvent) {
+            if (handshakeEvent.isSuccess()) {
+                TlsPskHandler tlsPskHandler = ctx.channel().pipeline().get(TlsPskHandler.class);
+                if (tlsPskHandler != null) {
+                    // PSK mode
+                    try {
+                        String tlsPskApplicationProtocol = tlsPskHandler.getApplicationProtocol();
+                        configurePipeline(
+                                ctx,
+                                tlsPskApplicationProtocol != null
+                                        ? tlsPskApplicationProtocol
+                                        : FALLBACK_APPLICATION_PROTOCOL);
+                    } catch (Throwable cause) {
+                        exceptionCaught(ctx, cause);
+                    } finally {
+                        // Handshake failures are handled in exceptionCaught(...).
+                        if (handshakeEvent.isSuccess()) {
+                            removeSelfIfPresent(ctx);
+                        }
+                    }
+                } else {
+                    // non PSK mode
+                    super.userEventTriggered(ctx, evt);
+                }
+            } else {
+                // handshake failures
+                // TODO sunnys - handle PSK handshake failures
+                super.userEventTriggered(ctx, evt);
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
     }
 
     @Override
@@ -117,5 +158,12 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
     private void configureHttp1(ChannelPipeline pipeline) {
         addHttpHandlerFn.accept(pipeline);
+    }
+
+    private void removeSelfIfPresent(ChannelHandlerContext ctx) {
+        ChannelPipeline pipeline = ctx.pipeline();
+        if (!ctx.isRemoved()) {
+            pipeline.remove(this);
+        }
     }
 }
