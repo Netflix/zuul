@@ -136,6 +136,7 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             final ProxyEndpoint edgeProxyEndpoint = (ProxyEndpoint) endpoint;
             edgeProxyEndpoint.finish(error);
         }
+        System.out.println("fireEndpointFinish: setting zuulRequest to null");
         zuulRequest = null;
     }
 
@@ -147,10 +148,13 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
             if (zuulResponse != null) {
                 // fire a last content into the filter chain to unblock any filters awaiting a buffered body
                 responseFilterChain.filter(zuulResponse, new DefaultLastHttpContent());
-                SpectatorUtils.newCounter(
-                                "zuul.filterChain.bodyBuffer.hanging",
-                                zuulRequest.getContext().getRouteVIP())
-                        .increment();
+                System.out.println("xyz zuulRequest: " + zuulRequest);
+                if (zuulRequest != null) {
+                    SpectatorUtils.newCounter(
+                                    "zuul.filterChain.bodyBuffer.hanging",
+                                    zuulRequest.getContext().getRouteVIP())
+                            .increment();
+                }
             }
         }
     }

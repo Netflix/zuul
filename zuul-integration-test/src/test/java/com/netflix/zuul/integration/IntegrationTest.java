@@ -119,7 +119,7 @@ class IntegrationTest {
 
         final int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-        config.setProperty("zuul.server.netty.socket.force_nio", "true");
+        config.setProperty("zuul.server.netty.socket.force_nio", "false");
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
@@ -280,6 +280,7 @@ class IntegrationTest {
                 .build();
         Response response = okHttp.newCall(request).execute();
         final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        System.out.println("response.code=" + response.code());
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
@@ -340,6 +341,7 @@ class IntegrationTest {
                 .build();
         Response response = okHttp.newCall(request).execute();
         assertThat(response.code()).isEqualTo(500);
+        System.out.println("xyz response.body.string: " + response.body().string());
         assertThat(response.body().string()).isEqualTo("");
         verify(1, getRequestedFor(anyUrl()));
     }
