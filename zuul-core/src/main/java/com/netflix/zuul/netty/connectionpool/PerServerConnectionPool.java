@@ -238,7 +238,7 @@ public class PerServerConnectionPool implements IConnectionPool {
             CurrentPassport passport,
             AtomicReference<? super InetAddress> selectedHostAddr) {
 
-        if (!checkConnectionLimit(promise)) {
+        if (!isWithinConnectionLimit(promise)) {
             return;
         }
 
@@ -273,7 +273,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         }
     }
 
-    protected boolean checkConnectionLimit(Promise<PooledConnection> promise) {
+    protected boolean isWithinConnectionLimit(Promise<PooledConnection> promise) {
         // Enforce MaxConnectionsPerHost config.
         int maxConnectionsPerHost = config.maxConnectionsPerHost();
         int openAndOpeningConnectionCount = server.getOpenConnectionsCount() + connCreationsInProgress.get();
