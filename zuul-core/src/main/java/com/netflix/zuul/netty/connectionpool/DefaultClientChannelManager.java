@@ -41,6 +41,10 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -50,9 +54,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.annotation.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -214,26 +215,23 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         boolean released = false;
 
-        // if the connection has been around too long (i.e. too many requests), then close it
-        // TODO(argha-c): Document what is a reasonable default here, and the class of origins that optimizes for
-        final boolean connExpiredLifetime = conn.getUsageCount() > connPoolConfig.getMaxRequestsPerConnection();
-        if (conn.isShouldClose() || connExpiredLifetime) {
+
+        if (conn.isShouldClose()) {
             // Close and discard the connection, as it has been flagged (possibly due to receiving a non-channel error
             // like a 503).
             conn.setInPool(false);
             conn.close();
-            if (connExpiredLifetime) {
-                closeExpiredConnLifetimeCounter.increment();
-                LOG.debug(
-                        "[{}] closing conn lifetime expired, usage: {}",
-                        conn.getChannel().id(),
-                        conn.getUsageCount());
-            } else {
                 LOG.debug(
                         "[{}] closing conn flagged to be closed",
                         conn.getChannel().id());
-            }
-
+        } else if(isConnectionExpired(conn.getUsageCount())) {
+            conn.setInPool(false);
+            conn.close();
+            closeExpiredConnLifetimeCounter.increment();
+            LOG.debug(
+                    "[{}] closing conn lifetime expired, usage: {}",
+                    conn.getChannel().id(),
+                    conn.getUsageCount());
         } else if (connPoolConfig.isCloseOnCircuitBreakerEnabled() && discoveryResult.isCircuitBreakerTripped()) {
             LOG.debug(
                     "[{}] closing conn, server circuit breaker tripped",
@@ -268,6 +266,12 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         return released;
+    }
+
+    protected boolean isConnectionExpired(long usageCount) {
+        // if the connection has been around too long (i.e. too many requests), then close it
+        // TODO(argha-c): Document what is a reasonable default here, and the class of origins that optimizes for
+        return usageCount > connPoolConfig.getMaxRequestsPerConnection();
     }
 
     protected void updateServerStatsOnRelease(final PooledConnection conn) {
