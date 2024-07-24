@@ -25,6 +25,7 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.psk.ClientPSKIdentityInfo;
 import com.netflix.zuul.netty.server.psk.TlsPskHandler;
+import com.netflix.zuul.netty.server.psk.ZuulPskServer;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,15 +36,16 @@ import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Stores info about the client and server's SSL certificates in the context, after a successful handshake.
@@ -104,7 +106,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                     }
 
                     Boolean tlsHandshakeUsingExternalPSK = ctx.channel()
-                            .attr(TlsPskHandler.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
+                            .attr(ZuulPskServer.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
                             .get();
 
                     ClientPSKIdentityInfo clientPSKIdentityInfo = ctx.channel()
