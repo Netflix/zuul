@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.ssl;
 
+import com.netflix.zuul.netty.server.psk.ClientPSKIdentityInfo;
 import io.netty.handler.ssl.ClientAuth;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -31,6 +32,8 @@ public class SslHandshakeInfo {
     private final Certificate serverCertificate;
     private final X509Certificate clientCertificate;
     private final boolean isOfIntermediary;
+    private final boolean usingExternalPSK;
+    private final ClientPSKIdentityInfo clientPSKIdentityInfo;
 
     public SslHandshakeInfo(
             boolean isOfIntermediary,
@@ -38,13 +41,17 @@ public class SslHandshakeInfo {
             String cipherSuite,
             ClientAuth clientAuthRequirement,
             Certificate serverCertificate,
-            X509Certificate clientCertificate) {
+            X509Certificate clientCertificate,
+            boolean usingExternalPSK,
+            ClientPSKIdentityInfo clientPSKIdentityInfo) {
         this.protocol = protocol;
         this.cipherSuite = cipherSuite;
         this.clientAuthRequirement = clientAuthRequirement;
         this.serverCertificate = serverCertificate;
         this.clientCertificate = clientCertificate;
         this.isOfIntermediary = isOfIntermediary;
+        this.usingExternalPSK = usingExternalPSK;
+        this.clientPSKIdentityInfo = clientPSKIdentityInfo;
     }
 
     public boolean isOfIntermediary() {
@@ -69,6 +76,14 @@ public class SslHandshakeInfo {
 
     public X509Certificate getClientCertificate() {
         return clientCertificate;
+    }
+
+    public boolean usingExternalPSK() {
+        return usingExternalPSK;
+    }
+
+    public ClientPSKIdentityInfo geClientPSKIdentityInfo() {
+        return clientPSKIdentityInfo;
     }
 
     @Override
