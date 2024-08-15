@@ -10,7 +10,7 @@ dependencies {
     implementation 'commons-configuration:commons-configuration:1.10'
     annotationProcessor project(":zuul-processor")
 
-    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.19.0'
+    runtimeOnly 'org.apache.logging.log4j:log4j-core:2.23.1'
     runtimeOnly 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
 
 }
