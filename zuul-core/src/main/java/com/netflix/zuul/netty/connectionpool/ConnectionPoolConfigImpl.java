@@ -52,7 +52,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     public static final IClientConfigKey<Boolean> TCP_KEEP_ALIVE = new CommonClientConfigKey<>("TcpKeepAlive") {};
 
-    public static final IClientConfigKey<Boolean> TCP_NO_DELAY = new CommonClientConfigKey<>("TcpKeepAlive") {};
+    public static final IClientConfigKey<Boolean> TCP_NO_DELAY = new CommonClientConfigKey<>("TcpNoDelay") {};
 
     public static final IClientConfigKey<Boolean> AUTO_READ = new CommonClientConfigKey<>("AutoRead") {};
 
