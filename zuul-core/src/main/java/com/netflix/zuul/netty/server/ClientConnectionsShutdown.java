@@ -30,10 +30,9 @@ import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: Change this class to be an instance per-port.
