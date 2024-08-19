@@ -30,9 +30,10 @@ import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: Change this class to be an instance per-port.
@@ -113,7 +114,14 @@ public class ClientConnectionsShutdown {
             ScheduledFuture<?> timeoutTask = executor.schedule(
                     () -> {
                         LOG.warn("Force closing remaining {} active client channels.", channels.size());
-                        channels.close();
+                        channels.close().addListener(future -> {
+                            if (!future.isSuccess()) {
+                                LOG.error("Failed to close all connections", future.cause());
+                            }
+                            if (!promise.isDone()) {
+                                promise.setSuccess(null);
+                            }
+                        });
                     },
                     GRACEFUL_CLOSE_TIMEOUT.get(),
                     TimeUnit.SECONDS);
