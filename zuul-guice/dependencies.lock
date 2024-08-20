@@ -11,6 +11,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -19,6 +20,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -26,6 +28,7 @@
             "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
@@ -54,6 +57,7 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -73,7 +77,7 @@
             "locked": "30.1-jre",
             "transitive": [
                 "com.google.inject:guice",
-                "com.netflix.servo:servo-core"
+                "com.netflix.archaius:archaius-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -83,10 +87,7 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
+            "locked": "5.1.0"
         },
         "com.google.j2objc:j2objc-annotations": {
             "locked": "1.3",
@@ -95,14 +96,14 @@
             ]
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -111,12 +112,6 @@
             "locked": "0.3.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
-            ]
-        },
-        "com.netflix.netflix-commons:netflix-eventbus": {
-            "locked": "0.3.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
             ]
         },
         "com.netflix.ribbon:ribbon-archaius": {
@@ -137,15 +132,10 @@
                 "com.netflix.zuul:zuul-discovery"
             ]
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+            "locked": "1.7.18",
             "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -158,28 +148,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -193,6 +163,7 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10",
             "transitive": [
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -315,24 +286,34 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
                 "com.google.inject:guice"
             ]
         },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
-            ]
-        },
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -350,7 +331,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36",
             "transitive": [
-                "com.netflix.servo:servo-core",
+                "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -417,6 +399,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -425,6 +408,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -432,6 +416,7 @@
             "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
@@ -460,6 +445,7 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -479,7 +465,7 @@
             "locked": "30.1-jre",
             "transitive": [
                 "com.google.inject:guice",
-                "com.netflix.servo:servo-core"
+                "com.netflix.archaius:archaius-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -489,10 +475,7 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
+            "locked": "5.1.0"
         },
         "com.google.j2objc:j2objc-annotations": {
             "locked": "1.3",
@@ -501,14 +484,14 @@
             ]
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -517,12 +500,6 @@
             "locked": "0.3.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
-            ]
-        },
-        "com.netflix.netflix-commons:netflix-eventbus": {
-            "locked": "0.3.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
             ]
         },
         "com.netflix.ribbon:ribbon-archaius": {
@@ -543,15 +520,10 @@
                 "com.netflix.zuul:zuul-discovery"
             ]
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+            "locked": "1.7.18",
             "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -564,28 +536,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -599,6 +551,7 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10",
             "transitive": [
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -721,17 +674,28 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
                 "com.google.inject:guice"
-            ]
-        },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
             ]
         },
         "net.sf.jopt-simple:jopt-simple": {
@@ -749,8 +713,7 @@
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -798,7 +761,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36",
             "transitive": [
-                "com.netflix.servo:servo-core",
+                "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -883,7 +847,9 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka"
+                "com.netflix.ribbon:ribbon-eureka",
+                "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -902,20 +868,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -925,6 +891,7 @@
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ]
@@ -936,22 +903,13 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
-            "transitive": [
-                "com.google.guava:guava"
-            ]
+            "locked": "5.1.0"
         },
         "com.google.truth:truth": {
             "locked": "1.1.5"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
@@ -960,7 +918,7 @@
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.zuul:zuul-core",
@@ -1023,16 +981,22 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
+            "locked": "0.10.1",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+        "com.netflix.servo:servo-internal": {
+            "locked": "0.10.1",
             "transitive": [
+                "com.netflix.servo:servo-core"
+            ]
+        },
+        "com.netflix.spectator:spectator-api": {
+            "locked": "1.7.18",
+            "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -1045,28 +1009,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -1303,6 +1247,30 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "javax.annotation:javax.annotation-api": {
+            "locked": "1.2",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -1315,13 +1283,6 @@
             "locked": "2.5",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
             ]
         },
         "joda-time:joda-time": {
@@ -1381,8 +1342,7 @@
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -1392,13 +1352,13 @@
             ]
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "org.bouncycastle:bcpkix-jdk18on",
@@ -1406,20 +1366,20 @@
             ]
         },
         "org.bouncycastle:bcutil-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "org.bouncycastle:bcpkix-jdk18on"
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "org.codehaus.jettison:jettison": {
-            "locked": "1.4.0",
+            "locked": "1.5.4",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -1431,7 +1391,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1440,19 +1400,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -1460,14 +1420,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1533,6 +1493,7 @@
             "locked": "1.7.36",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-commons-util",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.netflix-commons:netflix-infix",
@@ -1542,6 +1503,7 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
@@ -1622,7 +1584,9 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka"
+                "com.netflix.ribbon:ribbon-eureka",
+                "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -1641,19 +1605,19 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.11.0",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "31.1-jre",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.netflix.archaius:archaius-core",
@@ -1662,6 +1626,7 @@
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ]
@@ -1673,19 +1638,10 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "1.3",
-            "transitive": [
-                "com.google.guava:guava"
-            ]
+            "locked": "5.1.0"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
@@ -1694,7 +1650,7 @@
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.zuul:zuul-core",
@@ -1757,16 +1713,22 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
+            "locked": "0.10.1",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+        "com.netflix.servo:servo-internal": {
+            "locked": "0.10.1",
             "transitive": [
+                "com.netflix.servo:servo-core"
+            ]
+        },
+        "com.netflix.spectator:spectator-api": {
+            "locked": "1.7.18",
+            "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -1779,28 +1741,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -2037,6 +1979,30 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "javax.annotation:javax.annotation-api": {
+            "locked": "1.2",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -2049,13 +2015,6 @@
             "locked": "2.5",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
             ]
         },
         "joda-time:joda-time": {
@@ -2085,8 +2044,7 @@
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -2096,13 +2054,13 @@
             ]
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "org.bouncycastle:bcpkix-jdk18on",
@@ -2110,19 +2068,19 @@
             ]
         },
         "org.bouncycastle:bcutil-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "org.bouncycastle:bcpkix-jdk18on"
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.12.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "org.codehaus.jettison:jettison": {
-            "locked": "1.4.0",
+            "locked": "1.5.4",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -2131,6 +2089,7 @@
             "locked": "1.7.36",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-commons-util",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.netflix-commons:netflix-infix",
@@ -2140,6 +2099,7 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
@@ -2164,6 +2124,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -2172,6 +2133,7 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -2179,6 +2141,7 @@
             "locked": "2.16.1",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2213,6 +2176,7 @@
             "locked": "3.0.2",
             "transitive": [
                 "com.google.guava:guava",
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -2234,7 +2198,7 @@
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
-                "com.netflix.servo:servo-core"
+                "com.netflix.archaius:archaius-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -2244,10 +2208,7 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
+            "locked": "5.1.0"
         },
         "com.google.j2objc:j2objc-annotations": {
             "locked": "2.8",
@@ -2259,14 +2220,14 @@
             "locked": "1.1.5"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2275,12 +2236,6 @@
             "locked": "0.3.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
-            ]
-        },
-        "com.netflix.netflix-commons:netflix-eventbus": {
-            "locked": "0.3.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
             ]
         },
         "com.netflix.ribbon:ribbon-archaius": {
@@ -2301,15 +2256,10 @@
                 "com.netflix.zuul:zuul-discovery"
             ]
         },
-        "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+            "locked": "1.7.18",
             "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -2322,28 +2272,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -2357,6 +2287,7 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10",
             "transitive": [
+                "com.netflix.archaius:archaius-core",
                 "com.netflix.eureka:eureka-client"
             ]
         },
@@ -2479,17 +2410,28 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
                 "com.google.inject:guice"
-            ]
-        },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
             ]
         },
         "junit:junit": {
@@ -2513,8 +2455,7 @@
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -2547,7 +2488,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -2555,19 +2496,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -2575,14 +2516,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -2616,7 +2557,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "1.7.36",
             "transitive": [
-                "com.netflix.servo:servo-core",
+                "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -2701,7 +2643,9 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka"
+                "com.netflix.ribbon:ribbon-eureka",
+                "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -2720,20 +2664,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -2743,6 +2687,7 @@
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
             ]
@@ -2754,22 +2699,13 @@
             ]
         },
         "com.google.inject:guice": {
-            "locked": "5.1.0",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
-            "transitive": [
-                "com.google.guava:guava"
-            ]
+            "locked": "5.1.0"
         },
         "com.google.truth:truth": {
             "locked": "1.1.5"
         },
         "com.netflix.archaius:archaius-core": {
-            "locked": "0.7.7",
+            "locked": "0.7.12",
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
@@ -2778,7 +2714,7 @@
             ]
         },
         "com.netflix.eureka:eureka-client": {
-            "locked": "1.10.18",
+            "locked": "2.0.3",
             "transitive": [
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.zuul:zuul-core",
@@ -2841,16 +2777,22 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.12.21",
+            "locked": "0.10.1",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.spectator:spectator-api": {
-            "locked": "1.7.17",
+        "com.netflix.servo:servo-internal": {
+            "locked": "0.10.1",
             "transitive": [
+                "com.netflix.servo:servo-core"
+            ]
+        },
+        "com.netflix.spectator:spectator-api": {
+            "locked": "1.7.18",
+            "transitive": [
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.zuul:zuul-core"
             ]
         },
@@ -2863,28 +2805,8 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.sun.jersey.contribs:jersey-apache-client4": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.sun.jersey:jersey-client": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
-            ]
-        },
-        "com.sun.jersey:jersey-core": {
-            "locked": "1.19.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-client"
-            ]
-        },
         "com.thoughtworks.xstream:xstream": {
-            "locked": "1.4.19",
+            "locked": "1.4.20",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -3121,6 +3043,30 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "jakarta.ws.rs:jakarta.ws.rs-api": {
+            "locked": "3.0.0",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
+        "javax.annotation:javax.annotation-api": {
+            "locked": "1.2",
+            "transitive": [
+                "com.netflix.eureka:eureka-client"
+            ]
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -3133,13 +3079,6 @@
             "locked": "2.5",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "javax.ws.rs:jsr311-api": {
-            "locked": "1.1.1",
-            "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey:jersey-core"
             ]
         },
         "joda-time:joda-time": {
@@ -3187,8 +3126,7 @@
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client",
-                "com.sun.jersey.contribs:jersey-apache-client4"
+                "com.netflix.eureka:eureka-client"
             ]
         },
         "org.apache.httpcomponents:httpcore": {
@@ -3198,13 +3136,13 @@
             ]
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "org.bouncycastle:bcpkix-jdk18on",
@@ -3212,20 +3150,20 @@
             ]
         },
         "org.bouncycastle:bcutil-jdk18on": {
-            "locked": "1.76",
+            "locked": "1.78.1",
             "transitive": [
                 "org.bouncycastle:bcpkix-jdk18on"
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "org.codehaus.jettison:jettison": {
-            "locked": "1.4.0",
+            "locked": "1.5.4",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
             ]
@@ -3237,7 +3175,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -3246,19 +3184,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -3266,14 +3204,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -3314,6 +3252,7 @@
             "locked": "1.7.36",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
+                "com.netflix.eureka:eureka-client",
                 "com.netflix.netflix-commons:netflix-commons-util",
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.netflix-commons:netflix-infix",
@@ -3323,6 +3262,7 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
+                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery"
