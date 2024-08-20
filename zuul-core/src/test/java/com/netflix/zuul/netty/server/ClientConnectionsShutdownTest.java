@@ -18,9 +18,11 @@ package com.netflix.zuul.netty.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -31,6 +33,7 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
+import com.netflix.zuul.netty.server.ClientConnectionsShutdown.ShutdownType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -225,7 +228,7 @@ class ClientConnectionsShutdownTest {
         try {
             configuration.setProperty(configName, "0");
             createChannels(10);
-            Promise<Void> promise = shutdown.gracefullyShutdownClientChannels(false);
+            Promise<Void> promise = shutdown.gracefullyShutdownClientChannels(ShutdownType.OUT_OF_SERVICE);
             verify(eventLoop, never()).schedule(isA(Runnable.class), anyLong(), isA(TimeUnit.class));
             channels.forEach(Channel::close);
 
@@ -236,8 +239,22 @@ class ClientConnectionsShutdownTest {
         }
     }
 
+    @Test
+    public void shutdownTypeForwardedToFlag() throws InterruptedException {
+        shutdown = spy(shutdown);
+        doNothing().when(shutdown).flagChannelForClose(any(), any());
+        createChannels(1);
+        Channel channel = channels.iterator().next();
+        for (ShutdownType type : ShutdownType.values()) {
+            shutdown.gracefullyShutdownClientChannels(type);
+            verify(shutdown).flagChannelForClose(channel, type);
+        }
+
+        channels.close().await(5, TimeUnit.SECONDS);
+    }
+
     private void createChannels(int numChannels) throws InterruptedException {
-        ChannelInitializer<LocalChannel> initializer = new ChannelInitializer<LocalChannel>() {
+        ChannelInitializer<LocalChannel> initializer = new ChannelInitializer<>() {
             @Override
             protected void initChannel(LocalChannel ch) {}
         };
