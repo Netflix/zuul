@@ -20,7 +20,6 @@ import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.util.concurrent.ScheduledFuture;
 
 import java.util.ArrayList;
@@ -125,7 +124,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     private void requestClientToCloseConnection() {
         if (ctx.channel().isActive()) {
             // Application level protocol for asking client to close connection
-            ctx.writeAndFlush(pushProtocol.goAwayMessage());
+            pushProtocol.sendGoAwayMessage(ctx);
             // Force close connection if client doesn't close in reasonable time after we made request
             scheduledFutures.add(ctx.executor()
                     .schedule(
@@ -139,7 +138,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
 
     protected void keepAlive() {
         if (KEEP_ALIVE_ENABLED.get()) {
-            ctx.writeAndFlush(new PingWebSocketFrame());
+            pushProtocol.sendPing(ctx);
         }
     }
 

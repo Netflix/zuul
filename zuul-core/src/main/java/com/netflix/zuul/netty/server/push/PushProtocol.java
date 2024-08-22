@@ -17,6 +17,7 @@ package com.netflix.zuul.netty.server.push;
 
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -55,12 +56,18 @@ public enum PushProtocol {
         }
 
         @Override
-        public Object goAwayMessage() {
-            return new TextWebSocketFrame("_CLOSE_");
+        public ChannelFuture sendGoAwayMessage(ChannelHandlerContext ctx) {
+            return ctx.writeAndFlush(new TextWebSocketFrame("_CLOSE_"));
         }
 
         @Override
-        public Object serverClosingConnectionMessage(int statusCode, String reasonText) {
+        public ChannelFuture sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText) {
+            Object msg = serverClosingConnectionMessage(statusCode, reasonText);
+            ctx.writeAndFlush(msg).addListener(ChannelFutureListener.CLOSE);
+            return null;
+        }
+
+        private Object serverClosingConnectionMessage(int statusCode, String reasonText) {
             return new CloseWebSocketFrame(statusCode, reasonText);
         }
     },
@@ -98,27 +105,31 @@ public enum PushProtocol {
 
         @Override
         public ChannelFuture sendPing(ChannelHandlerContext ctx) {
-            final ByteBuf newBuff = ctx.alloc().buffer();
-            newBuff.ensureWritable(SSE_PING.length());
-            newBuff.writeCharSequence(SSE_PING, Charsets.UTF_8);
+            ByteBuf newBuff = ByteBufUtil.writeUtf8(ctx.alloc(), SSE_PING);
             return ctx.channel().writeAndFlush(newBuff);
         }
 
+        private static final String SSE_GO_AWAY = "event: goaway\r\ndata: _CLOSE_\r\n\r\n";
+
         @Override
-        public Object goAwayMessage() {
-            return "event: goaway\r\ndata: _CLOSE_\r\n\r\n";
+        public ChannelFuture sendGoAwayMessage(ChannelHandlerContext ctx) {
+            ByteBuf byteBufMsg = ByteBufUtil.writeUtf8(ctx.alloc(), SSE_GO_AWAY);
+            return ctx.writeAndFlush(byteBufMsg);
         }
 
         @Override
-        public Object serverClosingConnectionMessage(int statusCode, String reasonText) {
+        public ChannelFuture sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText) {
+            String msg = serverClosingConnectionMessage(statusCode, reasonText);
+            ByteBuf byteBufMsg = ByteBufUtil.writeUtf8(ctx.alloc(), msg);
+            return ctx.writeAndFlush(byteBufMsg).addListener(ChannelFutureListener.CLOSE);
+        }
+
+        private String serverClosingConnectionMessage(int statusCode, String reasonText) {
             return "event: close\r\ndata: " + statusCode + " " + reasonText + "\r\n\r\n";
         }
     };
 
-    public final void sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText) {
-        final Object mesg = serverClosingConnectionMessage(statusCode, reasonText);
-        ctx.writeAndFlush(mesg).addListener(ChannelFutureListener.CLOSE);
-    }
+    public abstract ChannelFuture sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText);
 
     public abstract Object getHandshakeCompleteEvent();
 
@@ -127,13 +138,9 @@ public enum PushProtocol {
     public abstract ChannelFuture sendPushMessage(ChannelHandlerContext ctx, ByteBuf mesg);
 
     public abstract ChannelFuture sendPing(ChannelHandlerContext ctx);
+
     /**
-     * Application level protocol for asking client to close connection
-     * @return WebSocketFrame which when sent to client will cause it to close the WebSocket
+     * Application level protocol for asking client to close connection sends WebSocketFrame / SSE event to client that will cause it to close the Connection
      */
-    public abstract Object goAwayMessage();
-    /**
-     * Message server sends to the client just before it force closes connection from its side
-     */
-    public abstract Object serverClosingConnectionMessage(int statusCode, String reasonText);
+    public abstract ChannelFuture sendGoAwayMessage(ChannelHandlerContext ctx);
 }
