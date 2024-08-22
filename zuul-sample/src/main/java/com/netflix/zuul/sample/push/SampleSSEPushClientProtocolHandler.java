@@ -39,7 +39,7 @@ import io.netty.handler.codec.http.HttpVersion;
 public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandler {
 
     public static final CachedDynamicIntProperty SSE_RETRY_BASE_INTERVAL =
-        new CachedDynamicIntProperty("zuul.push.sse.retry.base", 5000);
+            new CachedDynamicIntProperty("zuul.push.sse.retry.base", 5000);
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object mesg) throws Exception {
