@@ -46,19 +46,19 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.11.0",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "31.1-jre",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.netflix.servo:servo-core"
@@ -77,7 +77,7 @@
             ]
         },
         "com.google.j2objc:j2objc-annotations": {
-            "locked": "1.3",
+            "locked": "3.0.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -199,7 +199,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.12.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -308,19 +308,19 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.11.0",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "31.1-jre",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.netflix.servo:servo-core"
@@ -339,7 +339,7 @@
             ]
         },
         "com.google.j2objc:j2objc-annotations": {
-            "locked": "1.3",
+            "locked": "3.0.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -473,7 +473,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.12.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -601,20 +601,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -636,12 +636,6 @@
             "locked": "4.1.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.truth:truth": {
@@ -818,13 +812,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -873,7 +867,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
@@ -892,7 +886,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -900,19 +894,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -920,14 +914,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -937,7 +931,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.12.0"
+            "locked": "5.13.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -1079,19 +1073,19 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.11.0",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "31.1-jre",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.netflix.archaius:archaius-core",
@@ -1112,12 +1106,6 @@
             "locked": "4.1.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "1.3",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.netflix.archaius:archaius-core": {
@@ -1316,7 +1304,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.12.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -1402,20 +1390,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -1435,7 +1423,7 @@
             ]
         },
         "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
+            "locked": "3.0.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
@@ -1553,13 +1541,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -1588,7 +1576,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
@@ -1601,7 +1589,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1609,19 +1597,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -1629,14 +1617,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1646,7 +1634,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.12.0"
+            "locked": "5.13.0"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -1754,20 +1742,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.3.0-jre",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -1789,12 +1777,6 @@
             "locked": "4.1.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.truth:truth": {
@@ -1971,13 +1953,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.14.15",
+            "locked": "1.15.0",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -2014,7 +1996,7 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.43.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
@@ -2033,7 +2015,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -2041,19 +2023,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -2061,14 +2043,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0-M2",
+            "locked": "1.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0-M2",
+            "locked": "5.11.0",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -2078,7 +2060,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.12.0"
+            "locked": "5.13.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
