@@ -778,6 +778,14 @@ class HttpRequestMessageImplTest {
     }
 
     @Test
+    void getOriginalPort_multipleXFFPort() throws URISyntaxException {
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.X_FORWARDED_PORT, "9999,11000");
+        // Default to using server port
+        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 1000));
+    }
+
+    @Test
     void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
         SessionContext context = new SessionContext();
         context.set(
