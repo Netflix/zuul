@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -61,6 +62,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -156,7 +158,7 @@ class ProxyEndpointTest {
         createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
 
         proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
-        verify(nettyOrigin).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request), any(HttpResponse.class));
         verify(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -215,12 +217,12 @@ class ProxyEndpointTest {
     }
 
     private void disableRetriesOnAdjustment() {
-        doAnswer(invocation -> {
-                    doReturn(-1).when(nettyOrigin).getMaxRetriesForRequest(context);
-                    return null;
-                })
-                .when(nettyOrigin)
-                .adjustRetryPolicyIfNeeded(request);
+        Answer<?> answer = invocation -> {
+            doReturn(-1).when(nettyOrigin).getMaxRetriesForRequest(context);
+            return null;
+        };
+        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(request);
+        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(request, any(HttpResponse.class));
     }
 
     private static DiscoveryResult createDiscoveryResult() {
