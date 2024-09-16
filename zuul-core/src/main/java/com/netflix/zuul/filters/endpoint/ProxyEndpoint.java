@@ -738,8 +738,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if ((err == OutboundErrorType.RESET_CONNECTION)
                 || (err == OutboundErrorType.CONNECT_ERROR)
                 || (err == OutboundErrorType.READ_TIMEOUT
-                && IDEMPOTENT_HTTP_METHODS.contains(
-                zuulRequest.getMethod().toUpperCase()))) {
+                        && IDEMPOTENT_HTTP_METHODS.contains(
+                                zuulRequest.getMethod().toUpperCase()))) {
             return isRequestReplayable();
         }
         return false;
@@ -908,7 +908,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         boolean retryable5xxResponse = isRetryable5xxResponse(zuulRequest, originResponse);
         if (retryable5xxResponse) {
-            origin.adjustRetryPolicyIfNeeded(zuulRequest);
+            origin.adjustRetryPolicyIfNeeded(zuulRequest, originResponse);
         }
 
         if (retryable5xxResponse && isBelowRetryLimit()) {
