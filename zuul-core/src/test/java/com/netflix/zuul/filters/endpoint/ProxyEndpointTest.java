@@ -222,7 +222,7 @@ class ProxyEndpointTest {
             return null;
         };
         doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(request);
-        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(request, any(HttpResponse.class));
+        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request), any(HttpResponse.class));
     }
 
     private static DiscoveryResult createDiscoveryResult() {
