@@ -116,6 +116,18 @@ class PushRegistrationHandlerTest {
     }
 
     @Test
+    void closeIfClientAlreadyRegistered() throws Exception {
+        doHandshakeComplete();
+        handler.userEventTriggered(context, successfulAuth);
+        PushConnection firstConnection = registry.get(successfulAuth.getClientIdentity());
+        assertNotNull(firstConnection);
+
+        handler.userEventTriggered(context, successfulAuth);
+        validateConnectionClosed(1009, "Connection already registered for this client");
+        assertEquals(firstConnection, registry.get(successfulAuth.getClientIdentity()));
+    }
+
+    @Test
     void authFailed() throws Exception {
         doHandshakeComplete();
         handler.userEventTriggered(context, new TestAuth(false));
