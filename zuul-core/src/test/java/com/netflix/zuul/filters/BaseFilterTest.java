@@ -48,7 +48,7 @@ class BaseFilterTest {
     }
 
     @Test
-    void testShouldFilter() {
+    public void testShouldFilter() {
         class TestZuulFilter extends BaseSyncFilter {
 
             @Override
@@ -80,7 +80,7 @@ class BaseFilterTest {
     }
 
     @Test
-    void validateDefaultConcurrencyLimit() {
+    public void validateDefaultConcurrencyLimit() {
         final int[] limit = {0};
         class ConcInboundFilter extends BaseFilter {
 
@@ -105,7 +105,7 @@ class BaseFilterTest {
     }
 
     @Test
-    void validateFilterGlobalConcurrencyLimitOverride() {
+    public void validateFilterGlobalConcurrencyLimitOverride() {
         config.setProperty("zuul.filter.concurrency.limit.default", 7000);
         config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
         final int[] limit = {0};
@@ -133,7 +133,7 @@ class BaseFilterTest {
     }
 
     @Test
-    void validateFilterSpecificConcurrencyLimitOverride() {
+    public void validateFilterSpecificConcurrencyLimitOverride() {
         config.setProperty("zuul.filter.concurrency.limit.default", 7000);
         config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4300);
         final int[] limit = {0};
