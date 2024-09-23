@@ -28,8 +28,6 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.concurrent.Promise;
-
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -81,7 +79,5 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     Registry getSpectatorRegistry();
 
-    default void adjustRetryPolicyIfNeeded(HttpRequestMessage zuulRequest, @Nullable HttpResponse response) {
-        adjustRetryPolicyIfNeeded(zuulRequest);
-    }
+    default void originRetryPolicyAdjustmentIfNeeded(HttpRequestMessage zuulReq, HttpResponse nettyResponse) {}
 }

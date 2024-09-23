@@ -89,10 +89,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -104,6 +100,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -908,7 +907,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         boolean retryable5xxResponse = isRetryable5xxResponse(zuulRequest, originResponse);
         if (retryable5xxResponse) {
-            origin.adjustRetryPolicyIfNeeded(zuulRequest, originResponse);
+            origin.originRetryPolicyAdjustmentIfNeeded(zuulRequest, originResponse);
+            origin.adjustRetryPolicyIfNeeded(zuulRequest);
         }
 
         if (retryable5xxResponse && isBelowRetryLimit()) {
