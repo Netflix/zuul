@@ -62,7 +62,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.mockito.stubbing.Answer;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -158,7 +157,8 @@ class ProxyEndpointTest {
         createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
 
         proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
-        verify(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request), any(HttpResponse.class));
+        verify(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request));
+        verify(nettyOrigin).originRetryPolicyAdjustmentIfNeeded(request, response);
         verify(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -176,6 +176,7 @@ class ProxyEndpointTest {
         createResponse(HttpResponseStatus.BAD_REQUEST);
         proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
         verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin, never()).originRetryPolicyAdjustmentIfNeeded(request, response);
         validateNoRetry();
     }
 
@@ -204,6 +205,7 @@ class ProxyEndpointTest {
 
         proxyEndpoint.errorFromOrigin(new RuntimeException());
         verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin, never()).originRetryPolicyAdjustmentIfNeeded(request, response);
         validateNoRetry();
     }
 
@@ -217,12 +219,12 @@ class ProxyEndpointTest {
     }
 
     private void disableRetriesOnAdjustment() {
-        Answer<?> answer = invocation -> {
-            doReturn(-1).when(nettyOrigin).getMaxRetriesForRequest(context);
-            return null;
-        };
-        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(request);
-        doAnswer(answer).when(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request), any(HttpResponse.class));
+        doAnswer(invocation -> {
+                    doReturn(-1).when(nettyOrigin).getMaxRetriesForRequest(context);
+                    return null;
+                })
+                .when(nettyOrigin)
+                .adjustRetryPolicyIfNeeded(request);
     }
 
     private static DiscoveryResult createDiscoveryResult() {
