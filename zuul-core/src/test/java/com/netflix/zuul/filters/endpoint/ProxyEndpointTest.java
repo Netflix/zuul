@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -156,7 +157,8 @@ class ProxyEndpointTest {
         createResponse(HttpResponseStatus.SERVICE_UNAVAILABLE);
 
         proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
-        verify(nettyOrigin).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin).adjustRetryPolicyIfNeeded(eq(request));
+        verify(nettyOrigin).originRetryPolicyAdjustmentIfNeeded(request, response);
         verify(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
     }
 
@@ -174,6 +176,7 @@ class ProxyEndpointTest {
         createResponse(HttpResponseStatus.BAD_REQUEST);
         proxyEndpoint.handleOriginNonSuccessResponse(response, createDiscoveryResult());
         verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin, never()).originRetryPolicyAdjustmentIfNeeded(request, response);
         validateNoRetry();
     }
 
@@ -202,6 +205,7 @@ class ProxyEndpointTest {
 
         proxyEndpoint.errorFromOrigin(new RuntimeException());
         verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
+        verify(nettyOrigin, never()).originRetryPolicyAdjustmentIfNeeded(request, response);
         validateNoRetry();
     }
 
