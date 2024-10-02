@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class BaseServerStartup {
+
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
@@ -124,6 +125,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
      */
@@ -143,6 +145,12 @@ public abstract class BaseServerStartup {
     protected ChannelConfig defaultChannelDependencies(String listenAddressName) {
         ChannelConfig channelDependencies = new ChannelConfig();
         addChannelDependencies(channelDependencies, listenAddressName);
+        return channelDependencies;
+    }
+
+    protected ChannelConfig defaultChannelDependencies(ListenerSpec listenSpec) {
+        ChannelConfig channelDependencies = new ChannelConfig();
+        addChannelDependencies(channelDependencies, listenSpec.addressName());
         return channelDependencies;
     }
 
@@ -193,7 +201,7 @@ public abstract class BaseServerStartup {
         String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
 
         Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(
-                        listenAddressPropertyName, null)
+                listenAddressPropertyName, null)
                 .get();
         if (value == null) {
             value = new DynamicBooleanProperty(globalPropertyName, defaultValue)
@@ -293,6 +301,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress)} instead.
      */
@@ -302,6 +311,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
      */
@@ -311,6 +321,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, AsyncMapping)} instead.
      */
