@@ -145,7 +145,7 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter {
     }
 
     protected boolean isHealthcheckRequest(HttpRequestMessage req) {
-        return req.getPath().equals("/healthcheck");
+        return "/healthcheck".equals(req.getPath());
     }
 
     protected String getRequestId(Channel channel, SessionContext ctx) {
