@@ -148,15 +148,38 @@ public abstract class BaseServerStartup {
         return channelDependencies;
     }
 
-    protected ChannelConfig defaultChannelDependencies(ListenerSpec listenSpec) {
+    protected ChannelConfig defaultChannelDependencies(ListenerSpec listenerSpec) {
         ChannelConfig channelDependencies = new ChannelConfig();
-        addChannelDependencies(channelDependencies, listenSpec.addressName());
+        addChannelDependencies(channelDependencies, listenerSpec);
         return channelDependencies;
     }
 
     protected void addChannelDependencies(
             ChannelConfig channelDeps,
-            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
+            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName may be overriden by subclasse
+        channelDeps.set(ZuulDependencyKeys.registry, registry);
+
+        channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
+        channelDeps.set(ZuulDependencyKeys.serverStatusManager, serverStatusManager);
+
+        channelDeps.set(ZuulDependencyKeys.accessLogPublisher, accessLogPublisher);
+
+        channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
+        channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
+        final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
+        channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
+        channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
+
+        channelDeps.set(ZuulDependencyKeys.eventLoopGroupMetrics, eventLoopGroupMetrics);
+
+        channelDeps.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDeps.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+    }
+
+    protected void addChannelDependencies(
+            ChannelConfig channelDeps,
+            @SuppressWarnings("unused") ListenerSpec listenerSpec) { // listenerSpec may be overriden by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
