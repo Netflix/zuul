@@ -162,10 +162,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
             } else if (evt instanceof PushUserAuth) {
                 authEvent = (PushUserAuth) evt;
                 if ((authEvent.isSuccess()) && (pushConnection != null)) {
-                    logger.debug("registering client {}", authEvent);
-                    ctx.pipeline().remove(PushAuthHandler.NAME);
-                    registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
-                    logger.debug("Authentication complete {}", authEvent);
+                    registerClientIfAbsent();
                 } else {
                     logger.error(
                             "Push registration failed: Auth success={}, WS handshake success={}",
@@ -178,6 +175,17 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
             }
         }
         super.userEventTriggered(ctx, evt);
+    }
+
+    private void registerClientIfAbsent() {
+        if (pushConnectionRegistry.get(authEvent.getClientIdentity()) != null) {
+            pushProtocol.sendErrorAndClose(ctx, 1009, "Connection already registered for this client");
+        } else {
+            logger.debug("registering client {}", authEvent);
+            ctx.pipeline().remove(PushAuthHandler.NAME);
+            registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);
+            logger.debug("Authentication complete {}", authEvent);
+        }
     }
 
     protected int getKeepAliveInterval() {
