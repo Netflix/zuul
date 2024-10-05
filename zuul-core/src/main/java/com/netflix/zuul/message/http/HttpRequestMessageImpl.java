@@ -566,6 +566,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
         }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
         if (portStr != null && !portStr.isEmpty()) {
+            int idx = portStr.indexOf(",");
+            if (idx != -1) {
+                //get most left value
+                portStr = portStr.substring(0, idx).trim();
+            }
             return Integer.parseInt(portStr);
         }
 
