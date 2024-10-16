@@ -36,12 +36,11 @@ import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
-
 import java.util.function.Consumer;
 
 /**
  * Http2 Or Http Handler
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: December 15, 2017
  */
@@ -75,6 +74,9 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 
+    /**
+     * this method is inspired by ApplicationProtocolNegotiationHandler.userEventTriggered
+     */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof SslHandshakeCompletionEvent handshakeEvent) {

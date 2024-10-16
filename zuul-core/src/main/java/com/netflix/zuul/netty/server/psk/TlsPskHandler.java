@@ -25,14 +25,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
-import org.bouncycastle.tls.CipherSuite;
-import org.bouncycastle.tls.ProtocolName;
-import org.bouncycastle.tls.crypto.impl.jcajce.JcaTlsCryptoProvider;
-
-import javax.net.ssl.SSLSession;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Set;
+import javax.net.ssl.SSLSession;
+import org.bouncycastle.tls.CipherSuite;
+import org.bouncycastle.tls.ProtocolName;
+import org.bouncycastle.tls.crypto.impl.jcajce.JcaTlsCryptoProvider;
 
 public class TlsPskHandler extends ChannelDuplexHandler {
 
@@ -67,8 +66,7 @@ public class TlsPskHandler extends ChannelDuplexHandler {
             promise.setFailure(new IllegalStateException("Failed to write message on the channel. Message is not a ByteBuf"));
             return;
         }
-        byte[] appDataBytes = byteBufMsg.hasArray() ? byteBufMsg.array() : TlsPskUtils.readDirect(byteBufMsg);
-        ReferenceCountUtil.safeRelease(byteBufMsg);
+        byte[] appDataBytes = TlsPskUtils.getAppDataBytesAndRelease(byteBufMsg);
         tlsPskServerProtocol.writeApplicationData(appDataBytes, 0, appDataBytes.length);
         int availableOutputBytes = tlsPskServerProtocol.getAvailableOutputBytes();
         if (availableOutputBytes != 0) {
@@ -98,11 +96,11 @@ public class TlsPskHandler extends ChannelDuplexHandler {
      * the protocol name or null if application-level protocol has not been negotiated
      */
     public String getApplicationProtocol() {
-        return tlsPskServer!=null ? tlsPskServer.getApplicationProtocol() : null;
+        return tlsPskServer != null ? tlsPskServer.getApplicationProtocol() : null;
     }
 
     public SSLSession getSession() {
-        return tlsPskServerProtocol!=null ? tlsPskServerProtocol.getSSLSession() : null;
+        return tlsPskServerProtocol != null ? tlsPskServerProtocol.getSSLSession() : null;
     }
 
 }

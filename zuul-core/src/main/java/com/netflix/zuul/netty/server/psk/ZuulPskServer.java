@@ -19,8 +19,15 @@ package com.netflix.zuul.netty.server.psk;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Timer;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import lombok.SneakyThrows;
 import org.bouncycastle.tls.AbstractTlsServer;
 import org.bouncycastle.tls.AlertDescription;
@@ -39,13 +46,6 @@ import org.bouncycastle.tls.crypto.TlsCrypto;
 import org.bouncycastle.tls.crypto.TlsSecret;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public class ZuulPskServer extends AbstractTlsServer {
 
@@ -101,7 +101,7 @@ public class ZuulPskServer extends AbstractTlsServer {
     @Override
     protected Vector getProtocolNames() {
         Vector protocolNames = new Vector();
-        if (supportedApplicationProtocols!=null) {
+        if (supportedApplicationProtocols != null) {
             supportedApplicationProtocols.forEach(protocolNames::addElement);
         }
         return protocolNames;
@@ -145,16 +145,19 @@ public class ZuulPskServer extends AbstractTlsServer {
     @Override
     @SneakyThrows
     // TODO: Ask BC folks to see if getExternalPSK can throw a checked exception
+    // https://github.com/bcgit/bc-java/issues/1673
     public TlsPSKExternal getExternalPSK(Vector clientPskIdentities) {
-        byte[] clientPskIdentity = ((PskIdentity)clientPskIdentities.get(0)).getIdentity();
+        byte[] clientPskIdentity = ((PskIdentity) clientPskIdentities.get(0)).getIdentity();
         byte[] psk;
-        try{
+        try {
             this.ctx.channel().attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY).set(new ClientPSKIdentityInfo(clientPskIdentity));
             psk = externalTlsPskProvider.provide(clientPskIdentity, this.context.getSecurityParametersHandshake().getClientRandom());
-        }catch (PskCreationFailureException e) {
+        } catch (PskCreationFailureException e) {
             throw switch (e.getTlsAlertMessage()) {
-                case unknown_psk_identity -> new TlsFatalAlert(AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
-                case decrypt_error -> new TlsFatalAlert(AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
+                case unknown_psk_identity ->
+                        new TlsFatalAlert(AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
+                case decrypt_error ->
+                        new TlsFatalAlert(AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
             };
         }
         TlsSecret pskTlsSecret = getCrypto().createSecret(psk);
@@ -173,6 +176,10 @@ public class ZuulPskServer extends AbstractTlsServer {
         }
         if (cause != null) {
             LOGGER.error("TLS/PSK alert stacktrace", cause);
+        }
+
+        if (alertDescription == AlertDescription.close_notify) {
+            ctx.fireUserEventTriggered(SslCloseCompletionEvent.SUCCESS);
         }
     }
 
@@ -210,7 +217,7 @@ public class ZuulPskServer extends AbstractTlsServer {
     public String getApplicationProtocol() {
         ProtocolName protocolName =
                 context.getSecurityParametersConnection().getApplicationProtocol();
-        if (protocolName!=null) {
+        if (protocolName != null) {
             return protocolName.getUtf8Decoding();
         }
         return null;

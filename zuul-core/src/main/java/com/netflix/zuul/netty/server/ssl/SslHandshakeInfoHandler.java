@@ -36,16 +36,15 @@ import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Stores info about the client and server's SSL certificates in the context, after a successful handshake.
@@ -105,9 +104,10 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         serverCert = session.getLocalCertificates()[0];
                     }
 
-                    Boolean tlsHandshakeUsingExternalPSK = ctx.channel()
+                    //if attribute is true, then true. If null or false then false
+                    boolean tlsHandshakeUsingExternalPSK = Boolean.TRUE.equals(ctx.channel()
                             .attr(ZuulPskServer.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
-                            .get();
+                            .get());
 
                     ClientPSKIdentityInfo clientPSKIdentityInfo = ctx.channel()
                             .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
@@ -138,7 +138,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             CurrentPassport.fromChannel(ctx.channel()).getState();
                     if (cause instanceof ClosedChannelException
                             && (PassportState.SERVER_CH_INACTIVE.equals(passportState)
-                                    || PassportState.SERVER_CH_IDLE_TIMEOUT.equals(passportState))) {
+                            || PassportState.SERVER_CH_IDLE_TIMEOUT.equals(passportState))) {
                         // Either client closed the connection without/before having completed a handshake, or
                         // the connection idle timed-out before handshake.
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then

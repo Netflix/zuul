@@ -17,12 +17,19 @@
 package com.netflix.zuul.netty.server.psk;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.ReferenceCountUtil;
 
 class TlsPskUtils {
-    static byte[] readDirect(ByteBuf byteBufMsg) {
+    protected static byte[] readDirect(ByteBuf byteBufMsg) {
         int length = byteBufMsg.readableBytes();
         byte[] dest = new byte[length];
-        byteBufMsg.readSlice(length).getBytes(0, dest);
+        byteBufMsg.readBytes(dest);
         return dest;
+    }
+
+    protected static byte[] getAppDataBytesAndRelease(ByteBuf byteBufMsg) {
+        byte[] appDataBytes = byteBufMsg.hasArray() ? byteBufMsg.array() : TlsPskUtils.readDirect(byteBufMsg);
+        ReferenceCountUtil.safeRelease(byteBufMsg);
+        return appDataBytes;
     }
 }
