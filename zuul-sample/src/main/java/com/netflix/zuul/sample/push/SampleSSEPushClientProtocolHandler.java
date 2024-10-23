@@ -19,6 +19,8 @@ package com.netflix.zuul.sample.push;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.zuul.netty.server.push.PushClientProtocolHandler;
 import com.netflix.zuul.netty.server.push.PushProtocol;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -62,8 +64,8 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
                         if (pipeline.get(HttpContentCompressor.class) != null) {
                             pipeline.remove(HttpContentCompressor.class);
                         }
-                        final String reconnetInterval = "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n";
-                        ctx.writeAndFlush(reconnetInterval);
+                        final ByteBuf reconnectInterval = ByteBufUtil.writeUtf8(ctx.alloc(), "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n");
+                        ctx.writeAndFlush(reconnectInterval);
                     }
                 });
             }
