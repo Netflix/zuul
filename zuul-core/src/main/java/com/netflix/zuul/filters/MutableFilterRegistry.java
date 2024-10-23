@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public final class MutableFilterRegistry implements FilterRegistry {

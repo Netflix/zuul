@@ -16,7 +16,7 @@
 package com.netflix.zuul.netty.server;
 
 import com.netflix.config.DynamicIntProperty;
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Event loop configuration for the Zuul server.
