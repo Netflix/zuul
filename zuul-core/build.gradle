@@ -53,7 +53,7 @@ dependencies {
     runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-aarch_64" )
 
     implementation 'io.perfmark:perfmark-api:0.27.0'
-    implementation 'javax.inject:javax.inject:1'
+    api 'jakarta.inject:jakarta.inject-api:2.0.1'
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito,
             libraries.mockito,
