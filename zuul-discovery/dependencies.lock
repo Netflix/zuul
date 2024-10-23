@@ -812,13 +812,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -886,7 +886,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -894,19 +894,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -914,14 +914,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -931,7 +931,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.13.0"
+            "locked": "5.14.2"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -1541,13 +1541,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -1589,7 +1589,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1597,19 +1597,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -1617,14 +1617,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1634,7 +1634,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.13.0"
+            "locked": "5.14.2"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -1953,13 +1953,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.0",
+            "locked": "1.15.4",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -2015,7 +2015,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -2023,19 +2023,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -2043,14 +2043,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.0",
+            "locked": "1.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.0",
+            "locked": "5.11.3",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -2060,7 +2060,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.13.0"
+            "locked": "5.14.2"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
