@@ -8,7 +8,7 @@ on:
         required: true
         default: 'master'
       repository:
-        description: 'override for forks'
+        description: 'Repository name (override for forks)'
         required: false
         default: Netflix/zuul
 
