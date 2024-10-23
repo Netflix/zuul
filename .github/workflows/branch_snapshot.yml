@@ -7,6 +7,10 @@ on:
         description: 'Branch to publish snapshot of'
         required: true
         default: 'master'
+      repository:
+        description: 'override for forks'
+        required: false
+        default: ${{ github.repository }}
 
 jobs:
   build:
@@ -20,6 +24,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.branch }}
+          repository: ${{ github.event.inputs.repository }}
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
