@@ -30,9 +30,10 @@ import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * TODO: Change this class to be an instance per-port.
@@ -110,6 +111,7 @@ public class ClientConnectionsShutdown {
             flagChannelForClose(channel, shutdownType);
         }
 
+        LOG.info("Setting up scheduled task for {} with shutdownType: {}", closeFuture, shutdownType);
         Promise<Void> promise = executor.newPromise();
         Runnable cancelTimeoutTask;
         if (shutdownType == ShutdownType.SHUTDOWN) {
@@ -129,6 +131,7 @@ public class ClientConnectionsShutdown {
                     TimeUnit.SECONDS);
             cancelTimeoutTask = () -> {
                 if (!timeoutTask.isDone()) {
+                    LOG.info("Timeout task canceled before completion.");
                     // close happened before the timeout
                     timeoutTask.cancel(false);
                 }
@@ -138,6 +141,7 @@ public class ClientConnectionsShutdown {
         }
 
         closeFuture.addListener(future -> {
+            LOG.info("CloseFuture completed successfully: {}", future.isSuccess());
             cancelTimeoutTask.run();
             promise.setSuccess(null);
         });
