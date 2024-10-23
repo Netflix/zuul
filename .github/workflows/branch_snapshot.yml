@@ -10,7 +10,7 @@ on:
       repository:
         description: 'override for forks'
         required: false
-        default: ${{ github.repository }}
+        default: Netflix/zuul
 
 jobs:
   build:
