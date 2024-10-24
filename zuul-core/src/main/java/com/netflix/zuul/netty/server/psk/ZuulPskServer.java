@@ -142,10 +142,15 @@ public class ZuulPskServer extends AbstractTlsServer {
         return super.getServerVersion();
     }
 
+    /**
+     * TODO: Ask BC folks to see if getExternalPSK can throw a checked exception
+     * https://github.com/bcgit/bc-java/issues/1673
+     * We are using SneakyThrows here because getExternalPSK is an override and we cant have throws in the method signature
+     * and we dont want to catch and wrap in RuntimeException.
+     * SneakyThrows allows up to compile and it will throw the exception at runtime.
+     */
     @Override
     @SneakyThrows
-    // TODO: Ask BC folks to see if getExternalPSK can throw a checked exception
-    // https://github.com/bcgit/bc-java/issues/1673
     public TlsPSKExternal getExternalPSK(Vector clientPskIdentities) {
         byte[] clientPskIdentity = ((PskIdentity) clientPskIdentities.get(0)).getIdentity();
         byte[] psk;
