@@ -16,10 +16,13 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -30,11 +33,15 @@ import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
+import com.netflix.zuul.netty.server.ClientConnectionsShutdown.ShutdownType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
@@ -176,6 +183,41 @@ class ClientConnectionsShutdownTest {
     }
 
     @Test
+    void connectionNeedsToBeForceClosedAndOneChannelThrowsAnException() throws Exception {
+        String configName = "server.outofservice.close.timeout";
+        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
+
+        try {
+            configuration.setProperty(configName, "0");
+            createChannels(5);
+            ChannelFuture connect = new Bootstrap()
+                    .group(CLIENT_EVENT_LOOP)
+                    .channel(LocalChannel.class)
+                    .handler(new ChannelInitializer<>() {
+                        @Override
+                        protected void initChannel(Channel ch) {
+                            ch.pipeline().addLast(new ChannelOutboundHandlerAdapter() {
+                                @Override
+                                public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+                                    throw new Exception();
+                                }
+                            });
+                        }
+                    })
+                    .remoteAddress(LOCAL_ADDRESS)
+                    .connect()
+                    .sync();
+            channels.add(connect.channel());
+
+            boolean await = shutdown.gracefullyShutdownClientChannels().await(10, TimeUnit.SECONDS);
+            assertTrue(await, "the promise should finish even if a channel failed to close");
+            assertEquals(1, channels.size(), "all other channels should have been closed");
+        } finally {
+            configuration.setProperty(configName, "30");
+        }
+    }
+
+    @Test
     void connectionsNotForceClosed() throws Exception {
         String configName = "server.outofservice.close.timeout";
         AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
@@ -186,7 +228,7 @@ class ClientConnectionsShutdownTest {
         try {
             configuration.setProperty(configName, "0");
             createChannels(10);
-            Promise<Void> promise = shutdown.gracefullyShutdownClientChannels(false);
+            Promise<Void> promise = shutdown.gracefullyShutdownClientChannels(ShutdownType.OUT_OF_SERVICE);
             verify(eventLoop, never()).schedule(isA(Runnable.class), anyLong(), isA(TimeUnit.class));
             channels.forEach(Channel::close);
 
@@ -197,8 +239,22 @@ class ClientConnectionsShutdownTest {
         }
     }
 
+    @Test
+    public void shutdownTypeForwardedToFlag() throws InterruptedException {
+        shutdown = spy(shutdown);
+        doNothing().when(shutdown).flagChannelForClose(any(), any());
+        createChannels(1);
+        Channel channel = channels.iterator().next();
+        for (ShutdownType type : ShutdownType.values()) {
+            shutdown.gracefullyShutdownClientChannels(type);
+            verify(shutdown).flagChannelForClose(channel, type);
+        }
+
+        channels.close().await(5, TimeUnit.SECONDS);
+    }
+
     private void createChannels(int numChannels) throws InterruptedException {
-        ChannelInitializer<LocalChannel> initializer = new ChannelInitializer<LocalChannel>() {
+        ChannelInitializer<LocalChannel> initializer = new ChannelInitializer<>() {
             @Override
             protected void initChannel(LocalChannel ch) {}
         };

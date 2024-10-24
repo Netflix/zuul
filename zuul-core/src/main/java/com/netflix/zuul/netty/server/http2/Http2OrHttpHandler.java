@@ -46,6 +46,8 @@ import java.util.function.Consumer;
  */
 public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     public static final AttributeKey<String> PROTOCOL_NAME = AttributeKey.valueOf("protocol_name");
+    public static final String PROTOCOL_HTTP_1_1 = "HTTP/1.1";
+    public static final String PROTOCOL_HTTP_2 = "HTTP/2";
 
     private static final String FALLBACK_APPLICATION_PROTOCOL = ApplicationProtocolNames.HTTP_1_1;
 
@@ -116,12 +118,12 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     @Override
     protected void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
         if (ApplicationProtocolNames.HTTP_2.equals(protocol)) {
-            ctx.channel().attr(PROTOCOL_NAME).set("HTTP/2");
+            ctx.channel().attr(PROTOCOL_NAME).set(PROTOCOL_HTTP_2);
             configureHttp2(ctx.pipeline());
             return;
         }
         if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
-            ctx.channel().attr(PROTOCOL_NAME).set("HTTP/1.1");
+            ctx.channel().attr(PROTOCOL_NAME).set(PROTOCOL_HTTP_1_1);
             configureHttp1(ctx.pipeline());
             return;
         }

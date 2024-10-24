@@ -52,6 +52,11 @@ public class ClientConnectionsShutdown {
     private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT =
             new DynamicIntProperty("server.outofservice.close.timeout", 30);
 
+    public enum ShutdownType {
+        OUT_OF_SERVICE,
+        SHUTDOWN
+    }
+
     private final ChannelGroup channels;
     private final EventExecutor executor;
     private final EurekaClient discoveryClient;
@@ -81,7 +86,7 @@ public class ClientConnectionsShutdown {
                     // Schedule to gracefully close all the client connections.
                     if (ENABLED.get()) {
                         executor.schedule(
-                                () -> gracefullyShutdownClientChannels(false),
+                                () -> gracefullyShutdownClientChannels(ShutdownType.OUT_OF_SERVICE),
                                 DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
                                 TimeUnit.MILLISECONDS);
                     }
@@ -91,10 +96,10 @@ public class ClientConnectionsShutdown {
     }
 
     public Promise<Void> gracefullyShutdownClientChannels() {
-        return gracefullyShutdownClientChannels(true);
+        return gracefullyShutdownClientChannels(ShutdownType.SHUTDOWN);
     }
 
-    Promise<Void> gracefullyShutdownClientChannels(boolean forceCloseAfterTimeout) {
+    Promise<Void> gracefullyShutdownClientChannels(ShutdownType shutdownType) {
         // Mark all active connections to be closed after next response sent.
         LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
 
@@ -102,18 +107,23 @@ public class ClientConnectionsShutdown {
         // be closed during the force close stage
         ChannelGroupFuture closeFuture = channels.newCloseFuture();
         for (Channel channel : channels) {
-            ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
-            ChannelPromise closePromise = channel.pipeline().newPromise();
-            channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
+            flagChannelForClose(channel, shutdownType);
         }
 
         Promise<Void> promise = executor.newPromise();
         Runnable cancelTimeoutTask;
-        if (forceCloseAfterTimeout) {
+        if (shutdownType == ShutdownType.SHUTDOWN) {
             ScheduledFuture<?> timeoutTask = executor.schedule(
                     () -> {
                         LOG.warn("Force closing remaining {} active client channels.", channels.size());
-                        channels.close();
+                        channels.close().addListener(future -> {
+                            if (!future.isSuccess()) {
+                                LOG.error("Failed to close all connections", future.cause());
+                            }
+                            if (!promise.isDone()) {
+                                promise.setSuccess(null);
+                            }
+                        });
                     },
                     GRACEFUL_CLOSE_TIMEOUT.get(),
                     TimeUnit.SECONDS);
@@ -133,5 +143,11 @@ public class ClientConnectionsShutdown {
         });
 
         return promise;
+    }
+
+    protected void flagChannelForClose(Channel channel, ShutdownType shutdownType) {
+        ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
+        ChannelPromise closePromise = channel.pipeline().newPromise();
+        channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
     }
 }

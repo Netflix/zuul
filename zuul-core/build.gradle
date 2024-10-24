@@ -9,13 +9,15 @@ dependencies {
     implementation libraries.guava
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.78'
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78'
-    implementation 'org.bouncycastle:bctls-jdk18on:1.78'
+
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bctls-jdk18on:1.78.1'
+
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
     api 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
 
-    api "com.netflix.archaius:archaius-core:0.7.7"
+    api "com.netflix.archaius:archaius-core:0.7.12"
     api "com.netflix.spectator:spectator-api:latest.release"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
@@ -61,7 +63,7 @@ dependencies {
 
     testImplementation 'commons-configuration:commons-configuration:1.10'
 
-    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.13'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'

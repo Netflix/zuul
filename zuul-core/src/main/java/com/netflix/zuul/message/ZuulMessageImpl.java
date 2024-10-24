@@ -147,16 +147,13 @@ public class ZuulMessageImpl implements ZuulMessage {
             return null;
         }
 
-        int size = 0;
-        for (final HttpContent chunk : bodyChunks) {
-            size += chunk.content().readableBytes();
-        }
+        int size = this.getBodyLength();
         final byte[] body = new byte[size];
         int offset = 0;
         for (final HttpContent chunk : bodyChunks) {
             final ByteBuf content = chunk.content();
-            final int len = content.readableBytes();
-            content.getBytes(content.readerIndex(), body, offset, len);
+            final int len = content.writerIndex(); // writer idx tracks the total readable bytes in the buffer
+            content.getBytes(0, body, offset, len);
             offset += len;
         }
         return body;
@@ -166,7 +163,8 @@ public class ZuulMessageImpl implements ZuulMessage {
     public int getBodyLength() {
         int size = 0;
         for (final HttpContent chunk : bodyChunks) {
-            size += chunk.content().readableBytes();
+            // writer index tracks the total number of bytes written to the buffer regardless of buffer reads
+            size += chunk.content().writerIndex();
         }
         return size;
     }

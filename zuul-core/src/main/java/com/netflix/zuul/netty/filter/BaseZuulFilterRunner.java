@@ -302,8 +302,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         return false;
     }
 
-    private boolean isMessageBodyReadyForFilter(final ZuulFilter filter, final I inMesg) {
-        return ((!filter.needsBodyBuffered(inMesg)) || (inMesg.hasCompleteBody()));
+    private boolean isMessageBodyReadyForFilter(final ZuulFilter<I, O> filter, final I inMesg) {
+        return inMesg.hasCompleteBody() || (!filter.needsBodyBuffered(inMesg));
     }
 
     protected O handleFilterException(final I inMesg, final ZuulFilter<I, O> filter, final Throwable ex) {

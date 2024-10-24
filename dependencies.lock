@@ -133,7 +133,7 @@
     },
     "palantirJavaFormat": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -141,7 +141,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson.datatype:jackson-datatype-guava",
@@ -152,7 +152,7 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.datatype:jackson-datatype-guava",
                 "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
@@ -162,28 +162,28 @@
             ]
         },
         "com.fasterxml.jackson.datatype:jackson-datatype-guava": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.palantir.javaformat:palantir-java-format-spi"
             ]
         },
         "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.palantir.javaformat:palantir-java-format"
             ]
         },
         "com.fasterxml.jackson.module:jackson-module-parameter-names": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.palantir.javaformat:palantir-java-format"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.15.2",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -196,35 +196,27 @@
         "com.google.code.findbugs:jsr305": {
             "locked": "3.0.2",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.18.0",
+            "locked": "2.23.0",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.1.2-jre",
+            "locked": "33.0.0-jre",
             "transitive": [
                 "com.fasterxml.jackson.datatype:jackson-datatype-guava",
                 "com.palantir.javaformat:palantir-java-format",
                 "com.palantir.javaformat:palantir-java-format-spi"
-            ]
-        },
-        "com.google.guava:guava-parent": {
-            "locked": "32.1.2-jre",
-            "transitive": [
-                "com.google.guava:guava"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -234,19 +226,18 @@
             ]
         },
         "com.palantir.javaformat:palantir-java-format": {
-            "locked": "2.36.0"
+            "locked": "2.49.0"
         },
         "com.palantir.javaformat:palantir-java-format-spi": {
-            "locked": "2.36.0",
+            "locked": "2.49.0",
             "transitive": [
                 "com.palantir.javaformat:palantir-java-format"
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.33.0",
+            "locked": "3.41.0",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.guava:guava-parent"
+                "com.google.guava:guava"
             ]
         },
         "org.functionaljava:functionaljava": {

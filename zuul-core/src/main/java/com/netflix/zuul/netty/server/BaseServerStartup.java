@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class BaseServerStartup {
+
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
@@ -124,6 +125,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
      */
@@ -146,9 +148,38 @@ public abstract class BaseServerStartup {
         return channelDependencies;
     }
 
+    protected ChannelConfig defaultChannelDependencies(ListenerSpec listenerSpec) {
+        ChannelConfig channelDependencies = new ChannelConfig();
+        addChannelDependencies(channelDependencies, listenerSpec);
+        return channelDependencies;
+    }
+
     protected void addChannelDependencies(
             ChannelConfig channelDeps,
-            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
+            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName may be overriden by subclasse
+        channelDeps.set(ZuulDependencyKeys.registry, registry);
+
+        channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
+        channelDeps.set(ZuulDependencyKeys.serverStatusManager, serverStatusManager);
+
+        channelDeps.set(ZuulDependencyKeys.accessLogPublisher, accessLogPublisher);
+
+        channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
+        channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
+        final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
+        channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
+        channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
+
+        channelDeps.set(ZuulDependencyKeys.eventLoopGroupMetrics, eventLoopGroupMetrics);
+
+        channelDeps.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDeps.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+    }
+
+    protected void addChannelDependencies(
+            ChannelConfig channelDeps,
+            @SuppressWarnings("unused") ListenerSpec listenerSpec) { // listenerSpec may be overriden by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
@@ -193,7 +224,7 @@ public abstract class BaseServerStartup {
         String listenAddressPropertyName = "server." + listenAddressName + "." + propertySuffix;
 
         Boolean value = new ChainedDynamicProperty.DynamicBooleanPropertyThatSupportsNull(
-                        listenAddressPropertyName, null)
+                listenAddressPropertyName, null)
                 .get();
         if (value == null) {
             value = new DynamicBooleanProperty(globalPropertyName, defaultValue)
@@ -293,6 +324,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress)} instead.
      */
@@ -302,6 +334,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
      */
@@ -311,6 +344,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, AsyncMapping)} instead.
      */
