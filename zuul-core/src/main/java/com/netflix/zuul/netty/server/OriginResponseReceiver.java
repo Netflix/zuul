@@ -38,6 +38,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.ReadTimeoutException;
@@ -59,6 +60,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(OriginResponseReceiver.class);
     private static final AttributeKey<Throwable> SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE =
             AttributeKey.newInstance("_ssl_handshake_from_origin_throwable");
+    private static final AttributeKey<Boolean> SSL_CLOSE_NOTIFY_SEEN =
+            AttributeKey.newInstance("_ssl_close_notify_seen");
     public static final String CHANNEL_HANDLER_NAME = "_origin_response_receiver";
 
     public OriginResponseReceiver(final ProxyEndpoint edgeProxy) {
@@ -106,15 +109,20 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof CompleteEvent) {
-            final CompleteReason reason = ((CompleteEvent) evt).getReason();
+        if (evt instanceof CompleteEvent completeEvent) {
+            final CompleteReason reason = completeEvent.getReason();
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
-                logger.error(
-                        "Origin request completed with reason other than COMPLETE: {}, {}",
-                        reason.name(),
-                        ChannelUtils.channelInfoForLogging(ctx.channel()));
-                final ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
-                edgeProxy.errorFromOrigin(ze);
+                if(reason == CompleteReason.CLOSE && Boolean.TRUE.equals(ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get())) {
+                    logger.warn("Origin request completed with close, after getting a SslCloseCompletionEvent event, treating as a reset: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    edgeProxy.errorFromOrigin(new OriginConnectException("Origin connection close_notify", OutboundErrorType.RESET_CONNECTION));
+                } else {
+                    logger.error(
+                            "Origin request completed with reason other than COMPLETE: {}, {}",
+                            reason.name(),
+                            ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    final ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
+                    edgeProxy.errorFromOrigin(ze);
+                }
             }
 
             // First let this event propagate along the pipeline, before cleaning vars from the channel.
@@ -134,6 +142,10 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 edgeProxy.errorFromOrigin(
                         new OutboundException(OutboundErrorType.READ_TIMEOUT, edgeProxy.getRequestAttempts()));
             }
+            super.userEventTriggered(ctx, evt);
+        } else if(evt instanceof SslCloseCompletionEvent) {
+            logger.warn("Received SslCloseCompletionEvent on {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+            ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).set(true);
             super.userEventTriggered(ctx, evt);
         } else {
             super.userEventTriggered(ctx, evt);
