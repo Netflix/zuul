@@ -7,6 +7,13 @@ on:
         description: 'Branch to publish snapshot of'
         required: true
         default: 'master'
+      repository:
+        description: 'Repository name (override for forks)'
+        required: false
+        default: Netflix/zuul
+      version:
+        description: 'The version number to use'
+        required: true
 
 jobs:
   build:
@@ -20,6 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.branch }}
+          repository: ${{ github.event.inputs.repository }}
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -27,7 +35,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Build snapshot
-        run: ./gradlew build snapshot
+        run: ./gradlew build snapshot -Prelease.version=${{ github.event.inputs.version }}
         env:
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
