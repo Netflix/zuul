@@ -32,7 +32,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Build snapshot
-        run: ./gradlew build snapshot
+        run: ./gradlew build snapshot -Prelease.version=2.5.10-tls-psk-SNAPSHOT
         env:
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
