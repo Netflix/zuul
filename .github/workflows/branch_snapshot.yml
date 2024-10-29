@@ -11,6 +11,9 @@ on:
         description: 'Repository name (override for forks)'
         required: false
         default: Netflix/zuul
+      version:
+        description: 'The version number to use'
+        required: true
 
 jobs:
   build:
@@ -32,7 +35,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Build snapshot
-        run: ./gradlew build snapshot -Prelease.version=2.5.10-tls-psk-SNAPSHOT
+        run: ./gradlew build snapshot -Prelease.version=${{ github.event.inputs.version }}
         env:
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
