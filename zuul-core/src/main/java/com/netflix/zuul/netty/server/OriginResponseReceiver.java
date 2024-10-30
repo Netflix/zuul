@@ -144,7 +144,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             }
             super.userEventTriggered(ctx, evt);
         } else if(evt instanceof SslCloseCompletionEvent) {
-            logger.warn("Received SslCloseCompletionEvent on {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
+            logger.debug("Received SslCloseCompletionEvent on {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
             ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).set(true);
             super.userEventTriggered(ctx, evt);
         } else {
