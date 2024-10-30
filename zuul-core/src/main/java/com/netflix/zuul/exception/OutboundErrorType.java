@@ -56,7 +56,7 @@ public enum OutboundErrorType implements ErrorType {
             ZuulStatusCategory.FAILURE_ORIGIN_RESET_CONNECTION,
             ClientException.ErrorType.CONNECT_EXCEPTION),
     CLOSE_NOTIFY_CONNECTION(
-            500,
+            504,
             ZuulStatusCategory.FAILURE_ORIGIN_CLOSE_NOTIFY_CONNECTION,
             ClientException.ErrorType.CONNECT_EXCEPTION),
     CANCELLED(400, ZuulStatusCategory.FAILURE_CLIENT_CANCELLED, ClientException.ErrorType.SOCKET_TIMEOUT_EXCEPTION),
