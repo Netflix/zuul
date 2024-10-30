@@ -69,7 +69,8 @@ public enum ZuulStatusCategory implements StatusCategory {
     FAILURE_ORIGIN_THROTTLED(ZuulStatusCategoryGroup.FAILURE, 6, "Throttled by origin returning 503 status"),
     FAILURE_ORIGIN_NO_SERVERS(ZuulStatusCategoryGroup.FAILURE, 14, "No UP origin servers available in Discovery"),
     FAILURE_ORIGIN_RESET_CONNECTION(
-            ZuulStatusCategoryGroup.FAILURE, 15, "Connection reset on an established origin connection");
+            ZuulStatusCategoryGroup.FAILURE, 15, "Connection reset on an established origin connection"),
+    FAILURE_ORIGIN_CLOSE_NOTIFY_CONNECTION(ZuulStatusCategoryGroup.FAILURE, 15, "Connection TLS session shutdown");
 
     private final StatusCategoryGroup group;
     private final String id;
