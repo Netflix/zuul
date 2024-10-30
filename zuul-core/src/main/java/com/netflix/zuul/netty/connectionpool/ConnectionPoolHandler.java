@@ -28,6 +28,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
     private final Counter inactiveCounter;
     private final Counter errorCounter;
     private final Counter headerCloseCounter;
+    private final Counter sslCloseCompletionCounter;
 
     public ConnectionPoolHandler(OriginName originName) {
         if (originName == null) {
@@ -58,6 +60,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
         this.inactiveCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_inactive", originName.getMetricId());
         this.errorCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_error", originName.getMetricId());
         this.headerCloseCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_headerClose", originName.getMetricId());
+        this.sslCloseCompletionCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_sslClose", originName.getMetricId());
     }
 
     @Override
@@ -71,12 +74,11 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
             final String msg = "Origin channel for origin - " + originName + " - idle timeout has fired. "
                     + ChannelUtils.channelInfoForLogging(ctx.channel());
             closeConnection(ctx, msg);
-        } else if (evt instanceof CompleteEvent) {
+        } else if (evt instanceof CompleteEvent completeEvt) {
             // The HttpLifecycleChannelHandler instance will fire this event when either a response has finished being
             // written, or
             // the channel is no longer active or disconnected.
             // Return the connection to pool.
-            CompleteEvent completeEvt = (CompleteEvent) evt;
             final CompleteReason reason = completeEvt.getReason();
             if (reason == CompleteReason.SESSION_COMPLETE) {
                 final PooledConnection conn = PooledConnection.getFromChannel(ctx.channel());
@@ -97,6 +99,11 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
                         + reason.name() + ", " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 closeConnection(ctx, msg);
             }
+        } else if(evt instanceof SslCloseCompletionEvent event) {
+            sslCloseCompletionCounter.increment();
+            String msg = "Origin channel for origin - " + originName + " - received SslCloseCompletionEvent " + event + ". "
+                    + ChannelUtils.channelInfoForLogging(ctx.channel());
+            closeConnection(ctx, msg);
         }
     }
 
