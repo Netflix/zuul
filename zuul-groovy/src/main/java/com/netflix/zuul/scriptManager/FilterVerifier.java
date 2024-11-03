@@ -78,6 +78,7 @@ public class FilterVerifier {
      * compiles the Groovy source code
      *
      */
+    @SuppressWarnings("BanClassLoader")
     public Class<?> compileGroovy(String sFilterCode) throws CompilationFailedException {
         GroovyClassLoader loader = new GroovyClassLoader();
         return loader.parseClass(sFilterCode);

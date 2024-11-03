@@ -16,20 +16,18 @@
 
 package com.netflix.zuul.message;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.netflix.zuul.context.SessionContext;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ZuulMessageImplTest {
@@ -66,7 +64,7 @@ class ZuulMessageImplTest {
         final String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
@@ -79,7 +77,7 @@ class ZuulMessageImplTest {
         final String body = new String(msg.getBody());
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
@@ -92,7 +90,7 @@ class ZuulMessageImplTest {
         final String body = msg.getBodyAsText();
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
