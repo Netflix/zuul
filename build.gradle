@@ -9,6 +9,7 @@ plugins {
     id "com.google.osdetector" version '1.7.3'
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '6.8.1'
+    id 'net.ltgt.errorprone' version '4.1.0'
 }
 
 ext.githubProjectName = rootProject.name
@@ -39,6 +40,7 @@ subprojects {
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
     apply plugin: 'com.palantir.java-format'
+    apply plugin: 'net.ltgt.errorprone'
 
     license {
         ignoreFailures = false
@@ -59,6 +61,24 @@ subprojects {
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        dependencies {
+            errorprone "com.uber.nullaway:nullaway:latest.release"
+            errorprone "com.google.errorprone:error_prone_core:latest.release"
+        }
+
+        options.errorprone {
+            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
+            option("NullAway:AnnotatedPackages", "com.netflix.zuul")
+//            Uncomment to automatically apply fixes for a check:
+//
+//            errorproneArgs.addAll(
+//                "-XepPatchChecks:UnnecessaryParentheses",
+//                "-XepPatchLocation:IN_PLACE",
+//            )
         }
     }
 
