@@ -1,4 +1,9 @@
 {
+    "errorproneJavac": {
+        "com.google.errorprone:javac": {
+            "locked": "9+181-r4173-1"
+        }
+    },
     "jmh": {
         "net.sf.jopt-simple:jopt-simple": {
             "locked": "5.0.4",
