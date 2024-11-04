@@ -157,6 +157,23 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * <p>This method exists for static analysis.
      */
     @Override
+    public boolean containsKey(Object key) {
+        return super.containsKey(key);
+    }
+
+    /**
+     * Checks for the existence of the key in the context.
+     */
+    public <T> boolean containsKey(Key<T> key) {
+        return typedMap.containsKey(Objects.requireNonNull(key, "key"));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
     public Object put(String key, Object value) {
         return super.put(key, value);
     }
