@@ -15,15 +15,13 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.google.common.truth.Truth;
 import com.netflix.zuul.context.SessionContext.Key;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class SessionContextTest {
@@ -106,5 +104,19 @@ class SessionContextTest {
         String val = context.remove(key);
         Truth.assertThat(context.get(key)).isNull();
         Truth.assertThat(val).isEqualTo("bar");
+    }
+
+    @Test
+    void containsKey() {
+        SessionContext context = new SessionContext();
+        Key<String> key = SessionContext.newKey("foo");
+        context.put(key, "bar");
+
+        Truth.assertThat(context.containsKey(key)).isTrue();
+
+        String val = context.remove(key);
+        Truth.assertThat(val).isEqualTo("bar");
+
+        Truth.assertThat(context.containsKey(key)).isFalse();
     }
 }
