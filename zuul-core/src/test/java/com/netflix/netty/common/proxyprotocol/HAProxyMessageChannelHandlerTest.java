@@ -220,7 +220,7 @@ class HAProxyMessageChannelHandlerTest {
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
         final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
-        assertThat(customTLV.isEmpty());
+        assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 
     @Test
@@ -306,6 +306,6 @@ class HAProxyMessageChannelHandlerTest {
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
         final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
-        assertThat(customTLV.isEmpty());
+        assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 }

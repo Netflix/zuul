@@ -9,6 +9,7 @@ plugins {
     id "com.google.osdetector" version '1.7.3'
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '6.8.1'
+    id 'net.ltgt.errorprone' version '4.1.0'
 }
 
 ext.githubProjectName = rootProject.name
@@ -39,6 +40,7 @@ subprojects {
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
     apply plugin: 'com.palantir.java-format'
+    apply plugin: 'net.ltgt.errorprone'
 
     license {
         ignoreFailures = false
@@ -59,6 +61,160 @@ subprojects {
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        dependencies {
+            errorprone "com.uber.nullaway:nullaway:0.12.1"
+            errorprone "com.google.errorprone:error_prone_core:2.35.1"
+        }
+
+        options.errorprone {
+            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
+            option("NullAway:AnnotatedPackages", "com.netflix.zuul")
+            check("DeduplicateConstants", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
+            errorproneArgs.addAll(
+//                Uncomment to automatically apply fixes for a check.
+//                N.B: disables all other checks while enabled.
+//                "-XepPatchChecks:UnnecessaryParentheses",
+//                "-XepPatchLocation:IN_PLACE",
+                "-Xep:AutoFactoryAtInject",
+                "-Xep:BanClassLoader",
+                "-Xep:BanSerializableRead",
+                "-Xep:ClassName",
+                "-Xep:ComparisonContractViolated",
+                "-Xep:DepAnn",
+                "-Xep:EmptyIf",
+                "-Xep:ExtendsAutoValue",
+                "-Xep:InjectMoreThanOneQualifier",
+                "-Xep:InsecureCryptoUsage",
+                "-Xep:IterablePathParameter",
+                "-Xep:LongLiteralLowerCaseSuffix",
+                "-Xep:MissingRuntimeRetention",
+                "-Xep:NoAllocation",
+                "-Xep:RefersToDaggerCodegen",
+                "-Xep:StaticOrDefaultInterfaceMethod",
+                "-Xep:StaticQualifiedUsingExpression",
+                "-Xep:SystemExitOutsideMain",
+                "-Xep:UseCorrectAssertInTests",
+                "-Xep:AnnotationPosition",
+                "-Xep:AssertFalse",
+                "-Xep:AssistedInjectAndInjectOnConstructors",
+                "-Xep:AvoidObjectArrays",
+                "-Xep:BinderIdentityRestoredDangerously",
+                "-Xep:BindingToUnqualifiedCommonType",
+                "-Xep:BuilderReturnThis",
+                "-Xep:CanIgnoreReturnValueSuggester",
+                "-Xep:CannotMockFinalClass",
+                "-Xep:CannotMockMethod",
+                "-Xep:CatchingUnchecked",
+                "-Xep:CheckedExceptionNotThrown",
+                "-Xep:ConstantPatternCompile",
+                "-Xep:DefaultLocale",
+                "-Xep:DifferentNameButSame",
+                "-Xep:EqualsBrokenForNull",
+                "-Xep:ExpectedExceptionChecker",
+                "-Xep:FloggerLogWithCause",
+                "-Xep:FloggerMessageFormat",
+                "-Xep:FloggerRedundantIsEnabled",
+                "-Xep:FloggerRequiredModifiers",
+                "-Xep:FloggerWithCause",
+                "-Xep:FloggerWithoutCause",
+                "-Xep:FunctionalInterfaceClash",
+                "-Xep:HardCodedSdCardPath",
+                "-Xep:IdentifierName",
+                "-Xep:InconsistentOverloads",
+                "-Xep:InitializeInline",
+                "-Xep:InterfaceWithOnlyStatics",
+                "-Xep:InterruptedExceptionSwallowed",
+                "-Xep:Interruption",
+                "-Xep:MissingDefault",
+                "-Xep:MockitoDoSetup",
+                "-Xep:MutableGuiceModule",
+                "-Xep:NonCanonicalStaticMemberImport",
+                "-Xep:NonFinalStaticField",
+                "-Xep:PreferJavaTimeOverload",
+                "-Xep:PreferredInterfaceType",
+                "-Xep:PrimitiveArrayPassedToVarargsMethod",
+                "-Xep:QualifierWithTypeUse",
+                "-Xep:RedundantOverride",
+                "-Xep:RedundantThrows",
+                "-Xep:StringFormatWithLiteral",
+                "-Xep:StronglyTypeByteString",
+                "-Xep:StronglyTypeTime",
+                "-Xep:SunApi",
+                "-Xep:SuppressWarningsWithoutExplanation",
+                "-Xep:SystemOut",
+                "-Xep:TestExceptionChecker",
+                "-Xep:ThrowSpecificExceptions",
+                "-Xep:TimeUnitMismatch",
+                "-Xep:TooManyParameters",
+                "-Xep:TransientMisuse",
+                "-Xep:TruthContainsExactlyElementsInUsage",
+                "-Xep:TryWithResourcesVariable",
+                "-Xep:UnescapedEntity",
+                "-Xep:UnnecessarilyFullyQualified",
+                "-Xep:UnnecessarilyUsedValue",
+                "-Xep:UnnecessarilyVisible",
+                "-Xep:UnnecessaryAnonymousClass",
+                "-Xep:UnnecessaryDefaultInEnumSwitch",
+                "-Xep:UnnecessaryFinal",
+                "-Xep:UnnecessaryOptionalGet",
+                "-Xep:UnnecessaryTestMethodPrefix",
+                "-Xep:UnsafeLocaleUsage",
+                "-Xep:UnusedException",
+                "-Xep:UrlInSee",
+                "-Xep:UsingJsr305CheckReturnValue",
+                "-Xep:Var",
+                "-Xep:Varifier",
+                "-Xep:YodaCondition",
+                "-Xep:AnnotationMirrorToString",
+                "-Xep:AnnotationValueToString",
+                "-Xep:BooleanParameter",
+                "-Xep:ClassNamedLikeTypeParameter",
+                "-Xep:ConstantField",
+                "-Xep:EqualsMissingNullable",
+                "-Xep:FieldCanBeFinal",
+                "-Xep:FieldCanBeLocal",
+                "-Xep:FieldCanBeStatic",
+                "-Xep:FieldMissingNullable",
+                "-Xep:ForEachIterable",
+                "-Xep:ImmutableMemberCollection",
+                "-Xep:ImmutableRefactoring",
+                "-Xep:ImmutableSetForContains",
+                "-Xep:ImplementAssertionWithChaining",
+                "-Xep:LambdaFunctionalInterface",
+                "-Xep:MethodCanBeStatic",
+                "-Xep:MissingBraces",
+                "-Xep:MixedArrayDimensions",
+                "-Xep:MultiVariableDeclaration",
+                "-Xep:MultipleTopLevelClasses",
+                "-Xep:PackageLocation",
+                "-Xep:ParameterComment",
+                "-Xep:ParameterMissingNullable",
+                "-Xep:PrivateConstructorForNoninstantiableModule",
+                "-Xep:PrivateConstructorForUtilityClass",
+                "-Xep:PublicApiNamedStreamShouldReturnStream",
+                "-Xep:RemoveUnusedImports",
+                "-Xep:ReturnMissingNullable",
+                "-Xep:ReturnsNullCollection",
+                "-Xep:ScopeOnModule",
+                "-Xep:SwitchDefault",
+                "-Xep:SymbolToString",
+                "-Xep:ThrowsUncheckedException",
+                "-Xep:TryFailRefactoring",
+                "-Xep:TypeParameterNaming",
+                "-Xep:TypeToString",
+                "-Xep:UngroupedOverloads",
+                "-Xep:UnnecessaryBoxedAssignment",
+                "-Xep:UnnecessaryBoxedVariable",
+                "-Xep:UnnecessarySetDefault",
+                "-Xep:UnnecessaryStaticImport",
+                "-Xep:UseEnumSwitch",
+                "-Xep:VoidMissingNullable",
+                "-Xep:WildcardImport",
+            )
         }
     }
 
