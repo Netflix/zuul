@@ -73,6 +73,7 @@ subprojects {
         options.errorprone {
             check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
             option("NullAway:AnnotatedPackages", "com.netflix.zuul")
+            check("DeduplicateConstants", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
             errorproneArgs.addAll(
 //                Uncomment to automatically apply fixes for a check.
 //                N.B: disables all other checks while enabled.
@@ -83,7 +84,6 @@ subprojects {
                 "-Xep:BanSerializableRead",
                 "-Xep:ClassName",
                 "-Xep:ComparisonContractViolated",
-                "-Xep:DeduplicateConstants",
                 "-Xep:DepAnn",
                 "-Xep:EmptyIf",
                 "-Xep:ExtendsAutoValue",
