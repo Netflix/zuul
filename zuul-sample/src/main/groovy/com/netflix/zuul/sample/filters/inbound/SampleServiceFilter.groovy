@@ -19,7 +19,7 @@ package com.netflix.zuul.sample.filters.inbound
 import com.netflix.zuul.filters.http.HttpInboundFilter
 import com.netflix.zuul.message.http.HttpRequestMessage
 import com.netflix.zuul.sample.SampleService
-import javax.inject.Inject
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import rx.Observable

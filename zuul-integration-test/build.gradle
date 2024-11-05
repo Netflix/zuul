@@ -14,7 +14,6 @@ dependencies {
     annotationProcessor project(":zuul-processor")
 
     testImplementation 'org.wiremock:wiremock:3.9.1'
-    testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
     testImplementation "io.netty.incubator:netty-incubator-transport-classes-io_uring:${versions_netty_io_uring}"
     testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
