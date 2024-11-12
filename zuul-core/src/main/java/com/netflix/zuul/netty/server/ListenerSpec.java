@@ -32,7 +32,6 @@ public record ListenerSpec(String addressName, boolean defaultAddressEnabled, So
 
     public ListenerSpec {
         Objects.requireNonNull(addressName, "addressName");
-        Objects.requireNonNull(defaultAddressEnabled, "defaultAddressEnabled");
         Objects.requireNonNull(defaultAddressValue, "defaultAddressValue");
     }
 
