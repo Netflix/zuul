@@ -35,6 +35,24 @@ public class SslHandshakeInfo {
     private final boolean usingExternalPSK;
     private final ClientPSKIdentityInfo clientPSKIdentityInfo;
 
+    //for backward compatibility
+    public SslHandshakeInfo(
+            boolean isOfIntermediary,
+            String protocol,
+            String cipherSuite,
+            ClientAuth clientAuthRequirement,
+            Certificate serverCertificate,
+            X509Certificate clientCertificate) {
+        this.protocol = protocol;
+        this.cipherSuite = cipherSuite;
+        this.clientAuthRequirement = clientAuthRequirement;
+        this.serverCertificate = serverCertificate;
+        this.clientCertificate = clientCertificate;
+        this.isOfIntermediary = isOfIntermediary;
+        this.usingExternalPSK = false;
+        this.clientPSKIdentityInfo = null;
+    }
+
     public SslHandshakeInfo(
             boolean isOfIntermediary,
             String protocol,
