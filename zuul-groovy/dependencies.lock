@@ -310,7 +310,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -383,13 +383,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -402,7 +402,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-http",
@@ -411,7 +411,7 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -419,14 +419,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -441,7 +441,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -450,7 +450,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -458,7 +458,7 @@
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -470,7 +470,7 @@
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler"
@@ -1080,7 +1080,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1153,13 +1153,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1172,7 +1172,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-http",
@@ -1181,7 +1181,7 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1189,14 +1189,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1211,7 +1211,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1220,7 +1220,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -1228,7 +1228,7 @@
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1240,7 +1240,7 @@
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler"
@@ -1760,7 +1760,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1866,13 +1866,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -1891,7 +1891,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-haproxy",
@@ -1901,14 +1901,14 @@
             ]
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1916,14 +1916,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -1943,7 +1943,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -1952,7 +1952,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -1960,21 +1960,21 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -1992,35 +1992,35 @@
             ]
         },
         "io.netty:netty-transport-classes-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-epoll"
             ]
         },
         "io.netty:netty-transport-classes-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-kqueue"
             ]
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
                 "io.netty:netty-bom",
@@ -2737,7 +2737,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2843,13 +2843,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -2868,7 +2868,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-haproxy",
@@ -2878,14 +2878,14 @@
             ]
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -2893,14 +2893,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -2920,7 +2920,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -2929,7 +2929,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -2937,21 +2937,21 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -2969,35 +2969,35 @@
             ]
         },
         "io.netty:netty-transport-classes-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-epoll"
             ]
         },
         "io.netty:netty-transport-classes-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-kqueue"
             ]
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
                 "io.netty:netty-bom",
@@ -3738,7 +3738,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -3811,13 +3811,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -3830,7 +3830,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-http",
@@ -3839,7 +3839,7 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -3847,14 +3847,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -3869,7 +3869,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -3878,7 +3878,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -3886,7 +3886,7 @@
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -3898,7 +3898,7 @@
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler"
@@ -4449,7 +4449,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.1",
+            "locked": "1.8.2",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -4555,13 +4555,13 @@
             ]
         },
         "io.netty:netty-bom": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -4580,7 +4580,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-codec-haproxy",
@@ -4590,14 +4590,14 @@
             ]
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -4605,14 +4605,14 @@
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -4632,7 +4632,7 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom",
@@ -4641,7 +4641,7 @@
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-handler",
@@ -4649,21 +4649,21 @@
             ]
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-tcnative-classes": {
-            "locked": "2.0.66.Final",
+            "locked": "2.0.69.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-tcnative-boringssl-static"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
@@ -4681,35 +4681,35 @@
             ]
         },
         "io.netty:netty-transport-classes-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-epoll"
             ]
         },
         "io.netty:netty-transport-classes-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty:netty-bom",
                 "io.netty:netty-transport-native-kqueue"
             ]
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "com.netflix.zuul:zuul-core",
                 "io.netty:netty-bom"
             ]
         },
         "io.netty:netty-transport-native-unix-common": {
-            "locked": "4.1.113.Final",
+            "locked": "4.1.115.Final",
             "transitive": [
                 "io.netty.incubator:netty-incubator-transport-classes-io_uring",
                 "io.netty:netty-bom",
