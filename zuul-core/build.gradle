@@ -33,8 +33,8 @@ dependencies {
     api "io.netty:netty-transport"
 
     implementation "io.netty:netty-codec-haproxy"
-    implementation "io.netty:netty-transport-native-epoll:linux-x86_64"
-    implementation "io.netty:netty-transport-native-kqueue:osx-x86_64"
+    implementation (group: "io.netty", "name": "netty-transport-native-epoll", "classifier": "linux-x86_64")
+    implementation (group: "io.netty", "name": "netty-transport-native-kqueue", "classifier": "osx-x86_64")
 
     implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
 
