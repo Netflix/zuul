@@ -59,6 +59,7 @@ public class AccessLogPublisher {
             LocalDateTime dateTime,
             Integer localPort,
             String remoteIp,
+            String originalRemoteIp,
             Long durationNs,
             Integer requestBodySize,
             Integer responseBodySize) {
@@ -66,6 +67,7 @@ public class AccessLogPublisher {
 
         String dateTimeStr = dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : "-----T-:-:-";
         String remoteIpStr = (remoteIp != null && !remoteIp.isEmpty()) ? remoteIp : "-";
+        String originalRemoteIpStr = (originalRemoteIp != null && !originalRemoteIp.isEmpty()) ? originalRemoteIp : "-";
         String port = localPort != null ? localPort.toString() : "-";
         String method = request != null ? request.method().toString().toUpperCase() : "-";
         String uri = request != null ? request.uri() : "-";
@@ -94,6 +96,8 @@ public class AccessLogPublisher {
         sb.append(dateTimeStr)
                 .append(DELIM)
                 .append(remoteIpStr)
+                .append(DELIM)
+                .append(originalRemoteIpStr)
                 .append(DELIM)
                 .append(port)
                 .append(DELIM)

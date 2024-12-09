@@ -39,6 +39,8 @@ public final class AccessLogChannelHandler {
     private static final AttributeKey<RequestState> ATTR_REQ_STATE =
             AttributeKey.newInstance("_accesslog_requeststate");
 
+    private static final AttributeKey<String> ATTR_CLIENT_IP = AttributeKey.valueOf("client_ip");
+
     private static final Logger LOG = LoggerFactory.getLogger(AccessLogChannelHandler.class);
 
     public static final class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter {
@@ -77,9 +79,16 @@ public final class AccessLogChannelHandler {
 
                 // Response complete, so now write to access log.
                 long durationNs = System.nanoTime() - state.startTimeNs;
+
                 String remoteIp = ctx.channel()
                         .attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS)
                         .get();
+
+                String originalRemoteIp = "";
+                if (ATTR_CLIENT_IP != null) {
+                    originalRemoteIp = ctx.channel().attr(ATTR_CLIENT_IP).get();
+                }
+
                 Integer localPort = ctx.channel()
                         .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
                         .get();
@@ -100,6 +109,7 @@ public final class AccessLogChannelHandler {
                         state.dateTime,
                         localPort,
                         remoteIp,
+                        originalRemoteIp,
                         durationNs,
                         state.requestBodySize,
                         state.responseBodySize);
