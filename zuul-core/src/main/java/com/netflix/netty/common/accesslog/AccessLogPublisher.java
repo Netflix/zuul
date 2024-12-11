@@ -95,7 +95,6 @@ public class AccessLogPublisher {
                 .append(DELIM)
                 .append(remoteIpStr)
                 .append(DELIM)
-                .append(DELIM)
                 .append(port)
                 .append(DELIM)
                 .append(method)
