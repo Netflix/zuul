@@ -59,15 +59,13 @@ public class AccessLogPublisher {
             LocalDateTime dateTime,
             Integer localPort,
             String remoteIp,
-            String originalRemoteIp,
             Long durationNs,
-            Integer requestBodySize,
-            Integer responseBodySize) {
-        StringBuilder sb = new StringBuilder();
+            Long requestBodySize,
+            Long responseBodySize) {
+        StringBuilder sb = new StringBuilder(512);
 
         String dateTimeStr = dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : "-----T-:-:-";
         String remoteIpStr = (remoteIp != null && !remoteIp.isEmpty()) ? remoteIp : "-";
-        String originalRemoteIpStr = (originalRemoteIp != null && !originalRemoteIp.isEmpty()) ? originalRemoteIp : "-";
         String port = localPort != null ? localPort.toString() : "-";
         String method = request != null ? request.method().toString().toUpperCase() : "-";
         String uri = request != null ? request.uri() : "-";
@@ -97,7 +95,6 @@ public class AccessLogPublisher {
                 .append(DELIM)
                 .append(remoteIpStr)
                 .append(DELIM)
-                .append(originalRemoteIpStr)
                 .append(DELIM)
                 .append(port)
                 .append(DELIM)
@@ -138,6 +135,6 @@ public class AccessLogPublisher {
 
     String headerAsString(HttpHeaders headers, String headerName) {
         List<String> values = headers.getAll(headerName);
-        return (values.size() == 0) ? "-" : String.join(",", values);
+        return values.isEmpty() ? "-" : String.join(",", values);
     }
 }
