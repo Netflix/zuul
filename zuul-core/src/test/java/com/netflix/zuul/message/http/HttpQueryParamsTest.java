@@ -19,7 +19,10 @@ package com.netflix.zuul.message.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,6 +38,17 @@ class HttpQueryParamsTest {
         qp.add("k2", "v3");
 
         assertEquals("k1=v1&k1=v2&k2=v3", qp.toEncodedString());
+    }
+
+    @Test
+    void testDuplicateKv() {
+        HttpQueryParams qp = new HttpQueryParams();
+        qp.add("k1", "v1");
+        qp.add("k1", "v1");
+        qp.add("k1", "v1");
+
+        assertEquals("k1=v1&k1=v1&k1=v1", qp.toEncodedString());
+        assertEquals(List.of("v1", "v1", "v1"), qp.get("k1"));
     }
 
     @Test
@@ -144,5 +158,15 @@ class HttpQueryParamsTest {
         queryParams.add(camelCaseKey.toLowerCase(Locale.ROOT), "value");
 
         assertTrue(queryParams.containsIgnoreCase(camelCaseKey));
+    }
+
+    @Test
+    void maintainsOrderOnToString() {
+        String queryString =
+                IntStream.range(0, 100).mapToObj(i -> "k%d=v%d".formatted(i, i)).collect(Collectors.joining("&"));
+        HttpQueryParams queryParams = HttpQueryParams.parse(queryString);
+        assertEquals(queryString, queryParams.toEncodedString());
+        assertEquals(queryString, queryParams.toString());
+        assertEquals(queryString, queryParams.immutableCopy().toString());
     }
 }
