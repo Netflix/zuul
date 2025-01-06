@@ -42,7 +42,7 @@ class HttpServerLifecycleChannelHandlerTest {
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-            assert evt instanceof CompleteEvent;
+            Truth.assertThat(evt).isInstanceOf(CompleteEvent.class);
             this.completeEvent = (CompleteEvent) evt;
         }
 

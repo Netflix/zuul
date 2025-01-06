@@ -18,10 +18,11 @@ package com.netflix.zuul.groovy;
 
 import com.netflix.zuul.DynamicCodeCompiler;
 import groovy.lang.GroovyClassLoader;
-import java.io.File;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Groovy code compiler
@@ -48,6 +49,7 @@ public class GroovyCompiler implements DynamicCodeCompiler {
     /**
      * @return a new GroovyClassLoader
      */
+    @SuppressWarnings("BanClassLoader")
     GroovyClassLoader getGroovyClassLoader() {
         return new GroovyClassLoader();
     }

@@ -43,7 +43,7 @@ class BaseFilterTest {
     private final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
 
     @BeforeEach
-    public void tearDown() {
+    public void setUpTest() {
         config.clear();
     }
 

@@ -41,11 +41,23 @@ public final class AccessLogChannelHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(AccessLogChannelHandler.class);
 
-    public static final class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter {
+    public static class AccessLogInboundChannelHandler extends ChannelInboundHandlerAdapter {
         private final AccessLogPublisher publisher;
 
         public AccessLogInboundChannelHandler(AccessLogPublisher publisher) {
             this.publisher = publisher;
+        }
+
+        protected Integer getLocalPort(ChannelHandlerContext ctx) {
+            return ctx.channel()
+                    .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
+                    .get();
+        }
+
+        protected String getRemoteIp(ChannelHandlerContext ctx) {
+            return ctx.channel()
+                    .attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS)
+                    .get();
         }
 
         @Override
@@ -77,12 +89,9 @@ public final class AccessLogChannelHandler {
 
                 // Response complete, so now write to access log.
                 long durationNs = System.nanoTime() - state.startTimeNs;
-                String remoteIp = ctx.channel()
-                        .attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS)
-                        .get();
-                Integer localPort = ctx.channel()
-                        .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
-                        .get();
+
+                Integer localPort = getLocalPort(ctx);
+                String remoteIp = getRemoteIp(ctx);
 
                 if (state.response == null) {
                     LOG.debug(
@@ -132,7 +141,7 @@ public final class AccessLogChannelHandler {
         HttpRequest request;
         HttpResponse response;
         long startTimeNs;
-        int requestBodySize = 0;
-        int responseBodySize = 0;
+        long requestBodySize = 0;
+        long responseBodySize = 0;
     }
 }

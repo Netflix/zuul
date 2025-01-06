@@ -157,11 +157,6 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
             }
             throw new AssertionError("Missed cased: " + bindType);
         }
-
-        @Override
-        public boolean equals(Object object) {
-            return false;
-        }
     }
 
     public SocketAddressProperty(String propName, SocketAddress defaultValue) {
