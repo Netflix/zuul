@@ -304,7 +304,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -509,7 +509,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.servo:servo-core",
@@ -877,7 +877,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1124,7 +1124,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.servo:servo-core",
@@ -1201,7 +1201,7 @@
             ]
         },
         "com.google.auto.value:auto-value-annotations": {
-            "locked": "1.10.1",
+            "locked": "1.11.0",
             "transitive": [
                 "com.google.truth:truth"
             ]
@@ -1271,7 +1271,7 @@
             ]
         },
         "com.google.truth:truth": {
-            "locked": "1.1.5"
+            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12",
@@ -1354,7 +1354,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1614,7 +1614,7 @@
             ]
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.26.0",
+            "locked": "0.27.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1660,13 +1660,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -1737,8 +1737,7 @@
         "org.checkerframework:checker-qual": {
             "locked": "3.43.0",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.truth:truth"
+                "com.google.guava:guava"
             ]
         },
         "org.codehaus.jettison:jettison": {
@@ -1753,8 +1752,14 @@
                 "junit:junit"
             ]
         },
+        "org.jspecify:jspecify": {
+            "locked": "0.3.0",
+            "transitive": [
+                "com.google.truth:truth"
+            ]
+        },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1763,19 +1768,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -1783,14 +1788,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1800,13 +1805,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.14.2",
+            "locked": "5.15.2",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.14.2"
+            "locked": "5.15.2"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -1846,14 +1851,14 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.7",
             "transitive": [
                 "com.google.truth:truth",
                 "org.openjdk.jmh:jmh-generator-asm"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.netflix-commons:netflix-commons-util",
@@ -2082,7 +2087,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2342,7 +2347,7 @@
             ]
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.26.0",
+            "locked": "0.27.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2445,7 +2450,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.netflix-commons:netflix-commons-util",
@@ -2679,7 +2684,7 @@
             ]
         },
         "com.google.auto.value:auto-value-annotations": {
-            "locked": "1.10.1",
+            "locked": "1.11.0",
             "transitive": [
                 "com.google.truth:truth"
             ]
@@ -2693,20 +2698,20 @@
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.19.1",
+            "locked": "2.28.0",
             "transitive": [
                 "com.google.guava:guava",
                 "com.google.truth:truth"
             ]
         },
         "com.google.guava:failureaccess": {
-            "locked": "1.0.1",
+            "locked": "1.0.2",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.guava:guava": {
-            "locked": "32.0.1-android",
+            "locked": "33.2.1-android",
             "transitive": [
                 "com.google.inject:guice",
                 "com.google.truth:truth",
@@ -2727,13 +2732,13 @@
             ]
         },
         "com.google.j2objc:j2objc-annotations": {
-            "locked": "2.8",
+            "locked": "3.0.0",
             "transitive": [
                 "com.google.guava:guava"
             ]
         },
         "com.google.truth:truth": {
-            "locked": "1.1.5"
+            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12",
@@ -2785,7 +2790,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2977,13 +2982,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -3012,10 +3017,9 @@
             ]
         },
         "org.checkerframework:checker-qual": {
-            "locked": "3.35.0",
+            "locked": "3.42.0",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.truth:truth"
+                "com.google.guava:guava"
             ]
         },
         "org.hamcrest:hamcrest-core": {
@@ -3024,8 +3028,14 @@
                 "junit:junit"
             ]
         },
+        "org.jspecify:jspecify": {
+            "locked": "0.3.0",
+            "transitive": [
+                "com.google.truth:truth"
+            ]
+        },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -3033,19 +3043,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -3053,14 +3063,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -3070,13 +3080,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.14.2",
+            "locked": "5.15.2",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.14.2"
+            "locked": "5.15.2"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -3086,13 +3096,13 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.7",
             "transitive": [
                 "com.google.truth:truth"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.servo:servo-core",
@@ -3169,7 +3179,7 @@
             ]
         },
         "com.google.auto.value:auto-value-annotations": {
-            "locked": "1.10.1",
+            "locked": "1.11.0",
             "transitive": [
                 "com.google.truth:truth"
             ]
@@ -3239,7 +3249,7 @@
             ]
         },
         "com.google.truth:truth": {
-            "locked": "1.1.5"
+            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12",
@@ -3322,7 +3332,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.2",
+            "locked": "1.8.3",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -3582,7 +3592,7 @@
             ]
         },
         "io.perfmark:perfmark-api": {
-            "locked": "0.26.0",
+            "locked": "0.27.0",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -3628,13 +3638,13 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.15.4",
+            "locked": "1.15.11",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -3693,8 +3703,7 @@
         "org.checkerframework:checker-qual": {
             "locked": "3.43.0",
             "transitive": [
-                "com.google.guava:guava",
-                "com.google.truth:truth"
+                "com.google.guava:guava"
             ]
         },
         "org.codehaus.jettison:jettison": {
@@ -3709,8 +3718,14 @@
                 "junit:junit"
             ]
         },
+        "org.jspecify:jspecify": {
+            "locked": "0.3.0",
+            "transitive": [
+                "com.google.truth:truth"
+            ]
+        },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -3719,19 +3734,19 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
@@ -3739,14 +3754,14 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.11.3",
+            "locked": "1.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.11.3",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -3756,13 +3771,13 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.14.2",
+            "locked": "5.15.2",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.14.2"
+            "locked": "5.15.2"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -3778,13 +3793,13 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "9.5",
+            "locked": "9.7",
             "transitive": [
                 "com.google.truth:truth"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.36",
+            "locked": "2.0.16",
             "transitive": [
                 "com.netflix.archaius:archaius-core",
                 "com.netflix.netflix-commons:netflix-commons-util",
