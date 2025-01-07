@@ -242,7 +242,7 @@ subprojects {
                 mockito: 'org.mockito:mockito-core:5.+',
                 slf4j: "org.slf4j:slf4j-api:2.0.16",
                 truth: 'com.google.truth:truth:1.4.4',
-                awaitility: 'org.awaitility:awaitility:4.2.0'
+                awaitility: 'org.awaitility:awaitility:4.2.2'
         ]
     }
 
