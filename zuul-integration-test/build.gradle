@@ -21,7 +21,7 @@ dependencies {
     testImplementation "org.slf4j:slf4j-api:2.0.16"
     testImplementation 'org.apache.commons:commons-lang3:3.17.0'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.23.1'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3'
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"
