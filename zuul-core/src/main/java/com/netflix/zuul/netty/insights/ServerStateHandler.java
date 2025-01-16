@@ -81,7 +81,7 @@ public final class ServerStateHandler {
                             cause.getClass().getSimpleName())
                     .increment();
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
-            logger.info("Connection error on Inbound: {} ", cause);
+            logger.info("Connection error on Inbound", cause);
 
             super.exceptionCaught(ctx, cause);
         }
@@ -123,7 +123,7 @@ public final class ServerStateHandler {
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             passport(ctx).add(PassportState.SERVER_CH_EXCEPTION);
             if (cause instanceof Errors.NativeIoException) {
-                logger.debug("PassportStateServerHandler Outbound NativeIoException {}", cause);
+                logger.debug("PassportStateServerHandler Outbound NativeIoException", cause);
                 registry.counter(
                                 "server.connection.exception.outbound",
                                 "handler",
