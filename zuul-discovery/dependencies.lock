@@ -38,14 +38,14 @@
             ]
         },
         "com.google.errorprone:error_prone_annotation": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_check_api",
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.github.ben-manes.caffeine:caffeine",
                 "com.google.errorprone:error_prone_check_api",
@@ -54,16 +54,16 @@
             ]
         },
         "com.google.errorprone:error_prone_check_api": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.35.1"
+            "locked": "2.36.0"
         },
         "com.google.errorprone:error_prone_type_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
@@ -103,7 +103,7 @@
             ]
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.1"
+            "locked": "0.12.3"
         },
         "io.github.eisop:dataflow-errorprone": {
             "locked": "3.41.0-eisop1",
@@ -460,14 +460,14 @@
             ]
         },
         "com.google.errorprone:error_prone_annotation": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_check_api",
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.github.ben-manes.caffeine:caffeine",
                 "com.google.errorprone:error_prone_check_api",
@@ -476,16 +476,16 @@
             ]
         },
         "com.google.errorprone:error_prone_check_api": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.35.1"
+            "locked": "2.36.0"
         },
         "com.google.errorprone:error_prone_type_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
@@ -525,7 +525,7 @@
             ]
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.1"
+            "locked": "0.12.3"
         },
         "io.github.eisop:dataflow-errorprone": {
             "locked": "3.41.0-eisop1",
@@ -1696,14 +1696,14 @@
             ]
         },
         "com.google.errorprone:error_prone_annotation": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_check_api",
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.github.ben-manes.caffeine:caffeine",
                 "com.google.errorprone:error_prone_check_api",
@@ -1712,16 +1712,16 @@
             ]
         },
         "com.google.errorprone:error_prone_check_api": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
         },
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.35.1"
+            "locked": "2.36.0"
         },
         "com.google.errorprone:error_prone_type_annotations": {
-            "locked": "2.35.1",
+            "locked": "2.36.0",
             "transitive": [
                 "com.google.errorprone:error_prone_core"
             ]
@@ -1761,7 +1761,7 @@
             ]
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.1"
+            "locked": "0.12.3"
         },
         "io.github.eisop:dataflow-errorprone": {
             "locked": "3.41.0-eisop1",

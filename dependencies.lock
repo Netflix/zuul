@@ -273,16 +273,12 @@
                 "com.fasterxml.jackson.dataformat:jackson-dataformat-xml",
                 "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
                 "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
-                "com.fasterxml.jackson.module:jackson-module-kotlin",
                 "com.fasterxml.jackson:jackson-bom",
                 "com.github.docker-java:docker-java-api",
                 "org.openrewrite:rewrite-groovy",
-                "org.openrewrite:rewrite-hcl",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-json",
                 "org.openrewrite:rewrite-maven",
                 "org.openrewrite:rewrite-properties",
-                "org.openrewrite:rewrite-protobuf",
                 "org.openrewrite:rewrite-xml",
                 "org.openrewrite:rewrite-yaml"
             ]
@@ -314,7 +310,6 @@
                 "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
                 "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
                 "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
-                "com.fasterxml.jackson.module:jackson-module-kotlin",
                 "com.fasterxml.jackson.module:jackson-module-parameter-names",
                 "com.fasterxml.jackson:jackson-bom",
                 "org.openrewrite:rewrite-core"
@@ -372,12 +367,6 @@
                 "org.openrewrite:rewrite-maven"
             ]
         },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.17.2",
-            "transitive": [
-                "com.fasterxml.jackson:jackson-bom"
-            ]
-        },
         "com.fasterxml.jackson.module:jackson-module-parameter-names": {
             "locked": "2.17.2",
             "transitive": [
@@ -398,7 +387,6 @@
                 "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
                 "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
                 "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
-                "com.fasterxml.jackson.module:jackson-module-kotlin",
                 "com.fasterxml.jackson.module:jackson-module-parameter-names"
             ]
         },
@@ -499,9 +487,7 @@
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite:rewrite-core",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-java-11",
-                "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21"
+                "org.openrewrite:rewrite-java-17"
             ]
         },
         "io.micrometer:micrometer-commons": {
@@ -517,16 +503,10 @@
                 "org.openrewrite:rewrite-core",
                 "org.openrewrite:rewrite-csharp",
                 "org.openrewrite:rewrite-groovy",
-                "org.openrewrite:rewrite-hcl",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-java-11",
                 "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21",
-                "org.openrewrite:rewrite-java-8",
-                "org.openrewrite:rewrite-json",
                 "org.openrewrite:rewrite-maven",
                 "org.openrewrite:rewrite-properties",
-                "org.openrewrite:rewrite-protobuf",
                 "org.openrewrite:rewrite-xml",
                 "org.openrewrite:rewrite-yaml"
             ]
@@ -584,11 +564,8 @@
         "org.antlr:antlr4-runtime": {
             "locked": "4.11.1",
             "transitive": [
-                "org.openrewrite:rewrite-hcl",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-json",
                 "org.openrewrite:rewrite-maven",
-                "org.openrewrite:rewrite-protobuf",
                 "org.openrewrite:rewrite-xml",
                 "org.openrewrite:rewrite-yaml"
             ]
@@ -692,9 +669,8 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.7.22",
+            "locked": "1.6.10",
             "transitive": [
-                "com.fasterxml.jackson.module:jackson-module-kotlin",
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
@@ -708,7 +684,6 @@
             "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
-                "org.jetbrains.kotlin:kotlin-reflect",
                 "org.openrewrite:rewrite-kotlin"
             ]
         },
@@ -716,7 +691,6 @@
             "locked": "26.0.1",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.openrewrite.gradle.tooling:model",
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-logging-frameworks",
@@ -728,19 +702,12 @@
                 "org.openrewrite:rewrite-csharp",
                 "org.openrewrite:rewrite-gradle",
                 "org.openrewrite:rewrite-groovy",
-                "org.openrewrite:rewrite-hcl",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-java-11",
                 "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21",
-                "org.openrewrite:rewrite-java-8",
                 "org.openrewrite:rewrite-java-lombok",
-                "org.openrewrite:rewrite-json",
                 "org.openrewrite:rewrite-kotlin",
                 "org.openrewrite:rewrite-maven",
-                "org.openrewrite:rewrite-polyglot",
                 "org.openrewrite:rewrite-properties",
-                "org.openrewrite:rewrite-protobuf",
                 "org.openrewrite:rewrite-xml",
                 "org.openrewrite:rewrite-yaml",
                 "org.rnorth.duct-tape:duct-tape"
@@ -765,9 +732,6 @@
             "transitive": [
                 "io.micrometer:micrometer-core"
             ]
-        },
-        "org.openrewrite.gradle.tooling:model": {
-            "locked": "2.8.0"
         },
         "org.openrewrite.meta:rewrite-analysis": {
             "locked": "2.14.0",
@@ -825,15 +789,10 @@
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-csharp",
                 "org.openrewrite:rewrite-gradle",
-                "org.openrewrite:rewrite-hcl",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-java-11",
                 "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21",
-                "org.openrewrite:rewrite-json",
                 "org.openrewrite:rewrite-maven",
                 "org.openrewrite:rewrite-properties",
-                "org.openrewrite:rewrite-protobuf",
                 "org.openrewrite:rewrite-xml",
                 "org.openrewrite:rewrite-yaml"
             ]
@@ -850,8 +809,7 @@
             "transitive": [
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
-                "org.openrewrite.recipe:rewrite-testing-frameworks",
-                "org.openrewrite:rewrite-polyglot"
+                "org.openrewrite.recipe:rewrite-testing-frameworks"
             ]
         },
         "org.openrewrite:rewrite-groovy": {
@@ -860,15 +818,7 @@
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-static-analysis",
-                "org.openrewrite:rewrite-gradle",
-                "org.openrewrite:rewrite-polyglot"
-            ]
-        },
-        "org.openrewrite:rewrite-hcl": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom",
-                "org.openrewrite:rewrite-polyglot"
+                "org.openrewrite:rewrite-gradle"
             ]
         },
         "org.openrewrite:rewrite-java": {
@@ -881,18 +831,9 @@
                 "org.openrewrite.recipe:rewrite-testing-frameworks",
                 "org.openrewrite:rewrite-csharp",
                 "org.openrewrite:rewrite-groovy",
-                "org.openrewrite:rewrite-java-11",
                 "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21",
-                "org.openrewrite:rewrite-java-8",
                 "org.openrewrite:rewrite-kotlin",
                 "org.openrewrite:rewrite-maven"
-            ]
-        },
-        "org.openrewrite:rewrite-java-11": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom"
             ]
         },
         "org.openrewrite:rewrite-java-17": {
@@ -904,30 +845,11 @@
                 "org.openrewrite.recipe:rewrite-testing-frameworks"
             ]
         },
-        "org.openrewrite:rewrite-java-21": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom"
-            ]
-        },
-        "org.openrewrite:rewrite-java-8": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom"
-            ]
-        },
         "org.openrewrite:rewrite-java-lombok": {
             "locked": "8.42.0",
             "transitive": [
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-java-17"
-            ]
-        },
-        "org.openrewrite:rewrite-json": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom",
-                "org.openrewrite:rewrite-polyglot"
             ]
         },
         "org.openrewrite:rewrite-kotlin": {
@@ -944,14 +866,7 @@
                 "org.openrewrite.recipe:rewrite-java-dependencies",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite.recipe:rewrite-testing-frameworks",
-                "org.openrewrite:rewrite-gradle",
-                "org.openrewrite:rewrite-polyglot"
-            ]
-        },
-        "org.openrewrite:rewrite-polyglot": {
-            "locked": "1.16.2",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom"
+                "org.openrewrite:rewrite-gradle"
             ]
         },
         "org.openrewrite:rewrite-properties": {
@@ -960,15 +875,7 @@
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-gradle",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-maven",
-                "org.openrewrite:rewrite-polyglot"
-            ]
-        },
-        "org.openrewrite:rewrite-protobuf": {
-            "locked": "8.42.0",
-            "transitive": [
-                "org.openrewrite.recipe:rewrite-recipe-bom",
-                "org.openrewrite:rewrite-polyglot"
+                "org.openrewrite:rewrite-maven"
             ]
         },
         "org.openrewrite:rewrite-templating": {
@@ -986,8 +893,7 @@
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-maven",
-                "org.openrewrite:rewrite-polyglot"
+                "org.openrewrite:rewrite-maven"
             ]
         },
         "org.openrewrite:rewrite-yaml": {
@@ -995,8 +901,7 @@
             "transitive": [
                 "org.openrewrite.meta:rewrite-analysis",
                 "org.openrewrite.recipe:rewrite-recipe-bom",
-                "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-polyglot"
+                "org.openrewrite:rewrite-java"
             ]
         },
         "org.ow2.asm:asm": {
@@ -1004,10 +909,7 @@
             "transitive": [
                 "io.quarkus.gizmo:gizmo",
                 "org.openrewrite:rewrite-java",
-                "org.openrewrite:rewrite-java-11",
                 "org.openrewrite:rewrite-java-17",
-                "org.openrewrite:rewrite-java-21",
-                "org.openrewrite:rewrite-java-8",
                 "org.ow2.asm:asm-tree",
                 "org.ow2.asm:asm-util"
             ]
