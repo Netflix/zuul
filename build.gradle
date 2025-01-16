@@ -66,7 +66,7 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         dependencies {
-            errorprone "com.uber.nullaway:nullaway:0.12.1"
+            errorprone "com.uber.nullaway:nullaway:0.12.3"
             errorprone "com.google.errorprone:error_prone_core:2.36.0"
         }
 
