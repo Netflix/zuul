@@ -30,6 +30,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http2.Http2StreamFrameToHttpObjectCodec;
 import io.netty.util.AttributeKey;
+
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -37,6 +39,22 @@ import java.util.function.Consumer;
  */
 @ChannelHandler.Sharable
 public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
+
+    private static final Set<AttributeKey<?>> ATTRIBUTES_TO_COPY = Set.of(
+            SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
+            SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
+            SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS,
+            SourceAddressChannelHandler.ATTR_REMOTE_ADDR,
+            SourceAddressChannelHandler.ATTR_SOURCE_INET_ADDR,
+            SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
+            SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
+            SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
+            Http2OrHttpHandler.PROTOCOL_NAME,
+            SslHandshakeInfoHandler.ATTR_SSL_INFO,
+            HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
+            HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
+            HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS,
+            BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG);
 
     private static final Http2StreamHeaderCleaner http2StreamHeaderCleaner = new Http2StreamHeaderCleaner();
     private static final Http2ResetFrameHandler http2ResetFrameHandler = new Http2ResetFrameHandler();
@@ -90,29 +108,12 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
     }
 
     protected void copyAttrsFromParentChannel(Channel parent, Channel child) {
-        AttributeKey[] attributesToCopy = {
-                SourceAddressChannelHandler.ATTR_LOCAL_ADDRESS,
-                SourceAddressChannelHandler.ATTR_LOCAL_INET_ADDR,
-                SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS,
-                SourceAddressChannelHandler.ATTR_REMOTE_ADDR,
-                SourceAddressChannelHandler.ATTR_SOURCE_INET_ADDR,
-                SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS,
-                SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT,
-                SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS,
-                Http2OrHttpHandler.PROTOCOL_NAME,
-                SslHandshakeInfoHandler.ATTR_SSL_INFO,
-                HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
-                HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
-                HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS,
-                BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG
-        };
-
-        for (AttributeKey key : attributesToCopy) {
-            copyAttrFromParentChannel(parent, child, key);
+        for (AttributeKey<?> key : ATTRIBUTES_TO_COPY) {
+            copyAttributesFromParentChannel(parent, child, key);
         }
     }
 
-    protected void copyAttrFromParentChannel(Channel parent, Channel child, AttributeKey key) {
+    protected <T> void copyAttributesFromParentChannel(Channel parent, Channel child, AttributeKey<T> key) {
         child.attr(key).set(parent.attr(key).get());
     }
 }
