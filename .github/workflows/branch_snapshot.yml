@@ -35,8 +35,9 @@ jobs:
           java-version: 17
           cache: 'gradle'
       - name: Build snapshot
-        run: ./gradlew build snapshot -Prelease.version=${{ github.event.inputs.version }}
+        run: ./gradlew build snapshot -Prelease.version="$BUILD_VERSION"
         env:
+          BUILD_VERSION: ${{ github.event.inputs.version }}
           NETFLIX_OSS_SIGNING_KEY: ${{ secrets.ORG_SIGNING_KEY }}
           NETFLIX_OSS_SIGNING_PASSWORD: ${{ secrets.ORG_SIGNING_PASSWORD }}
           NETFLIX_OSS_REPO_USERNAME: ${{ secrets.ORG_NETFLIXOSS_USERNAME }}
