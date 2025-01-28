@@ -22,6 +22,7 @@ import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -54,7 +55,8 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
             HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE,
             HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION,
             HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS,
-            BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG);
+            BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG,
+            Server.CONN_DIMENSIONS);
 
     private static final Http2StreamHeaderCleaner http2StreamHeaderCleaner = new Http2StreamHeaderCleaner();
     private static final Http2ResetFrameHandler http2ResetFrameHandler = new Http2ResetFrameHandler();
