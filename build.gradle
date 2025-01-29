@@ -244,7 +244,7 @@ subprojects {
                 slf4j: "org.slf4j:slf4j-api:2.0.16",
                 truth: 'com.google.truth:truth:1.4.4',
                 awaitility: 'org.awaitility:awaitility:4.2.2',
-                lombok: 'org.projectlombok:lombok:1.18.30'
+                lombok: 'org.projectlombok:lombok:1.18.36'
         ]
     }
 
