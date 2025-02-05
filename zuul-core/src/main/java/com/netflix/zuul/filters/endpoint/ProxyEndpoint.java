@@ -840,17 +840,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         // Invoke any Ribbon execution listeners.
-        // Request was a success even if server may have responded with an error code 5XX, except for 503.
+        // Request was a success even if server may have responded with an error code 5XX.
+        // 503 is a special type of error which means the origin is throttling requests,
+        // but we are considering it as a success nonetheless.
         if (originConn != null) {
-            if (statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
-                origin.onRequestExecutionFailed(
-                        zuulRequest,
-                        originConn.getServer(),
-                        attemptNum,
-                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
-            } else {
-                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
-            }
+            origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
         }
 
         // Collect some info about the received response.
