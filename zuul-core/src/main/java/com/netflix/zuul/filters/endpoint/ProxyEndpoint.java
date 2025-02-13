@@ -844,7 +844,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         // Invoke any Ribbon execution listeners.
         // Request was a success even if server may have responded with an error code 5XX.
-        // 503 is a special type of error which means the origin is throttling requests,
         // but we are considering it as a success nonetheless.
         if (originConn != null) {
             if (!ENABLE_ORIGIN_THROTTLED_FOR_LB_ERRORS.get()
