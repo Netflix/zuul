@@ -71,8 +71,9 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
         Filter f = getClass().getAnnotation(Filter.class);
         if (f != null) {
             return f.category();
+        } else {
+            return FilterCategory.UNSPECIFIED;
         }
-        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
