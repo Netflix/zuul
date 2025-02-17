@@ -1,12 +1,6 @@
 # Default reviewers for Zuul OSS
 * @argha-c @jguerra @gavinbunney
 
-# Do not tag reviewers when only dep files are updated
-# avoid tagging for dependabot PRs
-build.gradle
-**/dependencies.lock
-**/gradle.lockfile
-gradle/**
-gradlew
-gradlew.bat
+# Note: exclusions aren't well supported atm.
+# If needed, use workflows to exclude specific files from review.
 
