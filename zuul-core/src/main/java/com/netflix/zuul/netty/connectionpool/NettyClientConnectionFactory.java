@@ -37,7 +37,7 @@ public final class NettyClientConnectionFactory {
     private final ConnectionPoolConfig connPoolConfig;
     private final ChannelInitializer<? extends Channel> channelInitializer;
 
-    NettyClientConnectionFactory(
+    public NettyClientConnectionFactory(
             final ConnectionPoolConfig connPoolConfig, final ChannelInitializer<? extends Channel> channelInitializer) {
         this.connPoolConfig = connPoolConfig;
         this.channelInitializer = channelInitializer;
