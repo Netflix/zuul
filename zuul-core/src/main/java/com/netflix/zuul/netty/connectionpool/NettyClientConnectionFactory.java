@@ -32,7 +32,7 @@ import java.util.Objects;
 /**
  * Created by saroskar on 3/16/16.
  */
-public final class NettyClientConnectionFactory {
+public class NettyClientConnectionFactory {
 
     private final ConnectionPoolConfig connPoolConfig;
     private final ChannelInitializer<? extends Channel> channelInitializer;
