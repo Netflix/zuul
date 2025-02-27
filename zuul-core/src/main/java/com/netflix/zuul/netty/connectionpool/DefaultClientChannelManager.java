@@ -118,24 +118,24 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        this.createNewConnCounter = newCounter("create");
-        this.createConnSucceededCounter = newCounter("create_success");
-        this.createConnFailedCounter = newCounter("create_fail");
+        ConnectionPoolMetrics metrics = ConnectionPoolMetrics.create(originName, registry);
+        this.createNewConnCounter = metrics.createNewConnCounter();
+        this.createConnSucceededCounter = metrics.createConnSucceededCounter();
+        this.createConnFailedCounter = metrics.createConnFailedCounter();
+        this.closeConnCounter = metrics.closeConnCounter();
+        this.closeAbovePoolHighWaterMarkCounter = metrics.closeAbovePoolHighWaterMarkCounter();
+        this.closeExpiredConnLifetimeCounter = metrics.closeExpiredConnLifetimeCounter();
+        this.requestConnCounter = metrics.requestConnCounter();
+        this.reuseConnCounter = metrics.reuseConnCounter();
+        this.releaseConnCounter = metrics.reuseConnCounter();
+        this.alreadyClosedCounter = metrics.alreadyClosedCounter();
+        this.connTakenFromPoolIsNotOpen = metrics.connTakenFromPoolIsNotOpen();
+        this.maxConnsPerHostExceededCounter = metrics.maxConnsPerHostExceededCounter();
+        this.closeWrtBusyConnCounter = metrics.closeWrtBusyConnCounter();
+        this.circuitBreakerClose = metrics.circuitBreakerClose();
 
-        this.closeConnCounter = newCounter("close");
-        this.closeAbovePoolHighWaterMarkCounter = newCounter("closeAbovePoolHighWaterMark");
-        this.closeExpiredConnLifetimeCounter = newCounter("closeExpiredConnLifetime");
-        this.requestConnCounter = newCounter("request");
-        this.reuseConnCounter = newCounter("reuse");
-        this.releaseConnCounter = newCounter("release");
-        this.alreadyClosedCounter = newCounter("alreadyClosed");
-        this.connTakenFromPoolIsNotOpen = newCounter("fromPoolIsClosed");
-        this.maxConnsPerHostExceededCounter = newCounter("maxConnsPerHostExceeded");
-        this.closeWrtBusyConnCounter = newCounter("closeWrtBusyConnCounter");
-        this.circuitBreakerClose = newCounter("closeCircuitBreaker");
+        this.connEstablishTimer = metrics.connEstablishTimer();
 
-        this.connEstablishTimer = PercentileTimer.get(
-                registry, registry.createId(METRIC_PREFIX + "createTiming", "id", originName.getMetricId()));
         this.connsInPool = newGauge("inPool");
         this.connsInUse = newGauge("inUse");
     }
@@ -215,16 +215,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         boolean released = false;
 
-
         if (conn.isShouldClose()) {
             // Close and discard the connection, as it has been flagged (possibly due to receiving a non-channel error
             // like a 503).
             conn.setInPool(false);
             conn.close();
-                LOG.debug(
-                        "[{}] closing conn flagged to be closed",
-                        conn.getChannel().id());
-        } else if(isConnectionExpired(conn.getUsageCount())) {
+            LOG.debug(
+                    "[{}] closing conn flagged to be closed", conn.getChannel().id());
+        } else if (isConnectionExpired(conn.getUsageCount())) {
             conn.setInPool(false);
             conn.close();
             closeExpiredConnLifetimeCounter.increment();
@@ -499,9 +497,5 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 .withName(METRIC_PREFIX + name)
                 .withTag("id", originName.getMetricId())
                 .monitorValue(new AtomicInteger());
-    }
-
-    private Counter newCounter(String name) {
-        return registry.counter(METRIC_PREFIX + name, "id", originName.getMetricId());
     }
 }
