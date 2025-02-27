@@ -23,7 +23,6 @@ import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.CachedDynamicLongProperty;
-import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Counter;
@@ -154,8 +153,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     public static final Set<String> IDEMPOTENT_HTTP_METHODS = Sets.newHashSet("GET", "HEAD", "OPTIONS");
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS =
             new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
-    private static final DynamicBooleanProperty ENABLE_ORIGIN_THROTTLED_FOR_LB_ERRORS =
-            new DynamicBooleanProperty("zuul.lb.503error.enabled", false);
 
     /**
      * Indicates how long Zuul should remember throttle events for an origin.  As of this writing, throttling is used
@@ -847,16 +844,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Invoke any Ribbon execution listeners.
         // Request was a success even if server may have responded with an error code 5XX.
         if (originConn != null) {
-            if (!ENABLE_ORIGIN_THROTTLED_FOR_LB_ERRORS.get()
-                    && statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
-                origin.onRequestExecutionFailed(
-                        zuulRequest,
-                        originConn.getServer(),
-                        attemptNum,
-                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
-            } else {
-                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
-            }
+            origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
         }
 
         // Collect some info about the received response.
