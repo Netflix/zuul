@@ -42,7 +42,8 @@ public record ConnectionPoolMetrics(Counter createNewConnCounter,
                                     Counter maxConnsPerHostExceededCounter,
                                     Counter closeWrtBusyConnCounter,
                                     Counter circuitBreakerClose,
-                                    PercentileTimer connEstablishTimer, AtomicInteger connsInPool,
+                                    PercentileTimer connEstablishTimer,
+                                    AtomicInteger connsInPool,
                                     AtomicInteger connsInUse) {
 
     public static final String METRIC_PREFIX = "connectionpool_";
