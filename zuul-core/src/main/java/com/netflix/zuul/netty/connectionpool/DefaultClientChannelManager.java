@@ -94,38 +94,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         metrics = ConnectionPoolMetrics.create(originName, registry);
     }
 
-    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
-        if (pipeline.get(handlerName) != null) {
-            pipeline.remove(handlerName);
-        }
-    }
-
-    @VisibleForTesting
-    static SocketAddress pickAddressInternal(ResolverResult chosenServer, @Nullable OriginName originName) {
-        String rawHost;
-        int port;
-        rawHost = chosenServer.getHost();
-        port = chosenServer.getPort();
-        InetSocketAddress serverAddr;
-        try {
-            InetAddress ipAddr = InetAddresses.forString(rawHost);
-            serverAddr = new InetSocketAddress(ipAddr, port);
-        } catch (IllegalArgumentException e1) {
-            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
-            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
-                    "unresolvedDiscoveryHost", originName == null ? "unknownOrigin" : originName.getTarget());
-            unresolvedDiscoveryHost.increment();
-            try {
-                serverAddr = new InetSocketAddress(rawHost, port);
-            } catch (RuntimeException e2) {
-                e1.addSuppressed(e2);
-                throw e1;
-            }
-        }
-
-        return serverAddr;
-    }
-
     @Override
     public void init() {
         dynamicServerResolver.setListener(new ServerPoolListener());
@@ -276,6 +244,12 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
+    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
+        if (pipeline.get(handlerName) != null) {
+            pipeline.remove(handlerName);
+        }
+    }
+
     @Override
     public boolean remove(PooledConnection conn) {
         if (conn == null) {
@@ -407,27 +381,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 connsInUse);
     }
 
-    @Override
-    public int getConnsInPool() {
-        return metrics.connsInPool().get();
-    }
-
-    @Override
-    public int getConnsInUse() {
-        return metrics.connsInUse().get();
-    }
-
-    protected ConcurrentHashMap<DiscoveryResult, IConnectionPool> getPerServerPools() {
-        return perServerPools;
-    }
-
-    /**
-     * Given a server chosen from the load balancer, pick the appropriate address to connect to.
-     */
-    protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
-        return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
-    }
-
     final class ServerPoolListener implements ResolverListener<DiscoveryResult> {
         @Override
         public void onChange(List<DiscoveryResult> removedSet) {
@@ -444,5 +397,52 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 }
             }
         }
+    }
+
+    @Override
+    public int getConnsInPool() {
+        return metrics.connsInPool().get();
+    }
+
+    @Override
+    public int getConnsInUse() {
+        return metrics.connsInUse().get();
+    }
+
+    protected ConcurrentHashMap<DiscoveryResult, IConnectionPool> getPerServerPools() {
+        return perServerPools;
+    }
+
+    @VisibleForTesting
+    static SocketAddress pickAddressInternal(ResolverResult chosenServer, @Nullable OriginName originName) {
+        String rawHost;
+        int port;
+        rawHost = chosenServer.getHost();
+        port = chosenServer.getPort();
+        InetSocketAddress serverAddr;
+        try {
+            InetAddress ipAddr = InetAddresses.forString(rawHost);
+            serverAddr = new InetSocketAddress(ipAddr, port);
+        } catch (IllegalArgumentException e1) {
+            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
+            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
+                    "unresolvedDiscoveryHost", originName == null ? "unknownOrigin" : originName.getTarget());
+            unresolvedDiscoveryHost.increment();
+            try {
+                serverAddr = new InetSocketAddress(rawHost, port);
+            } catch (RuntimeException e2) {
+                e1.addSuppressed(e2);
+                throw e1;
+            }
+        }
+
+        return serverAddr;
+    }
+
+    /**
+     * Given a server chosen from the load balancer, pick the appropriate address to connect to.
+     */
+    protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
+        return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
     }
 }
