@@ -22,7 +22,6 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
-import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.discovery.DynamicServerResolver;
 import com.netflix.zuul.discovery.ResolverResult;
@@ -62,8 +61,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class DefaultClientChannelManager implements ClientChannelManager {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
-
-    public static final String METRIC_PREFIX = "connectionpool_";
 
     private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
@@ -136,8 +133,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connEstablishTimer = metrics.connEstablishTimer();
 
-        this.connsInPool = newGauge("inPool");
-        this.connsInUse = newGauge("inUse");
+        this.connsInPool = metrics.connsInPool();
+        this.connsInUse = metrics.connsInUse();
     }
 
     @Override
@@ -490,12 +487,5 @@ public class DefaultClientChannelManager implements ClientChannelManager {
      */
     protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
         return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
-    }
-
-    private AtomicInteger newGauge(String name) {
-        return PolledMeter.using(registry)
-                .withName(METRIC_PREFIX + name)
-                .withTag("id", originName.getMetricId())
-                .monitorValue(new AtomicInteger());
     }
 }

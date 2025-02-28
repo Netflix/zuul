@@ -3,7 +3,10 @@ package com.netflix.zuul.netty.connectionpool;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
+import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.origins.OriginName;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Justin Guerra
@@ -23,7 +26,8 @@ public record ConnectionPoolMetrics(Counter createNewConnCounter,
                                     Counter maxConnsPerHostExceededCounter,
                                     Counter closeWrtBusyConnCounter,
                                     Counter circuitBreakerClose,
-                                    PercentileTimer connEstablishTimer) {
+                                    PercentileTimer connEstablishTimer, AtomicInteger connsInPool,
+                                    AtomicInteger connsInUse) {
 
     public static final String METRIC_PREFIX = "connectionpool_";
 
@@ -47,14 +51,25 @@ public record ConnectionPoolMetrics(Counter createNewConnCounter,
 
         PercentileTimer connEstablishTimer = PercentileTimer.get(
                 registry, registry.createId(METRIC_PREFIX + "createTiming", "id", originName.getMetricId()));
+
+        AtomicInteger connsInPool = newGauge("inPool", originName, registry);
+        AtomicInteger connsInUse = newGauge("inUse", originName, registry);
+
         return new ConnectionPoolMetrics(createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
                 closeConnCounter, closeAbovePoolHighWaterMarkCounter, closeExpiredConnLifetimeCounter, requestConnCounter,
                 reuseConnCounter, releaseConnCounter, alreadyClosedCounter, connTakenFromPoolIsNotOpen,
-                maxConnsPerHostExceededCounter, closeWrtBusyConnCounter, circuitBreakerClose, connEstablishTimer);
+                maxConnsPerHostExceededCounter, closeWrtBusyConnCounter, circuitBreakerClose, connEstablishTimer, connsInPool, connsInUse);
     }
 
     private static Counter newCounter(String metricName, OriginName originName, Registry registry) {
         return registry.counter(METRIC_PREFIX + metricName, "id", originName.getMetricId());
+    }
+
+    private static AtomicInteger newGauge(String metricName, OriginName originName, Registry registry) {
+        return PolledMeter.using(registry)
+                .withName(METRIC_PREFIX + metricName)
+                .withTag("id", originName.getMetricId())
+                .monitorValue(new AtomicInteger());
     }
 
 }
