@@ -46,30 +46,28 @@ public record ConnectionPoolMetrics(Counter createNewConnCounter,
                                     AtomicInteger connsInPool,
                                     AtomicInteger connsInUse) {
 
-    public static final String METRIC_PREFIX = "connectionpool_";
-
     public static ConnectionPoolMetrics create(OriginName originName, Registry registry) {
-        Counter createNewConnCounter = newCounter("create", originName, registry);
-        Counter createConnSucceededCounter = newCounter("create_success", originName, registry);
-        Counter createConnFailedCounter = newCounter("create_fail", originName, registry);
+        Counter createNewConnCounter = newCounter("connectionpool_create", originName, registry);
+        Counter createConnSucceededCounter = newCounter("connectionpool_create_success", originName, registry);
+        Counter createConnFailedCounter = newCounter("connectionpool_create_fail", originName, registry);
 
-        Counter closeConnCounter = newCounter("close", originName, registry);
-        Counter closeAbovePoolHighWaterMarkCounter = newCounter("closeAbovePoolHighWaterMark", originName, registry);
-        Counter closeExpiredConnLifetimeCounter = newCounter("closeExpiredConnLifetime", originName, registry);
-        Counter requestConnCounter = newCounter("request", originName, registry);
-        Counter reuseConnCounter = newCounter("reuse", originName, registry);
-        Counter releaseConnCounter = newCounter("release", originName, registry);
-        Counter alreadyClosedCounter = newCounter("alreadyClosed", originName, registry);
-        Counter connTakenFromPoolIsNotOpen = newCounter("fromPoolIsClosed", originName, registry);
-        Counter maxConnsPerHostExceededCounter = newCounter("maxConnsPerHostExceeded", originName, registry);
-        Counter closeWrtBusyConnCounter = newCounter("closeWrtBusyConnCounter", originName, registry);
-        Counter circuitBreakerClose = newCounter("closeCircuitBreaker", originName, registry);
+        Counter closeConnCounter = newCounter("connectionpool_close", originName, registry);
+        Counter closeAbovePoolHighWaterMarkCounter = newCounter("connectionpool_closeAbovePoolHighWaterMark", originName, registry);
+        Counter closeExpiredConnLifetimeCounter = newCounter("connectionpool_closeExpiredConnLifetime", originName, registry);
+        Counter requestConnCounter = newCounter("connectionpool_request", originName, registry);
+        Counter reuseConnCounter = newCounter("connectionpool_reuse", originName, registry);
+        Counter releaseConnCounter = newCounter("connectionpool_release", originName, registry);
+        Counter alreadyClosedCounter = newCounter("connectionpool_alreadyClosed", originName, registry);
+        Counter connTakenFromPoolIsNotOpen = newCounter("connectionpool_fromPoolIsClosed", originName, registry);
+        Counter maxConnsPerHostExceededCounter = newCounter("connectionpool_maxConnsPerHostExceeded", originName, registry);
+        Counter closeWrtBusyConnCounter = newCounter("connectionpool_closeWrtBusyConnCounter", originName, registry);
+        Counter circuitBreakerClose = newCounter("connectionpool_closeCircuitBreaker", originName, registry);
 
         PercentileTimer connEstablishTimer = PercentileTimer.get(
-                registry, registry.createId(METRIC_PREFIX + "createTiming", "id", originName.getMetricId()));
+                registry, registry.createId("connectionpool_createTiming", "id", originName.getMetricId()));
 
-        AtomicInteger connsInPool = newGauge("inPool", originName, registry);
-        AtomicInteger connsInUse = newGauge("inUse", originName, registry);
+        AtomicInteger connsInPool = newGauge("connectionpool_inPool", originName, registry);
+        AtomicInteger connsInUse = newGauge("connectionpool_inUse", originName, registry);
 
         return new ConnectionPoolMetrics(createNewConnCounter, createConnSucceededCounter, createConnFailedCounter,
                 closeConnCounter, closeAbovePoolHighWaterMarkCounter, closeExpiredConnLifetimeCounter, requestConnCounter,
@@ -78,12 +76,12 @@ public record ConnectionPoolMetrics(Counter createNewConnCounter,
     }
 
     private static Counter newCounter(String metricName, OriginName originName, Registry registry) {
-        return registry.counter(METRIC_PREFIX + metricName, "id", originName.getMetricId());
+        return registry.counter(metricName, "id", originName.getMetricId());
     }
 
     private static AtomicInteger newGauge(String metricName, OriginName originName, Registry registry) {
         return PolledMeter.using(registry)
-                .withName(METRIC_PREFIX + metricName)
+                .withName(metricName)
                 .withTag("id", originName.getMetricId())
                 .monitorValue(new AtomicInteger());
     }
