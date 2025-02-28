@@ -60,45 +60,21 @@ import java.util.concurrent.atomic.AtomicReference;
  * Time: 12:39 PM
  */
 public class DefaultClientChannelManager implements ClientChannelManager {
+    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
-
+    private static final Throwable SHUTTING_DOWN_ERR =
+            new IllegalStateException("ConnectionPool is shutting down now.");
     private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
     private final Registry registry;
-
     private final OriginName originName;
 
-    private static final Throwable SHUTTING_DOWN_ERR =
-            new IllegalStateException("ConnectionPool is shutting down now.");
-    private volatile boolean shuttingDown = false;
-
-    private final Counter createNewConnCounter;
-    private final Counter createConnSucceededCounter;
-    private final Counter createConnFailedCounter;
-
-    private final Counter closeConnCounter;
-    private final Counter requestConnCounter;
-    private final Counter closeAbovePoolHighWaterMarkCounter;
-    private final Counter closeExpiredConnLifetimeCounter;
-    private final Counter reuseConnCounter;
-    private final Counter releaseConnCounter;
-    private final Counter alreadyClosedCounter;
-    private final Counter connTakenFromPoolIsNotOpen;
-    private final Counter maxConnsPerHostExceededCounter;
-    private final Counter closeWrtBusyConnCounter;
-    private final Counter circuitBreakerClose;
-
-    private final PercentileTimer connEstablishTimer;
-    private final AtomicInteger connsInPool;
-    private final AtomicInteger connsInUse;
-
     private final ConcurrentHashMap<DiscoveryResult, IConnectionPool> perServerPools;
-
+    private final ConnectionPoolMetrics metrics;
+    private volatile boolean shuttingDown = false;
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
-
-    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
 
     public DefaultClientChannelManager(OriginName originName, IClientConfig clientConfig, Registry registry) {
         this(originName, clientConfig, new DynamicServerResolver(clientConfig), registry);
@@ -115,26 +91,39 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        ConnectionPoolMetrics metrics = ConnectionPoolMetrics.create(originName, registry);
-        this.createNewConnCounter = metrics.createNewConnCounter();
-        this.createConnSucceededCounter = metrics.createConnSucceededCounter();
-        this.createConnFailedCounter = metrics.createConnFailedCounter();
-        this.closeConnCounter = metrics.closeConnCounter();
-        this.closeAbovePoolHighWaterMarkCounter = metrics.closeAbovePoolHighWaterMarkCounter();
-        this.closeExpiredConnLifetimeCounter = metrics.closeExpiredConnLifetimeCounter();
-        this.requestConnCounter = metrics.requestConnCounter();
-        this.reuseConnCounter = metrics.reuseConnCounter();
-        this.releaseConnCounter = metrics.reuseConnCounter();
-        this.alreadyClosedCounter = metrics.alreadyClosedCounter();
-        this.connTakenFromPoolIsNotOpen = metrics.connTakenFromPoolIsNotOpen();
-        this.maxConnsPerHostExceededCounter = metrics.maxConnsPerHostExceededCounter();
-        this.closeWrtBusyConnCounter = metrics.closeWrtBusyConnCounter();
-        this.circuitBreakerClose = metrics.circuitBreakerClose();
+        metrics = ConnectionPoolMetrics.create(originName, registry);
+    }
 
-        this.connEstablishTimer = metrics.connEstablishTimer();
+    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
+        if (pipeline.get(handlerName) != null) {
+            pipeline.remove(handlerName);
+        }
+    }
 
-        this.connsInPool = metrics.connsInPool();
-        this.connsInUse = metrics.connsInUse();
+    @VisibleForTesting
+    static SocketAddress pickAddressInternal(ResolverResult chosenServer, @Nullable OriginName originName) {
+        String rawHost;
+        int port;
+        rawHost = chosenServer.getHost();
+        port = chosenServer.getPort();
+        InetSocketAddress serverAddr;
+        try {
+            InetAddress ipAddr = InetAddresses.forString(rawHost);
+            serverAddr = new InetSocketAddress(ipAddr, port);
+        } catch (IllegalArgumentException e1) {
+            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
+            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
+                    "unresolvedDiscoveryHost", originName == null ? "unknownOrigin" : originName.getTarget());
+            unresolvedDiscoveryHost.increment();
+            try {
+                serverAddr = new InetSocketAddress(rawHost, port);
+            } catch (RuntimeException e2) {
+                e1.addSuppressed(e2);
+                throw e1;
+            }
+        }
+
+        return serverAddr;
     }
 
     @Override
@@ -204,8 +193,8 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public boolean release(final PooledConnection conn) {
 
         conn.stopRequestTimer();
-        releaseConnCounter.increment();
-        connsInUse.decrementAndGet();
+        metrics.releaseConnCounter().increment();
+        metrics.connsInUse().decrementAndGet();
 
         final DiscoveryResult discoveryResult = conn.getServer();
         updateServerStatsOnRelease(conn);
@@ -222,7 +211,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         } else if (isConnectionExpired(conn.getUsageCount())) {
             conn.setInPool(false);
             conn.close();
-            closeExpiredConnLifetimeCounter.increment();
+            metrics.closeExpiredConnLifetimeCounter().increment();
             LOG.debug(
                     "[{}] closing conn lifetime expired, usage: {}",
                     conn.getChannel().id(),
@@ -231,14 +220,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             LOG.debug(
                     "[{}] closing conn, server circuit breaker tripped",
                     conn.getChannel().id());
-            circuitBreakerClose.increment();
+            metrics.circuitBreakerClose().increment();
             // Don't put conns for currently circuit-tripped servers back into the pool.
             conn.setInPool(false);
             conn.close();
         } else if (!conn.isActive()) {
             LOG.debug("[{}] conn inactive, cleaning up", conn.getChannel().id());
             // Connection is already closed, so discard.
-            alreadyClosedCounter.increment();
+            metrics.alreadyClosedCounter().increment();
             // make sure to decrement OpenConnectionCounts
             conn.updateServerStats();
             conn.setInPool(false);
@@ -287,12 +276,6 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
-    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
-        if (pipeline.get(handlerName) != null) {
-            pipeline.remove(handlerName);
-        }
-    }
-
     @Override
     public boolean remove(PooledConnection conn) {
         if (conn == null) {
@@ -310,7 +293,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             // The pool for this server no longer exists (maybe due to it failling out of
             // discovery).
             conn.setInPool(false);
-            connsInPool.decrementAndGet();
+            metrics.connsInPool().decrementAndGet();
             return false;
         }
     }
@@ -351,7 +334,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             SocketAddress finalServerAddr = pickAddress(chosenServer);
             final ClientChannelManager clientChannelMgr = this;
             PooledConnectionFactory pcf = createPooledConnectionFactory(
-                    chosenServer, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
+                    chosenServer, clientChannelMgr, metrics.closeConnCounter(), metrics.closeWrtBusyConnCounter());
 
             // Create a new pool for this server.
             return createConnectionPool(
@@ -361,17 +344,17 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     pcf,
                     connPoolConfig,
                     clientConfig,
-                    createNewConnCounter,
-                    createConnSucceededCounter,
-                    createConnFailedCounter,
-                    requestConnCounter,
-                    reuseConnCounter,
-                    connTakenFromPoolIsNotOpen,
-                    closeAbovePoolHighWaterMarkCounter,
-                    maxConnsPerHostExceededCounter,
-                    connEstablishTimer,
-                    connsInPool,
-                    connsInUse);
+                    metrics.createNewConnCounter(),
+                    metrics.createConnSucceededCounter(),
+                    metrics.createConnFailedCounter(),
+                    metrics.requestConnCounter(),
+                    metrics.reuseConnCounter(),
+                    metrics.connTakenFromPoolIsNotOpen(),
+                    metrics.closeAbovePoolHighWaterMarkCounter(),
+                    metrics.maxConnsPerHostExceededCounter(),
+                    metrics.connEstablishTimer(),
+                    metrics.connsInPool(),
+                    metrics.connsInUse());
         });
 
         return pool.acquire(eventLoop, passport, selectedHostAddr);
@@ -424,6 +407,27 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 connsInUse);
     }
 
+    @Override
+    public int getConnsInPool() {
+        return metrics.connsInPool().get();
+    }
+
+    @Override
+    public int getConnsInUse() {
+        return metrics.connsInUse().get();
+    }
+
+    protected ConcurrentHashMap<DiscoveryResult, IConnectionPool> getPerServerPools() {
+        return perServerPools;
+    }
+
+    /**
+     * Given a server chosen from the load balancer, pick the appropriate address to connect to.
+     */
+    protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
+        return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
+    }
+
     final class ServerPoolListener implements ResolverListener<DiscoveryResult> {
         @Override
         public void onChange(List<DiscoveryResult> removedSet) {
@@ -440,52 +444,5 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 }
             }
         }
-    }
-
-    @Override
-    public int getConnsInPool() {
-        return connsInPool.get();
-    }
-
-    @Override
-    public int getConnsInUse() {
-        return connsInUse.get();
-    }
-
-    protected ConcurrentHashMap<DiscoveryResult, IConnectionPool> getPerServerPools() {
-        return perServerPools;
-    }
-
-    @VisibleForTesting
-    static SocketAddress pickAddressInternal(ResolverResult chosenServer, @Nullable OriginName originName) {
-        String rawHost;
-        int port;
-        rawHost = chosenServer.getHost();
-        port = chosenServer.getPort();
-        InetSocketAddress serverAddr;
-        try {
-            InetAddress ipAddr = InetAddresses.forString(rawHost);
-            serverAddr = new InetSocketAddress(ipAddr, port);
-        } catch (IllegalArgumentException e1) {
-            LOG.warn("NettyClientConnectionFactory got an unresolved address, addr: {}", rawHost);
-            Counter unresolvedDiscoveryHost = SpectatorUtils.newCounter(
-                    "unresolvedDiscoveryHost", originName == null ? "unknownOrigin" : originName.getTarget());
-            unresolvedDiscoveryHost.increment();
-            try {
-                serverAddr = new InetSocketAddress(rawHost, port);
-            } catch (RuntimeException e2) {
-                e1.addSuppressed(e2);
-                throw e1;
-            }
-        }
-
-        return serverAddr;
-    }
-
-    /**
-     * Given a server chosen from the load balancer, pick the appropriate address to connect to.
-     */
-    protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
-        return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
     }
 }
