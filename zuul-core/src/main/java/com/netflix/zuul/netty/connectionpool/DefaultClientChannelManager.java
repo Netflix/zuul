@@ -22,7 +22,6 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.histogram.PercentileTimer;
-import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.discovery.DynamicServerResolver;
 import com.netflix.zuul.discovery.ResolverResult;
@@ -61,47 +60,21 @@ import java.util.concurrent.atomic.AtomicReference;
  * Time: 12:39 PM
  */
 public class DefaultClientChannelManager implements ClientChannelManager {
+    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
-
-    public static final String METRIC_PREFIX = "connectionpool_";
-
+    private static final Throwable SHUTTING_DOWN_ERR =
+            new IllegalStateException("ConnectionPool is shutting down now.");
     private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
     private final Registry registry;
-
     private final OriginName originName;
 
-    private static final Throwable SHUTTING_DOWN_ERR =
-            new IllegalStateException("ConnectionPool is shutting down now.");
-    private volatile boolean shuttingDown = false;
-
-    private final Counter createNewConnCounter;
-    private final Counter createConnSucceededCounter;
-    private final Counter createConnFailedCounter;
-
-    private final Counter closeConnCounter;
-    private final Counter requestConnCounter;
-    private final Counter closeAbovePoolHighWaterMarkCounter;
-    private final Counter closeExpiredConnLifetimeCounter;
-    private final Counter reuseConnCounter;
-    private final Counter releaseConnCounter;
-    private final Counter alreadyClosedCounter;
-    private final Counter connTakenFromPoolIsNotOpen;
-    private final Counter maxConnsPerHostExceededCounter;
-    private final Counter closeWrtBusyConnCounter;
-    private final Counter circuitBreakerClose;
-
-    private final PercentileTimer connEstablishTimer;
-    private final AtomicInteger connsInPool;
-    private final AtomicInteger connsInUse;
-
     private final ConcurrentHashMap<DiscoveryResult, IConnectionPool> perServerPools;
-
+    private final ConnectionPoolMetrics metrics;
+    private volatile boolean shuttingDown = false;
     private NettyClientConnectionFactory clientConnFactory;
     private OriginChannelInitializer channelInitializer;
-
-    public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
 
     public DefaultClientChannelManager(OriginName originName, IClientConfig clientConfig, Registry registry) {
         this(originName, clientConfig, new DynamicServerResolver(clientConfig), registry);
@@ -118,26 +91,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        this.createNewConnCounter = newCounter("create");
-        this.createConnSucceededCounter = newCounter("create_success");
-        this.createConnFailedCounter = newCounter("create_fail");
-
-        this.closeConnCounter = newCounter("close");
-        this.closeAbovePoolHighWaterMarkCounter = newCounter("closeAbovePoolHighWaterMark");
-        this.closeExpiredConnLifetimeCounter = newCounter("closeExpiredConnLifetime");
-        this.requestConnCounter = newCounter("request");
-        this.reuseConnCounter = newCounter("reuse");
-        this.releaseConnCounter = newCounter("release");
-        this.alreadyClosedCounter = newCounter("alreadyClosed");
-        this.connTakenFromPoolIsNotOpen = newCounter("fromPoolIsClosed");
-        this.maxConnsPerHostExceededCounter = newCounter("maxConnsPerHostExceeded");
-        this.closeWrtBusyConnCounter = newCounter("closeWrtBusyConnCounter");
-        this.circuitBreakerClose = newCounter("closeCircuitBreaker");
-
-        this.connEstablishTimer = PercentileTimer.get(
-                registry, registry.createId(METRIC_PREFIX + "createTiming", "id", originName.getMetricId()));
-        this.connsInPool = newGauge("inPool");
-        this.connsInUse = newGauge("inUse");
+        metrics = ConnectionPoolMetrics.create(originName, registry);
     }
 
     @Override
@@ -207,27 +161,25 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     public boolean release(final PooledConnection conn) {
 
         conn.stopRequestTimer();
-        releaseConnCounter.increment();
-        connsInUse.decrementAndGet();
+        metrics.releaseConnCounter().increment();
+        metrics.connsInUse().decrementAndGet();
 
         final DiscoveryResult discoveryResult = conn.getServer();
         updateServerStatsOnRelease(conn);
 
         boolean released = false;
 
-
         if (conn.isShouldClose()) {
             // Close and discard the connection, as it has been flagged (possibly due to receiving a non-channel error
             // like a 503).
             conn.setInPool(false);
             conn.close();
-                LOG.debug(
-                        "[{}] closing conn flagged to be closed",
-                        conn.getChannel().id());
-        } else if(isConnectionExpired(conn.getUsageCount())) {
+            LOG.debug(
+                    "[{}] closing conn flagged to be closed", conn.getChannel().id());
+        } else if (isConnectionExpired(conn.getUsageCount())) {
             conn.setInPool(false);
             conn.close();
-            closeExpiredConnLifetimeCounter.increment();
+            metrics.closeExpiredConnLifetimeCounter().increment();
             LOG.debug(
                     "[{}] closing conn lifetime expired, usage: {}",
                     conn.getChannel().id(),
@@ -236,14 +188,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             LOG.debug(
                     "[{}] closing conn, server circuit breaker tripped",
                     conn.getChannel().id());
-            circuitBreakerClose.increment();
+            metrics.circuitBreakerClose().increment();
             // Don't put conns for currently circuit-tripped servers back into the pool.
             conn.setInPool(false);
             conn.close();
         } else if (!conn.isActive()) {
             LOG.debug("[{}] conn inactive, cleaning up", conn.getChannel().id());
             // Connection is already closed, so discard.
-            alreadyClosedCounter.increment();
+            metrics.alreadyClosedCounter().increment();
             // make sure to decrement OpenConnectionCounts
             conn.updateServerStats();
             conn.setInPool(false);
@@ -315,7 +267,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             // The pool for this server no longer exists (maybe due to it failling out of
             // discovery).
             conn.setInPool(false);
-            connsInPool.decrementAndGet();
+            metrics.connsInPool().decrementAndGet();
             return false;
         }
     }
@@ -356,7 +308,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
             SocketAddress finalServerAddr = pickAddress(chosenServer);
             final ClientChannelManager clientChannelMgr = this;
             PooledConnectionFactory pcf = createPooledConnectionFactory(
-                    chosenServer, clientChannelMgr, closeConnCounter, closeWrtBusyConnCounter);
+                    chosenServer, clientChannelMgr, metrics.closeConnCounter(), metrics.closeWrtBusyConnCounter());
 
             // Create a new pool for this server.
             return createConnectionPool(
@@ -366,17 +318,17 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                     pcf,
                     connPoolConfig,
                     clientConfig,
-                    createNewConnCounter,
-                    createConnSucceededCounter,
-                    createConnFailedCounter,
-                    requestConnCounter,
-                    reuseConnCounter,
-                    connTakenFromPoolIsNotOpen,
-                    closeAbovePoolHighWaterMarkCounter,
-                    maxConnsPerHostExceededCounter,
-                    connEstablishTimer,
-                    connsInPool,
-                    connsInUse);
+                    metrics.createNewConnCounter(),
+                    metrics.createConnSucceededCounter(),
+                    metrics.createConnFailedCounter(),
+                    metrics.requestConnCounter(),
+                    metrics.reuseConnCounter(),
+                    metrics.connTakenFromPoolIsNotOpen(),
+                    metrics.closeAbovePoolHighWaterMarkCounter(),
+                    metrics.maxConnsPerHostExceededCounter(),
+                    metrics.connEstablishTimer(),
+                    metrics.connsInPool(),
+                    metrics.connsInUse());
         });
 
         return pool.acquire(eventLoop, passport, selectedHostAddr);
@@ -449,12 +401,12 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
     @Override
     public int getConnsInPool() {
-        return connsInPool.get();
+        return metrics.connsInPool().get();
     }
 
     @Override
     public int getConnsInUse() {
-        return connsInUse.get();
+        return metrics.connsInUse().get();
     }
 
     protected ConcurrentHashMap<DiscoveryResult, IConnectionPool> getPerServerPools() {
@@ -492,16 +444,5 @@ public class DefaultClientChannelManager implements ClientChannelManager {
      */
     protected SocketAddress pickAddress(DiscoveryResult chosenServer) {
         return pickAddressInternal(chosenServer, connPoolConfig.getOriginName());
-    }
-
-    private AtomicInteger newGauge(String name) {
-        return PolledMeter.using(registry)
-                .withName(METRIC_PREFIX + name)
-                .withTag("id", originName.getMetricId())
-                .monitorValue(new AtomicInteger());
-    }
-
-    private Counter newCounter(String name) {
-        return registry.counter(METRIC_PREFIX + name, "id", originName.getMetricId());
     }
 }
