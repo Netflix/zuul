@@ -304,7 +304,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -877,7 +877,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1354,7 +1354,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -1755,7 +1755,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1763,13 +1763,13 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
@@ -1790,7 +1790,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -2067,7 +2067,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -2740,7 +2740,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -3339,7 +3339,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
@@ -3572,7 +3572,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -3580,13 +3580,13 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit:junit-bom"
             ]
@@ -3607,7 +3607,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.12.0-RC2",
+            "locked": "5.11.4",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -3860,7 +3860,7 @@
             ]
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.6",
+            "locked": "1.8.7",
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
