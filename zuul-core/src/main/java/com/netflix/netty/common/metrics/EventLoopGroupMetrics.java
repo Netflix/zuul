@@ -19,8 +19,8 @@ package com.netflix.netty.common.metrics;
 import com.netflix.spectator.api.Registry;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 /**
  * User: michaels@netflix.com
