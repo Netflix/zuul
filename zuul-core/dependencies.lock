@@ -511,6 +511,9 @@
         "io.reactivex:rxjava": {
             "locked": "1.3.8"
         },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -1143,6 +1146,9 @@
         "io.reactivex:rxjava": {
             "locked": "1.3.8"
         },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -1709,6 +1715,9 @@
             "transitive": [
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
         },
         "javax.inject:javax.inject": {
             "locked": "1",
@@ -2422,6 +2431,9 @@
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -3056,6 +3068,9 @@
         "io.reactivex:rxjava": {
             "locked": "1.3.8"
         },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
+        },
         "javax.inject:javax.inject": {
             "locked": "1",
             "transitive": [
@@ -3689,6 +3704,9 @@
             "transitive": [
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
+        },
+        "jakarta.inject:jakarta.inject-api": {
+            "locked": "2.0.1"
         },
         "javax.inject:javax.inject": {
             "locked": "1",
