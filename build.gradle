@@ -235,10 +235,10 @@ subprojects {
         libraries = [
                 guava: "com.google.guava:guava:33.3.0-jre",
                 okhttp: 'com.squareup.okhttp3:okhttp:4.12.0',
-                jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.+',
-                jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.+',
-                jupiterEngine: 'org.junit.jupiter:junit-jupiter-engine:5.+',
-                jupiterMockito: 'org.mockito:mockito-junit-jupiter:5.+',
+                jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.11.+',
+                jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.11.+',
+                jupiterEngine: 'org.junit.jupiter:junit-jupiter-engine:5.11.+',
+                jupiterMockito: 'org.mockito:mockito-junit-jupiter:5.11.+',
                 mockito: 'org.mockito:mockito-core:5.+',
 
                 slf4j: "org.slf4j:slf4j-api:2.0.16",

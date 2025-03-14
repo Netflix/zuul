@@ -1251,7 +1251,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.15.2"
+            "locked": "5.16.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
@@ -2114,7 +2114,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.15.2"
+            "locked": "5.16.0"
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.3.0",
@@ -2545,7 +2545,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.15.2"
+            "locked": "5.16.0"
         },
         "org.objenesis:objenesis": {
             "locked": "3.3",
