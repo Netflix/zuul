@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
@@ -73,9 +75,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     public static final class Key<T> {
 
         private final String name;
+        private final Supplier<T> defaultValueSupplier;
 
-        private Key(String name) {
+        private Key(String name, Supplier<T> defaultValueSupplier) {
             this.name = Objects.requireNonNull(name, "name");
+            this.defaultValueSupplier = defaultValueSupplier;
         }
 
         @Override
@@ -102,6 +106,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         public int hashCode() {
             return super.hashCode();
         }
+
+        public T defaultValue() {
+            return defaultValueSupplier != null ? defaultValueSupplier.get() : null;
+        }
     }
 
     public SessionContext() {
@@ -115,7 +123,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     public static <T> Key<T> newKey(String name) {
-        return new Key<>(name);
+        return newKey(name, null);
+    }
+
+    public static <T> Key<T> newKey(String name, Supplier<T> defaultValueSupplier) {
+        return new Key<>(name, defaultValueSupplier);
     }
 
     /**
@@ -133,8 +145,13 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    public <T> T get(Key<T> key) {
-        return (T) typedMap.get(Objects.requireNonNull(key, "key"));
+    public <T> T get(@NonNull Key<T> key) {
+        T value = (T)typedMap.get(key);
+        if (value == null) {
+            value = key.defaultValue();
+        }
+
+        return value;
     }
 
     /**
