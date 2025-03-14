@@ -48,6 +48,8 @@ public class ZuulDependencyKeys {
             new ChannelConfigKey<>("sessionCtxDecorator");
     public static final ChannelConfigKey<RequestCompleteHandler> requestCompleteHandler =
             new ChannelConfigKey<>("requestCompleteHandler");
+    public static final ChannelConfigKey<Counter> httpRequestHeadersReadTimeoutCounter =
+            new ChannelConfigKey<>("httpRequestHeadersReadTimeoutCounter");
     public static final ChannelConfigKey<Counter> httpRequestReadTimeoutCounter =
             new ChannelConfigKey<>("httpRequestReadTimeoutCounter");
     public static final ChannelConfigKey<FilterLoader> filterLoader = new ChannelConfigKey<>("filterLoader");

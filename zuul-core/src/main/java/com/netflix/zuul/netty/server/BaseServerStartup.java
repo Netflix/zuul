@@ -166,6 +166,8 @@ public abstract class BaseServerStartup {
 
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
+        final Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
         final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
@@ -189,6 +191,8 @@ public abstract class BaseServerStartup {
 
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
+        final Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
         final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
