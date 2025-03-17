@@ -17,14 +17,7 @@
 package com.netflix.zuul.integration.server;
 
 import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.HealthCheckCallback;
-import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.EurekaEventListener;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -45,13 +38,11 @@ import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -94,7 +85,7 @@ public class Bootstrap {
                     registry,
                     new DirectMemoryMonitor(registry),
                     new EventLoopGroupMetrics(registry),
-                    new NoOpEurekaClient(),
+                    null,
                     new ApplicationInfoManager(null, null, null),
                     accessLogPublisher,
                     new PushConnectionRegistry());
@@ -122,111 +113,6 @@ public class Bootstrap {
     public void stop() {
         if (server != null) {
             server.stop();
-        }
-    }
-
-    private static class NoOpEurekaClient implements EurekaClient {
-        @Override
-        public Applications getApplicationsForARegion(@Nullable String region) {
-            return null;
-        }
-
-        @Override
-        public Applications getApplications(String serviceUrl) {
-            return null;
-        }
-
-        @Override
-        public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure) {
-            return List.of();
-        }
-
-        @Override
-        public List<InstanceInfo> getInstancesByVipAddress(String vipAddress, boolean secure, @Nullable String region) {
-            return List.of();
-        }
-
-        @Override
-        public List<InstanceInfo> getInstancesByVipAddressAndAppName(
-                String vipAddress, String appName, boolean secure) {
-            return List.of();
-        }
-
-        @Override
-        public Set<String> getAllKnownRegions() {
-            return Set.of();
-        }
-
-        @Override
-        public InstanceInfo.InstanceStatus getInstanceRemoteStatus() {
-            return null;
-        }
-
-        @Override
-        public List<String> getDiscoveryServiceUrls(String zone) {
-            return List.of();
-        }
-
-        @Override
-        public List<String> getServiceUrlsFromConfig(String instanceZone, boolean preferSameZone) {
-            return List.of();
-        }
-
-        @Override
-        public List<String> getServiceUrlsFromDNS(String instanceZone, boolean preferSameZone) {
-            return List.of();
-        }
-
-        @Override
-        public void registerHealthCheckCallback(HealthCheckCallback callback) {}
-
-        @Override
-        public void registerHealthCheck(HealthCheckHandler healthCheckHandler) {}
-
-        @Override
-        public void registerEventListener(EurekaEventListener eventListener) {}
-
-        @Override
-        public boolean unregisterEventListener(EurekaEventListener eventListener) {
-            return false;
-        }
-
-        @Override
-        public HealthCheckHandler getHealthCheckHandler() {
-            return null;
-        }
-
-        @Override
-        public void shutdown() {}
-
-        @Override
-        public EurekaClientConfig getEurekaClientConfig() {
-            return null;
-        }
-
-        @Override
-        public ApplicationInfoManager getApplicationInfoManager() {
-            return null;
-        }
-
-        @Override
-        public Application getApplication(String appName) {
-            return null;
-        }
-
-        @Override
-        public Applications getApplications() {
-            return null;
-        }
-
-        @Override
-        public List<InstanceInfo> getInstancesById(String id) {
-            return List.of();
-        }
-
-        @Override
-        public InstanceInfo getNextServerFromEureka(String virtualHostname, boolean secure) {
-            return null;
         }
     }
 
