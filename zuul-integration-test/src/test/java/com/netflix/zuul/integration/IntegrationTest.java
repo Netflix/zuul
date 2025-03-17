@@ -121,6 +121,9 @@ class IntegrationTest {
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
+        config.setProperty(
+                "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
+
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
