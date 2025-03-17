@@ -38,13 +38,12 @@ import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Bootstrap {
 
