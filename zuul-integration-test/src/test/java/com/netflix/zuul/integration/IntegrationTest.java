@@ -124,6 +124,8 @@ class IntegrationTest {
         config.setProperty(
                 "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
 
+        // short circuit graceful shutdown
+        config.setProperty("server.outofservice.close.timeout", "0");
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());
