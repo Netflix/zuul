@@ -142,7 +142,7 @@ class IntegrationTest {
     void beforeEachTest() {
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("server.http.request.headers.read.timeout.enabled", false);
-        config.setProperty("server.http.request.headers.read.timeout", 5000);
+        config.setProperty("server.http.request.headers.read.timeout", 10000);
 
         this.pathSegment = randomPathSegment();
         this.wmRuntimeInfo = wireMockExtension.getRuntimeInfo();

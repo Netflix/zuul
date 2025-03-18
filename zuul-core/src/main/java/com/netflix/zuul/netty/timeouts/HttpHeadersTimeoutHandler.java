@@ -32,13 +32,13 @@ import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.ScheduledFuture;
 
-public final class HttpHeadersTimeoutHandler {
+public class HttpHeadersTimeoutHandler {
         private static final Logger LOG = LoggerFactory.getLogger(HttpHeadersTimeoutHandler.class);
 
         private static final AttributeKey<ScheduledFuture<Void>> HTTP_HEADERS_READ_TIMEOUT_FUTURE =
             AttributeKey.newInstance("httpHeadersReadTimeoutFuture");
 
-        public static final class InboundHandler extends ChannelInboundHandlerAdapter {
+        public static class InboundHandler extends ChannelInboundHandlerAdapter {
             private final BooleanSupplier httpHeadersReadTimeoutEnabledSupplier;
             private final IntSupplier httpHeadersReadTimeoutSupplier;
 
@@ -59,7 +59,7 @@ public final class HttpHeadersTimeoutHandler {
                         return;
                     int timeout = httpHeadersReadTimeoutSupplier.getAsInt();
                     ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).set(
-                        ctx.channel().eventLoop().schedule(
+                        ctx.executor().schedule(
                             () -> {
                                 if (!closed) {
                                     ctx.fireExceptionCaught(ReadTimeoutException.INSTANCE);

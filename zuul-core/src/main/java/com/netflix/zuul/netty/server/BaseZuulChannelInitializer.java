@@ -94,7 +94,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             new CachedDynamicBooleanProperty("server.http.request.headers.read.timeout.enabled", false);
 
     public static final CachedDynamicIntProperty HTTP_REQUEST_HEADERS_READ_TIMEOUT =
-            new CachedDynamicIntProperty("server.http.request.headers.read.timeout", 5000);
+            new CachedDynamicIntProperty("server.http.request.headers.read.timeout", 10000);
 
     /**
      * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
