@@ -47,7 +47,6 @@ import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.codec.compression.Brotli;
-import io.netty.incubator.channel.uring.IOUring;
 import io.netty.util.ResourceLeakDetector;
 import java.io.IOException;
 import java.io.InputStream;
@@ -112,8 +111,6 @@ class IntegrationTest {
 
     @BeforeAll
     static void beforeAll() {
-        System.out.println("Epoll.isAvailable: " + Epoll.isAvailable());
-        System.out.println("IOUring.isAvailable: " + IOUring.isAvailable());
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 
@@ -123,6 +120,11 @@ class IntegrationTest {
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
+        config.setProperty(
+                "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
+
+        // short circuit graceful shutdown
+        config.setProperty("server.outofservice.close.timeout", "0");
         bootstrap = new Bootstrap();
         bootstrap.start();
         assertTrue(bootstrap.isRunning());

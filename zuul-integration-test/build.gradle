@@ -3,7 +3,6 @@ apply plugin: 'application'
 
 dependencies {
     implementation project(":zuul-core"),
-            project(":zuul-guice"),
             project(":zuul-discovery")
 
     implementation "io.netty:netty-transport-classes-epoll"
