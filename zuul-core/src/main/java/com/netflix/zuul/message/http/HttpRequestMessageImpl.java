@@ -553,15 +553,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     @Override
     public int getOriginalPort() {
-        try {
-            return getOriginalPort(getContext(), getHeaders(), getPort());
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return getOriginalPort(getContext(), getHeaders(), getPort());
     }
 
     @VisibleForTesting
-    static int getOriginalPort(SessionContext context, Headers headers, int serverPort) throws URISyntaxException {
+    static int getOriginalPort(SessionContext context, Headers headers, int serverPort)  {
         if (context.containsKey(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)) {
             return ((InetSocketAddress) context.get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS)).getPort();
         }

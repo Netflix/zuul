@@ -70,7 +70,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     @Override
-    protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req)  {
         if (!Objects.equals(req.method(), HttpMethod.GET)) {
             sendHttpResponse(req, ctx, HttpResponseStatus.METHOD_NOT_ALLOWED);
             return;
