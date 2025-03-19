@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import java.util.List;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-         boolean closeConn = ((status != HttpResponseStatus.OK) ||  !HttpUtil.isKeepAlive(req));
+         boolean closeConn = ((!Objects.equals(status, HttpResponseStatus.OK)) ||  !HttpUtil.isKeepAlive(req));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
@@ -70,7 +71,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
 
     @Override
     protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        if (req.method() != HttpMethod.GET) {
+        if (!Objects.equals(req.method(), HttpMethod.GET)) {
             sendHttpResponse(req, ctx, HttpResponseStatus.METHOD_NOT_ALLOWED);
             return;
         }

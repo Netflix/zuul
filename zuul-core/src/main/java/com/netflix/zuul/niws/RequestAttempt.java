@@ -122,7 +122,7 @@ public class RequestAttempt {
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;
 
-        if (server != null && server != DiscoveryResult.EMPTY) {
+        if (server != null && !server.equals(DiscoveryResult.EMPTY)) {
             this.host = server.getHost();
             this.port = server.getPort();
             this.availabilityZone = server.getZone();
