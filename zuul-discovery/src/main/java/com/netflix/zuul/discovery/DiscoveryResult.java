@@ -82,7 +82,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public Optional<String> getIPAddr() {
-        if (this == DiscoveryResult.EMPTY) {
+        if (this.equals(DiscoveryResult.EMPTY)) {
             return Optional.empty();
         }
         if (server.getInstanceInfo() != null) {

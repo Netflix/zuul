@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
+import java.util.Objects;
 
 /**
  * @author michaels
@@ -74,7 +75,7 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
                         // that it can continue sending the initial request body.
                         // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd
                         // response.
-                        if (((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
+                        if (Objects.equals(((HttpResponse) msg).status(), HttpResponseStatus.CONTINUE)) {
                             dontFireCompleteYet = true;
                         }
                     }

@@ -102,6 +102,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
@@ -548,7 +549,7 @@ public void invokeNext( HttpResponseMessage zuulResponse) {
                 /** TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
                  * @see DiscoveryResult.EMPTY indicates that the loadbalancer found no available servers.
                  */
-                if (server != DiscoveryResult.EMPTY) {
+                if (!Objects.equals(server, DiscoveryResult.EMPTY)) {
                     if (currentRequestStat != null) {
                         currentRequestStat.server(server);
                     }
@@ -728,7 +729,7 @@ public void invokeNext( HttpResponseMessage zuulResponse) {
 
              ClientException niwsEx = new ClientException(
                     ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-            if (chosenServer.get() != DiscoveryResult.EMPTY) {
+            if (!Objects.equals(chosenServer.get(), DiscoveryResult.EMPTY)) {
                 origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
