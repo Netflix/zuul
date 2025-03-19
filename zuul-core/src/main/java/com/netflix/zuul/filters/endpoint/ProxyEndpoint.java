@@ -216,9 +216,65 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return passport;
     }
 
-    public NettyOrigin getOrigin() {
+    
+public NettyOrigin getOrigin() {
         return origin;
     }
+
+    /**
+     * Get the implementing origin.
+     * <p>
+     * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
+     * rely on your own constructor parameters.
+     */
+    @Nullable
+    protected NettyOrigin getOrigin(HttpRequestMessage request) {
+        SessionContext context = request.getContext();
+        OriginManager<NettyOrigin> originManager =
+                (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
+        if (Debug.debugRequest(context)) {
+
+            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
+            if (routingLogEntries != null) {
+                for (String entry : routingLogEntries.build()) {
+                    Debug.addRequestDebug(context, "RoutingLog: " + entry);
+                }
+            }
+        }
+
+        String primaryRoute = context.getRouteVIP();
+        if (Strings.isNullOrEmpty(primaryRoute)) {
+            // If no vip selected, leave origin null, then later the handleNoOriginSelected() method will be invoked.
+            return null;
+        }
+
+        NettyOrigin origin = null;
+        // allow implementors to override the origin with custom injection logic
+        OriginName overrideOriginName = injectCustomOriginName(request);
+        if (overrideOriginName != null) {
+            // Use the custom vip instead if one has been provided.
+            origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
+        } else {
+            // This is the normal flow - that a RoutingFilter has assigned a route
+            OriginName originName = getOriginName(context);
+            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
+        }
+
+        verifyOrigin(context, request, origin);
+
+        // Update the routeVip on context to show the actual raw VIP from the clientConfig of the chosen Origin.
+        if (origin != null) {
+            context.set(
+                    CommonContextKeys.ACTUAL_VIP,
+                    origin.getClientConfig().get(IClientConfigKey.Keys.DeploymentContextBasedVipAddresses));
+            context.set(
+                    CommonContextKeys.ORIGIN_VIP_SECURE,
+                    origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure));
+        }
+
+        return origin;
+    }
+
 
     public HttpRequestMessage getZuulRequest() {
         return zuulRequest;
@@ -330,21 +386,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return null;
     }
 
-    public void invokeNext( HttpResponseMessage zuulResponse) {
+    
+public void invokeNext( HttpResponseMessage zuulResponse) {
         try {
             methodBinding.bind(() -> filterResponse(zuulResponse));
         } catch (Exception ex) {
             unlinkFromOrigin();
             logger.error("Error in invokeNext resp", ex);
             channelCtx.fireExceptionCaught(ex);
-        }
-    }
-
-    private void filterResponse( HttpResponseMessage zuulResponse) {
-        if (responseFilters != null) {
-            responseFilters.filter(zuulResponse);
-        } else {
-            channelCtx.fireChannelRead(zuulResponse);
         }
     }
 
@@ -357,6 +406,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             unlinkFromOrigin();
             logger.error("Error in invokeNext content", ex);
             channelCtx.fireExceptionCaught(ex);
+        }
+    }
+
+
+    private void filterResponse( HttpResponseMessage zuulResponse) {
+        if (responseFilters != null) {
+            responseFilters.filter(zuulResponse);
+        } else {
+            channelCtx.fireChannelRead(zuulResponse);
         }
     }
 
@@ -1034,60 +1092,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         return request;
-    }
-
-    /**
-     * Get the implementing origin.
-     * <p>
-     * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
-     * rely on your own constructor parameters.
-     */
-    @Nullable
-    protected NettyOrigin getOrigin(HttpRequestMessage request) {
-        SessionContext context = request.getContext();
-        OriginManager<NettyOrigin> originManager =
-                (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
-        if (Debug.debugRequest(context)) {
-
-            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
-            if (routingLogEntries != null) {
-                for (String entry : routingLogEntries.build()) {
-                    Debug.addRequestDebug(context, "RoutingLog: " + entry);
-                }
-            }
-        }
-
-        String primaryRoute = context.getRouteVIP();
-        if (Strings.isNullOrEmpty(primaryRoute)) {
-            // If no vip selected, leave origin null, then later the handleNoOriginSelected() method will be invoked.
-            return null;
-        }
-
-        NettyOrigin origin = null;
-        // allow implementors to override the origin with custom injection logic
-        OriginName overrideOriginName = injectCustomOriginName(request);
-        if (overrideOriginName != null) {
-            // Use the custom vip instead if one has been provided.
-            origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
-        } else {
-            // This is the normal flow - that a RoutingFilter has assigned a route
-            OriginName originName = getOriginName(context);
-            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
-        }
-
-        verifyOrigin(context, request, origin);
-
-        // Update the routeVip on context to show the actual raw VIP from the clientConfig of the chosen Origin.
-        if (origin != null) {
-            context.set(
-                    CommonContextKeys.ACTUAL_VIP,
-                    origin.getClientConfig().get(IClientConfigKey.Keys.DeploymentContextBasedVipAddresses));
-            context.set(
-                    CommonContextKeys.ORIGIN_VIP_SECURE,
-                    origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure));
-        }
-
-        return origin;
     }
 
     @Nonnull
