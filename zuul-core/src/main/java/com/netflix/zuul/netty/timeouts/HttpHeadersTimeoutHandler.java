@@ -87,6 +87,7 @@ public class HttpHeadersTimeoutHandler {
                         ScheduledFuture<Void> future = ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
                         if (future != null) {
                             future.cancel(false);
+                            ctx.pipeline().remove(this);
                             LOG.debug("[{}] Removing HTTP headers read timeout handler", ctx.channel().id());
                         }
                     }
