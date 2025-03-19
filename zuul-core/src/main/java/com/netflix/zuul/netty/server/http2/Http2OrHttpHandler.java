@@ -117,12 +117,12 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
 
     @Override
     protected void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
-        if (ApplicationProtocolNames.HTTP_2.equals(protocol)) {
+        if (protocol.equals(ApplicationProtocolNames.HTTP_2)) {
             ctx.channel().attr(PROTOCOL_NAME).set(PROTOCOL_HTTP_2);
             configureHttp2(ctx.pipeline());
             return;
         }
-        if (ApplicationProtocolNames.HTTP_1_1.equals(protocol)) {
+        if (protocol.equals(ApplicationProtocolNames.HTTP_1_1)) {
             ctx.channel().attr(PROTOCOL_NAME).set(PROTOCOL_HTTP_1_1);
             configureHttp1(ctx.pipeline());
             return;

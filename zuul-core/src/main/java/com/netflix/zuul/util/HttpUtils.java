@@ -147,7 +147,7 @@ public class HttpUtils {
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
         if (!Strings.isNullOrEmpty(teValue)) {
-            isChunked = "chunked".equals(teValue.toLowerCase());
+            isChunked = teValue.toLowerCase().equals("chunked");
         }
         return isChunked;
     }

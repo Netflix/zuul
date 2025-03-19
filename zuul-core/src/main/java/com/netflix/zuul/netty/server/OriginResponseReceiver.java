@@ -112,7 +112,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         if (evt instanceof CompleteEvent completeEvent) {
              CompleteReason reason = completeEvent.getReason();
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
-                if(reason == CompleteReason.CLOSE && Boolean.TRUE.equals(ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get())) {
+                if(reason == CompleteReason.CLOSE && ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get().equals(Boolean.TRUE)) {
                     logger.warn("Origin request completed with close, after getting a SslCloseCompletionEvent event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
                     edgeProxy.errorFromOrigin(new OriginConnectException("Origin connection close_notify", OutboundErrorType.CLOSE_NOTIFY_CONNECTION));
                 } else {

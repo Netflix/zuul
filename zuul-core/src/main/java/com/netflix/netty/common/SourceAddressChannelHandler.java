@@ -149,7 +149,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
 
     private InetSocketAddress sourceAddress(Channel channel) {
         SocketAddress remoteSocketAddr = channel.remoteAddress();
-        if (null != remoteSocketAddr && InetSocketAddress.class.isAssignableFrom(remoteSocketAddr.getClass())) {
+        if (remoteSocketAddr != null && InetSocketAddress.class.isAssignableFrom(remoteSocketAddr.getClass())) {
             InetSocketAddress inetSocketAddress = (InetSocketAddress) remoteSocketAddr;
             if (inetSocketAddress.getAddress() != null) {
                 return inetSocketAddress;
@@ -160,7 +160,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
 
     private InetSocketAddress localAddress(Channel channel) {
         SocketAddress localSocketAddress = channel.localAddress();
-        if (null != localSocketAddress && InetSocketAddress.class.isAssignableFrom(localSocketAddress.getClass())) {
+        if (localSocketAddress != null && InetSocketAddress.class.isAssignableFrom(localSocketAddress.getClass())) {
             InetSocketAddress inetSocketAddress = (InetSocketAddress) localSocketAddress;
             if (inetSocketAddress.getAddress() != null) {
                 return inetSocketAddress;

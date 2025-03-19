@@ -90,7 +90,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             return new MissingEndpointHandlingFilter("NO_ENDPOINT_NAME");
         }
 
-        if (PROXY_ENDPOINT_FILTER_NAME.equals(endpointName)) {
+        if (endpointName.equals(PROXY_ENDPOINT_FILTER_NAME)) {
             return newProxyEndpoint(zuulRequest);
         }
 

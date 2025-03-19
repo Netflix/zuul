@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 @Disabled
 class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
-    private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
+    private static final boolean IS_OS_LINUX = PlatformDependent.normalizedOs().equals("linux");
 
     @BeforeEach
     void beforeTest() {
