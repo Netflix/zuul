@@ -68,7 +68,7 @@ class IoUringTest {
 
     @BeforeEach
     void beforeTest() {
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_io_uring", "true");
         config.setProperty("zuul.server.netty.socket.force_nio", "false");
     }
@@ -90,7 +90,7 @@ class IoUringTest {
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
 
-        final List<IOUringSocketChannel> ioUringChannels =
+         List<IOUringSocketChannel> ioUringChannels =
                 Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
 
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
@@ -146,7 +146,7 @@ class IoUringTest {
         }
     }
 
-    private static void checkConnection(final int port) {
+    private static void checkConnection( int port) {
         LOGGER.info("checkConnection port {}", port);
         Socket sock = null;
         try {

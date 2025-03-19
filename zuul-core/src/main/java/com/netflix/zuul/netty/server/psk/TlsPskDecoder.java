@@ -36,7 +36,7 @@ public class TlsPskDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        final byte[] bytesRead = in.hasArray() ? in.array() : TlsPskUtils.readDirect(in);
+         byte[] bytesRead = in.hasArray() ? in.array() : TlsPskUtils.readDirect(in);
         try {
             tlsPskServerProtocol.offerInput(bytesRead);
         } catch (TlsFatalAlert tlsFatalAlert) {
@@ -46,7 +46,7 @@ public class TlsPskDecoder extends ByteToMessageDecoder {
             return;
         }
         writeOutputIfAvailable(ctx);
-        final int appDataAvailable = tlsPskServerProtocol.getAvailableInputBytes();
+         int appDataAvailable = tlsPskServerProtocol.getAvailableInputBytes();
         if (appDataAvailable > 0) {
             byte[] appData = new byte[appDataAvailable];
             tlsPskServerProtocol.readInput(appData, 0, appDataAvailable);
@@ -55,7 +55,7 @@ public class TlsPskDecoder extends ByteToMessageDecoder {
     }
 
     private void writeOutputIfAvailable(ChannelHandlerContext ctx) {
-        final int availableOutputBytes = tlsPskServerProtocol.getAvailableOutputBytes();
+         int availableOutputBytes = tlsPskServerProtocol.getAvailableOutputBytes();
         // output is available immediately (handshake not complete), pipe that back to the client right away
         if (availableOutputBytes != 0) {
             byte[] outputBytes = new byte[availableOutputBytes];

@@ -120,7 +120,7 @@ public class AccessLogPublisher {
         }
 
         // Write to logger.
-        final String access = sb.toString();
+         String access = sb.toString();
         logger.info(access);
         LOG.debug(access);
     }

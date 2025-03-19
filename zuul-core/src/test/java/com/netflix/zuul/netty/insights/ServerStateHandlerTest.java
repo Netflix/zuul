@@ -52,13 +52,13 @@ class ServerStateHandlerTest {
     @Test
     void verifyConnMetrics() {
 
-        final EmbeddedChannel channel = new EmbeddedChannel();
+         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 
-        final Counter connects = (Counter) registry.get(connectsId);
-        final Counter closes = (Counter) registry.get(closesId);
-        final Counter errors = (Counter) registry.get(errorsId);
+         Counter connects = (Counter) registry.get(connectsId);
+         Counter closes = (Counter) registry.get(closesId);
+         Counter errors = (Counter) registry.get(errorsId);
 
         // Connects X 3
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
@@ -78,7 +78,7 @@ class ServerStateHandlerTest {
     @Test
     void setPassportStateOnConnect() {
 
-        final EmbeddedChannel channel = new EmbeddedChannel();
+         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 
@@ -91,7 +91,7 @@ class ServerStateHandlerTest {
 
     @Test
     void setPassportStateOnDisconnect() {
-        final EmbeddedChannel channel = new EmbeddedChannel();
+         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 

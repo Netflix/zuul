@@ -68,11 +68,11 @@ public class PooledConnection {
     protected boolean released = false;
 
     public PooledConnection(
-            final Channel channel,
-            final DiscoveryResult server,
-            final ClientChannelManager channelManager,
-            final Counter closeConnCounter,
-            final Counter closeWrtBusyConnCounter) {
+             Channel channel,
+             DiscoveryResult server,
+             ClientChannelManager channelManager,
+             Counter closeConnCounter,
+             Counter closeWrtBusyConnCounter) {
         this.channel = channel;
         this.server = server;
         this.channelManager = channelManager;
@@ -132,7 +132,7 @@ public class PooledConnection {
     }
 
     public long stopRequestTimer() {
-        final long responseTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - reqStartTime);
+         long responseTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - reqStartTime);
         server.noteResponseTime(responseTime);
         return responseTime;
     }
@@ -202,7 +202,7 @@ public class PooledConnection {
     public void removeReadTimeoutHandler() {
         // Remove (and therefore destroy) the readTimeoutHandler when we release the
         // channel back to the pool. As don't want it timing-out when it's not in use.
-        final ChannelPipeline pipeline = getChannel().pipeline();
+         ChannelPipeline pipeline = getChannel().pipeline();
         removeHandlerFromPipeline(READ_TIMEOUT_HANDLER_NAME, pipeline);
     }
 

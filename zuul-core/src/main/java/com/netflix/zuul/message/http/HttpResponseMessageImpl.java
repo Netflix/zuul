@@ -61,7 +61,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
     }
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request) {
-        final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
+         HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }

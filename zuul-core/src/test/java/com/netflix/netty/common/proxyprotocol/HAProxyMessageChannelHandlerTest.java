@@ -147,16 +147,16 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+         HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("192.168.0.1");
         assertThat(hapm.destinationAddress()).isEqualTo("124.123.111.111");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> nflxTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+         List<HAProxyTLV> nflxTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
         Assert.assertEquals(nflxTLV.size(), 1);
-        final String payload = nflxTLV.get(0).content().toString(StandardCharsets.UTF_8);
+         String payload = nflxTLV.get(0).content().toString(StandardCharsets.UTF_8);
         assertThat(payload).isEqualTo("nflx.custom.tlv");
     }
 
@@ -212,14 +212,14 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+         HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("192.168.0.1");
         assertThat(hapm.destinationAddress()).isEqualTo("124.123.111.111");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+         List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
         assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 
@@ -298,14 +298,14 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+         HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("2001:db8:85a3:0:0:8a2e:370:7334");
         assertThat(hapm.destinationAddress()).isEqualTo("1050:0:0:0:5:600:300c:326b");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+         List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
         assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 }

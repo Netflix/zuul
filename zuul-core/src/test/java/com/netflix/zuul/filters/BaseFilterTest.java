@@ -81,7 +81,7 @@ class BaseFilterTest {
 
     @Test
     void validateDefaultConcurrencyLimit() {
-        final int[] limit = {0};
+         int[] limit = {0};
         class ConcInboundFilter extends BaseFilter {
 
             @Override
@@ -108,7 +108,7 @@ class BaseFilterTest {
     void validateFilterGlobalConcurrencyLimitOverride() {
         config.setProperty("zuul.filter.concurrency.limit.default", 7000);
         config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4000);
-        final int[] limit = {0};
+         int[] limit = {0};
 
         class ConcInboundFilter extends BaseFilter {
 
@@ -136,7 +136,7 @@ class BaseFilterTest {
     void validateFilterSpecificConcurrencyLimitOverride() {
         config.setProperty("zuul.filter.concurrency.limit.default", 7000);
         config.setProperty("zuul.ConcInboundFilter.in.concurrency.limit", 4300);
-        final int[] limit = {0};
+         int[] limit = {0};
 
         class ConcInboundFilter extends BaseFilter {
 

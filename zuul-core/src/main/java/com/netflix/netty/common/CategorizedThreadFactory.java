@@ -34,8 +34,8 @@ public class CategorizedThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(final Runnable r) {
-        final FastThreadLocalThread t = new FastThreadLocalThread(r, category + "-" + num++);
+    public Thread newThread( Runnable r) {
+         FastThreadLocalThread t = new FastThreadLocalThread(r, category + "-" + num++);
         return t;
     }
 }

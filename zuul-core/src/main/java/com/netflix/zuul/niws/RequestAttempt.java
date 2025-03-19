@@ -113,9 +113,9 @@ public class RequestAttempt {
     }
 
     public RequestAttempt(
-            final DiscoveryResult server,
+             DiscoveryResult server,
             InetAddress serverAddr,
-            final IClientConfig clientConfig,
+             IClientConfig clientConfig,
             int attemptNumber,
             int readTimeout) {
         this.status = -1;
