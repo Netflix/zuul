@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.server;
 
 import com.google.common.base.Preconditions;
+import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
 import com.netflix.netty.common.Http1ConnectionCloseHandler;
@@ -56,6 +57,7 @@ import com.netflix.zuul.netty.insights.PassportLoggingHandler;
 import com.netflix.zuul.netty.insights.PassportStateHttpServerHandler;
 import com.netflix.zuul.netty.insights.ServerStateHandler;
 import com.netflix.zuul.netty.server.ssl.SslHandshakeInfoHandler;
+import com.netflix.zuul.netty.timeouts.HttpHeadersTimeoutHandler;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -87,6 +89,12 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             new CachedDynamicIntProperty("server.http.decoder.maxHeaderSize", 32768);
     public static final CachedDynamicIntProperty MAX_CHUNK_SIZE =
             new CachedDynamicIntProperty("server.http.decoder.maxChunkSize", 32768);
+
+    public static final CachedDynamicBooleanProperty HTTP_REQUEST_HEADERS_READ_TIMEOUT_ENABLED =
+            new CachedDynamicBooleanProperty("server.http.request.headers.read.timeout.enabled", false);
+
+    public static final CachedDynamicIntProperty HTTP_REQUEST_HEADERS_READ_TIMEOUT =
+            new CachedDynamicIntProperty("server.http.request.headers.read.timeout", 10000);
 
     /**
      * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
@@ -128,6 +136,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     // protected final RequestRejectedChannelHandler requestRejectedChannelHandler;
     protected final SessionContextDecorator sessionContextDecorator;
     protected final RequestCompleteHandler requestCompleteHandler;
+    protected final Counter httpRequestHeadersReadTimeoutCounter;
     protected final Counter httpRequestReadTimeoutCounter;
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
@@ -204,6 +213,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.sessionContextDecorator = channelDependencies.get(ZuulDependencyKeys.sessionCtxDecorator);
         this.requestCompleteHandler = channelDependencies.get(ZuulDependencyKeys.requestCompleteHandler);
+        this.httpRequestHeadersReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter);
         this.httpRequestReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestReadTimeoutCounter);
 
         this.filterLoader = channelDependencies.get(ZuulDependencyKeys.filterLoader);
@@ -249,6 +259,11 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     }
 
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
+        pipeline.addLast(new HttpHeadersTimeoutHandler.InboundHandler(
+            HTTP_REQUEST_HEADERS_READ_TIMEOUT_ENABLED::get,
+            HTTP_REQUEST_HEADERS_READ_TIMEOUT::get,
+            httpRequestHeadersReadTimeoutCounter
+        ));
         pipeline.addLast(new PassportStateHttpServerHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpServerHandler.OutboundHandler());
         if (httpRequestReadTimeout > -1) {

@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -140,6 +141,10 @@ class IntegrationTest {
 
     @BeforeEach
     void beforeEachTest() {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("server.http.request.headers.read.timeout.enabled", false);
+        config.setProperty("server.http.request.headers.read.timeout", 10000);
+
         this.pathSegment = randomPathSegment();
 
         this.wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
@@ -250,6 +255,63 @@ class IntegrationTest {
         assertThat(response.code()).isEqualTo(504);
         assertThat(response.body().string()).isEqualTo("");
         verifyResponseHeaders(response);
+    }
+
+    @ParameterizedTest
+    @MethodSource("arguments")
+    void httpGetHappyPathWithHeadersReadTimeout(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("server.http.request.headers.read.timeout.enabled", true);
+
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello world")));
+
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .get()
+                .build();
+        Response response = okHttp.newCall(request).execute();
+        assertThat(response.code()).isEqualTo(200);
+        assertThat(response.body().string()).isEqualTo("hello world");
+        verifyResponseHeaders(response);
+    }
+
+    @ParameterizedTest
+    @MethodSource("arguments")
+    void httpPostHappyPathWithHeadersReadTimeout(
+            final String description,
+            final OkHttpClient okHttp,
+            final boolean requestBodyBuffering,
+            final boolean responseBodyBuffering)
+            throws Exception {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("server.http.request.headers.read.timeout.enabled", true);
+
+        wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
+
+        Request request = setupRequestBuilder(requestBodyBuffering, responseBodyBuffering)
+                .post(RequestBody.create("Simple POST request body".getBytes(StandardCharsets.UTF_8)))
+                .build();
+        Response response = okHttp.newCall(request).execute();
+        assertThat(response.code()).isEqualTo(200);
+        assertThat(response.body().string()).isEqualTo("Thank you next");
+        verifyResponseHeaders(response);
+    }
+
+    @Test
+    void httpGetFailsDueToHeadersReadTimeout() throws Exception {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("server.http.request.headers.read.timeout.enabled", true);
+        config.setProperty("server.http.request.headers.read.timeout", 100);
+
+        Socket slowClient = new Socket("localhost", ZUUL_SERVER_PORT);
+        Thread.sleep(500);
+        // end of stream reached because zuul closed the connection
+        assertThat(slowClient.getInputStream().read()).isEqualTo(-1);
+        slowClient.close();
     }
 
     @ParameterizedTest
