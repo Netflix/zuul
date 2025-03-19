@@ -37,7 +37,6 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -283,7 +282,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     @Override
     public String getPath() {
-        if (Objects.equals(message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI), Boolean.TRUE)) {
+        if (message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI).equals(Boolean.TRUE)) {
             return decodedPath;
         }
         return path;
