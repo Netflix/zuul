@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.net.InetAddresses;
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.NoopRegistry;
@@ -64,7 +63,7 @@ class DefaultClientChannelManagerTest {
 
     @Test
     void pickAddressInternal_discovery() {
-        InstanceInfo instanceInfo = Builder.newBuilder()
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("app")
                 .setHostName("192.168.0.1")
                 .setPort(443)
@@ -81,7 +80,7 @@ class DefaultClientChannelManagerTest {
 
     @Test
     void pickAddressInternal_discovery_unresolved() {
-        InstanceInfo instanceInfo = Builder.newBuilder()
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("app")
                 .setHostName("localhost")
                 .setPort(443)
@@ -148,7 +147,7 @@ class DefaultClientChannelManagerTest {
          DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
 
          DynamicServerResolver resolver = mock(DynamicServerResolver.class);
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
                 .setPort(7777)
@@ -181,7 +180,7 @@ class DefaultClientChannelManagerTest {
 
         Server.defaultOutboundChannelType.set(NioSocketChannel.class);
 
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName(appName)
                 .setHostName(serverHostname)
                 .setPort(serverPort)
