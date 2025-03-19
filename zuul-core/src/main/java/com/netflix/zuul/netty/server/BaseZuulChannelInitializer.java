@@ -111,7 +111,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final int maxRequestsPerConnectionInBrownout;
     protected final int connectionExpiry;
     protected final int maxConnections;
-    private final int connCloseDelay;
+    
 
     protected final Registry registry;
     protected final HttpMetricsChannelHandler httpMetricsHandler;
@@ -188,7 +188,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.maxRequestsPerConnectionInBrownout =
                 channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout);
         this.connectionExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
-        this.connCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
+         int connCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
 
         StripUntrustedProxyHeadersHandler.AllowWhen allowProxyHeadersWhen =
                 channelConfig.get(CommonChannelConfigKeys.allowProxyHeadersWhen);
