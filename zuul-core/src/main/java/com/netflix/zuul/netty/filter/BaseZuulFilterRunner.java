@@ -420,8 +420,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private final I inMesg;
         private final ZuulFilter<I, O> filter;
         private final long startTime;
-        private ZuulMessage snapshot;
-        private AtomicBoolean concurrencyDecremented;
+        private final ZuulMessage snapshot;
+        private final AtomicBoolean concurrencyDecremented;
 
         private final AtomicReference<Link> onNextLinkOut = new AtomicReference<>();
         private final AtomicReference<Link> onErrorLinkOut = new AtomicReference<>();

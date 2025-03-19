@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class ZuulFiltersModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
 
-    private static Predicate<String> blank = String::isEmpty;
+    private static final Predicate<String> blank = String::isEmpty;
 
     @Override
     protected void configure() {

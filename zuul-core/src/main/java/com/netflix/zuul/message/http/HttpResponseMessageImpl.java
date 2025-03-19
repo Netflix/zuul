@@ -40,8 +40,8 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
             .getIntProperty("zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
     private static final Logger LOG = LoggerFactory.getLogger(HttpResponseMessageImpl.class);
 
-    private ZuulMessage message;
-    private HttpRequestMessage outboundRequest;
+    private final ZuulMessage message;
+    private final HttpRequestMessage outboundRequest;
     private int status;
     private HttpResponseInfo inboundResponse = null;
 

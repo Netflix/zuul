@@ -48,7 +48,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     private final String originDomain;
 
     public static final String NAME = "push_auth_handler";
-    private static Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
 
     public PushAuthHandler(String pushConnectionPath, String originDomain) {
         this.pushConnectionPath = pushConnectionPath;

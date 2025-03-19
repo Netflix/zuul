@@ -77,7 +77,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private static final String URI_SCHEME_HTTPS = "https";
 
     private final boolean immutable;
-    private ZuulMessage message;
+    private final ZuulMessage message;
     private String protocol;
     private String method;
     private String path;
@@ -87,7 +87,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private String scheme;
     private int port;
     private String serverName;
-    private SocketAddress clientRemoteAddress;
+    private final SocketAddress clientRemoteAddress;
 
     private HttpRequestInfo inboundRequest = null;
     private Cookies parsedCookies = null;

@@ -46,7 +46,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     private boolean hasBody;
     private boolean bodyBufferedCompletely;
-    private List<HttpContent> bodyChunks;
+    private final List<HttpContent> bodyChunks;
 
     public ZuulMessageImpl(SessionContext context) {
         this(context, new Headers());

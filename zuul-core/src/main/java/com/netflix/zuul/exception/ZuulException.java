@@ -22,7 +22,7 @@ package com.netflix.zuul.exception;
  * Time: 4:33 PM
  */
 public class ZuulException extends RuntimeException {
-    private String errorCause;
+    private final String errorCause;
     private int statusCode = 500;
     private boolean shouldLogAsError = true;
 
