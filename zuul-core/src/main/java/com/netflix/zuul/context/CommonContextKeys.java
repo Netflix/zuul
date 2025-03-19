@@ -27,7 +27,7 @@ import com.netflix.zuul.stats.status.StatusCategory;
 import io.netty.channel.Channel;
 import java.net.InetAddress;
 import java.util.Map;
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 
 /**
  * Common Context Keys
