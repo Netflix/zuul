@@ -76,8 +76,7 @@ public final class Headers {
      * Get the first value found for this key even if there are multiple. If none, then
      * return {@code null}.
      */
-    @Nullable
-    public String getFirst(String headerName) {
+    @Nullable public String getFirst(String headerName) {
         String normalName = HeaderName.normalize(Objects.requireNonNull(headerName, "headerName"));
         return getFirstNormal(normalName);
     }
@@ -86,8 +85,7 @@ public final class Headers {
      * Get the first value found for this key even if there are multiple. If none, then
      * return {@code null}.
      */
-    @Nullable
-    public String getFirst(HeaderName headerName) {
+    @Nullable public String getFirst(HeaderName headerName) {
         String normalName = Objects.requireNonNull(headerName, "headerName").getNormalised();
         return getFirstNormal(normalName);
     }
@@ -118,8 +116,7 @@ public final class Headers {
         return defaultValue;
     }
 
-    @Nullable
-    private String getFirstNormal(String name) {
+    @Nullable private String getFirstNormal(String name) {
         for (int i = 0; i < size(); i++) {
             if (name(i).equals(name)) {
                 return value(i);

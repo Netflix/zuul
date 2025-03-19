@@ -84,8 +84,7 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
         UDS,
         ;
 
-        @Nullable
-        private final Supplier<? extends InetAddress> addressSupplier;
+        @Nullable private final Supplier<? extends InetAddress> addressSupplier;
 
         BindType() {
             addressSupplier = null;
