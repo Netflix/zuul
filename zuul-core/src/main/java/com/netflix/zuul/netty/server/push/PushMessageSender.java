@@ -31,7 +31,6 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import jakarta.inject.Inject;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +93,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
             logPushAttempt();
 
              HttpMethod method = request.method();
-            if ((!Objects.equals(method, HttpMethod.POST)) && (!Objects.equals(method, HttpMethod.GET))) {
+            if ((!method.equals(HttpMethod.POST)) && (!method.equals(HttpMethod.GET))) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.METHOD_NOT_ALLOWED, null);
                 return;
             }
@@ -119,7 +118,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
                 return;
             }
 
-            if (Objects.equals(method, HttpMethod.GET)) {
+            if (method.equals(HttpMethod.GET)) {
                 // client only checking if particular CID + ESN is connected to this instance
                 sendHttpResponse(ctx, request, HttpResponseStatus.OK, userAuth);
                 return;
