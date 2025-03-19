@@ -296,7 +296,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         // (argha-c): Always ensure the selected server is updated, since the call chain relies on this mutation.
         selectedServer.set(chosenServer);
-        if (Objects.equals(chosenServer, DiscoveryResult.EMPTY)) {
+        if (chosenServer.equals(DiscoveryResult.EMPTY)) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
             promise.setFailure(
                     new OriginConnectException("No servers available", OutboundErrorType.NO_AVAILABLE_SERVERS));
