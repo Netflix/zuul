@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfigKey.Keys;
 import com.netflix.spectator.api.Counter;
@@ -152,7 +151,7 @@ class PerServerConnectionPoolTest {
 
         OriginName originName = OriginName.fromVipAndApp("whatever", "whatever-secure");
 
-        InstanceInfo instanceInfo = Builder.newBuilder()
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setIPAddr("175.45.176.0")
                 .setPort(7001)
                 .setAppName("whatever")
