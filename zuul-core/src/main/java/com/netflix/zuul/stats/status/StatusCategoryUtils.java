@@ -33,13 +33,11 @@ public class StatusCategoryUtils {
         return getStatusCategory(msg.getContext());
     }
 
-    @Nullable
-    public static StatusCategory getStatusCategory(SessionContext ctx) {
+    @Nullable public static StatusCategory getStatusCategory(SessionContext ctx) {
         return ctx.get(CommonContextKeys.STATUS_CATEGORY);
     }
 
-    @Nullable
-    public static String getStatusCategoryReason(SessionContext ctx) {
+    @Nullable public static String getStatusCategoryReason(SessionContext ctx) {
         return ctx.get(CommonContextKeys.STATUS_CATEGORY_REASON);
     }
 
@@ -57,13 +55,11 @@ public class StatusCategoryUtils {
         ctx.remove(CommonContextKeys.STATUS_CATEGORY_REASON);
     }
 
-    @Nullable
-    public static StatusCategory getOriginStatusCategory(SessionContext ctx) {
+    @Nullable public static StatusCategory getOriginStatusCategory(SessionContext ctx) {
         return ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY);
     }
 
-    @Nullable
-    public static String getOriginStatusCategoryReason(SessionContext ctx) {
+    @Nullable public static String getOriginStatusCategoryReason(SessionContext ctx) {
         return ctx.get(CommonContextKeys.ORIGIN_STATUS_CATEGORY_REASON);
     }
 

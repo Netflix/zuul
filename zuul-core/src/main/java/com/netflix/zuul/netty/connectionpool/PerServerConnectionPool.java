@@ -448,8 +448,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         return connsInUse.get();
     }
 
-    @Nullable
-    protected InetAddress getSelectedHostString(SocketAddress addr) {
+    @Nullable protected InetAddress getSelectedHostString(SocketAddress addr) {
         if (addr instanceof InetSocketAddress) {
             return ((InetSocketAddress) addr).getAddress();
         } else {

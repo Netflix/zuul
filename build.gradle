@@ -32,13 +32,14 @@ allprojects {
         mavenCentral()
     }
 
-    apply plugin: 'com.palantir.java-format'
     apply plugin: 'com.diffplug.spotless'
 
     spotless {
         enforceCheck false
         java {
             rootProject.hasProperty('spotlessJavaTarget') ? target(rootProject.getProperty('spotlessJavaTarget').split(",")) : target('src/*/java/**/*.java')
+            removeUnusedImports('cleanthat-javaparser-unnecessaryimport')
+            palantirJavaFormat()
             formatAnnotations()
         }
     }
@@ -51,7 +52,6 @@ subprojects {
     apply plugin: 'com.netflix.nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
-    apply plugin: 'com.palantir.java-format'
     apply plugin: 'net.ltgt.errorprone'
 
     license {
