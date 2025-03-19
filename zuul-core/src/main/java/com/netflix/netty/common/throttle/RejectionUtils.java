@@ -173,7 +173,7 @@ public final class RejectionUtils {
             HttpResponseStatus rejectedCode,
             String rejectedBody,
             Map<String, String> rejectionHeaders)
-            throws Exception {
+             {
 
         boolean shouldDropMessage = false;
         if (rejectionType == RejectionType.REJECT || rejectionType == RejectionType.CLOSE) {

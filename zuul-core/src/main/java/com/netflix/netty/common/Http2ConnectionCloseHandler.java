@@ -113,7 +113,7 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
         return false;
     }
 
-    private void closeChannel(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+    private void closeChannel(ChannelHandlerContext ctx, ChannelPromise promise)  {
         Channel child = ctx.channel();
         Channel parent = HttpUtils.getMainChannel(ctx);
 
