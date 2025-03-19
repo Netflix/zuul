@@ -109,7 +109,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             for (int i = 0; i < limit; i++) {
                 final ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
-                if ((!filter.isDisabled()) && (!shouldSkipFilter(inMesg, filter))) {
+                if ( !filter.isDisabled() &&  !shouldSkipFilter(inMesg, filter)) {
                     ByteBufUtil.touch(chunk, "Filter runner processing chunk, filter: ", filterName);
                     final HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
                     if (newChunk == null) {

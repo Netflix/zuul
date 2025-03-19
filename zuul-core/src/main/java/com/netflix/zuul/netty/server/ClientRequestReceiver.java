@@ -195,7 +195,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             // Send the request down the filter pipeline
             ctx.fireChannelRead(zuulRequest);
         } else if (msg instanceof HttpContent) {
-            if ((zuulRequest != null) && (!zuulRequest.getContext().isCancelled())) {
+            if ((zuulRequest != null) &&  !zuulRequest.getContext().isCancelled()) {
                 ctx.fireChannelRead(msg);
             } else {
                 // We already sent response for this request, these are laggard request body chunks that are still

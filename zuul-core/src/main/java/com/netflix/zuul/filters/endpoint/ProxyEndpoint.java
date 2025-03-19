@@ -277,7 +277,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
         }
 
-        if ((error) && (origCh != null)) {
+        if ( error && (origCh != null)) {
             origCh.close();
         }
     }
