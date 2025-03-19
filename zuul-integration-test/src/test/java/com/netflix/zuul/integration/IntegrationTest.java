@@ -281,7 +281,7 @@ class IntegrationTest {
                 .get()
                 .build();
         Response response = okHttp.newCall(request).execute();
-        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        final int expectedStatusCode =  responseBodyBuffering ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
@@ -365,7 +365,7 @@ class IntegrationTest {
                 .get()
                 .build();
         Response response = okHttp.newCall(request).execute();
-        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        final int expectedStatusCode =  responseBodyBuffering ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }

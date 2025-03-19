@@ -104,7 +104,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             setEndpoint(zuulReq, endpoint);
             final HttpResponseMessage zuulResp = filter(endpoint, zuulReq);
 
-            if ((zuulResp != null) && (!(endpoint instanceof ProxyEndpoint))) {
+            if ((zuulResp != null) &&  !(endpoint instanceof ProxyEndpoint)) {
                 // EdgeProxyEndpoint calls invokeNextStage internally
                 logger.debug(
                         "Endpoint calling invokeNextStage, UUID {}",
@@ -171,7 +171,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             zuulCtx.setShouldSendErrorResponse(false);
             zuulCtx.setErrorResponseSent(true);
             final String errEndPointName = zuulCtx.getErrorEndpoint();
-            return (Strings.isNullOrEmpty(errEndPointName)) ? DEFAULT_ERROR_ENDPOINT.get() : errEndPointName;
+            return  Strings.isNullOrEmpty(errEndPointName) ? DEFAULT_ERROR_ENDPOINT.get() : errEndPointName;
         } else {
             return zuulCtx.getEndpoint();
         }

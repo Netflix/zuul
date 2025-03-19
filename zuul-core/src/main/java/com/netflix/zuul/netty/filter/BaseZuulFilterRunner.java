@@ -290,7 +290,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             return false;
         }
         final SessionContext zuulCtx = inMesg.getContext();
-        if ((zuulCtx.shouldStopFilterProcessing()) && (!filter.overrideStopFilterProcessing())) {
+        if ( zuulCtx.shouldStopFilterProcessing() &&  !filter.overrideStopFilterProcessing()) {
             return true;
         }
         if (zuulCtx.isCancelled()) {
@@ -303,7 +303,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     }
 
     private boolean isMessageBodyReadyForFilter(final ZuulFilter<I, O> filter, final I inMesg) {
-        return inMesg.hasCompleteBody() || (!filter.needsBodyBuffered(inMesg));
+        return inMesg.hasCompleteBody() ||  !filter.needsBodyBuffered(inMesg);
     }
 
     protected O handleFilterException(final I inMesg, final ZuulFilter<I, O> filter, final Throwable ex) {
