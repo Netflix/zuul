@@ -124,8 +124,8 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     @Override
     public void incrementConcurrency() throws ZuulFilterConcurrencyExceededException {
-        final int limit = calculateConcurency();
-        if ((concurrencyProtectionEnabled.get()) && (concurrentCount.get() >= limit)) {
+         int limit = calculateConcurency();
+        if ( concurrencyProtectionEnabled.get() && (concurrentCount.get() >= limit)) {
             concurrencyRejections.increment();
             throw new ZuulFilterConcurrencyExceededException(this, limit);
         }
@@ -133,7 +133,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     }
 
     protected int calculateConcurency() {
-        final int customLimit = filterConcurrencyCustom.get();
+         int customLimit = filterConcurrencyCustom.get();
         return customLimit != DEFAULT_FILTER_CONCURRENCY_LIMIT ? customLimit : filterConcurrencyDefault.get();
     }
 

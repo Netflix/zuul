@@ -33,7 +33,7 @@ public class TestUtil {
     public static final String JUMBO_RESPONSE_BODY = StringUtils.repeat("abc", 1_000_000);
 
     public static DiscoveryEnabledServer makeDiscoveryEnabledServer(
-            final String appName, final String ipAddress, final int port) {
+             String appName,  String ipAddress,  int port) {
         InstanceInfo instanceInfo = new InstanceInfo(
                 UUID.randomUUID().toString(),
                 appName,

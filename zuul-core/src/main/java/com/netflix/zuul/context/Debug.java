@@ -34,7 +34,7 @@ import rx.Observable;
  * Time: 2:26 PM
  */
 public class Debug {
-    private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
+    
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
         ctx.setDebugRequest(bDebug);
@@ -133,7 +133,7 @@ public class Debug {
                     if (oldValue == null && newValue != null) {
                         addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                     } else if (oldValue != null && newValue != null) {
-                        if (!(oldValue.equals(newValue))) {
+                        if (! oldValue.equals(newValue)) {
                             addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
                         }
                     }

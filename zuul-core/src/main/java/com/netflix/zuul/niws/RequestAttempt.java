@@ -113,16 +113,16 @@ public class RequestAttempt {
     }
 
     public RequestAttempt(
-            final DiscoveryResult server,
+             DiscoveryResult server,
             InetAddress serverAddr,
-            final IClientConfig clientConfig,
+             IClientConfig clientConfig,
             int attemptNumber,
             int readTimeout) {
         this.status = -1;
         this.attempt = attemptNumber;
         this.readTimeout = readTimeout;
 
-        if (server != null && server != DiscoveryResult.EMPTY) {
+        if (server != null && !server.equals(DiscoveryResult.EMPTY)) {
             this.host = server.getHost();
             this.port = server.getPort();
             this.availabilityZone = server.getZone();

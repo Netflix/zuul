@@ -40,8 +40,8 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
             .getIntProperty("zuul.HttpResponseMessage.body.max.size", 25 * 1000 * 1024);
     private static final Logger LOG = LoggerFactory.getLogger(HttpResponseMessageImpl.class);
 
-    private ZuulMessage message;
-    private HttpRequestMessage outboundRequest;
+    private final ZuulMessage message;
+    private final HttpRequestMessage outboundRequest;
     private int status;
     private HttpResponseInfo inboundResponse = null;
 
@@ -61,7 +61,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
     }
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request) {
-        final HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
+         HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }
@@ -200,7 +200,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
         boolean dirty = false;
         Headers filtered = new Headers();
         for (Header hdr : getHeaders().entries()) {
-            if (HttpHeaderNames.SET_COOKIE.equals(hdr.getName())) {
+            if (hdr.getName().equals(HttpHeaderNames.SET_COOKIE)) {
                 String value = hdr.getValue();
 
                 // Strip out this set-cookie as requested.

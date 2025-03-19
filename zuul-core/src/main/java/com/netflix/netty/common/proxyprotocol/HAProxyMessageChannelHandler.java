@@ -28,7 +28,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
 import io.netty.handler.codec.haproxy.HAProxyTLV;
-import io.netty.handler.codec.haproxy.HAProxyTLV.Type;
 import io.netty.util.AttributeKey;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -60,7 +59,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
     static final Attrs.Key<String> HAPM_SRC_IP_VERSION = Attrs.newKey("hapm_src_ipproto");
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg)  {
         if (msg instanceof HAProxyMessage) {
             HAProxyMessage hapm = (HAProxyMessage) msg;
             Channel channel = ctx.channel();
@@ -68,7 +67,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
             ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> hapm.release());
             channel.attr(ATTR_HAPROXY_VERSION).set(hapm.protocolVersion());
             // Parse and persist any custom TLVs that might be part of the connection
-            final List<HAProxyTLV> tlvList = hapm.tlvs().stream().filter(tlv -> tlv.type() == Type.OTHER)
+             List<HAProxyTLV> tlvList = hapm.tlvs().stream().filter(tlv -> tlv.type() == HAProxyTLV.Type.OTHER)
                     .collect(Collectors.toList());
             channel.attr(ATTR_HAPROXY_CUSTOM_TLVS).set(tlvList);
             // Get the real host and port that the client connected with.

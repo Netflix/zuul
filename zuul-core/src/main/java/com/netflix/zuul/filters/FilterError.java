@@ -21,8 +21,8 @@ package com.netflix.zuul.filters;
  * Time: 10:19 AM
  */
 public class FilterError implements Cloneable {
-    private String filterName;
-    private String filterType;
+    private final String filterName;
+    private final String filterType;
     private Throwable exception = null;
 
     public FilterError(String filterName, String filterType, Throwable exception) {

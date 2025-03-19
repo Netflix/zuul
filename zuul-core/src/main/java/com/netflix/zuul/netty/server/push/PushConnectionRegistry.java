@@ -43,7 +43,7 @@ public class PushConnectionRegistry {
     }
 
     @Nullable
-    public PushConnection get(final String clientId) {
+    public PushConnection get( String clientId) {
         return clientPushConnectionMap.get(clientId);
     }
 
@@ -57,13 +57,13 @@ public class PushConnectionRegistry {
         return Base64.getUrlEncoder().encodeToString(tokenBuffer);
     }
 
-    public void put(final String clientId, final PushConnection pushConnection) {
+    public void put( String clientId,  PushConnection pushConnection) {
         pushConnection.setSecureToken(mintNewSecureToken());
         clientPushConnectionMap.put(clientId, pushConnection);
     }
 
-    public PushConnection remove(final String clientId) {
-        final PushConnection pc = clientPushConnectionMap.remove(clientId);
+    public PushConnection remove( String clientId) {
+         PushConnection pc = clientPushConnectionMap.remove(clientId);
         return pc;
     }
 

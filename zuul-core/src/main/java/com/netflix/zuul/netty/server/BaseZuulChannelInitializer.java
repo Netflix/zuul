@@ -111,7 +111,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final int maxRequestsPerConnectionInBrownout;
     protected final int connectionExpiry;
     protected final int maxConnections;
-    private final int connCloseDelay;
+    
 
     protected final Registry registry;
     protected final HttpMetricsChannelHandler httpMetricsHandler;
@@ -188,7 +188,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.maxRequestsPerConnectionInBrownout =
                 channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout);
         this.connectionExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
-        this.connCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
+         
 
         StripUntrustedProxyHeadersHandler.AllowWhen allowProxyHeadersWhen =
                 channelConfig.get(CommonChannelConfigKeys.allowProxyHeadersWhen);
@@ -297,7 +297,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         }
     }
 
-    protected void addZuulHandlers(final ChannelPipeline pipeline) {
+    protected void addZuulHandlers( ChannelPipeline pipeline) {
         pipeline.addLast("logger", nettyLogger);
         pipeline.addLast(new ClientRequestReceiver(sessionContextDecorator));
         pipeline.addLast(passportLoggingHandler);
@@ -305,25 +305,25 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast(new ClientResponseWriter(requestCompleteHandler, registry));
     }
 
-    protected void addZuulFilterChainHandler(final ChannelPipeline pipeline) {
-        final ZuulFilter<HttpResponseMessage, HttpResponseMessage>[] responseFilters = getFilters(
+    protected void addZuulFilterChainHandler( ChannelPipeline pipeline) {
+         ZuulFilter<HttpResponseMessage, HttpResponseMessage>[] responseFilters = getFilters(
                 new OutboundPassportStampingFilter(PassportState.FILTERS_OUTBOUND_START),
                 new OutboundPassportStampingFilter(PassportState.FILTERS_OUTBOUND_END));
 
         // response filter chain
-        final ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain =
+         ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain =
                 getFilterChainRunner(responseFilters, filterUsageNotifier);
 
         // endpoint | response filter chain
-        final FilterRunner<HttpRequestMessage, HttpResponseMessage> endPoint =
+         FilterRunner<HttpRequestMessage, HttpResponseMessage> endPoint =
                 getEndpointRunner(responseFilterChain, filterUsageNotifier, filterLoader);
 
-        final ZuulFilter<HttpRequestMessage, HttpRequestMessage>[] requestFilters = getFilters(
+         ZuulFilter<HttpRequestMessage, HttpRequestMessage>[] requestFilters = getFilters(
                 new InboundPassportStampingFilter(PassportState.FILTERS_INBOUND_START),
                 new InboundPassportStampingFilter(PassportState.FILTERS_INBOUND_END));
 
         // request filter chain | end point | response filter chain
-        final ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain =
+         ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain =
                 getFilterChainRunner(requestFilters, filterUsageNotifier, endPoint);
 
         pipeline.addLast(new ZuulFilterChainHandler(requestFilterChain, responseFilterChain));
@@ -348,8 +348,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     @SuppressWarnings("unchecked") // For the conversion from getFiltersByType.  It's not safe, sorry.
     public <T extends ZuulMessage> ZuulFilter<T, T>[] getFilters(ZuulFilter<T, T> start, ZuulFilter<T, T> stop) {
-        final SortedSet<ZuulFilter<?, ?>> zuulFilters = filterLoader.getFiltersByType(start.filterType());
-        final ZuulFilter<T, T>[] filters = new ZuulFilter[zuulFilters.size() + 2];
+         SortedSet<ZuulFilter<?, ?>> zuulFilters = filterLoader.getFiltersByType(start.filterType());
+         ZuulFilter<T, T>[] filters = new ZuulFilter[zuulFilters.size() + 2];
         filters[0] = start;
         int i = 1;
         for (ZuulFilter<?, ?> filter : zuulFilters) {
