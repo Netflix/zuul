@@ -116,9 +116,15 @@ public class HttpQueryParams implements Cloneable {
         return delegate.get(name.toLowerCase());
     }
 
-    public boolean contains(String name) {
+    
+public boolean contains(String name) {
         return delegate.containsKey(name);
     }
+
+    public boolean contains(String name, String value) {
+        return delegate.containsEntry(name, value);
+    }
+
 
     /**
      * Per https://tools.ietf.org/html/rfc7230#page-19, query params are to be treated as case sensitive.
@@ -126,10 +132,6 @@ public class HttpQueryParams implements Cloneable {
      */
     public boolean containsIgnoreCase(String name) {
         return delegate.containsKey(name) || delegate.containsKey(name.toLowerCase(Locale.ROOT));
-    }
-
-    public boolean contains(String name, String value) {
-        return delegate.containsEntry(name, value);
     }
 
     /**
