@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadFactory;
  * Time: 11:49 AM
  */
 public class CategorizedThreadFactory implements ThreadFactory {
-    private String category;
+    private final String category;
     private int num = 0;
 
     public CategorizedThreadFactory(String category) {

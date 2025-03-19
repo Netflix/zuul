@@ -53,7 +53,7 @@ public class FilterFileManager {
     }
 
     public static class FilterFileManagerConfig {
-        private String[] classNames;
+        private final String[] classNames;
         boolean enabled;
 
         public FilterFileManagerConfig(String[] classNames) {

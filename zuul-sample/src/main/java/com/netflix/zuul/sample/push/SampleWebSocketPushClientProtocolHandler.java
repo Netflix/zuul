@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocolHandler {
 
-    private static Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
 
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
