@@ -126,8 +126,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected final HttpRequestMessage zuulRequest;
     protected final SessionContext context;
 
-    @Nullable
-    protected final NettyOrigin origin;
+    @Nullable protected final NettyOrigin origin;
 
     protected final RequestAttempts requestAttempts;
     protected final CurrentPassport passport;
@@ -223,8 +222,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
      */
-    @Nullable
-    protected NettyOrigin getOrigin(HttpRequestMessage request) {
+    @Nullable protected NettyOrigin getOrigin(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         OriginManager<NettyOrigin> originManager =
                 (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
@@ -1112,8 +1110,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      *
      * @return {@code null} if unused.
      */
-    @Nullable
-    protected OriginName injectCustomOriginName(HttpRequestMessage request) {
+    @Nullable protected OriginName injectCustomOriginName(HttpRequestMessage request) {
         // override for custom vip injection
         return null;
     }

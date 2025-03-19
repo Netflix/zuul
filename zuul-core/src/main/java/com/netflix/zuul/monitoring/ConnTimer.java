@@ -52,8 +52,7 @@ public final class ConnTimer {
     // TODO(carl-mastrangelo): make this changeable.
     private final Id metricBase;
 
-    @Nullable
-    private final Id preciseMetricBase;
+    @Nullable private final Id preciseMetricBase;
 
     private final Map<String, Long> timings = new LinkedHashMap<>();
 

@@ -41,8 +41,8 @@ class CurrentPassportTest {
     void test_findEachPairOf_2pairs() {
         CurrentPassport passport = CurrentPassport.parseFromToString(
                 "CurrentPassport {start_ms=0, [+0=IN_REQ_HEADERS_RECEIVED, +5=FILTERS_INBOUND_START,"
-                    + " +50=IN_REQ_LAST_CONTENT_RECEIVED, +200=MISC_IO_START, +250=MISC_IO_STOP, +300=MISC_IO_START,"
-                    + " +350=FILTERS_INBOUND_END, +400=MISC_IO_STOP, +1117794707=NOW]}");
+                        + " +50=IN_REQ_LAST_CONTENT_RECEIVED, +200=MISC_IO_START, +250=MISC_IO_STOP, +300=MISC_IO_START,"
+                        + " +350=FILTERS_INBOUND_END, +400=MISC_IO_STOP, +1117794707=NOW]}");
 
         List<StartAndEnd> pairs = passport.findEachPairOf(PassportState.MISC_IO_START, PassportState.MISC_IO_STOP);
         assertEquals(2, pairs.size());

@@ -30,8 +30,7 @@ import javax.annotation.Nullable;
  */
 public class BasicRequestCompleteHandler implements RequestCompleteHandler {
     @Inject
-    @Nullable
-    private RequestMetricsPublisher requestMetricsPublisher;
+    @Nullable private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
     public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response) {

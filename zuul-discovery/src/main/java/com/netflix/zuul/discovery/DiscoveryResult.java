@@ -131,8 +131,7 @@ public final class DiscoveryResult implements ResolverResult {
         return new SimpleMetaInfo(server.getMetaInfo());
     }
 
-    @Nullable
-    public String getAvailabilityZone() {
+    @Nullable public String getAvailabilityZone() {
         InstanceInfo instanceInfo = server.getInstanceInfo();
         if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
             return ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
