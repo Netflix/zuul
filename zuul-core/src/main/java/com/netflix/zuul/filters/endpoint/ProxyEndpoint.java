@@ -1059,7 +1059,7 @@ public void invokeNext( HttpResponseMessage zuulResponse) {
             uri = override.toString();
         }
 
-        if (null != uri) {
+        if (uri != null) {
             int index = uri.indexOf('?');
             if (index != -1) {
                 // Strip the query string off of the URI.
@@ -1087,7 +1087,7 @@ public void invokeNext( HttpResponseMessage zuulResponse) {
             }
 
             request.setPath(modifiedPath);
-            if (null != modifiedQueryParams) {
+            if (modifiedQueryParams != null) {
                 request.setQueryParams(modifiedQueryParams);
             }
         }
