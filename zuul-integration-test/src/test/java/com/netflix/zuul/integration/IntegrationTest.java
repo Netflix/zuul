@@ -96,7 +96,7 @@ class IntegrationTest {
     private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String pathSegment;
-    private WireMockRuntimeInfo wmRuntimeInfo;
+    
     private WireMock wireMock;
 
     @RegisterExtension
@@ -142,7 +142,7 @@ class IntegrationTest {
     @BeforeEach
     void beforeEachTest() {
         this.pathSegment = randomPathSegment();
-        this.wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
+         WireMockRuntimeInfo wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
         this.wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
     }
 
