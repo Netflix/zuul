@@ -83,6 +83,7 @@ subprojects {
                 "-Xep:FieldCanBeStatic:OFF",
                 "-Xep:MethodCanBeStatic:OFF",
                 "-Xep:Var:OFF",
+                "-Xep:Varifier:OFF",
             )
         }
     }
