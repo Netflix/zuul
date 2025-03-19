@@ -137,7 +137,7 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        final int port = 7007;
+         int port = 7007;
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
@@ -150,7 +150,7 @@ class ElbProxyProtocolChannelHandlerTest {
         assertEquals(dropped, buf);
         buf.release();
 
-        final Counter counter = registry.counter(
+         Counter counter = registry.counter(
                 "zuul.hapm.decode", "success", "false", "port", String.valueOf(port), "needs_more_data", "false");
         assertEquals(1, counter.count());
     }

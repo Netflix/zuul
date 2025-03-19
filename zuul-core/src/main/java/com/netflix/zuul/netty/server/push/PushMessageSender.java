@@ -58,17 +58,17 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
 
     private void sendHttpResponse(
             ChannelHandlerContext ctx, FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
-        final FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
+         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
+         ChannelFuture cf = ctx.channel().writeAndFlush(resp);
         if (!HttpUtil.isKeepAlive(request)) {
             cf.addListener(ChannelFutureListener.CLOSE);
         }
         logPushEvent(request, status, userAuth);
     }
 
-    protected boolean verifySecureToken(final FullHttpRequest request, final PushConnection conn) {
-        final String secureToken = request.headers().get(SECURE_TOKEN_HEADER_NAME);
+    protected boolean verifySecureToken( FullHttpRequest request,  PushConnection conn) {
+         String secureToken = request.headers().get(SECURE_TOKEN_HEADER_NAME);
         if (Strings.isNullOrEmpty(secureToken)) {
             // caller is not asking to verify secure token
             return true;
@@ -77,13 +77,13 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
     }
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext ctx, final FullHttpRequest request) throws Exception {
+    protected void channelRead0( ChannelHandlerContext ctx,  FullHttpRequest request) throws Exception {
         if (!request.decoderResult().isSuccess()) {
             sendHttpResponse(ctx, request, HttpResponseStatus.BAD_REQUEST, null);
             return;
         }
 
-        final String path = request.uri();
+         String path = request.uri();
         if (path == null) {
             sendHttpResponse(ctx, request, HttpResponseStatus.BAD_REQUEST, null);
             return;
@@ -92,20 +92,20 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
         if (path.endsWith("/push")) {
             logPushAttempt();
 
-            final HttpMethod method = request.method();
+             HttpMethod method = request.method();
             if ((method != HttpMethod.POST) && (method != HttpMethod.GET)) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.METHOD_NOT_ALLOWED, null);
                 return;
             }
 
-            final PushUserAuth userAuth = getPushUserAuth(request);
+             PushUserAuth userAuth = getPushUserAuth(request);
             if (!userAuth.isSuccess()) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.UNAUTHORIZED, userAuth);
                 logNoIdentity();
                 return;
             }
 
-            final PushConnection pushConn = pushConnectionRegistry.get(userAuth.getClientIdentity());
+             PushConnection pushConn = pushConnectionRegistry.get(userAuth.getClientIdentity());
             if (pushConn == null) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.NOT_FOUND, userAuth);
                 logClientNotConnected();
@@ -130,7 +130,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
                 return;
             }
 
-            final ByteBuf body = request.content().retain();
+             ByteBuf body = request.content().retain();
             if (body.readableBytes() <= 0) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.NO_CONTENT, userAuth);
                 // Because we are not passing the body to the pushConn (who would normally handle destroying),
@@ -139,7 +139,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
                 return;
             }
 
-            final ChannelFuture clientFuture = pushConn.sendPushMessage(body);
+             ChannelFuture clientFuture = pushConn.sendPushMessage(body);
             clientFuture.addListener(cf -> {
                 HttpResponseStatus status;
                 if (cf.isSuccess()) {

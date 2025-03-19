@@ -68,7 +68,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
             ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> hapm.release());
             channel.attr(ATTR_HAPROXY_VERSION).set(hapm.protocolVersion());
             // Parse and persist any custom TLVs that might be part of the connection
-            final List<HAProxyTLV> tlvList = hapm.tlvs().stream().filter(tlv -> tlv.type() == Type.OTHER)
+             List<HAProxyTLV> tlvList = hapm.tlvs().stream().filter(tlv -> tlv.type() == Type.OTHER)
                     .collect(Collectors.toList());
             channel.attr(ATTR_HAPROXY_CUSTOM_TLVS).set(tlvList);
             // Get the real host and port that the client connected with.

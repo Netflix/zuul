@@ -96,9 +96,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
     }
 
     protected void gracefully(ChannelHandlerContext ctx, ChannelPromise promise) {
-        final Channel channel = ctx.channel();
+         Channel channel = ctx.channel();
         if (channel.isActive()) {
-            final String channelId = channel.id().asShortText();
+             String channelId = channel.id().asShortText();
 
             // In gracefulCloseDelay secs time, go ahead and close the connection if it hasn't already been.
             int gracefulCloseDelay = ConnectionCloseChannelAttributes.gracefulCloseDelay(channel);

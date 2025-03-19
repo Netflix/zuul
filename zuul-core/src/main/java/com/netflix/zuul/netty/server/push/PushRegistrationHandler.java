@@ -144,7 +144,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     }
 
     private int ditheredReconnectDeadline() {
-        final int dither = ThreadLocalRandom.current().nextInt(RECONNECT_DITHER.get());
+         int dither = ThreadLocalRandom.current().nextInt(RECONNECT_DITHER.get());
         return PUSH_REGISTRY_TTL.get() - dither - CLIENT_CLOSE_GRACE_PERIOD.get();
     }
 

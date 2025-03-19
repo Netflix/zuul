@@ -158,13 +158,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
-    public boolean release(final PooledConnection conn) {
+    public boolean release( PooledConnection conn) {
 
         conn.stopRequestTimer();
         metrics.releaseConnCounter().increment();
         metrics.connsInUse().decrementAndGet();
 
-        final DiscoveryResult discoveryResult = conn.getServer();
+         DiscoveryResult discoveryResult = conn.getServer();
         updateServerStatsOnRelease(conn);
 
         boolean released = false;
@@ -226,14 +226,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return usageCount > connPoolConfig.getMaxRequestsPerConnection();
     }
 
-    protected void updateServerStatsOnRelease(final PooledConnection conn) {
-        final DiscoveryResult discoveryResult = conn.getServer();
+    protected void updateServerStatsOnRelease( PooledConnection conn) {
+         DiscoveryResult discoveryResult = conn.getServer();
         discoveryResult.decrementActiveRequestsCount();
         discoveryResult.incrementNumRequests();
     }
 
     protected void releaseHandlers(PooledConnection conn) {
-        final ChannelPipeline pipeline = conn.getChannel().pipeline();
+         ChannelPipeline pipeline = conn.getChannel().pipeline();
         removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
         // The Outbound handler is always after the inbound handler, so look for it.
         ChannelHandlerContext passportStateHttpClientHandlerCtx =
@@ -244,7 +244,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
-    public static void removeHandlerFromPipeline(final String handlerName, final ChannelPipeline pipeline) {
+    public static void removeHandlerFromPipeline( String handlerName,  ChannelPipeline pipeline) {
         if (pipeline.get(handlerName) != null) {
             pipeline.remove(handlerName);
         }
@@ -273,7 +273,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
-    public Promise<PooledConnection> acquire(final EventLoop eventLoop) {
+    public Promise<PooledConnection> acquire( EventLoop eventLoop) {
         return acquire(eventLoop, null, CurrentPassport.create(), new AtomicReference<>(), new AtomicReference<>());
     }
 
@@ -292,7 +292,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         // Choose the next load-balanced server.
-        final DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
+         DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
 
         // (argha-c): Always ensure the selected server is updated, since the call chain relies on this mutation.
         selectedServer.set(chosenServer);
@@ -306,7 +306,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         // Now get the connection-pool for this server.
         IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
             SocketAddress finalServerAddr = pickAddress(chosenServer);
-            final ClientChannelManager clientChannelMgr = this;
+             ClientChannelManager clientChannelMgr = this;
             PooledConnectionFactory pcf = createPooledConnectionFactory(
                     chosenServer, clientChannelMgr, metrics.closeConnCounter(), metrics.closeWrtBusyConnCounter());
 

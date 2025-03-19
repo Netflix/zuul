@@ -62,7 +62,7 @@ public final class ClientTimeoutHandler {
                     return;
                 }
 
-                final Duration timeout =
+                 Duration timeout =
                         ctx.channel().attr(ORIGIN_RESPONSE_READ_TIMEOUT).get();
                 if (timeout != null) {
                     promise.addListener(e -> {
