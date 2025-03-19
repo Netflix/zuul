@@ -77,7 +77,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
         }
 
          String path = req.uri();
-        if ("/healthcheck".equals(path)) {
+        if (path.equals("/healthcheck")) {
             sendHttpResponse(req, ctx, HttpResponseStatus.OK);
         } else if (pushConnectionPath.equals(path)) {
             // CSRF protection

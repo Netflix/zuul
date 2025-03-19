@@ -304,9 +304,8 @@ public final class RejectionUtils {
 
     private static boolean closeConnectionAfterReject(Channel channel) {
         if (channel.hasAttr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)) {
-            return HAProxyProtocolVersion.V2
-                    == channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
-                    .get();
+            return channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION).get()
+                    == HAProxyProtocolVersion.V2;
         } else {
             return false;
         }

@@ -40,7 +40,7 @@ public class ErrorStatsData implements NamedCount {
      * @param cause
      */
     public ErrorStatsData(String route, String cause) {
-        if (null == route || "".equals(route)) {
+        if (route == null || route.equals("")) {
             route = "UNKNOWN";
         }
         id = route + "_" + cause;

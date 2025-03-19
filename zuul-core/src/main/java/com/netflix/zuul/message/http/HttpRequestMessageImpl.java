@@ -669,7 +669,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
             uri.append(URI_SCHEME_SEP).append(getOriginalHost());
 
             int port = getOriginalPort();
-            if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port) || (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
+            if ((scheme.equals(URI_SCHEME_HTTP) && port == 80) || (scheme.equals(URI_SCHEME_HTTPS) && port == 443)) {
                 // Don't need to include port.
             } else {
                 uri.append(':').append(port);

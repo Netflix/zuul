@@ -200,7 +200,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
         boolean dirty = false;
         Headers filtered = new Headers();
         for (Header hdr : getHeaders().entries()) {
-            if (HttpHeaderNames.SET_COOKIE.equals(hdr.getName())) {
+            if (hdr.getName().equals(HttpHeaderNames.SET_COOKIE)) {
                 String value = hdr.getValue();
 
                 // Strip out this set-cookie as requested.

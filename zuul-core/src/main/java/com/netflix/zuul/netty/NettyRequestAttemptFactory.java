@@ -51,7 +51,7 @@ public class NettyRequestAttemptFactory {
         }
 
         if (t instanceof Errors.NativeIoException
-                && Errors.ERRNO_ECONNRESET_NEGATIVE == ((Errors.NativeIoException) t).expectedErr()) {
+                && ((Errors.NativeIoException)t).expectedErr() == Errors.ERRNO_ECONNRESET_NEGATIVE) {
             // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are
             // overloaded.
             LOG.warn("ERRNO_ECONNRESET_NEGATIVE mapped to RESET_CONNECTION", t);
