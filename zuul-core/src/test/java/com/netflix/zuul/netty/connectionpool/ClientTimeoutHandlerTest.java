@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,6 +29,8 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.util.ReferenceCountUtil;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +38,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 /**
  * @author Justin Guerra
@@ -69,7 +69,7 @@ class ClientTimeoutHandlerTest {
     @Test
     public void dontStartReadTimeoutHandlerIfNotLastContent() {
         addTimeoutToChannel();
-        channel.writeOutbound(new DefaultHttpContent(Unpooled.wrappedBuffer("yo".getBytes())));
+        channel.writeOutbound(new DefaultHttpContent(Unpooled.wrappedBuffer("yo".getBytes(UTF_8))));
         verify(pooledConnection, never()).startReadTimeoutHandler(any());
         verifyWrite();
     }
