@@ -16,17 +16,16 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.common.collect.Lists;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Tag;
 import com.netflix.zuul.origins.OriginName;
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Justin Guerra

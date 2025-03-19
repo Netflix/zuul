@@ -15,6 +15,8 @@
  */
 package com.netflix.zuul.netty.server.push;
 
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -22,8 +24,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 
 /**
  * Maintains client identity to web socket or SSE channel mapping.
@@ -43,7 +43,7 @@ public class PushConnectionRegistry {
     }
 
     @Nullable
-    public PushConnection get( String clientId) {
+    public PushConnection get(String clientId) {
         return clientPushConnectionMap.get(clientId);
     }
 
@@ -57,13 +57,13 @@ public class PushConnectionRegistry {
         return Base64.getUrlEncoder().encodeToString(tokenBuffer);
     }
 
-    public void put( String clientId,  PushConnection pushConnection) {
+    public void put(String clientId, PushConnection pushConnection) {
         pushConnection.setSecureToken(mintNewSecureToken());
         clientPushConnectionMap.put(clientId, pushConnection);
     }
 
-    public PushConnection remove( String clientId) {
-         PushConnection pc = clientPushConnectionMap.remove(clientId);
+    public PushConnection remove(String clientId) {
+        PushConnection pc = clientPushConnectionMap.remove(clientId);
         return pc;
     }
 

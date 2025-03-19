@@ -54,14 +54,15 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
         this.outboundRequest = request;
         if (this.outboundRequest.getInboundRequest() == null) {
             LOG.warn(
-                    "HttpResponseMessage created with a request that does not have a stored inboundRequest! Probably a bug in the filter that is creating this response.",
+                    "HttpResponseMessage created with a request that does not have a stored inboundRequest! Probably a"
+                            + " bug in the filter that is creating this response.",
                     new RuntimeException("Invalid HttpRequestMessage"));
         }
         this.status = status;
     }
 
     public static HttpResponseMessage defaultErrorResponse(HttpRequestMessage request) {
-         HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
+        HttpResponseMessage resp = new HttpResponseMessageImpl(request.getContext(), request, 500);
         resp.finishBufferedBodyIfIncomplete();
         return resp;
     }

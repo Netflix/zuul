@@ -210,7 +210,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                 LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
 
-             KeyStore trustStore = KeyStore.getInstance("JKS");
+            KeyStore trustStore = KeyStore.getInstance("JKS");
             trustStore.load(
                     new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
                     trustStorePassword.toCharArray());

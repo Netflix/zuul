@@ -64,7 +64,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             AttributeKey.newInstance("_ssl_close_notify_seen");
     public static final String CHANNEL_HANDLER_NAME = "_origin_response_receiver";
 
-    public OriginResponseReceiver( ProxyEndpoint edgeProxy) {
+    public OriginResponseReceiver(ProxyEndpoint edgeProxy) {
         this.edgeProxy = edgeProxy;
     }
 
@@ -73,13 +73,13 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     }
 
     @Override
-    public final void channelRead( ChannelHandlerContext ctx, Object msg) throws Exception {
+    public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try (TaskCloseable a = PerfMark.traceTask("ORR.channelRead")) {
             channelReadInternal(ctx, msg);
         }
     }
 
-    protected void channelReadInternal( ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelReadInternal(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
@@ -89,7 +89,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             }
             ctx.channel().read();
         } else if (msg instanceof HttpContent) {
-             HttpContent chunk = (HttpContent) msg;
+            HttpContent chunk = (HttpContent) msg;
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
             } else {
@@ -99,7 +99,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         } else {
             // should never happen
             ReferenceCountUtil.release(msg);
-             Exception error = new IllegalStateException("Received invalid message from origin");
+            Exception error = new IllegalStateException("Received invalid message from origin");
             if (edgeProxy != null) {
                 edgeProxy.errorFromOrigin(error);
             }
@@ -110,17 +110,21 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof CompleteEvent completeEvent) {
-             CompleteReason reason = completeEvent.getReason();
+            CompleteReason reason = completeEvent.getReason();
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
-                if(reason == CompleteReason.CLOSE && ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get().equals(Boolean.TRUE)) {
-                    logger.warn("Origin request completed with close, after getting a SslCloseCompletionEvent event: {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
-                    edgeProxy.errorFromOrigin(new OriginConnectException("Origin connection close_notify", OutboundErrorType.CLOSE_NOTIFY_CONNECTION));
+                if (reason == CompleteReason.CLOSE
+                        && ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get().equals(Boolean.TRUE)) {
+                    logger.warn(
+                            "Origin request completed with close, after getting a SslCloseCompletionEvent event: {}",
+                            ChannelUtils.channelInfoForLogging(ctx.channel()));
+                    edgeProxy.errorFromOrigin(new OriginConnectException(
+                            "Origin connection close_notify", OutboundErrorType.CLOSE_NOTIFY_CONNECTION));
                 } else {
                     logger.error(
                             "Origin request completed with reason other than COMPLETE: {}, {}",
                             reason.name(),
                             ChannelUtils.channelInfoForLogging(ctx.channel()));
-                     ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
+                    ZuulException ze = new ZuulException("CompleteEvent", reason.name(), true);
                     edgeProxy.errorFromOrigin(ze);
                 }
             }
@@ -143,7 +147,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                         new OutboundException(OutboundErrorType.READ_TIMEOUT, edgeProxy.getRequestAttempts()));
             }
             super.userEventTriggered(ctx, evt);
-        } else if(evt instanceof SslCloseCompletionEvent) {
+        } else if (evt instanceof SslCloseCompletionEvent) {
             logger.debug("Received SslCloseCompletionEvent on {}", ChannelUtils.channelInfoForLogging(ctx.channel()));
             ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).set(true);
             super.userEventTriggered(ctx, evt);
@@ -161,16 +165,16 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
      */
     protected void postCompleteHook(ChannelHandlerContext ctx, Object evt) throws Exception {}
 
-    private HttpRequest buildOriginHttpRequest( HttpRequestMessage zuulRequest) {
-         String method = zuulRequest.getMethod().toUpperCase();
-         String uri = pathAndQueryString(zuulRequest);
+    private HttpRequest buildOriginHttpRequest(HttpRequestMessage zuulRequest) {
+        String method = zuulRequest.getMethod().toUpperCase();
+        String uri = pathAndQueryString(zuulRequest);
 
         customRequestProcessing(zuulRequest);
 
-         DefaultHttpRequest nettyReq =
+        DefaultHttpRequest nettyReq =
                 new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
         // Copy headers across.
-        for ( Header h : zuulRequest.getHeaders().entries()) {
+        for (Header h : zuulRequest.getHeaders().entries()) {
             nettyReq.headers().add(h.getKey(), h.getValue());
         }
 
@@ -186,9 +190,9 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
 
     private static String pathAndQueryString(HttpRequestMessage request) {
         // parsing the params cleans up any empty/null params using the logic of the HttpQueryParams class
-         HttpQueryParams cleanParams =
+        HttpQueryParams cleanParams =
                 HttpQueryParams.parse(request.getQueryParams().toEncodedString());
-         String cleanQueryStr = cleanParams.toEncodedString();
+        String cleanQueryStr = cleanParams.toEncodedString();
         if (cleanQueryStr == null || cleanQueryStr.isEmpty()) {
             return request.getPath();
         } else {
@@ -222,7 +226,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                                 .set(null);
                         fireWriteError("request headers", cause, ctx);
                         logger.debug(
-                                "SSLException is overridden by SSLHandshakeException caught in handler level. Original SSL exception message: ",
+                                "SSLException is overridden by SSLHandshakeException caught in handler level. Original"
+                                        + " SSL exception message: ",
                                 future.cause());
                     } else {
                         fireWriteError("request headers", future.cause(), ctx);
@@ -259,7 +264,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) {
         String errMesg = "Error while proxying " + requestPart + " to origin ";
         if (edgeProxy != null) {
-             ProxyEndpoint ep = edgeProxy;
+            ProxyEndpoint ep = edgeProxy;
             edgeProxy = null;
             errMesg += ep.getOrigin().getName();
             ep.errorFromOrigin(cause);

@@ -76,8 +76,7 @@ public final class Headers {
      * Get the first value found for this key even if there are multiple. If none, then
      * return {@code null}.
      */
-    
-@Nullable
+    @Nullable
     public String getFirst(String headerName) {
         String normalName = HeaderName.normalize(Objects.requireNonNull(headerName, "headerName"));
         return getFirstNormal(normalName);
@@ -93,7 +92,6 @@ public final class Headers {
         return getFirstNormal(normalName);
     }
 
-
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return the specified defaultValue.
@@ -107,7 +105,6 @@ public final class Headers {
         return defaultValue;
     }
 
-
     /**
      * Get the first value found for this key even if there are multiple. If none, then
      * return the specified defaultValue.
@@ -120,7 +117,6 @@ public final class Headers {
         }
         return defaultValue;
     }
-
 
     @Nullable
     private String getFirstNormal(String name) {
@@ -203,8 +199,7 @@ public final class Headers {
      *
      * @throws ZuulException on invalid name or value
      */
-    
-public void setAndValidate(String headerName, @Nullable String value) {
+    public void setAndValidate(String headerName, @Nullable String value) {
         String normalName = HeaderName.normalize(Objects.requireNonNull(headerName, "headerName"));
         setNormal(validateField(headerName), validateField(normalName), validateField(value));
     }
@@ -220,7 +215,6 @@ public void setAndValidate(String headerName, @Nullable String value) {
         String normalName = Objects.requireNonNull(headerName, "headerName").getNormalised();
         setNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
     }
-
 
     /**
      * Replace any/all entries with this key, with this single entry if the key and entry are valid.
@@ -355,7 +349,7 @@ public void setAndValidate(String headerName, @Nullable String value) {
     public boolean setIfAbsentAndValid(HeaderName headerName, String value) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(headerName, "headerName");
-        if (isValid(headerName.getName()) && isValid( value)) {
+        if (isValid(headerName.getName()) && isValid(value)) {
             String normalName = headerName.getNormalised();
             return setIfAbsentNormal(headerName.getName(), normalName, value);
         }

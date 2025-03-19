@@ -55,9 +55,8 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         this(zuulFilters, usageNotifier, null, registry);
     }
 
-    
-@Override
-    public void filter( T inMesg) {
+    @Override
+    public void filter(T inMesg) {
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filter")) {
             addPerfMarkTags(inMesg);
             runFilters(inMesg, initRunningFilterIndex(inMesg));
@@ -67,19 +66,19 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     @Override
     public void filter(T inMesg, HttpContent chunk) {
         String filterName = "-";
-        
+
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(inMesg);
             Preconditions.checkNotNull(inMesg, "input message");
 
-             AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
-             int limit = runningFilterIdx.get();
+            AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
+            int limit = runningFilterIdx.get();
             for (int i = 0; i < limit; i++) {
-                 ZuulFilter<T, T> filter = filters[i];
+                ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
-                if ( !filter.isDisabled() &&  !shouldSkipFilter(inMesg, filter)) {
+                if (!filter.isDisabled() && !shouldSkipFilter(inMesg, filter)) {
                     ByteBufUtil.touch(chunk, "Filter runner processing chunk, filter: ", filterName);
-                     HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
+                    HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
                     if (newChunk == null) {
                         // Filter wants to break the chain and stop propagating this chunk any further
                         return;
@@ -133,17 +132,16 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         }
     }
 
-
     @Override
-    protected void resume( T inMesg) {
+    protected void resume(T inMesg) {
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".resume")) {
-             AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
+            AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
             runningFilterIdx.incrementAndGet();
             runFilters(inMesg, runningFilterIdx);
         }
     }
 
-    private final void runFilters( T mesg,  AtomicInteger runningFilterIdx) {
+    private final void runFilters(T mesg, AtomicInteger runningFilterIdx) {
         T inMesg = mesg;
         String filterName = "-";
         try {
@@ -151,9 +149,9 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             int i = runningFilterIdx.get();
 
             while (i < filters.length) {
-                 ZuulFilter<T, T> filter = filters[i];
+                ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
-                 T outMesg = filter(filter, inMesg);
+                T outMesg = filter(filter, inMesg);
                 if (outMesg == null) {
                     return; // either async filter or waiting for the message body to be buffered
                 }

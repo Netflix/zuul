@@ -92,16 +92,16 @@ public class RequestAttemptTest {
 
         // mock a stacktrace to ensure we don't actually capture it completely
         when(h2Exception.getStackTrace()).thenReturn(new StackTraceElement[] {
-                new StackTraceElement(
-                        DefaultHttp2Connection.class.getCanonicalName(),
-                        "createStream",
-                        "DefaultHttp2Connection.java",
-                        772),
-                new StackTraceElement(
-                        DefaultHttp2Connection.class.getCanonicalName(),
-                        "checkNewStreamAllowed",
-                        "DefaultHttp2Connection.java",
-                        902)
+            new StackTraceElement(
+                    DefaultHttp2Connection.class.getCanonicalName(),
+                    "createStream",
+                    "DefaultHttp2Connection.java",
+                    772),
+            new StackTraceElement(
+                    DefaultHttp2Connection.class.getCanonicalName(),
+                    "checkNewStreamAllowed",
+                    "DefaultHttp2Connection.java",
+                    902)
         });
 
         RequestAttempt attempt = new RequestAttempt(1, null, null, "target", "chosen", 200, null, null, 0, 0, 0);

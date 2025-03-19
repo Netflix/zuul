@@ -15,13 +15,13 @@
  */
 package com.netflix.zuul.filters;
 
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
-import jakarta.inject.Singleton;
 
 @Singleton
 public final class MutableFilterRegistry implements FilterRegistry {

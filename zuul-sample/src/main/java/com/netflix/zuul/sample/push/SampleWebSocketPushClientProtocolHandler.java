@@ -36,7 +36,7 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
     private static final Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
 
     @Override
-    public final void channelRead(ChannelHandlerContext ctx, Object msg)  {
+    public final void channelRead(ChannelHandlerContext ctx, Object msg) {
         try {
             if (!isAuthenticated()) {
                 // Do not entertain ANY message from unauthenticated client
@@ -48,8 +48,8 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
                 logger.debug("received close frame");
                 ctx.close();
             } else if (msg instanceof TextWebSocketFrame) {
-                 TextWebSocketFrame tf = (TextWebSocketFrame) msg;
-                 String text = tf.text();
+                TextWebSocketFrame tf = (TextWebSocketFrame) msg;
+                String text = tf.text();
                 logger.debug("received test frame: {}", text);
                 if (text != null && text.startsWith("ECHO ")) { // echo protocol
                     ctx.channel().writeAndFlush(tf.copy());

@@ -77,7 +77,7 @@ public final class DiscoveryResult implements ResolverResult {
      */
     @VisibleForTesting
     public static DiscoveryResult from(InstanceInfo instanceInfo, boolean useSecurePort) {
-         DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, useSecurePort);
+        DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, useSecurePort);
         return new DiscoveryResult(server);
     }
 
@@ -119,7 +119,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public String getTarget() {
-         InstanceInfo instanceInfo = server.getInstanceInfo();
+        InstanceInfo instanceInfo = server.getInstanceInfo();
         if (server.getPort() == instanceInfo.getSecurePort()) {
             return instanceInfo.getSecureVipAddress();
         } else {
@@ -133,7 +133,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Nullable
     public String getAvailabilityZone() {
-         InstanceInfo instanceInfo = server.getInstanceInfo();
+        InstanceInfo instanceInfo = server.getInstanceInfo();
         if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
             return ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
         }
@@ -238,7 +238,7 @@ public final class DiscoveryResult implements ResolverResult {
         if (!(obj instanceof DiscoveryResult)) {
             return false;
         }
-         DiscoveryResult other = (DiscoveryResult) obj;
+        DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }
 }

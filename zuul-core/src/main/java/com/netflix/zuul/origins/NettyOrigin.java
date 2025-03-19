@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface NettyOrigin extends InstrumentedOrigin {
 
     Promise<PooledConnection> connectToOrigin(
-             HttpRequestMessage zuulReq,
+            HttpRequestMessage zuulReq,
             EventLoop eventLoop,
             int attemptNumber,
             CurrentPassport passport,
@@ -49,29 +49,25 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     int getMaxRetriesForRequest(SessionContext context);
 
-    void onRequestExecutionStart( HttpRequestMessage zuulReq);
+    void onRequestExecutionStart(HttpRequestMessage zuulReq);
 
-    void onRequestStartWithServer(
-             HttpRequestMessage zuulReq,  DiscoveryResult discoveryResult, int attemptNum);
+    void onRequestStartWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum);
 
     void onRequestExceptionWithServer(
-             HttpRequestMessage zuulReq,  DiscoveryResult discoveryResult,  int attemptNum, Throwable t);
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t);
 
     void onRequestExecutionSuccess(
-             HttpRequestMessage zuulReq,
-             HttpResponseMessage zuulResp,
-             DiscoveryResult discoveryResult,
-             int attemptNum);
+            HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, DiscoveryResult discoveryResult, int attemptNum);
 
     void onRequestExecutionFailed(
-             HttpRequestMessage zuulReq,  DiscoveryResult discoveryResult,  int attemptNum, Throwable t);
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t);
 
-    void recordFinalError( HttpRequestMessage requestMsg,  Throwable throwable);
+    void recordFinalError(HttpRequestMessage requestMsg, Throwable throwable);
 
-    void recordFinalResponse( HttpResponseMessage resp);
+    void recordFinalResponse(HttpResponseMessage resp);
 
     RequestAttempt newRequestAttempt(
-             DiscoveryResult server,  InetAddress serverAddr,  SessionContext zuulCtx, int attemptNum);
+            DiscoveryResult server, InetAddress serverAddr, SessionContext zuulCtx, int attemptNum);
 
     String getIpAddrFromServer(DiscoveryResult server);
 
