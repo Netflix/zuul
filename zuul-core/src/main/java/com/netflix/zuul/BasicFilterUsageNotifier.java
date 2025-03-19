@@ -28,7 +28,7 @@ public class BasicFilterUsageNotifier implements FilterUsageNotifier {
     private final Registry registry;
 
     @Inject
-    BasicFilterUsageNotifier(Registry registry) {
+    public BasicFilterUsageNotifier(Registry registry) {
         this.registry = registry;
     }
 

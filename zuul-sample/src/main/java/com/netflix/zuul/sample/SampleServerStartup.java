@@ -54,8 +54,6 @@ import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 
 /**
  * Sample Server Startup - class that configures the Netty server startup settings
@@ -63,7 +61,6 @@ import jakarta.inject.Singleton;
  * Author: Arthur Gonigberg
  * Date: November 20, 2017
  */
-@Singleton
 public class SampleServerStartup extends BaseServerStartup {
 
     enum ServerType {
@@ -79,7 +76,6 @@ public class SampleServerStartup extends BaseServerStartup {
     private final PushConnectionRegistry pushConnectionRegistry;
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
-    @Inject
     public SampleServerStartup(
             ServerStatusManager serverStatusManager,
             FilterLoader filterLoader,
