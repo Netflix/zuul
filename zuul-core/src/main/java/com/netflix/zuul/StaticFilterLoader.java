@@ -20,7 +20,6 @@ import com.google.errorprone.annotations.DoNotCall;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -119,12 +118,6 @@ public final class StaticFilterLoader implements FilterLoader {
             }
         }
         return Collections.unmodifiableSet(filterTypes);
-    }
-
-    @Override
-    @DoNotCall
-    public boolean putFilter(File file) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -14,13 +14,13 @@
  *      limitations under the License.
  */
 
-package com.netflix.zuul.sample.filters.inbound
+package com.netflix.zuul.sample.filters.inbound;
 
-import com.netflix.zuul.context.SessionContext
-import com.netflix.zuul.filters.endpoint.ProxyEndpoint
-import com.netflix.zuul.filters.http.HttpInboundSyncFilter
-import com.netflix.zuul.message.http.HttpRequestMessage
-import com.netflix.zuul.sample.filters.endpoint.Healthcheck
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
+import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.sample.filters.endpoint.Healthcheck;
 
 /**
  * Routes configuration
@@ -28,32 +28,32 @@ import com.netflix.zuul.sample.filters.endpoint.Healthcheck
  * Author: Arthur Gonigberg
  * Date: November 21, 2017
  */
-class Routes extends HttpInboundSyncFilter {
+public class Routes extends HttpInboundSyncFilter {
 
     @Override
-    int filterOrder() {
-        return 0
+    public int filterOrder() {
+        return 0;
     }
 
     @Override
-    boolean shouldFilter(HttpRequestMessage httpRequestMessage) {
-        return true
+    public boolean shouldFilter(HttpRequestMessage httpRequestMessage) {
+        return true;
     }
 
     @Override
-    HttpRequestMessage apply(HttpRequestMessage request) {
-        SessionContext context = request.getContext()
-        String path = request.getPath()
-        String host = request.getOriginalHost()
+    public HttpRequestMessage apply(HttpRequestMessage request) {
+        SessionContext context = request.getContext();
+        String path = request.getPath();
+        String host = request.getOriginalHost();
 
-        // Route healthchecks to the healthcheck endpoint.;
+        // Route healthchecks to the healthcheck endpoint.
         if (path.equalsIgnoreCase("/healthcheck")) {
-            context.setEndpoint(Healthcheck.class.getCanonicalName())
+            context.setEndpoint(Healthcheck.class.getCanonicalName());
         } else {
             context.setEndpoint(ProxyEndpoint.class.getCanonicalName());
-            context.setRouteVIP("api")
+            context.setRouteVIP("api");
         }
 
-        return request
+        return request;
     }
 }
