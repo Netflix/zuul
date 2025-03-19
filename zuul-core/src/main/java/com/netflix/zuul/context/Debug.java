@@ -133,7 +133,7 @@ public class Debug {
                     if (oldValue == null && newValue != null) {
                         addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                     } else if (oldValue != null && newValue != null) {
-                        if (!(oldValue.equals(newValue))) {
+                        if (! oldValue.equals(newValue)) {
                             addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
                         }
                     }

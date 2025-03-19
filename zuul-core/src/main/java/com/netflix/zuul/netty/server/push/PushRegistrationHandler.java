@@ -161,7 +161,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("WebSocket handshake complete.");
             } else if (evt instanceof PushUserAuth) {
                 authEvent = (PushUserAuth) evt;
-                if ((authEvent.isSuccess()) && (pushConnection != null)) {
+                if ( authEvent.isSuccess() && (pushConnection != null)) {
                     logger.debug("registering client {}", authEvent);
                     ctx.pipeline().remove(PushAuthHandler.NAME);
                     registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);

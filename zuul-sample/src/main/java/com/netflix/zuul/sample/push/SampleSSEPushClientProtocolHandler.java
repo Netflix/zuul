@@ -43,7 +43,7 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
     public void channelRead(final ChannelHandlerContext ctx, final Object mesg) throws Exception {
         if (mesg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) mesg;
-            if ((req.method() == HttpMethod.GET) && (PushProtocol.SSE.getPath().equals(req.uri()))) {
+            if ((req.method() == HttpMethod.GET) &&  PushProtocol.SSE.getPath().equals(req.uri())) {
                 ctx.pipeline().fireUserEventTriggered(PushProtocol.SSE.getHandshakeCompleteEvent());
 
                 final DefaultHttpResponse resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);

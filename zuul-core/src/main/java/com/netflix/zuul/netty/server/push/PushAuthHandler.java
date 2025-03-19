@@ -58,7 +58,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != HttpResponseStatus.OK) || (!HttpUtil.isKeepAlive(req)));
+        final boolean closeConn = ((status != HttpResponseStatus.OK) ||  !HttpUtil.isKeepAlive(req));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
