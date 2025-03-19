@@ -17,7 +17,6 @@ package com.netflix.zuul;
 
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
-import java.io.File;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -28,14 +27,6 @@ import java.util.SortedSet;
  * It also holds ZuulFilters by filterType.
  */
 public interface FilterLoader {
-    /**
-     * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
-     * a true response means that it was successful.
-     *
-     * @param file the file to load
-     * @return true if the filter in file successfully read, compiled, verified and added to Zuul
-     */
-    boolean putFilter(File file);
 
     /**
      * Load and cache filters by className.
