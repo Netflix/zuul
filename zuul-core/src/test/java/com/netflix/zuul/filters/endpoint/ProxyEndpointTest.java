@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.filters.endpoint;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,7 +107,7 @@ class ProxyEndpointTest {
                 false);
         request.storeInboundRequest();
 
-        request.setBody("Hello There".getBytes());
+        request.setBody("Hello There".getBytes(UTF_8));
         BasicNettyOriginManager originManager = new BasicNettyOriginManager(Spectator.globalRegistry());
 
         context.set(CommonContextKeys.ORIGIN_MANAGER, originManager);
@@ -137,7 +138,7 @@ class ProxyEndpointTest {
     @Test
     void testRetryWillResetBodyReader() {
 
-        assertEquals("Hello There", new String(request.getBody()));
+        assertEquals("Hello There", new String(request.getBody(), UTF_8));
 
         // move the body readerIndex to the end to mimic nettys behavior after writing to the origin channel
         request.getBodyContents()
@@ -149,7 +150,7 @@ class ProxyEndpointTest {
 
         // when retrying a response, the request body reader should have it's indexes reset
         proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
-        assertEquals("Hello There", new String(request.getBody()));
+        assertEquals("Hello There", new String(request.getBody(), UTF_8));
     }
 
     @Test

@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.message;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -61,9 +62,9 @@ class ZuulMessageImplTest {
     @Test
     void testBufferBody2GetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
-        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
-         String body = new String(msg.getBody());
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes(UTF_8))));
+         String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
@@ -73,10 +74,10 @@ class ZuulMessageImplTest {
     @Test
     void testBufferBody3GetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes(UTF_8))));
         msg.bufferBodyContents(new DefaultLastHttpContent());
-         String body = new String(msg.getBody());
+         String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals("Hello World!", body);
@@ -86,8 +87,8 @@ class ZuulMessageImplTest {
     @Test
     void testBufferBody3GetBodyAsText() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("World!".getBytes(UTF_8))));
         msg.bufferBodyContents(new DefaultLastHttpContent());
          String body = msg.getBodyAsText();
         assertTrue(msg.hasBody());
@@ -99,8 +100,8 @@ class ZuulMessageImplTest {
     @Test
     void testSetBodyGetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBody(TEXT1.getBytes());
-         String body = new String(msg.getBody());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+         String body = new String(msg.getBody(), UTF_8);
         assertEquals(TEXT1, body);
         assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
         assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
@@ -110,7 +111,7 @@ class ZuulMessageImplTest {
     void testSetBodyAsTextGetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
         msg.setBodyAsText(TEXT1);
-         String body = new String(msg.getBody());
+         String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals(TEXT1, body);
@@ -134,7 +135,7 @@ class ZuulMessageImplTest {
     void testMultiSetBodyAsTextGetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
         msg.setBodyAsText(TEXT1);
-        String body = new String(msg.getBody());
+        String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals(TEXT1, body);
@@ -142,7 +143,7 @@ class ZuulMessageImplTest {
         assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
 
         msg.setBodyAsText(TEXT2);
-        body = new String(msg.getBody());
+        body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals(TEXT2, body);
@@ -153,16 +154,16 @@ class ZuulMessageImplTest {
     @Test
     void testMultiSetBodyGetBody() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.setBody(TEXT1.getBytes());
-        String body = new String(msg.getBody());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+        String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals(TEXT1, body);
         assertEquals(1, msg.getHeaders().getAll("Content-Length").size());
         assertEquals(String.valueOf(TEXT1.length()), msg.getHeaders().getFirst("Content-Length"));
 
-        msg.setBody(TEXT2.getBytes());
-        body = new String(msg.getBody());
+        msg.setBody(TEXT2.getBytes(UTF_8));
+        body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
         assertEquals(TEXT2, body);
@@ -173,8 +174,8 @@ class ZuulMessageImplTest {
     @Test
     void testResettingBodyReaderIndex() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
-        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes(UTF_8))));
 
         // replicate what happens in nettys tls channel writer which moves the reader index on the contained ByteBuf
         for (HttpContent c : msg.getBodyContents()) {
@@ -197,8 +198,8 @@ class ZuulMessageImplTest {
     @Test
     void testFetchingBodyReturnsEntireBuffer() {
          ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes())));
-        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes())));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("World!".getBytes(UTF_8))));
 
         // move the reader indexes to the end of the content buffers
         for (HttpContent c : msg.getBodyContents()) {
@@ -210,7 +211,7 @@ class ZuulMessageImplTest {
         assertEquals("Hello World!", new String(msg.getBody(), StandardCharsets.UTF_8));
 
         // buffer more content and ensure body returns entire chunk content
-        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(" Bye".getBytes())));
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(" Bye".getBytes(UTF_8))));
 
         assertEquals(16, msg.getBodyLength());
         assertEquals("Hello World! Bye", new String(msg.getBody(), StandardCharsets.UTF_8));
@@ -222,7 +223,7 @@ class ZuulMessageImplTest {
         assertEquals(0, msg.getBodyLength());
         assertNull(msg.getBody());
 
-        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("".getBytes())));
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("".getBytes(UTF_8))));
         assertEquals(0, msg.getBodyLength());
         assertEquals(0, msg.getBody().length);
     }
