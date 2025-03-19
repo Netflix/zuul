@@ -32,8 +32,8 @@ import org.junit.jupiter.api.Test;
 
 class MaxInboundConnectionsHandlerTest {
 
-    private Registry registry = new DefaultRegistry();
-    private String listener = "test-throttled";
+    private final Registry registry = new DefaultRegistry();
+    private final String listener = "test-throttled";
     private Id counterId;
 
     @BeforeEach

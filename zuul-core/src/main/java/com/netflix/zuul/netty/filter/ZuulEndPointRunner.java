@@ -54,7 +54,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
     private final FilterLoader filterLoader;
 
-    private static Logger logger = LoggerFactory.getLogger(ZuulEndPointRunner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZuulEndPointRunner.class);
     public static final String PROXY_ENDPOINT_FILTER_NAME = ProxyEndpoint.class.getCanonicalName();
     public static final DynamicStringProperty DEFAULT_ERROR_ENDPOINT =
             new DynamicStringProperty("zuul.filters.error.default", "endpoint.ErrorResponse");
