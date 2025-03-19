@@ -31,11 +31,11 @@ import jakarta.inject.Singleton;
 public class EventLoopGroupMetrics {
     private final ThreadLocal<EventLoopMetrics> metricsForCurrentThread;
     private final Map<Thread, EventLoopMetrics> byEventLoop = new HashMap<>();
-    private final Registry registry;
+    
 
     @Inject
     public EventLoopGroupMetrics(Registry registry) {
-        this.registry = registry;
+        
         this.metricsForCurrentThread = ThreadLocal.withInitial(() -> {
             String name = nameForCurrentEventLoop();
             EventLoopMetrics metrics = new EventLoopMetrics(registry, name);

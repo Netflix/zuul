@@ -23,9 +23,9 @@ public enum ExecutionStatus {
     BODY_AWAIT(-4),
     ASYNC_AWAIT(-5);
 
-    private final int status;
+    
 
     ExecutionStatus(int status) {
-        this.status = status;
+        
     }
 }
