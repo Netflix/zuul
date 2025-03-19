@@ -19,8 +19,6 @@ package com.netflix.zuul;
 import com.netflix.zuul.filters.FilterRegistry;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
-import java.io.File;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,55 +36,18 @@ public final class DynamicFilterLoader implements FilterLoader {
     private static final Logger LOG = LoggerFactory.getLogger(DynamicFilterLoader.class);
 
     private final ConcurrentMap<String, Long> filterClassLastModified = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, String> filterClassCode = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, String> filterCheck = new ConcurrentHashMap<>();
     private final ConcurrentMap<FilterType, SortedSet<ZuulFilter<?, ?>>> hashFiltersByType = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, ZuulFilter<?, ?>> filtersByNameAndType = new ConcurrentHashMap<>();
 
     private final FilterRegistry filterRegistry;
 
-    private final DynamicCodeCompiler compiler;
-
     private final FilterFactory filterFactory;
 
     @Inject
     public DynamicFilterLoader(
-            FilterRegistry filterRegistry, DynamicCodeCompiler compiler, FilterFactory filterFactory) {
+            FilterRegistry filterRegistry, FilterFactory filterFactory) {
         this.filterRegistry = filterRegistry;
-        this.compiler = compiler;
         this.filterFactory = filterFactory;
-    }
-
-    /**
-     * Given source and name will compile and store the filter if it detects that the filter code
-     * has changed or the filter doesn't exist. Otherwise it will return an instance of the
-     * requested ZuulFilter.
-     *
-     * @deprecated it is unclear to me why this method is needed.   Nothing seems to use it, and the
-     *             swapping of code seems to happen elsewhere.   This will be removed in a later
-     *             Zuul release.
-     */
-    @Deprecated
-    public ZuulFilter<?, ?> getFilter(String sourceCode, String filterName) throws Exception {
-        if (filterCheck.get(filterName) == null) {
-            filterCheck.putIfAbsent(filterName, filterName);
-            if (!sourceCode.equals(filterClassCode.get(filterName))) {
-                if (filterRegistry.isMutable()) {
-                    LOG.info("reloading code {}", filterName);
-                    filterRegistry.remove(filterName);
-                } else {
-                    LOG.warn("Filter registry is not mutable, discarding {}", filterName);
-                }
-            }
-        }
-        ZuulFilter<?, ?> filter = filterRegistry.get(filterName);
-        if (filter == null) {
-            Class<?> clazz = compiler.compile(sourceCode, filterName);
-            if (!Modifier.isAbstract(clazz.getModifiers())) {
-                filter = filterFactory.newInstance(clazz);
-            }
-        }
-        return filter;
     }
 
     /**
@@ -94,42 +55,6 @@ public final class DynamicFilterLoader implements FilterLoader {
      */
     public int filterInstanceMapSize() {
         return filterRegistry.size();
-    }
-
-    /**
-     * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
-     * a true response means that it was successful.
-     *
-     * @param file the file to load
-     * @return true if the filter in file successfully read, compiled, verified and added to Zuul
-     */
-    @Override
-    public boolean putFilter(File file) {
-        if (!filterRegistry.isMutable()) {
-            return false;
-        }
-        try {
-            String sName = file.getAbsolutePath();
-            if (filterClassLastModified.get(sName) != null
-                    && (file.lastModified() != filterClassLastModified.get(sName))) {
-                LOG.debug("reloading filter {}", sName);
-                filterRegistry.remove(sName);
-            }
-            ZuulFilter<?, ?> filter = filterRegistry.get(sName);
-            if (filter == null) {
-                Class<?> clazz = compiler.compile(file);
-                if (!Modifier.isAbstract(clazz.getModifiers())) {
-                    filter = filterFactory.newInstance(clazz);
-                    putFilter(sName, filter, file.lastModified());
-                    return true;
-                }
-            }
-        } catch (Exception e) {
-            LOG.error("Error loading filter! Continuing. file={}", file, e);
-            return false;
-        }
-
-        return false;
     }
 
     private void putFilter(String filterName, ZuulFilter<?, ?> filter, long lastModified) {

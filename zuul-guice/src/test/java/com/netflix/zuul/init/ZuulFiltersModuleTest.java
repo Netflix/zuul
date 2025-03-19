@@ -36,26 +36,6 @@ class ZuulFiltersModuleTest {
     private final ZuulFiltersModule module = new ZuulFiltersModule();
 
     @Test
-    void testDefaultFilterLocations() {
-        Mockito.when(configuration.getStringArray("zuul.filters.locations"))
-                .thenReturn("inbound,outbound,endpoint".split(","));
-
-        String[] filterLocations = module.findFilterLocations(configuration);
-
-        assertThat(filterLocations.length, equalTo(3));
-        assertThat(filterLocations[1], equalTo("outbound"));
-    }
-
-    @Test
-    void testEmptyFilterLocations() {
-        Mockito.when(configuration.getStringArray("zuul.filters.locations")).thenReturn(new String[0]);
-
-        String[] filterLocations = module.findFilterLocations(configuration);
-
-        assertThat(filterLocations.length, equalTo(0));
-    }
-
-    @Test
     void testEmptyClassNames() {
         Mockito.when(configuration.getStringArray("zuul.filters.classes")).thenReturn(new String[] {});
         Mockito.when(configuration.getStringArray("zuul.filters.packages")).thenReturn(new String[] {});

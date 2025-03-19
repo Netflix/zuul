@@ -1833,7 +1833,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.16.0",
+            "locked": "5.16.1",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
@@ -3129,7 +3129,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.16.0",
+            "locked": "5.16.1",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
@@ -3834,7 +3834,7 @@
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "5.16.0",
+            "locked": "5.16.1",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter"
             ]
