@@ -33,8 +33,7 @@ import org.mockito.MockitoAnnotations;
 
 class DynamicFilterLoaderTest {
 
-    @Mock
-    private File file;
+    
 
     private final FilterRegistry registry = new MutableFilterRegistry();
 
@@ -42,7 +41,7 @@ class DynamicFilterLoaderTest {
 
     private DynamicFilterLoader loader;
 
-    private final TestZuulFilter filter = new TestZuulFilter();
+    
 
     @BeforeEach
     void before() throws Exception {
