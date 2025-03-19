@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
@@ -54,7 +53,7 @@ class DiscoveryResultTest {
 
     @Test
     void serverStatsCacheForSameServer() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("serverstats-cache")
                 .setHostName("serverstats-cache")
                 .setPort(7777)
@@ -73,12 +72,12 @@ class DiscoveryResultTest {
 
     @Test
     void serverStatsDifferForDifferentServer() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("serverstats-cache")
                 .setHostName("serverstats-cache")
                 .setPort(7777)
                 .build();
-         InstanceInfo otherInstance = Builder.newBuilder()
+         InstanceInfo otherInstance = InstanceInfo.Builder.newBuilder()
                 .setAppName("serverstats-cache-2")
                 .setHostName("serverstats-cache-2")
                 .setPort(7777)
@@ -98,7 +97,7 @@ class DiscoveryResultTest {
     @Test
     void ipAddrV4FromInstanceInfo() {
          String ipAddr = "100.1.0.1";
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("ipAddrv4")
                 .setHostName("ipAddrv4")
                 .setIPAddr(ipAddr)
@@ -115,7 +114,7 @@ class DiscoveryResultTest {
 
     @Test
     void ipAddrEmptyForIncompleteInstanceInfo() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("ipAddrMissing")
                 .setHostName("ipAddrMissing")
                 .setPort(7777)
@@ -131,7 +130,7 @@ class DiscoveryResultTest {
 
     @Test
     void sameUnderlyingInstanceInfoEqualsSameResult() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
                 .setPort(7777)
@@ -151,12 +150,12 @@ class DiscoveryResultTest {
 
     @Test
     void serverInstancesExposingDiffPortsAreNotEqual() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
                 .setPort(7777)
                 .build();
-         InstanceInfo otherPort = Builder.newBuilder()
+         InstanceInfo otherPort = InstanceInfo.Builder.newBuilder()
                 .setAppName("server-equality")
                 .setHostName("server-equality")
                 .setPort(9999)
@@ -176,13 +175,13 @@ class DiscoveryResultTest {
 
     @Test
     void securePortMustCheckInstanceInfo() {
-         InstanceInfo instanceInfo = Builder.newBuilder()
+         InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setAppName("secure-port")
                 .setHostName("secure-port")
                 .setPort(7777)
                 .enablePort(PortType.SECURE, false)
                 .build();
-         InstanceInfo secureEnabled = Builder.newBuilder()
+         InstanceInfo secureEnabled = InstanceInfo.Builder.newBuilder()
                 .setAppName("secure-port")
                 .setHostName("secure-port")
                 .setPort(7777)
