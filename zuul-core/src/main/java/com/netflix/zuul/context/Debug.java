@@ -34,7 +34,7 @@ import rx.Observable;
  * Time: 2:26 PM
  */
 public class Debug {
-    private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
+    
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
         ctx.setDebugRequest(bDebug);

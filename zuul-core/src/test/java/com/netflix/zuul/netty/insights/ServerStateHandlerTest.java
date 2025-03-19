@@ -43,7 +43,7 @@ class ServerStateHandlerTest {
     @BeforeEach
     void init() {
         registry = new DefaultRegistry();
-         Id currentConnsId = registry.createId("server.connections.current").withTags("id", listener);
+         
         connectsId = registry.createId("server.connections.connect").withTags("id", listener);
         closesId = registry.createId("server.connections.close").withTags("id", listener);
         errorsId = registry.createId("server.connections.errors").withTags("id", listener);

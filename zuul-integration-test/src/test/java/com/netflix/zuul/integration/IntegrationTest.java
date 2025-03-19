@@ -142,7 +142,7 @@ class IntegrationTest {
     @BeforeEach
     void beforeEachTest() {
         this.pathSegment = randomPathSegment();
-         WireMockRuntimeInfo wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
+         
         this.wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
     }
 

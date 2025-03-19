@@ -188,7 +188,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.maxRequestsPerConnectionInBrownout =
                 channelConfig.get(CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout);
         this.connectionExpiry = channelConfig.get(CommonChannelConfigKeys.connectionExpiry);
-         int connCloseDelay = channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
+         
 
         StripUntrustedProxyHeadersHandler.AllowWhen allowProxyHeadersWhen =
                 channelConfig.get(CommonChannelConfigKeys.allowProxyHeadersWhen);

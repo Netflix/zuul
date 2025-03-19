@@ -39,8 +39,7 @@ public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T>
     public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval) {
         super(resourceType, samplingInterval);
 
-         AtomicInteger instancesLeakCounter = SpectatorUtils.newGauge(
-                "NettyLeakDetector_instances", resourceType.getSimpleName(), new AtomicInteger());
+         
         this.leakCounter =
                 SpectatorUtils.newGauge("NettyLeakDetector", resourceType.getSimpleName(), new AtomicInteger());
     }

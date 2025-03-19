@@ -50,7 +50,7 @@ class StatsManagerTest {
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
         assertNotNull(routeStatusMap);
 
-        RouteStatusCodeMonitor routeStatusMonitor = routeStatusMap.get(status);
+        
 
         // 2nd request
         sm.collectRouteStats(route, status);
