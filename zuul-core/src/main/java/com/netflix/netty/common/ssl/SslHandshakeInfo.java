@@ -35,7 +35,7 @@ public class SslHandshakeInfo {
     private final boolean usingExternalPSK;
     private final ClientPSKIdentityInfo clientPSKIdentityInfo;
 
-    //for backward compatibility
+    // for backward compatibility
     public SslHandshakeInfo(
             boolean isOfIntermediary,
             String protocol,

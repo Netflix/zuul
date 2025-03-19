@@ -50,14 +50,12 @@ public class ZuulFiltersModule extends AbstractModule {
     }
 
     @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig(
-            AbstractConfiguration config) {
+    FilterFileManagerConfig provideFilterFileManagerConfig(AbstractConfiguration config) {
 
         String[] filterClassNames = findClassNames(config);
 
         // Init the FilterStore.
-        FilterFileManagerConfig filterConfig =
-                new FilterFileManagerConfig(filterClassNames);
+        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterClassNames);
         return filterConfig;
     }
 

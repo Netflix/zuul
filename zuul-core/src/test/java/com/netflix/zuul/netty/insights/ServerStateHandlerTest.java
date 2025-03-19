@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 class ServerStateHandlerTest {
 
     private Registry registry;
-    
+
     private Id connectsId;
     private Id errorsId;
     private Id closesId;
@@ -43,7 +43,7 @@ class ServerStateHandlerTest {
     @BeforeEach
     void init() {
         registry = new DefaultRegistry();
-         
+
         connectsId = registry.createId("server.connections.connect").withTags("id", listener);
         closesId = registry.createId("server.connections.close").withTags("id", listener);
         errorsId = registry.createId("server.connections.errors").withTags("id", listener);
@@ -52,13 +52,13 @@ class ServerStateHandlerTest {
     @Test
     void verifyConnMetrics() {
 
-         EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 
-         Counter connects = (Counter) registry.get(connectsId);
-         Counter closes = (Counter) registry.get(closesId);
-         Counter errors = (Counter) registry.get(errorsId);
+        Counter connects = (Counter) registry.get(connectsId);
+        Counter closes = (Counter) registry.get(closesId);
+        Counter errors = (Counter) registry.get(errorsId);
 
         // Connects X 3
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
@@ -78,7 +78,7 @@ class ServerStateHandlerTest {
     @Test
     void setPassportStateOnConnect() {
 
-         EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 
@@ -91,7 +91,7 @@ class ServerStateHandlerTest {
 
     @Test
     void setPassportStateOnDisconnect() {
-         EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new InboundHandler(registry, listener));
 

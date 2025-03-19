@@ -31,15 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T> {
 
-    
-
     @VisibleForTesting
     final AtomicInteger leakCounter;
 
     public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval) {
         super(resourceType, samplingInterval);
 
-         
         this.leakCounter =
                 SpectatorUtils.newGauge("NettyLeakDetector", resourceType.getSimpleName(), new AtomicInteger());
     }

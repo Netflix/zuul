@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.49.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.60.0'
     }
 }
 
@@ -10,6 +10,7 @@ plugins {
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '6.29.3'
     id 'net.ltgt.errorprone' version '4.1.0'
+    id 'com.diffplug.spotless' version "6.25.0"
 }
 
 ext.githubProjectName = rootProject.name
@@ -29,6 +30,17 @@ configurations.all {
 allprojects {
     repositories {
         mavenCentral()
+    }
+
+    apply plugin: 'com.palantir.java-format'
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        enforceCheck false
+        java {
+            rootProject.hasProperty('spotlessJavaTarget') ? target(rootProject.getProperty('spotlessJavaTarget').split(",")) : target('src/*/java/**/*.java')
+            formatAnnotations()
+        }
     }
 }
 

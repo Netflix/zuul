@@ -49,9 +49,14 @@ public class DebugRequest extends HttpInboundSyncFilter {
     public HttpRequestMessage apply(HttpRequestMessage request) {
         SessionContext ctx = request.getContext();
 
-        Debug.addRequestDebug(ctx, "REQUEST:: " + request.getOriginalScheme() + " " + request.getOriginalHost() + ":" + request.getOriginalPort());
+        Debug.addRequestDebug(
+                ctx,
+                "REQUEST:: " + request.getOriginalScheme() + " " + request.getOriginalHost() + ":"
+                        + request.getOriginalPort());
 
-        Debug.addRequestDebug(ctx, "REQUEST:: > " + request.getMethod() + " " + request.reconstructURI() + " " + request.getProtocol());
+        Debug.addRequestDebug(
+                ctx,
+                "REQUEST:: > " + request.getMethod() + " " + request.reconstructURI() + " " + request.getProtocol());
 
         for (Header header : request.getHeaders().entries()) {
             Debug.addRequestDebug(ctx, "REQUEST:: > " + header.getName() + ":" + header.getValue());

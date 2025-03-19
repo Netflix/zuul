@@ -40,10 +40,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -53,6 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -158,13 +157,13 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
-    public boolean release( PooledConnection conn) {
+    public boolean release(PooledConnection conn) {
 
         conn.stopRequestTimer();
         metrics.releaseConnCounter().increment();
         metrics.connsInUse().decrementAndGet();
 
-         DiscoveryResult discoveryResult = conn.getServer();
+        DiscoveryResult discoveryResult = conn.getServer();
         updateServerStatsOnRelease(conn);
 
         boolean released = false;
@@ -226,14 +225,14 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         return usageCount > connPoolConfig.getMaxRequestsPerConnection();
     }
 
-    protected void updateServerStatsOnRelease( PooledConnection conn) {
-         DiscoveryResult discoveryResult = conn.getServer();
+    protected void updateServerStatsOnRelease(PooledConnection conn) {
+        DiscoveryResult discoveryResult = conn.getServer();
         discoveryResult.decrementActiveRequestsCount();
         discoveryResult.incrementNumRequests();
     }
 
     protected void releaseHandlers(PooledConnection conn) {
-         ChannelPipeline pipeline = conn.getChannel().pipeline();
+        ChannelPipeline pipeline = conn.getChannel().pipeline();
         removeHandlerFromPipeline(OriginResponseReceiver.CHANNEL_HANDLER_NAME, pipeline);
         // The Outbound handler is always after the inbound handler, so look for it.
         ChannelHandlerContext passportStateHttpClientHandlerCtx =
@@ -244,7 +243,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
                 new IdleStateHandler(0, 0, connPoolConfig.getIdleTimeout(), TimeUnit.MILLISECONDS));
     }
 
-    public static void removeHandlerFromPipeline( String handlerName,  ChannelPipeline pipeline) {
+    public static void removeHandlerFromPipeline(String handlerName, ChannelPipeline pipeline) {
         if (pipeline.get(handlerName) != null) {
             pipeline.remove(handlerName);
         }
@@ -273,7 +272,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
-    public Promise<PooledConnection> acquire( EventLoop eventLoop) {
+    public Promise<PooledConnection> acquire(EventLoop eventLoop) {
         return acquire(eventLoop, null, CurrentPassport.create(), new AtomicReference<>(), new AtomicReference<>());
     }
 
@@ -292,7 +291,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         }
 
         // Choose the next load-balanced server.
-         DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
+        DiscoveryResult chosenServer = dynamicServerResolver.resolve(key);
 
         // (argha-c): Always ensure the selected server is updated, since the call chain relies on this mutation.
         selectedServer.set(chosenServer);
@@ -306,7 +305,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         // Now get the connection-pool for this server.
         IConnectionPool pool = perServerPools.computeIfAbsent(chosenServer, s -> {
             SocketAddress finalServerAddr = pickAddress(chosenServer);
-             ClientChannelManager clientChannelMgr = this;
+            ClientChannelManager clientChannelMgr = this;
             PooledConnectionFactory pcf = createPooledConnectionFactory(
                     chosenServer, clientChannelMgr, metrics.closeConnCounter(), metrics.closeWrtBusyConnCounter());
 

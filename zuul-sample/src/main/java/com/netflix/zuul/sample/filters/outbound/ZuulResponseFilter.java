@@ -81,13 +81,16 @@ public class ZuulResponseFilter extends HttpOutboundSyncFilter {
             headers.set(X_ZUUL_PROXY_ATTEMPTS, headerStr);
 
             headers.set(X_ZUUL, "zuul");
-            headers.set(X_ZUUL_INSTANCE, System.getenv("EC2_INSTANCE_ID") != null ? System.getenv("EC2_INSTANCE_ID") : "unknown");
+            headers.set(
+                    X_ZUUL_INSTANCE,
+                    System.getenv("EC2_INSTANCE_ID") != null ? System.getenv("EC2_INSTANCE_ID") : "unknown");
             headers.set(CONNECTION, KEEP_ALIVE);
             headers.set(X_ORIGINATING_URL, response.getInboundRequest().reconstructURI());
 
             if (response.getStatus() >= 400 && context.getError() != null) {
                 Throwable error = context.getError();
-                headers.set(X_ZUUL_ERROR_CAUSE,
+                headers.set(
+                        X_ZUUL_ERROR_CAUSE,
                         error instanceof ZuulException ? ((ZuulException) error).getErrorCause() : "UNKNOWN_CAUSE");
             }
 
@@ -101,8 +104,8 @@ public class ZuulResponseFilter extends HttpOutboundSyncFilter {
         }
 
         if (context.debugRequest()) {
-            Debug.getRequestDebug(context).forEach( s -> logger.info("REQ_DEBUG: {}", s));
-            Debug.getRoutingDebug(context).forEach( s -> logger.info("ZUUL_DEBUG: {}", s));
+            Debug.getRequestDebug(context).forEach(s -> logger.info("REQ_DEBUG: {}", s));
+            Debug.getRoutingDebug(context).forEach(s -> logger.info("ZUUL_DEBUG: {}", s));
         }
 
         return response;

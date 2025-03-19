@@ -79,8 +79,8 @@ class SslHandshakeInfoHandlerTest {
         RuntimeException withMessage = new RuntimeException("some unexpected message");
         assertEquals("some unexpected message", handler.getFailureCause(withMessage));
 
-        RuntimeException openSslMessage = new RuntimeException(
-                "javax.net.ssl.SSLHandshakeException: error:1000008e:SSL routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
+        RuntimeException openSslMessage = new RuntimeException("javax.net.ssl.SSLHandshakeException: error:1000008e:SSL"
+                + " routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
 
         assertEquals("DIGEST_CHECK_FAILED", handler.getFailureCause(openSslMessage));
     }

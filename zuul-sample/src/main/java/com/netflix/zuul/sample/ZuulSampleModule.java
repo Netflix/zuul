@@ -84,7 +84,7 @@ public class ZuulSampleModule extends AbstractModule {
         bind(AccessLogPublisher.class)
                 .toInstance(new AccessLogPublisher(
                         "ACCESS", (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel)
-                        .getContext()
-                        .getUUID()));
+                                .getContext()
+                                .getUUID()));
     }
 }

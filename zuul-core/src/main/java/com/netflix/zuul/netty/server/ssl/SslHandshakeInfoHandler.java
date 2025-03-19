@@ -104,7 +104,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         serverCert = session.getLocalCertificates()[0];
                     }
 
-                    //if attribute is true, then true. If null or false then false
+                    // if attribute is true, then true. If null or false then false
                     boolean tlsHandshakeUsingExternalPSK = ctx.channel()
                             .attr(ZuulPskServer.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
                             .get()
@@ -139,7 +139,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             CurrentPassport.fromChannel(ctx.channel()).getState();
                     if (cause instanceof ClosedChannelException
                             && (passportState.equals(PassportState.SERVER_CH_INACTIVE)
-                            || passportState.equals(PassportState.SERVER_CH_IDLE_TIMEOUT))) {
+                                    || passportState.equals(PassportState.SERVER_CH_IDLE_TIMEOUT))) {
                         // Either client closed the connection without/before having completed a handshake, or
                         // the connection idle timed-out before handshake.
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then

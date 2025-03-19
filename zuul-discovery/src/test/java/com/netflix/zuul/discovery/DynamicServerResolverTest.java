@@ -45,24 +45,24 @@ class DynamicServerResolverTest {
             }
         }
 
-         CustomListener listener = new CustomListener();
-         DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
+        CustomListener listener = new CustomListener();
+        DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
         resolver.setListener(listener);
 
-         InstanceInfo first = InstanceInfo.Builder.newBuilder()
+        InstanceInfo first = InstanceInfo.Builder.newBuilder()
                 .setAppName("zuul-discovery-1")
                 .setHostName("zuul-discovery-1")
                 .setIPAddr("100.10.10.1")
                 .setPort(443)
                 .build();
-         InstanceInfo second = InstanceInfo.Builder.newBuilder()
+        InstanceInfo second = InstanceInfo.Builder.newBuilder()
                 .setAppName("zuul-discovery-2")
                 .setHostName("zuul-discovery-2")
                 .setIPAddr("100.10.10.2")
                 .setPort(443)
                 .build();
-         DiscoveryEnabledServer server1 = new DiscoveryEnabledServer(first, true);
-         DiscoveryEnabledServer server2 = new DiscoveryEnabledServer(second, true);
+        DiscoveryEnabledServer server1 = new DiscoveryEnabledServer(first, true);
+        DiscoveryEnabledServer server2 = new DiscoveryEnabledServer(second, true);
 
         resolver.onUpdate(ImmutableList.of(server1, server2), ImmutableList.of());
 
@@ -72,9 +72,9 @@ class DynamicServerResolverTest {
 
     @Test
     void properSentinelValueWhenServersUnavailable() {
-         DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
+        DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
 
-         DiscoveryResult nonExistentServer = resolver.resolve(null);
+        DiscoveryResult nonExistentServer = resolver.resolve(null);
 
         Truth.assertThat(nonExistentServer).isSameInstanceAs(DiscoveryResult.EMPTY);
         Truth.assertThat(nonExistentServer.getHost()).isEqualTo("undefined");
