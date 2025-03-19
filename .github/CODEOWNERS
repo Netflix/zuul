@@ -1,5 +1,5 @@
 # Default reviewers for Zuul OSS
-* @argha-c @jguerra @gavinbunney @lalernehl @lindseyreynolds
+* @argha-c @jguerra @gavinbunney @lalernehl @lindseyreynolds @connorworley
 
 # Note: exclusions aren't well supported atm.
 # If needed, use workflows to exclude specific files from review.
