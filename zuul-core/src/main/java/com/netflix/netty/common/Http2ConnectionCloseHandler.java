@@ -69,8 +69,8 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
         // Close the connection immediately after LastContent is written, rather than
         // waiting until the graceful-delay is up if this flag is set.
         if (isEndOfRequestResponse(msg)) {
-            final Channel parent = HttpUtils.getMainChannel(ctx);
-            final ChannelPromise closeAfterPromise = shouldCloseAfter(ctx, parent);
+             Channel parent = HttpUtils.getMainChannel(ctx);
+             ChannelPromise closeAfterPromise = shouldCloseAfter(ctx, parent);
             if (closeAfterPromise != null) {
 
                 // Add listener to close the channel AFTER response has been sent.

@@ -58,11 +58,11 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != HttpResponseStatus.OK) ||  !HttpUtil.isKeepAlive(req));
+         boolean closeConn = ((status != HttpResponseStatus.OK) ||  !HttpUtil.isKeepAlive(req));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
-        final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
+         ChannelFuture cf = ctx.channel().writeAndFlush(resp);
         if (closeConn) {
             cf.addListener(ChannelFutureListener.CLOSE);
         }
@@ -75,7 +75,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
             return;
         }
 
-        final String path = req.uri();
+         String path = req.uri();
         if ("/healthcheck".equals(path)) {
             sendHttpResponse(req, ctx, HttpResponseStatus.OK);
         } else if (pushConnectionPath.equals(path)) {
@@ -86,7 +86,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
                 // client auth will happen later, continue with WebSocket upgrade handshake
                 ctx.fireChannelRead(req.retain());
             } else {
-                final PushUserAuth authEvent = doAuth(req, ctx);
+                 PushUserAuth authEvent = doAuth(req, ctx);
                 if (authEvent.isSuccess()) {
                     ctx.fireChannelRead(req.retain()); // continue with WebSocket upgrade handshake
                     ctx.fireUserEventTriggered(authEvent);
@@ -101,7 +101,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     protected boolean isInvalidOrigin(FullHttpRequest req) {
-        final String origin = req.headers().get(HttpHeaderNames.ORIGIN);
+         String origin = req.headers().get(HttpHeaderNames.ORIGIN);
         if (origin == null || !origin.toLowerCase().endsWith(originDomain)) {
             logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
             return true;
@@ -110,8 +110,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     protected final Cookies parseCookies(FullHttpRequest req) {
-        final Cookies cookies = new Cookies();
-        final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
+         Cookies cookies = new Cookies();
+         String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
             List<Cookie> decoded = ServerCookieDecoder.LAX.decodeAll(cookieStr);
             decoded.forEach(cookies::add);
