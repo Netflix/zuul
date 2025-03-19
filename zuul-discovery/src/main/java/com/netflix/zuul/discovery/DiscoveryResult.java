@@ -102,7 +102,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Override
     public boolean isDiscoveryEnabled() {
-        return server instanceof DiscoveryEnabledServer;
+        return server != null;
     }
 
     @Override
