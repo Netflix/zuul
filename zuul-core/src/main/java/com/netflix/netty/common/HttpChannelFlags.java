@@ -38,16 +38,18 @@ public class HttpChannelFlags {
             attributeKey = AttributeKey.newInstance(name);
         }
 
-        public void set(Channel ch) {
+        
+public void set(Channel ch) {
             ch.attr(attributeKey).set(Boolean.TRUE);
-        }
-
-        public void remove(Channel ch) {
-            ch.attr(attributeKey).set(null);
         }
 
         public void set(ChannelHandlerContext ctx) {
             set(ctx.channel());
+        }
+
+
+        public void remove(Channel ch) {
+            ch.attr(attributeKey).set(null);
         }
 
         public boolean get(Channel ch) {
