@@ -772,12 +772,6 @@
                 "com.github.vlsi.compactmap:compactmap"
             ]
         },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
         "com.github.vlsi.compactmap:compactmap": {
             "locked": "2.0",
             "transitive": [
@@ -894,9 +888,6 @@
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
-        },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
         },
         "com.netflix.zuul:zuul-guice": {
             "project": true
@@ -1079,18 +1070,6 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
@@ -1108,188 +1087,6 @@
             "locked": "3.12.0",
             "transitive": [
                 "com.google.guava:guava"
-            ]
-        },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
-            ]
-        },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
             ]
         },
         "org.slf4j:slf4j-api": {
@@ -1559,12 +1356,6 @@
                 "com.github.vlsi.compactmap:compactmap"
             ]
         },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
         "com.github.vlsi.compactmap:compactmap": {
             "locked": "2.0",
             "transitive": [
@@ -1682,9 +1473,6 @@
                 "com.netflix.zuul:zuul-core"
             ]
         },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
-        },
         "com.netflix.zuul:zuul-guice": {
             "project": true
         },
@@ -1866,22 +1654,10 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
-            ]
-        },
         "net.sf.jopt-simple:jopt-simple": {
             "locked": "5.0.4",
             "transitive": [
                 "org.openjdk.jmh:jmh-core"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
             ]
         },
         "org.apache.commons:commons-math3": {
@@ -1909,182 +1685,6 @@
                 "com.google.guava:guava"
             ]
         },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
-            ]
-        },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.36",
             "transitive": [
@@ -2107,12 +1707,6 @@
             "transitive": [
                 "org.openjdk.jmh:jmh-generator-asm",
                 "org.openjdk.jmh:jmh-generator-bytecode"
-            ]
-        },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
             ]
         },
         "org.ow2.asm:asm": {
@@ -2150,12 +1744,6 @@
                 "com.google.inject:guice"
             ]
         },
-        "com.beust:jcommander": {
-            "locked": "1.78",
-            "transitive": [
-                "org.testng:testng"
-            ]
-        },
         "com.fasterxml.jackson.core:jackson-annotations": {
             "locked": "2.16.1",
             "transitive": [
@@ -2196,12 +1784,6 @@
             "locked": "0.2",
             "transitive": [
                 "com.github.vlsi.compactmap:compactmap"
-            ]
-        },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
             ]
         },
         "com.github.vlsi.compactmap:compactmap": {
@@ -2257,8 +1839,7 @@
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
                 "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-discovery",
-                "com.netflix.zuul:zuul-groovy"
+                "com.netflix.zuul:zuul-discovery"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -2363,7 +1944,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true,
             "transitive": [
-                "com.netflix.zuul:zuul-groovy",
                 "com.netflix.zuul:zuul-guice"
             ]
         },
@@ -2372,9 +1952,6 @@
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
-        },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
         },
         "com.netflix.zuul:zuul-guice": {
             "project": true
@@ -2397,12 +1974,6 @@
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.sun.jersey:jersey-client"
-            ]
-        },
-        "com.thoughtworks.qdox:qdox": {
-            "locked": "1.12.1",
-            "transitive": [
-                "org.codehaus.groovy:groovy-docgenerator"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -2445,12 +2016,6 @@
             "transitive": [
                 "commons-configuration:commons-configuration",
                 "org.apache.httpcomponents:httpclient"
-            ]
-        },
-        "info.picocli:picocli": {
-            "locked": "4.6.3",
-            "transitive": [
-                "org.codehaus.groovy:groovy-cli-picocli"
             ]
         },
         "io.github.x-stream:mxparser": {
@@ -2677,22 +2242,10 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "jline:jline": {
-            "locked": "2.14.6",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
         "joda-time:joda-time": {
             "locked": "2.3",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
             ]
         },
         "net.sf.jopt-simple:jopt-simple": {
@@ -2711,32 +2264,6 @@
             "locked": "3.2.1",
             "transitive": [
                 "org.antlr:antlr-runtime"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant-junit",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-antlr": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-junit": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-launcher": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant",
-                "org.codehaus.groovy:groovy-ant"
             ]
         },
         "org.apache.commons:commons-math": {
@@ -2814,235 +2341,10 @@
                 "com.google.guava:guava"
             ]
         },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-templates"
-            ]
-        },
         "org.codehaus.jettison:jettison": {
             "locked": "1.4.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-commons": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-engine": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-launcher",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.platform:junit-platform-launcher"
             ]
         },
         "org.openjdk.jmh:jmh-core": {
@@ -3069,13 +2371,6 @@
                 "org.openjdk.jmh:jmh-generator-bytecode"
             ]
         },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine"
-            ]
-        },
         "org.ow2.asm:asm": {
             "locked": "9.0",
             "transitive": [
@@ -3098,20 +2393,7 @@
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery",
-                "org.apache.logging.log4j:log4j-slf4j-impl",
-                "org.testng:testng"
-            ]
-        },
-        "org.testng:testng": {
-            "locked": "7.5",
-            "transitive": [
-                "org.codehaus.groovy:groovy-testng"
-            ]
-        },
-        "org.webjars:jquery": {
-            "locked": "3.5.1",
-            "transitive": [
-                "org.testng:testng"
+                "org.apache.logging.log4j:log4j-slf4j-impl"
             ]
         },
         "xmlpull:xmlpull": {
@@ -3133,12 +2415,6 @@
             "locked": "1.0",
             "transitive": [
                 "com.google.inject:guice"
-            ]
-        },
-        "com.beust:jcommander": {
-            "locked": "1.78",
-            "transitive": [
-                "org.testng:testng"
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
@@ -3181,12 +2457,6 @@
             "locked": "0.2",
             "transitive": [
                 "com.github.vlsi.compactmap:compactmap"
-            ]
-        },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
             ]
         },
         "com.github.vlsi.compactmap:compactmap": {
@@ -3242,8 +2512,7 @@
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
                 "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-discovery",
-                "com.netflix.zuul:zuul-groovy"
+                "com.netflix.zuul:zuul-discovery"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -3348,7 +2617,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true,
             "transitive": [
-                "com.netflix.zuul:zuul-groovy",
                 "com.netflix.zuul:zuul-guice"
             ]
         },
@@ -3357,9 +2625,6 @@
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
-        },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
         },
         "com.netflix.zuul:zuul-guice": {
             "project": true
@@ -3382,12 +2647,6 @@
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.sun.jersey:jersey-client"
-            ]
-        },
-        "com.thoughtworks.qdox:qdox": {
-            "locked": "1.12.1",
-            "transitive": [
-                "org.codehaus.groovy:groovy-docgenerator"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -3430,12 +2689,6 @@
             "transitive": [
                 "commons-configuration:commons-configuration",
                 "org.apache.httpcomponents:httpclient"
-            ]
-        },
-        "info.picocli:picocli": {
-            "locked": "4.6.3",
-            "transitive": [
-                "org.codehaus.groovy:groovy-cli-picocli"
             ]
         },
         "io.github.x-stream:mxparser": {
@@ -3662,22 +2915,10 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "jline:jline": {
-            "locked": "2.14.6",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
         "joda-time:joda-time": {
             "locked": "2.3",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
             ]
         },
         "org.antlr:antlr-runtime": {
@@ -3690,32 +2931,6 @@
             "locked": "3.2.1",
             "transitive": [
                 "org.antlr:antlr-runtime"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant-junit",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-antlr": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-junit": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-launcher": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant",
-                "org.codehaus.groovy:groovy-ant"
             ]
         },
         "org.apache.commons:commons-math": {
@@ -3787,242 +3002,10 @@
                 "com.google.guava:guava"
             ]
         },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-templates"
-            ]
-        },
         "org.codehaus.jettison:jettison": {
             "locked": "1.4.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-commons": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-engine": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-launcher",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.platform:junit-platform-launcher"
-            ]
-        },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine"
             ]
         },
         "org.slf4j:slf4j-api": {
@@ -4041,20 +3024,7 @@
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery",
-                "org.apache.logging.log4j:log4j-slf4j-impl",
-                "org.testng:testng"
-            ]
-        },
-        "org.testng:testng": {
-            "locked": "7.5",
-            "transitive": [
-                "org.codehaus.groovy:groovy-testng"
-            ]
-        },
-        "org.webjars:jquery": {
-            "locked": "3.5.1",
-            "transitive": [
-                "org.testng:testng"
+                "org.apache.logging.log4j:log4j-slf4j-impl"
             ]
         },
         "xmlpull:xmlpull": {
@@ -4267,12 +3237,6 @@
                 "com.github.vlsi.compactmap:compactmap"
             ]
         },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
         "com.github.vlsi.compactmap:compactmap": {
             "locked": "2.0",
             "transitive": [
@@ -4389,9 +3353,6 @@
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
-        },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
         },
         "com.netflix.zuul:zuul-guice": {
             "project": true
@@ -4574,18 +3535,6 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
         "org.apache.httpcomponents:httpclient": {
             "locked": "4.5.3",
             "transitive": [
@@ -4603,188 +3552,6 @@
             "locked": "3.12.0",
             "transitive": [
                 "com.google.guava:guava"
-            ]
-        },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
-            ]
-        },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api"
             ]
         },
         "org.slf4j:slf4j-api": {
@@ -4814,12 +3581,6 @@
             "locked": "1.0",
             "transitive": [
                 "com.google.inject:guice"
-            ]
-        },
-        "com.beust:jcommander": {
-            "locked": "1.78",
-            "transitive": [
-                "org.testng:testng"
             ]
         },
         "com.fasterxml.jackson.core:jackson-annotations": {
@@ -4862,12 +3623,6 @@
             "locked": "0.2",
             "transitive": [
                 "com.github.vlsi.compactmap:compactmap"
-            ]
-        },
-        "com.github.javaparser:javaparser-core": {
-            "locked": "3.25.4",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovydoc"
             ]
         },
         "com.github.vlsi.compactmap:compactmap": {
@@ -4923,8 +3678,7 @@
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
                 "com.netflix.zuul:zuul-core",
-                "com.netflix.zuul:zuul-discovery",
-                "com.netflix.zuul:zuul-groovy"
+                "com.netflix.zuul:zuul-discovery"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -5029,7 +3783,6 @@
         "com.netflix.zuul:zuul-core": {
             "project": true,
             "transitive": [
-                "com.netflix.zuul:zuul-groovy",
                 "com.netflix.zuul:zuul-guice"
             ]
         },
@@ -5038,9 +3791,6 @@
             "transitive": [
                 "com.netflix.zuul:zuul-core"
             ]
-        },
-        "com.netflix.zuul:zuul-groovy": {
-            "project": true
         },
         "com.netflix.zuul:zuul-guice": {
             "project": true
@@ -5063,12 +3813,6 @@
             "transitive": [
                 "com.netflix.eureka:eureka-client",
                 "com.sun.jersey:jersey-client"
-            ]
-        },
-        "com.thoughtworks.qdox:qdox": {
-            "locked": "1.12.1",
-            "transitive": [
-                "org.codehaus.groovy:groovy-docgenerator"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -5111,12 +3855,6 @@
             "transitive": [
                 "commons-configuration:commons-configuration",
                 "org.apache.httpcomponents:httpclient"
-            ]
-        },
-        "info.picocli:picocli": {
-            "locked": "4.6.3",
-            "transitive": [
-                "org.codehaus.groovy:groovy-cli-picocli"
             ]
         },
         "io.github.x-stream:mxparser": {
@@ -5343,22 +4081,10 @@
                 "com.sun.jersey:jersey-core"
             ]
         },
-        "jline:jline": {
-            "locked": "2.14.6",
-            "transitive": [
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
         "joda-time:joda-time": {
             "locked": "2.3",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-infix"
-            ]
-        },
-        "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test"
             ]
         },
         "org.antlr:antlr-runtime": {
@@ -5371,32 +4097,6 @@
             "locked": "3.2.1",
             "transitive": [
                 "org.antlr:antlr-runtime"
-            ]
-        },
-        "org.apache.ant:ant": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant-junit",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-antlr": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-junit": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.apache.ant:ant-launcher": {
-            "locked": "1.10.12",
-            "transitive": [
-                "org.apache.ant:ant",
-                "org.codehaus.groovy:groovy-ant"
             ]
         },
         "org.apache.commons:commons-math": {
@@ -5468,242 +4168,10 @@
                 "com.google.guava:guava"
             ]
         },
-        "org.codehaus.groovy:groovy": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant",
-                "org.codehaus.groovy:groovy-astbuilder",
-                "org.codehaus.groovy:groovy-cli-picocli",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-datetime",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-jmx",
-                "org.codehaus.groovy:groovy-json",
-                "org.codehaus.groovy:groovy-jsr223",
-                "org.codehaus.groovy:groovy-macro",
-                "org.codehaus.groovy:groovy-nio",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-sql",
-                "org.codehaus.groovy:groovy-swing",
-                "org.codehaus.groovy:groovy-templates",
-                "org.codehaus.groovy:groovy-test",
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.codehaus.groovy:groovy-testng",
-                "org.codehaus.groovy:groovy-xml"
-            ]
-        },
-        "org.codehaus.groovy:groovy-all": {
-            "locked": "3.0.19",
-            "transitive": [
-                "com.netflix.zuul:zuul-groovy"
-            ]
-        },
-        "org.codehaus.groovy:groovy-ant": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-astbuilder": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-cli-picocli": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-console": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh"
-            ]
-        },
-        "org.codehaus.groovy:groovy-datetime": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-docgenerator": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovydoc"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovydoc": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-ant"
-            ]
-        },
-        "org.codehaus.groovy:groovy-groovysh": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jmx": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-json": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-jsr223": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-macro": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-nio": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-servlet": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-sql": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-swing": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console"
-            ]
-        },
-        "org.codehaus.groovy:groovy-templates": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-console",
-                "org.codehaus.groovy:groovy-docgenerator",
-                "org.codehaus.groovy:groovy-groovydoc",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-test-junit5": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-testng": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all"
-            ]
-        },
-        "org.codehaus.groovy:groovy-xml": {
-            "locked": "3.0.19",
-            "transitive": [
-                "org.codehaus.groovy:groovy-all",
-                "org.codehaus.groovy:groovy-groovysh",
-                "org.codehaus.groovy:groovy-servlet",
-                "org.codehaus.groovy:groovy-templates"
-            ]
-        },
         "org.codehaus.jettison:jettison": {
             "locked": "1.4.0",
             "transitive": [
                 "com.netflix.eureka:eureka-client"
-            ]
-        },
-        "org.hamcrest:hamcrest-core": {
-            "locked": "1.3",
-            "transitive": [
-                "junit:junit"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-commons": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-engine": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-launcher",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.9.2",
-            "transitive": [
-                "org.codehaus.groovy:groovy-test-junit5",
-                "org.junit:junit-bom"
-            ]
-        },
-        "org.junit:junit-bom": {
-            "locked": "5.9.2",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.platform:junit-platform-launcher"
-            ]
-        },
-        "org.opentest4j:opentest4j": {
-            "locked": "1.2.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine"
             ]
         },
         "org.slf4j:slf4j-api": {
@@ -5722,20 +4190,7 @@
                 "com.netflix.spectator:spectator-api",
                 "com.netflix.zuul:zuul-core",
                 "com.netflix.zuul:zuul-discovery",
-                "org.apache.logging.log4j:log4j-slf4j-impl",
-                "org.testng:testng"
-            ]
-        },
-        "org.testng:testng": {
-            "locked": "7.5",
-            "transitive": [
-                "org.codehaus.groovy:groovy-testng"
-            ]
-        },
-        "org.webjars:jquery": {
-            "locked": "3.5.1",
-            "transitive": [
-                "org.testng:testng"
+                "org.apache.logging.log4j:log4j-slf4j-impl"
             ]
         },
         "xmlpull:xmlpull": {

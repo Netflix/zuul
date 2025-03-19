@@ -25,7 +25,6 @@ import com.netflix.zuul.FilterFileManager.FilterFileManagerConfig;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.guice.GuiceFilterFactory;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Predicate;
@@ -46,25 +45,19 @@ public class ZuulFiltersModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        LOG.info("Starting Groovy Filter file manager");
-
         bind(FilterFactory.class).to(GuiceFilterFactory.class);
-
         bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
-
-        LOG.info("Groovy Filter file manager started");
     }
 
     @Provides
     FilterFileManagerConfig provideFilterFileManagerConfig(
-            AbstractConfiguration config, FilenameFilter filenameFilter) {
-        // Get filter directories.
-        String[] filterLocations = findFilterLocations(config);
+            AbstractConfiguration config) {
+
         String[] filterClassNames = findClassNames(config);
 
         // Init the FilterStore.
         FilterFileManagerConfig filterConfig =
-                new FilterFileManagerConfig(filterLocations, filterClassNames, 5, filenameFilter);
+                new FilterFileManagerConfig(filterClassNames);
         return filterConfig;
     }
 
@@ -103,25 +96,5 @@ public class ZuulFiltersModule extends AbstractModule {
         }
 
         return filterClassNames;
-    }
-
-    @VisibleForTesting
-    String[] findFilterLocations(AbstractConfiguration config) {
-        String[] locations = config.getStringArray("zuul.filters.locations");
-        if (locations == null) {
-            locations = new String[] {"inbound", "outbound", "endpoint"};
-        }
-        String[] filterLocations = Arrays.stream(locations)
-                .map(String::trim)
-                .filter(blank.negate())
-                .toArray(String[]::new);
-
-        if (filterLocations.length != 0) {
-            LOG.info("Using filter locations: ");
-            for (String location : filterLocations) {
-                LOG.info("  {}", location);
-            }
-        }
-        return filterLocations;
     }
 }
