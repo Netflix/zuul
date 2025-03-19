@@ -24,24 +24,18 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.MutableFilterRegistry;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
-import java.io.File;
 import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 class DynamicFilterLoaderTest {
-
-    
 
     private final FilterRegistry registry = new MutableFilterRegistry();
 
     private final FilterFactory filterFactory = new DefaultFilterFactory();
 
     private DynamicFilterLoader loader;
-
-    
 
     @BeforeEach
     void before() throws Exception {

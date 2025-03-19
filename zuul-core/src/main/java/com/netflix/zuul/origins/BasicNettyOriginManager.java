@@ -18,9 +18,9 @@ package com.netflix.zuul.origins;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.SessionContext;
-import java.util.concurrent.ConcurrentHashMap;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Basic Netty Origin Manager that most apps can use. This can also serve as a useful template for creating more

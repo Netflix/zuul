@@ -74,7 +74,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     @Override
-    protected void initChannel(Channel ch)  {
+    protected void initChannel(Channel ch) {
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 

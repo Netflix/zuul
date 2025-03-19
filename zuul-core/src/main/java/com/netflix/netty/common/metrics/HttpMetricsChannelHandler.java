@@ -19,7 +19,6 @@ package com.netflix.netty.common.metrics;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;

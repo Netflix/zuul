@@ -49,9 +49,9 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
     private static final DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty(
             "zuul.gzip.contenttypes",
             "text/html,application/x-javascript,text/css,application/javascript,text/javascript,text/plain,text/xml,"
-                    + "application/json,application/vnd.ms-fontobject,application/x-font-opentype,application/x-font-truetype,"
-                    + "application/x-font-ttf,application/xml,font/eot,font/opentype,font/otf,image/svg+xml,image/vnd.microsoft.icon,"
-                    + "text/event-stream",
+                + "application/json,application/vnd.ms-fontobject,application/x-font-opentype,application/x-font-truetype,"
+                + "application/x-font-ttf,application/xml,font/eot,font/opentype,font/otf,image/svg+xml,image/vnd.microsoft.icon,"
+                + "text/event-stream",
             ",");
 
     // https://webmasters.stackexchange.com/questions/31750/what-is-recommended-minimum-object-size-for-gzip-performance-benefits
@@ -72,19 +72,19 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
         }
 
         // A flag on SessionContext can be set to override normal mechanism of checking if client accepts gzip.;
-         HttpRequestInfo request = response.getInboundRequest();
-         Boolean overrideIsGzipRequested =
+        HttpRequestInfo request = response.getInboundRequest();
+        Boolean overrideIsGzipRequested =
                 (Boolean) response.getContext().get(CommonContextKeys.OVERRIDE_GZIP_REQUESTED);
-         boolean isGzipRequested = (overrideIsGzipRequested == null)
+        boolean isGzipRequested = (overrideIsGzipRequested == null)
                 ? HttpUtils.acceptsGzip(request.getHeaders())
                 : overrideIsGzipRequested;
 
         // Check the headers to see if response is already gzipped.
-         Headers respHeaders = response.getHeaders();
+        Headers respHeaders = response.getHeaders();
         boolean isResponseCompressed = HttpUtils.isCompressed(respHeaders);
 
         // Decide what to do.;
-         boolean shouldGzip = isGzippableContentType(response)
+        boolean shouldGzip = isGzippableContentType(response)
                 && isGzipRequested
                 && !isResponseCompressed
                 && isRightSizeForGzip(response);
@@ -100,7 +100,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
 
     @VisibleForTesting
     boolean isRightSizeForGzip(HttpResponseMessage response) {
-         Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
+        Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
         // bodySize == null is chunked encoding which is eligible for gzip compression
         return (bodySize == null) || (bodySize >= MIN_BODY_SIZE_FOR_GZIP.get());
     }
@@ -108,7 +108,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
     @Override
     public HttpResponseMessage apply(HttpResponseMessage response) {
         // set Gzip headers
-         Headers respHeaders = response.getHeaders();
+        Headers respHeaders = response.getHeaders();
         respHeaders.set(HttpHeaderNames.CONTENT_ENCODING, "gzip");
         respHeaders.remove(HttpHeaderNames.CONTENT_LENGTH);
         return response;
@@ -128,7 +128,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
 
     @Override
     public HttpContent processContentChunk(ZuulMessage resp, HttpContent chunk) {
-         Gzipper gzipper = (Gzipper) resp.getContext().get(CommonContextKeys.GZIPPER);
+        Gzipper gzipper = (Gzipper) resp.getContext().get(CommonContextKeys.GZIPPER);
         gzipper.write(chunk);
         if (chunk instanceof LastHttpContent) {
             gzipper.finish();

@@ -146,7 +146,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     @SuppressWarnings("unchecked")
     @Nullable
     public <T> T get(@NonNull Key<T> key) {
-        T value = (T)typedMap.get(key);
+        T value = (T) typedMap.get(key);
         if (value == null) {
             value = key.defaultValue();
         }

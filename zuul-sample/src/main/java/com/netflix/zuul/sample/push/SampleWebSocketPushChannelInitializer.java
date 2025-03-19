@@ -44,7 +44,7 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
     }
 
     @Override
-    protected void addPushHandlers( ChannelPipeline pipeline) {
+    protected void addPushHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(PushProtocol.WEBSOCKET.getPath(), null, true));

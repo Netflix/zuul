@@ -94,10 +94,9 @@ public class StatusCategoryUtils {
         return (status < 100 || status >= 500);
     }
 
-    public static void storeStatusCategoryIfNotAlreadyFailure(
-             SessionContext context,  StatusCategory statusCategory) {
+    public static void storeStatusCategoryIfNotAlreadyFailure(SessionContext context, StatusCategory statusCategory) {
         if (statusCategory != null) {
-             StatusCategory nfs = getStatusCategory(context);
+            StatusCategory nfs = getStatusCategory(context);
             if (nfs == null || nfs.getGroup().getId() == ZuulStatusCategoryGroup.SUCCESS.getId()) {
                 setStatusCategory(context, statusCategory);
             }

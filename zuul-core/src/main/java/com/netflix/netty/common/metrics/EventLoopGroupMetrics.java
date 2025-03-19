@@ -17,10 +17,10 @@
 package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Registry;
-import java.util.HashMap;
-import java.util.Map;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: michaels@netflix.com
@@ -31,11 +31,10 @@ import jakarta.inject.Singleton;
 public class EventLoopGroupMetrics {
     private final ThreadLocal<EventLoopMetrics> metricsForCurrentThread;
     private final Map<Thread, EventLoopMetrics> byEventLoop = new HashMap<>();
-    
 
     @Inject
     public EventLoopGroupMetrics(Registry registry) {
-        
+
         this.metricsForCurrentThread = ThreadLocal.withInitial(() -> {
             String name = nameForCurrentEventLoop();
             EventLoopMetrics metrics = new EventLoopMetrics(registry, name);

@@ -355,7 +355,7 @@ public class Server {
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
-                public void uncaughtException( Thread t,  Throwable e) {
+                public void uncaughtException(Thread t, Throwable e) {
                     LOG.error("Uncaught throwable", e);
                 }
             });
@@ -374,8 +374,8 @@ public class Server {
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
-             boolean useNio = FORCE_NIO.get();
-             boolean useIoUring = FORCE_IO_URING.get();
+            boolean useNio = FORCE_NIO.get();
+            boolean useIoUring = FORCE_IO_URING.get();
             if (useIoUring && ioUringIsAvailable()) {
                 channelType = IOUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IOUringSocketChannel.class);
@@ -467,7 +467,7 @@ public class Server {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             Long now = System.nanoTime();
-             Channel child = (Channel) msg;
+            Channel child = (Channel) msg;
             child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
             ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
             timer.record(now, "ACCEPT");
