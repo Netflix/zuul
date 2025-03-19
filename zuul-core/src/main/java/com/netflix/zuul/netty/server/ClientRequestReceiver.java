@@ -124,7 +124,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
     }
 
-    private void channelReadInternal( ChannelHandlerContext ctx, Object msg) throws Exception {
+    private void channelReadInternal( ChannelHandlerContext ctx, Object msg)  {
         // Flag that we have now received the LastContent for this request from the client.
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
@@ -475,7 +475,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
     }
 
-    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) throws Exception {
+    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx)  {
 
          String errMesg = String.format("Error writing %s to client", requestPart);
 

@@ -230,35 +230,31 @@ public class Server {
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
-        try {
-            List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
+        List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
-            // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry :
-                    addressesToInitializers.entrySet()) {
-                NamedSocketAddress requestedNamedAddr = entry.getKey();
-                ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
-                Channel chan = nettyServerFuture.channel();
-                addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
-                allBindFutures.add(nettyServerFuture);
-            }
+        // Setup each of the channel initializers on requested ports.
+        for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry :
+                addressesToInitializers.entrySet()) {
+            NamedSocketAddress requestedNamedAddr = entry.getKey();
+            ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
+            Channel chan = nettyServerFuture.channel();
+            addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
+            allBindFutures.add(nettyServerFuture);
+        }
 
-            // All channels should share a single ByteBufAllocator instance.
-            // Add metrics to monitor that allocator's memory usage.
-            if (!allBindFutures.isEmpty()) {
-                ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
-                if (alloc instanceof ByteBufAllocatorMetricProvider) {
-                    ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
-                    PolledMeter.using(registry)
-                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
-                            .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
-                    PolledMeter.using(registry)
-                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
-                            .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
-                }
+        // All channels should share a single ByteBufAllocator instance.
+        // Add metrics to monitor that allocator's memory usage.
+        if (!allBindFutures.isEmpty()) {
+            ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
+            if (alloc instanceof ByteBufAllocatorMetricProvider) {
+                ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+                PolledMeter.using(registry)
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+                PolledMeter.using(registry)
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -286,7 +282,7 @@ public class Server {
     }
 
     private ChannelFuture setupServerBootstrap(
-            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
+            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) {
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 

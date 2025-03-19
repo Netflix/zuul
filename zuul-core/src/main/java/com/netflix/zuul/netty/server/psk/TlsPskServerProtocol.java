@@ -74,7 +74,7 @@ public class TlsPskServerProtocol extends TlsServerProtocol {
             }
 
             @Override
-            public Certificate[] getPeerCertificates() throws SSLPeerUnverifiedException {
+            public Certificate[] getPeerCertificates()  {
                 return new Certificate[0];
             }
 
@@ -84,12 +84,12 @@ public class TlsPskServerProtocol extends TlsServerProtocol {
             }
 
             @Override
-            public X509Certificate[] getPeerCertificateChain() throws SSLPeerUnverifiedException {
+            public X509Certificate[] getPeerCertificateChain()  {
                 return new X509Certificate[0];
             }
 
             @Override
-            public Principal getPeerPrincipal() throws SSLPeerUnverifiedException {
+            public Principal getPeerPrincipal()  {
                 return null;
             }
 

@@ -36,7 +36,7 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
     private static final Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
 
     @Override
-    public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public final void channelRead(ChannelHandlerContext ctx, Object msg)  {
         try {
             if (!isAuthenticated()) {
                 // Do not entertain ANY message from unauthenticated client

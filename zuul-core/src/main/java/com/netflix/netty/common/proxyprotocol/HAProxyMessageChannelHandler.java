@@ -59,7 +59,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
     static final Attrs.Key<String> HAPM_SRC_IP_VERSION = Attrs.newKey("hapm_src_ipproto");
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg)  {
         if (msg instanceof HAProxyMessage) {
             HAProxyMessage hapm = (HAProxyMessage) msg;
             Channel channel = ctx.channel();

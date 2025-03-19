@@ -256,7 +256,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
      */
     protected void preWriteHook(ChannelHandlerContext ctx, HttpRequestMessage zuulReq) {}
 
-    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) throws Exception {
+    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) {
         String errMesg = "Error while proxying " + requestPart + " to origin ";
         if (edgeProxy != null) {
              ProxyEndpoint ep = edgeProxy;
