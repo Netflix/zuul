@@ -103,7 +103,7 @@ public class JsonUtility {
     }
 
     private static class JsonDocument {
-        StringBuilder json = new StringBuilder();
+        final StringBuilder json = new StringBuilder();
 
         private boolean newGroup = false;
 

@@ -30,12 +30,12 @@ public class NeedsBodyBufferedOutboundFilter extends HttpOutboundFilter {
     }
 
     @Override
-    public boolean needsBodyBuffered(final HttpResponseMessage message) {
+    public boolean needsBodyBuffered(HttpResponseMessage message) {
         return BodyUtil.needsResponseBodyBuffering(message.getOutboundRequest());
     }
 
     @Override
-    public Observable<HttpResponseMessage> applyAsync(final HttpResponseMessage response) {
+    public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response) {
         return Observable.just(response);
     }
 }

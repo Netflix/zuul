@@ -46,7 +46,6 @@ public class SampleServiceFilter extends HttpInboundFilter {
         return 500;
     }
 
-
     @Override
     public boolean shouldFilter(HttpRequestMessage msg) {
         return sampleService.isHealthy();

@@ -22,10 +22,9 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 /**
  * Client Timeout Handler
@@ -62,7 +61,7 @@ public final class ClientTimeoutHandler {
                     return;
                 }
 
-                final Duration timeout =
+                Duration timeout =
                         ctx.channel().attr(ORIGIN_RESPONSE_READ_TIMEOUT).get();
                 if (timeout != null) {
                     promise.addListener(e -> {

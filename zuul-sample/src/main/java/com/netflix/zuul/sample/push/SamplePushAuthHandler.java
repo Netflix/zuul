@@ -50,10 +50,10 @@ public class SamplePushAuthHandler extends PushAuthHandler {
 
     @Override
     protected PushUserAuth doAuth(FullHttpRequest req, ChannelHandlerContext ctx) {
-        final Cookies cookies = parseCookies(req);
-        for (final Cookie c : cookies.getAll()) {
+        Cookies cookies = parseCookies(req);
+        for (Cookie c : cookies.getAll()) {
             if (c.name().equals("userAuthCookie")) {
-                final String customerId = c.value();
+                String customerId = c.value();
                 if (!Strings.isNullOrEmpty(customerId)) {
                     return new SamplePushUserAuth(customerId);
                 }

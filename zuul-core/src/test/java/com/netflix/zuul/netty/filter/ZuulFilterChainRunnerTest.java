@@ -74,15 +74,15 @@ class ZuulFilterChainRunnerTest {
 
     @Test
     void testInboundFilterChain() {
-        final SimpleInboundFilter inbound1 = spy(new SimpleInboundFilter(true));
-        final SimpleInboundFilter inbound2 = spy(new SimpleInboundFilter(false));
+        SimpleInboundFilter inbound1 = spy(new SimpleInboundFilter(true));
+        SimpleInboundFilter inbound2 = spy(new SimpleInboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[] {inbound1, inbound2};
+        ZuulFilter[] filters = new ZuulFilter[] {inbound1, inbound2};
 
-        final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
-        final Registry registry = mock(Registry.class);
+        FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
+        Registry registry = mock(Registry.class);
 
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
 
         runner.filter(request);
 
@@ -96,15 +96,15 @@ class ZuulFilterChainRunnerTest {
 
     @Test
     void testOutboundFilterChain() {
-        final SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
-        final SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(false));
+        SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
+        SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(false));
 
-        final ZuulFilter[] filters = new ZuulFilter[] {outbound1, outbound2};
+        ZuulFilter[] filters = new ZuulFilter[] {outbound1, outbound2};
 
-        final FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
-        final Registry registry = mock(Registry.class);
+        FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
+        Registry registry = mock(Registry.class);
 
-        final ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
 
         runner.filter(response);
 
@@ -119,7 +119,7 @@ class ZuulFilterChainRunnerTest {
     class SimpleInboundFilter extends HttpInboundFilter {
         private final boolean shouldFilter;
 
-        public SimpleInboundFilter(final boolean shouldFilter) {
+        public SimpleInboundFilter(boolean shouldFilter) {
             this.shouldFilter = shouldFilter;
         }
 
@@ -147,7 +147,7 @@ class ZuulFilterChainRunnerTest {
     class SimpleOutboundFilter extends HttpOutboundFilter {
         private final boolean shouldFilter;
 
-        public SimpleOutboundFilter(final boolean shouldFilter) {
+        public SimpleOutboundFilter(boolean shouldFilter) {
             this.shouldFilter = shouldFilter;
         }
 

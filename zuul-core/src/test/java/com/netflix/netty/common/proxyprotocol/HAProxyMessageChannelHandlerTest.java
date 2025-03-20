@@ -98,7 +98,7 @@ class HAProxyMessageChannelHandlerTest {
         header[13] = 0x11; // TCP over IPv4
 
         header[14] = 0x00; // Addl. bytes
-        header[15] = (byte) 0x1E;  // -----
+        header[15] = (byte) 0x1E; // -----
 
         header[16] = (byte) 0xc0; // Src Addr 192.168.0.1
         header[17] = (byte) 0xa8; // -----
@@ -147,16 +147,18 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+        HAProxyMessage hapm =
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("192.168.0.1");
         assertThat(hapm.destinationAddress()).isEqualTo("124.123.111.111");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> nflxTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+        List<HAProxyTLV> nflxTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS)
+                .get();
         Assert.assertEquals(nflxTLV.size(), 1);
-        final String payload = nflxTLV.get(0).content().toString(StandardCharsets.UTF_8);
+        String payload = nflxTLV.get(0).content().toString(StandardCharsets.UTF_8);
         assertThat(payload).isEqualTo("nflx.custom.tlv");
     }
 
@@ -183,7 +185,7 @@ class HAProxyMessageChannelHandlerTest {
         header[13] = 0x11; // TCP over IPv4
 
         header[14] = 0x00; // Addl. bytes
-        header[15] = (byte) 0x0C;  // -----
+        header[15] = (byte) 0x0C; // -----
 
         header[16] = (byte) 0xc0; // Src Addr 192.168.0.1
         header[17] = (byte) 0xa8; // -----
@@ -212,14 +214,16 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+        HAProxyMessage hapm =
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("192.168.0.1");
         assertThat(hapm.destinationAddress()).isEqualTo("124.123.111.111");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+        List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS)
+                .get();
         assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 
@@ -242,10 +246,10 @@ class HAProxyMessageChannelHandlerTest {
         header[11] = 0x0A; // -----
 
         header[12] = 0x21; // v2 PROXY
-        header[13] = 0x21;// TCP over IPv6
+        header[13] = 0x21; // TCP over IPv6
 
         header[14] = 0x00; // Addl. bytes
-        header[15] = 0x24;  // -----
+        header[15] = 0x24; // -----
 
         header[16] = 0x20; // Source Address
         header[17] = 0x01; // -----
@@ -298,14 +302,16 @@ class HAProxyMessageChannelHandlerTest {
         Object result = channel.readInbound();
         assertNull(result);
 
-        final HAProxyMessage hapm = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
+        HAProxyMessage hapm =
+                channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_MESSAGE).get();
 
         assertThat(hapm.sourceAddress()).isEqualTo("2001:db8:85a3:0:0:8a2e:370:7334");
         assertThat(hapm.destinationAddress()).isEqualTo("1050:0:0:0:5:600:300c:326b");
         assertThat(hapm.sourcePort()).isEqualTo(10006);
         assertThat(hapm.destinationPort()).isEqualTo(443);
 
-        final List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS).get();
+        List<HAProxyTLV> customTLV = channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_CUSTOM_TLVS)
+                .get();
         assertThat(customTLV.isEmpty()).isEqualTo(true);
     }
 }

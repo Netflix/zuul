@@ -98,13 +98,13 @@ class ZuulEndPointRunnerTest {
         request.getContext().setEndpoint(BASIC_ENDPOINT);
         assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
         endpointRunner.filter(request);
-        final ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter =
+        ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter =
                 request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
         assertTrue(filter instanceof BasicEndpoint);
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
-        final HttpResponseMessage capturedResponseMessage = captor.getValue();
+        HttpResponseMessage capturedResponseMessage = captor.getValue();
         assertEquals(capturedResponseMessage.getInboundRequest(), request.getInboundRequest());
         assertEquals("basicEndpoint", capturedResponseMessage.getContext().getEndpoint());
         assertFalse(capturedResponseMessage.getContext().errorResponseSent());
@@ -115,12 +115,12 @@ class ZuulEndPointRunnerTest {
         request.getContext().setShouldSendErrorResponse(true);
         assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
         endpointRunner.filter(request);
-        final ZuulFilter filter = request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
+        ZuulFilter filter = request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
         assertTrue(filter instanceof ErrorEndpoint);
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
-        final HttpResponseMessage capturedResponseMessage = captor.getValue();
+        HttpResponseMessage capturedResponseMessage = captor.getValue();
         assertEquals(capturedResponseMessage.getInboundRequest(), request.getInboundRequest());
         assertNull(capturedResponseMessage.getContext().getEndpoint());
         assertTrue(capturedResponseMessage.getContext().errorResponseSent());

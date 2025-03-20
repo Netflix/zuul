@@ -50,8 +50,6 @@ class StatsManagerTest {
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
         assertNotNull(routeStatusMap);
 
-        RouteStatusCodeMonitor routeStatusMonitor = routeStatusMap.get(status);
-
         // 2nd request
         sm.collectRouteStats(route, status);
     }
@@ -66,23 +64,23 @@ class StatsManagerTest {
 
     @Test
     void testCollectRequestStats() {
-        final String host = "api.netflix.com";
-        final String proto = "https";
+        String host = "api.netflix.com";
+        String proto = "https";
 
-        final HttpRequestInfo req = Mockito.mock(HttpRequestInfo.class);
+        HttpRequestInfo req = Mockito.mock(HttpRequestInfo.class);
         Headers headers = new Headers();
         when(req.getHeaders()).thenReturn(headers);
         headers.set(StatsManager.HOST_HEADER, host);
         headers.set(StatsManager.X_FORWARDED_PROTO_HEADER, proto);
         when(req.getClientIp()).thenReturn("127.0.0.1");
 
-        final StatsManager sm = StatsManager.getManager();
+        StatsManager sm = StatsManager.getManager();
         sm.collectRequestStats(req);
 
-        final NamedCountingMonitor hostMonitor = sm.getHostMonitor(host);
+        NamedCountingMonitor hostMonitor = sm.getHostMonitor(host);
         assertNotNull(hostMonitor, "hostMonitor should not be null");
 
-        final NamedCountingMonitor protoMonitor = sm.getProtocolMonitor(proto);
+        NamedCountingMonitor protoMonitor = sm.getProtocolMonitor(proto);
         assertNotNull(protoMonitor, "protoMonitor should not be null");
 
         assertEquals(1, hostMonitor.getCount());
@@ -101,8 +99,8 @@ class StatsManagerTest {
 
     @Test
     void extractsClientIpFromXForwardedFor() {
-        final String ip1 = "hi";
-        final String ip2 = "hey";
+        String ip1 = "hi";
+        String ip2 = "hey";
         assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(ip1));
         assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(String.format("%s,%s", ip1, ip2)));
         assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(String.format("%s, %s", ip1, ip2)));

@@ -77,7 +77,7 @@ class ClientRequestReceiverTest {
         }
         assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
         int destinationPort = ((InetSocketAddress)
-                result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS))
+                        result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS))
                 .getPort();
         assertEquals(444, destinationPort);
         assertEquals(444, result.getOriginalPort());
@@ -308,12 +308,12 @@ class ClientRequestReceiverTest {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
 
-        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(
                 HttpVersion.HTTP_1_1, HttpMethod.POST, "?ELhAWDLM1hwm8bhU0UT4", Unpooled.buffer());
 
         // Write the message and save a copy
         channel.writeInbound(request);
-        final HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
+        HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
 
         // Set the attr to emulate pipelining rejection
         channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);

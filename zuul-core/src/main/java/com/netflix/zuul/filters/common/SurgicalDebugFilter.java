@@ -69,7 +69,7 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
         String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
         // dont' apply filter if it was already applied
-        boolean notAlreadyFiltered = !("true".equals(isSurgicalFilterRequest));
+        boolean notAlreadyFiltered = !isSurgicalFilterRequest.equals("true");
 
         return notAlreadyFiltered && patternMatches(request);
     }

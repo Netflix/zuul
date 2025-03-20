@@ -65,7 +65,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     private final OriginName originName;
     private final IClientConfig clientConfig;
 
-    public ConnectionPoolConfigImpl(final OriginName originName, IClientConfig clientConfig) {
+    public ConnectionPoolConfigImpl(OriginName originName, IClientConfig clientConfig) {
         this.originName = Objects.requireNonNull(originName, "originName");
         this.clientConfig = clientConfig;
     }

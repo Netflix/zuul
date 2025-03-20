@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import java.util.List;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     private final String originDomain;
 
     public static final String NAME = "push_auth_handler";
-    private static Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PushAuthHandler.class);
 
     public PushAuthHandler(String pushConnectionPath, String originDomain) {
         this.pushConnectionPath = pushConnectionPath;
@@ -58,25 +59,25 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        final boolean closeConn = ((status != HttpResponseStatus.OK) || (!HttpUtil.isKeepAlive(req)));
+        boolean closeConn = ((!Objects.equals(status, HttpResponseStatus.OK)) || !HttpUtil.isKeepAlive(req));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
-        final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
+        ChannelFuture cf = ctx.channel().writeAndFlush(resp);
         if (closeConn) {
             cf.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
     @Override
-    protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
-        if (req.method() != HttpMethod.GET) {
+    protected final void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) {
+        if (!Objects.equals(req.method(), HttpMethod.GET)) {
             sendHttpResponse(req, ctx, HttpResponseStatus.METHOD_NOT_ALLOWED);
             return;
         }
 
-        final String path = req.uri();
-        if ("/healthcheck".equals(path)) {
+        String path = req.uri();
+        if (path.equals("/healthcheck")) {
             sendHttpResponse(req, ctx, HttpResponseStatus.OK);
         } else if (pushConnectionPath.equals(path)) {
             // CSRF protection
@@ -86,7 +87,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
                 // client auth will happen later, continue with WebSocket upgrade handshake
                 ctx.fireChannelRead(req.retain());
             } else {
-                final PushUserAuth authEvent = doAuth(req, ctx);
+                PushUserAuth authEvent = doAuth(req, ctx);
                 if (authEvent.isSuccess()) {
                     ctx.fireChannelRead(req.retain()); // continue with WebSocket upgrade handshake
                     ctx.fireUserEventTriggered(authEvent);
@@ -101,7 +102,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     protected boolean isInvalidOrigin(FullHttpRequest req) {
-        final String origin = req.headers().get(HttpHeaderNames.ORIGIN);
+        String origin = req.headers().get(HttpHeaderNames.ORIGIN);
         if (origin == null || !origin.toLowerCase().endsWith(originDomain)) {
             logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
             return true;
@@ -110,8 +111,8 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     }
 
     protected final Cookies parseCookies(FullHttpRequest req) {
-        final Cookies cookies = new Cookies();
-        final String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
+        Cookies cookies = new Cookies();
+        String cookieStr = req.headers().get(HttpHeaderNames.COOKIE);
         if (!Strings.isNullOrEmpty(cookieStr)) {
             List<Cookie> decoded = ServerCookieDecoder.LAX.decodeAll(cookieStr);
             decoded.forEach(cookies::add);

@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class ZuulFiltersModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
 
-    private static Predicate<String> blank = String::isEmpty;
+    private static final Predicate<String> blank = String::isEmpty;
 
     @Override
     protected void configure() {
@@ -50,14 +50,12 @@ public class ZuulFiltersModule extends AbstractModule {
     }
 
     @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig(
-            AbstractConfiguration config) {
+    FilterFileManagerConfig provideFilterFileManagerConfig(AbstractConfiguration config) {
 
         String[] filterClassNames = findClassNames(config);
 
         // Init the FilterStore.
-        FilterFileManagerConfig filterConfig =
-                new FilterFileManagerConfig(filterClassNames);
+        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterClassNames);
         return filterConfig;
     }
 

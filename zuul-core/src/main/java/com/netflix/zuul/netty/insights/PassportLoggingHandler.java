@@ -86,7 +86,8 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter {
         // Do some debug logging of the Passport.
         if (LOG.isDebugEnabled()) {
             LOG.debug(
-                    "State after complete. , current-server-conns = {}, current-http-reqs = {}, status = {}, nfstatus = {}, toplevelid = {}, req = {}, passport = {}",
+                    "State after complete. , current-server-conns = {}, current-http-reqs = {}, status = {}, nfstatus"
+                            + " = {}, toplevelid = {}, req = {}, passport = {}",
                     ConnCounter.from(channel).getCurrentActiveConns(),
                     HttpMetricsChannelHandler.getInflightRequestCountFromChannel(channel),
                     (response == null ? getRequestId(channel, ctx) : response.getStatus()),
@@ -114,7 +115,8 @@ public class PassportLoggingHandler extends ChannelInboundHandlerAdapter {
                     // Why did we fail to attempt to proxy this request?
                     RequestAttempts attempts = RequestAttempts.getFromSessionContext(ctx);
                     LOG.debug(
-                            "State after complete. , context-error = {}, current-http-reqs = {}, toplevelid = {}, req = {}, attempts = {}, passport = {}",
+                            "State after complete. , context-error = {}, current-http-reqs = {}, toplevelid = {}, req"
+                                    + " = {}, attempts = {}, passport = {}",
                             String.valueOf(ctx.getError()),
                             HttpMetricsChannelHandler.getInflightRequestCountFromChannel(channel),
                             topLevelRequestId,

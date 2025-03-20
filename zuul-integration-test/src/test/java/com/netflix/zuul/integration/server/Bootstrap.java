@@ -63,7 +63,6 @@ public class Bootstrap {
     }
 
     private Server server;
-    private int exitCode = 0;
 
     public void start() {
         long startNanos = System.nanoTime();
@@ -96,7 +95,7 @@ public class Bootstrap {
             logger.info("Zuul: finished startup. Duration = {}ms", TimeUnit.NANOSECONDS.toMillis(startupDuration));
             // server.awaitTermination();
         } catch (Throwable t) {
-            exitCode = 1;
+
             throw new RuntimeException(t);
         }
     }

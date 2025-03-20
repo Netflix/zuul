@@ -172,8 +172,7 @@ public final class RejectionUtils {
             @Nullable Integer injectedLatencyMillis,
             HttpResponseStatus rejectedCode,
             String rejectedBody,
-            Map<String, String> rejectionHeaders)
-            throws Exception {
+            Map<String, String> rejectionHeaders) {
 
         boolean shouldDropMessage = false;
         if (rejectionType == RejectionType.REJECT || rejectionType == RejectionType.CLOSE) {
@@ -304,9 +303,9 @@ public final class RejectionUtils {
 
     private static boolean closeConnectionAfterReject(Channel channel) {
         if (channel.hasAttr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)) {
-            return HAProxyProtocolVersion.V2
-                    == channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
-                    .get();
+            return channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
+                            .get()
+                    == HAProxyProtocolVersion.V2;
         } else {
             return false;
         }
@@ -330,6 +329,5 @@ public final class RejectionUtils {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status, body, headers, EmptyHttpHeaders.INSTANCE);
     }
 
-    private RejectionUtils() {
-    }
+    private RejectionUtils() {}
 }

@@ -134,7 +134,7 @@ public class BasicNettyOrigin implements NettyOrigin {
 
     @Override
     public String getIpAddrFromServer(DiscoveryResult discoveryResult) {
-        final Optional<String> ipAddr = discoveryResult.getIPAddr();
+        Optional<String> ipAddr = discoveryResult.getIPAddr();
         return ipAddr.isPresent() ? ipAddr.get() : null;
     }
 
@@ -154,11 +154,11 @@ public class BasicNettyOrigin implements NettyOrigin {
             return;
         }
 
-        final SessionContext zuulCtx = requestMsg.getContext();
+        SessionContext zuulCtx = requestMsg.getContext();
 
         // Choose StatusCategory based on the ErrorType.
-        final ErrorType et = requestAttemptFactory.mapNettyToOutboundErrorType(throwable);
-        final StatusCategory nfs = et.getStatusCategory();
+        ErrorType et = requestAttemptFactory.mapNettyToOutboundErrorType(throwable);
+        StatusCategory nfs = et.getStatusCategory();
         StatusCategoryUtils.setStatusCategory(zuulCtx, nfs);
         StatusCategoryUtils.setOriginStatusCategory(zuulCtx, nfs);
 
@@ -168,7 +168,7 @@ public class BasicNettyOrigin implements NettyOrigin {
     @Override
     public void recordFinalResponse(HttpResponseMessage resp) {
         if (resp != null) {
-            final SessionContext zuulCtx = resp.getContext();
+            SessionContext zuulCtx = resp.getContext();
 
             // Store the status code of final attempt response.
             int originStatusCode = resp.getStatus();

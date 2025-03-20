@@ -22,7 +22,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.util.concurrent.ScheduledFuture;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -144,7 +143,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     }
 
     private int ditheredReconnectDeadline() {
-        final int dither = ThreadLocalRandom.current().nextInt(RECONNECT_DITHER.get());
+        int dither = ThreadLocalRandom.current().nextInt(RECONNECT_DITHER.get());
         return PUSH_REGISTRY_TTL.get() - dither - CLIENT_CLOSE_GRACE_PERIOD.get();
     }
 
@@ -161,7 +160,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
                 logger.debug("WebSocket handshake complete.");
             } else if (evt instanceof PushUserAuth) {
                 authEvent = (PushUserAuth) evt;
-                if ((authEvent.isSuccess()) && (pushConnection != null)) {
+                if (authEvent.isSuccess() && (pushConnection != null)) {
                     logger.debug("registering client {}", authEvent);
                     ctx.pipeline().remove(PushAuthHandler.NAME);
                     registerClient(ctx, authEvent, pushConnection, pushConnectionRegistry);

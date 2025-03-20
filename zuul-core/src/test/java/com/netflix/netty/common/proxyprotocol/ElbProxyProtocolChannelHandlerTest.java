@@ -137,7 +137,7 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        final int port = 7007;
+        int port = 7007;
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
@@ -150,7 +150,7 @@ class ElbProxyProtocolChannelHandlerTest {
         assertEquals(dropped, buf);
         buf.release();
 
-        final Counter counter = registry.counter(
+        Counter counter = registry.counter(
                 "zuul.hapm.decode", "success", "false", "port", String.valueOf(port), "needs_more_data", "false");
         assertEquals(1, counter.count());
     }
@@ -294,34 +294,34 @@ class ElbProxyProtocolChannelHandlerTest {
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
         ByteBuf buf = Unpooled.wrappedBuffer(new byte[] {
-                0x0D,
-                0x0A,
-                0x0D,
-                0x0A,
-                0x00,
-                0x0D,
-                0x0A,
-                0x51,
-                0x55,
-                0x49,
-                0x54,
-                0x0A,
-                0x21,
-                0x11,
-                0x00,
-                0x0C,
-                (byte) 0xC0,
-                (byte) 0xA8,
-                0x00,
-                0x01,
-                0x7C,
-                0x7B,
-                0x6F,
-                0x6F,
-                0x27,
-                0x18,
-                0x01,
-                (byte) 0xbb
+            0x0D,
+            0x0A,
+            0x0D,
+            0x0A,
+            0x00,
+            0x0D,
+            0x0A,
+            0x51,
+            0x55,
+            0x49,
+            0x54,
+            0x0A,
+            0x21,
+            0x11,
+            0x00,
+            0x0C,
+            (byte) 0xC0,
+            (byte) 0xA8,
+            0x00,
+            0x01,
+            0x7C,
+            0x7B,
+            0x6F,
+            0x6F,
+            0x27,
+            0x18,
+            0x01,
+            (byte) 0xbb
         });
         channel.writeInbound(buf);
 

@@ -32,8 +32,8 @@ import org.junit.jupiter.api.Test;
 
 class MaxInboundConnectionsHandlerTest {
 
-    private Registry registry = new DefaultRegistry();
-    private String listener = "test-throttled";
+    private final Registry registry = new DefaultRegistry();
+    private final String listener = "test-throttled";
     private Id counterId;
 
     @BeforeEach
@@ -44,7 +44,7 @@ class MaxInboundConnectionsHandlerTest {
     @Test
     void verifyPassportStateAndAttrs() {
 
-        final EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, listener, 1));
 
@@ -52,7 +52,7 @@ class MaxInboundConnectionsHandlerTest {
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        final Counter throttledCount = (Counter) registry.get(counterId);
+        Counter throttledCount = (Counter) registry.get(counterId);
 
         assertEquals(1, throttledCount.count());
         assertEquals(

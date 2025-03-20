@@ -45,8 +45,8 @@ class Http2OrHttpHandlerTest {
     @Test
     void swapInHttp2HandlerBasedOnALPN() throws Exception {
         EmbeddedChannel channel = new EmbeddedChannel();
-        final NoopRegistry registry = new NoopRegistry();
-        final ChannelConfig channelConfig = new ChannelConfig();
+        NoopRegistry registry = new NoopRegistry();
+        ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
         Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
@@ -54,7 +54,7 @@ class Http2OrHttpHandlerTest {
                 new Http2ConnectionExpiryHandler(100, 100, 20 * 60 * 1000);
         Http2MetricsChannelHandlers http2MetricsChannelHandlers =
                 new Http2MetricsChannelHandlers(registry, "server", "http2-443");
-        final Http2OrHttpHandler http2OrHttpHandler = new Http2OrHttpHandler(
+        Http2OrHttpHandler http2OrHttpHandler = new Http2OrHttpHandler(
                 new Http2StreamInitializer(
                         channel,
                         (x) -> {},

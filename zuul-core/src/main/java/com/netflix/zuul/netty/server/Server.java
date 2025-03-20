@@ -230,35 +230,31 @@ public class Server {
         serverGroup = new ServerGroup(
                 "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
         serverGroup.initializeTransport();
-        try {
-            List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
+        List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
-            // Setup each of the channel initializers on requested ports.
-            for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry :
-                    addressesToInitializers.entrySet()) {
-                NamedSocketAddress requestedNamedAddr = entry.getKey();
-                ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
-                Channel chan = nettyServerFuture.channel();
-                addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
-                allBindFutures.add(nettyServerFuture);
-            }
+        // Setup each of the channel initializers on requested ports.
+        for (Map.Entry<NamedSocketAddress, ? extends ChannelInitializer<?>> entry :
+                addressesToInitializers.entrySet()) {
+            NamedSocketAddress requestedNamedAddr = entry.getKey();
+            ChannelFuture nettyServerFuture = setupServerBootstrap(requestedNamedAddr, entry.getValue());
+            Channel chan = nettyServerFuture.channel();
+            addressesToChannels.put(requestedNamedAddr.withNewSocket(chan.localAddress()), chan);
+            allBindFutures.add(nettyServerFuture);
+        }
 
-            // All channels should share a single ByteBufAllocator instance.
-            // Add metrics to monitor that allocator's memory usage.
-            if (!allBindFutures.isEmpty()) {
-                ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
-                if (alloc instanceof ByteBufAllocatorMetricProvider) {
-                    ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
-                    PolledMeter.using(registry)
-                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
-                            .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
-                    PolledMeter.using(registry)
-                            .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
-                            .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
-                }
+        // All channels should share a single ByteBufAllocator instance.
+        // Add metrics to monitor that allocator's memory usage.
+        if (!allBindFutures.isEmpty()) {
+            ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
+            if (alloc instanceof ByteBufAllocatorMetricProvider) {
+                ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+                PolledMeter.using(registry)
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+                PolledMeter.using(registry)
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -286,7 +282,7 @@ public class Server {
     }
 
     private ChannelFuture setupServerBootstrap(
-            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) throws InterruptedException {
+            NamedSocketAddress listenAddress, ChannelInitializer<?> channelInitializer) {
         ServerBootstrap serverBootstrap =
                 new ServerBootstrap().group(serverGroup.clientToProxyBossPool, serverGroup.clientToProxyWorkerPool);
 
@@ -359,7 +355,7 @@ public class Server {
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
-                public void uncaughtException(final Thread t, final Throwable e) {
+                public void uncaughtException(Thread t, Throwable e) {
                     LOG.error("Uncaught throwable", e);
                 }
             });
@@ -378,8 +374,8 @@ public class Server {
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
-            final boolean useNio = FORCE_NIO.get();
-            final boolean useIoUring = FORCE_IO_URING.get();
+            boolean useNio = FORCE_NIO.get();
+            boolean useIoUring = FORCE_IO_URING.get();
             if (useIoUring && ioUringIsAvailable()) {
                 channelType = IOUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IOUringSocketChannel.class);
@@ -471,7 +467,7 @@ public class Server {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             Long now = System.nanoTime();
-            final Channel child = (Channel) msg;
+            Channel child = (Channel) msg;
             child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
             ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
             timer.record(now, "ACCEPT");

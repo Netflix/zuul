@@ -20,8 +20,8 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.stats.RequestMetricsPublisher;
-import javax.annotation.Nullable;
 import jakarta.inject.Inject;
+import javax.annotation.Nullable;
 
 /**
  * User: michaels@netflix.com
@@ -30,8 +30,7 @@ import jakarta.inject.Inject;
  */
 public class BasicRequestCompleteHandler implements RequestCompleteHandler {
     @Inject
-    @Nullable
-    private RequestMetricsPublisher requestMetricsPublisher;
+    @Nullable private RequestMetricsPublisher requestMetricsPublisher;
 
     @Override
     public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response) {

@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server.psk;
 
-
 public interface ExternalTlsPskProvider {
     byte[] provide(byte[] clientPskIdentity, byte[] clientRandom) throws PskCreationFailureException;
 }

@@ -40,7 +40,7 @@ public class FilterFileManager {
         this.config = config;
         this.filterLoader = filterLoader;
     }
-    
+
     @Inject
     public void init() throws Exception {
         if (!config.enabled) {
@@ -53,16 +53,14 @@ public class FilterFileManager {
     }
 
     public static class FilterFileManagerConfig {
-        private String[] classNames;
+        private final String[] classNames;
         boolean enabled;
 
         public FilterFileManagerConfig(String[] classNames) {
             this(classNames, true);
         }
 
-        public FilterFileManagerConfig(
-                String[] classNames,
-                boolean enabled) {
+        public FilterFileManagerConfig(String[] classNames, boolean enabled) {
             this.classNames = classNames;
             this.enabled = enabled;
         }

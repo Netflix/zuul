@@ -23,8 +23,6 @@ import io.netty.util.ReferenceCounted;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 /**
@@ -34,7 +32,6 @@ import rx.Observable;
  * Time: 2:26 PM
  */
 public class Debug {
-    private static final Logger LOG = LoggerFactory.getLogger(Debug.class);
 
     public static void setDebugRequest(SessionContext ctx, boolean bDebug) {
         ctx.setDebugRequest(bDebug);
@@ -133,7 +130,7 @@ public class Debug {
                     if (oldValue == null && newValue != null) {
                         addRoutingDebug(context, "{" + filterName + "} added " + key + "=" + newValue.toString());
                     } else if (oldValue != null && newValue != null) {
-                        if (!(oldValue.equals(newValue))) {
+                        if (!oldValue.equals(newValue)) {
                             addRoutingDebug(context, "{" + filterName + "} changed " + key + "=" + newValue.toString());
                         }
                     }

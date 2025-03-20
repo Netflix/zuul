@@ -56,12 +56,12 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
         concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
         concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
         filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
-        concurrencyProtectionEnabled = new CachedDynamicBooleanProperty("zuul.filter.concurrency.protect.enabled",
-                true);
-        filterConcurrencyDefault = new CachedDynamicIntProperty("zuul.filter.concurrency.limit.default",
-                DEFAULT_FILTER_CONCURRENCY_LIMIT);
-        filterConcurrencyCustom = new CachedDynamicIntProperty(maxConcurrencyPropertyName(),
-                DEFAULT_FILTER_CONCURRENCY_LIMIT);
+        concurrencyProtectionEnabled =
+                new CachedDynamicBooleanProperty("zuul.filter.concurrency.protect.enabled", true);
+        filterConcurrencyDefault =
+                new CachedDynamicIntProperty("zuul.filter.concurrency.limit.default", DEFAULT_FILTER_CONCURRENCY_LIMIT);
+        filterConcurrencyCustom =
+                new CachedDynamicIntProperty(maxConcurrencyPropertyName(), DEFAULT_FILTER_CONCURRENCY_LIMIT);
     }
 
     @Override
@@ -124,8 +124,8 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     @Override
     public void incrementConcurrency() throws ZuulFilterConcurrencyExceededException {
-        final int limit = calculateConcurency();
-        if ((concurrencyProtectionEnabled.get()) && (concurrentCount.get() >= limit)) {
+        int limit = calculateConcurency();
+        if (concurrencyProtectionEnabled.get() && (concurrentCount.get() >= limit)) {
             concurrencyRejections.increment();
             throw new ZuulFilterConcurrencyExceededException(this, limit);
         }
@@ -133,7 +133,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     }
 
     protected int calculateConcurency() {
-        final int customLimit = filterConcurrencyCustom.get();
+        int customLimit = filterConcurrencyCustom.get();
         return customLimit != DEFAULT_FILTER_CONCURRENCY_LIMIT ? customLimit : filterConcurrencyDefault.get();
     }
 

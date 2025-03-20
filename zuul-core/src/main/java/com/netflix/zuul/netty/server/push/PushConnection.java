@@ -61,10 +61,10 @@ public class PushConnection {
      * @return true if should be rate limited, false if it is OK to send the message
      */
     public synchronized boolean isRateLimited() {
-        final double rate = TOKEN_BUCKET_RATE.get();
-        final double window = TOKEN_BUCKET_WINDOW.get();
-        final long current = System.currentTimeMillis();
-        final double timePassed = current - tkBktLastCheckTime;
+        double rate = TOKEN_BUCKET_RATE.get();
+        double window = TOKEN_BUCKET_WINDOW.get();
+        long current = System.currentTimeMillis();
+        double timePassed = current - tkBktLastCheckTime;
 
         tkBktLastCheckTime = current;
         tkBktAllowance = tkBktAllowance + timePassed * (rate / window);

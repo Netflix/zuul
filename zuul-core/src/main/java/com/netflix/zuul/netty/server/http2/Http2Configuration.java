@@ -37,7 +37,7 @@ public class Http2Configuration {
                 ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
                 supportedProtocols);
 
-        final SslContext sslContext;
+        SslContext sslContext;
         try {
             sslContext = builder.applicationProtocolConfig(apn).build();
         } catch (SSLException e) {
@@ -65,7 +65,7 @@ public class Http2Configuration {
                 // ACCEPT is currently the only mode supported by both OpenSsl and JDK providers.
                 ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
                 ApplicationProtocolNames.HTTP_1_1);
-        final SslContext sslContext;
+        SslContext sslContext;
         try {
             sslContext = sslContextFactory
                     .createBuilderForServer()

@@ -37,7 +37,6 @@ import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.Options;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.google.common.collect.ImmutableSet;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
@@ -96,7 +95,7 @@ class IntegrationTest {
     private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String pathSegment;
-    private WireMockRuntimeInfo wmRuntimeInfo;
+
     private WireMock wireMock;
 
     @RegisterExtension
@@ -114,7 +113,7 @@ class IntegrationTest {
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 
-        final int wireMockPort = wireMockExtension.getPort();
+        int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
@@ -142,11 +141,11 @@ class IntegrationTest {
     @BeforeEach
     void beforeEachTest() {
         this.pathSegment = randomPathSegment();
-        this.wmRuntimeInfo = wireMockExtension.getRuntimeInfo();
+
         this.wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
     }
 
-    private static OkHttpClient setupOkHttpClient(final Protocol... protocols) {
+    private static OkHttpClient setupOkHttpClient(Protocol... protocols) {
         return new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.MILLISECONDS)
                 .readTimeout(CLIENT_READ_TIMEOUT)
@@ -157,9 +156,8 @@ class IntegrationTest {
                 .build();
     }
 
-    private Request.Builder setupRequestBuilder(
-            final boolean requestBodyBuffering, final boolean responseBodyBuffering) {
-        final HttpUrl url = new HttpUrl.Builder()
+    private Request.Builder setupRequestBuilder(boolean requestBodyBuffering, boolean responseBodyBuffering) {
+        HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")
                 .host("localhost")
                 .port(ZUUL_SERVER_PORT)
@@ -186,10 +184,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpGetHappyPath(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello world")));
@@ -206,10 +201,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpPostHappyPath(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
@@ -226,10 +218,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpPostWithInvalidHostHeader(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(post(anyUrl()).willReturn(ok().withBody("Thank you next")));
@@ -247,10 +236,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpGetFailsDueToOriginReadTimeout(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl())
@@ -269,10 +255,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpGetFailsDueToMalformedResponseChunk(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.MALFORMED_RESPONSE_CHUNK)));
@@ -281,7 +264,7 @@ class IntegrationTest {
                 .get()
                 .build();
         Response response = okHttp.newCall(request).execute();
-        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        int expectedStatusCode = responseBodyBuffering ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
@@ -289,10 +272,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void zuulWillRetryHttpGetWhenOriginReturns500(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(500)));
@@ -309,10 +289,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void zuulWillRetryHttpGetWhenOriginReturns503(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(503)));
@@ -329,10 +306,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpGetReturnsStatus500DueToConnectionResetByPeer(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)));
@@ -349,10 +323,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void httpGet_ServerChunkedDribbleDelay(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl())
@@ -365,7 +336,7 @@ class IntegrationTest {
                 .get()
                 .build();
         Response response = okHttp.newCall(request).execute();
-        final int expectedStatusCode = (responseBodyBuffering) ? 504 : 200;
+        int expectedStatusCode = responseBodyBuffering ? 504 : 200;
         assertThat(response.code()).isEqualTo(expectedStatusCode);
         response.close();
     }
@@ -373,10 +344,7 @@ class IntegrationTest {
     @ParameterizedTest
     @MethodSource("arguments")
     void blockRequestWithMultipleHostHeaders(
-            final String description,
-            final OkHttpClient okHttp,
-            final boolean requestBodyBuffering,
-            final boolean responseBodyBuffering)
+            String description, OkHttpClient okHttp, boolean requestBodyBuffering, boolean responseBodyBuffering)
             throws Exception {
 
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(200)));
@@ -395,7 +363,7 @@ class IntegrationTest {
     @Test
     @Disabled
     void deflateOnly() throws Exception {
-        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
 
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
@@ -424,7 +392,7 @@ class IntegrationTest {
 
     @Test
     void gzipOnly() throws Exception {
-        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
 
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
@@ -453,7 +421,7 @@ class IntegrationTest {
     @Test
     void brotliOnly() throws Throwable {
         Brotli.ensureAvailability();
-        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
 
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
@@ -483,7 +451,7 @@ class IntegrationTest {
 
     @Test
     void noCompression() throws Exception {
-        final String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
+        String expectedResponseBody = TestUtil.COMPRESSIBLE_CONTENT;
 
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
@@ -509,7 +477,7 @@ class IntegrationTest {
 
     @Test
     void jumboOriginResponseShouldBeChunked() throws Exception {
-        final String expectedResponseBody = TestUtil.JUMBO_RESPONSE_BODY;
+        String expectedResponseBody = TestUtil.JUMBO_RESPONSE_BODY;
 
         wireMock.register(get(anyUrl())
                 .willReturn(aResponse()
@@ -555,7 +523,7 @@ class IntegrationTest {
         }
     }
 
-    private static void verifyResponseHeaders(final Response response) {
+    private static void verifyResponseHeaders(Response response) {
         assertThat(response.header(HeaderNames.REQUEST_ID)).startsWith("RQ-");
     }
 }

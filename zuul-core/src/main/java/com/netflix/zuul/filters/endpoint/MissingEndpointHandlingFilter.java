@@ -43,9 +43,9 @@ public final class MissingEndpointHandlingFilter
 
     @Override
     public HttpResponseMessage apply(HttpRequestMessage request) {
-        final SessionContext zuulCtx = request.getContext();
+        SessionContext zuulCtx = request.getContext();
         zuulCtx.setErrorResponseSent(true);
-        final String errMesg = "Missing Endpoint filter, name = " + name;
+        String errMesg = "Missing Endpoint filter, name = " + name;
         zuulCtx.setError(new ZuulException(errMesg, true));
         LOG.error(errMesg);
         return new HttpResponseMessageImpl(zuulCtx, request, 500);
@@ -57,7 +57,7 @@ public final class MissingEndpointHandlingFilter
     }
 
     @Override
-    public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
+    public HttpResponseMessage getDefaultOutput(HttpRequestMessage input) {
         return HttpResponseMessageImpl.defaultErrorResponse(input);
     }
 }

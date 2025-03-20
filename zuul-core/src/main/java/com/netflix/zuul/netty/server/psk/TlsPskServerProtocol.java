@@ -16,14 +16,12 @@
 
 package com.netflix.zuul.netty.server.psk;
 
-import org.bouncycastle.tls.TlsServerProtocol;
-
-import javax.net.ssl.SSLPeerUnverifiedException;
+import java.security.Principal;
+import java.security.cert.Certificate;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSessionContext;
 import javax.security.cert.X509Certificate;
-import java.security.Principal;
-import java.security.cert.Certificate;
+import org.bouncycastle.tls.TlsServerProtocol;
 
 public class TlsPskServerProtocol extends TlsServerProtocol {
 
@@ -74,7 +72,7 @@ public class TlsPskServerProtocol extends TlsServerProtocol {
             }
 
             @Override
-            public Certificate[] getPeerCertificates() throws SSLPeerUnverifiedException {
+            public Certificate[] getPeerCertificates() {
                 return new Certificate[0];
             }
 
@@ -84,12 +82,12 @@ public class TlsPskServerProtocol extends TlsServerProtocol {
             }
 
             @Override
-            public X509Certificate[] getPeerCertificateChain() throws SSLPeerUnverifiedException {
+            public X509Certificate[] getPeerCertificateChain() {
                 return new X509Certificate[0];
             }
 
             @Override
-            public Principal getPeerPrincipal() throws SSLPeerUnverifiedException {
+            public Principal getPeerPrincipal() {
                 return null;
             }
 

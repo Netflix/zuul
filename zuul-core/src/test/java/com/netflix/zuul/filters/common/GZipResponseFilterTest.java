@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.filters.common;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,20 +71,19 @@ class GZipResponseFilterTest {
     void prepareResponseBody_NeedsGZipping() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
 
-        byte[] originBody = "blah".getBytes();
+        byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
         assertTrue(filter.shouldFilter(response));
 
-        final HttpResponseMessage result = filter.apply(response);
-        final HttpContent hc1 = filter.processContentChunk(
+        HttpResponseMessage result = filter.apply(response);
+        HttpContent hc1 = filter.processContentChunk(
                 response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
-        final HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
-        final byte[] body =
-                new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
-        final int hc1Len = hc1.content().readableBytes();
-        final int hc2Len = hc2.content().readableBytes();
+        HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
+        byte[] body = new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
+        int hc1Len = hc1.content().readableBytes();
+        int hc2Len = hc2.content().readableBytes();
         hc1.content().readBytes(body, 0, hc1Len);
         hc2.content().readBytes(body, hc1Len, hc2Len);
 
@@ -109,20 +109,19 @@ class GZipResponseFilterTest {
     void prepareResponseBody_NeedsGZipping_gzipDeflate() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
-        byte[] originBody = "blah".getBytes();
+        byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
         assertTrue(filter.shouldFilter(response));
 
-        final HttpResponseMessage result = filter.apply(response);
-        final HttpContent hc1 = filter.processContentChunk(
+        HttpResponseMessage result = filter.apply(response);
+        HttpContent hc1 = filter.processContentChunk(
                 response, new DefaultHttpContent(Unpooled.wrappedBuffer(originBody)).retain());
-        final HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
-        final byte[] body =
-                new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
-        final int hc1Len = hc1.content().readableBytes();
-        final int hc2Len = hc2.content().readableBytes();
+        HttpContent hc2 = filter.processContentChunk(response, new DefaultLastHttpContent());
+        byte[] body = new byte[hc1.content().readableBytes() + hc2.content().readableBytes()];
+        int hc1Len = hc1.content().readableBytes();
+        int hc2Len = hc2.content().readableBytes();
         hc1.content().readBytes(body, 0, hc1Len);
         hc2.content().readBytes(body, hc1Len, hc2Len);
 
@@ -148,7 +147,7 @@ class GZipResponseFilterTest {
     void prepareResponseBody_alreadyZipped() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
-        byte[] originBody = "blah".getBytes();
+        byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "gzip");
@@ -160,7 +159,7 @@ class GZipResponseFilterTest {
     void prepareResponseBody_alreadyDeflated() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip,deflate");
 
-        byte[] originBody = "blah".getBytes();
+        byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "deflate");
@@ -171,7 +170,7 @@ class GZipResponseFilterTest {
     @Test
     void prepareResponseBody_NeedsGZipping_butTooSmall() throws Exception {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
-        byte[] originBody = "blah".getBytes();
+        byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         response.setHasBody(true);
         assertFalse(filter.shouldFilter(response));

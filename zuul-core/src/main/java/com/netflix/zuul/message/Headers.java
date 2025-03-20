@@ -76,8 +76,7 @@ public final class Headers {
      * Get the first value found for this key even if there are multiple. If none, then
      * return {@code null}.
      */
-    @Nullable
-    public String getFirst(String headerName) {
+    @Nullable public String getFirst(String headerName) {
         String normalName = HeaderName.normalize(Objects.requireNonNull(headerName, "headerName"));
         return getFirstNormal(normalName);
     }
@@ -86,20 +85,9 @@ public final class Headers {
      * Get the first value found for this key even if there are multiple. If none, then
      * return {@code null}.
      */
-    @Nullable
-    public String getFirst(HeaderName headerName) {
+    @Nullable public String getFirst(HeaderName headerName) {
         String normalName = Objects.requireNonNull(headerName, "headerName").getNormalised();
         return getFirstNormal(normalName);
-    }
-
-    @Nullable
-    private String getFirstNormal(String name) {
-        for (int i = 0; i < size(); i++) {
-            if (name(i).equals(name)) {
-                return value(i);
-            }
-        }
-        return null;
     }
 
     /**
@@ -126,6 +114,15 @@ public final class Headers {
             return value;
         }
         return defaultValue;
+    }
+
+    @Nullable private String getFirstNormal(String name) {
+        for (int i = 0; i < size(); i++) {
+            if (name(i).equals(name)) {
+                return value(i);
+            }
+        }
+        return null;
     }
 
     /**
@@ -205,6 +202,18 @@ public final class Headers {
     }
 
     /**
+     * Replace any/all entries with this key, with this single entry and validate.
+     *
+     * If value is {@code null}, then not added, but any existing header of same name is removed.
+     *
+     * @throws ZuulException on invalid name or value
+     */
+    public void setAndValidate(HeaderName headerName, String value) {
+        String normalName = Objects.requireNonNull(headerName, "headerName").getNormalised();
+        setNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
+    }
+
+    /**
      * Replace any/all entries with this key, with this single entry if the key and entry are valid.
      *
      * If value is {@code null}, then not added, but any existing header of same name is removed.
@@ -228,18 +237,6 @@ public final class Headers {
             String normalName = HeaderName.normalize(headerName);
             setNormal(headerName, normalName, value);
         }
-    }
-
-    /**
-     * Replace any/all entries with this key, with this single entry and validate.
-     *
-     * If value is {@code null}, then not added, but any existing header of same name is removed.
-     *
-     * @throws ZuulException on invalid name or value
-     */
-    public void setAndValidate(HeaderName headerName, String value) {
-        String normalName = Objects.requireNonNull(headerName, "headerName").getNormalised();
-        setNormal(validateField(headerName.getName()), validateField(normalName), validateField(value));
     }
 
     private void setNormal(String originalName, String normalName, @Nullable String value) {
@@ -349,7 +346,7 @@ public final class Headers {
     public boolean setIfAbsentAndValid(HeaderName headerName, String value) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(headerName, "headerName");
-        if (isValid(headerName.getName()) && isValid((value))) {
+        if (isValid(headerName.getName()) && isValid(value)) {
             String normalName = headerName.getNormalised();
             return setIfAbsentNormal(headerName.getName(), normalName, value);
         }

@@ -155,14 +155,19 @@ public class ZuulPskServer extends AbstractTlsServer {
         byte[] clientPskIdentity = ((PskIdentity) clientPskIdentities.get(0)).getIdentity();
         byte[] psk;
         try {
-            this.ctx.channel().attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY).set(new ClientPSKIdentityInfo(clientPskIdentity));
-            psk = externalTlsPskProvider.provide(clientPskIdentity, this.context.getSecurityParametersHandshake().getClientRandom());
+            this.ctx
+                    .channel()
+                    .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
+                    .set(new ClientPSKIdentityInfo(clientPskIdentity));
+            psk = externalTlsPskProvider.provide(
+                    clientPskIdentity,
+                    this.context.getSecurityParametersHandshake().getClientRandom());
         } catch (PskCreationFailureException e) {
             throw switch (e.getTlsAlertMessage()) {
-                case unknown_psk_identity ->
-                        new TlsFatalAlert(AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
-                case decrypt_error ->
-                        new TlsFatalAlert(AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
+                case unknown_psk_identity -> new TlsFatalAlert(
+                        AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
+                case decrypt_error -> new TlsFatalAlert(
+                        AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
             };
         }
         TlsSecret pskTlsSecret = getCrypto().createSecret(psk);
@@ -220,8 +225,7 @@ public class ZuulPskServer extends AbstractTlsServer {
     }
 
     public String getApplicationProtocol() {
-        ProtocolName protocolName =
-                context.getSecurityParametersConnection().getApplicationProtocol();
+        ProtocolName protocolName = context.getSecurityParametersConnection().getApplicationProtocol();
         if (protocolName != null) {
             return protocolName.getUtf8Decoding();
         }
@@ -231,9 +235,9 @@ public class ZuulPskServer extends AbstractTlsServer {
     private static int getPRFAlgorithm13(int cipherSuite) {
         return switch (cipherSuite) {
             case CipherSuite.TLS_AES_128_CCM_SHA256,
-                 CipherSuite.TLS_AES_128_CCM_8_SHA256,
-                 CipherSuite.TLS_AES_128_GCM_SHA256,
-                 CipherSuite.TLS_CHACHA20_POLY1305_SHA256 -> PRFAlgorithm.tls13_hkdf_sha256;
+                    CipherSuite.TLS_AES_128_CCM_8_SHA256,
+                    CipherSuite.TLS_AES_128_GCM_SHA256,
+                    CipherSuite.TLS_CHACHA20_POLY1305_SHA256 -> PRFAlgorithm.tls13_hkdf_sha256;
             case CipherSuite.TLS_AES_256_GCM_SHA384 -> PRFAlgorithm.tls13_hkdf_sha384;
             case CipherSuite.TLS_SM4_CCM_SM3, CipherSuite.TLS_SM4_GCM_SM3 -> PRFAlgorithm.tls13_hkdf_sm3;
             default -> -1;

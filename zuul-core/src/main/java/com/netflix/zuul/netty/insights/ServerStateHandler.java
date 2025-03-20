@@ -89,7 +89,7 @@ public final class ServerStateHandler {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             if (evt instanceof IdleStateEvent) {
-                final CurrentPassport passport = CurrentPassport.fromChannel(ctx.channel());
+                CurrentPassport passport = CurrentPassport.fromChannel(ctx.channel());
                 if (passport != null) {
                     passport.add(PassportState.SERVER_CH_IDLE_TIMEOUT);
                 }

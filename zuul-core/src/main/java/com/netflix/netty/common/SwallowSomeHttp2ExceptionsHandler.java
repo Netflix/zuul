@@ -43,7 +43,7 @@ public class SwallowSomeHttp2ExceptionsHandler extends ChannelOutboundHandlerAda
         if (cause instanceof Http2Exception) {
             Http2Exception h2e = (Http2Exception) cause;
             if (h2e.error() == Http2Error.NO_ERROR
-                    && Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN.equals(h2e.shutdownHint())) {
+                    && h2e.shutdownHint().equals(Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN)) {
                 // This is the exception we threw ourselves to make the http2 codec gracefully close the connection. So
                 // just
                 // swallow it so that it doesn't propagate and get logged.

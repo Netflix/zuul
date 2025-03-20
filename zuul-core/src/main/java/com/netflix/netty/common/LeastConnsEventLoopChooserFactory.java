@@ -49,7 +49,7 @@ public class LeastConnsEventLoopChooserFactory implements EventExecutorChooserFa
         private final List<EventExecutor> executors;
         private final EventLoopGroupMetrics groupMetrics;
 
-        public LeastConnsEventExecutorChooser(EventExecutor[] executors, final EventLoopGroupMetrics groupMetrics) {
+        public LeastConnsEventExecutorChooser(EventExecutor[] executors, EventLoopGroupMetrics groupMetrics) {
             this.executors = Arrays.asList(executors);
             this.groupMetrics = groupMetrics;
         }

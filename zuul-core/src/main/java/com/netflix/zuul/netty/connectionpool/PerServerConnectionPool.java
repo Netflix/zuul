@@ -28,10 +28,6 @@ import io.netty.channel.EventLoop;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -41,6 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -136,7 +135,7 @@ public class PerServerConnectionPool implements IConnectionPool {
     }
 
     /** function to run when a connection is acquired before returning it to caller. */
-    protected void onAcquire(final PooledConnection conn, CurrentPassport passport) {
+    protected void onAcquire(PooledConnection conn, CurrentPassport passport) {
         passport.setOnChannel(conn.getChannel());
         removeIdleStateHandler(conn);
 
@@ -164,7 +163,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         Promise<PooledConnection> promise = eventLoop.newPromise();
 
         // Try getting a connection from the pool.
-        final PooledConnection conn = tryGettingFromConnectionPool(eventLoop);
+        PooledConnection conn = tryGettingFromConnectionPool(eventLoop);
         if (conn != null) {
             // There was a pooled connection available, so use this one.
             reusePooledConnection(passport, selectedHostAddr, conn, promise);
@@ -176,7 +175,11 @@ public class PerServerConnectionPool implements IConnectionPool {
         return promise;
     }
 
-    protected void reusePooledConnection(CurrentPassport passport, AtomicReference<? super InetAddress> selectedHostAddr, PooledConnection conn, Promise<PooledConnection> promise) {
+    protected void reusePooledConnection(
+            CurrentPassport passport,
+            AtomicReference<? super InetAddress> selectedHostAddr,
+            PooledConnection conn,
+            Promise<PooledConnection> promise) {
         conn.startRequestTimer();
         conn.incrementUsageCount();
         conn.getChannel().read();
@@ -249,7 +252,7 @@ public class PerServerConnectionPool implements IConnectionPool {
 
             selectedHostAddr.set(getSelectedHostString(serverAddr));
 
-            final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
+            ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
                 handleConnectCompletion(cf, promise, passport);
@@ -284,7 +287,8 @@ public class PerServerConnectionPool implements IConnectionPool {
                             + openAndOpeningConnectionCount,
                     OutboundErrorType.ORIGIN_SERVER_MAX_CONNS));
             LOG.warn(
-                    "Unable to create new connection because at MaxConnectionsPerHost! maxConnectionsPerHost={}, connectionsPerHost={}, host={}origin={}",
+                    "Unable to create new connection because at MaxConnectionsPerHost! maxConnectionsPerHost={},"
+                            + " connectionsPerHost={}, host={}origin={}",
                     maxConnectionsPerHost,
                     openAndOpeningConnectionCount,
                     server.getServerId(),
@@ -334,7 +338,7 @@ public class PerServerConnectionPool implements IConnectionPool {
 
     protected void createConnection(
             ChannelFuture cf, Promise<PooledConnection> callerPromise, CurrentPassport passport) {
-        final PooledConnection conn = pooledConnectionFactory.create(cf.channel());
+        PooledConnection conn = pooledConnectionFactory.create(cf.channel());
 
         conn.incrementUsageCount();
         conn.startRequestTimer();
@@ -444,8 +448,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         return connsInUse.get();
     }
 
-    @Nullable
-    protected InetAddress getSelectedHostString(SocketAddress addr) {
+    @Nullable protected InetAddress getSelectedHostString(SocketAddress addr) {
         if (addr instanceof InetSocketAddress) {
             return ((InetSocketAddress) addr).getAddress();
         } else {

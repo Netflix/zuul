@@ -56,7 +56,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     }
 
     @Override
-    public void filter(final T inMesg) {
+    public void filter(T inMesg) {
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filter")) {
             addPerfMarkTags(inMesg);
             runFilters(inMesg, initRunningFilterIndex(inMesg));
@@ -64,54 +64,21 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
     }
 
     @Override
-    protected void resume(final T inMesg) {
-        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".resume")) {
-            final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
-            runningFilterIdx.incrementAndGet();
-            runFilters(inMesg, runningFilterIdx);
-        }
-    }
-
-    private final void runFilters(final T mesg, final AtomicInteger runningFilterIdx) {
-        T inMesg = mesg;
-        String filterName = "-";
-        try {
-            Preconditions.checkNotNull(mesg, "Input message");
-            int i = runningFilterIdx.get();
-
-            while (i < filters.length) {
-                final ZuulFilter<T, T> filter = filters[i];
-                filterName = filter.filterName();
-                final T outMesg = filter(filter, inMesg);
-                if (outMesg == null) {
-                    return; // either async filter or waiting for the message body to be buffered
-                }
-                inMesg = outMesg;
-                i = runningFilterIdx.incrementAndGet();
-            }
-
-            // Filter chain has reached its end, pass result to the next stage
-            invokeNextStage(inMesg);
-        } catch (Exception ex) {
-            handleException(inMesg, filterName, ex);
-        }
-    }
-
-    @Override
     public void filter(T inMesg, HttpContent chunk) {
         String filterName = "-";
+
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(inMesg);
             Preconditions.checkNotNull(inMesg, "input message");
 
-            final AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
-            final int limit = runningFilterIdx.get();
+            AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
+            int limit = runningFilterIdx.get();
             for (int i = 0; i < limit; i++) {
-                final ZuulFilter<T, T> filter = filters[i];
+                ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
-                if ((!filter.isDisabled()) && (!shouldSkipFilter(inMesg, filter))) {
+                if (!filter.isDisabled() && !shouldSkipFilter(inMesg, filter)) {
                     ByteBufUtil.touch(chunk, "Filter runner processing chunk, filter: ", filterName);
-                    final HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
+                    HttpContent newChunk = filter.processContentChunk(inMesg, chunk);
                     if (newChunk == null) {
                         // Filter wants to break the chain and stop propagating this chunk any further
                         return;
@@ -161,6 +128,40 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             }
         } catch (Exception ex) {
             ReferenceCountUtil.safeRelease(chunk);
+            handleException(inMesg, filterName, ex);
+        }
+    }
+
+    @Override
+    protected void resume(T inMesg) {
+        try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".resume")) {
+            AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
+            runningFilterIdx.incrementAndGet();
+            runFilters(inMesg, runningFilterIdx);
+        }
+    }
+
+    private final void runFilters(T mesg, AtomicInteger runningFilterIdx) {
+        T inMesg = mesg;
+        String filterName = "-";
+        try {
+            Preconditions.checkNotNull(mesg, "Input message");
+            int i = runningFilterIdx.get();
+
+            while (i < filters.length) {
+                ZuulFilter<T, T> filter = filters[i];
+                filterName = filter.filterName();
+                T outMesg = filter(filter, inMesg);
+                if (outMesg == null) {
+                    return; // either async filter or waiting for the message body to be buffered
+                }
+                inMesg = outMesg;
+                i = runningFilterIdx.incrementAndGet();
+            }
+
+            // Filter chain has reached its end, pass result to the next stage
+            invokeNextStage(inMesg);
+        } catch (Exception ex) {
             handleException(inMesg, filterName, ex);
         }
     }

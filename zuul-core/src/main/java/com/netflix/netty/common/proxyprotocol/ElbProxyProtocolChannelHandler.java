@@ -59,7 +59,7 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
                     .addAfter(NAME, null, new HAProxyMessageChannelHandler())
                     .replace(this, null, new HAProxyMessageDecoder());
         } else {
-            final int port = ctx.channel()
+            int port = ctx.channel()
                     .attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT)
                     .get();
 

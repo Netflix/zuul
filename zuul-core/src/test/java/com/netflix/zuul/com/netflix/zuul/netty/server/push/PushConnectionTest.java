@@ -31,7 +31,7 @@ class PushConnectionTest {
 
     @Test
     void testOneMessagePerSecond() throws InterruptedException {
-        final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
+        PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
         for (int i = 0; i < 5; i++) {
             assertFalse(conn.isRateLimited());
             Thread.sleep(1000);
@@ -40,7 +40,7 @@ class PushConnectionTest {
 
     @Test
     void testThreeMessagesInSuccession() {
-        final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
+        PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());
@@ -48,7 +48,7 @@ class PushConnectionTest {
 
     @Test
     void testFourMessagesInSuccession() {
-        final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
+        PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());
@@ -57,7 +57,7 @@ class PushConnectionTest {
 
     @Test
     void testFirstThreeMessagesSuccess() {
-        final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
+        PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
         for (int i = 0; i < 10; i++) {
             if (i < 3) {
                 assertFalse(conn.isRateLimited());
@@ -69,7 +69,7 @@ class PushConnectionTest {
 
     @Test
     void testMessagesInBatches() throws InterruptedException {
-        final PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
+        PushConnection conn = new PushConnection(PushProtocol.WEBSOCKET, null);
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());
         assertFalse(conn.isRateLimited());

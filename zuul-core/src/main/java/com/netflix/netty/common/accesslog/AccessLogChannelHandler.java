@@ -137,7 +137,7 @@ public final class AccessLogChannelHandler {
     }
 
     private static class RequestState {
-        LocalDateTime dateTime = LocalDateTime.now();
+        final LocalDateTime dateTime = LocalDateTime.now();
         HttpRequest request;
         HttpResponse response;
         long startTimeNs;

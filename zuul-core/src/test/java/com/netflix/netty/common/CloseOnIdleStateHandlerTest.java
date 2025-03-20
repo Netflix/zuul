@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 
 class CloseOnIdleStateHandlerTest {
 
-    private Registry registry = new DefaultRegistry();
+    private final Registry registry = new DefaultRegistry();
     private Id counterId;
     private final String listener = "test-idle-state";
 
@@ -41,7 +41,7 @@ class CloseOnIdleStateHandlerTest {
 
     @Test
     void incrementCounterOnIdleStateEvent() {
-        final EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new CloseOnIdleStateHandler(registry, listener));
 
@@ -49,7 +49,7 @@ class CloseOnIdleStateHandlerTest {
                 .context(DummyChannelHandler.class)
                 .fireUserEventTriggered(IdleStateEvent.ALL_IDLE_STATE_EVENT);
 
-        final Counter idleTimeouts = (Counter) registry.get(counterId);
+        Counter idleTimeouts = (Counter) registry.get(counterId);
         assertEquals(1, idleTimeouts.count());
     }
 }

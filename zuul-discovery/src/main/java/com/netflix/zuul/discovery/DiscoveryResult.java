@@ -77,12 +77,12 @@ public final class DiscoveryResult implements ResolverResult {
      */
     @VisibleForTesting
     public static DiscoveryResult from(InstanceInfo instanceInfo, boolean useSecurePort) {
-        final DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, useSecurePort);
+        DiscoveryEnabledServer server = new DiscoveryEnabledServer(instanceInfo, useSecurePort);
         return new DiscoveryResult(server);
     }
 
     public Optional<String> getIPAddr() {
-        if (this == DiscoveryResult.EMPTY) {
+        if (this.equals(DiscoveryResult.EMPTY)) {
             return Optional.empty();
         }
         if (server.getInstanceInfo() != null) {
@@ -102,7 +102,7 @@ public final class DiscoveryResult implements ResolverResult {
 
     @Override
     public boolean isDiscoveryEnabled() {
-        return server instanceof DiscoveryEnabledServer;
+        return server != null;
     }
 
     @Override
@@ -119,7 +119,7 @@ public final class DiscoveryResult implements ResolverResult {
     }
 
     public String getTarget() {
-        final InstanceInfo instanceInfo = server.getInstanceInfo();
+        InstanceInfo instanceInfo = server.getInstanceInfo();
         if (server.getPort() == instanceInfo.getSecurePort()) {
             return instanceInfo.getSecureVipAddress();
         } else {
@@ -131,9 +131,8 @@ public final class DiscoveryResult implements ResolverResult {
         return new SimpleMetaInfo(server.getMetaInfo());
     }
 
-    @Nullable
-    public String getAvailabilityZone() {
-        final InstanceInfo instanceInfo = server.getInstanceInfo();
+    @Nullable public String getAvailabilityZone() {
+        InstanceInfo instanceInfo = server.getInstanceInfo();
         if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
             return ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
         }
@@ -238,7 +237,7 @@ public final class DiscoveryResult implements ResolverResult {
         if (!(obj instanceof DiscoveryResult)) {
             return false;
         }
-        final DiscoveryResult other = (DiscoveryResult) obj;
+        DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }
 }

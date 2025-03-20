@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
@@ -208,7 +210,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                 LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
 
-            final KeyStore trustStore = KeyStore.getInstance("JKS");
+            KeyStore trustStore = KeyStore.getInstance("JKS");
             trustStore.load(
                     new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
                     trustStorePassword.toCharArray());
@@ -228,7 +230,7 @@ public class BaseSslContextFactory implements SslContextFactory {
      *
      */
     protected String getTruststorePassword(byte[] trustStorePwdBytes) {
-        return new String(trustStorePwdBytes).trim();
+        return new String(trustStorePwdBytes, UTF_8).trim();
     }
 
     /**
