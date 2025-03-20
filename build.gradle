@@ -18,7 +18,7 @@ ext.githubProjectName = rootProject.name
 
 idea {
     project {
-        languageLevel = '17'
+        languageLevel = '21'
     }
 }
 
@@ -67,12 +67,12 @@ subprojects {
 
     group = "com.netflix.${githubProjectName}"
 
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(21)
         }
     }
 
