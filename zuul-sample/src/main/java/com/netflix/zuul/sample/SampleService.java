@@ -16,10 +16,9 @@
 
 package com.netflix.zuul.sample;
 
-import rx.Observable;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import rx.Observable;
 
 /**
  * Sample Service for demonstration in SampleServiceFilter.

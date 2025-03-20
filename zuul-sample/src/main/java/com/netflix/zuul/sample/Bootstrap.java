@@ -42,13 +42,12 @@ import com.netflix.zuul.sample.filters.inbound.Routes;
 import com.netflix.zuul.sample.filters.inbound.SampleServiceFilter;
 import com.netflix.zuul.sample.filters.outbound.ZuulResponseFilter;
 import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bootstrap

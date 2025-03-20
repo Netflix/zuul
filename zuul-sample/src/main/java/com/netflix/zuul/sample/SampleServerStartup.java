@@ -48,8 +48,6 @@ import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
