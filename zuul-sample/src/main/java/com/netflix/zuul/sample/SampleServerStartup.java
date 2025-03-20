@@ -48,8 +48,6 @@ import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -63,7 +61,6 @@ import java.util.Map;
  * Author: Arthur Gonigberg
  * Date: November 20, 2017
  */
-@Singleton
 public class SampleServerStartup extends BaseServerStartup {
 
     enum ServerType {
@@ -79,7 +76,6 @@ public class SampleServerStartup extends BaseServerStartup {
     private final PushConnectionRegistry pushConnectionRegistry;
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
-    @Inject
     public SampleServerStartup(
             ServerStatusManager serverStatusManager,
             FilterLoader filterLoader,
