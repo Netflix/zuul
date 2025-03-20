@@ -135,6 +135,7 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
+        maxParallelForks = Runtime.runtime.availableProcessors();
     }
 }
 
