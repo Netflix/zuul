@@ -27,8 +27,8 @@ public class OriginServerList extends ConfigurationBasedServerList {
     protected List<Server> derive(String value) {
         List<Server> list = Lists.newArrayList();
         if (!Strings.isNullOrEmpty(value)) {
-            for (String s : value.split(",")) {
-                String[] hostAndPort = s.split(":");
+            for (String s : value.split(",", -1)) {
+                String[] hostAndPort = s.split(":", -1);
                 String host = hostAndPort[0];
                 int port = Integer.parseInt(hostAndPort[1]);
                 list.add(TestUtil.makeDiscoveryEnabledServer("", host, port));

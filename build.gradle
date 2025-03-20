@@ -82,20 +82,21 @@ subprojects {
             errorprone "com.google.errorprone:error_prone_core:2.36.0"
         }
 
+        options.compilerArgs << "-Werror"
+
         options.errorprone {
-            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
+            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.OFF)
             option("NullAway:AnnotatedPackages", "com.netflix.zuul")
-            check("DeduplicateConstants", net.ltgt.gradle.errorprone.CheckSeverity.WARN)
             errorproneArgs.addAll(
-//                Uncomment to automatically apply fixes for a check.
-//                N.B: disables all other checks while enabled.
-//                "-XepPatchChecks:UnnecessaryParentheses",
-//                "-XepPatchLocation:IN_PLACE",
+                // Uncomment and remove -Werror javac flag to automatically apply fixes for a check.
+                // N.B: disables all other checks while enabled.
+                // "-XepPatchChecks:UnnecessaryParentheses",
+                // "-XepPatchLocation:IN_PLACE",
                 "-Xep:ClassCanBeStatic:OFF",
-                "-Xep:FieldCanBeStatic:OFF",
-                "-Xep:MethodCanBeStatic:OFF",
-                "-Xep:Var:OFF",
-                "-Xep:Varifier:OFF",
+                "-Xep:EmptyBlockTag:OFF",
+                "-Xep:FutureReturnValueIgnored:OFF",
+                "-Xep:InlineMeSuggester:OFF",
+                "-Xep:MissingSummary:OFF",
             )
         }
     }

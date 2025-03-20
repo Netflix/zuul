@@ -91,8 +91,8 @@ class IntegrationTest {
     private static Bootstrap bootstrap;
     private static final int ZUUL_SERVER_PORT = findAvailableTcpPort();
 
-    private static final Duration CLIENT_READ_TIMEOUT = Duration.ofMillis(3000);
-    private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofMillis(1000);
+    private static final Duration CLIENT_READ_TIMEOUT = Duration.ofSeconds(3);
+    private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofSeconds(1);
     private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
     private String pathSegment;
 

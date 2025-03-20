@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests for {@link Server}.
  */
+@SuppressWarnings("AddressSelection")
 class ServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
@@ -118,6 +119,7 @@ class ServerTest {
         }
     }
 
+    @SuppressWarnings("EmptyCatch")
     private static void checkConnection(int port) {
         Socket sock = null;
         try {

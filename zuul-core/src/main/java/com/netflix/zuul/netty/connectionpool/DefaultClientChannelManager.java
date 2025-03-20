@@ -61,8 +61,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultClientChannelManager implements ClientChannelManager {
     public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
-    private static final Throwable SHUTTING_DOWN_ERR =
-            new IllegalStateException("ConnectionPool is shutting down now.");
     private final Resolver<DiscoveryResult> dynamicServerResolver;
     private final ConnectionPoolConfig connPoolConfig;
     private final IClientConfig clientConfig;
@@ -286,7 +284,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         if (shuttingDown) {
             Promise<PooledConnection> promise = eventLoop.newPromise();
-            promise.setFailure(SHUTTING_DOWN_ERR);
+            promise.setFailure(new IllegalStateException("ConnectionPool is shutting down now."));
             return promise;
         }
 

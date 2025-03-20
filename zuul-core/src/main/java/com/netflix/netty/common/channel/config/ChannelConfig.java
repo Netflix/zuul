@@ -17,6 +17,7 @@
 package com.netflix.netty.common.channel.config;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * User: michaels@netflix.com
@@ -30,8 +31,8 @@ public class ChannelConfig implements Cloneable {
         parameters = new HashMap<>();
     }
 
-    public ChannelConfig(HashMap<ChannelConfigKey, ChannelConfigValue> parameters) {
-        this.parameters = (HashMap<ChannelConfigKey, ChannelConfigValue>) parameters.clone();
+    public ChannelConfig(Map<ChannelConfigKey, ChannelConfigValue> parameters) {
+        this.parameters = new HashMap<ChannelConfigKey, ChannelConfigValue>(parameters);
     }
 
     public void add(ChannelConfigValue param) {

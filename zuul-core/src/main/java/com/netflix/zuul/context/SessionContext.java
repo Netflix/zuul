@@ -112,6 +112,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         }
     }
 
+    @SuppressWarnings("UnnecessaryStringBuilder")
     public SessionContext() {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A counter for connection stats.  Not thread-safe.
  */
+@SuppressWarnings("ErroneousBitwiseExpression")
 public final class ConnCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConnCounter.class);

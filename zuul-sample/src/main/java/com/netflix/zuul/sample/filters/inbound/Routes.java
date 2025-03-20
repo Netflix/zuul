@@ -44,7 +44,6 @@ public class Routes extends HttpInboundSyncFilter {
     public HttpRequestMessage apply(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         String path = request.getPath();
-        String host = request.getOriginalHost();
 
         // Route healthchecks to the healthcheck endpoint.
         if (path.equalsIgnoreCase("/healthcheck")) {

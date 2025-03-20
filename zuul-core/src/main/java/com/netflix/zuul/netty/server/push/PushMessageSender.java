@@ -94,7 +94,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
             logPushAttempt();
 
             HttpMethod method = request.method();
-            if ((!Objects.equals(method, HttpMethod.POST)) && (!Objects.equals(method, HttpMethod.GET))) {
+            if (!Objects.equals(method, HttpMethod.POST) && !Objects.equals(method, HttpMethod.GET)) {
                 sendHttpResponse(ctx, request, HttpResponseStatus.METHOD_NOT_ALLOWED, null);
                 return;
             }

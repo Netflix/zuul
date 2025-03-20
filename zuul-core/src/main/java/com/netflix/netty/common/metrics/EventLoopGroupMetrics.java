@@ -66,7 +66,7 @@ public class EventLoopGroupMetrics {
     private static String nameForCurrentEventLoop() {
         // We're relying on the knowledge that we name the eventloop threads consistently.
         String threadName = Thread.currentThread().getName();
-        String parts[] = threadName.split("-ClientToZuulWorker-");
+        String parts[] = threadName.split("-ClientToZuulWorker-", -1);
         if (parts.length == 2) {
             return parts[1];
         }
