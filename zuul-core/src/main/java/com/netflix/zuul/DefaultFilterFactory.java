@@ -30,7 +30,7 @@ public class DefaultFilterFactory implements FilterFactory {
      * @return A new instance of ZuulFilter
      */
     @Override
-    public ZuulFilter newInstance(Class clazz) throws InstantiationException, IllegalAccessException {
-        return (ZuulFilter) clazz.newInstance();
+    public ZuulFilter<?, ?> newInstance(Class<?> clazz) throws InstantiationException, IllegalAccessException {
+        return (ZuulFilter<?, ?>) clazz.newInstance();
     }
 }
