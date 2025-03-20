@@ -173,8 +173,8 @@ class DebugTest {
 
     @Test
     void testNoCMEWhenComparingContexts() {
-         SessionContext context = new SessionContext();
-         SessionContext copy = new SessionContext();
+        SessionContext context = new SessionContext();
+        SessionContext copy = new SessionContext();
 
         context.set("foo", "bar");
 

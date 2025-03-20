@@ -37,9 +37,12 @@ public class Http2ConnectionErrorHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if(cause instanceof Http2Exception http2Exception) {
+        if (cause instanceof Http2Exception http2Exception) {
             LOG.debug("Received Http/2 connection error", cause);
-            SpectatorUtils.newCounter("server.connection.http2.connection.exception", http2Exception.error().name()).increment();
+            SpectatorUtils.newCounter(
+                            "server.connection.http2.connection.exception",
+                            http2Exception.error().name())
+                    .increment();
         } else {
             ctx.fireExceptionCaught(cause);
         }

@@ -59,7 +59,8 @@ public abstract class HttpLifecycleChannelHandler {
             // This could potentially happen if a bad client sends a 2nd request on the same connection
             // without waiting for the response from the first. And we don't support HTTP Pipelining.
             logger.debug(
-                    "Received a http request on connection where we already have a request being processed. Closing the connection now. channel = {}",
+                    "Received a http request on connection where we already have a request being processed. Closing"
+                            + " the connection now. channel = {}",
                     channel.id().asLongText());
             channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
             channel.close();

@@ -38,7 +38,7 @@ public class SamplePushMessageSender extends PushMessageSender {
 
     @Override
     protected PushUserAuth getPushUserAuth(FullHttpRequest request) {
-         String cid = request.headers().get("X-CUSTOMER_ID");
+        String cid = request.headers().get("X-CUSTOMER_ID");
         if (Strings.isNullOrEmpty(cid)) {
             return new SamplePushUserAuth(HttpResponseStatus.UNAUTHORIZED.code());
         }

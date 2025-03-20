@@ -22,14 +22,13 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
-
-import javax.annotation.Nullable;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import javax.annotation.Nullable;
 
 /**
  * Stores the source IP address as an attribute of the channel. This has the advantage of allowing us to overwrite it if
@@ -127,8 +126,7 @@ public final class SourceAddressChannelHandler extends ChannelInboundHandlerAdap
      * Returns the String form of a socket address, or {@code null} if there isn't one.
      */
     @VisibleForTesting
-    @Nullable
-    static String getHostAddress(InetSocketAddress socketAddress) {
+    @Nullable static String getHostAddress(InetSocketAddress socketAddress) {
         InetAddress address = socketAddress.getAddress();
         if (address instanceof Inet6Address) {
             // Strip the scope from the address since some other classes choke on it.

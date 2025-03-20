@@ -51,7 +51,10 @@ public class TlsPskHandler extends ChannelDuplexHandler {
 
     private ZuulPskServer tlsPskServer;
 
-    public TlsPskHandler(Registry registry, ExternalTlsPskProvider externalTlsPskProvider, Set<ProtocolName> supportedApplicationProtocols) {
+    public TlsPskHandler(
+            Registry registry,
+            ExternalTlsPskProvider externalTlsPskProvider,
+            Set<ProtocolName> supportedApplicationProtocols) {
         super();
         this.registry = registry;
         this.externalTlsPskProvider = externalTlsPskProvider;
@@ -63,7 +66,8 @@ public class TlsPskHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (!(msg instanceof ByteBuf byteBufMsg)) {
             ReferenceCountUtil.safeRelease(msg);
-            promise.setFailure(new IllegalStateException("Failed to write message on the channel. Message is not a ByteBuf"));
+            promise.setFailure(
+                    new IllegalStateException("Failed to write message on the channel. Message is not a ByteBuf"));
             return;
         }
         byte[] appDataBytes = TlsPskUtils.getAppDataBytesAndRelease(byteBufMsg);
@@ -84,8 +88,12 @@ public class TlsPskHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        tlsPskServer =
-                new ZuulPskServer(new JcaTlsCryptoProvider().create(secureRandom), registry, externalTlsPskProvider, ctx, supportedApplicationProtocols);
+        tlsPskServer = new ZuulPskServer(
+                new JcaTlsCryptoProvider().create(secureRandom),
+                registry,
+                externalTlsPskProvider,
+                ctx,
+                supportedApplicationProtocols);
         tlsPskServerProtocol.accept(tlsPskServer);
         super.channelRegistered(ctx);
     }
@@ -102,5 +110,4 @@ public class TlsPskHandler extends ChannelDuplexHandler {
     public SSLSession getSession() {
         return tlsPskServerProtocol != null ? tlsPskServerProtocol.getSSLSession() : null;
     }
-
 }

@@ -48,7 +48,7 @@ public class HttpUtils {
      * @return <code>String</code> IP address
      */
     public static String getClientIP(HttpRequestInfo request) {
-         String xForwardedFor = request.getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_FOR);
+        String xForwardedFor = request.getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_FOR);
         String clientIP;
         if (xForwardedFor == null) {
             clientIP = request.getClientIp();
@@ -115,12 +115,12 @@ public class HttpUtils {
     }
 
     public static boolean hasNonZeroContentLengthHeader(ZuulMessage msg) {
-         Integer contentLengthVal = getContentLengthIfPresent(msg);
+        Integer contentLengthVal = getContentLengthIfPresent(msg);
         return (contentLengthVal != null) && (contentLengthVal > 0);
     }
 
     public static Integer getContentLengthIfPresent(ZuulMessage msg) {
-         String contentLengthValue =
+        String contentLengthValue =
                 msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.CONTENT_LENGTH);
         if (!Strings.isNullOrEmpty(contentLengthValue)) {
             try {
@@ -133,7 +133,7 @@ public class HttpUtils {
     }
 
     public static Integer getBodySizeIfKnown(ZuulMessage msg) {
-         Integer bodySize = getContentLengthIfPresent(msg);
+        Integer bodySize = getContentLengthIfPresent(msg);
         if (bodySize != null) {
             return bodySize;
         }

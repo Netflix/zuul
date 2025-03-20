@@ -54,8 +54,8 @@ class HttpServerLifecycleChannelHandlerTest {
     @Test
     void completionEventReasonIsUpdatedOnPipelineReject() {
 
-         EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
-         AssertReasonHandler reasonHandler = new AssertReasonHandler();
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
+        AssertReasonHandler reasonHandler = new AssertReasonHandler();
         channel.pipeline().addLast(reasonHandler);
 
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
@@ -70,8 +70,8 @@ class HttpServerLifecycleChannelHandlerTest {
     @Test
     void completionEventReasonIsCloseByDefault() {
 
-         EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
-         AssertReasonHandler reasonHandler = new AssertReasonHandler();
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpServerLifecycleOutboundChannelHandler());
+        AssertReasonHandler reasonHandler = new AssertReasonHandler();
         channel.pipeline().addLast(reasonHandler);
 
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);

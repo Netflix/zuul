@@ -52,12 +52,12 @@ class ClientResponseWriterTest {
 
     @Test
     void exemptClientTimeoutResponseBeforeRequestRead() {
-         ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
-         EmbeddedChannel channel = new EmbeddedChannel();
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel();
 
-         SessionContext context = new SessionContext();
+        SessionContext context = new SessionContext();
         StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.FAILURE_CLIENT_TIMEOUT);
-         HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
+        HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isTrue();
@@ -65,12 +65,12 @@ class ClientResponseWriterTest {
 
     @Test
     void flagResponseBeforeRequestRead() {
-         ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
-         EmbeddedChannel channel = new EmbeddedChannel();
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel();
 
-         SessionContext context = new SessionContext();
+        SessionContext context = new SessionContext();
         StatusCategoryUtils.setStatusCategory(context, ZuulStatusCategory.FAILURE_LOCAL);
-         HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
+        HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isFalse();
@@ -79,8 +79,8 @@ class ClientResponseWriterTest {
     @Test
     void allowExtensionForPremptingResponse() {
 
-         ZuulStatusCategory customStatus = ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
-         ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler()) {
+        ZuulStatusCategory customStatus = ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE;
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler()) {
             @Override
             protected boolean shouldAllowPreemptiveResponse(Channel channel) {
                 StatusCategory status =
@@ -89,10 +89,10 @@ class ClientResponseWriterTest {
             }
         };
 
-         EmbeddedChannel channel = new EmbeddedChannel();
-         SessionContext context = new SessionContext();
+        EmbeddedChannel channel = new EmbeddedChannel();
+        SessionContext context = new SessionContext();
         StatusCategoryUtils.setStatusCategory(context, customStatus);
-         HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
+        HttpRequestMessage request = new HttpRequestBuilder(context).withDefaults();
         channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
 
         assertThat(responseWriter.shouldAllowPreemptiveResponse(channel)).isTrue();

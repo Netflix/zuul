@@ -16,9 +16,9 @@
 
 package com.netflix.zuul.sample;
 
+import jakarta.inject.Singleton;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import jakarta.inject.Singleton;
 import rx.Observable;
 
 /**

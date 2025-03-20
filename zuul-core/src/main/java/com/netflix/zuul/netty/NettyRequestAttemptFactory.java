@@ -33,7 +33,7 @@ public class NettyRequestAttemptFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyRequestAttemptFactory.class);
 
-    public ErrorType mapNettyToOutboundErrorType( Throwable t) {
+    public ErrorType mapNettyToOutboundErrorType(Throwable t) {
         if (t instanceof ReadTimeoutException) {
             return OutboundErrorType.READ_TIMEOUT;
         }
@@ -51,7 +51,7 @@ public class NettyRequestAttemptFactory {
         }
 
         if (t instanceof Errors.NativeIoException
-                && ((Errors.NativeIoException)t).expectedErr() == Errors.ERRNO_ECONNRESET_NEGATIVE) {
+                && ((Errors.NativeIoException) t).expectedErr() == Errors.ERRNO_ECONNRESET_NEGATIVE) {
             // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are
             // overloaded.
             LOG.warn("ERRNO_ECONNRESET_NEGATIVE mapped to RESET_CONNECTION", t);
@@ -62,7 +62,7 @@ public class NettyRequestAttemptFactory {
             return OutboundErrorType.RESET_CONNECTION;
         }
 
-         Throwable cause = t.getCause();
+        Throwable cause = t.getCause();
         if (cause instanceof IllegalStateException && cause.getMessage().contains("server")) {
             LOG.warn("IllegalStateException mapped to NO_AVAILABLE_SERVERS", cause);
             return OutboundErrorType.NO_AVAILABLE_SERVERS;
@@ -71,14 +71,14 @@ public class NettyRequestAttemptFactory {
         return OutboundErrorType.OTHER;
     }
 
-    public OutboundException mapNettyToOutboundException( Throwable t,  SessionContext context) {
+    public OutboundException mapNettyToOutboundException(Throwable t, SessionContext context) {
         if (t instanceof OutboundException) {
             return (OutboundException) t;
         }
 
         // Map this throwable to zuul's OutboundException.
-         ErrorType errorType = mapNettyToOutboundErrorType(t);
-         RequestAttempts attempts = RequestAttempts.getFromSessionContext(context);
+        ErrorType errorType = mapNettyToOutboundErrorType(t);
+        RequestAttempts attempts = RequestAttempts.getFromSessionContext(context);
         if (errorType == OutboundErrorType.OTHER) {
             return new OutboundException(errorType, attempts, t);
         }
