@@ -153,6 +153,15 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
 
         return value;
     }
+    
+    /**
+     * Returns the value in the context, or default value from the
+     * typed key default value supplier if absent.
+     */
+    @NonNull
+    public <T> T getOrDefault(@NonNull Key<T> key) {
+        return Objects.requireNonNull(this.get(key), "expected non-null value or defaultValue supplier");
+    }
 
     /**
      * Returns the value in the context, or {@code defaultValue} if absent.
