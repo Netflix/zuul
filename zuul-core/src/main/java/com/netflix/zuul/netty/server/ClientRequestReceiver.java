@@ -70,6 +70,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -361,7 +362,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         HttpRequestMessage request = new HttpRequestMessageImpl(
                 context,
                 protocol,
-                nativeRequest.method().asciiName().toString().toLowerCase(),
+                nativeRequest.method().asciiName().toString().toLowerCase(Locale.ROOT),
                 path,
                 copyQueryParams(nativeRequest),
                 copyHeaders(nativeRequest),

@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.stats.status;
 
+import com.google.errorprone.annotations.Immutable;
+
 /**
  * Zuul Status Category
  *
@@ -38,6 +40,7 @@ package com.netflix.zuul.stats.status;
  *    CLIENT
  *    LOCAL
  */
+@Immutable
 public enum ZuulStatusCategory implements StatusCategory {
     SUCCESS(ZuulStatusCategoryGroup.SUCCESS, 1, "Successfully proxied"),
     SUCCESS_NOT_FOUND(

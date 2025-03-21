@@ -23,6 +23,7 @@ import io.netty.util.ReferenceCounted;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import rx.Observable;
 
 /**
@@ -157,7 +158,7 @@ public class Debug {
                             "%s:: %s LINE: %s %s %s",
                             prefix,
                             arrow,
-                            request.getMethod().toUpperCase(),
+                            request.getMethod().toUpperCase(Locale.ROOT),
                             request.getPathAndQuery(),
                             request.getProtocol()));
             obs = Debug.writeDebugMessage(context, request, prefix, arrow);

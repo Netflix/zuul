@@ -133,7 +133,7 @@ public class PooledConnection {
 
     public long stopRequestTimer() {
         long responseTime = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - reqStartTime);
-        server.noteResponseTime(responseTime);
+        server.noteResponseTime((double) responseTime);
         return responseTime;
     }
 

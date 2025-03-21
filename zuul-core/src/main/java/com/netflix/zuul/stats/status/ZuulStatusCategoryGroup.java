@@ -16,12 +16,15 @@
 
 package com.netflix.zuul.stats.status;
 
+import com.google.errorprone.annotations.Immutable;
+
 /**
  * Zuul Status Category Group
  *
  * Author: Arthur Gonigberg
  * Date: December 20, 2017
  */
+@Immutable
 public enum ZuulStatusCategoryGroup implements StatusCategoryGroup {
     SUCCESS(1),
     FAILURE(2);

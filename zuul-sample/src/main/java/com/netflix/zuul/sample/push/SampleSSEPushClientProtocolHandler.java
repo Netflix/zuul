@@ -43,7 +43,8 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
     public void channelRead(ChannelHandlerContext ctx, Object mesg) throws Exception {
         if (mesg instanceof FullHttpRequest) {
             FullHttpRequest req = (FullHttpRequest) mesg;
-            if ((req.method() == HttpMethod.GET) && PushProtocol.SSE.getPath().equals(req.uri())) {
+            if (req.method().equals(HttpMethod.GET)
+                    && PushProtocol.SSE.getPath().equals(req.uri())) {
                 ctx.pipeline().fireUserEventTriggered(PushProtocol.SSE.getHandshakeCompleteEvent());
 
                 DefaultHttpResponse resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
@@ -62,8 +63,8 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
                         if (pipeline.get(HttpContentCompressor.class) != null) {
                             pipeline.remove(HttpContentCompressor.class);
                         }
-                        String reconnetInterval = "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n";
-                        ctx.writeAndFlush(reconnetInterval);
+                        String reconnectInterval = "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n";
+                        ctx.writeAndFlush(reconnectInterval);
                     }
                 });
             }

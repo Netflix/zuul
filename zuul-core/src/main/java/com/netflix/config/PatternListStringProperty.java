@@ -38,7 +38,7 @@ public class PatternListStringProperty extends DerivedStringProperty<List<Patter
     protected List<Pattern> derive(String value) {
         ArrayList<Pattern> ptns = new ArrayList<>();
         if (value != null) {
-            for (String ptnTxt : value.split(",")) {
+            for (String ptnTxt : value.split(",", -1)) {
                 try {
                     ptns.add(Pattern.compile(ptnTxt.trim()));
                 } catch (Exception e) {

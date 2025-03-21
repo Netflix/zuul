@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -68,7 +69,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     static {
         RE_STRIP = new ArrayList<>();
-        for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::")) {
+        for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::", -1)) {
             RE_STRIP.add(Pattern.compile(ptn));
         }
     }
@@ -619,7 +620,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
         // fallback to using a colon split
         // valid IPv6 addresses would have been handled already so any colon is safely assumed a port separator
-        String[] components = host.split(":");
+        String[] components = host.split(":", -1);
         if (components.length > 2) {
             // handle case with unbracketed IPv6 addresses
             return new Pair<>(null, -1);
@@ -660,7 +661,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
         try {
             StringBuilder uri = new StringBuilder(100);
 
-            String scheme = getOriginalScheme().toLowerCase();
+            String scheme = getOriginalScheme().toLowerCase(Locale.ROOT);
             uri.append(scheme);
             uri.append(URI_SCHEME_SEP).append(getOriginalHost());
 

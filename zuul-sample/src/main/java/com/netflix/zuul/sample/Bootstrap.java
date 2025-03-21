@@ -42,6 +42,7 @@ import com.netflix.zuul.sample.filters.inbound.Routes;
 import com.netflix.zuul.sample.filters.inbound.SampleServiceFilter;
 import com.netflix.zuul.sample.filters.outbound.ZuulResponseFilter;
 import com.netflix.zuul.sample.push.SamplePushMessageSenderInitializer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -149,7 +150,9 @@ public class Bootstrap {
         }
 
         @Override
-        public ZuulFilter<?, ?> newInstance(Class<?> clazz) throws InstantiationException, IllegalAccessException {
+        public ZuulFilter<?, ?> newInstance(Class<?> clazz)
+                throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+                        InvocationTargetException, NoSuchMethodException {
             if (clazz.equals(SampleServiceFilter.class)) {
                 return new SampleServiceFilter(new SampleService());
             } else {

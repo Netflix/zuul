@@ -35,6 +35,7 @@ import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
+import java.util.Locale;
 
 /**
  * General-purpose filter for gzipping/ungzipping response bodies if requested/needed.  This should be run as late as
@@ -121,7 +122,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
             if (charsetIndex > 0) {
                 ct = ct.substring(0, charsetIndex);
             }
-            return GZIPPABLE_CONTENT_TYPES.get().contains(ct.toLowerCase());
+            return GZIPPABLE_CONTENT_TYPES.get().contains(ct.toLowerCase(Locale.ROOT));
         }
         return false;
     }

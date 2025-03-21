@@ -121,9 +121,8 @@ public class StatsManager {
             }
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
-        } finally {
-            return String.format("host_%s", host);
         }
+        return String.format("host_%s", host);
     }
 
     private static final String protocolKey(String proto) {
@@ -178,12 +177,12 @@ public class StatsManager {
 
     @VisibleForTesting
     static final boolean isIPv6(String ip) {
-        return ip.split(":").length == 8;
+        return ip.split(":", -1).length == 8;
     }
 
     @VisibleForTesting
     static final String extractClientIpFromXForwardedFor(String xForwardedFor) {
-        return xForwardedFor.split(",")[0];
+        return xForwardedFor.split(",", -1)[0];
     }
 
     /**

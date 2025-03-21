@@ -142,7 +142,7 @@ class DefaultClientChannelManagerTest {
     }
 
     @Test
-    void updateServerRefOnValidDiscoveryResult() {
+    void updateServerRefOnValidDiscoveryResult() throws InterruptedException {
         OriginName originName = OriginName.fromVip("vip", "test");
         DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
 
@@ -162,7 +162,7 @@ class DefaultClientChannelManagerTest {
         AtomicReference<DiscoveryResult> serverRef = new AtomicReference<>();
 
         // TODO(argha-c) capture and assert on the promise once we have a dummy with ServerStats initialized
-        clientChannelManager.acquire(
+        var unusedFuture = clientChannelManager.acquire(
                 new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
         Truth.assertThat(serverRef.get()).isSameInstanceAs(discoveryResult);

@@ -95,10 +95,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -141,7 +143,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* Individual retry related state */
     private volatile PooledConnection originConn;
     private volatile OriginResponseReceiver originResponseReceiver;
-    private volatile int concurrentReqCount;
+    private AtomicInteger concurrentReqCount;
     private volatile boolean proxiedRequestWithoutBuffering;
     protected int attemptNum;
     protected RequestAttempt currentRequestAttempt;
@@ -191,6 +193,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         passport = CurrentPassport.fromSessionContext(context);
         chosenServer = new AtomicReference<>(DiscoveryResult.EMPTY);
         chosenHostAddr = new AtomicReference<>();
+        concurrentReqCount = new AtomicInteger();
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -280,9 +283,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             originResponseReceiver = null;
         }
 
-        if (concurrentReqCount > 0) {
+        if (concurrentReqCount.get() > 0) {
             origin.recordProxyRequestEnd();
-            concurrentReqCount--;
+            concurrentReqCount.incrementAndGet();
         }
 
         Channel origCh = null;
@@ -302,9 +305,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     public void finish(boolean error) {
         Channel origCh = unlinkFromOrigin();
 
-        while (concurrentReqCount > 0) {
+        while (concurrentReqCount.get() > 0) {
             origin.recordProxyRequestEnd();
-            concurrentReqCount--;
+            concurrentReqCount.decrementAndGet();
         }
 
         if (currentRequestStat != null) {
@@ -484,7 +487,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             currentRequestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
-            concurrentReqCount++;
+            concurrentReqCount.incrementAndGet();
 
             // update RPS trackers
             updateOriginRpsTrackers(origin, attemptNum);
@@ -536,7 +539,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             methodBinding.bind(() -> {
                 DiscoveryResult server = chosenServer.get();
 
-                /** TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
+                /* TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
                  * @see DiscoveryResult.EMPTY indicates that the loadbalancer found no available servers.
                  */
                 if (!Objects.equals(server, DiscoveryResult.EMPTY)) {
@@ -789,7 +792,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 || (err == OutboundErrorType.CONNECT_ERROR)
                 || (err == OutboundErrorType.READ_TIMEOUT
                         && IDEMPOTENT_HTTP_METHODS.contains(
-                                zuulRequest.getMethod().toUpperCase()))) {
+                                zuulRequest.getMethod().toUpperCase(Locale.ROOT)))) {
             return isRequestReplayable();
         }
         return false;
@@ -1003,7 +1006,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
             // Retry if this is an idempotent http method AND status code was retriable for idempotent methods.
             else if (RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS.get().contains(status)
-                    && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase())) {
+                    && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase(Locale.ROOT))) {
                 return true;
             }
         }

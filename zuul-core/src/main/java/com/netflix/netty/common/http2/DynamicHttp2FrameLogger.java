@@ -16,6 +16,8 @@
 
 package com.netflix.netty.common.http2;
 
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
 import com.netflix.config.DynamicStringSetProperty;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -248,7 +250,9 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
         return ByteBufUtil.hexDump(buf, buf.readerIndex(), length) + "...";
     }
 
-    private void log(Direction direction, String frame, ChannelHandlerContext ctx, String format, Object... args) {
+    @FormatMethod
+    private void log(
+            Direction direction, String frame, ChannelHandlerContext ctx, @FormatString String format, Object... args) {
         if (shouldLogFrame(frame)) {
             StringBuilder b = new StringBuilder(200)
                     .append(direction.name())
