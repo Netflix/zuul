@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server.psk;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Bytes;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Timer;
@@ -26,6 +25,7 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
@@ -160,7 +160,7 @@ public class ZuulPskServer extends AbstractTlsServer {
             this.ctx
                     .channel()
                     .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
-                    .set(new ClientPSKIdentityInfo(ImmutableList.copyOf(Bytes.asList(clientPskIdentity))));
+                    .set(new ClientPSKIdentityInfo(List.copyOf(Bytes.asList(clientPskIdentity))));
             psk = externalTlsPskProvider.provide(
                     clientPskIdentity,
                     this.context.getSecurityParametersHandshake().getClientRandom());

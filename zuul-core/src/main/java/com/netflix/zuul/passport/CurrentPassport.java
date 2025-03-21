@@ -487,59 +487,8 @@ class CountingCurrentPassport extends CurrentPassport {
             case OUT_RESP_LAST_CONTENT_SENT:
                 OUT_RESP_LAST_CONTENT_SENT_CNT.increment();
                 break;
-            case FILTERS_INBOUND_BUF_END:
-            case FILTERS_INBOUND_BUF_START:
-            case FILTERS_INBOUND_END:
-            case FILTERS_INBOUND_START:
-            case FILTERS_OUTBOUND_BUF_END:
-            case FILTERS_OUTBOUND_BUF_START:
-            case FILTERS_OUTBOUND_END:
-            case FILTERS_OUTBOUND_START:
-            case IN_REQ_CANCELLED:
-            case IN_REQ_CONTENT_RECEIVED:
-            case IN_REQ_READ_TIMEOUT:
-            case IN_REQ_REJECTED:
-            case IN_RESP_CONTENT_RECEIVED:
-            case MISC_IO_START:
-            case MISC_IO_STOP:
-            case ORIGIN_CH_ACTIVE:
-            case ORIGIN_CH_CLOSE:
-            case ORIGIN_CH_CONNECTED:
-            case ORIGIN_CH_CONNECTING:
-            case ORIGIN_CH_DISCONNECT:
-            case ORIGIN_CH_EXCEPTION:
-            case ORIGIN_CH_IDLE_TIMEOUT:
-            case ORIGIN_CH_INACTIVE:
-            case ORIGIN_CH_IO_EX:
-            case ORIGIN_CH_POOL_RETURNED:
-            case ORIGIN_CH_READ_TIMEOUT:
-            case ORIGIN_CONN_ACQUIRE_END:
-            case ORIGIN_CONN_ACQUIRE_FAILED:
-            case ORIGIN_CONN_ACQUIRE_START:
-            case ORIGIN_RETRY_START:
-            case OUT_REQ_CONTENT_ERROR_SENDING:
-            case OUT_REQ_CONTENT_SENDING:
-            case OUT_REQ_CONTENT_SENT:
-            case OUT_REQ_HEADERS_ERROR_SENDING:
-            case OUT_REQ_HEADERS_SENDING:
-            case OUT_REQ_LAST_CONTENT_ERROR_SENDING:
-            case OUT_REQ_LAST_CONTENT_SENDING:
-            case OUT_RESP_CONTENT_ERROR_SENDING:
-            case OUT_RESP_CONTENT_SENDING:
-            case OUT_RESP_CONTENT_SENT:
-            case OUT_RESP_HEADERS_ERROR_SENDING:
-            case OUT_RESP_HEADERS_SENDING:
-            case OUT_RESP_LAST_CONTENT_ERROR_SENDING:
-            case OUT_RESP_LAST_CONTENT_SENDING:
-            case SERVER_CH_ACTIVE:
-            case SERVER_CH_CLOSE:
-            case SERVER_CH_DISCONNECT:
-            case SERVER_CH_EXCEPTION:
-            case SERVER_CH_IDLE_TIMEOUT:
-            case SERVER_CH_INACTIVE:
-            case SERVER_CH_REJECTING:
-            case SERVER_CH_SSL_HANDSHAKE_COMPLETE:
-            case SERVER_CH_THROTTLING:
+            default:
+                logger.debug("Not incrementing any state counter for state {}", state);
                 break;
         }
     }

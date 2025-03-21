@@ -15,6 +15,6 @@
  */
 package com.netflix.zuul.netty.server.psk;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-public record ClientPSKIdentityInfo(ImmutableList<Byte> clientPSKIdentity) {}
+public record ClientPSKIdentityInfo(List<Byte> clientPSKIdentity) {}
