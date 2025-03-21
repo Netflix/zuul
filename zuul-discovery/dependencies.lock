@@ -218,7 +218,10 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.3.0-jre",
+            "transitive": [
+                "com.netflix.servo:servo-core"
+            ]
         },
         "com.google.guava:listenablefuture": {
             "locked": "9999.0-empty-to-avoid-conflict-with-guava",
@@ -253,10 +256,14 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.13.2"
+        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -335,7 +342,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "xmlpull:xmlpull": {
@@ -613,7 +621,10 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "33.3.0-jre"
+            "locked": "33.3.0-jre",
+            "transitive": [
+                "com.netflix.servo:servo-core"
+            ]
         },
         "com.google.guava:listenablefuture": {
             "locked": "9999.0-empty-to-avoid-conflict-with-guava",
@@ -648,10 +659,14 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.13.2"
+        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -772,7 +787,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "xmlpull:xmlpull": {
@@ -848,9 +864,7 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.ribbon:ribbon-eureka"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -890,8 +904,7 @@
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -962,22 +975,17 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.13.2",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.servo:servo-internal": {
-            "locked": "0.10.1",
-            "transitive": [
-                "com.netflix.servo:servo-core"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -1259,7 +1267,6 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api"
             ]
         },
@@ -1330,9 +1337,7 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.ribbon:ribbon-eureka"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -1370,8 +1375,7 @@
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -1439,22 +1443,17 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.13.2",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.servo:servo-internal": {
-            "locked": "0.10.1",
-            "transitive": [
-                "com.netflix.servo:servo-core"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -1602,7 +1601,6 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api"
             ]
         },
@@ -1841,7 +1839,8 @@
         "com.google.guava:guava": {
             "locked": "33.3.0-jre",
             "transitive": [
-                "com.google.truth:truth"
+                "com.google.truth:truth",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -1880,10 +1879,14 @@
         "com.netflix.ribbon:ribbon-loadbalancer": {
             "locked": "2.4.4"
         },
+        "com.netflix.servo:servo-core": {
+            "locked": "0.13.2"
+        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -2063,7 +2066,8 @@
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "xmlpull:xmlpull": {
@@ -2139,9 +2143,7 @@
                 "com.netflix.netflix-commons:netflix-statistics",
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
-                "com.netflix.ribbon:ribbon-eureka",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.ribbon:ribbon-eureka"
             ]
         },
         "com.google.code.findbugs:jsr305": {
@@ -2181,8 +2183,7 @@
                 "com.netflix.ribbon:ribbon-archaius",
                 "com.netflix.ribbon:ribbon-core",
                 "com.netflix.ribbon:ribbon-loadbalancer",
-                "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal"
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.google.guava:listenablefuture": {
@@ -2253,22 +2254,17 @@
             ]
         },
         "com.netflix.servo:servo-core": {
-            "locked": "0.10.1",
+            "locked": "0.13.2",
             "transitive": [
                 "com.netflix.netflix-commons:netflix-eventbus",
                 "com.netflix.ribbon:ribbon-loadbalancer"
             ]
         },
-        "com.netflix.servo:servo-internal": {
-            "locked": "0.10.1",
-            "transitive": [
-                "com.netflix.servo:servo-core"
-            ]
-        },
         "com.netflix.spectator:spectator-api": {
             "locked": "1.7.3",
             "transitive": [
-                "com.netflix.eureka:eureka-client"
+                "com.netflix.eureka:eureka-client",
+                "com.netflix.servo:servo-core"
             ]
         },
         "com.thoughtworks.xstream:xstream": {
@@ -2513,7 +2509,6 @@
                 "com.netflix.ribbon:ribbon-eureka",
                 "com.netflix.ribbon:ribbon-loadbalancer",
                 "com.netflix.servo:servo-core",
-                "com.netflix.servo:servo-internal",
                 "com.netflix.spectator:spectator-api"
             ]
         },
