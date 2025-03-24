@@ -62,9 +62,7 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
-            HttpRequest req = (HttpRequest) msg;
-
+        if (msg instanceof HttpRequest req) {
             switch (allowWhen) {
                 case NEVER:
                     stripXFFHeaders(req);

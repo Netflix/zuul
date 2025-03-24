@@ -91,8 +91,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Channel channel = ctx.channel();
 
-        if (msg instanceof HttpResponseMessage) {
-            HttpResponseMessage resp = (HttpResponseMessage) msg;
+        if (msg instanceof HttpResponseMessage resp) {
+            
 
             if (skipProcessing(resp)) {
                 return;
@@ -137,8 +137,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
                 resp.disposeBufferedBody();
                 channel.close();
             }
-        } else if (msg instanceof HttpContent) {
-            HttpContent chunk = (HttpContent) msg;
+        } else if (msg instanceof HttpContent chunk) {
+            
             if (channel.isActive()) {
                 channel.writeAndFlush(chunk);
             } else {
@@ -286,8 +286,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         int status = 500;
 
-        if (cause instanceof ZuulException) {
-            ZuulException ze = (ZuulException) cause;
+        if (cause instanceof ZuulException ze) {
+            
             status = ze.getStatusCode();
             logger.error(
                     "Exception caught in ClientResponseWriter for channel {} ",

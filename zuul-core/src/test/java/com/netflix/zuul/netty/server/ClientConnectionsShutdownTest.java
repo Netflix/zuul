@@ -125,7 +125,7 @@ class ClientConnectionsShutdownTest {
             ArgumentCaptor<EurekaEventListener> captor = ArgumentCaptor.forClass(EurekaEventListener.class);
             shutdown = spy(new ClientConnectionsShutdown(channels, executor, eureka));
             verify(eureka).registerEventListener(captor.capture());
-            doReturn(executor.newPromise()).when(shutdown).gracefullyShutdownClientChannels();
+            doReturn(Mockito.mock(Promise.class)).when(shutdown).gracefullyShutdownClientChannels();
 
             EurekaEventListener listener = captor.getValue();
 

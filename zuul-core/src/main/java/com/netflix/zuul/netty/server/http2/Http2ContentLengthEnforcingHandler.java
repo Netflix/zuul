@@ -52,8 +52,8 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
-            HttpRequest req = (HttpRequest) msg;
+        if (msg instanceof HttpRequest req) {
+            
             List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
             if (lengthHeaders.size() > 1) {
                 ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));

@@ -33,7 +33,7 @@ public final class VipUtils {
     @Deprecated
     public static String extractAppNameFromVIP(String vipAddress) {
         String vipPrefix = getVIPPrefix(vipAddress);
-        return vipPrefix.split("-")[0];
+        return vipPrefix.split("-", -1)[0];
     }
 
     /**

@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
      4) verify that the server stops
 
 */
+@SuppressWarnings("AddressSelection")
 @Disabled
 class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
@@ -146,6 +147,7 @@ class IoUringTest {
         }
     }
 
+    @SuppressWarnings("EmptyCatch")
     private static void checkConnection(int port) {
         LOGGER.info("checkConnection port {}", port);
         Socket sock = null;

@@ -25,6 +25,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class HttpUtils {
             return null;
         }
         xForwardedFor = xForwardedFor.trim();
-        String tokenized[] = xForwardedFor.split(",");
+        String tokenized[] = xForwardedFor.split(",", -1);
         if (tokenized.length == 0) {
             return null;
         } else {
@@ -147,7 +148,7 @@ public class HttpUtils {
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
         if (!Strings.isNullOrEmpty(teValue)) {
-            isChunked = teValue.toLowerCase().equals("chunked");
+            isChunked = teValue.toLowerCase(Locale.ROOT).equals("chunked");
         }
         return isChunked;
     }

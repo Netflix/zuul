@@ -82,6 +82,7 @@ public class TlsPskServerProtocol extends TlsServerProtocol {
             }
 
             @Override
+            @SuppressWarnings("removal")
             public X509Certificate[] getPeerCertificateChain() {
                 return new X509Certificate[0];
             }
