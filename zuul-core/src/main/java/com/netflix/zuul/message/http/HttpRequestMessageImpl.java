@@ -582,8 +582,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     @Override
     public Optional<Integer> getClientDestinationPort() {
-        if (clientRemoteAddress instanceof InetSocketAddress) {
-            InetSocketAddress inetSocketAddress = (InetSocketAddress) this.clientRemoteAddress;
+        if (clientRemoteAddress instanceof InetSocketAddress inetSocketAddress) {
             return Optional.of(inetSocketAddress.getPort());
         } else {
             return Optional.empty();

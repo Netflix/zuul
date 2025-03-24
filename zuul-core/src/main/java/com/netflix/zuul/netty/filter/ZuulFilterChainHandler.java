@@ -86,8 +86,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public final void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof CompleteEvent) {
-            CompleteEvent completeEvent = (CompleteEvent) evt;
+        if (evt instanceof CompleteEvent completeEvent) {
+            
             fireEndpointFinish(
                     completeEvent.getReason() != HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE, ctx);
         } else if (evt instanceof HttpRequestReadTimeoutEvent) {
@@ -132,8 +132,8 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
         finishResponseFilters(ctx);
 
         ZuulFilter endpoint = ZuulEndPointRunner.getEndpoint(zuulRequest);
-        if (endpoint instanceof ProxyEndpoint) {
-            ProxyEndpoint edgeProxyEndpoint = (ProxyEndpoint) endpoint;
+        if (endpoint instanceof ProxyEndpoint edgeProxyEndpoint) {
+            
             edgeProxyEndpoint.finish(error);
         }
         zuulRequest = null;

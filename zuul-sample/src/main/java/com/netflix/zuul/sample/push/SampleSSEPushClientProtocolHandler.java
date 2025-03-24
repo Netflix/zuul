@@ -41,8 +41,8 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object mesg) throws Exception {
-        if (mesg instanceof FullHttpRequest) {
-            FullHttpRequest req = (FullHttpRequest) mesg;
+        if (mesg instanceof FullHttpRequest req) {
+            
             if (req.method().equals(HttpMethod.GET)
                     && PushProtocol.SSE.getPath().equals(req.uri())) {
                 ctx.pipeline().fireUserEventTriggered(PushProtocol.SSE.getHandshakeCompleteEvent());

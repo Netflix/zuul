@@ -49,7 +49,7 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 @SupportedAnnotationTypes(FilterProcessor.FILTER_TYPE)
-@SupportedSourceVersion(SourceVersion.RELEASE_17)
+@SupportedSourceVersion(SourceVersion.RELEASE_21)
 public final class FilterProcessor extends AbstractProcessor {
 
     static final String FILTER_TYPE = "com.netflix.zuul.Filter";

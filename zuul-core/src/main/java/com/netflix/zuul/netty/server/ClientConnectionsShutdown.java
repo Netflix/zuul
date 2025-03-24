@@ -73,8 +73,8 @@ public class ClientConnectionsShutdown {
 
     private void initDiscoveryListener() {
         this.discoveryClient.registerEventListener(event -> {
-            if (event instanceof StatusChangeEvent) {
-                StatusChangeEvent sce = (StatusChangeEvent) event;
+            if (event instanceof StatusChangeEvent sce) {
+                
 
                 LOG.info("Received {}", sce);
 

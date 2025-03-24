@@ -44,12 +44,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
                 .attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE)
                 .get();
 
-        if (msg instanceof HttpResponse) {
-            HttpResponse response = (HttpResponse) msg;
-            if (closePromise != null) {
-                // Add header to tell client that they should close this connection.
-                response.headers().set(HttpHeaderNames.CONNECTION, "close");
-            }
+        if (msg instanceof HttpResponse response && closePromise != null) {
+            // Add header to tell client that they should close this connection.
+            response.headers().set(HttpHeaderNames.CONNECTION, "close");
         }
 
         super.write(ctx, msg, promise);

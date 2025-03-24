@@ -60,8 +60,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if (msg instanceof HAProxyMessage) {
-            HAProxyMessage hapm = (HAProxyMessage) msg;
+        if (msg instanceof HAProxyMessage hapm) {
             Channel channel = ctx.channel();
             channel.attr(ATTR_HAPROXY_MESSAGE).set(hapm);
             ctx.channel().closeFuture().addListener((ChannelFutureListener) future -> hapm.release());

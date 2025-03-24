@@ -91,8 +91,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 ReferenceCountUtil.safeRelease(msg);
             }
             ctx.channel().read();
-        } else if (msg instanceof HttpContent) {
-            HttpContent chunk = (HttpContent) msg;
+        } else if (msg instanceof HttpContent chunk) {
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
             } else {

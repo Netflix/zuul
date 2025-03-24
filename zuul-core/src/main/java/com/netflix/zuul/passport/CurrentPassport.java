@@ -42,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CurrentPassport {
-    private static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);
+    protected static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);
 
     private static final CachedDynamicBooleanProperty COUNT_STATES =
             new CachedDynamicBooleanProperty("zuul.passport.count.enabled", false);

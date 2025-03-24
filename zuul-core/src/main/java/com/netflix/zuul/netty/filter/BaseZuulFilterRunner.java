@@ -177,8 +177,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         if (inMesg instanceof HttpRequestInfo) {
             req = (HttpRequestInfo) inMesg;
         }
-        if (inMesg instanceof HttpResponseMessage) {
-            HttpResponseMessage msg = (HttpResponseMessage) inMesg;
+        if (inMesg instanceof HttpResponseMessage msg) {
+            
             req = msg.getOutboundRequest();
             PerfMark.attachTag("statuscode", msg.getStatus());
         }

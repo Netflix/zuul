@@ -32,8 +32,8 @@ public class Http2StreamErrorHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        if (cause instanceof Http2Exception.StreamException) {
-            Http2Exception.StreamException streamEx = (Http2Exception.StreamException) cause;
+        if (cause instanceof Http2Exception.StreamException streamEx) {
+            
             ctx.writeAndFlush(new DefaultHttp2ResetFrame(streamEx.error()));
         } else if (cause instanceof DecoderException) {
             ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
