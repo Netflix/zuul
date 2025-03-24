@@ -34,6 +34,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
     public final void sendHttpResponse(HttpRequest req, ChannelHandlerContext ctx, HttpResponseStatus status) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
-        boolean closeConn = ((!Objects.equals(status, HttpResponseStatus.OK)) || !HttpUtil.isKeepAlive(req));
+        boolean closeConn = (!Objects.equals(status, HttpResponseStatus.OK) || !HttpUtil.isKeepAlive(req));
         if (closeConn) {
             resp.headers().add(HttpHeaderNames.CONNECTION, "Close");
         }
@@ -103,7 +104,7 @@ public abstract class PushAuthHandler extends SimpleChannelInboundHandler<FullHt
 
     protected boolean isInvalidOrigin(FullHttpRequest req) {
         String origin = req.headers().get(HttpHeaderNames.ORIGIN);
-        if (origin == null || !origin.toLowerCase().endsWith(originDomain)) {
+        if (origin == null || !origin.toLowerCase(Locale.ROOT).endsWith(originDomain)) {
             logger.error("Invalid Origin header {} in WebSocket upgrade request", origin);
             return true;
         }

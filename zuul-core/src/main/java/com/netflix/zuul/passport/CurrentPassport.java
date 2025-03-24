@@ -26,12 +26,13 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -41,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CurrentPassport {
-    private static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);
+    protected static final Logger logger = LoggerFactory.getLogger(CurrentPassport.class);
 
     private static final CachedDynamicBooleanProperty COUNT_STATES =
             new CachedDynamicBooleanProperty("zuul.passport.count.enabled", false);
@@ -59,7 +60,7 @@ public class CurrentPassport {
             new CachedDynamicBooleanProperty("zuul.passport.state.content.enabled", false);
 
     private final Ticker ticker;
-    private final LinkedList<PassportItem> history;
+    private final ArrayDeque<PassportItem> history;
     private final HashSet<PassportState> statesAdded;
     private final long creationTimeSinceEpochMs;
 
@@ -106,7 +107,7 @@ public class CurrentPassport {
     @VisibleForTesting
     public CurrentPassport(Ticker ticker) {
         this.ticker = ticker;
-        this.history = new LinkedList<>();
+        this.history = new ArrayDeque<>();
         this.statesAdded = new HashSet<>();
         this.creationTimeSinceEpochMs = System.currentTimeMillis();
     }
@@ -157,7 +158,7 @@ public class CurrentPassport {
     }
 
     @VisibleForTesting
-    public LinkedList<PassportItem> getHistory() {
+    public Deque<PassportItem> getHistory() {
         try (Unlocker ignored = lock()) {
             // best effort, but doesn't actually protect anything
             return history;
@@ -391,7 +392,7 @@ public class CurrentPassport {
         Pattern ptnState = Pattern.compile("^\\+(\\d+)=(.+)$");
         Matcher m = ptn.matcher(text);
         if (m.matches()) {
-            String[] stateStrs = m.group(1).split(", ");
+            String[] stateStrs = m.group(1).split(", ", -1);
             MockTicker ticker = new MockTicker();
             passport = new CurrentPassport(ticker);
             try (Unlocker ignored = passport.lock()) {
@@ -485,6 +486,9 @@ class CountingCurrentPassport extends CurrentPassport {
                 break;
             case OUT_RESP_LAST_CONTENT_SENT:
                 OUT_RESP_LAST_CONTENT_SENT_CNT.increment();
+                break;
+            default:
+                logger.debug("Not incrementing any state counter for state {}", state);
                 break;
         }
     }

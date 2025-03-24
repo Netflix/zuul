@@ -15,4 +15,6 @@
  */
 package com.netflix.zuul.netty.server.psk;
 
-public record ClientPSKIdentityInfo(byte[] clientPSKIdentity) {}
+import java.util.List;
+
+public record ClientPSKIdentityInfo(List<Byte> clientPSKIdentity) {}

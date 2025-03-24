@@ -27,6 +27,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.AttributeKey;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +138,7 @@ public final class AccessLogChannelHandler {
     }
 
     private static class RequestState {
-        final LocalDateTime dateTime = LocalDateTime.now();
+        final LocalDateTime dateTime = LocalDateTime.now(ZoneId.systemDefault());
         HttpRequest request;
         HttpResponse response;
         long startTimeNs;

@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class AccessLogPublisher {
         String dateTimeStr = dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : "-----T-:-:-";
         String remoteIpStr = (remoteIp != null && !remoteIp.isEmpty()) ? remoteIp : "-";
         String port = localPort != null ? localPort.toString() : "-";
-        String method = request != null ? request.method().toString().toUpperCase() : "-";
+        String method = request != null ? request.method().toString().toUpperCase(Locale.ROOT) : "-";
         String uri = request != null ? request.uri() : "-";
         if (uri.length() > URI_LENGTH_LIMIT.get()) {
             uri = uri.substring(0, URI_LENGTH_LIMIT.get());

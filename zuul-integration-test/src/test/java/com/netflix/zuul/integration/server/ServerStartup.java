@@ -110,7 +110,7 @@ public class ServerStartup extends BaseServerStartup {
         SocketAddress sockAddr;
         String metricId;
         {
-            @Deprecated int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
+            int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
             sockAddr = new SocketAddressProperty("zuul.server.addr.main", "=" + port).getValue();
             if (sockAddr instanceof InetSocketAddress) {
                 metricId = String.valueOf(((InetSocketAddress) sockAddr).getPort());

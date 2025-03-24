@@ -113,7 +113,7 @@ public class HttpQueryParams implements Cloneable {
     }
 
     public List<String> get(String name) {
-        return delegate.get(name.toLowerCase());
+        return delegate.get(name.toLowerCase(Locale.ROOT));
     }
 
     public boolean contains(String name) {

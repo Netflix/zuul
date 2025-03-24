@@ -19,6 +19,8 @@ package com.netflix.zuul.netty.server;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
 import com.netflix.zuul.exception.ZuulException;
@@ -47,6 +49,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.io.IOException;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,8 +91,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 ReferenceCountUtil.safeRelease(msg);
             }
             ctx.channel().read();
-        } else if (msg instanceof HttpContent) {
-            HttpContent chunk = (HttpContent) msg;
+        } else if (msg instanceof HttpContent chunk) {
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
             } else {
@@ -166,7 +168,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     protected void postCompleteHook(ChannelHandlerContext ctx, Object evt) throws Exception {}
 
     private HttpRequest buildOriginHttpRequest(HttpRequestMessage zuulRequest) {
-        String method = zuulRequest.getMethod().toUpperCase();
+        String method = zuulRequest.getMethod().toUpperCase(Locale.ROOT);
         String uri = pathAndQueryString(zuulRequest);
 
         customRequestProcessing(zuulRequest);

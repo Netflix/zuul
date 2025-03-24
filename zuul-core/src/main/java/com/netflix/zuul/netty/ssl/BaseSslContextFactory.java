@@ -78,7 +78,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     @Override
     public SslContextBuilder createBuilderForServer() {
         try {
-            ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
+            List<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
 
             LOG.debug("Using SslProvider of type {}", sslProvider.name());
@@ -183,7 +183,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         return SupportedCipherSuiteFilter.INSTANCE;
     }
 
-    protected ArrayList<X509Certificate> getTrustedX509Certificates()
+    protected List<X509Certificate> getTrustedX509Certificates()
             throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
 

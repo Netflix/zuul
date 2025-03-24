@@ -67,7 +67,7 @@ class ZuulMessageImplTest {
         String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
@@ -80,7 +80,7 @@ class ZuulMessageImplTest {
         String body = new String(msg.getBody(), UTF_8);
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
@@ -93,7 +93,7 @@ class ZuulMessageImplTest {
         String body = msg.getBodyAsText();
         assertTrue(msg.hasBody());
         assertTrue(msg.hasCompleteBody());
-        assertEquals("Hello World!", body);
+        assertEquals(TEXT1, body);
         assertEquals(0, msg.getHeaders().getAll("Content-Length").size());
     }
 
@@ -208,7 +208,7 @@ class ZuulMessageImplTest {
 
         // ensure body returns entire chunk content irregardless of reader index movement above
         assertEquals(12, msg.getBodyLength());
-        assertEquals("Hello World!", new String(msg.getBody(), StandardCharsets.UTF_8));
+        assertEquals(TEXT1, new String(msg.getBody(), StandardCharsets.UTF_8));
 
         // buffer more content and ensure body returns entire chunk content
         msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(" Bye".getBytes(UTF_8))));

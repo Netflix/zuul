@@ -104,14 +104,14 @@ class SessionContextTest {
     @Test
     void getOrDefaultUsesDefaultValueSupplier() {
         SessionContext context = new SessionContext();
-        Key<String> key = SessionContext.newKey("foo", () -> "bar");
+        SessionContext.Key<String> key = SessionContext.newKey("foo", () -> "bar");
         assertEquals("bar", context.getOrDefault(key));
     }
 
     @Test
     void getOrDefaultUsesDefaultValueSupplierFailsWithout() {
         SessionContext context = new SessionContext();
-        Key<String> key = SessionContext.newKey("foo");
+        SessionContext.Key<String> key = SessionContext.newKey("foo");
         assertThrows(NullPointerException.class, () -> context.getOrDefault(key));
     }
 
