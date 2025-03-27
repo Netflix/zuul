@@ -72,6 +72,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
@@ -247,7 +248,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up
                         // state. But
                         // thats ok, so don't log in that case.
-                        if (zuulRequest.getProtocol().equals("HTTP/2")) {
+                        if (Objects.equals(zuulRequest.getProtocol(), "HTTP/2")) {
                             LOG.debug(
                                     "Client {} request UUID {} to {} completed with reason = {}, {}",
                                     clientRequest.method(),

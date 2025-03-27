@@ -25,6 +25,7 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import java.util.Objects;
 
 /**
  * This is an abstract filter that will route requests that match the patternMatches() method to a debug Eureka "VIP" or
@@ -68,8 +69,8 @@ public class SurgicalDebugFilter extends HttpInboundSyncFilter {
         }
 
         String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
-        // dont' apply filter if it was already applied
-        boolean notAlreadyFiltered = !isSurgicalFilterRequest.equals("true");
+        // don't apply filter if it was already applied
+        boolean notAlreadyFiltered = !Objects.equals(isSurgicalFilterRequest, "true");
 
         return notAlreadyFiltered && patternMatches(request);
     }
