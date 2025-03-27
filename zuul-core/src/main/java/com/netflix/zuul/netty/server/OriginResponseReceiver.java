@@ -16,9 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.zuul.exception.OutboundErrorType;
@@ -50,6 +47,7 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,7 +113,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             CompleteReason reason = completeEvent.getReason();
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
                 if (reason == CompleteReason.CLOSE
-                        && ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get().equals(Boolean.TRUE)) {
+                        && Objects.equals(ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get(), Boolean.TRUE)) {
                     logger.warn(
                             "Origin request completed with close, after getting a SslCloseCompletionEvent event: {}",
                             ChannelUtils.channelInfoForLogging(ctx.channel()));
