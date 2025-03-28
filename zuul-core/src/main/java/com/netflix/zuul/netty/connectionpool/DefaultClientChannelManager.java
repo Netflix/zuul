@@ -61,17 +61,19 @@ import org.slf4j.LoggerFactory;
 public class DefaultClientChannelManager implements ClientChannelManager {
     public static final String IDLE_STATE_HANDLER_NAME = "idleStateHandler";
     private static final Logger LOG = LoggerFactory.getLogger(DefaultClientChannelManager.class);
-    private final Resolver<DiscoveryResult> dynamicServerResolver;
-    private final ConnectionPoolConfig connPoolConfig;
-    private final IClientConfig clientConfig;
-    private final Registry registry;
-    private final OriginName originName;
 
-    private final ConcurrentHashMap<DiscoveryResult, IConnectionPool> perServerPools;
-    private final ConnectionPoolMetrics metrics;
+    protected final Resolver<DiscoveryResult> dynamicServerResolver;
+    protected final ConnectionPoolConfig connPoolConfig;
+    protected final IClientConfig clientConfig;
+    protected final Registry registry;
+    protected final OriginName originName;
+    protected final ConcurrentHashMap<DiscoveryResult, IConnectionPool> perServerPools;
+    protected final ConnectionPoolMetrics metrics;
+
+    protected NettyClientConnectionFactory clientConnFactory;
+    protected OriginChannelInitializer channelInitializer;
+
     private volatile boolean shuttingDown = false;
-    private NettyClientConnectionFactory clientConnFactory;
-    private OriginChannelInitializer channelInitializer;
 
     public DefaultClientChannelManager(OriginName originName, IClientConfig clientConfig, Registry registry) {
         this(originName, clientConfig, new DynamicServerResolver(clientConfig), registry);
@@ -88,7 +90,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
 
         this.connPoolConfig = new ConnectionPoolConfigImpl(originName, this.clientConfig);
 
-        metrics = ConnectionPoolMetrics.create(originName, registry);
+        this.metrics = ConnectionPoolMetrics.create(originName, registry);
     }
 
     @Override
