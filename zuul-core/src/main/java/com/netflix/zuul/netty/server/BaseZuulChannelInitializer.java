@@ -39,6 +39,7 @@ import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Timer;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -137,6 +138,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final SessionContextDecorator sessionContextDecorator;
     protected final RequestCompleteHandler requestCompleteHandler;
     protected final Counter httpRequestHeadersReadTimeoutCounter;
+    protected final Timer httpRequestHeadersReadTimer;
     protected final Counter httpRequestReadTimeoutCounter;
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
@@ -214,6 +216,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         this.sessionContextDecorator = channelDependencies.get(ZuulDependencyKeys.sessionCtxDecorator);
         this.requestCompleteHandler = channelDependencies.get(ZuulDependencyKeys.requestCompleteHandler);
         this.httpRequestHeadersReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter);
+        this.httpRequestHeadersReadTimer = channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimer);
         this.httpRequestReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestReadTimeoutCounter);
 
         this.filterLoader = channelDependencies.get(ZuulDependencyKeys.filterLoader);
@@ -262,7 +265,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
         pipeline.addLast(new HttpHeadersTimeoutHandler.InboundHandler(
             HTTP_REQUEST_HEADERS_READ_TIMEOUT_ENABLED::get,
             HTTP_REQUEST_HEADERS_READ_TIMEOUT::get,
-            httpRequestHeadersReadTimeoutCounter
+            httpRequestHeadersReadTimeoutCounter,
+            httpRequestHeadersReadTimer
         ));
         pipeline.addLast(new PassportStateHttpServerHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpServerHandler.OutboundHandler());
