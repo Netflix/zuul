@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.spectator.api.Counter;
-import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -46,11 +46,11 @@ public class HttpHeadersTimeoutHandler {
             private final IntSupplier httpHeadersReadTimeoutSupplier;
 
             private final Counter httpHeadersReadTimeoutCounter;
-            private final Timer httpHeadersReadTimer;
+            private final PercentileTimer httpHeadersReadTimer;
 
             private boolean closed = false;
 
-            public InboundHandler(BooleanSupplier httpHeadersReadTimeoutEnabledSupplier, IntSupplier httpHeadersReadTimeoutSupplier, Counter httpHeadersReadTimeoutCounter, Timer httpHeadersReadTimer) {
+            public InboundHandler(BooleanSupplier httpHeadersReadTimeoutEnabledSupplier, IntSupplier httpHeadersReadTimeoutSupplier, Counter httpHeadersReadTimeoutCounter, PercentileTimer httpHeadersReadTimer) {
                 this.httpHeadersReadTimeoutEnabledSupplier = httpHeadersReadTimeoutEnabledSupplier;
                 this.httpHeadersReadTimeoutSupplier = httpHeadersReadTimeoutSupplier;
                 this.httpHeadersReadTimeoutCounter = httpHeadersReadTimeoutCounter;

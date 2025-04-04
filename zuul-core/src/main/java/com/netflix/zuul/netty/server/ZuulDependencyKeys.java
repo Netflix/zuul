@@ -24,7 +24,7 @@ import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -51,7 +51,7 @@ public class ZuulDependencyKeys {
             new ChannelConfigKey<>("requestCompleteHandler");
     public static final ChannelConfigKey<Counter> httpRequestHeadersReadTimeoutCounter =
             new ChannelConfigKey<>("httpRequestHeadersReadTimeoutCounter");
-public static final ChannelConfigKey<Timer> httpRequestHeadersReadTimer =
+public static final ChannelConfigKey<PercentileTimer> httpRequestHeadersReadTimer =
             new ChannelConfigKey<>("httpRequestHeadersReadTimer");
     public static final ChannelConfigKey<Counter> httpRequestReadTimeoutCounter =
             new ChannelConfigKey<>("httpRequestReadTimeoutCounter");
