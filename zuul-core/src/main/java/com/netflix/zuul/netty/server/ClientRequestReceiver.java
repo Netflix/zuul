@@ -321,7 +321,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             context = new SessionContext();
         }
 
-        // Get the client IP
+        // Get the client IP (ignore XFF headers at this point, as that can be app specific).
         Channel channel = clientCtx.channel();
         String clientIp = getClientIp(channel);
 
