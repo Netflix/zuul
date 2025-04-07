@@ -16,9 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
@@ -66,6 +63,10 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
@@ -75,9 +76,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.net.ssl.SSLException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
 /**
  * Created by saroskar on 1/6/17.
@@ -322,10 +323,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             context = new SessionContext();
         }
 
-        // Get the client IP (ignore XFF headers at this point, as that can be app specific).
+        // Get the client IP
         Channel channel = clientCtx.channel();
-        String clientIp =
-                channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
+        String clientIp = getClientIp(channel);
 
         // This is the only way I found to get the port of the request with netty...
         int port =
@@ -397,6 +397,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         return request;
+    }
+
+    protected String getClientIp(Channel channel) {
+        return channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
     }
 
     private String parsePath(String uri) {
