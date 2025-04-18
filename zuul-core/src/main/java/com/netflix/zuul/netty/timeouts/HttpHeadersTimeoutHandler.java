@@ -71,7 +71,7 @@ public class HttpHeadersTimeoutHandler {
                                     ctx.fireExceptionCaught(ReadTimeoutException.INSTANCE);
                                     ctx.close();
                                     closed = true;
-                                    httpHeadersReadTimeoutCounter.increment();
+                                    if (httpHeadersReadTimeoutCounter != null) httpHeadersReadTimeoutCounter.increment();
                                     LOG.debug("[{}] HTTP headers read timeout handler timed out", ctx.channel().id());
                                 }
                                 return null;
@@ -90,7 +90,7 @@ public class HttpHeadersTimeoutHandler {
             public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                 try {
                     if (msg instanceof HttpMessage) {
-                        httpHeadersReadTimer.record(System.nanoTime() - ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).get(), TimeUnit.NANOSECONDS);
+                        if (httpHeadersReadTimer != null) httpHeadersReadTimer.record(System.nanoTime() - ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).get(), TimeUnit.NANOSECONDS);
                         ScheduledFuture<Void> future = ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
                         if (future != null) {
                             future.cancel(false);
