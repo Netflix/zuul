@@ -16,91 +16,103 @@
 
 package com.netflix.zuul.netty.timeouts;
 
-import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.spectator.api.Counter;
-import com.netflix.spectator.api.Timer;
-
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.function.IntSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpHeadersTimeoutHandler {
-        private static final Logger LOG = LoggerFactory.getLogger(HttpHeadersTimeoutHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpHeadersTimeoutHandler.class);
 
-        private static final AttributeKey<ScheduledFuture<Void>> HTTP_HEADERS_READ_TIMEOUT_FUTURE =
+    private static final AttributeKey<ScheduledFuture<Void>> HTTP_HEADERS_READ_TIMEOUT_FUTURE =
             AttributeKey.newInstance("httpHeadersReadTimeoutFuture");
-        private static final AttributeKey<Long> HTTP_HEADERS_READ_START_TIME =
+    private static final AttributeKey<Long> HTTP_HEADERS_READ_START_TIME =
             AttributeKey.newInstance("httpHeadersReadStartTime");
 
-        public static class InboundHandler extends ChannelInboundHandlerAdapter {
-            private final BooleanSupplier httpHeadersReadTimeoutEnabledSupplier;
-            private final IntSupplier httpHeadersReadTimeoutSupplier;
+    public static class InboundHandler extends ChannelInboundHandlerAdapter {
+        private final BooleanSupplier httpHeadersReadTimeoutEnabledSupplier;
+        private final IntSupplier httpHeadersReadTimeoutSupplier;
 
-            private final Counter httpHeadersReadTimeoutCounter;
-            private final Timer httpHeadersReadTimer;
+        private final Counter httpHeadersReadTimeoutCounter;
+        private final PercentileTimer httpHeadersReadTimer;
 
-            private boolean closed = false;
+        private boolean closed = false;
 
-            public InboundHandler(BooleanSupplier httpHeadersReadTimeoutEnabledSupplier, IntSupplier httpHeadersReadTimeoutSupplier, Counter httpHeadersReadTimeoutCounter, Timer httpHeadersReadTimer) {
-                this.httpHeadersReadTimeoutEnabledSupplier = httpHeadersReadTimeoutEnabledSupplier;
-                this.httpHeadersReadTimeoutSupplier = httpHeadersReadTimeoutSupplier;
-                this.httpHeadersReadTimeoutCounter = httpHeadersReadTimeoutCounter;
-                this.httpHeadersReadTimer = httpHeadersReadTimer;
-            }
+        public InboundHandler(
+                BooleanSupplier httpHeadersReadTimeoutEnabledSupplier,
+                IntSupplier httpHeadersReadTimeoutSupplier,
+                Counter httpHeadersReadTimeoutCounter,
+                PercentileTimer httpHeadersReadTimer) {
+            this.httpHeadersReadTimeoutEnabledSupplier = httpHeadersReadTimeoutEnabledSupplier;
+            this.httpHeadersReadTimeoutSupplier = httpHeadersReadTimeoutSupplier;
+            this.httpHeadersReadTimeoutCounter = httpHeadersReadTimeoutCounter;
+            this.httpHeadersReadTimer = httpHeadersReadTimer;
+        }
 
-            @Override
-            public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                try {
-                    ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).set(System.nanoTime());
-                    if (!httpHeadersReadTimeoutEnabledSupplier.getAsBoolean())
-                        return;
-                    int timeout = httpHeadersReadTimeoutSupplier.getAsInt();
-                    ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).set(
-                        ctx.executor().schedule(
-                            () -> {
-                                if (!closed) {
-                                    ctx.fireExceptionCaught(ReadTimeoutException.INSTANCE);
-                                    ctx.close();
-                                    closed = true;
-                                    httpHeadersReadTimeoutCounter.increment();
-                                    LOG.debug("[{}] HTTP headers read timeout handler timed out", ctx.channel().id());
-                                }
-                                return null;
-                            },
-                            timeout,
-                            TimeUnit.MILLISECONDS
-                        )
-                    );
-                    LOG.debug("[{}] Adding HTTP headers read timeout handler: {}", ctx.channel().id(), timeout);
-                } finally {
-                    super.channelActive(ctx);
-                }
-            }
-
-            @Override
-            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                try {
-                    if (msg instanceof HttpMessage) {
-                        httpHeadersReadTimer.record(System.nanoTime() - ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).get(), TimeUnit.NANOSECONDS);
-                        ScheduledFuture<Void> future = ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
-                        if (future != null) {
-                            future.cancel(false);
-                            LOG.debug("[{}] Removing HTTP headers read timeout handler", ctx.channel().id());
-                        }
-                        ctx.pipeline().remove(this);
-                    }
-                } finally {
-                    super.channelRead(ctx, msg);
-                }
+        @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            try {
+                ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).set(System.nanoTime());
+                if (!httpHeadersReadTimeoutEnabledSupplier.getAsBoolean()) return;
+                int timeout = httpHeadersReadTimeoutSupplier.getAsInt();
+                ctx.channel()
+                        .attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE)
+                        .set(ctx.executor()
+                                .schedule(
+                                        () -> {
+                                            if (!closed) {
+                                                ctx.fireExceptionCaught(ReadTimeoutException.INSTANCE);
+                                                ctx.close();
+                                                closed = true;
+                                                if (httpHeadersReadTimeoutCounter != null)
+                                                    httpHeadersReadTimeoutCounter.increment();
+                                                LOG.debug(
+                                                        "[{}] HTTP headers read timeout handler timed out",
+                                                        ctx.channel().id());
+                                            }
+                                            return null;
+                                        },
+                                        timeout,
+                                        TimeUnit.MILLISECONDS));
+                LOG.debug(
+                        "[{}] Adding HTTP headers read timeout handler: {}",
+                        ctx.channel().id(),
+                        timeout);
+            } finally {
+                super.channelActive(ctx);
             }
         }
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            try {
+                if (msg instanceof HttpMessage) {
+                    Long readStartTime =
+                            ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).get();
+                    if (httpHeadersReadTimer != null && readStartTime != null)
+                        httpHeadersReadTimer.record(System.nanoTime() - readStartTime, TimeUnit.NANOSECONDS);
+                    ScheduledFuture<Void> future =
+                            ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
+                    if (future != null) {
+                        future.cancel(false);
+                        LOG.debug(
+                                "[{}] Removing HTTP headers read timeout handler",
+                                ctx.channel().id());
+                    }
+                    ctx.pipeline().remove(this);
+                }
+            } finally {
+                super.channelRead(ctx, msg);
+            }
+        }
+    }
 }

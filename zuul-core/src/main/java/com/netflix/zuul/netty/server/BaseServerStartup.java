@@ -32,7 +32,7 @@ import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -169,7 +169,7 @@ public abstract class BaseServerStartup {
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
         Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
-        Timer httpRequestHeadersReadTimer = registry.timer("server.http.request.headers.read.timer");
+        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
         Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
@@ -196,7 +196,7 @@ public abstract class BaseServerStartup {
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
         Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
-        Timer httpRequestHeadersReadTimer = registry.timer("server.http.request.headers.read.timer");
+        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
         Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
