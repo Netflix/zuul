@@ -39,7 +39,7 @@ import com.netflix.netty.common.proxyprotocol.StripUntrustedProxyHeadersHandler;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -138,7 +138,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final SessionContextDecorator sessionContextDecorator;
     protected final RequestCompleteHandler requestCompleteHandler;
     protected final Counter httpRequestHeadersReadTimeoutCounter;
-    protected final Timer httpRequestHeadersReadTimer;
+    protected final PercentileTimer httpRequestHeadersReadTimer;
     protected final Counter httpRequestReadTimeoutCounter;
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
