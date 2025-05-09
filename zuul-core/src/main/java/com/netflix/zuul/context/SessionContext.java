@@ -55,7 +55,9 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     private boolean debugRouting = false;
     private boolean debugRequest = false;
     private boolean debugRequestHeadersOnly = false;
-    private boolean cancelled = false;
+
+    // cancelled is volatile so it can be checked in async filters
+    private volatile boolean cancelled = false;
 
     private static final String KEY_UUID = "_uuid";
     private static final String KEY_VIP = "routeVIP";
@@ -145,7 +147,8 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Returns the value in the context, or {@code null} if absent.
      */
     @SuppressWarnings("unchecked")
-    @Nullable public <T> T get(@NonNull Key<T> key) {
+    @Nullable
+    public <T> T get(@NonNull Key<T> key) {
         T value = (T) typedMap.get(key);
         if (value == null) {
             value = key.defaultValue();
@@ -153,7 +156,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
 
         return value;
     }
-    
+
     /**
      * Returns the value in the context, or default value from the
      * typed key default value supplier if absent.
@@ -208,7 +211,8 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Returns the previous value associated with key, or {@code null} if there was no mapping for key.  Unlike
      * {@link #put(String, Object)}, this will never return a null value if the key is present in the map.
      */
-    @Nullable @CanIgnoreReturnValue
+    @Nullable
+    @CanIgnoreReturnValue
     public <T> T put(Key<T> key, T value) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(value, "value");
