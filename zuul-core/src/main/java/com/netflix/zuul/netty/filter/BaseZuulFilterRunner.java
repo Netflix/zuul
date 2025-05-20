@@ -429,6 +429,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private final AtomicReference<Link> onErrorLinkOut = new AtomicReference<>();
         private final AtomicReference<Link> onCompletedLinkOut = new AtomicReference<>();
 
+        // no synchronization needed since onNext and onCompleted are always called on the same thread
         private O outMesg;
 
         public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
