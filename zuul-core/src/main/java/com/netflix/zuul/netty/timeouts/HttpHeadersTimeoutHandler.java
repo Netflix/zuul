@@ -70,7 +70,6 @@ public class HttpHeadersTimeoutHandler {
                                 .schedule(
                                         () -> {
                                             if (!closed) {
-                                                ctx.fireExceptionCaught(ReadTimeoutException.INSTANCE);
                                                 ctx.close();
                                                 closed = true;
                                                 if (httpHeadersReadTimeoutCounter != null)
