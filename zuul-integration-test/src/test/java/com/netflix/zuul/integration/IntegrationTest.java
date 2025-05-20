@@ -44,6 +44,7 @@ import com.netflix.netty.common.metrics.CustomLeakDetector;
 import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
+import com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl;
 import io.netty.channel.epoll.Epoll;
 import io.netty.handler.codec.compression.Brotli;
 import io.netty.util.ResourceLeakDetector;
@@ -117,11 +118,15 @@ class IntegrationTest {
         int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
+        // run with a single event loop to make tests more deterministic, especially for connection pooling
+        config.setProperty("zuul.server.netty.threads.worker", "1");
         config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
         config.setProperty(
                 "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
+        // disable connection pooling for reliable retry testing
+        config.setProperty("api.ribbon." + ConnectionPoolConfigImpl.MAX_REQUESTS_PER_CONNECTION.key(), "0");
 
         // short circuit graceful shutdown
         config.setProperty("server.outofservice.close.timeout", "0");
