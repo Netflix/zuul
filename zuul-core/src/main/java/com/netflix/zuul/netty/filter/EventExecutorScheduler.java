@@ -49,12 +49,16 @@ public class EventExecutorScheduler extends Scheduler {
     public Worker createWorker() {
         return new Worker() {
 
+            private volatile boolean unsubscribed;
+
             @Override
-            public void unsubscribe() {}
+            public void unsubscribe() {
+                unsubscribed = true;
+            }
 
             @Override
             public boolean isUnsubscribed() {
-                return false;
+                return unsubscribed;
             }
 
             @Override

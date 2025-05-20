@@ -42,11 +42,13 @@ class EventExecutorSchedulerTest {
 
     private DefaultEventLoopGroup group;
     private EventLoop eventLoop;
+    private EventExecutorScheduler scheduler;
 
     @BeforeEach
     void setUp() {
         group = new DefaultEventLoopGroup(1);
         eventLoop = group.next();
+        scheduler = new EventExecutorScheduler(eventLoop);
     }
 
     @AfterEach
@@ -61,7 +63,6 @@ class EventExecutorSchedulerTest {
 
     @Test
     void alreadyOnEventLoopImmediatelyRuns() {
-        EventExecutorScheduler scheduler = new EventExecutorScheduler(eventLoop);
         Worker worker = scheduler.createWorker();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -92,7 +93,6 @@ class EventExecutorSchedulerTest {
             }
         };
 
-        EventExecutorScheduler scheduler = new EventExecutorScheduler(eventLoop);
         Worker worker = scheduler.createWorker();
         Subscription schedule = worker.schedule(action);
         assertFalse(schedule.isUnsubscribed());
@@ -102,5 +102,13 @@ class EventExecutorSchedulerTest {
         eventLoop.submit(() -> {}).get(5, TimeUnit.SECONDS);
         assertTrue(inEventLoop.get());
         assertTrue(schedule.isUnsubscribed());
+    }
+
+    @Test
+    void workerUnsubscribe() {
+        Worker worker = scheduler.createWorker();
+        assertFalse(worker.isUnsubscribed());
+        worker.unsubscribe();
+        assertTrue(worker.isUnsubscribed());
     }
 }
