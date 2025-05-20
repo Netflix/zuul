@@ -16,6 +16,9 @@
 
 package com.netflix.zuul.netty.filter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Filter;
@@ -34,6 +37,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.local.LocalChannel;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,15 +86,20 @@ public class BaseZuulFilterRunnerTest {
     }
 
     @Test
-    public void onCompleteCalledBeforeResume() {
+    public void onCompleteCalledBeforeResume() throws Exception {
         AsyncFilter asyncFilter = new AsyncFilter();
         resumer.validator = m -> {
-            assertEquals(0, asyncFilter.getConcurrency());
+            assertEquals(
+                    0,
+                    asyncFilter.getConcurrency(),
+                    "concurrency should have been decremented before the filter chain was resumed");
             return m;
         };
 
         runner.filter(asyncFilter, message);
-        resumer.future.join();
+        ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
+        // sanity check to verify the message was transformed by AsyncFilter
+        assertNotSame(message, filteredMessage);
     }
 
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
@@ -98,7 +107,7 @@ public class BaseZuulFilterRunnerTest {
 
         @Override
         public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input);
+            return Observable.just(input.clone());
         }
 
         @Override
