@@ -179,7 +179,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             req = (HttpRequestInfo) inMesg;
         }
         if (inMesg instanceof HttpResponseMessage msg) {
-            
+
             req = msg.getOutboundRequest();
             PerfMark.attachTag("statuscode", msg.getStatus());
         }
@@ -450,9 +450,6 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onNextAsync")) {
                 PerfMark.linkIn(onNextLinkOut.get());
                 addPerfMarkTags(inMesg);
-                if (outMesg == null) {
-                    outMesg = filter.getDefaultOutput(inMesg);
-                }
                 this.outMesg = outMesg;
             } catch (Exception e) {
                 decrementConcurrency();
@@ -477,6 +474,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         public void onCompleted() {
             try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onCompletedAsync")) {
                 PerfMark.linkIn(onCompletedLinkOut.get());
+                if (outMesg == null) {
+                    outMesg = filter.getDefaultOutput(inMesg);
+                }
                 decrementConcurrency();
                 recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
                 resumeInBindingContext(outMesg, filter.filterName());

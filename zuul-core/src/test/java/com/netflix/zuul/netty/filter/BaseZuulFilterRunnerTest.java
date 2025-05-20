@@ -17,7 +17,9 @@
 package com.netflix.zuul.netty.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
@@ -38,6 +40,7 @@ import io.netty.channel.local.LocalChannel;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,6 +91,8 @@ public class BaseZuulFilterRunnerTest {
     @Test
     public void onCompleteCalledBeforeResume() throws Exception {
         AsyncFilter asyncFilter = new AsyncFilter();
+        asyncFilter.output.set(message.clone());
+
         resumer.validator = m -> {
             assertEquals(
                     0,
@@ -102,12 +107,34 @@ public class BaseZuulFilterRunnerTest {
         assertNotSame(message, filteredMessage);
     }
 
+    @Test
+    public void onCompleteCalledWithNullMessage() throws Exception {
+        AsyncFilter asyncFilter = new AsyncFilter();
+        asyncFilter.output.set(null);
+
+        resumer.validator = m -> {
+            assertEquals(
+                    0,
+                    asyncFilter.getConcurrency(),
+                    "concurrency should have been decremented before the filter chain was resumed");
+            assertNotNull(m);
+            return m;
+        };
+
+        runner.filter(asyncFilter, message);
+        ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
+        // sanity check to verify the message was transformed by AsyncFilter
+        assertSame(message, filteredMessage);
+    }
+
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
     private static class AsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
 
+        private AtomicReference<ZuulMessage> output = new AtomicReference<>();
+
         @Override
         public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input.clone());
+            return Observable.just(output.get());
         }
 
         @Override
