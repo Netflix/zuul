@@ -28,6 +28,7 @@ import com.netflix.zuul.DefaultFilterFactory;
 import com.netflix.zuul.StaticFilterLoader;
 import com.netflix.zuul.context.ZuulSessionContextDecorator;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.integration.server.filters.CrossThreadBoundaryFilter;
 import com.netflix.zuul.integration.server.filters.InboundRoutesFilter;
 import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedInboundFilter;
 import com.netflix.zuul.integration.server.filters.NeedsBodyBufferedOutboundFilter;
@@ -56,6 +57,7 @@ public class Bootstrap {
         classes.add(InboundRoutesFilter.class);
         classes.add(NeedsBodyBufferedInboundFilter.class);
         classes.add(RequestHeaderFilter.class);
+        classes.add(CrossThreadBoundaryFilter.class);
         classes.add(ResponseHeaderFilter.class);
         classes.add(NeedsBodyBufferedOutboundFilter.class);
 
