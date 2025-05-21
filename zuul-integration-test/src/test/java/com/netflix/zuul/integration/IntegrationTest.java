@@ -112,7 +112,7 @@ class IntegrationTest {
     @BeforeAll
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
-        //        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
+        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 
         int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
@@ -124,8 +124,6 @@ class IntegrationTest {
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
         config.setProperty(
                 "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
-        // disable connection pooling for reliable retry testing
-        //        config.setProperty("api.ribbon." + ConnectionPoolConfigImpl.MAX_REQUESTS_PER_CONNECTION.key(), "0");
 
         // short circuit graceful shutdown
         config.setProperty("server.outofservice.close.timeout", "0");
@@ -180,11 +178,12 @@ class IntegrationTest {
     static Stream<Arguments> arguments() {
         List<Arguments> list = new ArrayList<Arguments>();
         for (Protocol protocol : ImmutableSet.of(Protocol.HTTP_1_1)) {
-            //            for (boolean requestBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
-            //                for (boolean responseBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
-            list.add(Arguments.of(protocol.name(), setupOkHttpClient(protocol), true, true));
-            //                }
-            //            }
+            for (boolean requestBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
+                for (boolean responseBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
+                    list.add(Arguments.of(
+                            protocol.name(), setupOkHttpClient(protocol), requestBodyBuffering, responseBodyBuffering));
+                }
+            }
         }
         return list.stream();
     }

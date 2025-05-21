@@ -629,7 +629,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         // Get ready to read origin's response
         syncClientAndOriginChannels(channelCtx.channel(), ch);
-        ch.read(); // TODO sort of breaks the retry logic I'm trying to add..
+        ch.read();
 
         originConn = conn;
         channelCtx.read();
@@ -819,7 +819,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         if (!zuulRequest.hasCompleteBody()) {
             NO_RETRY_INCOMPLETE_BODY.increment();
-            //            zuulRequest.getBodyContents()
             return false;
         }
         return true;
