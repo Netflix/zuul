@@ -21,10 +21,11 @@ import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import rx.Observable;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import rx.Observable;
 
 /**
  * @author Justin Guerra
