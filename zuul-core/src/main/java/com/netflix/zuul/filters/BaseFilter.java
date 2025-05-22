@@ -141,4 +141,8 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     public void decrementConcurrency() {
         concurrentCount.decrementAndGet();
     }
+
+    public int getConcurrency() {
+        return concurrentCount.get();
+    }
 }

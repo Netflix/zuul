@@ -55,7 +55,8 @@ import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 /**
- * Subclasses of this class are supposed to be thread safe and hence should not have any non final member variables
+ * Subclasses of this class are supposed to be thread safe
+ *
  * Created by saroskar on 5/18/17.
  */
 @ThreadSafe
@@ -178,7 +179,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             req = (HttpRequestInfo) inMesg;
         }
         if (inMesg instanceof HttpResponseMessage msg) {
-            
+
             req = msg.getOutboundRequest();
             PerfMark.attachTag("statuscode", msg.getStatus());
         }
@@ -202,7 +203,6 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                 filterRunStatus = ExecutionStatus.SKIPPED;
             }
 
-            ;
             try (TaskCloseable ignored2 = PerfMark.traceTask(filter, f -> f.filterName() + ".shouldSkipFilter")) {
                 if (shouldSkipFilter(inMesg, filter)) {
                     filterRunStatus = ExecutionStatus.SKIPPED;
@@ -239,7 +239,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             inMesg.runBufferedBodyContentThroughFilter(filter);
 
             if (filter.getSyncType() == FilterSyncType.SYNC) {
-                SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter) filter;
+                SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter<I, O>) filter;
                 O outMesg;
                 try (TaskCloseable ignored2 = PerfMark.traceTask(filter, f -> f.filterName() + ".apply")) {
                     addPerfMarkTags(inMesg);
@@ -282,8 +282,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         }
     }
 
-    /* This is typically set by a filter when wanting to reject a request and also reduce load on the server by
-    not processing any more filterChain */
+    /**
+     *  This is typically set by a filter when wanting to reject a request and also reduce load on the server by
+     *  not processing anymore filterChain
+     */
     protected final boolean shouldSkipFilter(I inMesg, ZuulFilter<I, O> filter) {
         if (filter.filterType() == FilterType.ENDPOINT) {
             // Endpoints may not be skipped
@@ -427,6 +429,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         private final AtomicReference<Link> onErrorLinkOut = new AtomicReference<>();
         private final AtomicReference<Link> onCompletedLinkOut = new AtomicReference<>();
 
+        // no synchronization needed since onNext and onCompleted are always called on the same thread
+        private O outMesg;
+
         public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
             this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
             this.filter = Preconditions.checkNotNull(filter, "filter");
@@ -446,11 +451,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onNextAsync")) {
                 PerfMark.linkIn(onNextLinkOut.get());
                 addPerfMarkTags(inMesg);
-                recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
-                if (outMesg == null) {
-                    outMesg = filter.getDefaultOutput(inMesg);
-                }
-                resumeInBindingContext(outMesg, filter.filterName());
+                this.outMesg = outMesg;
             } catch (Exception e) {
                 decrementConcurrency();
                 handleException(inMesg, filter.filterName(), e);
@@ -475,6 +476,13 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onCompletedAsync")) {
                 PerfMark.linkIn(onCompletedLinkOut.get());
                 decrementConcurrency();
+                if (outMesg == null) {
+                    outMesg = filter.getDefaultOutput(inMesg);
+                }
+                recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
+                resumeInBindingContext(outMesg, filter.filterName());
+            } catch (Exception e) {
+                handleException(inMesg, filter.filterName(), e);
             }
         }
 
