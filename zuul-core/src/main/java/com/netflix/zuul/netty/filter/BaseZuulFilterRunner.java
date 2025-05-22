@@ -52,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observer;
 import rx.functions.Action0;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 /**
  * Subclasses of this class are supposed to be thread safe
@@ -264,8 +263,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                         .doOnNext(resumer.onNextStarted(nettyToSchedulerLink))
                         .doOnError(resumer.onErrorStarted(nettyToSchedulerLink))
                         .doOnCompleted(resumer.onCompletedStarted(nettyToSchedulerLink))
-                        .observeOn(
-                                Schedulers.from(getChannelHandlerContext(inMesg).executor()))
+                        .observeOn(new EventExecutorScheduler(
+                                getChannelHandlerContext(inMesg).executor()))
                         .doOnUnsubscribe(resumer::decrementConcurrency)
                         .subscribe(resumer);
             }

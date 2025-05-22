@@ -128,7 +128,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected final HttpRequestMessage zuulRequest;
     protected final SessionContext context;
 
-    @Nullable protected final NettyOrigin origin;
+    @Nullable
+    protected final NettyOrigin origin;
 
     protected final RequestAttempts requestAttempts;
     protected final CurrentPassport passport;
@@ -144,7 +145,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private volatile PooledConnection originConn;
     private volatile OriginResponseReceiver originResponseReceiver;
     private AtomicInteger concurrentReqCount;
-    private volatile boolean proxiedRequestWithoutBuffering;
+    private volatile boolean receivedChunkAfterProxyStarted;
     protected int attemptNum;
     protected RequestAttempt currentRequestAttempt;
     protected List<RequestStat> requestStats = new ArrayList<>();
@@ -225,7 +226,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
      */
-    @Nullable protected NettyOrigin getOrigin(HttpRequestMessage request) {
+    @Nullable
+    protected NettyOrigin getOrigin(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         OriginManager<NettyOrigin> originManager =
                 (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
@@ -365,8 +367,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     @Override
     public HttpContent processContentChunk(ZuulMessage zuulReq, HttpContent chunk) {
         if (originConn != null) {
+            if (chunk instanceof LastHttpContent && !receivedChunkAfterProxyStarted) {
+                // if everything except the LastHttpContent was buffered, then buffer the last chunk so this request
+                // is considered replayable
+                zuulReq.bufferBodyContents(chunk.retain());
+            }
+
             // Connected to origin, stream request body without buffering
-            proxiedRequestWithoutBuffering = true;
+            receivedChunkAfterProxyStarted = true;
+
             ByteBufUtil.touch(chunk, "ProxyEndpoint writing chunk to origin, request: ", zuulReq);
             originConn.getChannel().writeAndFlush(chunk);
             return null;
@@ -808,7 +817,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             NO_RETRY_RESP_STARTED.increment();
             return false;
         }
-        if (proxiedRequestWithoutBuffering) {
+        if (!zuulRequest.hasCompleteBody()) {
             NO_RETRY_INCOMPLETE_BODY.increment();
             return false;
         }
@@ -1113,7 +1122,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      *
      * @return {@code null} if unused.
      */
-    @Nullable protected OriginName injectCustomOriginName(HttpRequestMessage request) {
+    @Nullable
+    protected OriginName injectCustomOriginName(HttpRequestMessage request) {
         // override for custom vip injection
         return null;
     }
