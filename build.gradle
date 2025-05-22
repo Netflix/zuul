@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.60.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.67.0'
     }
 }
 
