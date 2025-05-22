@@ -172,7 +172,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
         customRequestProcessing(zuulRequest);
 
         DefaultHttpRequest nettyReq =
-                new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri, false);
+                new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.valueOf(method), uri);
         // Copy headers across.
         for (Header h : zuulRequest.getHeaders().entries()) {
             nettyReq.headers().add(h.getKey(), h.getValue());
