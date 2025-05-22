@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
@@ -42,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +70,7 @@ public class BaseZuulFilterRunnerTest {
     private TestBaseZuulFilterRunner runner;
     private EventLoopGroup group;
     private TestResumer resumer;
+    private ErrorCapturingHandler errorCapturingHandler;
 
     @BeforeEach
     public void setup() {
@@ -76,7 +80,9 @@ public class BaseZuulFilterRunnerTest {
 
         group = new DefaultEventLoopGroup(1);
         LocalChannel localChannel = new LocalChannel();
+        errorCapturingHandler = new ErrorCapturingHandler();
         localChannel.pipeline().addLast(new ChannelInboundHandlerAdapter());
+        localChannel.pipeline().addLast(errorCapturingHandler);
         group.register(localChannel);
         ChannelHandlerContext context = localChannel.pipeline().context(ChannelInboundHandlerAdapter.class);
         sessionContext.set(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, context);
@@ -125,6 +131,18 @@ public class BaseZuulFilterRunnerTest {
         ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
         // sanity check to verify the message was transformed by AsyncFilter
         assertSame(message, filteredMessage);
+    }
+
+    @Test
+    public void onCompleteThrows() {
+        doThrow(new RuntimeException()).when(notifier).notify(any(), any());
+        AsyncFilter asyncFilter = new AsyncFilter();
+        asyncFilter.output.set(message);
+
+        runner.filter(asyncFilter, message);
+        Awaitility.await("request should have failed with an exception")
+                .atMost(5, TimeUnit.SECONDS)
+                .until(() -> errorCapturingHandler.error.get() != null);
     }
 
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
@@ -183,5 +201,15 @@ public class BaseZuulFilterRunnerTest {
 
         @Override
         public void filter(ZuulMessage zuulMesg, HttpContent chunk) {}
+    }
+
+    private static class ErrorCapturingHandler extends ChannelInboundHandlerAdapter {
+
+        private final AtomicReference<Throwable> error = new AtomicReference<>();
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            error.set(cause);
+        }
     }
 }
