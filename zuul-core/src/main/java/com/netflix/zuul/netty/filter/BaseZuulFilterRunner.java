@@ -475,12 +475,14 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         public void onCompleted() {
             try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onCompletedAsync")) {
                 PerfMark.linkIn(onCompletedLinkOut.get());
+                decrementConcurrency();
                 if (outMesg == null) {
                     outMesg = filter.getDefaultOutput(inMesg);
                 }
-                decrementConcurrency();
                 recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
                 resumeInBindingContext(outMesg, filter.filterName());
+            } catch (Exception e) {
+                handleException(inMesg, filter.filterName(), e);
             }
         }
 
