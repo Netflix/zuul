@@ -27,8 +27,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -133,6 +133,14 @@ class ProxyEndpointTest {
 
         doNothing().when(proxyEndpoint).operationComplete(any());
         doNothing().when(proxyEndpoint).invokeNext((HttpResponseMessage) any());
+    }
+
+    @Test
+    void testRecordProxyRequestEndIsCalledOnce() {
+        proxyEndpoint.apply(request);
+        proxyEndpoint.finish(false);
+
+        verify(nettyOrigin, times(1)).recordProxyRequestEnd();
     }
 
     @Test
