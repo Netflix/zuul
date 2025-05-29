@@ -285,7 +285,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         if (concurrentReqCount.get() > 0) {
             origin.recordProxyRequestEnd();
-            concurrentReqCount.incrementAndGet();
+            concurrentReqCount.decrementAndGet();
         }
 
         Channel origCh = null;
