@@ -501,7 +501,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private boolean isStreamCancelled(Throwable cause) {
         // Detect if the stream is cancelled or closed.
-        // If the stream was closed before the write occured, then netty flags it with INTERNAL_ERROR code.
+        // If the stream was closed before the write occurred, then netty flags it with INTERNAL_ERROR code.
         if (cause instanceof Http2Exception.StreamException) {
             Http2Exception http2Exception = (Http2Exception) cause;
             if (http2Exception.error() == Http2Error.INTERNAL_ERROR) {
