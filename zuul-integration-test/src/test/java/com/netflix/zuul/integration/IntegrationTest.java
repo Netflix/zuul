@@ -123,7 +123,7 @@ class IntegrationTest {
     @BeforeAll
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
-        //        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
+        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
 
         int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
