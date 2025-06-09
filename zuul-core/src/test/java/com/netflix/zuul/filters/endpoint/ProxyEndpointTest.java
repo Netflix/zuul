@@ -18,6 +18,8 @@ package com.netflix.zuul.filters.endpoint;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -39,9 +41,11 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.netty.NettyRequestAttemptFactory;
+import com.netflix.zuul.netty.connectionpool.DefaultOriginChannelInitializer;
 import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.netty.server.MethodBinding;
 import com.netflix.zuul.netty.timeouts.OriginTimeoutManager;
+import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
 import com.netflix.zuul.origins.NettyOrigin;
@@ -49,17 +53,22 @@ import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportItem;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Promise;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -85,10 +94,11 @@ class ProxyEndpointTest {
     private HttpRequestMessage request;
     private HttpResponse response;
     private CurrentPassport passport;
+    private EmbeddedChannel channel;
 
     @BeforeEach
     void setup() {
-        EmbeddedChannel channel = new EmbeddedChannel();
+        channel = new EmbeddedChannel();
         doReturn(channel).when(chc).channel();
 
         context = new SessionContext();
@@ -216,6 +226,59 @@ class ProxyEndpointTest {
         verify(nettyOrigin, never()).adjustRetryPolicyIfNeeded(request);
         verify(nettyOrigin, never()).originRetryPolicyAdjustmentIfNeeded(request, response);
         validateNoRetry();
+    }
+
+    @Test
+    public void lastContentAfterProxyStartedIsConsideredReplayable() {
+        Promise<PooledConnection> promise = channel.eventLoop().newPromise();
+
+        PooledConnection pooledConnection = Mockito.mock(PooledConnection.class);
+        promise.setSuccess(pooledConnection);
+
+        doReturn(channel).when(pooledConnection).getChannel();
+        doReturn(promise).when(nettyOrigin).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
+
+        doReturn(Mockito.mock(RequestAttempt.class)).when(nettyOrigin).newRequestAttempt(any(), any(), any(), anyInt());
+
+        request = new HttpRequestMessageImpl(
+                context,
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                null,
+                null,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new LocalAddress("777"),
+                false);
+        request.storeInboundRequest();
+
+        proxyEndpoint = spy(new ProxyEndpoint(request, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory) {
+            @Override
+            public NettyOrigin getOrigin(HttpRequestMessage request) {
+                return nettyOrigin;
+            }
+
+            @Override
+            protected OriginTimeoutManager getTimeoutManager(NettyOrigin origin) {
+                return timeoutManager;
+            }
+        });
+
+        channel.pipeline()
+                .addLast(DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER, new ChannelInboundHandlerAdapter());
+
+        proxyEndpoint.apply(request);
+        LastHttpContent lastContent = new DefaultLastHttpContent();
+        assertFalse(proxyEndpoint.isRequestReplayable());
+        proxyEndpoint.processContentChunk(request, lastContent);
+        assertTrue(proxyEndpoint.isRequestReplayable());
+
+        channel.releaseOutbound();
+        assertEquals(1, lastContent.refCnt(), "ref count should be 1 in case a retry is needed");
+        ReferenceCountUtil.safeRelease(lastContent);
     }
 
     private void validateNoRetry() {
