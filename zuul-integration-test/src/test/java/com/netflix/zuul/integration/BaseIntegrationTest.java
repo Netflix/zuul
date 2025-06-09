@@ -41,10 +41,8 @@ import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.google.common.collect.ImmutableSet;
-import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.CustomLeakDetector;
-import com.netflix.zuul.integration.server.Bootstrap;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.integration.server.TestUtil;
 import io.netty.channel.epoll.Epoll;
@@ -53,7 +51,6 @@ import io.netty.util.ResourceLeakDetector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -94,21 +91,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class IntegrationTest {
+abstract class BaseIntegrationTest {
 
     static {
         System.setProperty("io.netty.customResourceLeakDetector", CustomLeakDetector.class.getCanonicalName());
     }
 
-    private static Bootstrap bootstrap;
-    private static final int ZUUL_SERVER_PORT = findAvailableTcpPort();
-
     private static final Duration CLIENT_READ_TIMEOUT = Duration.ofSeconds(3);
-    private static final Duration ORIGIN_READ_TIMEOUT = Duration.ofSeconds(1);
-    private final String zuulBaseUri = "http://localhost:" + ZUUL_SERVER_PORT;
-    private String pathSegment;
-
-    private WireMock wireMock;
+    static final Duration ORIGIN_READ_TIMEOUT = Duration.ofSeconds(1);
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
@@ -124,32 +114,27 @@ class IntegrationTest {
     static void beforeAll() {
         assertTrue(ResourceLeakDetector.isEnabled());
         assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
-
         int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-        config.setProperty("zuul.server.netty.socket.force_nio", "true");
-        // run with a single event loop to make tests more deterministic, especially for connection pooling
-        config.setProperty("zuul.server.netty.threads.worker", "1");
-        config.setProperty("zuul.server.port.main", ZUUL_SERVER_PORT);
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
-        config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), ORIGIN_READ_TIMEOUT.toMillis());
-        config.setProperty(
-                "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
-
-        // short circuit graceful shutdown
-        config.setProperty("server.outofservice.close.timeout", "0");
-        bootstrap = new Bootstrap();
-        bootstrap.start();
-        assertTrue(bootstrap.isRunning());
         CustomLeakDetector.assertZeroLeaks();
     }
 
     @AfterAll
     static void afterAll() {
-        if (bootstrap != null) {
-            bootstrap.stop();
-        }
         CustomLeakDetector.assertZeroLeaks();
+        ConfigurationManager.getConfigInstance().clear();
+    }
+
+    private final int zuulServerPort;
+    private final String zuulBaseUri;
+
+    private String pathSegment;
+    private WireMock wireMock;
+
+    public BaseIntegrationTest(int zuulServerPort) {
+        this.zuulServerPort = zuulServerPort;
+        zuulBaseUri = "http://localhost:" + this.zuulServerPort;
     }
 
     @BeforeEach
@@ -178,7 +163,7 @@ class IntegrationTest {
         HttpUrl url = new HttpUrl.Builder()
                 .scheme("http")
                 .host("localhost")
-                .port(ZUUL_SERVER_PORT)
+                .port(zuulServerPort)
                 .addPathSegment(pathSegment)
                 .addQueryParameter("bufferRequestBody", "" + requestBodyBuffering)
                 .addQueryParameter("bufferResponseBody", "" + responseBodyBuffering)
@@ -343,7 +328,7 @@ class IntegrationTest {
         config.setProperty("server.http.request.headers.read.timeout.enabled", true);
         config.setProperty("server.http.request.headers.read.timeout", 100);
 
-        Socket slowClient = new Socket("localhost", ZUUL_SERVER_PORT);
+        Socket slowClient = new Socket("localhost", zuulServerPort);
         Thread.sleep(500);
         // end of stream reached because zuul closed the connection
         assertThat(slowClient.getInputStream().read()).isEqualTo(-1);
@@ -678,14 +663,6 @@ class IntegrationTest {
 
     private static String randomPathSegment() {
         return UUID.randomUUID().toString();
-    }
-
-    private static int findAvailableTcpPort() {
-        try (ServerSocket sock = new ServerSocket(0)) {
-            return sock.getLocalPort();
-        } catch (IOException e) {
-            return -1;
-        }
     }
 
     private static void verifyResponseHeaders(Response response) {
