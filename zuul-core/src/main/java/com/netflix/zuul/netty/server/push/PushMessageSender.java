@@ -57,7 +57,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
         this.pushConnectionRegistry = pushConnectionRegistry;
     }
 
-    private void sendHttpResponse(
+    protected void sendHttpResponse(
             ChannelHandlerContext ctx, FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
         FullHttpResponse resp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
         resp.headers().add("Content-Length", "0");
@@ -140,6 +140,7 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
                 return;
             }
 
+            logPushEventBody(request, body);
             ChannelFuture clientFuture = pushConn.sendPushMessage(body);
             clientFuture.addListener(cf -> {
                 HttpResponseStatus status;
@@ -188,6 +189,10 @@ public abstract class PushMessageSender extends SimpleChannelInboundHandler<Full
 
     protected void logPushEvent(FullHttpRequest request, HttpResponseStatus status, PushUserAuth userAuth) {
         logger.debug("Push notification status: {}, auth: {}", status.code(), userAuth != null ? userAuth : "-");
+    }
+
+    protected void logPushEventBody(FullHttpRequest request, ByteBuf body) {
+        logger.debug("push event body");
     }
 
     protected abstract PushUserAuth getPushUserAuth(FullHttpRequest request);
