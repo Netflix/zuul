@@ -43,7 +43,7 @@ public class SampleSSEPushChannelInitializer extends PushChannelInitializer {
     }
 
     @Override
-    protected void addPushHandlers(final ChannelPipeline pipeline) {
+    protected void addPushHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
         pipeline.addLast(new PushRegistrationHandler(pushConnectionRegistry, PushProtocol.SSE));
         pipeline.addLast(new SampleSSEPushClientProtocolHandler());

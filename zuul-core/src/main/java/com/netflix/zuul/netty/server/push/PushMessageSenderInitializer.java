@@ -28,11 +28,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 public abstract class PushMessageSenderInitializer extends ChannelInitializer<Channel> {
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
+        ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(65536));
         addPushMessageHandlers(pipeline);
     }
 
-    protected abstract void addPushMessageHandlers(final ChannelPipeline pipeline);
+    protected abstract void addPushMessageHandlers(ChannelPipeline pipeline);
 }

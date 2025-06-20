@@ -48,7 +48,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     private final SslContext sslContext;
     private final boolean isSSlFromIntermediary;
     private final SwallowSomeHttp2ExceptionsHandler swallowSomeHttp2ExceptionsHandler;
-    private final String metricId;
+    private final String http2SslMetricId;
 
     /**
      * Use {@link #Http2SslChannelInitializer(String, ChannelConfig, ChannelConfig, ChannelGroup)} instead.
@@ -62,7 +62,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     public Http2SslChannelInitializer(
             String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
-        this.metricId = Preconditions.checkNotNull(metricId, "metricId");
+        this.http2SslMetricId = Preconditions.checkNotNull(metricId, "metricId");
 
         this.swallowSomeHttp2ExceptionsHandler = new SwallowSomeHttp2ExceptionsHandler(registry);
 
@@ -74,7 +74,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception {
+    protected void initChannel(Channel ch) {
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 
@@ -113,7 +113,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         addSslClientCertChecks(pipeline);
 
         Http2MetricsChannelHandlers http2MetricsChannelHandlers =
-                new Http2MetricsChannelHandlers(registry, "server", "http2-" + metricId);
+                new Http2MetricsChannelHandlers(registry, "server", "http2-" + http2SslMetricId);
 
         Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
         Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(
@@ -138,12 +138,12 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         pipeline.addLast(swallowSomeHttp2ExceptionsHandler);
     }
 
-    protected void http1Handlers(ChannelPipeline pipeline) {
+    private void http1Handlers(ChannelPipeline pipeline) {
         addHttpRelatedHandlers(pipeline);
         addZuulHandlers(pipeline);
     }
 
-    protected void http1Codec(ChannelPipeline pipeline) {
+    private void http1Codec(ChannelPipeline pipeline) {
         pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
     }
 }

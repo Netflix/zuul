@@ -25,8 +25,7 @@ import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.stats.status.StatusCategory;
 import io.netty.channel.Channel;
-
-import javax.inject.Provider;
+import jakarta.inject.Provider;
 import java.net.InetAddress;
 import java.util.Map;
 

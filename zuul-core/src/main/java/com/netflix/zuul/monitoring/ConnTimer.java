@@ -24,14 +24,13 @@ import com.netflix.zuul.Attrs;
 import com.netflix.zuul.netty.server.Server;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * A timer for connection stats.  Not thread-safe.
@@ -53,8 +52,7 @@ public final class ConnTimer {
     // TODO(carl-mastrangelo): make this changeable.
     private final Id metricBase;
 
-    @Nullable
-    private final Id preciseMetricBase;
+    @Nullable private final Id preciseMetricBase;
 
     private final Map<String, Long> timings = new LinkedHashMap<>();
 

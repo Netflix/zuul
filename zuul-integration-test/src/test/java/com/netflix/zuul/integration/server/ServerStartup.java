@@ -48,9 +48,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.compression.CompressionOptions;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.ssl.ClientAuth;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -111,7 +110,7 @@ public class ServerStartup extends BaseServerStartup {
         SocketAddress sockAddr;
         String metricId;
         {
-            @Deprecated int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
+            int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
             sockAddr = new SocketAddressProperty("zuul.server.addr.main", "=" + port).getValue();
             if (sockAddr instanceof InetSocketAddress) {
                 metricId = String.valueOf(((InetSocketAddress) sockAddr).getPort());

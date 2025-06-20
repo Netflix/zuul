@@ -22,10 +22,9 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.Duration;
 
 /**
  * Client Timeout Handler
@@ -58,15 +57,21 @@ public final class ClientTimeoutHandler {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             try {
-                final Duration timeout =
+                if (!(msg instanceof LastHttpContent)) {
+                    return;
+                }
+
+                Duration timeout =
                         ctx.channel().attr(ORIGIN_RESPONSE_READ_TIMEOUT).get();
-                if (timeout != null && msg instanceof LastHttpContent) {
+                if (timeout != null) {
                     promise.addListener(e -> {
-                        LOG.debug(
-                                "[{}] Adding read timeout handler: {}",
-                                ctx.channel().id(),
-                                timeout.toMillis());
-                        PooledConnection.getFromChannel(ctx.channel()).startReadTimeoutHandler(timeout);
+                        if (e.isSuccess()) {
+                            LOG.debug(
+                                    "[{}] Adding read timeout handler: {}",
+                                    ctx.channel().id(),
+                                    timeout.toMillis());
+                            PooledConnection.getFromChannel(ctx.channel()).startReadTimeoutHandler(timeout);
+                        }
                     });
                 }
             } finally {

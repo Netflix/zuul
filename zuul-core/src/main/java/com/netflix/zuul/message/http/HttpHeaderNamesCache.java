@@ -17,7 +17,6 @@
 package com.netflix.zuul.message.http;
 
 import com.netflix.zuul.message.HeaderName;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

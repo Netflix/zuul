@@ -16,21 +16,20 @@
 
 package com.netflix.zuul.niws;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import io.netty.handler.codec.http2.DefaultHttp2Connection;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Exception;
-import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.security.cert.CertificateException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import javax.net.ssl.SSLHandshakeException;
+import org.junit.jupiter.api.Test;
 
 public class RequestAttemptTest {
 

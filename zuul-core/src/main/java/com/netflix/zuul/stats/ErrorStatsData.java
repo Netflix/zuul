@@ -19,7 +19,6 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.patterns.PolledMeter;
 import com.netflix.zuul.stats.monitoring.NamedCount;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -41,7 +40,7 @@ public class ErrorStatsData implements NamedCount {
      * @param cause
      */
     public ErrorStatsData(String route, String cause) {
-        if (null == route || "".equals(route)) {
+        if (route == null || route.equals("")) {
             route = "UNKNOWN";
         }
         id = route + "_" + cause;
@@ -58,7 +57,7 @@ public class ErrorStatsData implements NamedCount {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || !(o instanceof ErrorStatsData)) {
             return false;
         }
 

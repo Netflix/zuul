@@ -48,9 +48,6 @@ import com.netflix.zuul.sample.push.SampleWebSocketPushChannelInitializer;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.ClientAuth;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -60,11 +57,10 @@ import java.util.Map;
 
 /**
  * Sample Server Startup - class that configures the Netty server startup settings
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 20, 2017
  */
-@Singleton
 public class SampleServerStartup extends BaseServerStartup {
 
     enum ServerType {
@@ -80,7 +76,6 @@ public class SampleServerStartup extends BaseServerStartup {
     private final PushConnectionRegistry pushConnectionRegistry;
     private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
-    @Inject
     public SampleServerStartup(
             ServerStatusManager serverStatusManager,
             FilterLoader filterLoader,
@@ -118,7 +113,7 @@ public class SampleServerStartup extends BaseServerStartup {
         SocketAddress sockAddr;
         String metricId;
         {
-            @Deprecated int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
+            int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
             sockAddr = new SocketAddressProperty("zuul.server.addr.main", "=" + port).getValue();
             if (sockAddr instanceof InetSocketAddress) {
                 metricId = String.valueOf(((InetSocketAddress) sockAddr).getPort());

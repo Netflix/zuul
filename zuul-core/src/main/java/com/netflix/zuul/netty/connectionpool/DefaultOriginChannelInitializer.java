@@ -57,7 +57,7 @@ public class DefaultOriginChannelInitializer extends OriginChannelInitializer {
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
+        ChannelPipeline pipeline = ch.pipeline();
 
         pipeline.addLast(new PassportStateOriginHandler.InboundHandler());
         pipeline.addLast(new PassportStateOriginHandler.OutboundHandler());

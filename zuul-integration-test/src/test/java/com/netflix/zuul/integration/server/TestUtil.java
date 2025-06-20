@@ -18,11 +18,10 @@ package com.netflix.zuul.integration.server;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.apache.commons.lang3.StringUtils;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 
 public class TestUtil {
     private TestUtil() {}
@@ -33,8 +32,7 @@ public class TestUtil {
     public static final String COMPRESSIBLE_CONTENT_TYPE = "text/plain";
     public static final String JUMBO_RESPONSE_BODY = StringUtils.repeat("abc", 1_000_000);
 
-    public static DiscoveryEnabledServer makeDiscoveryEnabledServer(
-            final String appName, final String ipAddress, final int port) {
+    public static DiscoveryEnabledServer makeDiscoveryEnabledServer(String appName, String ipAddress, int port) {
         InstanceInfo instanceInfo = new InstanceInfo(
                 UUID.randomUUID().toString(),
                 appName,

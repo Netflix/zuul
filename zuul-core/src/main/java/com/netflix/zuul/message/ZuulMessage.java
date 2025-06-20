@@ -20,7 +20,6 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
-
 import javax.annotation.Nullable;
 
 /**
@@ -60,13 +59,14 @@ public interface ZuulMessage extends Cloneable {
     void setHasBody(boolean hasBody);
 
     /**
-     * Returns the message body.  If there is no message body, this returns {@code null}.
+     * Returns the message body.
+     * This is the entire buffered body, regardless of whether the underlying body chunks have been read or not.
+     * If there is no message body, this returns {@code null}.
      */
-    @Nullable
-    byte[] getBody();
+    @Nullable byte[] getBody();
 
     /**
-     * Returns the length of the message body, or {@code 0} if there isn't a message present.
+     * Returns the length of the entire buffered message body, or {@code 0} if there isn't a message present.
      */
     int getBodyLength();
 
@@ -123,8 +123,7 @@ public interface ZuulMessage extends Cloneable {
     /**
      * Gets the body of this message as UTF-8 text, or {@code null} if there is no body.
      */
-    @Nullable
-    String getBodyAsText();
+    @Nullable String getBodyAsText();
 
     /**
      * Reset the chunked body reader indexes. Users SHOULD call this method before retrying requests

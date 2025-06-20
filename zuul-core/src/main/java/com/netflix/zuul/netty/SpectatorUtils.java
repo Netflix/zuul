@@ -43,13 +43,13 @@ public final class SpectatorUtils {
     }
 
     public static <T extends Number> T newGauge(String name, String id, T number) {
-        final CompositeRegistry registry = Spectator.globalRegistry();
+        CompositeRegistry registry = Spectator.globalRegistry();
         Id gaugeId = registry.createId(name, "id", id);
         return registry.gauge(gaugeId, number);
     }
 
     public static <T extends Number> T newGauge(String name, String id, T number, String... tags) {
-        final CompositeRegistry registry = Spectator.globalRegistry();
+        CompositeRegistry registry = Spectator.globalRegistry();
         Id gaugeId = registry.createId(name, getTagsWithId(id, tags));
         return registry.gauge(gaugeId, number);
     }

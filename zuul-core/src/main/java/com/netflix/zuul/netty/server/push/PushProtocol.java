@@ -45,7 +45,7 @@ public enum PushProtocol {
 
         @Override
         public ChannelFuture sendPushMessage(ChannelHandlerContext ctx, ByteBuf mesg) {
-            final TextWebSocketFrame wsf = new TextWebSocketFrame(mesg);
+            TextWebSocketFrame wsf = new TextWebSocketFrame(mesg);
             return ctx.channel().writeAndFlush(wsf);
         }
 
@@ -83,7 +83,7 @@ public enum PushProtocol {
 
         @Override
         public ChannelFuture sendPushMessage(ChannelHandlerContext ctx, ByteBuf mesg) {
-            final ByteBuf newBuff = ctx.alloc().buffer();
+            ByteBuf newBuff = ctx.alloc().buffer();
             newBuff.ensureWritable(SSE_PREAMBLE.length());
             newBuff.writeCharSequence(SSE_PREAMBLE, Charsets.UTF_8);
             newBuff.ensureWritable(mesg.writableBytes());
@@ -98,7 +98,7 @@ public enum PushProtocol {
 
         @Override
         public ChannelFuture sendPing(ChannelHandlerContext ctx) {
-            final ByteBuf newBuff = ctx.alloc().buffer();
+            ByteBuf newBuff = ctx.alloc().buffer();
             newBuff.ensureWritable(SSE_PING.length());
             newBuff.writeCharSequence(SSE_PING, Charsets.UTF_8);
             return ctx.channel().writeAndFlush(newBuff);
@@ -116,7 +116,7 @@ public enum PushProtocol {
     };
 
     public final void sendErrorAndClose(ChannelHandlerContext ctx, int statusCode, String reasonText) {
-        final Object mesg = serverClosingConnectionMessage(statusCode, reasonText);
+        Object mesg = serverClosingConnectionMessage(statusCode, reasonText);
         ctx.writeAndFlush(mesg).addListener(ChannelFutureListener.CLOSE);
     }
 

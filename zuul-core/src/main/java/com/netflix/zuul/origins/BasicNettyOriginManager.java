@@ -18,9 +18,8 @@ package com.netflix.zuul.origins;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.context.SessionContext;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**

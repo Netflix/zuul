@@ -23,6 +23,9 @@ import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.ChannelUtils;
+import com.netflix.zuul.netty.server.psk.ClientPSKIdentityInfo;
+import com.netflix.zuul.netty.server.psk.TlsPskHandler;
+import com.netflix.zuul.netty.server.psk.ZuulPskServer;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,16 +36,16 @@ import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Stores info about the client and server's SSL certificates in the context, after a successful handshake.
@@ -82,10 +85,13 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
                     CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_SSL_HANDSHAKE_COMPLETE);
 
-                    SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
-                    SSLSession session = sslhandler.engine().getSession();
+                    SSLSession session = getSSLSession(ctx);
+                    if (session == null) {
+                        logger.warn("Error getting the SSL handshake info. SSLSession is null");
+                        return;
+                    }
 
-                    ClientAuth clientAuth = whichClientAuthEnum(sslhandler);
+                    ClientAuth clientAuth = whichClientAuthEnum(ctx);
 
                     Certificate serverCert = null;
                     X509Certificate peerCert = null;
@@ -99,13 +105,26 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         serverCert = session.getLocalCertificates()[0];
                     }
 
+                    // if attribute is true, then true. If null or false then false
+                    boolean tlsHandshakeUsingExternalPSK = Objects.equals(
+                            ctx.channel()
+                                    .attr(ZuulPskServer.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
+                                    .get(),
+                            Boolean.TRUE);
+
+                    ClientPSKIdentityInfo clientPSKIdentityInfo = ctx.channel()
+                            .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
+                            .get();
+
                     SslHandshakeInfo info = new SslHandshakeInfo(
                             isSSlFromIntermediary,
                             session.getProtocol(),
                             session.getCipherSuite(),
                             clientAuth,
                             serverCert,
-                            peerCert);
+                            peerCert,
+                            tlsHandshakeUsingExternalPSK,
+                            clientPSKIdentityInfo);
                     ctx.channel().attr(ATTR_SSL_INFO).set(info);
 
                     // Metrics.
@@ -121,8 +140,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                     PassportState passportState =
                             CurrentPassport.fromChannel(ctx.channel()).getState();
                     if (cause instanceof ClosedChannelException
-                            && (PassportState.SERVER_CH_INACTIVE.equals(passportState)
-                                    || PassportState.SERVER_CH_IDLE_TIMEOUT.equals(passportState))) {
+                            && (passportState == PassportState.SERVER_CH_INACTIVE
+                                    || passportState == PassportState.SERVER_CH_IDLE_TIMEOUT)) {
                         // Either client closed the connection without/before having completed a handshake, or
                         // the connection idle timed-out before handshake.
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then
@@ -130,7 +149,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                         // without sending anything.
                         // So don't treat these as SSL handshake failures.
                         logger.debug(
-                                "Client closed connection or it idle timed-out without doing an ssl handshake. , client_ip = {}, channel_info = {}",
+                                "Client closed connection or it idle timed-out without doing an ssl handshake. ,"
+                                        + " client_ip = {}, channel_info = {}",
                                 clientIP,
                                 ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else if (cause instanceof SSLException
@@ -185,7 +205,24 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
         super.userEventTriggered(ctx, evt);
     }
 
-    private ClientAuth whichClientAuthEnum(SslHandler sslhandler) {
+    private SSLSession getSSLSession(ChannelHandlerContext ctx) {
+        SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
+        if (sslhandler != null) {
+            return sslhandler.engine().getSession();
+        }
+        TlsPskHandler tlsPskHandler = ctx.channel().pipeline().get(TlsPskHandler.class);
+        if (tlsPskHandler != null) {
+            return tlsPskHandler.getSession();
+        }
+        return null;
+    }
+
+    private ClientAuth whichClientAuthEnum(ChannelHandlerContext ctx) {
+        SslHandler sslhandler = ctx.channel().pipeline().get(SslHandler.class);
+        if (sslhandler == null) {
+            return ClientAuth.NONE;
+        }
+
         ClientAuth clientAuth;
         if (sslhandler.engine().getNeedClientAuth()) {
             clientAuth = ClientAuth.REQUIRE;

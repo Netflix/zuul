@@ -19,7 +19,6 @@ package com.netflix.netty.common.metrics;
 import com.google.common.annotations.VisibleForTesting;
 import com.netflix.zuul.netty.SpectatorUtils;
 import io.netty.util.ResourceLeakDetector;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,16 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T> {
 
-    private final AtomicInteger instancesLeakCounter;
-
     @VisibleForTesting
     final AtomicInteger leakCounter;
 
     public InstrumentedResourceLeakDetector(Class<?> resourceType, int samplingInterval) {
         super(resourceType, samplingInterval);
 
-        this.instancesLeakCounter = SpectatorUtils.newGauge(
-                "NettyLeakDetector_instances", resourceType.getSimpleName(), new AtomicInteger());
         this.leakCounter =
                 SpectatorUtils.newGauge("NettyLeakDetector", resourceType.getSimpleName(), new AtomicInteger());
     }

@@ -21,12 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -41,8 +40,7 @@ public class RequestAttempts extends ArrayList<RequestAttempt> {
         super();
     }
 
-    @Nullable
-    public RequestAttempt getFinalAttempt() {
+    @Nullable public RequestAttempt getFinalAttempt() {
         if (size() > 0) {
             return get(size() - 1);
         } else {

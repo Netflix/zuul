@@ -26,20 +26,19 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.Resolver;
 import com.netflix.zuul.resolver.ResolverListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Argha C
  * @since 2/25/21
- *
+ * <p>
  * Implements a resolver, wrapping a ribbon load-balancer.
  */
 public class DynamicServerResolver implements Resolver<DiscoveryResult> {
@@ -77,7 +76,7 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
 
     @Override
     public DiscoveryResult resolve(@Nullable Object key) {
-        final Server server = loadBalancer.chooseServer(key);
+        Server server = loadBalancer.chooseServer(key);
         return server != null
                 ? new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats())
                 : DiscoveryResult.EMPTY;
@@ -120,7 +119,7 @@ public class DynamicServerResolver implements Resolver<DiscoveryResult> {
     void onUpdate(List<Server> oldList, List<Server> newList) {
         Set<Server> oldSet = new HashSet<>(oldList);
         Set<Server> newSet = new HashSet<>(newList);
-        final List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream()
+        List<DiscoveryResult> discoveryResults = Sets.difference(oldSet, newSet).stream()
                 .map(server ->
                         new DiscoveryResult((DiscoveryEnabledServer) server, loadBalancer.getLoadBalancerStats()))
                 .collect(Collectors.toList());

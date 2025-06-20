@@ -22,13 +22,13 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AccessLogPublisher {
     private static final char DELIM = '\t';
@@ -61,14 +61,14 @@ public class AccessLogPublisher {
             Integer localPort,
             String remoteIp,
             Long durationNs,
-            Integer requestBodySize,
-            Integer responseBodySize) {
-        StringBuilder sb = new StringBuilder();
+            Long requestBodySize,
+            Long responseBodySize) {
+        StringBuilder sb = new StringBuilder(512);
 
         String dateTimeStr = dateTime != null ? dateTime.format(DATE_TIME_FORMATTER) : "-----T-:-:-";
         String remoteIpStr = (remoteIp != null && !remoteIp.isEmpty()) ? remoteIp : "-";
         String port = localPort != null ? localPort.toString() : "-";
-        String method = request != null ? request.method().toString().toUpperCase() : "-";
+        String method = request != null ? request.method().toString().toUpperCase(Locale.ROOT) : "-";
         String uri = request != null ? request.uri() : "-";
         if (uri.length() > URI_LENGTH_LIMIT.get()) {
             uri = uri.substring(0, URI_LENGTH_LIMIT.get());
@@ -121,7 +121,7 @@ public class AccessLogPublisher {
         }
 
         // Write to logger.
-        final String access = sb.toString();
+        String access = sb.toString();
         logger.info(access);
         LOG.debug(access);
     }
@@ -135,6 +135,6 @@ public class AccessLogPublisher {
 
     String headerAsString(HttpHeaders headers, String headerName) {
         List<String> values = headers.getAll(headerName);
-        return (values.size() == 0) ? "-" : String.join(",", values);
+        return values.isEmpty() ? "-" : String.join(",", values);
     }
 }

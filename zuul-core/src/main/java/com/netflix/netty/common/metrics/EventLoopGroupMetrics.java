@@ -17,9 +17,8 @@
 package com.netflix.netty.common.metrics;
 
 import com.netflix.spectator.api.Registry;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,11 +31,10 @@ import java.util.Map;
 public class EventLoopGroupMetrics {
     private final ThreadLocal<EventLoopMetrics> metricsForCurrentThread;
     private final Map<Thread, EventLoopMetrics> byEventLoop = new HashMap<>();
-    private final Registry registry;
 
     @Inject
     public EventLoopGroupMetrics(Registry registry) {
-        this.registry = registry;
+
         this.metricsForCurrentThread = ThreadLocal.withInitial(() -> {
             String name = nameForCurrentEventLoop();
             EventLoopMetrics metrics = new EventLoopMetrics(registry, name);
@@ -68,7 +66,7 @@ public class EventLoopGroupMetrics {
     private static String nameForCurrentEventLoop() {
         // We're relying on the knowledge that we name the eventloop threads consistently.
         String threadName = Thread.currentThread().getName();
-        String parts[] = threadName.split("-ClientToZuulWorker-");
+        String parts[] = threadName.split("-ClientToZuulWorker-", -1);
         if (parts.length == 2) {
             return parts[1];
         }

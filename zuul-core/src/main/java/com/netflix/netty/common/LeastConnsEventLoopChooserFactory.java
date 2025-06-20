@@ -19,14 +19,13 @@ package com.netflix.netty.common;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -50,7 +49,7 @@ public class LeastConnsEventLoopChooserFactory implements EventExecutorChooserFa
         private final List<EventExecutor> executors;
         private final EventLoopGroupMetrics groupMetrics;
 
-        public LeastConnsEventExecutorChooser(EventExecutor[] executors, final EventLoopGroupMetrics groupMetrics) {
+        public LeastConnsEventExecutorChooser(EventExecutor[] executors, EventLoopGroupMetrics groupMetrics) {
             this.executors = Arrays.asList(executors);
             this.groupMetrics = groupMetrics;
         }

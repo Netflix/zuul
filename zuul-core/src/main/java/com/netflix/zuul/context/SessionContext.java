@@ -19,8 +19,6 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
-
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
@@ -74,9 +75,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     public static final class Key<T> {
 
         private final String name;
+        private final Supplier<T> defaultValueSupplier;
 
-        private Key(String name) {
+        private Key(String name, Supplier<T> defaultValueSupplier) {
             this.name = Objects.requireNonNull(name, "name");
+            this.defaultValueSupplier = defaultValueSupplier;
         }
 
         @Override
@@ -103,8 +106,13 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         public int hashCode() {
             return super.hashCode();
         }
+
+        public T defaultValue() {
+            return defaultValueSupplier != null ? defaultValueSupplier.get() : null;
+        }
     }
 
+    @SuppressWarnings("UnnecessaryStringBuilder")
     public SessionContext() {
         // Use a higher than default initial capacity for the hashmap as we generally have more than the default
         // 16 entries.
@@ -116,7 +124,11 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     public static <T> Key<T> newKey(String name) {
-        return new Key<>(name);
+        return newKey(name, null);
+    }
+
+    public static <T> Key<T> newKey(String name, Supplier<T> defaultValueSupplier) {
+        return new Key<>(name, defaultValueSupplier);
     }
 
     /**
@@ -133,9 +145,22 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Returns the value in the context, or {@code null} if absent.
      */
     @SuppressWarnings("unchecked")
-    @Nullable
-    public <T> T get(Key<T> key) {
-        return (T) typedMap.get(Objects.requireNonNull(key, "key"));
+    @Nullable public <T> T get(@NonNull Key<T> key) {
+        T value = (T) typedMap.get(key);
+        if (value == null) {
+            value = key.defaultValue();
+        }
+
+        return value;
+    }
+    
+    /**
+     * Returns the value in the context, or default value from the
+     * typed key default value supplier if absent.
+     */
+    @NonNull
+    public <T> T getOrDefault(@NonNull Key<T> key) {
+        return Objects.requireNonNull(this.get(key), "expected non-null value or defaultValue supplier");
     }
 
     /**
@@ -158,6 +183,23 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * <p>This method exists for static analysis.
      */
     @Override
+    public boolean containsKey(Object key) {
+        return super.containsKey(key);
+    }
+
+    /**
+     * Checks for the existence of the key in the context.
+     */
+    public <T> boolean containsKey(Key<T> key) {
+        return typedMap.containsKey(Objects.requireNonNull(key, "key"));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>This method exists for static analysis.
+     */
+    @Override
     public Object put(String key, Object value) {
         return super.put(key, value);
     }
@@ -166,8 +208,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
      * Returns the previous value associated with key, or {@code null} if there was no mapping for key.  Unlike
      * {@link #put(String, Object)}, this will never return a null value if the key is present in the map.
      */
-    @Nullable
-    @CanIgnoreReturnValue
+    @Nullable @CanIgnoreReturnValue
     public <T> T put(Key<T> key, T value) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(value, "value");

@@ -40,19 +40,20 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
             new CachedDynamicIntProperty("zuul.push.sse.retry.base", 5000);
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object mesg) throws Exception {
-        if (mesg instanceof FullHttpRequest) {
-            final FullHttpRequest req = (FullHttpRequest) mesg;
-            if ((req.method() == HttpMethod.GET) && (PushProtocol.SSE.getPath().equals(req.uri()))) {
+    public void channelRead(ChannelHandlerContext ctx, Object mesg) throws Exception {
+        if (mesg instanceof FullHttpRequest req) {
+            
+            if (req.method().equals(HttpMethod.GET)
+                    && PushProtocol.SSE.getPath().equals(req.uri())) {
                 ctx.pipeline().fireUserEventTriggered(PushProtocol.SSE.getHandshakeCompleteEvent());
 
-                final DefaultHttpResponse resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-                final HttpHeaders headers = resp.headers();
+                DefaultHttpResponse resp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+                HttpHeaders headers = resp.headers();
                 headers.add("Connection", "keep-alive");
                 headers.add("Content-Type", "text/event-stream");
                 headers.add("Transfer-Encoding", "chunked");
 
-                final ChannelFuture cf = ctx.channel().writeAndFlush(resp);
+                ChannelFuture cf = ctx.channel().writeAndFlush(resp);
                 cf.addListener(future -> {
                     if (future.isSuccess()) {
                         ChannelPipeline pipeline = ctx.pipeline();
@@ -62,8 +63,8 @@ public class SampleSSEPushClientProtocolHandler extends PushClientProtocolHandle
                         if (pipeline.get(HttpContentCompressor.class) != null) {
                             pipeline.remove(HttpContentCompressor.class);
                         }
-                        final String reconnetInterval = "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n";
-                        ctx.writeAndFlush(reconnetInterval);
+                        String reconnectInterval = "retry: " + SSE_RETRY_BASE_INTERVAL.get() + "\r\n\r\n";
+                        ctx.writeAndFlush(reconnectInterval);
                     }
                 });
             }

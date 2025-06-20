@@ -16,6 +16,11 @@
 
 package com.netflix.netty.common.proxyprotocol;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.spectator.api.Counter;
@@ -29,19 +34,13 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.haproxy.HAProxyMessage;
 import io.netty.handler.codec.haproxy.HAProxyProtocolVersion;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class ElbProxyProtocolChannelHandlerTest {
@@ -138,7 +137,7 @@ class ElbProxyProtocolChannelHandlerTest {
         EmbeddedChannel channel = new EmbeddedChannel();
         // This is normally done by Server.
         channel.attr(Server.CONN_DIMENSIONS).set(Attrs.newInstance());
-        final int port = 7007;
+        int port = 7007;
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(port);
         channel.pipeline()
                 .addLast(ElbProxyProtocolChannelHandler.NAME, new ElbProxyProtocolChannelHandler(registry, true));
@@ -151,7 +150,7 @@ class ElbProxyProtocolChannelHandlerTest {
         assertEquals(dropped, buf);
         buf.release();
 
-        final Counter counter = registry.counter(
+        Counter counter = registry.counter(
                 "zuul.hapm.decode", "success", "false", "port", String.valueOf(port), "needs_more_data", "false");
         assertEquals(1, counter.count());
     }

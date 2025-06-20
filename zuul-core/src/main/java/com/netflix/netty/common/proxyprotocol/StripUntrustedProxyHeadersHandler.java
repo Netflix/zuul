@@ -30,7 +30,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.util.AsciiString;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -63,9 +62,7 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest) {
-            HttpRequest req = (HttpRequest) msg;
-
+        if (msg instanceof HttpRequest req) {
             switch (allowWhen) {
                 case NEVER:
                     stripXFFHeaders(req);

@@ -3,25 +3,25 @@ apply plugin: 'application'
 
 dependencies {
     implementation project(":zuul-core"),
-            project(":zuul-guice"),
             project(":zuul-discovery")
 
     implementation "io.netty:netty-transport-classes-epoll"
-    implementation "com.netflix.eureka:eureka-client:1.10.18"
+    implementation "com.netflix.eureka:eureka-client:2.0.4"
     implementation "com.netflix.ribbon:ribbon-eureka:$versions_ribbon"
     implementation "com.netflix.ribbon:ribbon-loadbalancer:$versions_ribbon"
     implementation 'commons-configuration:commons-configuration:1.10'
     annotationProcessor project(":zuul-processor")
 
-    testImplementation 'org.wiremock:wiremock:3.3.1'
+    testImplementation 'org.wiremock:wiremock:3.10.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
     testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito, libraries.okhttp
     testImplementation "io.netty.incubator:netty-incubator-transport-classes-io_uring:${versions_netty_io_uring}"
     testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
-    testImplementation "org.slf4j:slf4j-api:2.0.9"
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.21.1'
-    testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.21.1'
+    testImplementation "org.slf4j:slf4j-api:2.0.16"
+    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
+    testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3'
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"
     testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-x86_64:$versions_brotli4j"

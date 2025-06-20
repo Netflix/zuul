@@ -31,11 +31,10 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.util.concurrent.EventExecutor;
+import jakarta.inject.Inject;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: michaels@netflix.com
@@ -69,8 +68,8 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
         // Close the connection immediately after LastContent is written, rather than
         // waiting until the graceful-delay is up if this flag is set.
         if (isEndOfRequestResponse(msg)) {
-            final Channel parent = HttpUtils.getMainChannel(ctx);
-            final ChannelPromise closeAfterPromise = shouldCloseAfter(ctx, parent);
+            Channel parent = HttpUtils.getMainChannel(ctx);
+            ChannelPromise closeAfterPromise = shouldCloseAfter(ctx, parent);
             if (closeAfterPromise != null) {
 
                 // Add listener to close the channel AFTER response has been sent.
@@ -113,7 +112,7 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
         return false;
     }
 
-    private void closeChannel(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+    private void closeChannel(ChannelHandlerContext ctx, ChannelPromise promise) {
         Channel child = ctx.channel();
         Channel parent = HttpUtils.getMainChannel(ctx);
 
@@ -203,7 +202,8 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
                         // to do it
                         // explicitly ourselves like this.
                         LOG.debug(
-                                "gracefullyWithDelay: firing graceful_shutdown event to make netty send a final go_away frame and then close connection. channel={}",
+                                "gracefullyWithDelay: firing graceful_shutdown event to make netty send a final"
+                                        + " go_away frame and then close connection. channel={}",
                                 parent.id().asShortText());
                         Http2Exception h2e =
                                 new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);

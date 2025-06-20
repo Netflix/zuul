@@ -24,11 +24,10 @@ import com.netflix.config.DynamicLongProperty;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.origins.NettyOrigin;
-
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 
 /**
  * Origin Timeout Manager
@@ -97,8 +96,7 @@ public class OriginTimeoutManager {
     /**
      * This method makes the assumption that the timeout is a numeric value
      */
-    @Nullable
-    private Long getRequestReadTimeout(IClientConfig clientConfig) {
+    @Nullable private Long getRequestReadTimeout(IClientConfig clientConfig) {
         return Optional.ofNullable(clientConfig.get(CommonClientConfigKey.ReadTimeout))
                 .map(Long::valueOf)
                 .orElse(null);
@@ -107,8 +105,7 @@ public class OriginTimeoutManager {
     /**
      * This method makes the assumption that the timeout is a numeric value
      */
-    @Nullable
-    private Long getOriginReadTimeout() {
+    @Nullable private Long getOriginReadTimeout() {
         return Optional.ofNullable(origin.getClientConfig().get(CommonClientConfigKey.ReadTimeout))
                 .map(Long::valueOf)
                 .orElse(null);

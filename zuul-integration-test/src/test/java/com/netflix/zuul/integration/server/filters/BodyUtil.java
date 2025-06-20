@@ -18,11 +18,11 @@ package com.netflix.zuul.integration.server.filters;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 
 public class BodyUtil {
-    public static boolean needsRequestBodyBuffering(final HttpRequestMessage request) {
+    public static boolean needsRequestBodyBuffering(HttpRequestMessage request) {
         return request.getQueryParams().contains("bufferRequestBody", "true");
     }
 
-    public static boolean needsResponseBodyBuffering(final HttpRequestMessage request) {
+    public static boolean needsResponseBodyBuffering(HttpRequestMessage request) {
         return request.getQueryParams().contains("bufferResponseBody", "true");
     }
 }

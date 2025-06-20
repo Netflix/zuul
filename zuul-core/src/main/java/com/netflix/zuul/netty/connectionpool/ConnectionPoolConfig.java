@@ -57,4 +57,8 @@ public interface ConnectionPoolConfig {
     boolean isSecure();
 
     boolean useIPAddrForServer();
+
+    default boolean isCloseOnCircuitBreakerEnabled() {
+        return true;
+    }
 }

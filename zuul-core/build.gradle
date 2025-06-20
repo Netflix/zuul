@@ -3,15 +3,21 @@ apply plugin: "java-library"
 
 dependencies {
 
+    compileOnly libraries.lombok
+    annotationProcessor(libraries.lombok)
+
     implementation libraries.guava
     // TODO(carl-mastrangelo): this can be implementation; remove Logger from public api points.
     api libraries.slf4j
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.76'
+
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+    implementation 'org.bouncycastle:bctls-jdk18on:1.78.1'
+
     implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
     api 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
 
-    api "com.netflix.archaius:archaius-core:0.7.7"
+    api "com.netflix.archaius:archaius-core:0.7.12"
     api "com.netflix.spectator:spectator-api:latest.release"
     api "com.netflix.netflix-commons:netflix-commons-util:0.3.0"
 
@@ -20,7 +26,7 @@ dependencies {
     api "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
     api "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
 
-    api "com.netflix.eureka:eureka-client:1.10.18"
+    api "com.netflix.eureka:eureka-client:2.0.4"
     api "io.reactivex:rxjava:1.3.8"
     api platform("io.netty:netty-bom:${versions_netty}")
 
@@ -33,8 +39,8 @@ dependencies {
     api "io.netty:netty-transport"
 
     implementation "io.netty:netty-codec-haproxy"
-    implementation "io.netty:netty-transport-native-epoll:linux-x86_64"
-    implementation "io.netty:netty-transport-native-kqueue:osx-x86_64"
+    implementation (group: "io.netty", "name": "netty-transport-native-epoll", "classifier": "linux-x86_64")
+    implementation (group: "io.netty", "name": "netty-transport-native-kqueue", "classifier": "osx-x86_64")
 
     implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
 
@@ -46,8 +52,8 @@ dependencies {
     runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-x86_64" )
     runtimeOnly( group: "io.netty", name: "netty-tcnative-boringssl-static", classifier: "osx-aarch_64" )
 
-    implementation 'io.perfmark:perfmark-api:0.26.0'
-    implementation 'javax.inject:javax.inject:1'
+    implementation 'io.perfmark:perfmark-api:0.27.0'
+    api 'jakarta.inject:jakarta.inject-api:2.0.1'
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.jupiterMockito,
             libraries.mockito,
@@ -57,7 +63,7 @@ dependencies {
 
     testImplementation 'commons-configuration:commons-configuration:1.10'
 
-    testRuntimeOnly 'org.slf4j:slf4j-simple:1.7.36'
+    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.13'
 
     jmh 'org.openjdk.jmh:jmh-core:1.+'
     jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.+'

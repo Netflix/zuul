@@ -36,12 +36,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
-
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 /**
  * A collection of rejection related utilities useful for failing requests. These are tightly coupled with the channel
@@ -56,9 +55,9 @@ public final class RejectionUtils {
     /**
      * Closes the connection without sending a response, and fires a {@link RequestRejectedEvent} back up the pipeline.
      *
-     * @param nfStatus the status to use for metric reporting
-     * @param reason the reason for rejecting the request.  This is not sent back to the client.
-     * @param request the request that is being rejected.
+     * @param nfStatus              the status to use for metric reporting
+     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
+     * @param request               the request that is being rejected.
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
      */
@@ -68,6 +67,10 @@ public final class RejectionUtils {
             String reason,
             HttpRequest request,
             @Nullable Integer injectedLatencyMillis) {
+
+        // Notify other handlers before closing the conn.
+        notifyHandlers(ctx, nfStatus, REJECT_CLOSING_STATUS, reason, request);
+
         if (injectedLatencyMillis != null && injectedLatencyMillis > 0) {
             // Delay closing the connection for configured time.
             ctx.executor()
@@ -83,23 +86,20 @@ public final class RejectionUtils {
             CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_REJECTING);
             ctx.close();
         }
-
-        // Notify other handlers that we've rejected this request.
-        notifyHandlers(ctx, nfStatus, REJECT_CLOSING_STATUS, reason, request);
     }
 
     /**
      * Sends a rejection response back to the client, and fires a {@link RequestRejectedEvent} back up the pipeline.
      *
-     * @param ctx the channel handler processing the request
-     * @param nfStatus the status to use for metric reporting
-     * @param reason the reason for rejecting the request.  This is not sent back to the client.
-     * @param request the request that is being rejected.
+     * @param ctx                   the channel handler processing the request
+     * @param nfStatus              the status to use for metric reporting
+     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
+     * @param request               the request that is being rejected.
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
-     * @param rejectedCode the HTTP code to send back to the client.
-     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
-     * @param rejectionHeaders additional HTTP headers to add to the rejection response
+     * @param rejectedCode          the HTTP code to send back to the client.
+     * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectionHeaders      additional HTTP headers to add to the rejection response
      */
     public static void sendRejectionResponse(
             ChannelHandlerContext ctx,
@@ -152,16 +152,16 @@ public final class RejectionUtils {
      * Throttle either by sending rejection response message, or by closing the connection now, or just drop the
      * message. Only call this if ThrottleResult.shouldThrottle() returned {@code true}.
      *
-     * @param ctx the channel handler processing the request
-     * @param msg the request that is being rejected.
-     * @param rejectionType the type of rejection
-     * @param nfStatus the status to use for metric reporting
-     * @param reason the reason for rejecting the request.  This is not sent back to the client.
+     * @param ctx                   the channel handler processing the request
+     * @param msg                   the request that is being rejected.
+     * @param rejectionType         the type of rejection
+     * @param nfStatus              the status to use for metric reporting
+     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
-     * @param rejectedCode the HTTP code to send back to the client.
-     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
-     * @param rejectionHeaders additional HTTP headers to add to the rejection response
+     * @param rejectedCode          the HTTP code to send back to the client.
+     * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectionHeaders      additional HTTP headers to add to the rejection response
      */
     public static void handleRejection(
             ChannelHandlerContext ctx,
@@ -172,8 +172,7 @@ public final class RejectionUtils {
             @Nullable Integer injectedLatencyMillis,
             HttpResponseStatus rejectedCode,
             String rejectedBody,
-            Map<String, String> rejectionHeaders)
-            throws Exception {
+            Map<String, String> rejectionHeaders) {
 
         boolean shouldDropMessage = false;
         if (rejectionType == RejectionType.REJECT || rejectionType == RejectionType.CLOSE) {
@@ -214,15 +213,15 @@ public final class RejectionUtils {
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
      *
-     * @param ctx the channel handler processing the request
-     * @param rejectionType the type of rejection
-     * @param nfStatus the status to use for metric reporting
-     * @param reason the reason for rejecting the request.  This is not sent back to the client.
-     * @param request the request that is being rejected.
+     * @param ctx                   the channel handler processing the request
+     * @param rejectionType         the type of rejection
+     * @param nfStatus              the status to use for metric reporting
+     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
+     * @param request               the request that is being rejected.
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
-     * @param rejectedCode the HTTP code to send back to the client.
-     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectedCode          the HTTP code to send back to the client.
+     * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
      */
     public static void reject(
             ChannelHandlerContext ctx,
@@ -248,16 +247,16 @@ public final class RejectionUtils {
     /**
      * Switches on the rejection type to decide how to reject the request and or close the conn.
      *
-     * @param ctx the channel handler processing the request
-     * @param rejectionType the type of rejection
-     * @param nfStatus the status to use for metric reporting
-     * @param reason the reason for rejecting the request.  This is not sent back to the client.
-     * @param request the request that is being rejected.
+     * @param ctx                   the channel handler processing the request
+     * @param rejectionType         the type of rejection
+     * @param nfStatus              the status to use for metric reporting
+     * @param reason                the reason for rejecting the request.  This is not sent back to the client.
+     * @param request               the request that is being rejected.
      * @param injectedLatencyMillis optional parameter to delay sending a response. The reject notification is still
      *                              sent up the pipeline.
-     * @param rejectedCode the HTTP code to send back to the client.
-     * @param rejectedBody the HTTP body to be sent back.  It is assumed to be of type text/plain.
-     * @param rejectionHeaders additional HTTP headers to add to the rejection response
+     * @param rejectedCode          the HTTP code to send back to the client.
+     * @param rejectedBody          the HTTP body to be sent back.  It is assumed to be of type text/plain.
+     * @param rejectionHeaders      additional HTTP headers to add to the rejection response
      */
     public static void reject(
             ChannelHandlerContext ctx,
@@ -304,9 +303,9 @@ public final class RejectionUtils {
 
     private static boolean closeConnectionAfterReject(Channel channel) {
         if (channel.hasAttr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)) {
-            return HAProxyProtocolVersion.V2
-                    == channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
-                            .get();
+            return channel.attr(HAProxyMessageChannelHandler.ATTR_HAPROXY_VERSION)
+                            .get()
+                    == HAProxyProtocolVersion.V2;
         } else {
             return false;
         }

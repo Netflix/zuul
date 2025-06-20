@@ -23,11 +23,10 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -45,12 +44,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
                 .attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE)
                 .get();
 
-        if (msg instanceof HttpResponse) {
-            HttpResponse response = (HttpResponse) msg;
-            if (closePromise != null) {
-                // Add header to tell client that they should close this connection.
-                response.headers().set(HttpHeaderNames.CONNECTION, "close");
-            }
+        if (msg instanceof HttpResponse response && closePromise != null) {
+            // Add header to tell client that they should close this connection.
+            response.headers().set(HttpHeaderNames.CONNECTION, "close");
         }
 
         super.write(ctx, msg, promise);
@@ -96,9 +92,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
     }
 
     protected void gracefully(ChannelHandlerContext ctx, ChannelPromise promise) {
-        final Channel channel = ctx.channel();
+        Channel channel = ctx.channel();
         if (channel.isActive()) {
-            final String channelId = channel.id().asShortText();
+            String channelId = channel.id().asShortText();
 
             // In gracefulCloseDelay secs time, go ahead and close the connection if it hasn't already been.
             int gracefulCloseDelay = ConnectionCloseChannelAttributes.gracefulCloseDelay(channel);
@@ -116,11 +112,13 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
                                     // for this conn fires.
                                     if (requestInflight.get()) {
                                         LOG.debug(
-                                                "gracefully: firing graceful_shutdown event to close connection, but request still inflight, so leaving. channel={}",
+                                                "gracefully: firing graceful_shutdown event to close connection, but"
+                                                        + " request still inflight, so leaving. channel={}",
                                                 channelId);
                                     } else {
                                         LOG.debug(
-                                                "gracefully: firing graceful_shutdown event to close connection. channel={}",
+                                                "gracefully: firing graceful_shutdown event to close connection."
+                                                        + " channel={}",
                                                 channelId);
                                         ctx.close(promise);
                                     }

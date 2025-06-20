@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
@@ -63,20 +65,18 @@ import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
-import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
+import javax.net.ssl.SSLException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by saroskar on 1/6/17.
@@ -119,13 +119,13 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try (TaskCloseable ignore = PerfMark.traceTask("CRR.channelRead")) {
             channelReadInternal(ctx, msg);
         }
     }
 
-    private void channelReadInternal(final ChannelHandlerContext ctx, Object msg) throws Exception {
+    private void channelReadInternal(ChannelHandlerContext ctx, Object msg) {
         // Flag that we have now received the LastContent for this request from the client.
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
@@ -162,7 +162,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         + "clientRequest = " + clientRequest.toString()
                         + ", uri = " + String.valueOf(clientRequest.uri())
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
-                final ZuulException ze = new ZuulException(errorMsg);
+                ZuulException ze = new ZuulException(errorMsg);
                 ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
                 StatusCategoryUtils.setStatusCategory(
                         zuulRequest.getContext(),
@@ -181,7 +181,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()));
-                final ZuulException ze = new ZuulException("Multiple Host headers");
+                ZuulException ze = new ZuulException("Multiple Host headers");
                 ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 StatusCategoryUtils.setStatusCategory(
                         zuulRequest.getContext(),
@@ -196,7 +196,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             // Send the request down the filter pipeline
             ctx.fireChannelRead(zuulRequest);
         } else if (msg instanceof HttpContent) {
-            if ((zuulRequest != null) && (!zuulRequest.getContext().isCancelled())) {
+            if ((zuulRequest != null) && !zuulRequest.getContext().isCancelled()) {
                 ctx.fireChannelRead(msg);
             } else {
                 // We already sent response for this request, these are laggard request body chunks that are still
@@ -216,11 +216,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof CompleteEvent) {
-            final CompleteReason reason = ((CompleteEvent) evt).getReason();
+            CompleteReason reason = ((CompleteEvent) evt).getReason();
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 zuulRequest.disposeBufferedBody();
-                final CurrentPassport passport = CurrentPassport.fromSessionContext(zuulRequest.getContext());
+                CurrentPassport passport = CurrentPassport.fromSessionContext(zuulRequest.getContext());
                 if ((passport != null) && (passport.findState(PassportState.OUT_RESP_LAST_CONTENT_SENT) == null)) {
                     // Only log this state if the response does not seem to have completed normally.
                     passport.add(PassportState.IN_REQ_CANCELLED);
@@ -239,7 +239,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
 
             if (reason != CompleteReason.SESSION_COMPLETE && zuulRequest != null) {
-                final SessionContext zuulCtx = zuulRequest.getContext();
+                SessionContext zuulCtx = zuulRequest.getContext();
                 if (clientRequest != null) {
                     if (LOG.isInfoEnabled()) {
                         // With http/2, the netty codec closes/completes the stream immediately after writing the
@@ -247,7 +247,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up
                         // state. But
                         // thats ok, so don't log in that case.
-                        if (!"HTTP/2".equals(zuulRequest.getProtocol())) {
+                        if (Objects.equals(zuulRequest.getProtocol(), "HTTP/2")) {
                             LOG.debug(
                                     "Client {} request UUID {} to {} completed with reason = {}, {}",
                                     clientRequest.method(),
@@ -278,21 +278,21 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         super.userEventTriggered(ctx, evt);
 
         if (evt instanceof CompleteEvent) {
-            final Channel channel = ctx.channel();
+            Channel channel = ctx.channel();
             channel.attr(ATTR_ZUUL_REQ).set(null);
             channel.attr(ATTR_ZUUL_RESP).set(null);
             channel.attr(ATTR_LAST_CONTENT_RECEIVED).set(null);
         }
     }
 
-    private static void dumpDebugInfo(final List<String> debugInfo) {
+    private static void dumpDebugInfo(List<String> debugInfo) {
         debugInfo.forEach((dbg) -> LOG.debug(dbg));
     }
 
     private void handleExpect100Continue(ChannelHandlerContext ctx, HttpRequest req) {
         if (HttpUtil.is100ContinueExpected(req)) {
             PerfMark.event("CRR.handleExpect100Continue");
-            final ChannelFuture f =
+            ChannelFuture f =
                     ctx.writeAndFlush(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.CONTINUE));
             f.addListener((s) -> {
                 if (!s.isSuccess()) {
@@ -306,11 +306,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     }
 
     // Build a ZuulMessage from the netty request.
-    private HttpRequestMessage buildZuulHttpRequest(
-            final HttpRequest nativeRequest, final ChannelHandlerContext clientCtx) {
+    private HttpRequestMessage buildZuulHttpRequest(HttpRequest nativeRequest, ChannelHandlerContext clientCtx) {
         PerfMark.attachTag("path", nativeRequest, HttpRequest::uri);
         // Setup the context for this request.
-        final SessionContext context;
+        SessionContext context;
         if (decorator != null) { // Optionally decorate the context.
             SessionContext tempContext = new SessionContext();
             // Store the netty channel in SessionContext.
@@ -323,18 +322,17 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         // Get the client IP (ignore XFF headers at this point, as that can be app specific).
-        final Channel channel = clientCtx.channel();
-        final String clientIp =
-                channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
+        Channel channel = clientCtx.channel();
+        String clientIp = getClientIp(channel);
 
         // This is the only way I found to get the port of the request with netty...
-        final int port =
+        int port =
                 channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).get();
-        final String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS)
+        String serverName = channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_ADDRESS)
                 .get();
-        final SocketAddress clientDestinationAddress =
+        SocketAddress clientDestinationAddress =
                 channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).get();
-        final InetSocketAddress proxyProtocolDestinationAddress = channel.attr(
+        InetSocketAddress proxyProtocolDestinationAddress = channel.attr(
                         SourceAddressChannelHandler.ATTR_PROXY_PROTOCOL_DESTINATION_ADDRESS)
                 .get();
         if (proxyProtocolDestinationAddress != null) {
@@ -343,7 +341,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         // Store info about the SSL handshake if applicable, and choose the http scheme.
         String scheme = SCHEME_HTTP;
-        final SslHandshakeInfo sslHandshakeInfo =
+        SslHandshakeInfo sslHandshakeInfo =
                 channel.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
         if (sslHandshakeInfo != null) {
             context.set(CommonContextKeys.SSL_HANDSHAKE_INFO, sslHandshakeInfo);
@@ -360,10 +358,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         String path = parsePath(nativeRequest.uri());
 
         // Setup the req/resp message objects.
-        final HttpRequestMessage request = new HttpRequestMessageImpl(
+        HttpRequestMessage request = new HttpRequestMessageImpl(
                 context,
                 protocol,
-                nativeRequest.method().asciiName().toString().toLowerCase(),
+                nativeRequest.method().asciiName().toString().toLowerCase(Locale.ROOT),
                 path,
                 copyQueryParams(nativeRequest),
                 copyHeaders(nativeRequest),
@@ -392,11 +390,15 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         channel.attr(ATTR_ZUUL_REQ).set(request);
 
         if (nativeRequest instanceof DefaultFullHttpRequest) {
-            final ByteBuf chunk = ((DefaultFullHttpRequest) nativeRequest).content();
+            ByteBuf chunk = ((DefaultFullHttpRequest) nativeRequest).content();
             request.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
 
         return request;
+    }
+
+    protected String getClientIp(Channel channel) {
+        return channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
     }
 
     private String parsePath(String uri) {
@@ -432,8 +434,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
     }
 
-    private static Headers copyHeaders(final HttpRequest req) {
-        final Headers headers = new Headers(req.headers().size());
+    private static Headers copyHeaders(HttpRequest req) {
+        Headers headers = new Headers(req.headers().size());
         for (Iterator<Entry<String, String>> it = req.headers().iteratorAsString(); it.hasNext(); ) {
             Entry<String, String> header = it.next();
             headers.add(header.getKey(), header.getValue());
@@ -441,10 +443,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         return headers;
     }
 
-    public static HttpQueryParams copyQueryParams(final HttpRequest nativeRequest) {
-        final String uri = nativeRequest.uri();
+    public static HttpQueryParams copyQueryParams(HttpRequest nativeRequest) {
+        String uri = nativeRequest.uri();
         int queryStart = uri.indexOf('?');
-        final String query = queryStart == -1 ? null : uri.substring(queryStart + 1);
+        String query = queryStart == -1 ? null : uri.substring(queryStart + 1);
         return HttpQueryParams.parse(query);
     }
 
@@ -476,9 +478,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
     }
 
-    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) throws Exception {
+    private void fireWriteError(String requestPart, Throwable cause, ChannelHandlerContext ctx) {
 
-        final String errMesg = String.format("Error writing %s to client", requestPart);
+        String errMesg = String.format("Error writing %s to client", requestPart);
 
         if (cause instanceof java.nio.channels.ClosedChannelException
                 || cause instanceof Errors.NativeIoException
@@ -499,7 +501,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private boolean isStreamCancelled(Throwable cause) {
         // Detect if the stream is cancelled or closed.
-        // If the stream was closed before the write occured, then netty flags it with INTERNAL_ERROR code.
+        // If the stream was closed before the write occurred, then netty flags it with INTERNAL_ERROR code.
         if (cause instanceof Http2Exception.StreamException) {
             Http2Exception http2Exception = (Http2Exception) cause;
             if (http2Exception.error() == Http2Error.INTERNAL_ERROR) {

@@ -33,10 +33,10 @@ import org.slf4j.LoggerFactory;
  */
 public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocolHandler {
 
-    private static Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleWebSocketPushClientProtocolHandler.class);
 
     @Override
-    public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public final void channelRead(ChannelHandlerContext ctx, Object msg) {
         try {
             if (!isAuthenticated()) {
                 // Do not entertain ANY message from unauthenticated client
@@ -47,9 +47,9 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
             } else if (msg instanceof CloseWebSocketFrame) {
                 logger.debug("received close frame");
                 ctx.close();
-            } else if (msg instanceof TextWebSocketFrame) {
-                final TextWebSocketFrame tf = (TextWebSocketFrame) msg;
-                final String text = tf.text();
+            } else if (msg instanceof TextWebSocketFrame tf) {
+                
+                String text = tf.text();
                 logger.debug("received test frame: {}", text);
                 if (text != null && text.startsWith("ECHO ")) { // echo protocol
                     ctx.channel().writeAndFlush(tf.copy());

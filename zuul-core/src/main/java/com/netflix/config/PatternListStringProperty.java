@@ -16,12 +16,11 @@
 
 package com.netflix.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -39,7 +38,7 @@ public class PatternListStringProperty extends DerivedStringProperty<List<Patter
     protected List<Pattern> derive(String value) {
         ArrayList<Pattern> ptns = new ArrayList<>();
         if (value != null) {
-            for (String ptnTxt : value.split(",")) {
+            for (String ptnTxt : value.split(",", -1)) {
                 try {
                     ptns.add(Pattern.compile(ptnTxt.trim()));
                 } catch (Exception e) {

@@ -33,6 +33,7 @@ public enum FilterCategory {
     OBSERVABILITY("observability", "Filters providing observability features"),
     OVERLOAD("overload", "Filters to respond on the server being in an overloaded state such as brownout"),
     ROUTING("routing", "Filters which make routing decisions"),
+    UNSPECIFIED("unspecified", "Default category when no category is specified"),
     ;
 
     private final String code;

@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.ssl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.ssl.ServerSslConfig;
@@ -31,9 +33,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,6 +48,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToDoubleFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -77,7 +78,7 @@ public class BaseSslContextFactory implements SslContextFactory {
     @Override
     public SslContextBuilder createBuilderForServer() {
         try {
-            ArrayList<X509Certificate> trustedCerts = getTrustedX509Certificates();
+            List<X509Certificate> trustedCerts = getTrustedX509Certificates();
             SslProvider sslProvider = chooseSslProvider();
 
             LOG.debug("Using SslProvider of type {}", sslProvider.name());
@@ -182,7 +183,7 @@ public class BaseSslContextFactory implements SslContextFactory {
         return SupportedCipherSuiteFilter.INSTANCE;
     }
 
-    protected ArrayList<X509Certificate> getTrustedX509Certificates()
+    protected List<X509Certificate> getTrustedX509Certificates()
             throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         ArrayList<X509Certificate> trustedCerts = new ArrayList<>();
 
@@ -209,7 +210,7 @@ public class BaseSslContextFactory implements SslContextFactory {
                 LOG.debug("X509Cert Trust Store Password {}", trustStorePassword);
             }
 
-            final KeyStore trustStore = KeyStore.getInstance("JKS");
+            KeyStore trustStore = KeyStore.getInstance("JKS");
             trustStore.load(
                     new FileInputStream(serverSslConfig.getClientAuthTrustStoreFile()),
                     trustStorePassword.toCharArray());
@@ -229,7 +230,7 @@ public class BaseSslContextFactory implements SslContextFactory {
      *
      */
     protected String getTruststorePassword(byte[] trustStorePwdBytes) {
-        return new String(trustStorePwdBytes).trim();
+        return new String(trustStorePwdBytes, UTF_8).trim();
     }
 
     /**

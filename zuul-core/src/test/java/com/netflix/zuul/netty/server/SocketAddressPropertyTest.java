@@ -16,20 +16,19 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.netflix.zuul.netty.server.SocketAddressProperty.BindType;
 import io.netty.channel.unix.DomainSocketAddress;
-import org.junit.jupiter.api.Test;
-
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class SocketAddressPropertyTest {
 
@@ -162,5 +161,13 @@ class SocketAddressPropertyTest {
             });
             assertTrue(exception.getMessage().contains("Port"));
         }
+    }
+
+    @Test
+    public void failsOnBadAddress() throws Exception {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            SocketAddressProperty.Decoder.INSTANCE.apply("");
+        });
+        assertEquals("Invalid address", exception.getMessage());
     }
 }

@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.netty.server.http2;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -28,8 +30,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.junit.jupiter.api.Test;
-
-import static com.google.common.truth.Truth.assertThat;
 
 class Http2ContentLengthEnforcingHandlerTest {
 

@@ -32,6 +32,7 @@ import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.histogram.PercentileTimer;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
@@ -43,16 +44,16 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.AsyncMapping;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseServerStartup {
+
     protected static final Logger LOG = LoggerFactory.getLogger(BaseServerStartup.class);
 
     protected final ServerStatusManager serverStatusManager;
@@ -125,6 +126,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #chooseAddrsAndChannels(ChannelGroup)} instead.
      */
@@ -147,9 +149,15 @@ public abstract class BaseServerStartup {
         return channelDependencies;
     }
 
+    protected ChannelConfig defaultChannelDependencies(ListenerSpec listenerSpec) {
+        ChannelConfig channelDependencies = new ChannelConfig();
+        addChannelDependencies(channelDependencies, listenerSpec);
+        return channelDependencies;
+    }
+
     protected void addChannelDependencies(
             ChannelConfig channelDeps,
-            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName is used by subclasses
+            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName may be overriden by subclasse
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
@@ -159,7 +167,38 @@ public abstract class BaseServerStartup {
 
         channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
-        final Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
+        Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
+        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
+        Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
+        channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
+        channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
+
+        channelDeps.set(ZuulDependencyKeys.eventLoopGroupMetrics, eventLoopGroupMetrics);
+
+        channelDeps.set(ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDeps.set(ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+    }
+
+    protected void addChannelDependencies(
+            ChannelConfig channelDeps,
+            @SuppressWarnings("unused") ListenerSpec listenerSpec) { // listenerSpec may be overriden by subclasses
+        channelDeps.set(ZuulDependencyKeys.registry, registry);
+
+        channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
+        channelDeps.set(ZuulDependencyKeys.serverStatusManager, serverStatusManager);
+
+        channelDeps.set(ZuulDependencyKeys.accessLogPublisher, accessLogPublisher);
+
+        channelDeps.set(ZuulDependencyKeys.sessionCtxDecorator, sessionCtxDecorator);
+        channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
+        Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
+        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
+        channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
+        Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
         channelDeps.set(ZuulDependencyKeys.filterLoader, filterLoader);
         channelDeps.set(ZuulDependencyKeys.filterUsageNotifier, usageNotifier);
@@ -294,6 +333,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress)} instead.
      */
@@ -303,6 +343,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, ServerSslConfig)} instead.
      */
@@ -312,6 +353,7 @@ public abstract class BaseServerStartup {
     }
 
     // TODO(carl-mastrangelo): remove this after 2.1.7
+
     /**
      * Use {@link #logAddrConfigured(SocketAddress, AsyncMapping)} instead.
      */

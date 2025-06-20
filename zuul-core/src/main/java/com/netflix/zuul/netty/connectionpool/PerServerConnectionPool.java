@@ -28,10 +28,6 @@ import io.netty.channel.EventLoop;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -41,6 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: michaels@netflix.com
@@ -136,7 +135,7 @@ public class PerServerConnectionPool implements IConnectionPool {
     }
 
     /** function to run when a connection is acquired before returning it to caller. */
-    protected void onAcquire(final PooledConnection conn, CurrentPassport passport) {
+    protected void onAcquire(PooledConnection conn, CurrentPassport passport) {
         passport.setOnChannel(conn.getChannel());
         removeIdleStateHandler(conn);
 
@@ -164,21 +163,29 @@ public class PerServerConnectionPool implements IConnectionPool {
         Promise<PooledConnection> promise = eventLoop.newPromise();
 
         // Try getting a connection from the pool.
-        final PooledConnection conn = tryGettingFromConnectionPool(eventLoop);
+        PooledConnection conn = tryGettingFromConnectionPool(eventLoop);
         if (conn != null) {
             // There was a pooled connection available, so use this one.
-            conn.startRequestTimer();
-            conn.incrementUsageCount();
-            conn.getChannel().read();
-            onAcquire(conn, passport);
-            initPooledConnection(conn, promise);
-            selectedHostAddr.set(getSelectedHostString(serverAddr));
+            reusePooledConnection(passport, selectedHostAddr, conn, promise);
         } else {
             // connection pool empty, create new connection using client connection factory.
             tryMakingNewConnection(eventLoop, promise, passport, selectedHostAddr);
         }
 
         return promise;
+    }
+
+    protected void reusePooledConnection(
+            CurrentPassport passport,
+            AtomicReference<? super InetAddress> selectedHostAddr,
+            PooledConnection conn,
+            Promise<PooledConnection> promise) {
+        conn.startRequestTimer();
+        conn.incrementUsageCount();
+        conn.getChannel().read();
+        onAcquire(conn, passport);
+        initPooledConnection(conn, promise);
+        selectedHostAddr.set(getSelectedHostString(serverAddr));
     }
 
     protected void updateServerStatsOnAcquire() {
@@ -233,21 +240,8 @@ public class PerServerConnectionPool implements IConnectionPool {
             Promise<PooledConnection> promise,
             CurrentPassport passport,
             AtomicReference<? super InetAddress> selectedHostAddr) {
-        // Enforce MaxConnectionsPerHost config.
-        int maxConnectionsPerHost = config.maxConnectionsPerHost();
-        int openAndOpeningConnectionCount = server.getOpenConnectionsCount() + connCreationsInProgress.get();
-        if (maxConnectionsPerHost != -1 && openAndOpeningConnectionCount >= maxConnectionsPerHost) {
-            maxConnsPerHostExceededCounter.increment();
-            promise.setFailure(new OriginConnectException(
-                    "maxConnectionsPerHost=" + maxConnectionsPerHost + ", connectionsPerHost="
-                            + openAndOpeningConnectionCount,
-                    OutboundErrorType.ORIGIN_SERVER_MAX_CONNS));
-            LOG.warn(
-                    "Unable to create new connection because at MaxConnectionsPerHost! maxConnectionsPerHost={}, connectionsPerHost={}, host={}origin={}",
-                    maxConnectionsPerHost,
-                    openAndOpeningConnectionCount,
-                    server.getServerId(),
-                    config.getOriginName());
+
+        if (!isWithinConnectionLimit(promise)) {
             return;
         }
 
@@ -258,7 +252,7 @@ public class PerServerConnectionPool implements IConnectionPool {
 
             selectedHostAddr.set(getSelectedHostString(serverAddr));
 
-            final ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
+            ChannelFuture cf = connectToServer(eventLoop, passport, serverAddr);
 
             if (cf.isDone()) {
                 handleConnectCompletion(cf, promise, passport);
@@ -280,6 +274,28 @@ public class PerServerConnectionPool implements IConnectionPool {
         } catch (Throwable e) {
             promise.setFailure(e);
         }
+    }
+
+    protected boolean isWithinConnectionLimit(Promise<PooledConnection> promise) {
+        // Enforce MaxConnectionsPerHost config.
+        int maxConnectionsPerHost = config.maxConnectionsPerHost();
+        int openAndOpeningConnectionCount = server.getOpenConnectionsCount() + connCreationsInProgress.get();
+        if (maxConnectionsPerHost != -1 && openAndOpeningConnectionCount >= maxConnectionsPerHost) {
+            maxConnsPerHostExceededCounter.increment();
+            promise.setFailure(new OriginConnectException(
+                    "maxConnectionsPerHost=" + maxConnectionsPerHost + ", connectionsPerHost="
+                            + openAndOpeningConnectionCount,
+                    OutboundErrorType.ORIGIN_SERVER_MAX_CONNS));
+            LOG.warn(
+                    "Unable to create new connection because at MaxConnectionsPerHost! maxConnectionsPerHost={},"
+                            + " connectionsPerHost={}, host={}origin={}",
+                    maxConnectionsPerHost,
+                    openAndOpeningConnectionCount,
+                    server.getServerId(),
+                    config.getOriginName());
+            return false;
+        }
+        return true;
     }
 
     protected ChannelFuture connectToServer(EventLoop eventLoop, CurrentPassport passport, SocketAddress serverAddr) {
@@ -322,7 +338,7 @@ public class PerServerConnectionPool implements IConnectionPool {
 
     protected void createConnection(
             ChannelFuture cf, Promise<PooledConnection> callerPromise, CurrentPassport passport) {
-        final PooledConnection conn = pooledConnectionFactory.create(cf.channel());
+        PooledConnection conn = pooledConnectionFactory.create(cf.channel());
 
         conn.incrementUsageCount();
         conn.startRequestTimer();
@@ -355,8 +371,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         CurrentPassport passport = CurrentPassport.fromChannel(conn.getChannel());
 
         // Discard conn if already at least above waterline in the pool already for this server.
-        int poolWaterline = config.perServerWaterline();
-        if (poolWaterline > -1 && connections.size() >= poolWaterline) {
+        if (isOverPerServerWaterline(connections.size())) {
             closeAboveHighWaterMarkCounter.increment();
             conn.close();
             conn.setInPool(false);
@@ -374,6 +389,11 @@ public class PerServerConnectionPool implements IConnectionPool {
             conn.setInPool(false);
             return false;
         }
+    }
+
+    protected boolean isOverPerServerWaterline(int connectionsInPool) {
+        int poolWaterline = config.perServerWaterline();
+        return poolWaterline > -1 && connectionsInPool >= poolWaterline;
     }
 
     @Override
@@ -428,8 +448,7 @@ public class PerServerConnectionPool implements IConnectionPool {
         return connsInUse.get();
     }
 
-    @Nullable
-    private static InetAddress getSelectedHostString(SocketAddress addr) {
+    @Nullable protected InetAddress getSelectedHostString(SocketAddress addr) {
         if (addr instanceof InetSocketAddress) {
             return ((InetSocketAddress) addr).getAddress();
         } else {

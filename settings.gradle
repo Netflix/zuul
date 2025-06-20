@@ -1,8 +1,6 @@
 rootProject.name='zuul'
 
 include 'zuul-core'
-include 'zuul-groovy'
-include 'zuul-guice'
 include 'zuul-processor'
 include 'zuul-sample'
 include 'zuul-discovery'

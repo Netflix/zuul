@@ -16,6 +16,13 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -28,13 +35,6 @@ import io.netty.incubator.channel.uring.IOUring;
 import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -45,13 +45,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
 
@@ -62,14 +61,15 @@ import static org.mockito.Mockito.mock;
      4) verify that the server stops
 
 */
+@SuppressWarnings("AddressSelection")
 @Disabled
 class IoUringTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(IoUringTest.class);
-    private static final boolean IS_OS_LINUX = "linux".equals(PlatformDependent.normalizedOs());
+    private static final boolean IS_OS_LINUX = PlatformDependent.normalizedOs().equals("linux");
 
     @BeforeEach
     void beforeTest() {
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_io_uring", "true");
         config.setProperty("zuul.server.netty.socket.force_nio", "false");
     }
@@ -91,7 +91,7 @@ class IoUringTest {
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
 
-        final List<IOUringSocketChannel> ioUringChannels =
+        List<IOUringSocketChannel> ioUringChannels =
                 Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
 
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
@@ -147,7 +147,8 @@ class IoUringTest {
         }
     }
 
-    private static void checkConnection(final int port) {
+    @SuppressWarnings("EmptyCatch")
+    private static void checkConnection(int port) {
         LOGGER.info("checkConnection port {}", port);
         Socket sock = null;
         try {

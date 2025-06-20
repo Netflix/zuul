@@ -35,6 +35,7 @@ import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
+import java.util.Locale;
 
 /**
  * General-purpose filter for gzipping/ungzipping response bodies if requested/needed.  This should be run as late as
@@ -46,7 +47,7 @@ import io.netty.handler.codec.http.LastHttpContent;
  */
 @Filter(order = 110, type = FilterType.OUTBOUND)
 public class GZipResponseFilter extends HttpOutboundSyncFilter {
-    private static DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty(
+    private static final DynamicStringSetProperty GZIPPABLE_CONTENT_TYPES = new DynamicStringSetProperty(
             "zuul.gzip.contenttypes",
             "text/html,application/x-javascript,text/css,application/javascript,text/javascript,text/plain,text/xml,"
                     + "application/json,application/vnd.ms-fontobject,application/x-font-opentype,application/x-font-truetype,"
@@ -72,19 +73,19 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
         }
 
         // A flag on SessionContext can be set to override normal mechanism of checking if client accepts gzip.;
-        final HttpRequestInfo request = response.getInboundRequest();
-        final Boolean overrideIsGzipRequested =
+        HttpRequestInfo request = response.getInboundRequest();
+        Boolean overrideIsGzipRequested =
                 (Boolean) response.getContext().get(CommonContextKeys.OVERRIDE_GZIP_REQUESTED);
-        final boolean isGzipRequested = (overrideIsGzipRequested == null)
+        boolean isGzipRequested = (overrideIsGzipRequested == null)
                 ? HttpUtils.acceptsGzip(request.getHeaders())
                 : overrideIsGzipRequested;
 
         // Check the headers to see if response is already gzipped.
-        final Headers respHeaders = response.getHeaders();
+        Headers respHeaders = response.getHeaders();
         boolean isResponseCompressed = HttpUtils.isCompressed(respHeaders);
 
         // Decide what to do.;
-        final boolean shouldGzip = isGzippableContentType(response)
+        boolean shouldGzip = isGzippableContentType(response)
                 && isGzipRequested
                 && !isResponseCompressed
                 && isRightSizeForGzip(response);
@@ -100,7 +101,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
 
     @VisibleForTesting
     boolean isRightSizeForGzip(HttpResponseMessage response) {
-        final Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
+        Integer bodySize = HttpUtils.getBodySizeIfKnown(response);
         // bodySize == null is chunked encoding which is eligible for gzip compression
         return (bodySize == null) || (bodySize >= MIN_BODY_SIZE_FOR_GZIP.get());
     }
@@ -108,7 +109,7 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
     @Override
     public HttpResponseMessage apply(HttpResponseMessage response) {
         // set Gzip headers
-        final Headers respHeaders = response.getHeaders();
+        Headers respHeaders = response.getHeaders();
         respHeaders.set(HttpHeaderNames.CONTENT_ENCODING, "gzip");
         respHeaders.remove(HttpHeaderNames.CONTENT_LENGTH);
         return response;
@@ -121,14 +122,14 @@ public class GZipResponseFilter extends HttpOutboundSyncFilter {
             if (charsetIndex > 0) {
                 ct = ct.substring(0, charsetIndex);
             }
-            return GZIPPABLE_CONTENT_TYPES.get().contains(ct.toLowerCase());
+            return GZIPPABLE_CONTENT_TYPES.get().contains(ct.toLowerCase(Locale.ROOT));
         }
         return false;
     }
 
     @Override
     public HttpContent processContentChunk(ZuulMessage resp, HttpContent chunk) {
-        final Gzipper gzipper = (Gzipper) resp.getContext().get(CommonContextKeys.GZIPPER);
+        Gzipper gzipper = (Gzipper) resp.getContext().get(CommonContextKeys.GZIPPER);
         gzipper.write(chunk);
         if (chunk instanceof LastHttpContent) {
             gzipper.finish();

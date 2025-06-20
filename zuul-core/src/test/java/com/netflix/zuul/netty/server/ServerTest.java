@@ -16,6 +16,13 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
@@ -26,12 +33,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -42,23 +43,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.mock;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests for {@link Server}.
  */
+@SuppressWarnings("AddressSelection")
 class ServerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTest.class);
 
     @BeforeEach
     void beforeTest() {
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.netty.socket.force_io_uring", "false");
     }
@@ -67,10 +67,10 @@ class ServerTest {
     void getListeningSockets() throws Exception {
         ServerStatusManager ssm = mock(ServerStatusManager.class);
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
-        final List<NioSocketChannel> nioChannels = Collections.synchronizedList(new ArrayList<NioSocketChannel>());
+        List<NioSocketChannel> nioChannels = Collections.synchronizedList(new ArrayList<NioSocketChannel>());
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
-            protected void initChannel(final Channel ch) {
+            protected void initChannel(Channel ch) {
                 LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
                 if (ch instanceof NioSocketChannel) {
                     nioChannels.add((NioSocketChannel) ch);
@@ -103,7 +103,7 @@ class ServerTest {
         assertEquals(2, addrs.size());
         for (NamedSocketAddress address : addrs) {
             assertTrue(address.unwrap() instanceof InetSocketAddress);
-            final int port = ((InetSocketAddress) address.unwrap()).getPort();
+            int port = ((InetSocketAddress) address.unwrap()).getPort();
             assertNotEquals(0, port);
             checkConnection(port);
         }
@@ -119,7 +119,8 @@ class ServerTest {
         }
     }
 
-    private static void checkConnection(final int port) {
+    @SuppressWarnings("EmptyCatch")
+    private static void checkConnection(int port) {
         Socket sock = null;
         try {
             InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);

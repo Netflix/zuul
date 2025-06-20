@@ -20,7 +20,6 @@ import com.netflix.zuul.exception.ZuulException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpContent;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
@@ -48,7 +47,7 @@ public class Gzipper {
     private void write(ByteBuf bb) throws IOException {
         byte[] bytes;
         int offset;
-        final int length = bb.readableBytes();
+        int length = bb.readableBytes();
         if (bb.hasArray()) {
             /* avoid memory copy if possible */
             bytes = bb.array();
@@ -61,7 +60,7 @@ public class Gzipper {
         gzos.write(bytes, offset, length);
     }
 
-    public void write(final HttpContent chunk) {
+    public void write(HttpContent chunk) {
         try {
             write(chunk.content());
             gzos.flush();
@@ -83,7 +82,7 @@ public class Gzipper {
     }
 
     public ByteBuf getByteBuf() {
-        final ByteBuf copy = Unpooled.copiedBuffer(baos.toByteArray());
+        ByteBuf copy = Unpooled.copiedBuffer(baos.toByteArray());
         baos.reset();
         return copy;
     }

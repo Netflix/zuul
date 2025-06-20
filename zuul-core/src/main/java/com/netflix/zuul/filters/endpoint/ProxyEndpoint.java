@@ -22,7 +22,6 @@ import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfigKey;
-import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Counter;
@@ -89,10 +88,6 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
@@ -100,10 +95,17 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Not thread safe! New instance of this class is created per HTTP/1.1 request proxied to the origin but NOT for each
@@ -142,8 +144,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* Individual retry related state */
     private volatile PooledConnection originConn;
     private volatile OriginResponseReceiver originResponseReceiver;
-    private volatile int concurrentReqCount;
-    private volatile boolean proxiedRequestWithoutBuffering;
+    private AtomicInteger concurrentReqCount;
+    private volatile boolean receivedChunkAfterProxyStarted;
     protected int attemptNum;
     protected RequestAttempt currentRequestAttempt;
     protected List<RequestStat> requestStats = new ArrayList<>();
@@ -157,11 +159,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
      * Indicates how long Zuul should remember throttle events for an origin.  As of this writing, throttling is used
      * to decide to cache request bodies.
      */
-    private static final CachedDynamicLongProperty THROTTLE_MEMORY_SECONDS = new CachedDynamicLongProperty(
-            "zuul.proxy.throttle_memory_seconds", Duration.ofMinutes(5).getSeconds());
-
     private static final Set<HeaderName> REQUEST_HEADERS_TO_REMOVE =
             Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
+
     private static final Set<HeaderName> RESPONSE_HEADERS_TO_REMOVE =
             Sets.newHashSet(HttpHeaderNames.CONNECTION, HttpHeaderNames.KEEP_ALIVE);
     public static final String POOLED_ORIGIN_CONNECTION_KEY = "_origin_pooled_conn";
@@ -171,17 +171,17 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final Counter NO_RETRY_RESP_STARTED = SpectatorUtils.newCounter("zuul.no.retry", "resp_started");
 
     public ProxyEndpoint(
-            final HttpRequestMessage inMesg,
-            final ChannelHandlerContext ctx,
-            final FilterRunner<HttpResponseMessage, ?> filters,
+            HttpRequestMessage inMesg,
+            ChannelHandlerContext ctx,
+            FilterRunner<HttpResponseMessage, ?> filters,
             MethodBinding<?> methodBinding) {
         this(inMesg, ctx, filters, methodBinding, new NettyRequestAttemptFactory());
     }
 
     public ProxyEndpoint(
-            final HttpRequestMessage inMesg,
-            final ChannelHandlerContext ctx,
-            final FilterRunner<HttpResponseMessage, ?> filters,
+            HttpRequestMessage inMesg,
+            ChannelHandlerContext ctx,
+            FilterRunner<HttpResponseMessage, ?> filters,
             MethodBinding<?> methodBinding,
             NettyRequestAttemptFactory requestAttemptFactory) {
         channelCtx = ctx;
@@ -194,6 +194,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         passport = CurrentPassport.fromSessionContext(context);
         chosenServer = new AtomicReference<>(DiscoveryResult.EMPTY);
         chosenHostAddr = new AtomicReference<>();
+        concurrentReqCount = new AtomicInteger();
 
         this.methodBinding = methodBinding;
         this.requestAttemptFactory = requestAttemptFactory;
@@ -219,6 +220,60 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return origin;
     }
 
+    /**
+     * Get the implementing origin.
+     * <p>
+     * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
+     * rely on your own constructor parameters.
+     */
+    @Nullable
+    protected NettyOrigin getOrigin(HttpRequestMessage request) {
+        SessionContext context = request.getContext();
+        OriginManager<NettyOrigin> originManager =
+                (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
+        if (Debug.debugRequest(context)) {
+
+            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
+            if (routingLogEntries != null) {
+                for (String entry : routingLogEntries.build()) {
+                    Debug.addRequestDebug(context, "RoutingLog: " + entry);
+                }
+            }
+        }
+
+        String primaryRoute = context.getRouteVIP();
+        if (Strings.isNullOrEmpty(primaryRoute)) {
+            // If no vip selected, leave origin null, then later the handleNoOriginSelected() method will be invoked.
+            return null;
+        }
+
+        NettyOrigin origin = null;
+        // allow implementors to override the origin with custom injection logic
+        OriginName overrideOriginName = injectCustomOriginName(request);
+        if (overrideOriginName != null) {
+            // Use the custom vip instead if one has been provided.
+            origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
+        } else {
+            // This is the normal flow - that a RoutingFilter has assigned a route
+            OriginName originName = getOriginName(context);
+            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
+        }
+
+        verifyOrigin(context, request, origin);
+
+        // Update the routeVip on context to show the actual raw VIP from the clientConfig of the chosen Origin.
+        if (origin != null) {
+            context.set(
+                    CommonContextKeys.ACTUAL_VIP,
+                    origin.getClientConfig().get(IClientConfigKey.Keys.DeploymentContextBasedVipAddresses));
+            context.set(
+                    CommonContextKeys.ORIGIN_VIP_SECURE,
+                    origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure));
+        }
+
+        return origin;
+    }
+
     public HttpRequestMessage getZuulRequest() {
         return zuulRequest;
     }
@@ -230,9 +285,9 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             originResponseReceiver = null;
         }
 
-        if (concurrentReqCount > 0) {
+        if (concurrentReqCount.get() > 0) {
             origin.recordProxyRequestEnd();
-            concurrentReqCount--;
+            concurrentReqCount.decrementAndGet();
         }
 
         Channel origCh = null;
@@ -250,11 +305,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     public void finish(boolean error) {
-        final Channel origCh = unlinkFromOrigin();
+        Channel origCh = unlinkFromOrigin();
 
-        while (concurrentReqCount > 0) {
+        while (concurrentReqCount.get() > 0) {
             origin.recordProxyRequestEnd();
-            concurrentReqCount--;
+            concurrentReqCount.decrementAndGet();
         }
 
         if (currentRequestStat != null) {
@@ -276,7 +331,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
         }
 
-        if ((error) && (origCh != null)) {
+        if (error && (origCh != null)) {
             origCh.close();
         }
     }
@@ -288,7 +343,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     @Override
-    public HttpResponseMessage apply(final HttpRequestMessage input) {
+    public HttpResponseMessage apply(HttpRequestMessage input) {
         // If no Origin has been selected, then just return a 404 static response.
         // handle any exception here
         try {
@@ -310,10 +365,17 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     @Override
-    public HttpContent processContentChunk(final ZuulMessage zuulReq, final HttpContent chunk) {
+    public HttpContent processContentChunk(ZuulMessage zuulReq, HttpContent chunk) {
         if (originConn != null) {
+            if (chunk instanceof LastHttpContent && !receivedChunkAfterProxyStarted) {
+                // if everything except the LastHttpContent was buffered, then buffer the last chunk so this request
+                // is considered replayable
+                zuulReq.bufferBodyContents(chunk.retain());
+            }
+
             // Connected to origin, stream request body without buffering
-            proxiedRequestWithoutBuffering = true;
+            receivedChunkAfterProxyStarted = true;
+
             ByteBufUtil.touch(chunk, "ProxyEndpoint writing chunk to origin, request: ", zuulReq);
             originConn.getChannel().writeAndFlush(chunk);
             return null;
@@ -325,11 +387,11 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     @Override
-    public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
+    public HttpResponseMessage getDefaultOutput(HttpRequestMessage input) {
         return null;
     }
 
-    public void invokeNext(final HttpResponseMessage zuulResponse) {
+    public void invokeNext(HttpResponseMessage zuulResponse) {
         try {
             methodBinding.bind(() -> filterResponse(zuulResponse));
         } catch (Exception ex) {
@@ -339,15 +401,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void filterResponse(final HttpResponseMessage zuulResponse) {
-        if (responseFilters != null) {
-            responseFilters.filter(zuulResponse);
-        } else {
-            channelCtx.fireChannelRead(zuulResponse);
-        }
-    }
-
-    public void invokeNext(final HttpContent chunk) {
+    public void invokeNext(HttpContent chunk) {
         try {
             ByteBufUtil.touch(chunk, "ProxyEndpoint received chunk from origin, request: ", zuulRequest);
             methodBinding.bind(() -> filterResponseChunk(chunk));
@@ -359,7 +413,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void filterResponseChunk(final HttpContent chunk) {
+    private void filterResponse(HttpResponseMessage zuulResponse) {
+        if (responseFilters != null) {
+            responseFilters.filter(zuulResponse);
+        } else {
+            channelCtx.fireChannelRead(zuulResponse);
+        }
+    }
+
+    private void filterResponseChunk(HttpContent chunk) {
         if (context.isCancelled() || !channelCtx.channel().isActive()) {
             SpectatorUtils.newCounter(
                             "zuul.origin.strayChunk",
@@ -382,7 +444,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void storeAndLogOriginRequestInfo() {
-        final Map<String, Object> eventProps = context.getEventProperties();
+        Map<String, Object> eventProps = context.getEventProperties();
         // These two maps appear to be almost the same but are slightly different.   Also, the types in the map don't
         // match exactly what needs to happen, so this is more of a To-Do.  ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY is
         // supposed to be the mapping of IP addresses of the server.  This is (AFAICT) only used for logging.   It is
@@ -434,7 +496,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             currentRequestStat = createRequestStat();
             origin.preRequestChecks(zuulRequest);
-            concurrentReqCount++;
+            concurrentReqCount.incrementAndGet();
 
             // update RPS trackers
             updateOriginRpsTrackers(origin, attemptNum);
@@ -480,16 +542,16 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     @Override
-    public void operationComplete(final Future<PooledConnection> connectResult) {
+    public void operationComplete(Future<PooledConnection> connectResult) {
         // MUST run this within bindingcontext to support ThreadVariables.
         try {
             methodBinding.bind(() -> {
                 DiscoveryResult server = chosenServer.get();
 
-                /** TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
+                /* TODO(argha-c): This reliance on mutable update of the `chosenServer` must be improved.
                  * @see DiscoveryResult.EMPTY indicates that the loadbalancer found no available servers.
                  */
-                if (server != DiscoveryResult.EMPTY) {
+                if (!Objects.equals(server, DiscoveryResult.EMPTY)) {
                     if (currentRequestStat != null) {
                         currentRequestStat.server(server);
                     }
@@ -542,8 +604,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void writeClientRequestToOrigin(final PooledConnection conn, Duration readTimeout) {
-        final Channel ch = conn.getChannel();
+    private void writeClientRequestToOrigin(PooledConnection conn, Duration readTimeout) {
+        Channel ch = conn.getChannel();
         passport.setOnChannel(ch);
 
         // set read timeout on origin channel
@@ -554,7 +616,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
         preWriteToOrigin(chosenServer.get(), zuulRequest);
 
-        final ChannelPipeline pipeline = ch.pipeline();
+        ChannelPipeline pipeline = ch.pipeline();
         originResponseReceiver = getOriginResponseReceiver();
         pipeline.addBefore(
                 DefaultOriginChannelInitializer.CONNECTION_POOL_HANDLER,
@@ -585,7 +647,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override for custom metrics or processing
     }
 
-    private static void writeBufferedBodyContent(final HttpRequestMessage zuulRequest, final Channel channel) {
+    private static void writeBufferedBodyContent(HttpRequestMessage zuulRequest, Channel channel) {
         zuulRequest.getBodyContents().forEach((chunk) -> {
             channel.write(chunk.retain());
         });
@@ -601,7 +663,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return (attemptNum <= maxAllowedRetries) && isRemoteZuulRetriesBelowRetryLimit(maxAllowedRetries);
     }
 
-    public void errorFromOrigin(final Throwable ex) {
+    public void errorFromOrigin(Throwable ex) {
         try {
             // Flag that there was an origin server related error for the loadbalancer to choose
             // whether to circuit-trip this server.
@@ -616,7 +678,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
 
             // detach from current origin
-            final Channel originCh = unlinkFromOrigin();
+            Channel originCh = unlinkFromOrigin();
 
             methodBinding.bind(() -> processErrorFromOrigin(ex, originCh));
         } catch (Exception e) {
@@ -624,10 +686,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void processErrorFromOrigin(final Throwable ex, final Channel origCh) {
+    private void processErrorFromOrigin(Throwable ex, Channel origCh) {
         try {
-            final SessionContext zuulCtx = context;
-            final ErrorType err = requestAttemptFactory.mapNettyToOutboundErrorType(ex);
+            SessionContext zuulCtx = context;
+            ErrorType err = requestAttemptFactory.mapNettyToOutboundErrorType(ex);
 
             // Be cautious about how much we log about errors from origins, as it can have perf implications at high
             // rps.
@@ -636,7 +698,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 logger.warn(
                         "{}, origin = {}: {}", err.getStatusCategory().name(), origin.getName(), String.valueOf(ex));
             } else {
-                final String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
+                String origChInfo = (origCh != null) ? ChannelUtils.channelInfoForLogging(origCh) : "";
                 if (logger.isInfoEnabled()) {
                     // Include the stacktrace.
                     logger.warn(
@@ -667,16 +729,20 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             postErrorProcessing(ex, zuulCtx, err, chosenServer.get(), attemptNum);
 
-            final ClientException niwsEx = new ClientException(
+            ClientException niwsEx = new ClientException(
                     ClientException.ErrorType.valueOf(err.getClientErrorType().name()));
-            if (chosenServer.get() != DiscoveryResult.EMPTY) {
+            if (!Objects.equals(chosenServer.get(), DiscoveryResult.EMPTY)) {
                 origin.onRequestExceptionWithServer(zuulRequest, chosenServer.get(), attemptNum, niwsEx);
             }
 
-            if ((isBelowRetryLimit()) && (isRetryable(err))) {
+            boolean retryable = isRetryable(err);
+            if (retryable) {
+                origin.adjustRetryPolicyIfNeeded(zuulRequest);
+            }
+
+            if (retryable && isBelowRetryLimit()) {
                 // retry request with different origin
                 passport.add(PassportState.ORIGIN_RETRY_START);
-                origin.adjustRetryPolicyIfNeeded(zuulRequest);
                 proxyRequestToOrigin();
             } else {
                 // Record the exception in context. An error filter should later run which can translate this into an
@@ -702,8 +768,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override for custom processing
     }
 
-    private void handleError(final Throwable cause) {
-        final ZuulException ze = (cause instanceof ZuulException)
+    private void handleError(Throwable cause) {
+        ZuulException ze = (cause instanceof ZuulException)
                 ? (ZuulException) cause
                 : requestAttemptFactory.mapNettyToOutboundException(cause, context);
         logger.debug("Proxy endpoint failed.", cause);
@@ -730,12 +796,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         invokeNext(zuulResponse);
     }
 
-    protected boolean isRetryable(final ErrorType err) {
+    protected boolean isRetryable(ErrorType err) {
         if ((err == OutboundErrorType.RESET_CONNECTION)
                 || (err == OutboundErrorType.CONNECT_ERROR)
                 || (err == OutboundErrorType.READ_TIMEOUT
                         && IDEMPOTENT_HTTP_METHODS.contains(
-                                zuulRequest.getMethod().toUpperCase()))) {
+                                zuulRequest.getMethod().toUpperCase(Locale.ROOT)))) {
             return isRequestReplayable();
         }
         return false;
@@ -743,22 +809,22 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     /**
      * Request is replayable on a different origin IFF
-     *   A) we have not started to send response back to the client  AND
-     *   B) we have not lost any of its body chunks
+     * A) we have not started to send response back to the client  AND
+     * B) we have not lost any of its body chunks
      */
     protected boolean isRequestReplayable() {
         if (startedSendingResponseToClient) {
             NO_RETRY_RESP_STARTED.increment();
             return false;
         }
-        if (proxiedRequestWithoutBuffering) {
+        if (!zuulRequest.hasCompleteBody()) {
             NO_RETRY_INCOMPLETE_BODY.increment();
             return false;
         }
         return true;
     }
 
-    public void responseFromOrigin(final HttpResponse originResponse) {
+    public void responseFromOrigin(HttpResponse originResponse) {
         try (TaskCloseable ignore = PerfMark.traceTask("ProxyEndpoint.responseFromOrigin")) {
             PerfMark.attachTag("uuid", zuulRequest, r -> r.getContext().getUUID());
             PerfMark.attachTag("path", zuulRequest, HttpRequestInfo::getPath);
@@ -772,7 +838,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    private void processResponseFromOrigin(final HttpResponse originResponse) {
+    private void processResponseFromOrigin(HttpResponse originResponse) {
         if (originResponse.status().code() >= 500) {
             handleOriginNonSuccessResponse(originResponse, chosenServer.get());
         } else {
@@ -780,12 +846,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
-    protected void handleOriginSuccessResponse(final HttpResponse originResponse, DiscoveryResult chosenServer) {
+    protected void handleOriginSuccessResponse(HttpResponse originResponse, DiscoveryResult chosenServer) {
         origin.recordSuccessResponse();
         if (originConn != null) {
             originConn.getServer().clearSuccessiveConnectionFailureCount();
         }
-        final int respStatus = originResponse.status().code();
+        int respStatus = originResponse.status().code();
         long duration = 0;
         if (currentRequestStat != null) {
             currentRequestStat.updateWithHttpStatusCode(respStatus);
@@ -796,22 +862,22 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
         // separate nfstatus for 404 so that we can notify origins
         ByteBufUtil.touch(originResponse, "ProxyEndpoint handling successful response, request: ", zuulRequest);
-        final StatusCategory statusCategory =
+        StatusCategory statusCategory =
                 respStatus == 404 ? ZuulStatusCategory.SUCCESS_NOT_FOUND : ZuulStatusCategory.SUCCESS;
         zuulResponse = buildZuulHttpResponse(originResponse, statusCategory, context.getError());
         invokeNext(zuulResponse);
     }
 
     private HttpResponseMessage buildZuulHttpResponse(
-            final HttpResponse httpResponse, final StatusCategory statusCategory, final Throwable ex) {
+            HttpResponse httpResponse, StatusCategory statusCategory, Throwable ex) {
         startedSendingResponseToClient = true;
 
         // Translate the netty HttpResponse into a zuul HttpResponseMessage.
-        final SessionContext zuulCtx = context;
-        final int respStatus = httpResponse.status().code();
-        final HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus);
+        SessionContext zuulCtx = context;
+        int respStatus = httpResponse.status().code();
+        HttpResponseMessage zuulResponse = new HttpResponseMessageImpl(zuulCtx, zuulRequest, respStatus);
 
-        final Headers respHeaders = zuulResponse.getHeaders();
+        Headers respHeaders = zuulResponse.getHeaders();
         for (Map.Entry<String, String> entry : httpResponse.headers()) {
             respHeaders.add(entry.getKey(), entry.getValue());
         }
@@ -832,22 +898,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (httpResponse instanceof DefaultFullHttpResponse) {
             ByteBufUtil.touch(
                     httpResponse, "ProxyEndpoint converting Netty response to Zuul response, request: ", zuulRequest);
-            final ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
+            ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
             zuulResponse.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
 
         // Invoke any Ribbon execution listeners.
-        // Request was a success even if server may have responded with an error code 5XX, except for 503.
+        // Request was a success even if server may have responded with an error code 5XX.
         if (originConn != null) {
-            if (statusCategory == ZuulStatusCategory.FAILURE_ORIGIN_THROTTLED) {
-                origin.onRequestExecutionFailed(
-                        zuulRequest,
-                        originConn.getServer(),
-                        attemptNum,
-                        new ClientException(ClientException.ErrorType.SERVER_THROTTLED));
-            } else {
-                origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
-            }
+            origin.onRequestExecutionSuccess(zuulRequest, zuulResponse, originConn.getServer(), attemptNum);
         }
 
         // Collect some info about the received response.
@@ -865,8 +923,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return resp;
     }
 
-    protected void handleOriginNonSuccessResponse(final HttpResponse originResponse, DiscoveryResult chosenServer) {
-        final int respStatus = originResponse.status().code();
+    protected void handleOriginNonSuccessResponse(HttpResponse originResponse, DiscoveryResult chosenServer) {
+        int respStatus = originResponse.status().code();
         OutboundException obe;
         StatusCategory statusCategory;
         ClientException.ErrorType niwsErrorType;
@@ -902,9 +960,16 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Flag this error with the ExecutionListener.
         origin.onRequestExceptionWithServer(zuulRequest, chosenServer, attemptNum, new ClientException(niwsErrorType));
 
-        if ((isBelowRetryLimit()) && (isRetryable5xxResponse(zuulRequest, originResponse))) {
+        boolean retryable5xxResponse = isRetryable5xxResponse(zuulRequest, originResponse);
+        if (retryable5xxResponse) {
+            origin.originRetryPolicyAdjustmentIfNeeded(zuulRequest, originResponse);
+            origin.adjustRetryPolicyIfNeeded(zuulRequest);
+        }
+
+        if (retryable5xxResponse && isBelowRetryLimit()) {
             logger.debug(
-                    "Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+                    "Retrying: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={},"
+                            + " hasCompleteBody={}, method={}",
                     respStatus,
                     attemptNum,
                     origin.getMaxRetriesForRequest(context),
@@ -922,12 +987,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
             // retry request with different origin
             passport.add(PassportState.ORIGIN_RETRY_START);
-            origin.adjustRetryPolicyIfNeeded(zuulRequest);
             proxyRequestToOrigin();
         } else {
             SessionContext zuulCtx = context;
             logger.info(
-                    "Sending error to client: status={}, attemptNum={}, maxRetries={}, startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
+                    "Sending error to client: status={}, attemptNum={}, maxRetries={},"
+                            + " startedSendingResponseToClient={}, hasCompleteBody={}, method={}",
                     respStatus,
                     attemptNum,
                     origin.getMaxRetriesForRequest(zuulCtx),
@@ -942,7 +1007,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     public boolean isRetryable5xxResponse(
-            final HttpRequestMessage zuulRequest, HttpResponse originResponse) { // int retryNum, int maxRetries) {
+            HttpRequestMessage zuulRequest, HttpResponse originResponse) { // int retryNum, int maxRetries) {
         if (isRequestReplayable()) {
             int status = originResponse.status().code();
             if (status == 503 || originIndicatesRetryableInternalServerError(originResponse)) {
@@ -950,14 +1015,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
             // Retry if this is an idempotent http method AND status code was retriable for idempotent methods.
             else if (RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS.get().contains(status)
-                    && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase())) {
+                    && IDEMPOTENT_HTTP_METHODS.contains(zuulRequest.getMethod().toUpperCase(Locale.ROOT))) {
                 return true;
             }
         }
         return false;
     }
 
-    protected boolean originIndicatesRetryableInternalServerError(final HttpResponse response) {
+    protected boolean originIndicatesRetryableInternalServerError(HttpResponse response) {
         // override for custom origin headers for retry
         return false;
     }
@@ -965,7 +1030,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     /* static utility methods */
 
     protected HttpRequestMessage transformRequest(HttpRequestMessage requestMsg) {
-        final HttpRequestMessage massagedRequest = massageRequestURI(requestMsg);
+        HttpRequestMessage massagedRequest = massageRequestURI(requestMsg);
 
         Headers headers = massagedRequest.getHeaders();
         REQUEST_HEADERS_TO_REMOVE.forEach(headerName -> headers.remove(headerName.getName()));
@@ -983,7 +1048,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private static HttpRequestMessage massageRequestURI(HttpRequestMessage request) {
-        final SessionContext context = request.getContext();
+        SessionContext context = request.getContext();
         String modifiedPath;
         HttpQueryParams modifiedQueryParams = null;
         String uri = null;
@@ -993,12 +1058,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         // If another filter has specified an overrideURI, then use that instead of requested URI.
-        final Object override = context.get("overrideURI");
+        Object override = context.get("overrideURI");
         if (override != null) {
             uri = override.toString();
         }
 
-        if (null != uri) {
+        if (uri != null) {
             int index = uri.indexOf('?');
             if (index != -1) {
                 // Strip the query string off of the URI.
@@ -1026,7 +1091,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
             }
 
             request.setPath(modifiedPath);
-            if (null != modifiedQueryParams) {
+            if (modifiedQueryParams != null) {
                 request.setQueryParams(modifiedQueryParams);
             }
         }
@@ -1034,62 +1099,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return request;
     }
 
-    /**
-     * Get the implementing origin.
-     *
-     * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
-     * rely on your own constructor parameters.
-     */
-    @Nullable
-    protected NettyOrigin getOrigin(HttpRequestMessage request) {
-        SessionContext context = request.getContext();
-        OriginManager<NettyOrigin> originManager =
-                (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
-        if (Debug.debugRequest(context)) {
-
-            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
-            if (routingLogEntries != null) {
-                for (String entry : routingLogEntries.build()) {
-                    Debug.addRequestDebug(context, "RoutingLog: " + entry);
-                }
-            }
-        }
-
-        String primaryRoute = context.getRouteVIP();
-        if (Strings.isNullOrEmpty(primaryRoute)) {
-            // If no vip selected, leave origin null, then later the handleNoOriginSelected() method will be invoked.
-            return null;
-        }
-
-        String restClientName = getClientName(context);
-
-        NettyOrigin origin = null;
-        // allow implementors to override the origin with custom injection logic
-        OriginName overrideOriginName = injectCustomOriginName(request);
-        if (overrideOriginName != null) {
-            // Use the custom vip instead if one has been provided.
-            origin = getOrCreateOrigin(originManager, overrideOriginName, request.reconstructURI(), context);
-        } else if (restClientName != null) {
-            // This is the normal flow - that a RoutingFilter has assigned a route
-            OriginName originName = OriginName.fromVip(primaryRoute, restClientName);
-            origin = getOrCreateOrigin(originManager, originName, request.reconstructURI(), context);
-        }
-
-        verifyOrigin(context, request, restClientName, origin);
-
-        // Update the routeVip on context to show the actual raw VIP from the clientConfig of the chosen Origin.
-        if (origin != null) {
-            context.set(
-                    CommonContextKeys.ACTUAL_VIP,
-                    origin.getClientConfig().get(IClientConfigKey.Keys.DeploymentContextBasedVipAddresses));
-            context.set(
-                    CommonContextKeys.ORIGIN_VIP_SECURE,
-                    origin.getClientConfig().get(IClientConfigKey.Keys.IsSecure));
-        }
-
-        return origin;
+    @Nonnull
+    protected OriginName getOriginName(SessionContext context) {
+        String clientName = getClientName(context);
+        return OriginName.fromVip(context.getRouteVIP(), clientName);
     }
 
+    @Nonnull
     protected String getClientName(SessionContext context) {
         // make sure the restClientName will never be a raw VIP in cases where it's the fallback for another route
         // assignment
@@ -1100,7 +1116,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     /**
      * Inject your own custom VIP based on your own processing
-     *
+     * <p>
      * Note: this method gets called in the constructor so if overloading it or any methods called within, you cannot
      * rely on your own constructor parameters.
      *
@@ -1127,19 +1143,18 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         return origin;
     }
 
-    private void verifyOrigin(
-            SessionContext context, HttpRequestMessage request, String restClientName, Origin primaryOrigin) {
+    private void verifyOrigin(SessionContext context, HttpRequestMessage request, Origin primaryOrigin) {
         if (primaryOrigin == null) {
+            String vip = context.getRouteVIP();
             // If no origin found then add specific error-cause metric tag, and throw an exception with 404 status.
             StatusCategoryUtils.setStatusCategory(
                     context,
                     ZuulStatusCategory.SUCCESS_LOCAL_NO_ROUTE,
-                    "Unable to find an origin client matching `" + restClientName + "` to handle request");
+                    "Unable to find an origin client matching `" + vip + "` to handle request");
             String causeName = "RESTCLIENT_NOTFOUND";
             originNotFound(context, causeName);
             ZuulException ze = new ZuulException(
-                    "No origin found for request. name=" + restClientName + ", uri=" + request.reconstructURI(),
-                    causeName);
+                    "No origin found for request. name=" + vip + ", uri=" + request.reconstructURI(), causeName);
             ze.setStatusCode(404);
             throw ze;
         }

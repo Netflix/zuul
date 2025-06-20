@@ -32,7 +32,7 @@ public class ResponseHeaderFilter extends HttpOutboundFilter {
 
     @Override
     public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage response) {
-        final String requestId = response.getInboundRequest().getHeaders().getFirst(HeaderNames.REQUEST_ID);
+        String requestId = response.getInboundRequest().getHeaders().getFirst(HeaderNames.REQUEST_ID);
         if (requestId != null) {
             response.getHeaders().set(HeaderNames.REQUEST_ID, requestId);
             response.storeInboundResponse();

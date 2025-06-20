@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.36.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.67.0'
     }
 }
 
@@ -8,7 +8,9 @@ plugins {
     id 'com.netflix.nebula.netflixoss' version '11.6.0'
     id "com.google.osdetector" version '1.7.3'
     id 'me.champeau.jmh' version '0.7.2'
-    id 'org.openrewrite.rewrite' version '6.8.1'
+    id 'org.openrewrite.rewrite' version '6.29.3'
+    id 'net.ltgt.errorprone' version '4.1.0'
+    id 'com.diffplug.spotless' version "6.25.0"
 }
 
 ext.githubProjectName = rootProject.name
@@ -16,7 +18,7 @@ ext.githubProjectName = rootProject.name
 
 idea {
     project {
-        languageLevel = '17'
+        languageLevel = '21'
     }
 }
 
@@ -29,6 +31,18 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    apply plugin: 'com.diffplug.spotless'
+
+    spotless {
+        enforceCheck false
+        java {
+            rootProject.hasProperty('spotlessJavaTarget') ? target(rootProject.getProperty('spotlessJavaTarget').split(",")) : target('src/*/java/**/*.java')
+            removeUnusedImports('cleanthat-javaparser-unnecessaryimport')
+            palantirJavaFormat()
+            formatAnnotations()
+        }
+    }
 }
 
 subprojects {
@@ -38,7 +52,7 @@ subprojects {
     apply plugin: 'com.netflix.nebula.dependency-lock'
     apply plugin: 'me.champeau.jmh'
     apply plugin: 'org.openrewrite.rewrite'
-    apply plugin: 'com.palantir.java-format'
+    apply plugin: 'net.ltgt.errorprone'
 
     license {
         ignoreFailures = false
@@ -53,12 +67,37 @@ subprojects {
 
     group = "com.netflix.${githubProjectName}"
 
-    sourceCompatibility = '17'
-    targetCompatibility = '17'
+    sourceCompatibility = '21'
+    targetCompatibility = '21'
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        dependencies {
+            errorprone "com.uber.nullaway:nullaway:0.12.4"
+            errorprone "com.google.errorprone:error_prone_core:2.36.0"
+        }
+
+        options.compilerArgs << "-Werror"
+
+        options.errorprone {
+            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.OFF)
+            option("NullAway:AnnotatedPackages", "com.netflix.zuul")
+            errorproneArgs.addAll(
+                // Uncomment and remove -Werror javac flag to automatically apply fixes for a check.
+                // N.B: disables all other checks while enabled.
+                // "-XepPatchChecks:UnnecessaryParentheses",
+                // "-XepPatchLocation:IN_PLACE",
+                "-Xep:ClassCanBeStatic:OFF",
+                "-Xep:EmptyBlockTag:OFF",
+                "-Xep:FutureReturnValueIgnored:OFF",
+                "-Xep:InlineMeSuggester:OFF",
+                "-Xep:MissingSummary:OFF",
+            )
         }
     }
 
@@ -77,22 +116,18 @@ subprojects {
 
     ext {
         libraries = [
-                guava: "com.google.guava:guava:31.1-jre",
+                guava: "com.google.guava:guava:33.3.0-jre",
                 okhttp: 'com.squareup.okhttp3:okhttp:4.12.0',
-                jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.+',
-                jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.+',
-                jupiterEngine: 'org.junit.jupiter:junit-jupiter-engine:5.+',
-                jupiterMockito: 'org.mockito:mockito-junit-jupiter:5.+',
+                jupiterApi: 'org.junit.jupiter:junit-jupiter-api:5.11.+',
+                jupiterParams: 'org.junit.jupiter:junit-jupiter-params:5.11.+',
+                jupiterEngine: 'org.junit.jupiter:junit-jupiter-engine:5.11.+',
+                jupiterMockito: 'org.mockito:mockito-junit-jupiter:5.11.+',
                 mockito: 'org.mockito:mockito-core:5.+',
-                slf4j: "org.slf4j:slf4j-api:1.7.36",
-                truth: 'com.google.truth:truth:1.1.5',
-                awaitility: 'org.awaitility:awaitility:4.2.0'
-        ]
-    }
 
-    tasks.withType(Test).configureEach {
-        jvmArgs += [
-                "-Xcheck:jni"
+                slf4j: "org.slf4j:slf4j-api:2.0.16",
+                truth: 'com.google.truth:truth:1.4.4',
+                awaitility: 'org.awaitility:awaitility:4.2.2',
+                lombok: 'org.projectlombok:lombok:1.18.36'
         ]
     }
 
@@ -101,11 +136,12 @@ subprojects {
         testLogging {
             showStandardStreams = true
         }
+        maxParallelForks = Runtime.runtime.availableProcessors();
     }
 }
 
 dependencies {
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.6.3"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.23.2"))
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
     rewrite("org.openrewrite.recipe:rewrite-static-analysis")
@@ -115,8 +151,4 @@ rewrite {
     failOnDryRunResults = true
     activeRecipe("org.openrewrite.java.testing.junit5.JUnit5BestPractices")
     activeRecipe("org.openrewrite.java.logging.slf4j.Slf4jBestPractices")
-
-    exclusion(
-            // Exclude all groovy files
-            "**/*.groovy")
 }

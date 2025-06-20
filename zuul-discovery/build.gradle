@@ -9,9 +9,11 @@ dependencies {
     implementation "com.netflix.ribbon:ribbon-core:${versions_ribbon}"
     implementation "com.netflix.ribbon:ribbon-eureka:${versions_ribbon}"
     implementation "com.netflix.ribbon:ribbon-archaius:${versions_ribbon}"
-
     // Eureka
-    implementation "com.netflix.eureka:eureka-client:1.10.18"
+    implementation "com.netflix.eureka:eureka-client:2.0.4"
+    // unfortunately, servo is still a transitive dependency of eureka-client that stopped getting picked up
+    // after switching to version 2
+    api "com.netflix.servo:servo-core:0.13.2"
 
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine,

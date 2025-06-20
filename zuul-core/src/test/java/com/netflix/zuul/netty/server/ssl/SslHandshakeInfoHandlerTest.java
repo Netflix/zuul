@@ -16,6 +16,10 @@
 
 package com.netflix.zuul.netty.server.ssl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -24,14 +28,9 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.ReferenceCountUtil;
-import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLEngine;
 import java.nio.channels.ClosedChannelException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import javax.net.ssl.SSLEngine;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link SslHandshakeInfoHandler}.
@@ -80,8 +79,8 @@ class SslHandshakeInfoHandlerTest {
         RuntimeException withMessage = new RuntimeException("some unexpected message");
         assertEquals("some unexpected message", handler.getFailureCause(withMessage));
 
-        RuntimeException openSslMessage = new RuntimeException(
-                "javax.net.ssl.SSLHandshakeException: error:1000008e:SSL routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
+        RuntimeException openSslMessage = new RuntimeException("javax.net.ssl.SSLHandshakeException: error:1000008e:SSL"
+                + " routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
 
         assertEquals("DIGEST_CHECK_FAILED", handler.getFailureCause(openSslMessage));
     }

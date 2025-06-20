@@ -16,9 +16,9 @@
 
 package com.netflix.netty.common.metrics;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
-import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Gauge;
 import com.netflix.spectator.api.Registry;
@@ -27,7 +27,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -78,12 +77,12 @@ public class HttpMetricsChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof HttpServerLifecycleChannelHandler.StartEvent) {
+        if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
             incrementCurrentRequestsInFlight(ctx);
-        } else if (evt instanceof HttpServerLifecycleChannelHandler.CompleteEvent
+        } else if (evt instanceof CompleteEvent
                 && ((CompleteEvent) evt).getReason() == CompleteReason.PIPELINE_REJECT) {
             unSupportedPipeliningCounter.increment();
-        } else if (evt instanceof HttpServerLifecycleChannelHandler.CompleteEvent) {
+        } else if (evt instanceof CompleteEvent) {
             decrementCurrentRequestsIfOneInflight(ctx);
         }
         super.userEventTriggered(ctx, evt);

@@ -28,7 +28,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +46,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     private boolean hasBody;
     private boolean bodyBufferedCompletely;
-    private List<HttpContent> bodyChunks;
+    private final List<HttpContent> bodyChunks;
 
     public ZuulMessageImpl(SessionContext context) {
         this(context, new Headers());
@@ -95,7 +94,7 @@ public class ZuulMessageImpl implements ZuulMessage {
     }
 
     @Override
-    public void bufferBodyContents(final HttpContent chunk) {
+    public void bufferBodyContents(HttpContent chunk) {
         setHasBody(true);
         ByteBufUtil.touch(chunk, "ZuulMessage buffering body content.");
         bodyChunks.add(chunk);
@@ -127,7 +126,7 @@ public class ZuulMessageImpl implements ZuulMessage {
     public void setBody(byte[] body) {
         disposeBufferedBody();
         if (body != null && body.length > 0) {
-            final ByteBuf content = Unpooled.copiedBuffer(body);
+            ByteBuf content = Unpooled.copiedBuffer(body);
             bufferBodyContents(new DefaultLastHttpContent(content));
             setContentLength(body.length);
         } else {
@@ -138,7 +137,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     @Override
     public String getBodyAsText() {
-        final byte[] body = getBody();
+        byte[] body = getBody();
         return (body != null && body.length > 0) ? new String(getBody(), Charsets.UTF_8) : null;
     }
 
@@ -148,16 +147,13 @@ public class ZuulMessageImpl implements ZuulMessage {
             return null;
         }
 
-        int size = 0;
-        for (final HttpContent chunk : bodyChunks) {
-            size += chunk.content().readableBytes();
-        }
-        final byte[] body = new byte[size];
+        int size = this.getBodyLength();
+        byte[] body = new byte[size];
         int offset = 0;
-        for (final HttpContent chunk : bodyChunks) {
-            final ByteBuf content = chunk.content();
-            final int len = content.readableBytes();
-            content.getBytes(content.readerIndex(), body, offset, len);
+        for (HttpContent chunk : bodyChunks) {
+            ByteBuf content = chunk.content();
+            int len = content.writerIndex(); // writer idx tracks the total readable bytes in the buffer
+            content.getBytes(0, body, offset, len);
             offset += len;
         }
         return body;
@@ -166,8 +162,9 @@ public class ZuulMessageImpl implements ZuulMessage {
     @Override
     public int getBodyLength() {
         int size = 0;
-        for (final HttpContent chunk : bodyChunks) {
-            size += chunk.content().readableBytes();
+        for (HttpContent chunk : bodyChunks) {
+            // writer index tracks the total number of bytes written to the buffer regardless of buffer reads
+            size += chunk.content().writerIndex();
         }
         return size;
     }
@@ -179,7 +176,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     @Override
     public void resetBodyReader() {
-        for (final HttpContent chunk : bodyChunks) {
+        for (HttpContent chunk : bodyChunks) {
             chunk.content().resetReaderIndex();
         }
     }
@@ -208,16 +205,16 @@ public class ZuulMessageImpl implements ZuulMessage {
     public void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter) {
         // Loop optimized for the common case: Most filters' processContentChunk() return
         // original chunk passed in as is without any processing
-        final String filterName = filter.filterName();
+        String filterName = filter.filterName();
         for (int i = 0; i < bodyChunks.size(); i++) {
-            final HttpContent origChunk = bodyChunks.get(i);
+            HttpContent origChunk = bodyChunks.get(i);
             ByteBufUtil.touch(origChunk, "ZuulMessage processing chunk, filter: ", filterName);
-            final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
+            HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
             ByteBufUtil.touch(filteredChunk, "ZuulMessage processing filteredChunk, filter: ", filterName);
             if ((filteredChunk != null) && (filteredChunk != origChunk)) {
                 // filter actually did some processing, set the new chunk in and release the old chunk.
                 bodyChunks.set(i, filteredChunk);
-                final int refCnt = origChunk.refCnt();
+                int refCnt = origChunk.refCnt();
                 if (refCnt > 0) {
                     origChunk.release(refCnt);
                 }
@@ -227,7 +224,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     @Override
     public ZuulMessage clone() {
-        final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), Headers.copyOf(headers));
+        ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), Headers.copyOf(headers));
         this.bodyChunks.forEach(chunk -> {
             chunk.retain();
             copy.bufferBodyContents(chunk);

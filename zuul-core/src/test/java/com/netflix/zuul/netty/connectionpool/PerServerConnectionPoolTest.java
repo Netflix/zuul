@@ -16,11 +16,19 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.Builder;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfigKey.Keys;
-import com.netflix.config.ConfigurationManager;
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
@@ -42,31 +50,19 @@ import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.Promise;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import javax.net.ssl.SSLHandshakeException;
 import java.util.Deque;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.spy;
+import javax.net.ssl.SSLHandshakeException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * @author Justin Guerra
@@ -155,7 +151,7 @@ class PerServerConnectionPoolTest {
 
         OriginName originName = OriginName.fromVipAndApp("whatever", "whatever-secure");
 
-        InstanceInfo instanceInfo = Builder.newBuilder()
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setIPAddr("175.45.176.0")
                 .setPort(7001)
                 .setAppName("whatever")
@@ -290,27 +286,19 @@ class PerServerConnectionPoolTest {
     void releaseFromPoolAboveHighWaterMark() throws InterruptedException, ExecutionException {
         CurrentPassport currentPassport = CurrentPassport.create();
 
-        AbstractConfiguration configuration = ConfigurationManager.getConfigInstance();
-        String propertyName = "whatever.netty.client.perServerWaterline";
-
+        clientConfig.set(ConnectionPoolConfigImpl.PER_SERVER_WATERLINE, 0);
         Promise<PooledConnection> promise = pool.acquire(CLIENT_EVENT_LOOP, currentPassport, new AtomicReference<>());
 
         PooledConnection connection = promise.sync().get();
-        try {
-            configuration.setProperty(propertyName, 0);
-            CLIENT_EVENT_LOOP
-                    .submit(() -> {
-                        assertFalse(pool.release(connection));
-                        assertEquals(1, closeAboveHighWaterMarkCounter.count());
-                        assertFalse(connection.isInPool());
-                    })
-                    .sync();
-            assertTrue(
-                    connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS),
-                    "connection should have been closed");
-        } finally {
-            configuration.setProperty(propertyName, 4);
-        }
+        CLIENT_EVENT_LOOP
+                .submit(() -> {
+                    assertFalse(pool.release(connection));
+                    assertEquals(1, closeAboveHighWaterMarkCounter.count());
+                    assertFalse(connection.isInPool());
+                })
+                .sync();
+        assertTrue(
+                connection.getChannel().closeFuture().await(5, TimeUnit.SECONDS), "connection should have been closed");
     }
 
     @Test

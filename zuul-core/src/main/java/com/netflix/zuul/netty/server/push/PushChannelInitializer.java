@@ -58,7 +58,7 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
 
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
+        ChannelPipeline pipeline = ch.pipeline();
         storeChannel(ch);
         addTcpRelatedHandlers(pipeline);
         addHttp1Handlers(pipeline);
@@ -66,5 +66,5 @@ public abstract class PushChannelInitializer extends BaseZuulChannelInitializer 
         addPushHandlers(pipeline);
     }
 
-    protected abstract void addPushHandlers(final ChannelPipeline pipeline);
+    protected abstract void addPushHandlers(ChannelPipeline pipeline);
 }

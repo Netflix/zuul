@@ -16,6 +16,9 @@
 
 package com.netflix.netty.common.throttle;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
@@ -27,13 +30,10 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class MaxInboundConnectionsHandlerTest {
 
-    private Registry registry = new DefaultRegistry();
-    private String listener = "test-throttled";
+    private final Registry registry = new DefaultRegistry();
+    private final String listener = "test-throttled";
     private Id counterId;
 
     @BeforeEach
@@ -44,7 +44,7 @@ class MaxInboundConnectionsHandlerTest {
     @Test
     void verifyPassportStateAndAttrs() {
 
-        final EmbeddedChannel channel = new EmbeddedChannel();
+        EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(new DummyChannelHandler());
         channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, listener, 1));
 
@@ -52,7 +52,7 @@ class MaxInboundConnectionsHandlerTest {
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        final Counter throttledCount = (Counter) registry.get(counterId);
+        Counter throttledCount = (Counter) registry.get(counterId);
 
         assertEquals(1, throttledCount.count());
         assertEquals(

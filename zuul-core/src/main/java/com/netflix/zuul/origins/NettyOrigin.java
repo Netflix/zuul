@@ -26,8 +26,8 @@ import com.netflix.zuul.netty.connectionpool.PooledConnection;
 import com.netflix.zuul.niws.RequestAttempt;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.concurrent.Promise;
-
 import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface NettyOrigin extends InstrumentedOrigin {
 
     Promise<PooledConnection> connectToOrigin(
-            final HttpRequestMessage zuulReq,
+            HttpRequestMessage zuulReq,
             EventLoop eventLoop,
             int attemptNumber,
             CurrentPassport passport,
@@ -49,33 +49,31 @@ public interface NettyOrigin extends InstrumentedOrigin {
 
     int getMaxRetriesForRequest(SessionContext context);
 
-    void onRequestExecutionStart(final HttpRequestMessage zuulReq);
+    void onRequestExecutionStart(HttpRequestMessage zuulReq);
 
-    void onRequestStartWithServer(
-            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, int attemptNum);
+    void onRequestStartWithServer(HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum);
 
     void onRequestExceptionWithServer(
-            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, final int attemptNum, Throwable t);
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t);
 
     void onRequestExecutionSuccess(
-            final HttpRequestMessage zuulReq,
-            final HttpResponseMessage zuulResp,
-            final DiscoveryResult discoveryResult,
-            final int attemptNum);
+            HttpRequestMessage zuulReq, HttpResponseMessage zuulResp, DiscoveryResult discoveryResult, int attemptNum);
 
     void onRequestExecutionFailed(
-            final HttpRequestMessage zuulReq, final DiscoveryResult discoveryResult, final int attemptNum, Throwable t);
+            HttpRequestMessage zuulReq, DiscoveryResult discoveryResult, int attemptNum, Throwable t);
 
-    void recordFinalError(final HttpRequestMessage requestMsg, final Throwable throwable);
+    void recordFinalError(HttpRequestMessage requestMsg, Throwable throwable);
 
-    void recordFinalResponse(final HttpResponseMessage resp);
+    void recordFinalResponse(HttpResponseMessage resp);
 
     RequestAttempt newRequestAttempt(
-            final DiscoveryResult server, final InetAddress serverAddr, final SessionContext zuulCtx, int attemptNum);
+            DiscoveryResult server, InetAddress serverAddr, SessionContext zuulCtx, int attemptNum);
 
     String getIpAddrFromServer(DiscoveryResult server);
 
     IClientConfig getClientConfig();
 
     Registry getSpectatorRegistry();
+
+    default void originRetryPolicyAdjustmentIfNeeded(HttpRequestMessage zuulReq, HttpResponse nettyResponse) {}
 }

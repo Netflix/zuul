@@ -16,6 +16,11 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
@@ -41,19 +46,12 @@ import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpVersion;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Unit tests for {@link ClientRequestReceiver}.
@@ -309,12 +307,12 @@ class ClientRequestReceiverTest {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
 
-        final DefaultFullHttpRequest request = new DefaultFullHttpRequest(
+        DefaultFullHttpRequest request = new DefaultFullHttpRequest(
                 HttpVersion.HTTP_1_1, HttpMethod.POST, "?ELhAWDLM1hwm8bhU0UT4", Unpooled.buffer());
 
         // Write the message and save a copy
         channel.writeInbound(request);
-        final HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
+        HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
 
         // Set the attr to emulate pipelining rejection
         channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
@@ -364,5 +362,29 @@ class ClientRequestReceiverTest {
 
         List<String> duplicates = headers.getAll("Duplicate");
         assertEquals(Arrays.asList("Duplicate1", "Duplicate2"), duplicates);
+    }
+
+    @Test
+    void clientIpSet() {
+        String clientIp = "123.456.789.012";
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
+
+        // Required for messages
+        channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).set(clientIp);
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.pipeline().addLast(new HttpServerCodec());
+        channel.pipeline().addLast(receiver);
+
+        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post");
+
+        channel.writeOutbound(httpRequest);
+        ByteBuf byteBuf = channel.readOutbound();
+        channel.writeInbound(byteBuf);
+        channel.readInbound();
+        channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        assertEquals(clientIp, request.getClientIp());
     }
 }

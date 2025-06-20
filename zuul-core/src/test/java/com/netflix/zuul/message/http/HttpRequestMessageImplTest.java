@@ -16,25 +16,6 @@
 
 package com.netflix.zuul.message.http;
 
-import com.google.common.net.InetAddresses;
-import com.netflix.config.ConfigurationManager;
-import com.netflix.zuul.context.CommonContextKeys;
-import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.message.Headers;
-import io.netty.channel.local.LocalAddress;
-import io.netty.handler.codec.http.cookie.Cookie;
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,6 +25,25 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.net.InetAddresses;
+import com.netflix.config.ConfigurationManager;
+import com.netflix.zuul.context.CommonContextKeys;
+import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.message.Headers;
+import io.netty.channel.local.LocalAddress;
+import io.netty.handler.codec.http.cookie.Cookie;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@SuppressWarnings("AddressSelection")
 @ExtendWith(MockitoExtension.class)
 class HttpRequestMessageImplTest {
 
@@ -303,6 +303,34 @@ class HttpRequestMessageImplTest {
         verify(request, times(1)).generatePathAndQuery();
         assertEquals("/blah", request.getPathAndQuery());
         assertEquals("/blah", request.getPathAndQuery());
+    }
+
+    @Test
+    void testGetOriginalHost_immutable() {
+        HttpQueryParams queryParams = new HttpQueryParams();
+        Headers headers = new Headers();
+        headers.add("Host", "blah.netflix.com");
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/some/where",
+                queryParams,
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new SocketAddress() {},
+                true);
+
+        // Check it's the same value 2nd time.
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertEquals("blah.netflix.com", request.getOriginalHost());
+
+        // Update the Host header value and ensure the result didn't change.
+        headers.set("Host", "testOriginalHost2");
+        assertEquals("blah.netflix.com", request.getOriginalHost());
     }
 
     @Test
