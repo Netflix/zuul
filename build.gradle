@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.netflix.nebula.netflixoss' version '11.4.0'
+    id 'com.netflix.nebula.netflixoss' version '11.6.0'
     id "com.google.osdetector" version '1.7.3'
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '6.29.3'

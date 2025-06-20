@@ -15,7 +15,7 @@ jobs:
           git config --global user.name 'Zuul Build'
           git config --global user.email 'zuul-build@netflix.com'
       - uses: actions/checkout@v4
-      - uses: gradle/wrapper-validation-action@v3
+      - uses: gradle/actions/wrapper-validation@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
