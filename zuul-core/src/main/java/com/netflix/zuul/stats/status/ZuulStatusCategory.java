@@ -60,7 +60,7 @@ public enum ZuulStatusCategory implements StatusCategory {
     FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY(
             ZuulStatusCategoryGroup.FAILURE, 8, "Throttled due to reaching concurrency limit to origin"),
     FAILURE_LOCAL_IDLE_TIMEOUT(ZuulStatusCategoryGroup.FAILURE, 9, "Idle timeout due to channel inactivity"),
-
+    FAILURE_LOCAL_HEADER_FIELDS_TOO_LARGE(ZuulStatusCategoryGroup.FAILURE, 5, "Header Fields Too Large"),
     FAILURE_CLIENT_BAD_REQUEST(ZuulStatusCategoryGroup.FAILURE, 12, "Invalid request provided"),
     FAILURE_CLIENT_CANCELLED(ZuulStatusCategoryGroup.FAILURE, 13, "Client abandoned/closed the connection"),
     FAILURE_CLIENT_PIPELINE_REJECT(ZuulStatusCategoryGroup.FAILURE, 17, "Client rejected due to HTTP Pipelining"),

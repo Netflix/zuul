@@ -64,6 +64,7 @@ public enum OutboundErrorType implements ErrorType {
             ERROR_TYPE_ORIGIN_CONCURRENCY_EXCEEDED_STATUS.get(),
             ZuulStatusCategory.FAILURE_LOCAL_THROTTLED_ORIGIN_CONCURRENCY,
             ClientException.ErrorType.SERVER_THROTTLED),
+    HEADER_FIELDS_TOO_LARGE(431, ZuulStatusCategory.FAILURE_LOCAL_HEADER_FIELDS_TOO_LARGE, ClientException.ErrorType.GENERAL),
     OTHER(ERROR_TYPE_OTHER_STATUS.get(), ZuulStatusCategory.FAILURE_LOCAL, ClientException.ErrorType.GENERAL);
 
     private static final String NAME_PREFIX = "ORIGIN_";

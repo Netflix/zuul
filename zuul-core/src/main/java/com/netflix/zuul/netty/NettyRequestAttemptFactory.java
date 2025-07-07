@@ -24,6 +24,7 @@ import com.netflix.zuul.netty.connectionpool.OriginConnectException;
 import com.netflix.zuul.niws.RequestAttempts;
 import com.netflix.zuul.origins.OriginConcurrencyExceededException;
 import io.netty.channel.unix.Errors;
+import io.netty.handler.codec.http2.Http2Exception.HeaderListSizeException;
 import io.netty.handler.timeout.ReadTimeoutException;
 import java.nio.channels.ClosedChannelException;
 import org.slf4j.Logger;
@@ -60,6 +61,10 @@ public class NettyRequestAttemptFactory {
 
         if (t instanceof ClosedChannelException) {
             return OutboundErrorType.RESET_CONNECTION;
+        }
+
+        if (t instanceof HeaderListSizeException) {
+            return OutboundErrorType.HEADER_FIELDS_TOO_LARGE;
         }
 
         Throwable cause = t.getCause();
