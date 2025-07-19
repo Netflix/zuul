@@ -26,11 +26,12 @@ import io.netty.util.AttributeKey;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A counter for connection stats.  Not thread-safe.
+ * A counter for connection stats.
  */
 @SuppressWarnings("ErroneousBitwiseExpression")
 public final class ConnCounter {
@@ -64,7 +65,7 @@ public final class ConnCounter {
 
     private String lastCountKey;
 
-    private final Map<String, Gauge> counts = new HashMap<>();
+    private final Map<String, Gauge> counts = new ConcurrentHashMap<>();
 
     private ConnCounter(Registry registry, Channel chan, Id metricBase) {
         this.registry = Objects.requireNonNull(registry);
@@ -99,11 +100,7 @@ public final class ConnCounter {
     public void increment(String event, Attrs extraDimensions) {
         Objects.requireNonNull(event);
         Objects.requireNonNull(extraDimensions);
-        if (counts.containsKey(event)) {
-            // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
-            logger.warn("Duplicate conn counter increment {}", event);
-            return;
-        }
+
         Attrs connDims = chan.attr(Server.CONN_DIMENSIONS).get();
         Map<String, String> dimTags = new HashMap<>(connDims.size() + extraDimensions.size());
 
@@ -111,21 +108,28 @@ public final class ConnCounter {
         extraDimensions.forEach((k, v) -> dimTags.put(k.name(), String.valueOf(v)));
 
         dimTags.put("from", lastCountKey != null ? lastCountKey : "nascent");
-        lastCountKey = event;
+
         Id id = registry.createId(metricBase.name() + '.' + event)
                 .withTags(metricBase.tags())
                 .withTags(dimTags);
-        Gauge gauge = registry.gauge(id);
 
         synchronized (getLock(id)) {
+            if (counts.containsKey(event)) {
+                // TODO(carl-mastrangelo): make this throw IllegalStateException after verifying this doesn't happen.
+                logger.warn("Duplicate conn counter increment {}", event);
+                return;
+            }
+            Gauge gauge = registry.gauge(id);
             double current = gauge.value();
             gauge.set(Double.isNaN(current) ? 1 : current + 1);
+            counts.put(event, gauge);
+            lastCountKey = event;
         }
-        counts.put(event, gauge);
     }
 
     public double getCurrentActiveConns() {
-        return counts.containsKey("active") ? counts.get("active").value() : 0.0;
+        Gauge gauge = counts.get("active");
+        return gauge != null ? gauge.value() : 0.0;
     }
 
     public void decrement(String event) {
