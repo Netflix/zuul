@@ -13,7 +13,7 @@ jobs:
         run: |
           git config --global user.name 'Zuul Build'
           git config --global user.email 'zuul-build@netflix.com'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set up JDK
