@@ -18,7 +18,7 @@ dependencies {
     testImplementation "io.netty.incubator:netty-incubator-transport-classes-io_uring:${versions_netty_io_uring}"
     testImplementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
     testImplementation "org.slf4j:slf4j-api:2.0.16"
-    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
+    testImplementation 'org.apache.commons:commons-lang3:3.18.0'
     testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
     testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.24.3'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3'
