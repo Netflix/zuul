@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 2/26/25
  */
 public record ConnectionPoolMetrics(
+        OriginName originName,
         Counter createNewConnCounter,
         Counter createConnSucceededCounter,
         Counter createConnFailedCounter,
@@ -44,7 +45,12 @@ public record ConnectionPoolMetrics(
         Counter circuitBreakerClose,
         PercentileTimer connEstablishTimer,
         AtomicInteger connsInPool,
-        AtomicInteger connsInUse) {
+        AtomicInteger connsInUse,
+        Counter idleCounter,
+        Counter inactiveCounter,
+        Counter errorCounter,
+        Counter headerCloseCounter,
+        Counter sslCloseCompletionCounter) {
 
     public static ConnectionPoolMetrics create(OriginName originName, Registry registry) {
         Counter createNewConnCounter = newCounter("connectionpool_create", originName, registry);
@@ -66,6 +72,12 @@ public record ConnectionPoolMetrics(
         Counter closeWrtBusyConnCounter = newCounter("connectionpool_closeWrtBusyConnCounter", originName, registry);
         Counter circuitBreakerClose = newCounter("connectionpool_closeCircuitBreaker", originName, registry);
 
+        Counter idleCounter = newCounter("connectionpool_idle", originName, registry);
+        Counter inactiveCounter = newCounter("connectionpool_inactive", originName, registry);
+        Counter errorCounter = newCounter("connectionpool_error", originName, registry);
+        Counter headerCloseCounter = newCounter("connectionpool_headerClose", originName, registry);
+        Counter sslCloseCompletionCounter = newCounter("connectionpool_sslClose", originName, registry);
+
         PercentileTimer connEstablishTimer = PercentileTimer.get(
                 registry, registry.createId("connectionpool_createTiming", "id", originName.getMetricId()));
 
@@ -73,6 +85,7 @@ public record ConnectionPoolMetrics(
         AtomicInteger connsInUse = newGauge("connectionpool_inUse", originName, registry);
 
         return new ConnectionPoolMetrics(
+                originName,
                 createNewConnCounter,
                 createConnSucceededCounter,
                 createConnFailedCounter,
@@ -89,7 +102,12 @@ public record ConnectionPoolMetrics(
                 circuitBreakerClose,
                 connEstablishTimer,
                 connsInPool,
-                connsInUse);
+                connsInUse,
+                idleCounter,
+                inactiveCounter,
+                errorCounter,
+                headerCloseCounter,
+                sslCloseCompletionCounter);
     }
 
     private static Counter newCounter(String metricName, OriginName originName, Registry registry) {
