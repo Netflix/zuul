@@ -54,6 +54,12 @@ class ConnectionPoolMetricsTest {
         validateCounter("connectionpool_maxConnsPerHostExceeded", metrics.maxConnsPerHostExceededCounter());
         validateCounter("connectionpool_closeWrtBusyConnCounter", metrics.closeWrtBusyConnCounter());
         validateCounter("connectionpool_closeCircuitBreaker", metrics.circuitBreakerClose());
+
+        validateCounter("connectionpool_idle", metrics.idleCounter());
+        validateCounter("connectionpool_inactive", metrics.inactiveCounter());
+        validateCounter("connectionpool_error", metrics.errorCounter());
+        validateCounter("connectionpool_headerClose", metrics.headerCloseCounter());
+        validateCounter("connectionpool_sslClose", metrics.sslCloseCompletionCounter());
     }
 
     private void validateCounter(String name, Counter counter) {

@@ -19,9 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
-import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.netty.ChannelUtils;
-import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.origins.OriginName;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
@@ -42,26 +40,12 @@ import org.slf4j.LoggerFactory;
 public class ConnectionPoolHandler extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionPoolHandler.class);
 
-    public static final String METRIC_PREFIX = "connectionpool";
-
+    private final ConnectionPoolMetrics metrics;
     private final OriginName originName;
-    private final Counter idleCounter;
-    private final Counter inactiveCounter;
-    private final Counter errorCounter;
-    private final Counter headerCloseCounter;
-    private final Counter sslCloseCompletionCounter;
 
-    public ConnectionPoolHandler(OriginName originName) {
-        if (originName == null) {
-            throw new IllegalArgumentException("Null originName passed to constructor!");
-        }
-        this.originName = originName;
-        this.idleCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_idle", originName.getMetricId());
-        this.inactiveCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_inactive", originName.getMetricId());
-        this.errorCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_error", originName.getMetricId());
-        this.headerCloseCounter = SpectatorUtils.newCounter(METRIC_PREFIX + "_headerClose", originName.getMetricId());
-        this.sslCloseCompletionCounter =
-                SpectatorUtils.newCounter(METRIC_PREFIX + "_sslClose", originName.getMetricId());
+    public ConnectionPoolHandler(ConnectionPoolMetrics metrics) {
+        this.originName = metrics.originName();
+        this.metrics = metrics;
     }
 
     @Override
@@ -71,7 +55,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
 
         if (evt instanceof IdleStateEvent) {
             // Log some info about this.
-            idleCounter.increment();
+            metrics.idleCounter().increment();
             String msg = "Origin channel for origin - " + originName + " - idle timeout has fired. "
                     + ChannelUtils.channelInfoForLogging(ctx.channel());
             closeConnection(ctx, msg);
@@ -88,7 +72,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
                         String msg = "Origin channel for origin - " + originName
                                 + " - completed because of expired keep-alive. "
                                 + ChannelUtils.channelInfoForLogging(ctx.channel());
-                        headerCloseCounter.increment();
+                        metrics.headerCloseCounter().increment();
                         closeConnection(ctx, msg);
                     } else {
                         conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
@@ -101,7 +85,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
                 closeConnection(ctx, msg);
             }
         } else if (evt instanceof SslCloseCompletionEvent event) {
-            sslCloseCompletionCounter.increment();
+            metrics.sslCloseCompletionCounter().increment();
             String msg = "Origin channel for origin - " + originName + " - received SslCloseCompletionEvent " + event
                     + ". " + ChannelUtils.channelInfoForLogging(ctx.channel());
             closeConnection(ctx, msg);
@@ -111,7 +95,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // super.exceptionCaught(ctx, cause);
-        errorCounter.increment();
+        metrics.errorCounter().increment();
         String mesg = "Exception on Origin channel for origin - " + originName + ". "
                 + ChannelUtils.channelInfoForLogging(ctx.channel()) + " - "
                 + cause.getClass().getCanonicalName()
@@ -126,7 +110,7 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // super.channelInactive(ctx);
-        inactiveCounter.increment();
+        metrics.inactiveCounter().increment();
         String msg = "Client channel for origin - " + originName + " - inactive event has fired. "
                 + ChannelUtils.channelInfoForLogging(ctx.channel());
         closeConnection(ctx, msg);
