@@ -20,7 +20,9 @@ import jakarta.inject.Singleton;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
@@ -48,6 +50,10 @@ public class PushConnectionRegistry {
 
     public List<PushConnection> getAll() {
         return new ArrayList<>(clientPushConnectionMap.values());
+    }
+
+    public Map<String, PushConnection> getAllEntries() {
+        return Collections.unmodifiableMap(clientPushConnectionMap);
     }
 
     public String mintNewSecureToken() {
