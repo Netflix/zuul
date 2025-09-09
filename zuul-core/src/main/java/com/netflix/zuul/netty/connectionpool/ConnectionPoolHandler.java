@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.origins.OriginName;
 import io.netty.channel.ChannelDuplexHandler;
@@ -28,6 +29,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.ssl.SslCloseCompletionEvent;
 import io.netty.handler.timeout.IdleStateEvent;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,12 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
 
     private final ConnectionPoolMetrics metrics;
     private final OriginName originName;
+
+
+    @Deprecated
+    public ConnectionPoolHandler(OriginName originName) {
+        this(ConnectionPoolMetrics.create(Objects.requireNonNull(originName), Spectator.globalRegistry()));
+    }
 
     public ConnectionPoolHandler(ConnectionPoolMetrics metrics) {
         this.originName = metrics.originName();
