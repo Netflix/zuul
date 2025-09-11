@@ -24,6 +24,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketCloseStatus;
 
 /**
  * Author: Susheel Aroskar
@@ -95,8 +96,8 @@ public class PushConnection {
         return pushProtocol.sendPing(ctx);
     }
 
-    public void closeConnection(String message) {
-        ctx.writeAndFlush(new CloseWebSocketFrame(1008, message))
+    public void closeConnection(WebSocketCloseStatus status, String message) {
+        ctx.writeAndFlush(new CloseWebSocketFrame(status, message))
                 .addListener(ChannelFutureListener.CLOSE);
     }
 }
