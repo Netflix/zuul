@@ -31,8 +31,8 @@ import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.incubator.channel.uring.IOUring;
-import io.netty.incubator.channel.uring.IOUringSocketChannel;
+import io.netty.channel.uring.IoUring;
+import io.netty.channel.uring.IoUringServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.internal.PlatformDependent;
 import java.io.OutputStream;
@@ -76,7 +76,7 @@ class IoUringTest {
 
     @Test
     void testIoUringServer() throws Exception {
-        LOGGER.info("IOUring.isAvailable: {}", IOUring.isAvailable());
+        LOGGER.info("IOUring.isAvailable: {}", IoUring.isAvailable());
         LOGGER.info("IS_OS_LINUX: {}", IS_OS_LINUX);
 
         if (IS_OS_LINUX) {
@@ -85,21 +85,21 @@ class IoUringTest {
     }
 
     private void exerciseIoUringServer() throws Exception {
-        IOUring.ensureAvailability();
+        IoUring.ensureAvailability();
 
         ServerStatusManager ssm = mock(ServerStatusManager.class);
 
         Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
 
-        List<IOUringSocketChannel> ioUringChannels =
-                Collections.synchronizedList(new ArrayList<IOUringSocketChannel>());
+        List<IoUringServerSocketChannel> ioUringChannels =
+                Collections.synchronizedList(new ArrayList<IoUringServerSocketChannel>());
 
         ChannelInitializer<Channel> init = new ChannelInitializer<Channel>() {
             @Override
             protected void initChannel(Channel ch) {
                 LOGGER.info("Channel: {}, isActive={}, isOpen={}", ch.getClass().getName(), ch.isActive(), ch.isOpen());
-                if (ch instanceof IOUringSocketChannel) {
-                    ioUringChannels.add((IOUringSocketChannel) ch);
+                if (ch instanceof IoUringServerSocketChannel) {
+                    ioUringChannels.add((IoUringServerSocketChannel) ch);
                 }
             }
         };
@@ -142,8 +142,8 @@ class IoUringTest {
 
         assertEquals(2, ioUringChannels.size());
 
-        for (IOUringSocketChannel ch : ioUringChannels) {
-            assertTrue(ch.isShutdown(), "isShutdown");
+        for (IoUringServerSocketChannel ch : ioUringChannels) {
+            assertTrue(ch.eventLoop().isShutdown(), "isShutdown");
         }
     }
 

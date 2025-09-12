@@ -48,43 +48,43 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -173,43 +173,43 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -304,7 +304,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -312,41 +312,41 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.72.Final"
+            "locked": "2.0.73.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -370,19 +370,22 @@
             "locked": "1.78.1"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.11.0"
+            "locked": "5.13.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.37"
@@ -459,46 +462,46 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.72.Final"
+            "locked": "2.0.73.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -574,7 +577,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -582,38 +585,38 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -637,19 +640,22 @@
             "locked": "1.78.1"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.11.0"
+            "locked": "5.13.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
@@ -714,7 +720,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.8.17"
+            "locked": "1.9.0"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -722,41 +728,41 @@
         "commons-configuration:commons-configuration": {
             "locked": "1.10"
         },
-        "io.netty.incubator:netty-incubator-transport-native-io_uring": {
-            "locked": "0.0.26.Final"
-        },
         "io.netty:netty-bom": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.72.Final"
+            "locked": "2.0.73.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
+        },
+        "io.netty:netty-transport-native-io_uring": {
+            "locked": "4.2.6.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.1.124.Final"
+            "locked": "4.2.6.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -780,19 +786,22 @@
             "locked": "1.78.1"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "5.11.0"
+            "locked": "5.13.0"
         },
         "org.slf4j:slf4j-api": {
             "firstLevelTransitive": [

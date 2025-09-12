@@ -112,13 +112,16 @@
             "locked": "0.13.2"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
@@ -193,13 +196,16 @@
             "locked": "0.13.2"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
@@ -234,13 +240,16 @@
             "locked": "0.13.2"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.11.4"
+            "locked": "5.13.4"
+        },
+        "org.junit.platform:junit-platform-launcher": {
+            "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
             "locked": "5.19.0"
