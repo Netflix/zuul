@@ -43,8 +43,6 @@ dependencies {
     implementation (group: "io.netty", "name": "netty-transport-native-io_uring", "classifier": "linux-x86_64")
     implementation (group: "io.netty", "name": "netty-transport-native-kqueue", "classifier": "osx-x86_64")
 
-//    implementation "io.netty.incubator:netty-incubator-transport-native-io_uring:${versions_netty_io_uring}:linux-x86_64"
-
     // We are using the long-form dependency syntax here because we want to
     // explicitly set the classifier. We do not have the version number so we can't use
     // Gradle's short-form dependency notation.
