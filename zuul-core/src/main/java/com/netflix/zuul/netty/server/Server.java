@@ -40,32 +40,32 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.DefaultSelectStrategyFactory;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.IoHandlerFactory;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
-import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollIoHandler;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueIoHandler;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.kqueue.KQueueSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.incubator.channel.uring.IOUring;
-import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
-import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
-import io.netty.incubator.channel.uring.IOUringSocketChannel;
+import io.netty.channel.uring.IoUring;
+import io.netty.channel.uring.IoUringIoHandler;
+import io.netty.channel.uring.IoUringServerSocketChannel;
+import io.netty.channel.uring.IoUringSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.net.InetSocketAddress;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -370,50 +370,39 @@ public class Server {
                 chooserFactory = DefaultEventExecutorChooserFactory.INSTANCE;
             }
 
-            ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
-            Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
-
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
             boolean useNio = FORCE_NIO.get();
             boolean useIoUring = FORCE_IO_URING.get();
+
+            final IoHandlerFactory handlerFactory;
             if (useIoUring && ioUringIsAvailable()) {
-                channelType = IOUringServerSocketChannel.class;
-                defaultOutboundChannelType.set(IOUringSocketChannel.class);
-                clientToProxyBossPool = new IOUringEventLoopGroup(
-                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new IOUringEventLoopGroup(workerThreads, workerExecutor);
+                channelType = IoUringServerSocketChannel.class;
+                defaultOutboundChannelType.set(IoUringSocketChannel.class);
+                handlerFactory = IoUringIoHandler.newFactory();
             } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
                 defaultOutboundChannelType.set(EpollSocketChannel.class);
+                handlerFactory = EpollIoHandler.newFactory();
                 extraOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
-                clientToProxyBossPool = new EpollEventLoopGroup(
-                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new EpollEventLoopGroup(
-                        workerThreads, workerExecutor, chooserFactory, DefaultSelectStrategyFactory.INSTANCE);
             } else if (!useNio && kqueueIsAvailable()) {
                 channelType = KQueueServerSocketChannel.class;
                 defaultOutboundChannelType.set(KQueueSocketChannel.class);
-                clientToProxyBossPool = new KQueueEventLoopGroup(
-                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = new KQueueEventLoopGroup(
-                        workerThreads, workerExecutor, chooserFactory, DefaultSelectStrategyFactory.INSTANCE);
+                handlerFactory = KQueueIoHandler.newFactory();
             } else {
                 channelType = NioServerSocketChannel.class;
                 defaultOutboundChannelType.set(NioSocketChannel.class);
-                NioEventLoopGroup elg = new NioEventLoopGroup(
-                        workerThreads,
-                        workerExecutor,
-                        chooserFactory,
-                        SelectorProvider.provider(),
-                        DefaultSelectStrategyFactory.INSTANCE);
-                elg.setIoRatio(90);
-                clientToProxyBossPool = new NioEventLoopGroup(
-                        acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
-                clientToProxyWorkerPool = elg;
+                handlerFactory = NioIoHandler.newFactory();
             }
 
-            transportChannelOptions = Collections.unmodifiableMap(extraOptions);
+            clientToProxyBossPool = new MultiThreadIoEventLoopGroup(
+                    acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"), handlerFactory);
 
+            ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
+            Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
+            clientToProxyWorkerPool =
+                    new MultiThreadIoEventLoopGroup(workerThreads, workerExecutor, chooserFactory, handlerFactory);
+
+            transportChannelOptions = Collections.unmodifiableMap(extraOptions);
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
         }
 
@@ -457,7 +446,7 @@ public class Server {
         }
     }
 
-    /**
+    /*
      * Keys should be a short string usable in metrics.
      */
     public static final AttributeKey<Attrs> CONN_DIMENSIONS = AttributeKey.newInstance("zuulconndimensions");
@@ -509,7 +498,7 @@ public class Server {
     private static boolean ioUringIsAvailable() {
         boolean available;
         try {
-            available = IOUring.isAvailable();
+            available = IoUring.isAvailable();
         } catch (NoClassDefFoundError e) {
             LOG.debug("io_uring is unavailable, skipping", e);
             return false;
@@ -518,7 +507,7 @@ public class Server {
             return false;
         }
         if (!available) {
-            LOG.debug("io_uring is unavailable, skipping", IOUring.unavailabilityCause());
+            LOG.debug("io_uring is unavailable, skipping", IoUring.unavailabilityCause());
         }
         return available;
     }

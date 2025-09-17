@@ -16,7 +16,7 @@ dependencies {
     api "com.netflix.servo:servo-core:0.13.2"
 
 
-    testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine,
+    testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher,
             libraries.mockito,
             libraries.truth
 }
