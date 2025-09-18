@@ -16,6 +16,7 @@
 package com.netflix.zuul.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
@@ -25,6 +26,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -148,7 +150,12 @@ public class HttpUtils {
         boolean isChunked = false;
         String teValue = msg.getHeaders().getFirst(com.netflix.zuul.message.http.HttpHeaderNames.TRANSFER_ENCODING);
         if (!Strings.isNullOrEmpty(teValue)) {
-            isChunked = teValue.toLowerCase(Locale.ROOT).equals("chunked");
+            List<String> encodings = Splitter.on(',').trimResults().splitToList(teValue.toLowerCase(Locale.ROOT));
+            if (!encodings.isEmpty()) {
+                // Get the last encoding - "chunked" must be the final encoding
+                String finalEncoding = encodings.get(encodings.size() - 1);
+                isChunked = finalEncoding.equals("chunked");
+            }
         }
         return isChunked;
     }

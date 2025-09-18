@@ -27,6 +27,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.ZuulMessageImpl;
 import com.netflix.zuul.message.http.HttpQueryParams;
+import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -120,5 +121,94 @@ class HttpUtilsTest {
         Headers headers = new Headers();
         ZuulMessage msg = new ZuulMessageImpl(context, headers);
         assertThat(HttpUtils.getBodySizeIfKnown(msg)).isNull();
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_singleTokenChunked() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "chunked");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertTrue(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_singleTokenNotChunked() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "gzip");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertFalse(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_multiTokenWithChunked() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "gzip, chunked");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertTrue(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_multiTokenWithoutChunked() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "gzip, deflate");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertFalse(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_multiTokenChunkedNotLast() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "chunked, gzip");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertFalse(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_caseInsensitive() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "GZIP, CHUNKED");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertTrue(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_withWhitespace() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "gzip , chunked ");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertTrue(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_emptyHeader() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.TRANSFER_ENCODING, "");
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertFalse(HttpUtils.hasChunkedTransferEncodingHeader(msg));
+    }
+
+    @Test
+    void hasChunkedTransferEncodingHeader_nullHeader() {
+        SessionContext context = new SessionContext();
+        Headers headers = new Headers();
+        ZuulMessage msg = new ZuulMessageImpl(context, headers);
+        
+        assertFalse(HttpUtils.hasChunkedTransferEncodingHeader(msg));
     }
 }
