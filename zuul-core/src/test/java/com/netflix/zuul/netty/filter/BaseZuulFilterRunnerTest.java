@@ -39,7 +39,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.local.LocalChannel;
-import io.netty.channel.nio.NioIoHandler;
+import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -79,7 +79,7 @@ public class BaseZuulFilterRunnerTest {
         SessionContext sessionContext = new SessionContext();
         message = new HttpRequestBuilder(sessionContext).build();
 
-        group = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
+        group = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         LocalChannel localChannel = new LocalChannel();
         errorCapturingHandler = new ErrorCapturingHandler();
         localChannel.pipeline().addLast(new ChannelInboundHandlerAdapter());
