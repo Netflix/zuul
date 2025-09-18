@@ -49,8 +49,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
+import io.netty.channel.local.LocalIoHandler;
 import io.netty.channel.local.LocalServerChannel;
-import io.netty.channel.nio.NioIoHandler;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import java.util.UUID;
@@ -82,8 +82,8 @@ class ClientConnectionsShutdownTest {
     static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
 
-        CLIENT_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, NioIoHandler.newFactory());
-        SERVER_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, NioIoHandler.newFactory());
+        CLIENT_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, LocalIoHandler.newFactory());
+        SERVER_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, LocalIoHandler.newFactory());
         ServerBootstrap serverBootstrap = new ServerBootstrap()
                 .group(SERVER_EVENT_LOOP)
                 .localAddress(LOCAL_ADDRESS)

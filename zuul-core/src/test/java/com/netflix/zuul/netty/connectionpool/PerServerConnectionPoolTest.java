@@ -48,8 +48,8 @@ import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
+import io.netty.channel.local.LocalIoHandler;
 import io.netty.channel.local.LocalServerChannel;
-import io.netty.channel.nio.NioIoHandler;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.Promise;
 import java.util.Deque;
@@ -104,10 +104,10 @@ class PerServerConnectionPoolTest {
     static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
 
-        CLIENT_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
+        CLIENT_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         CLIENT_EVENT_LOOP = CLIENT_EVENT_LOOP_GROUP.next();
 
-        ORIGIN_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
+        ORIGIN_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(ORIGIN_EVENT_LOOP_GROUP)
                 .localAddress(LOCAL_ADDRESS)
