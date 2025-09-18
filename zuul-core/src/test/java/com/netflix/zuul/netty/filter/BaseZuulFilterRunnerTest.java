@@ -36,9 +36,10 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.DefaultEventLoopGroup;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.local.LocalChannel;
+import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +69,7 @@ public class BaseZuulFilterRunnerTest {
 
     private ZuulMessage message;
     private TestBaseZuulFilterRunner runner;
-    private EventLoopGroup group;
+    private MultithreadEventLoopGroup group;
     private TestResumer resumer;
     private ErrorCapturingHandler errorCapturingHandler;
 
@@ -78,7 +79,7 @@ public class BaseZuulFilterRunnerTest {
         SessionContext sessionContext = new SessionContext();
         message = new HttpRequestBuilder(sessionContext).build();
 
-        group = new DefaultEventLoopGroup(1);
+        group = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         LocalChannel localChannel = new LocalChannel();
         errorCapturingHandler = new ErrorCapturingHandler();
         localChannel.pipeline().addLast(new ChannelInboundHandlerAdapter());

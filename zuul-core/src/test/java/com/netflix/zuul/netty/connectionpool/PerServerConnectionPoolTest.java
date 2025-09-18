@@ -42,11 +42,13 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoop;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
+import io.netty.channel.local.LocalIoHandler;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.Promise;
@@ -71,8 +73,8 @@ import org.mockito.MockitoAnnotations;
 class PerServerConnectionPoolTest {
 
     private static LocalAddress LOCAL_ADDRESS;
-    private static DefaultEventLoopGroup ORIGIN_EVENT_LOOP_GROUP;
-    private static DefaultEventLoopGroup CLIENT_EVENT_LOOP_GROUP;
+    private static MultithreadEventLoopGroup ORIGIN_EVENT_LOOP_GROUP;
+    private static MultithreadEventLoopGroup CLIENT_EVENT_LOOP_GROUP;
     private static EventLoop CLIENT_EVENT_LOOP;
     private static Class<? extends Channel> PREVIOUS_CHANNEL_TYPE;
 
@@ -102,10 +104,10 @@ class PerServerConnectionPoolTest {
     static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
 
-        CLIENT_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
+        CLIENT_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         CLIENT_EVENT_LOOP = CLIENT_EVENT_LOOP_GROUP.next();
 
-        ORIGIN_EVENT_LOOP_GROUP = new DefaultEventLoopGroup(1);
+        ORIGIN_EVENT_LOOP_GROUP = new MultiThreadIoEventLoopGroup(1, LocalIoHandler.newFactory());
         ServerBootstrap bootstrap = new ServerBootstrap()
                 .group(ORIGIN_EVENT_LOOP_GROUP)
                 .localAddress(LOCAL_ADDRESS)
