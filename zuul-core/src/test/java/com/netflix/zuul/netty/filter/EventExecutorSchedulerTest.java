@@ -22,8 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.util.concurrent.Uninterruptibles;
-import io.netty.channel.DefaultEventLoopGroup;
 import io.netty.channel.EventLoop;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,13 +42,13 @@ import rx.functions.Action0;
  */
 class EventExecutorSchedulerTest {
 
-    private DefaultEventLoopGroup group;
+    private MultithreadEventLoopGroup group;
     private EventLoop eventLoop;
     private EventExecutorScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        group = new DefaultEventLoopGroup(1);
+        group = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
         eventLoop = group.next();
         scheduler = new EventExecutorScheduler(eventLoop);
     }

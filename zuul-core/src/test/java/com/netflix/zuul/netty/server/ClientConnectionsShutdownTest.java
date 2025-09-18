@@ -43,12 +43,14 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.DefaultEventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.local.LocalAddress;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalServerChannel;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import java.util.UUID;
@@ -72,16 +74,16 @@ class ClientConnectionsShutdownTest {
 
     // using LocalChannels instead of EmbeddedChannels to re-create threading behavior in an actual deployment
     private static LocalAddress LOCAL_ADDRESS;
-    private static DefaultEventLoopGroup SERVER_EVENT_LOOP;
-    private static DefaultEventLoopGroup CLIENT_EVENT_LOOP;
+    private static MultithreadEventLoopGroup SERVER_EVENT_LOOP;
+    private static MultithreadEventLoopGroup CLIENT_EVENT_LOOP;
     private static DefaultEventLoop EVENT_LOOP;
 
     @BeforeAll
     static void staticSetup() throws InterruptedException {
         LOCAL_ADDRESS = new LocalAddress(UUID.randomUUID().toString());
 
-        CLIENT_EVENT_LOOP = new DefaultEventLoopGroup(4);
-        SERVER_EVENT_LOOP = new DefaultEventLoopGroup(4);
+        CLIENT_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, NioIoHandler.newFactory());
+        SERVER_EVENT_LOOP = new MultiThreadIoEventLoopGroup(4, NioIoHandler.newFactory());
         ServerBootstrap serverBootstrap = new ServerBootstrap()
                 .group(SERVER_EVENT_LOOP)
                 .localAddress(LOCAL_ADDRESS)
