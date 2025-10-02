@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  */
 public class OriginResponseReceiver extends ChannelDuplexHandler {
 
-    private volatile ProxyEndpoint edgeProxy;
+    protected volatile ProxyEndpoint edgeProxy;
 
     private static final Logger logger = LoggerFactory.getLogger(OriginResponseReceiver.class);
     private static final AttributeKey<Throwable> SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE =
@@ -113,7 +113,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             CompleteReason reason = completeEvent.getReason();
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
                 if (reason == CompleteReason.CLOSE
-                        && Objects.equals(ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get(), Boolean.TRUE)) {
+                        && Objects.equals(
+                                ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get(), Boolean.TRUE)) {
                     logger.warn(
                             "Origin request completed with close, after getting a SslCloseCompletionEvent event: {}",
                             ChannelUtils.channelInfoForLogging(ctx.channel()));
