@@ -126,7 +126,7 @@ subprojects {
 
                 slf4j: "org.slf4j:slf4j-api:2.0.16",
                 assertj: 'org.assertj:assertj-core:3.26.3',
-                awaitility: 'org.awaitility:awaitility:4.2.2',
+                awaitility: 'org.awaitility:awaitility:4.3.0',
                 lombok: 'org.projectlombok:lombok:1.18.42'
         ]
     }
