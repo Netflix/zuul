@@ -17,6 +17,7 @@
 package com.netflix.zuul.netty.connectionpool;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -32,7 +33,6 @@ import io.netty.util.ReferenceCountUtil;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,7 +116,7 @@ class ClientTimeoutHandlerTest {
     }
 
     private void verifyWrite() {
-        Assertions.assertTrue(verifier.seenWrite);
+        assertThat(verifier.seenWrite).isTrue();
     }
 
     private static class WriteVerifyingHandler extends ChannelDuplexHandler {

@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -163,7 +162,7 @@ class ClientConnectionsShutdownTest {
 
         channels.forEach(Channel::close);
         testPromise.await(10, TimeUnit.SECONDS);
-        assertTrue(channels.isEmpty());
+        assertThat(channels.isEmpty()).isTrue();
     }
 
     @Test
@@ -176,9 +175,9 @@ class ClientConnectionsShutdownTest {
             createChannels(10);
             shutdown.gracefullyShutdownClientChannels().await(10, TimeUnit.SECONDS);
 
-            assertTrue(
-                    channels.isEmpty(),
-                    "All channels in group should have been force closed after the timeout was triggered");
+            assertThat(channels.isEmpty())
+                    .as("All channels in group should have been force closed after the timeout was triggered")
+                    .isTrue();
         } finally {
             configuration.setProperty(configName, "30");
         }
@@ -212,8 +211,12 @@ class ClientConnectionsShutdownTest {
             channels.add(connect.channel());
 
             boolean await = shutdown.gracefullyShutdownClientChannels().await(10, TimeUnit.SECONDS);
-            assertTrue(await, "the promise should finish even if a channel failed to close");
-            assertEquals(1, channels.size(), "all other channels should have been closed");
+            assertThat(await)
+                    .as("the promise should finish even if a channel failed to close")
+                    .isTrue();
+            assertThat(channels.size())
+                    .as("all other channels should have been closed")
+                    .isEqualTo(1);
         } finally {
             configuration.setProperty(configName, "30");
         }
@@ -235,7 +238,9 @@ class ClientConnectionsShutdownTest {
             channels.forEach(Channel::close);
 
             promise.await(10, TimeUnit.SECONDS);
-            assertTrue(channels.isEmpty(), "All channels in group should have been closed");
+            assertThat(channels.isEmpty())
+                    .as("All channels in group should have been closed")
+                    .isTrue();
         } finally {
             configuration.setProperty(configName, "30");
         }

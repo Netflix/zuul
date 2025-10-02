@@ -16,7 +16,7 @@
 
 package com.netflix.netty.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
@@ -50,6 +50,6 @@ class CloseOnIdleStateHandlerTest {
                 .fireUserEventTriggered(IdleStateEvent.ALL_IDLE_STATE_EVENT);
 
         Counter idleTimeouts = (Counter) registry.get(counterId);
-        assertEquals(1, idleTimeouts.count());
+        assertThat(idleTimeouts.count()).isEqualTo(1);
     }
 }

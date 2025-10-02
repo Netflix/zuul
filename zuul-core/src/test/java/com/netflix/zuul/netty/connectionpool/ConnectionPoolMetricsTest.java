@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Lists;
 import com.netflix.spectator.api.Counter;
@@ -63,9 +63,9 @@ class ConnectionPoolMetricsTest {
     }
 
     private void validateCounter(String name, Counter counter) {
-        assertEquals(name, counter.id().name());
+        assertThat(counter.id().name()).isEqualTo(name);
         Map<String, String> tags = Lists.newArrayList(counter.id().tags().iterator()).stream()
                 .collect(Collectors.toMap(Tag::key, Tag::value));
-        assertEquals("whatever", tags.get("id"));
+        assertThat(tags.get("id")).isEqualTo("whatever");
     }
 }

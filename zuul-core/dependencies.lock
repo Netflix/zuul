@@ -7,7 +7,7 @@
             "locked": "0.12.4"
         },
         "org.projectlombok:lombok": {
-            "locked": "1.18.36"
+            "locked": "1.18.42"
         }
     },
     "compileClasspath": {
@@ -105,7 +105,7 @@
             "locked": "1.78.1"
         },
         "org.projectlombok:lombok": {
-            "locked": "1.18.36"
+            "locked": "1.18.42"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
@@ -239,7 +239,7 @@
             "locked": "1.37"
         },
         "org.projectlombok:lombok": {
-            "locked": "1.18.36"
+            "locked": "1.18.42"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
@@ -257,9 +257,6 @@
                 "com.netflix.zuul:zuul-discovery"
             ],
             "locked": "33.3.0-jre"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12"
@@ -357,6 +354,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
+        },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
         },
@@ -382,7 +382,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.19.0"
+            "locked": "5.20.0"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"
@@ -546,9 +546,6 @@
         "com.google.guava:guava": {
             "locked": "33.3.0-jre"
         },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
-        },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12"
         },
@@ -627,6 +624,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
+        },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
         },
@@ -652,7 +652,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.19.0"
+            "locked": "5.20.0"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"
@@ -673,9 +673,6 @@
                 "com.netflix.zuul:zuul-discovery"
             ],
             "locked": "33.3.0-jre"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "locked": "0.7.12"
@@ -773,6 +770,9 @@
         "jakarta.inject:jakarta.inject-api": {
             "locked": "2.0.1"
         },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
+        },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
         },
@@ -798,7 +798,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.19.0"
+            "locked": "5.20.0"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"

@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.server.push;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import io.netty.channel.Channel;
@@ -54,8 +54,8 @@ class PushMessageSenderInitializerTest {
     void testInitChannel() throws Exception {
         initializer.initChannel(channel);
 
-        assertNotNull(channel.pipeline().context(HttpServerCodec.class));
-        assertNotNull(channel.pipeline().context(HttpObjectAggregator.class));
-        assertNotNull(channel.pipeline().get("mockHandler"));
+        assertThat(channel.pipeline().context(HttpServerCodec.class)).isNotNull();
+        assertThat(channel.pipeline().context(HttpObjectAggregator.class)).isNotNull();
+        assertThat(channel.pipeline().get("mockHandler")).isNotNull();
     }
 }

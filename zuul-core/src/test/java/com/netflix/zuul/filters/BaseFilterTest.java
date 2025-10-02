@@ -15,7 +15,8 @@
  */
 package com.netflix.zuul.filters;
 
-import com.google.common.truth.Truth;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
@@ -24,14 +25,14 @@ import com.netflix.zuul.message.ZuulMessageImpl;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import rx.Observable;
 
 /**
  * Tests for {@link BaseFilter}
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 class BaseFilterTest {
 
     private final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
@@ -65,7 +66,7 @@ class BaseFilterTest {
                 .applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()))
                 .toBlocking()
                 .single();
-        Truth.assertThat(limit[0]).isEqualTo(4000);
+        assertThat(limit[0]).isEqualTo(4000);
     }
 
     @Test
@@ -95,7 +96,7 @@ class BaseFilterTest {
                 .applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()))
                 .toBlocking()
                 .single();
-        Truth.assertThat(limit[0]).isEqualTo(7000);
+        assertThat(limit[0]).isEqualTo(7000);
     }
 
     @Test
@@ -125,6 +126,6 @@ class BaseFilterTest {
                 .applyAsync(new ZuulMessageImpl(new SessionContext(), new Headers()))
                 .toBlocking()
                 .single();
-        Truth.assertThat(limit[0]).isEqualTo(4300);
+        assertThat(limit[0]).isEqualTo(4300);
     }
 }

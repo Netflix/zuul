@@ -16,9 +16,8 @@
 
 package com.netflix.zuul.netty.filter;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -60,7 +59,7 @@ class EventExecutorSchedulerTest {
 
     @Test
     void nullExecutor() {
-        assertThrows(NullPointerException.class, () -> new EventExecutorScheduler(null));
+        assertThatThrownBy(() -> new EventExecutorScheduler(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -74,8 +73,8 @@ class EventExecutorSchedulerTest {
                 executed.set(true);
             };
             Subscription schedule = worker.schedule(action);
-            assertTrue(executed.get());
-            assertTrue(schedule.isUnsubscribed());
+            assertThat(executed.get()).isTrue();
+            assertThat(schedule.isUnsubscribed()).isTrue();
             latch.countDown();
         });
 
@@ -97,20 +96,20 @@ class EventExecutorSchedulerTest {
 
         Worker worker = scheduler.createWorker();
         Subscription schedule = worker.schedule(action);
-        assertFalse(schedule.isUnsubscribed());
+        assertThat(schedule.isUnsubscribed()).isFalse();
 
         latch.countDown();
         // ensure the original action finished
         eventLoop.submit(() -> {}).get(5, TimeUnit.SECONDS);
-        assertTrue(inEventLoop.get());
-        assertTrue(schedule.isUnsubscribed());
+        assertThat(inEventLoop.get()).isTrue();
+        assertThat(schedule.isUnsubscribed()).isTrue();
     }
 
     @Test
     void workerUnsubscribe() {
         Worker worker = scheduler.createWorker();
-        assertFalse(worker.isUnsubscribed());
+        assertThat(worker.isUnsubscribed()).isFalse();
         worker.unsubscribe();
-        assertTrue(worker.isUnsubscribed());
+        assertThat(worker.isUnsubscribed()).isTrue();
     }
 }

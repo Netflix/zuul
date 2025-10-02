@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.insights;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.DefaultRegistry;
@@ -65,14 +65,14 @@ class ServerStateHandlerTest {
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        assertEquals(3, connects.count());
+        assertThat(connects.count()).isEqualTo(3);
 
         // Closes X 1
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
 
-        assertEquals(3, connects.count());
-        assertEquals(1, closes.count());
-        assertEquals(0, errors.count());
+        assertThat(connects.count()).isEqualTo(3);
+        assertThat(closes.count()).isEqualTo(1);
+        assertThat(errors.count()).isEqualTo(0);
     }
 
     @Test
@@ -84,9 +84,7 @@ class ServerStateHandlerTest {
 
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
 
-        assertEquals(
-                PassportState.SERVER_CH_ACTIVE,
-                CurrentPassport.fromChannel(channel).getState());
+        assertThat(CurrentPassport.fromChannel(channel).getState()).isEqualTo(PassportState.SERVER_CH_ACTIVE);
     }
 
     @Test
@@ -97,8 +95,6 @@ class ServerStateHandlerTest {
 
         channel.pipeline().context(DummyChannelHandler.class).fireChannelInactive();
 
-        assertEquals(
-                PassportState.SERVER_CH_INACTIVE,
-                CurrentPassport.fromChannel(channel).getState());
+        assertThat(CurrentPassport.fromChannel(channel).getState()).isEqualTo(PassportState.SERVER_CH_INACTIVE);
     }
 }

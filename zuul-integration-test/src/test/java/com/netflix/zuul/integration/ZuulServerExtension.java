@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.integration;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
@@ -65,7 +65,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
         config.setProperty("server.outofservice.close.timeout", "0");
         bootstrap = new Bootstrap();
         bootstrap.start();
-        assertTrue(bootstrap.isRunning());
+        assertThat(bootstrap.isRunning()).isTrue();
     }
 
     @Override

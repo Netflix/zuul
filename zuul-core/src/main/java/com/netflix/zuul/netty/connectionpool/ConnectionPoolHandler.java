@@ -45,7 +45,6 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
     private final ConnectionPoolMetrics metrics;
     private final OriginName originName;
 
-
     @Deprecated
     public ConnectionPoolHandler(OriginName originName) {
         this(ConnectionPoolMetrics.create(Objects.requireNonNull(originName), Spectator.globalRegistry()));

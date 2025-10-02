@@ -16,8 +16,8 @@
 
 package com.netflix.zuul.netty;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.OutboundErrorType;
 import com.netflix.zuul.exception.OutboundException;
@@ -42,68 +42,72 @@ public class NettyRequestAttemptFactoryTest {
 
     @Test
     public void mapNettyToOutboundExceptionMapsToOutboundException() {
-        Exception e = new OutboundException(OutboundErrorType.OTHER,
-                new RequestAttempts());
+        Exception e = new OutboundException(OutboundErrorType.OTHER, new RequestAttempts());
         OutboundException mapException = factory.mapNettyToOutboundException(e, new SessionContext());
 
-        assertEquals(e, mapException);
+        assertThat(mapException).isEqualTo(e);
         // check that the type is OutboundException
-        assertNotNull(mapException);
+        assertThat(mapException).isNotNull();
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToReadTimeoutException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(new ReadTimeoutException(), new SessionContext());
+        OutboundException mapException =
+                factory.mapNettyToOutboundException(new ReadTimeoutException(), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.READ_TIMEOUT, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.READ_TIMEOUT);
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToOriginConcurrencyExceededException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(new OriginConcurrencyExceededException(OriginName.fromVipAndApp("vip", "app")), new SessionContext());
+        OutboundException mapException = factory.mapNettyToOutboundException(
+                new OriginConcurrencyExceededException(OriginName.fromVipAndApp("vip", "app")), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED);
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToOriginConnectException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(new OriginConnectException("error",
-                OutboundErrorType.OTHER), new SessionContext());
+        OutboundException mapException = factory.mapNettyToOutboundException(
+                new OriginConnectException("error", OutboundErrorType.OTHER), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.OTHER, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.OTHER);
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToClosedChannelException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(new ClosedChannelException(), new SessionContext());
+        OutboundException mapException =
+                factory.mapNettyToOutboundException(new ClosedChannelException(), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.RESET_CONNECTION, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.RESET_CONNECTION);
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToHeaderListSizeException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(Http2Exception.headerListSizeError(1, Http2Error.CONNECT_ERROR, false, ""), new SessionContext());
+        OutboundException mapException = factory.mapNettyToOutboundException(
+                Http2Exception.headerListSizeError(1, Http2Error.CONNECT_ERROR, false, ""), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.HEADER_FIELDS_TOO_LARGE, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.HEADER_FIELDS_TOO_LARGE);
     }
 
     @Test
     public void mapNettyToOutboundExceptionMapsToIllegalStateException() {
-        OutboundException mapException = factory.mapNettyToOutboundException(new Exception(new IllegalStateException(new Throwable("No available server"))), new SessionContext());
+        OutboundException mapException = factory.mapNettyToOutboundException(
+                new Exception(new IllegalStateException(new Throwable("No available server"))), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.NO_AVAILABLE_SERVERS, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.NO_AVAILABLE_SERVERS);
     }
 
     @Test
@@ -111,7 +115,7 @@ public class NettyRequestAttemptFactoryTest {
         OutboundException mapException = factory.mapNettyToOutboundException(new Exception(), new SessionContext());
 
         // check that the type is OutboundException
-        assertNotNull(mapException);
-        assertEquals(OutboundErrorType.OTHER, mapException.getOutboundErrorType());
+        assertThat(mapException).isNotNull();
+        assertThat(mapException.getOutboundErrorType()).isEqualTo(OutboundErrorType.OTHER);
     }
 }

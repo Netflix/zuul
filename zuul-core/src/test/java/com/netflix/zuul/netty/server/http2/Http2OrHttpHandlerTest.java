@@ -16,10 +16,7 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
@@ -72,7 +69,7 @@ class Http2OrHttpHandlerTest {
         assertThat(channel.pipeline().get(Http2FrameCodec.class)).isInstanceOf(Http2FrameCodec.class);
         assertThat(channel.pipeline().get(BaseZuulChannelInitializer.HTTP_CODEC_HANDLER_NAME))
                 .isInstanceOf(Http2MultiplexHandler.class);
-        assertEquals("HTTP/2", channel.attr(Http2OrHttpHandler.PROTOCOL_NAME).get());
+        assertThat(channel.attr(Http2OrHttpHandler.PROTOCOL_NAME).get()).isEqualTo("HTTP/2");
     }
 
     @Test
@@ -88,7 +85,8 @@ class Http2OrHttpHandlerTest {
         channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
 
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
-        assertNotNull(channel.pipeline().context(Http2ConnectionErrorHandler.class));
+        assertThat(channel.pipeline().context(Http2ConnectionErrorHandler.class))
+                .isNotNull();
     }
 
     @Test
@@ -105,6 +103,7 @@ class Http2OrHttpHandlerTest {
         channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
 
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
-        assertNull(channel.pipeline().context(Http2ConnectionErrorHandler.class));
+        assertThat(channel.pipeline().context(Http2ConnectionErrorHandler.class))
+                .isNull();
     }
 }

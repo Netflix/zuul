@@ -16,11 +16,7 @@
 
 package com.netflix.zuul.util;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
@@ -40,56 +36,56 @@ class HttpUtilsTest {
 
     @Test
     void detectsGzip() {
-        assertTrue(HttpUtils.isCompressed("gzip"));
+        assertThat(HttpUtils.isCompressed("gzip")).isTrue();
     }
 
     @Test
     void detectsDeflate() {
-        assertTrue(HttpUtils.isCompressed("deflate"));
+        assertThat(HttpUtils.isCompressed("deflate")).isTrue();
     }
 
     @Test
     void detectsCompress() {
-        assertTrue(HttpUtils.isCompressed("compress"));
+        assertThat(HttpUtils.isCompressed("compress")).isTrue();
     }
 
     @Test
     void detectsBR() {
-        assertTrue(HttpUtils.isCompressed("br"));
+        assertThat(HttpUtils.isCompressed("br")).isTrue();
     }
 
     @Test
     void detectsNonGzip() {
-        assertFalse(HttpUtils.isCompressed("identity"));
+        assertThat(HttpUtils.isCompressed("identity")).isFalse();
     }
 
     @Test
     void detectsGzipAmongOtherEncodings() {
-        assertTrue(HttpUtils.isCompressed("gzip, deflate"));
+        assertThat(HttpUtils.isCompressed("gzip, deflate")).isTrue();
     }
 
     @Test
     void acceptsGzip() {
         Headers headers = new Headers();
         headers.add("Accept-Encoding", "gzip, deflate");
-        assertTrue(HttpUtils.acceptsGzip(headers));
+        assertThat(HttpUtils.acceptsGzip(headers)).isTrue();
     }
 
     @Test
     void acceptsGzip_only() {
         Headers headers = new Headers();
         headers.add("Accept-Encoding", "deflate");
-        assertFalse(HttpUtils.acceptsGzip(headers));
+        assertThat(HttpUtils.acceptsGzip(headers)).isFalse();
     }
 
     @Test
     void stripMaliciousHeaderChars() {
-        assertEquals("something", HttpUtils.stripMaliciousHeaderChars("some\r\nthing"));
-        assertEquals("some thing", HttpUtils.stripMaliciousHeaderChars("some thing"));
-        assertEquals("something", HttpUtils.stripMaliciousHeaderChars("\nsome\r\nthing\r"));
-        assertEquals("", HttpUtils.stripMaliciousHeaderChars("\r"));
-        assertEquals("", HttpUtils.stripMaliciousHeaderChars(""));
-        assertNull(HttpUtils.stripMaliciousHeaderChars(null));
+        assertThat(HttpUtils.stripMaliciousHeaderChars("some\r\nthing")).isEqualTo("something");
+        assertThat(HttpUtils.stripMaliciousHeaderChars("some thing")).isEqualTo("some thing");
+        assertThat(HttpUtils.stripMaliciousHeaderChars("\nsome\r\nthing\r")).isEqualTo("something");
+        assertThat(HttpUtils.stripMaliciousHeaderChars("\r")).isEqualTo("");
+        assertThat(HttpUtils.stripMaliciousHeaderChars("")).isEqualTo("");
+        assertThat(HttpUtils.stripMaliciousHeaderChars(null)).isNull();
     }
 
     @Test

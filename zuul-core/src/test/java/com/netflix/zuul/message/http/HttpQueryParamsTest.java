@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.message.http;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +36,7 @@ class HttpQueryParamsTest {
         qp.add("k1", "v2");
         qp.add("k2", "v3");
 
-        assertEquals("k1=v1&k1=v2&k2=v3", qp.toEncodedString());
+        assertThat(qp.toEncodedString()).isEqualTo("k1=v1&k1=v2&k2=v3");
     }
 
     @Test
@@ -47,30 +46,30 @@ class HttpQueryParamsTest {
         qp.add("k1", "v1");
         qp.add("k1", "v1");
 
-        assertEquals("k1=v1&k1=v1&k1=v1", qp.toEncodedString());
-        assertEquals(List.of("v1", "v1", "v1"), qp.get("k1"));
+        assertThat(qp.toEncodedString()).isEqualTo("k1=v1&k1=v1&k1=v1");
+        assertThat(qp.get("k1")).isEqualTo(List.of("v1", "v1", "v1"));
     }
 
     @Test
     void testToEncodedString() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k'1", "v1&");
-        assertEquals("k%271=v1%26", qp.toEncodedString());
+        assertThat(qp.toEncodedString()).isEqualTo("k%271=v1%26");
 
         qp = new HttpQueryParams();
         qp.add("k+", "\n");
-        assertEquals("k%2B=%0A", qp.toEncodedString());
+        assertThat(qp.toEncodedString()).isEqualTo("k%2B=%0A");
     }
 
     @Test
     void testToString() {
         HttpQueryParams qp = new HttpQueryParams();
         qp.add("k'1", "v1&");
-        assertEquals("k'1=v1&", qp.toString());
+        assertThat(qp.toString()).isEqualTo("k'1=v1&");
 
         qp = new HttpQueryParams();
         qp.add("k+", "\n");
-        assertEquals("k+=\n", qp.toString());
+        assertThat(qp.toString()).isEqualTo("k+=\n");
     }
 
     @Test
@@ -82,7 +81,7 @@ class HttpQueryParamsTest {
         qp2.add("k1", "v1");
         qp2.add("k2", "v2");
 
-        assertEquals(qp1, qp2);
+        assertThat(qp2).isEqualTo(qp1);
     }
 
     @Test
@@ -94,9 +93,9 @@ class HttpQueryParamsTest {
 
         HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2&k3=");
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
-        assertEquals("k1=&k2=v2&k3=", actual.toEncodedString());
+        assertThat(actual.toEncodedString()).isEqualTo("k1=&k2=v2&k3=");
     }
 
     @Test
@@ -106,9 +105,9 @@ class HttpQueryParamsTest {
 
         HttpQueryParams actual = HttpQueryParams.parse("k1=");
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
-        assertEquals("k1=", actual.toEncodedString());
+        assertThat(actual.toEncodedString()).isEqualTo("k1=");
     }
 
     @Test
@@ -118,9 +117,9 @@ class HttpQueryParamsTest {
 
         HttpQueryParams actual = HttpQueryParams.parse("k1");
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
-        assertEquals("k1", actual.toEncodedString());
+        assertThat(actual.toEncodedString()).isEqualTo("k1");
     }
 
     @Test
@@ -130,9 +129,9 @@ class HttpQueryParamsTest {
 
         HttpQueryParams actual = HttpQueryParams.parse("=");
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
-        assertEquals("%3D", actual.toEncodedString());
+        assertThat(actual.toEncodedString()).isEqualTo("%3D");
     }
 
     @Test
@@ -145,9 +144,9 @@ class HttpQueryParamsTest {
 
         HttpQueryParams actual = HttpQueryParams.parse("k1=&k2=v2&k3&k4=v4");
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
 
-        assertEquals("k1=&k2=v2&k3&k4=v4", actual.toEncodedString());
+        assertThat(actual.toEncodedString()).isEqualTo("k1=&k2=v2&k3&k4=v4");
     }
 
     @Test
@@ -157,7 +156,7 @@ class HttpQueryParamsTest {
         queryParams.add("foo", "bar");
         queryParams.add(camelCaseKey.toLowerCase(Locale.ROOT), "value");
 
-        assertTrue(queryParams.containsIgnoreCase(camelCaseKey));
+        assertThat(queryParams.containsIgnoreCase(camelCaseKey)).isTrue();
     }
 
     @Test
@@ -165,8 +164,8 @@ class HttpQueryParamsTest {
         String queryString =
                 IntStream.range(0, 100).mapToObj(i -> "k%d=v%d".formatted(i, i)).collect(Collectors.joining("&"));
         HttpQueryParams queryParams = HttpQueryParams.parse(queryString);
-        assertEquals(queryString, queryParams.toEncodedString());
-        assertEquals(queryString, queryParams.toString());
-        assertEquals(queryString, queryParams.immutableCopy().toString());
+        assertThat(queryParams.toEncodedString()).isEqualTo(queryString);
+        assertThat(queryParams.toString()).isEqualTo(queryString);
+        assertThat(queryParams.immutableCopy().toString()).isEqualTo(queryString);
     }
 }

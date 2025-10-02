@@ -544,9 +544,6 @@
             ],
             "locked": "33.3.1-jre"
         },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
-        },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -723,6 +720,9 @@
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.24.3"
+        },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [
@@ -1000,9 +1000,6 @@
             ],
             "locked": "2.19.2"
         },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
-        },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1135,6 +1132,9 @@
         "org.apache.commons:commons-lang3": {
             "locked": "3.18.0"
         },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
+        },
         "org.junit.jupiter:junit-jupiter-api": {
             "locked": "5.13.4"
         },
@@ -1194,9 +1194,6 @@
                 "com.netflix.zuul:zuul-discovery"
             ],
             "locked": "33.3.1-jre"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.4.4"
         },
         "com.netflix.archaius:archaius-core": {
             "firstLevelTransitive": [
@@ -1374,6 +1371,9 @@
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.24.3"
+        },
+        "org.assertj:assertj-core": {
+            "locked": "3.26.3"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
             "firstLevelTransitive": [

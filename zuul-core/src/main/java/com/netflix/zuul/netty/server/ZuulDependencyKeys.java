@@ -51,7 +51,7 @@ public class ZuulDependencyKeys {
             new ChannelConfigKey<>("requestCompleteHandler");
     public static final ChannelConfigKey<Counter> httpRequestHeadersReadTimeoutCounter =
             new ChannelConfigKey<>("httpRequestHeadersReadTimeoutCounter");
-public static final ChannelConfigKey<PercentileTimer> httpRequestHeadersReadTimer =
+    public static final ChannelConfigKey<PercentileTimer> httpRequestHeadersReadTimer =
             new ChannelConfigKey<>("httpRequestHeadersReadTimer");
     public static final ChannelConfigKey<Counter> httpRequestReadTimeoutCounter =
             new ChannelConfigKey<>("httpRequestReadTimeoutCounter");

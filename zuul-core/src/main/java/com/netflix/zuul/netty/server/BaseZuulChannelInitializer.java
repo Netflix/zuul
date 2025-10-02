@@ -215,7 +215,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.sessionContextDecorator = channelDependencies.get(ZuulDependencyKeys.sessionCtxDecorator);
         this.requestCompleteHandler = channelDependencies.get(ZuulDependencyKeys.requestCompleteHandler);
-        this.httpRequestHeadersReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter);
+        this.httpRequestHeadersReadTimeoutCounter =
+                channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter);
         this.httpRequestHeadersReadTimer = channelDependencies.get(ZuulDependencyKeys.httpRequestHeadersReadTimer);
         this.httpRequestReadTimeoutCounter = channelDependencies.get(ZuulDependencyKeys.httpRequestReadTimeoutCounter);
 
@@ -263,11 +264,10 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(new HttpHeadersTimeoutHandler.InboundHandler(
-            HTTP_REQUEST_HEADERS_READ_TIMEOUT_ENABLED::get,
-            HTTP_REQUEST_HEADERS_READ_TIMEOUT::get,
-            httpRequestHeadersReadTimeoutCounter,
-            httpRequestHeadersReadTimer
-        ));
+                HTTP_REQUEST_HEADERS_READ_TIMEOUT_ENABLED::get,
+                HTTP_REQUEST_HEADERS_READ_TIMEOUT::get,
+                httpRequestHeadersReadTimeoutCounter,
+                httpRequestHeadersReadTimer));
         pipeline.addLast(new PassportStateHttpServerHandler.InboundHandler());
         pipeline.addLast(new PassportStateHttpServerHandler.OutboundHandler());
         if (httpRequestReadTimeout > -1) {

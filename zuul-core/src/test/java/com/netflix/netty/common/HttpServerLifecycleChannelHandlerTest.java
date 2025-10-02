@@ -16,7 +16,8 @@
 
 package com.netflix.netty.common;
 
-import com.google.common.truth.Truth;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.State;
@@ -42,7 +43,7 @@ class HttpServerLifecycleChannelHandlerTest {
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-            Truth.assertThat(evt).isInstanceOf(CompleteEvent.class);
+            assertThat(evt).isInstanceOf(CompleteEvent.class);
             this.completeEvent = (CompleteEvent) evt;
         }
 
@@ -64,7 +65,7 @@ class HttpServerLifecycleChannelHandlerTest {
         // Fire close
         channel.pipeline().close();
 
-        Truth.assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.PIPELINE_REJECT);
+        assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.PIPELINE_REJECT);
     }
 
     @Test
@@ -78,7 +79,7 @@ class HttpServerLifecycleChannelHandlerTest {
         // Fire close
         channel.pipeline().close();
 
-        Truth.assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.CLOSE);
+        assertThat(reasonHandler.getCompleteEvent().getReason()).isEqualTo(CompleteReason.CLOSE);
     }
 
     @Test
@@ -88,16 +89,16 @@ class HttpServerLifecycleChannelHandlerTest {
 
         ByteBuf buffer = UnpooledByteBufAllocator.DEFAULT.buffer();
         try {
-            Truth.assertThat(buffer.refCnt()).isEqualTo(1);
+            assertThat(buffer.refCnt()).isEqualTo(1);
             FullHttpRequest httpRequest =
                     new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/whatever", buffer);
             channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
             channel.writeInbound(httpRequest);
 
-            Truth.assertThat(channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT)
+            assertThat(channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT)
                             .get())
                     .isEqualTo(Boolean.TRUE);
-            Truth.assertThat(buffer.refCnt()).isEqualTo(0);
+            assertThat(buffer.refCnt()).isEqualTo(0);
         } finally {
             if (buffer.refCnt() != 0) {
                 ReferenceCountUtil.release(buffer);

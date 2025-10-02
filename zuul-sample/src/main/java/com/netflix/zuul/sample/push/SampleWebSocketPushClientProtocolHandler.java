@@ -48,7 +48,7 @@ public class SampleWebSocketPushClientProtocolHandler extends PushClientProtocol
                 logger.debug("received close frame");
                 ctx.close();
             } else if (msg instanceof TextWebSocketFrame tf) {
-                
+
                 String text = tf.text();
                 logger.debug("received test frame: {}", text);
                 if (text != null && text.startsWith("ECHO ")) { // echo protocol

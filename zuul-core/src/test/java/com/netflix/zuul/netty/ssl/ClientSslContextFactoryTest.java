@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.netty.ssl;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.spectator.api.DefaultRegistry;
 import io.netty.handler.ssl.OpenSslClientContext;
@@ -36,14 +35,14 @@ class ClientSslContextFactoryTest {
     void enableTls13() {
         String[] protos = ClientSslContextFactory.maybeAddTls13(true, "TLSv1.2");
 
-        assertEquals(Arrays.asList("TLSv1.3", "TLSv1.2"), Arrays.asList(protos));
+        assertThat(Arrays.asList(protos)).isEqualTo(Arrays.asList("TLSv1.3", "TLSv1.2"));
     }
 
     @Test
     void disableTls13() {
         String[] protos = ClientSslContextFactory.maybeAddTls13(false, "TLSv1.2");
 
-        assertEquals(Arrays.asList("TLSv1.2"), Arrays.asList(protos));
+        assertThat(Arrays.asList(protos)).isEqualTo(Arrays.asList("TLSv1.2"));
     }
 
     @Test
@@ -69,6 +68,6 @@ class ClientSslContextFactoryTest {
         ClientSslContextFactory factory = new ClientSslContextFactory(new DefaultRegistry());
         List<String> ciphers = factory.getCiphers();
         assertThat(ciphers).isNotEmpty();
-        assertThat(ciphers).containsNoDuplicates();
+        assertThat(ciphers).doesNotHaveDuplicates();
     }
 }

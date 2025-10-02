@@ -19,7 +19,8 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 public interface FilterRegistry {
-    @Nullable ZuulFilter<?, ?> get(String key);
+    @Nullable
+    ZuulFilter<?, ?> get(String key);
 
     int size();
 
@@ -37,7 +38,8 @@ public interface FilterRegistry {
      *
      * @throws IllegalStateException if this registry is not mutable.
      */
-    @Nullable ZuulFilter<?, ?> remove(String key);
+    @Nullable
+    ZuulFilter<?, ?> remove(String key);
 
     /**
      * Stores the filter into the registry.  If an existing filter was present with the same key,

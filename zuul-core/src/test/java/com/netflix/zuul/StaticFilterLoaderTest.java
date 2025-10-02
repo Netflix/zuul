@@ -16,8 +16,9 @@
 
 package com.netflix.zuul;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.collect.ImmutableSet;
-import com.google.common.truth.Truth;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.http.HttpInboundSyncFilter;
@@ -37,12 +38,12 @@ class StaticFilterLoaderTest {
                 factory, ImmutableSet.of(DummyFilter2.class, DummyFilter1.class, DummyFilter22.class));
 
         SortedSet<ZuulFilter<?, ?>> filters = filterLoader.getFiltersByType(FilterType.INBOUND);
-        Truth.assertThat(filters).hasSize(3);
+        assertThat(filters).hasSize(3);
         List<ZuulFilter<?, ?>> filterList = new ArrayList<>(filters);
 
-        Truth.assertThat(filterList.get(0)).isInstanceOf(DummyFilter1.class);
-        Truth.assertThat(filterList.get(1)).isInstanceOf(DummyFilter2.class);
-        Truth.assertThat(filterList.get(2)).isInstanceOf(DummyFilter22.class);
+        assertThat(filterList.get(0)).isInstanceOf(DummyFilter1.class);
+        assertThat(filterList.get(1)).isInstanceOf(DummyFilter2.class);
+        assertThat(filterList.get(2)).isInstanceOf(DummyFilter22.class);
     }
 
     @Test
@@ -52,7 +53,7 @@ class StaticFilterLoaderTest {
 
         ZuulFilter<?, ?> filter = filterLoader.getFilterByNameAndType("Robin", FilterType.INBOUND);
 
-        Truth.assertThat(filter).isInstanceOf(DummyFilter2.class);
+        assertThat(filter).isInstanceOf(DummyFilter2.class);
     }
 
     @Filter(order = 0, type = FilterType.INBOUND)

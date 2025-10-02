@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.monitoring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Registry;
@@ -42,15 +41,15 @@ class ConnTimerTest {
         timer.record(4000L, "end");
 
         PercentileTimer meter1 = PercentileTimer.get(registry, registry.createId("foo.start-middle"));
-        assertNotNull(meter1);
-        assertEquals(1000L, meter1.totalTime());
+        assertThat(meter1).isNotNull();
+        assertThat(meter1.totalTime()).isEqualTo(1000L);
 
         PercentileTimer meter2 = PercentileTimer.get(registry, registry.createId("foo.middle-end", "bar", "baz"));
-        assertNotNull(meter2);
-        assertEquals(2000L, meter2.totalTime());
+        assertThat(meter2).isNotNull();
+        assertThat(meter2.totalTime()).isEqualTo(2000L);
 
         PercentileTimer meter3 = PercentileTimer.get(registry, registry.createId("foo.start-end", "bar", "baz"));
-        assertNotNull(meter3);
-        assertEquals(3000L, meter3.totalTime());
+        assertThat(meter3).isNotNull();
+        assertThat(meter3.totalTime()).isEqualTo(3000L);
     }
 }

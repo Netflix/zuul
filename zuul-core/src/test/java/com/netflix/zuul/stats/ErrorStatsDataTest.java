@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,9 +32,9 @@ class ErrorStatsDataTest {
     void testUpdateStats() {
         ErrorStatsData sd = new ErrorStatsData("route", "test");
         sd.update();
-        assertEquals(1, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(1);
         sd.update();
-        assertEquals(2, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(2);
     }
 
     @Test
@@ -45,10 +44,9 @@ class ErrorStatsDataTest {
         ErrorStatsData sd2 = new ErrorStatsData("route", "test1");
         ErrorStatsData sd3 = new ErrorStatsData("route", "test");
 
-        assertEquals(sd, sd1);
-        assertEquals(sd1, sd);
-        assertEquals(sd, sd);
-        assertNotEquals(sd, sd2);
-        assertNotEquals(sd2, sd3);
+        assertThat(sd1).isEqualTo(sd);
+        assertThat(sd).isEqualTo(sd1);
+        assertThat(sd).isNotEqualTo(sd2);
+        assertThat(sd2).isNotEqualTo(sd3);
     }
 }

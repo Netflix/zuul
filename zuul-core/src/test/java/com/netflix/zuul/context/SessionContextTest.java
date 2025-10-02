@@ -15,11 +15,9 @@
  */
 package com.netflix.zuul.context;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.truth.Truth;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,8 +28,8 @@ class SessionContextTest {
     @Test
     void testBoolean() {
         SessionContext context = new SessionContext();
-        assertEquals(Boolean.FALSE, context.getBoolean("boolean_test"));
-        assertEquals(true, context.getBoolean("boolean_test", true));
+        assertThat(context.getBoolean("boolean_test")).isEqualTo(Boolean.FALSE);
+        assertThat(context.getBoolean("boolean_test", true)).isEqualTo(true);
     }
 
     @Test
@@ -42,12 +40,12 @@ class SessionContextTest {
         SessionContext.Key<String> key2 = SessionContext.newKey("foo");
         context.put(key2, "baz");
 
-        Truth.assertThat(context.keys()).containsExactly(key1, key2);
+        assertThat(context.keys()).containsExactlyInAnyOrder(key1, key2);
     }
 
     @Test
     void newKeyFailsOnNull() {
-        assertThrows(NullPointerException.class, () -> SessionContext.newKey(null));
+        assertThatThrownBy(() -> SessionContext.newKey(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -55,7 +53,7 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo");
 
-        assertThrows(NullPointerException.class, () -> context.put(key, null));
+        assertThatThrownBy(() -> context.put(key, null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -65,8 +63,8 @@ class SessionContextTest {
         context.put(key, "bar");
         context.put(key, "baz");
 
-        assertEquals("baz", context.get(key));
-        Truth.assertThat(context.keys()).containsExactly(key);
+        assertThat(context.get(key)).isEqualTo("baz");
+        assertThat(context.keys()).containsExactly(key);
     }
 
     @Test
@@ -74,7 +72,7 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo");
 
-        assertNull(context.get(key));
+        assertThat(context.get(key)).isNull();
     }
 
     @Test
@@ -82,7 +80,7 @@ class SessionContextTest {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo");
 
-        assertEquals("bar", context.getOrDefault(key, "bar"));
+        assertThat(context.getOrDefault(key, "bar")).isEqualTo("bar");
     }
 
     @Test
@@ -91,28 +89,28 @@ class SessionContextTest {
         SessionContext.Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
 
-        assertThrows(NullPointerException.class, () -> context.getOrDefault(key, null));
+        assertThatThrownBy(() -> context.getOrDefault(key, null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void getUsesDefaultValueSupplier() {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo", () -> "bar");
-        assertEquals("bar", context.get(key));
+        assertThat(context.get(key)).isEqualTo("bar");
     }
 
     @Test
     void getOrDefaultUsesDefaultValueSupplier() {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo", () -> "bar");
-        assertEquals("bar", context.getOrDefault(key));
+        assertThat(context.getOrDefault(key)).isEqualTo("bar");
     }
 
     @Test
     void getOrDefaultUsesDefaultValueSupplierFailsWithout() {
         SessionContext context = new SessionContext();
         SessionContext.Key<String> key = SessionContext.newKey("foo");
-        assertThrows(NullPointerException.class, () -> context.getOrDefault(key));
+        assertThatThrownBy(() -> context.getOrDefault(key)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -121,11 +119,11 @@ class SessionContextTest {
         SessionContext.Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
 
-        Truth.assertThat(context.get(key)).isEqualTo("bar");
+        assertThat(context.get(key)).isEqualTo("bar");
 
         String val = context.remove(key);
-        Truth.assertThat(context.get(key)).isNull();
-        Truth.assertThat(val).isEqualTo("bar");
+        assertThat(context.get(key)).isNull();
+        assertThat(val).isEqualTo("bar");
     }
 
     @Test
@@ -134,11 +132,11 @@ class SessionContextTest {
         SessionContext.Key<String> key = SessionContext.newKey("foo");
         context.put(key, "bar");
 
-        Truth.assertThat(context.containsKey(key)).isTrue();
+        assertThat(context.containsKey(key)).isTrue();
 
         String val = context.remove(key);
-        Truth.assertThat(val).isEqualTo("bar");
+        assertThat(val).isEqualTo("bar");
 
-        Truth.assertThat(context.containsKey(key)).isFalse();
+        assertThat(context.containsKey(key)).isFalse();
     }
 }

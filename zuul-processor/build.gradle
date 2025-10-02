@@ -5,7 +5,7 @@ dependencies {
     implementation project(":zuul-core")
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher,
-            libraries.truth
+            libraries.assertj
     testAnnotationProcessor project(":zuul-processor")
 }
 

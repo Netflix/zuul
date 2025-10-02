@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,11 +27,11 @@ class RouteStatusCodeMonitorTest {
     @Test
     void testUpdateStats() {
         RouteStatusCodeMonitor sd = new RouteStatusCodeMonitor("test", 200);
-        assertEquals("test", sd.route);
+        assertThat(sd.route).isEqualTo("test");
         sd.update();
-        assertEquals(1, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(1);
         sd.update();
-        assertEquals(2, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(2);
     }
 
     @Test
@@ -42,11 +41,10 @@ class RouteStatusCodeMonitorTest {
         RouteStatusCodeMonitor sd2 = new RouteStatusCodeMonitor("test1", 200);
         RouteStatusCodeMonitor sd3 = new RouteStatusCodeMonitor("test", 201);
 
-        assertEquals(sd, sd1);
-        assertEquals(sd1, sd);
-        assertEquals(sd, sd);
-        assertNotEquals(sd, sd2);
-        assertNotEquals(sd, sd3);
-        assertNotEquals(sd2, sd3);
+        assertThat(sd1).isEqualTo(sd);
+        assertThat(sd).isEqualTo(sd1);
+        assertThat(sd).isNotEqualTo(sd2);
+        assertThat(sd).isNotEqualTo(sd3);
+        assertThat(sd2).isNotEqualTo(sd3);
     }
 }

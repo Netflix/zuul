@@ -85,7 +85,8 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
         ;
 
         @SuppressWarnings("ImmutableEnumChecker") // Hopes and prayers that addressSupplier returns a constant.
-        @Nullable private final Supplier<? extends InetAddress> addressSupplier;
+        @Nullable
+        private final Supplier<? extends InetAddress> addressSupplier;
 
         BindType() {
             addressSupplier = null;

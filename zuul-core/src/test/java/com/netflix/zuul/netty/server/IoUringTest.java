@@ -16,10 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
@@ -127,12 +125,12 @@ class IoUringTest {
         s.start();
 
         List<NamedSocketAddress> addresses = s.getListeningAddresses();
-        assertEquals(2, addresses.size());
+        assertThat(addresses.size()).isEqualTo(2);
 
         addresses.forEach(address -> {
-            assertTrue(address.unwrap() instanceof InetSocketAddress);
+            assertThat(address.unwrap() instanceof InetSocketAddress).isTrue();
             InetSocketAddress inetAddress = ((InetSocketAddress) address.unwrap());
-            assertNotEquals(0, inetAddress.getPort());
+            assertThat(inetAddress.getPort()).isNotEqualTo(0);
             checkConnection(inetAddress.getPort());
         });
 
@@ -140,10 +138,10 @@ class IoUringTest {
 
         s.stop();
 
-        assertEquals(2, ioUringChannels.size());
+        assertThat(ioUringChannels.size()).isEqualTo(2);
 
         for (IoUringServerSocketChannel ch : ioUringChannels) {
-            assertTrue(ch.eventLoop().isShutdown(), "isShutdown");
+            assertThat(ch.eventLoop().isShutdown()).as("isShutdown").isTrue();
         }
     }
 

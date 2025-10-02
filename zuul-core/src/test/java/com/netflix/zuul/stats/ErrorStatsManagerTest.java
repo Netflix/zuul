@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Test;
@@ -33,21 +32,21 @@ class ErrorStatsManagerTest {
     @Test
     void testPutStats() {
         ErrorStatsManager sm = new ErrorStatsManager();
-        assertNotNull(sm);
+        assertThat(sm).isNotNull();
         sm.putStats("test", "cause");
-        assertNotNull(sm.routeMap.get("test"));
+        assertThat(sm.routeMap.get("test")).isNotNull();
         ConcurrentHashMap<String, ErrorStatsData> map = sm.routeMap.get("test");
         ErrorStatsData sd = map.get("cause");
-        assertEquals(1, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(1);
         sm.putStats("test", "cause");
-        assertEquals(2, sd.getCount());
+        assertThat(sd.getCount()).isEqualTo(2);
     }
 
     @Test
     void testGetStats() {
         ErrorStatsManager sm = new ErrorStatsManager();
-        assertNotNull(sm);
+        assertThat(sm).isNotNull();
         sm.putStats("test", "cause");
-        assertNotNull(sm.getStats("test", "cause"));
+        assertThat(sm.getStats("test", "cause")).isNotNull();
     }
 }

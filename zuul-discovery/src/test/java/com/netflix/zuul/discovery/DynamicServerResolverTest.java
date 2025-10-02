@@ -16,9 +16,10 @@
 
 package com.netflix.zuul.discovery;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -66,8 +67,7 @@ class DynamicServerResolverTest {
 
         resolver.onUpdate(ImmutableList.of(server1, server2), ImmutableList.of());
 
-        Truth.assertThat(listener.updatedList())
-                .containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
+        assertThat(listener.updatedList()).containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
     }
 
     @Test
@@ -76,8 +76,8 @@ class DynamicServerResolverTest {
 
         DiscoveryResult nonExistentServer = resolver.resolve(null);
 
-        Truth.assertThat(nonExistentServer).isSameInstanceAs(DiscoveryResult.EMPTY);
-        Truth.assertThat(nonExistentServer.getHost()).isEqualTo("undefined");
-        Truth.assertThat(nonExistentServer.getPort()).isEqualTo(-1);
+        assertThat(nonExistentServer).isSameAs(DiscoveryResult.EMPTY);
+        assertThat(nonExistentServer.getHost()).isEqualTo("undefined");
+        assertThat(nonExistentServer.getPort()).isEqualTo(-1);
     }
 }

@@ -16,10 +16,7 @@
 
 package com.netflix.zuul.netty.filter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,34 +93,34 @@ class ZuulEndPointRunnerTest {
     void nonErrorEndpoint() {
         request.getContext().setShouldSendErrorResponse(false);
         request.getContext().setEndpoint(BASIC_ENDPOINT);
-        assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
+        assertThat(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT)).isNull();
         endpointRunner.filter(request);
         ZuulFilter<HttpRequestMessage, HttpResponseMessage> filter =
                 request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
-        assertTrue(filter instanceof BasicEndpoint);
+        assertThat(filter instanceof BasicEndpoint).isTrue();
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
         HttpResponseMessage capturedResponseMessage = captor.getValue();
-        assertEquals(capturedResponseMessage.getInboundRequest(), request.getInboundRequest());
-        assertEquals("basicEndpoint", capturedResponseMessage.getContext().getEndpoint());
-        assertFalse(capturedResponseMessage.getContext().errorResponseSent());
+        assertThat(request.getInboundRequest()).isEqualTo(capturedResponseMessage.getInboundRequest());
+        assertThat(capturedResponseMessage.getContext().getEndpoint()).isEqualTo("basicEndpoint");
+        assertThat(capturedResponseMessage.getContext().errorResponseSent()).isFalse();
     }
 
     @Test
     void errorEndpoint() {
         request.getContext().setShouldSendErrorResponse(true);
-        assertNull(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT));
+        assertThat(request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT)).isNull();
         endpointRunner.filter(request);
         ZuulFilter filter = request.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);
-        assertTrue(filter instanceof ErrorEndpoint);
+        assertThat(filter instanceof ErrorEndpoint).isTrue();
 
         ArgumentCaptor<HttpResponseMessage> captor = ArgumentCaptor.forClass(HttpResponseMessage.class);
         verify(filterRunner, times(1)).filter(captor.capture());
         HttpResponseMessage capturedResponseMessage = captor.getValue();
-        assertEquals(capturedResponseMessage.getInboundRequest(), request.getInboundRequest());
-        assertNull(capturedResponseMessage.getContext().getEndpoint());
-        assertTrue(capturedResponseMessage.getContext().errorResponseSent());
+        assertThat(request.getInboundRequest()).isEqualTo(capturedResponseMessage.getInboundRequest());
+        assertThat(capturedResponseMessage.getContext().getEndpoint()).isNull();
+        assertThat(capturedResponseMessage.getContext().errorResponseSent()).isTrue();
     }
 
     @Filter(order = 10, type = FilterType.ENDPOINT)

@@ -17,9 +17,7 @@
 package com.netflix.zuul.filters.common;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.context.SessionContext;
@@ -75,7 +73,7 @@ class GZipResponseFilterTest {
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
-        assertTrue(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isTrue();
 
         HttpResponseMessage result = filter.apply(response);
         HttpContent hc1 = filter.processContentChunk(
@@ -98,11 +96,11 @@ class GZipResponseFilterTest {
             }
             bodyStr = baos.toString("UTF-8");
         }
-        assertEquals("blah", bodyStr);
-        assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"));
+        assertThat(bodyStr).isEqualTo("blah");
+        assertThat(result.getHeaders().getFirst("Content-Encoding")).isEqualTo("gzip");
 
         // Check Content-Length header has been removed
-        assertEquals(0, result.getHeaders().getAll("Content-Length").size());
+        assertThat(result.getHeaders().getAll("Content-Length").size()).isEqualTo(0);
     }
 
     @Test
@@ -113,7 +111,7 @@ class GZipResponseFilterTest {
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         Mockito.when(filter.isRightSizeForGzip(response)).thenReturn(true); // Force GZip for small response
         response.setHasBody(true);
-        assertTrue(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isTrue();
 
         HttpResponseMessage result = filter.apply(response);
         HttpContent hc1 = filter.processContentChunk(
@@ -136,11 +134,11 @@ class GZipResponseFilterTest {
             }
             bodyStr = baos.toString("UTF-8");
         }
-        assertEquals("blah", bodyStr);
-        assertEquals("gzip", result.getHeaders().getFirst("Content-Encoding"));
+        assertThat(bodyStr).isEqualTo("blah");
+        assertThat(result.getHeaders().getFirst("Content-Encoding")).isEqualTo("gzip");
 
         // Check Content-Length header has been removed
-        assertEquals(0, result.getHeaders().getAll("Content-Length").size());
+        assertThat(result.getHeaders().getAll("Content-Length").size()).isEqualTo(0);
     }
 
     @Test
@@ -152,7 +150,7 @@ class GZipResponseFilterTest {
         response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "gzip");
         response.setHasBody(true);
-        assertFalse(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isFalse();
     }
 
     @Test
@@ -164,7 +162,7 @@ class GZipResponseFilterTest {
         response.getHeaders().set("Content-Type", "application/json");
         response.getHeaders().set("Content-Encoding", "deflate");
         response.setHasBody(true);
-        assertFalse(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isFalse();
     }
 
     @Test
@@ -173,7 +171,7 @@ class GZipResponseFilterTest {
         byte[] originBody = "blah".getBytes(UTF_8);
         response.getHeaders().set("Content-Length", Integer.toString(originBody.length));
         response.setHasBody(true);
-        assertFalse(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isFalse();
     }
 
     @Test
@@ -181,6 +179,6 @@ class GZipResponseFilterTest {
         originalRequestHeaders.set("Accept-Encoding", "gzip");
         response.getHeaders().set("Transfer-Encoding", "chunked");
         response.setHasBody(true);
-        assertTrue(filter.shouldFilter(response));
+        assertThat(filter.shouldFilter(response)).isTrue();
     }
 }

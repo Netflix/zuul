@@ -34,7 +34,6 @@ public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest req) {
-            
 
             for (String name : req.headers().names()) {
                 if (name.startsWith("x-http2-")) {

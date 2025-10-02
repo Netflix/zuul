@@ -40,7 +40,6 @@ allprojects {
             rootProject.hasProperty('spotlessJavaTarget') ? target(rootProject.getProperty('spotlessJavaTarget').split(",")) : target('src/*/java/**/*.java')
             removeUnusedImports('cleanthat-javaparser-unnecessaryimport')
             palantirJavaFormat()
-            formatAnnotations()
         }
     }
 }
@@ -126,7 +125,7 @@ subprojects {
                 mockito: 'org.mockito:mockito-core:5.+',
 
                 slf4j: "org.slf4j:slf4j-api:2.0.16",
-                truth: 'com.google.truth:truth:1.4.4',
+                assertj: 'org.assertj:assertj-core:3.26.3',
                 awaitility: 'org.awaitility:awaitility:4.2.2',
                 lombok: 'org.projectlombok:lombok:1.18.42'
         ]

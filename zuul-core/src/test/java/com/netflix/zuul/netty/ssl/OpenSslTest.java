@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.netty.ssl;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslProvider;
@@ -28,13 +27,13 @@ class OpenSslTest {
     @BeforeEach
     void beforeEach() {
         OpenSsl.ensureAvailability();
-        assertTrue(OpenSsl.isAvailable());
+        assertThat(OpenSsl.isAvailable()).isTrue();
     }
 
     @Test
     void testBoringSsl() {
         assertThat(OpenSsl.versionString()).isEqualTo("BoringSSL");
-        assertTrue(SslProvider.isAlpnSupported(SslProvider.OPENSSL));
-        assertTrue(SslProvider.isTlsv13Supported(SslProvider.OPENSSL));
+        assertThat(SslProvider.isAlpnSupported(SslProvider.OPENSSL)).isTrue();
+        assertThat(SslProvider.isTlsv13Supported(SslProvider.OPENSSL)).isTrue();
     }
 }

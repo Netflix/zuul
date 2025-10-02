@@ -56,7 +56,7 @@ dependencies {
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher, libraries.jupiterMockito,
             libraries.mockito,
-            libraries.truth,
+            libraries.assertj,
             libraries.awaitility
 
 

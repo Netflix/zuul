@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
@@ -28,7 +26,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.net.InetAddresses;
-import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.spectator.api.DefaultRegistry;
@@ -72,10 +69,10 @@ class DefaultClientChannelManagerTest {
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
-        Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
+        assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
-        assertEquals(InetAddresses.forString("192.168.0.1"), socketAddress.getAddress());
-        assertEquals(443, socketAddress.getPort());
+        assertThat(socketAddress.getAddress()).isEqualTo(InetAddresses.forString("192.168.0.1"));
+        assertThat(socketAddress.getPort()).isEqualTo(443);
     }
 
     @Test
@@ -89,11 +86,13 @@ class DefaultClientChannelManagerTest {
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
-        Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
+        assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
 
-        assertTrue(socketAddress.getAddress().isLoopbackAddress(), socketAddress.toString());
-        assertEquals(443, socketAddress.getPort());
+        assertThat(socketAddress.getAddress().isLoopbackAddress())
+                .as(socketAddress.toString())
+                .isTrue();
+        assertThat(socketAddress.getPort()).isEqualTo(443);
     }
 
     @Test
@@ -102,10 +101,10 @@ class DefaultClientChannelManagerTest {
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
-        Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
+        assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
-        assertEquals(InetAddresses.forString("192.168.0.1"), socketAddress.getAddress());
-        assertEquals(443, socketAddress.getPort());
+        assertThat(socketAddress.getAddress()).isEqualTo(InetAddresses.forString("192.168.0.1"));
+        assertThat(socketAddress.getPort()).isEqualTo(443);
     }
 
     @Test
@@ -114,11 +113,13 @@ class DefaultClientChannelManagerTest {
 
         SocketAddress addr = DefaultClientChannelManager.pickAddressInternal(s, OriginName.fromVip("vip"));
 
-        Truth.assertThat(addr).isInstanceOf(InetSocketAddress.class);
+        assertThat(addr).isInstanceOf(InetSocketAddress.class);
         InetSocketAddress socketAddress = (InetSocketAddress) addr;
 
-        assertTrue(socketAddress.getAddress().isLoopbackAddress(), socketAddress.toString());
-        assertEquals(443, socketAddress.getPort());
+        assertThat(socketAddress.getAddress().isLoopbackAddress())
+                .as(socketAddress.toString())
+                .isTrue();
+        assertThat(socketAddress.getPort()).isEqualTo(443);
     }
 
     @Test
@@ -137,8 +138,8 @@ class DefaultClientChannelManagerTest {
         Promise<PooledConnection> promise = clientChannelManager.acquire(
                 new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
-        Truth.assertThat(promise.isSuccess()).isFalse();
-        Truth.assertThat(serverRef.get()).isSameInstanceAs(DiscoveryResult.EMPTY);
+        assertThat(promise.isSuccess()).isFalse();
+        assertThat(serverRef.get()).isSameAs(DiscoveryResult.EMPTY);
     }
 
     @Test
@@ -165,7 +166,7 @@ class DefaultClientChannelManagerTest {
         var unusedFuture = clientChannelManager.acquire(
                 new DefaultEventLoop(), null, CurrentPassport.create(), serverRef, new AtomicReference<>());
 
-        Truth.assertThat(serverRef.get()).isSameInstanceAs(discoveryResult);
+        assertThat(serverRef.get()).isSameAs(discoveryResult);
     }
 
     @Test
@@ -200,24 +201,24 @@ class DefaultClientChannelManagerTest {
 
         clientChannelManager.init();
 
-        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
+        assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
 
         Promise<PooledConnection> promiseConn = clientChannelManager.acquire(eventLoop);
         promiseConn.await(200, TimeUnit.MILLISECONDS);
-        assertTrue(promiseConn.isDone());
-        assertTrue(promiseConn.isSuccess());
+        assertThat(promiseConn.isDone()).isTrue();
+        assertThat(promiseConn.isSuccess()).isTrue();
 
         PooledConnection connection = promiseConn.get();
-        assertTrue(connection.isActive());
-        assertFalse(connection.isInPool());
+        assertThat(connection.isActive()).isTrue();
+        assertThat(connection.isInPool()).isFalse();
 
-        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(1);
+        assertThat(clientChannelManager.getConnsInUse()).isEqualTo(1);
 
         boolean releaseResult = clientChannelManager.release(connection);
-        assertTrue(releaseResult);
-        assertTrue(connection.isInPool());
+        assertThat(releaseResult).isTrue();
+        assertThat(connection.isInPool()).isTrue();
 
-        Truth.assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
+        assertThat(clientChannelManager.getConnsInUse()).isEqualTo(0);
 
         clientChannelManager.shutdown();
         serverSocket.close();
@@ -242,7 +243,7 @@ class DefaultClientChannelManagerTest {
         doReturn(true).when(discoveryResult).isCircuitBreakerTripped();
         doReturn(new EmbeddedChannel()).when(connection).getChannel();
 
-        Truth.assertThat(manager.release(connection)).isFalse();
+        assertThat(manager.release(connection)).isFalse();
         verify(connection).setInPool(false);
         verify(connection).close();
     }
@@ -273,7 +274,7 @@ class DefaultClientChannelManagerTest {
         manager.getPerServerPools().put(discoveryResult, connectionPool);
         clientConfig.set(ConnectionPoolConfigImpl.CLOSE_ON_CIRCUIT_BREAKER, false);
 
-        Truth.assertThat(manager.release(connection)).isTrue();
+        assertThat(manager.release(connection)).isTrue();
         verify(connection, never()).setInPool(anyBoolean());
         verify(connection, never()).close();
     }
