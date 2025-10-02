@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
@@ -59,10 +59,14 @@ class BaseZuulChannelInitializerTest {
 
         init.addTcpRelatedHandlers(channel.pipeline());
 
-        assertNotNull(channel.pipeline().context(SourceAddressChannelHandler.class));
-        assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
-        assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
-        assertNotNull(channel.pipeline().context(MaxInboundConnectionsHandler.class));
+        assertThat(channel.pipeline().context(SourceAddressChannelHandler.class))
+                .isNotNull();
+        assertThat(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class))
+                .isNotNull();
+        assertThat(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME))
+                .isNotNull();
+        assertThat(channel.pipeline().context(MaxInboundConnectionsHandler.class))
+                .isNotNull();
     }
 
     @Test
@@ -86,10 +90,14 @@ class BaseZuulChannelInitializerTest {
 
         init.addTcpRelatedHandlers(channel.pipeline());
 
-        assertNotNull(channel.pipeline().context(SourceAddressChannelHandler.class));
-        assertNotNull(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class));
-        assertNotNull(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME));
-        assertNotNull(channel.pipeline().context(MaxInboundConnectionsHandler.class));
+        assertThat(channel.pipeline().context(SourceAddressChannelHandler.class))
+                .isNotNull();
+        assertThat(channel.pipeline().context(PerEventLoopMetricsChannelHandler.Connections.class))
+                .isNotNull();
+        assertThat(channel.pipeline().context(ElbProxyProtocolChannelHandler.NAME))
+                .isNotNull();
+        assertThat(channel.pipeline().context(MaxInboundConnectionsHandler.class))
+                .isNotNull();
     }
 
     @Test
@@ -113,7 +121,9 @@ class BaseZuulChannelInitializerTest {
 
         init.addPassportHandler(channel.pipeline());
 
-        assertNotNull(channel.pipeline().context(ServerStateHandler.InboundHandler.class));
-        assertNotNull(channel.pipeline().context(ServerStateHandler.OutboundHandler.class));
+        assertThat(channel.pipeline().context(ServerStateHandler.InboundHandler.class))
+                .isNotNull();
+        assertThat(channel.pipeline().context(ServerStateHandler.OutboundHandler.class))
+                .isNotNull();
     }
 }

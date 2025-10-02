@@ -14,7 +14,7 @@ dependencies {
 
     testImplementation 'org.wiremock:wiremock:3.10.0'
     testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
-    testImplementation libraries.truth, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher, libraries.jupiterMockito, libraries.okhttp
+    testImplementation libraries.assertj, libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher, libraries.jupiterMockito, libraries.okhttp
     testImplementation "io.netty:netty-transport-native-io_uring"
 //    testImplementation "io.netty.incubator:netty-transport-native-io_uring::linux-x86_64"
     testImplementation "org.slf4j:slf4j-api:2.0.16"

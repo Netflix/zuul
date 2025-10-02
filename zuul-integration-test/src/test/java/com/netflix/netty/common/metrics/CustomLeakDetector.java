@@ -15,7 +15,7 @@
  */
 package com.netflix.netty.common.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,7 +28,7 @@ public class CustomLeakDetector extends InstrumentedResourceLeakDetector {
         List<CustomLeakDetector> leaks = GLOBAL_REGISTRY.stream()
                 .filter(detector -> detector.leakCounter.get() > 0)
                 .collect(Collectors.toList());
-        assertTrue(leaks.isEmpty(), "LEAKS DETECTED: " + leaks);
+        assertThat(leaks.isEmpty()).as("LEAKS DETECTED: " + leaks).isTrue();
     }
 
     private final String resourceTypeName;

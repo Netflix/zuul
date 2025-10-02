@@ -19,9 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.MAX_REQUESTS_PER_CONNECTION;
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.PER_SERVER_WATERLINE;
 import static com.netflix.zuul.netty.connectionpool.ConnectionPoolConfigImpl.TCP_KEEP_ALIVE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfigKey;
@@ -47,172 +45,173 @@ class ConnectionPoolConfigImplTest {
 
     @Test
     void testGetConnectTimeout() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_CONNECT_TIMEOUT, connectionPoolConfig.getConnectTimeout());
+        assertThat(connectionPoolConfig.getConnectTimeout())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_CONNECT_TIMEOUT);
     }
 
     @Test
     void testGetConnectTimeoutOverride() {
         clientConfig.set(IClientConfigKey.Keys.ConnectTimeout, 1000);
-        assertEquals(1000, connectionPoolConfig.getConnectTimeout());
+        assertThat(connectionPoolConfig.getConnectTimeout()).isEqualTo(1000);
     }
 
     @Test
     void testGetMaxRequestsPerConnection() {
-        assertEquals(
-                ConnectionPoolConfigImpl.DEFAULT_MAX_REQUESTS_PER_CONNECTION,
-                connectionPoolConfig.getMaxRequestsPerConnection());
+        assertThat(connectionPoolConfig.getMaxRequestsPerConnection())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_MAX_REQUESTS_PER_CONNECTION);
     }
 
     @Test
     void testGetMaxRequestsPerConnectionOverride() {
         clientConfig.set(MAX_REQUESTS_PER_CONNECTION, 2000);
-        assertEquals(2000, connectionPoolConfig.getMaxRequestsPerConnection());
+        assertThat(connectionPoolConfig.getMaxRequestsPerConnection()).isEqualTo(2000);
     }
 
     @Test
     void testMaxConnectionsPerHost() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_MAX_CONNS_PER_HOST, connectionPoolConfig.maxConnectionsPerHost());
+        assertThat(connectionPoolConfig.maxConnectionsPerHost())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_MAX_CONNS_PER_HOST);
     }
 
     @Test
     void testMaxConnectionsPerHostOverride() {
         clientConfig.set(IClientConfigKey.Keys.MaxConnectionsPerHost, 60);
-        assertEquals(60, connectionPoolConfig.maxConnectionsPerHost());
+        assertThat(connectionPoolConfig.maxConnectionsPerHost()).isEqualTo(60);
     }
 
     @Test
     void testPerServerWaterline() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_PER_SERVER_WATERLINE, connectionPoolConfig.perServerWaterline());
+        assertThat(connectionPoolConfig.perServerWaterline())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_PER_SERVER_WATERLINE);
     }
 
     @Test
     void testPerServerWaterlineOverride() {
         clientConfig.set(PER_SERVER_WATERLINE, 5);
-        assertEquals(5, connectionPoolConfig.perServerWaterline());
+        assertThat(connectionPoolConfig.perServerWaterline()).isEqualTo(5);
     }
 
     @Test
     void testGetIdleTimeout() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_IDLE_TIMEOUT, connectionPoolConfig.getIdleTimeout());
+        assertThat(connectionPoolConfig.getIdleTimeout()).isEqualTo(ConnectionPoolConfigImpl.DEFAULT_IDLE_TIMEOUT);
     }
 
     @Test
     void testGetIdleTimeoutOverride() {
         clientConfig.set(IClientConfigKey.Keys.ConnIdleEvictTimeMilliSeconds, 70000);
-        assertEquals(70000, connectionPoolConfig.getIdleTimeout());
+        assertThat(connectionPoolConfig.getIdleTimeout()).isEqualTo(70000);
     }
 
     @Test
     void testGetTcpKeepAlive() {
-        assertFalse(connectionPoolConfig.getTcpKeepAlive());
+        assertThat(connectionPoolConfig.getTcpKeepAlive()).isFalse();
     }
 
     @Test
     void testGetTcpKeepAliveOverride() {
         clientConfig.set(TCP_KEEP_ALIVE, true);
-        assertTrue(connectionPoolConfig.getTcpKeepAlive());
+        assertThat(connectionPoolConfig.getTcpKeepAlive()).isTrue();
     }
 
     @Test
     void testGetTcpNoDelay() {
-        assertFalse(connectionPoolConfig.getTcpNoDelay());
+        assertThat(connectionPoolConfig.getTcpNoDelay()).isFalse();
     }
 
     @Test
     void testGetTcpNoDelayOverride() {
         clientConfig.set(ConnectionPoolConfigImpl.TCP_NO_DELAY, true);
-        assertTrue(connectionPoolConfig.getTcpNoDelay());
+        assertThat(connectionPoolConfig.getTcpNoDelay()).isTrue();
     }
 
     @Test
     void testGetTcpReceiveBufferSize() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_BUFFER_SIZE, connectionPoolConfig.getTcpReceiveBufferSize());
+        assertThat(connectionPoolConfig.getTcpReceiveBufferSize())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_BUFFER_SIZE);
     }
 
     @Test
     void testGetTcpReceiveBufferSizeOverride() {
         clientConfig.set(IClientConfigKey.Keys.ReceiveBufferSize, 40000);
-        assertEquals(40000, connectionPoolConfig.getTcpReceiveBufferSize());
+        assertThat(connectionPoolConfig.getTcpReceiveBufferSize()).isEqualTo(40000);
     }
 
     @Test
     void testGetTcpSendBufferSize() {
-        assertEquals(ConnectionPoolConfigImpl.DEFAULT_BUFFER_SIZE, connectionPoolConfig.getTcpSendBufferSize());
+        assertThat(connectionPoolConfig.getTcpSendBufferSize()).isEqualTo(ConnectionPoolConfigImpl.DEFAULT_BUFFER_SIZE);
     }
 
     @Test
     void testGetTcpSendBufferSizeOverride() {
         clientConfig.set(IClientConfigKey.Keys.SendBufferSize, 40000);
-        assertEquals(40000, connectionPoolConfig.getTcpSendBufferSize());
+        assertThat(connectionPoolConfig.getTcpSendBufferSize()).isEqualTo(40000);
     }
 
     @Test
     void testGetNettyWriteBufferHighWaterMark() {
-        assertEquals(
-                ConnectionPoolConfigImpl.DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK,
-                connectionPoolConfig.getNettyWriteBufferHighWaterMark());
+        assertThat(connectionPoolConfig.getNettyWriteBufferHighWaterMark())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK);
     }
 
     @Test
     void testGetNettyWriteBufferHighWaterMarkOverride() {
         clientConfig.set(ConnectionPoolConfigImpl.WRITE_BUFFER_HIGH_WATER_MARK, 40000);
-        assertEquals(40000, connectionPoolConfig.getNettyWriteBufferHighWaterMark());
+        assertThat(connectionPoolConfig.getNettyWriteBufferHighWaterMark()).isEqualTo(40000);
     }
 
     @Test
     void testGetNettyWriteBufferLowWaterMark() {
-        assertEquals(
-                ConnectionPoolConfigImpl.DEFAULT_WRITE_BUFFER_LOW_WATER_MARK,
-                connectionPoolConfig.getNettyWriteBufferLowWaterMark());
+        assertThat(connectionPoolConfig.getNettyWriteBufferLowWaterMark())
+                .isEqualTo(ConnectionPoolConfigImpl.DEFAULT_WRITE_BUFFER_LOW_WATER_MARK);
     }
 
     @Test
     void testGetNettyWriteBufferLowWaterMarkOverride() {
         clientConfig.set(ConnectionPoolConfigImpl.WRITE_BUFFER_LOW_WATER_MARK, 10000);
-        assertEquals(10000, connectionPoolConfig.getNettyWriteBufferLowWaterMark());
+        assertThat(connectionPoolConfig.getNettyWriteBufferLowWaterMark()).isEqualTo(10000);
     }
 
     @Test
     void testGetNettyAutoRead() {
-        assertFalse(connectionPoolConfig.getNettyAutoRead());
+        assertThat(connectionPoolConfig.getNettyAutoRead()).isFalse();
     }
 
     @Test
     void testGetNettyAutoReadOverride() {
         clientConfig.set(ConnectionPoolConfigImpl.AUTO_READ, true);
-        assertTrue(connectionPoolConfig.getNettyAutoRead());
+        assertThat(connectionPoolConfig.getNettyAutoRead()).isTrue();
     }
 
     @Test
     void testIsSecure() {
-        assertFalse(connectionPoolConfig.isSecure());
+        assertThat(connectionPoolConfig.isSecure()).isFalse();
     }
 
     @Test
     void testIsSecureOverride() {
         clientConfig.set(IClientConfigKey.Keys.IsSecure, true);
-        assertTrue(connectionPoolConfig.isSecure());
+        assertThat(connectionPoolConfig.isSecure()).isTrue();
     }
 
     @Test
     void testUseIPAddrForServer() {
-        assertTrue(connectionPoolConfig.useIPAddrForServer());
+        assertThat(connectionPoolConfig.useIPAddrForServer()).isTrue();
     }
 
     @Test
     void testUseIPAddrForServerOverride() {
         clientConfig.set(IClientConfigKey.Keys.UseIPAddrForServer, false);
-        assertFalse(connectionPoolConfig.useIPAddrForServer());
+        assertThat(connectionPoolConfig.useIPAddrForServer()).isFalse();
     }
 
     @Test
     void testIsCloseOnCircuitBreakerEnabled() {
-        assertTrue(connectionPoolConfig.isCloseOnCircuitBreakerEnabled());
+        assertThat(connectionPoolConfig.isCloseOnCircuitBreakerEnabled()).isTrue();
     }
 
     @Test
     void testIsCloseOnCircuitBreakerEnabledOverride() {
         clientConfig.set(ConnectionPoolConfigImpl.CLOSE_ON_CIRCUIT_BREAKER, false);
-        assertFalse(connectionPoolConfig.isCloseOnCircuitBreakerEnabled());
+        assertThat(connectionPoolConfig.isCloseOnCircuitBreakerEnabled()).isFalse();
     }
 }

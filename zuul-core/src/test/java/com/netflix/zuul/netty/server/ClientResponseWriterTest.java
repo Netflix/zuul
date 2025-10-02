@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.server;
 
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.zuul.BasicRequestCompleteHandler;
@@ -128,12 +126,12 @@ class ClientResponseWriterTest {
         channel.writeInbound(response);
 
         HttpResponseMessage zuulResponse = responseWriter.getZuulResponse();
-        assertNotNull(zuulResponse);
-        assertNotNull(nettyResp.get());
+        assertThat(zuulResponse).isNotNull();
+        assertThat(nettyResp.get()).isNotNull();
 
         channel.pipeline()
                 .fireUserEventTriggered(new HttpLifecycleChannelHandler.CompleteEvent(
                         HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE, null, nettyResp.get()));
-        assertNull(responseWriter.getZuulResponse());
+        assertThat(responseWriter.getZuulResponse()).isNull();
     }
 }

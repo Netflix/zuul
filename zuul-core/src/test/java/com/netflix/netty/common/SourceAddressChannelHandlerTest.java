@@ -16,9 +16,7 @@
 
 package com.netflix.netty.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -29,9 +27,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.TestAbortedException;
 
 /**
  * Unit tests for {@link SourceAddressChannelHandler}.
@@ -42,11 +40,11 @@ class SourceAddressChannelHandlerTest {
     void ipv6AddressScopeIdRemoved() throws Exception {
         Inet6Address address =
                 Inet6Address.getByAddress("localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, 2);
-        assertEquals(2, address.getScopeId());
+        assertThat(address.getScopeId()).isEqualTo(2);
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
 
-        assertEquals("0:0:0:0:0:0:0:1", addressString);
+        assertThat(addressString).isEqualTo("0:0:0:0:0:0:0:1");
     }
 
     @Test
@@ -55,7 +53,7 @@ class SourceAddressChannelHandlerTest {
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
 
-        assertEquals("127.0.0.1", addressString);
+        assertThat(addressString).isEqualTo("127.0.0.1");
     }
 
     @Test
@@ -64,7 +62,7 @@ class SourceAddressChannelHandlerTest {
 
         String addressString = SourceAddressChannelHandler.getHostAddress(address);
 
-        assertNull(null, addressString);
+        assertThat(addressString).isNull();
     }
 
     @Test
@@ -73,11 +71,11 @@ class SourceAddressChannelHandlerTest {
         // ::ffff:127.0.0.1
         Inet6Address address = Inet6Address.getByAddress(
                 "localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (byte) 0xFF, (byte) 0xFF, 127, 0, 0, 1}, -1);
-        assertEquals(0, address.getScopeId());
+        assertThat(address.getScopeId()).isEqualTo(0);
 
         String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
 
-        assertEquals("127.0.0.1", addressString);
+        assertThat(addressString).isEqualTo("127.0.0.1");
     }
 
     @Test
@@ -97,15 +95,15 @@ class SourceAddressChannelHandlerTest {
                 continue;
             }
 
-            assertTrue(address.toString().contains("%"), address.toString());
+            assertThat(address.toString().contains("%")).as(address.toString()).isTrue();
 
             String addressString = SourceAddressChannelHandler.getHostAddress(new InetSocketAddress(address, 8080));
 
-            assertEquals("0:0:0:0:0:0:0:1", addressString);
+            assertThat(addressString).isEqualTo("0:0:0:0:0:0:0:1");
             return;
         }
 
-        AssumptionViolatedException failure = new AssumptionViolatedException("No Compatible Nics were found");
+        TestAbortedException failure = new TestAbortedException("No Compatible Nics were found");
         failures.forEach(failure::addSuppressed);
         throw failure;
     }

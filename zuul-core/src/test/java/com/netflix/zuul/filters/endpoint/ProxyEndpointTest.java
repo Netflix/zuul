@@ -17,10 +17,7 @@
 package com.netflix.zuul.filters.endpoint;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,6 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -156,7 +154,7 @@ class ProxyEndpointTest {
     @Test
     void testRetryWillResetBodyReader() {
 
-        assertEquals("Hello There", new String(request.getBody(), UTF_8));
+        assertThat(new String(request.getBody(), UTF_8)).isEqualTo("Hello There");
 
         // move the body readerIndex to the end to mimic nettys behavior after writing to the origin channel
         request.getBodyContents()
@@ -168,7 +166,7 @@ class ProxyEndpointTest {
 
         // when retrying a response, the request body reader should have it's indexes reset
         proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
-        assertEquals("Hello There", new String(request.getBody(), UTF_8));
+        assertThat(new String(request.getBody(), UTF_8)).isEqualTo("Hello There");
     }
 
     @Test
@@ -272,12 +270,14 @@ class ProxyEndpointTest {
 
         proxyEndpoint.apply(request);
         LastHttpContent lastContent = new DefaultLastHttpContent();
-        assertFalse(proxyEndpoint.isRequestReplayable());
+        assertThat(proxyEndpoint.isRequestReplayable()).isFalse();
         proxyEndpoint.processContentChunk(request, lastContent);
-        assertTrue(proxyEndpoint.isRequestReplayable());
+        assertThat(proxyEndpoint.isRequestReplayable()).isTrue();
 
         channel.releaseOutbound();
-        assertEquals(1, lastContent.refCnt(), "ref count should be 1 in case a retry is needed");
+        assertThat(lastContent.refCnt())
+                .as("ref count should be 1 in case a retry is needed")
+                .isEqualTo(1);
         ReferenceCountUtil.safeRelease(lastContent);
     }
 
@@ -287,7 +287,7 @@ class ProxyEndpointTest {
                 .map(PassportItem::getState)
                 .filter(s -> s == PassportState.ORIGIN_RETRY_START)
                 .findAny()
-                .ifPresent(s -> fail());
+                .ifPresent(s -> org.junit.jupiter.api.Assertions.fail());
     }
 
     private void disableRetriesOnAdjustment() {

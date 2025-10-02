@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.server.push;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,11 +38,11 @@ class PushConnectionRegistryTest {
 
     @Test
     void testPutAndGet() {
-        assertNull(pushConnectionRegistry.get("clientId1"));
+        assertThat(pushConnectionRegistry.get("clientId1")).isNull();
 
         pushConnectionRegistry.put("clientId1", pushConnection);
 
-        assertEquals(pushConnection, pushConnectionRegistry.get("clientId1"));
+        assertThat(pushConnectionRegistry.get("clientId1")).isEqualTo(pushConnection);
     }
 
     @Test
@@ -54,15 +52,15 @@ class PushConnectionRegistryTest {
 
         List<PushConnection> connections = pushConnectionRegistry.getAll();
 
-        assertEquals(2, connections.size());
+        assertThat(connections.size()).isEqualTo(2);
     }
 
     @Test
     void testMintNewSecureToken() {
         String token = pushConnectionRegistry.mintNewSecureToken();
 
-        assertNotNull(token);
-        assertEquals(20, token.length()); // 15 bytes become 20 characters when Base64-encoded
+        assertThat(token).isNotNull();
+        assertThat(token.length()).isEqualTo(20); // 15 bytes become 20 characters when Base64-encoded
     }
 
     @Test
@@ -76,16 +74,16 @@ class PushConnectionRegistryTest {
     void testRemove() {
         pushConnectionRegistry.put("clientId1", pushConnection);
 
-        assertEquals(pushConnection, pushConnectionRegistry.remove("clientId1"));
-        assertNull(pushConnectionRegistry.get("clientId1"));
+        assertThat(pushConnectionRegistry.remove("clientId1")).isEqualTo(pushConnection);
+        assertThat(pushConnectionRegistry.get("clientId1")).isNull();
     }
 
     @Test
     void testSize() {
-        assertEquals(0, pushConnectionRegistry.size());
+        assertThat(pushConnectionRegistry.size()).isEqualTo(0);
 
         pushConnectionRegistry.put("clientId1", pushConnection);
 
-        assertEquals(1, pushConnectionRegistry.size());
+        assertThat(pushConnectionRegistry.size()).isEqualTo(1);
     }
 }

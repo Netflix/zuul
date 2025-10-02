@@ -15,10 +15,7 @@
  */
 package com.netflix.zuul.netty.server.push;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -151,11 +148,11 @@ class PushRegistrationHandlerTest {
         int taskListSize = handler.getScheduledFutures().size();
         doReturn(true).when(channel).isActive();
         requestClientToClose.run();
-        assertEquals(taskListSize + 1, handler.getScheduledFutures().size());
+        assertThat(handler.getScheduledFutures().size()).isEqualTo(taskListSize + 1);
         Object capture = writeCaptor.getValue();
-        assertTrue(capture instanceof TextWebSocketFrame);
+        assertThat(capture instanceof TextWebSocketFrame).isTrue();
         TextWebSocketFrame frame = (TextWebSocketFrame) capture;
-        assertEquals("_CLOSE_", frame.text());
+        assertThat(frame.text()).isEqualTo("_CLOSE_");
     }
 
     @Test
@@ -167,31 +164,31 @@ class PushRegistrationHandlerTest {
         List<ScheduledFuture<?>> copyOfFutures = new ArrayList<>(handler.getScheduledFutures());
 
         handler.channelInactive(context);
-        assertNull(registry.get(testAuth.getClientIdentity()));
-        assertTrue(handler.getScheduledFutures().isEmpty());
-        copyOfFutures.forEach(f -> assertTrue(f.isCancelled()));
+        assertThat(registry.get(testAuth.getClientIdentity())).isNull();
+        assertThat(handler.getScheduledFutures().isEmpty()).isTrue();
+        copyOfFutures.forEach(f -> assertThat(f.isCancelled()).isTrue());
         verify(context).close();
     }
 
     private void doHandshakeComplete() throws Exception {
         handler.userEventTriggered(context, PushProtocol.WEBSOCKET.getHandshakeCompleteEvent());
-        assertNotNull(handler.getPushConnection());
+        assertThat(handler.getPushConnection()).isNotNull();
         verify(eventLoopSpy).schedule(scheduledCaptor.capture(), anyLong(), eq(TimeUnit.SECONDS));
     }
 
     private void authenticateChannel() throws Exception {
         handler.userEventTriggered(context, successfulAuth);
-        assertNotNull(registry.get(successfulAuth.getClientIdentity()));
-        assertEquals(2, handler.getScheduledFutures().size());
+        assertThat(registry.get(successfulAuth.getClientIdentity())).isNotNull();
+        assertThat(handler.getScheduledFutures().size()).isEqualTo(2);
         verify(pipelineMock).remove(PushAuthHandler.NAME);
     }
 
     private void validateConnectionClosed(int expected, String messaged) {
         Object capture = writeCaptor.getValue();
-        assertTrue(capture instanceof CloseWebSocketFrame);
+        assertThat(capture instanceof CloseWebSocketFrame).isTrue();
         CloseWebSocketFrame closeFrame = (CloseWebSocketFrame) capture;
-        assertEquals(expected, closeFrame.statusCode());
-        assertEquals(messaged, closeFrame.reasonText());
+        assertThat(closeFrame.statusCode()).isEqualTo(expected);
+        assertThat(closeFrame.reasonText()).isEqualTo(messaged);
         verify(channelFuture).addListener(ChannelFutureListener.CLOSE);
     }
 

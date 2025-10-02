@@ -68,7 +68,8 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         this.filterLoader = filterLoader;
     }
 
-    @Nullable public static ZuulFilter<HttpRequestMessage, HttpResponseMessage> getEndpoint(
+    @Nullable
+    public static ZuulFilter<HttpRequestMessage, HttpResponseMessage> getEndpoint(
             @Nullable HttpRequestMessage zuulReq) {
         if (zuulReq != null) {
             return zuulReq.getContext().get(CommonContextKeys.ZUUL_ENDPOINT);

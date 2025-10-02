@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.netty.timeouts;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.netflix.client.config.CommonClientConfigKey;
@@ -72,7 +72,7 @@ class OriginTimeoutManagerTest {
     void computeReadTimeout_default() {
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(OriginTimeoutManager.MAX_OUTBOUND_READ_TIMEOUT_MS.get(), timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(OriginTimeoutManager.MAX_OUTBOUND_READ_TIMEOUT_MS.get());
     }
 
     @Test
@@ -81,7 +81,7 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(1000, timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(1000);
     }
 
     @Test
@@ -90,7 +90,7 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(1000, timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(1000);
     }
 
     @Test
@@ -100,7 +100,7 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(1000, timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(1000);
     }
 
     @Test
@@ -110,7 +110,7 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(100, timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(100);
     }
 
     @Test
@@ -120,7 +120,7 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(100, timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(100);
     }
 
     @Test
@@ -134,6 +134,6 @@ class OriginTimeoutManagerTest {
 
         Duration timeout = originTimeoutManager.computeReadTimeout(request, 1);
 
-        assertEquals(OriginTimeoutManager.MAX_OUTBOUND_READ_TIMEOUT_MS.get(), timeout.toMillis());
+        assertThat(timeout.toMillis()).isEqualTo(OriginTimeoutManager.MAX_OUTBOUND_READ_TIMEOUT_MS.get());
     }
 }

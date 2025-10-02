@@ -16,10 +16,7 @@
 
 package com.netflix.zuul.stats;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.message.Headers;
@@ -42,13 +39,13 @@ class StatsManagerTest {
         int status = 500;
 
         StatsManager sm = StatsManager.getManager();
-        assertNotNull(sm);
+        assertThat(sm).isNotNull();
 
         // 1st request
         sm.collectRouteStats(route, status);
 
         ConcurrentHashMap<Integer, RouteStatusCodeMonitor> routeStatusMap = sm.routeStatusMap.get("test");
-        assertNotNull(routeStatusMap);
+        assertThat(routeStatusMap).isNotNull();
 
         // 2nd request
         sm.collectRouteStats(route, status);
@@ -57,9 +54,9 @@ class StatsManagerTest {
     @Test
     void testGetRouteStatusCodeMonitor() {
         StatsManager sm = StatsManager.getManager();
-        assertNotNull(sm);
+        assertThat(sm).isNotNull();
         sm.collectRouteStats("test", 500);
-        assertNotNull(sm.getRouteStatusCodeMonitor("test", 500));
+        assertThat(sm.getRouteStatusCodeMonitor("test", 500)).isNotNull();
     }
 
     @Test
@@ -78,39 +75,42 @@ class StatsManagerTest {
         sm.collectRequestStats(req);
 
         NamedCountingMonitor hostMonitor = sm.getHostMonitor(host);
-        assertNotNull(hostMonitor, "hostMonitor should not be null");
+        assertThat(hostMonitor).as("hostMonitor should not be null").isNotNull();
 
         NamedCountingMonitor protoMonitor = sm.getProtocolMonitor(proto);
-        assertNotNull(protoMonitor, "protoMonitor should not be null");
+        assertThat(protoMonitor).as("protoMonitor should not be null").isNotNull();
 
-        assertEquals(1, hostMonitor.getCount());
-        assertEquals(1, protoMonitor.getCount());
+        assertThat(hostMonitor.getCount()).isEqualTo(1);
+        assertThat(protoMonitor.getCount()).isEqualTo(1);
     }
 
     @Test
     void createsNormalizedHostKey() {
-        assertEquals("host_EC2.amazonaws.com", StatsManager.hostKey("ec2-174-129-179-89.compute-1.amazonaws.com"));
-        assertEquals("host_IP", StatsManager.hostKey("12.345.6.789"));
-        assertEquals("host_IP", StatsManager.hostKey("ip-10-86-83-168"));
-        assertEquals("host_CDN.nflxvideo.net", StatsManager.hostKey("002.ie.llnw.nflxvideo.net"));
-        assertEquals("host_CDN.llnwd.net", StatsManager.hostKey("netflix-635.vo.llnwd.net"));
-        assertEquals("host_CDN.nflximg.com", StatsManager.hostKey("cdn-0.nflximg.com"));
+        assertThat(StatsManager.hostKey("ec2-174-129-179-89.compute-1.amazonaws.com"))
+                .isEqualTo("host_EC2.amazonaws.com");
+        assertThat(StatsManager.hostKey("12.345.6.789")).isEqualTo("host_IP");
+        assertThat(StatsManager.hostKey("ip-10-86-83-168")).isEqualTo("host_IP");
+        assertThat(StatsManager.hostKey("002.ie.llnw.nflxvideo.net")).isEqualTo("host_CDN.nflxvideo.net");
+        assertThat(StatsManager.hostKey("netflix-635.vo.llnwd.net")).isEqualTo("host_CDN.llnwd.net");
+        assertThat(StatsManager.hostKey("cdn-0.nflximg.com")).isEqualTo("host_CDN.nflximg.com");
     }
 
     @Test
     void extractsClientIpFromXForwardedFor() {
         String ip1 = "hi";
         String ip2 = "hey";
-        assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(ip1));
-        assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(String.format("%s,%s", ip1, ip2)));
-        assertEquals(ip1, StatsManager.extractClientIpFromXForwardedFor(String.format("%s, %s", ip1, ip2)));
+        assertThat(StatsManager.extractClientIpFromXForwardedFor(ip1)).isEqualTo(ip1);
+        assertThat(StatsManager.extractClientIpFromXForwardedFor(String.format("%s,%s", ip1, ip2)))
+                .isEqualTo(ip1);
+        assertThat(StatsManager.extractClientIpFromXForwardedFor(String.format("%s, %s", ip1, ip2)))
+                .isEqualTo(ip1);
     }
 
     @Test
     void isIPv6() {
-        assertTrue(StatsManager.isIPv6("0:0:0:0:0:0:0:1"));
-        assertTrue(StatsManager.isIPv6("2607:fb10:2:232:72f3:95ff:fe03:a6e7"));
-        assertFalse(StatsManager.isIPv6("127.0.0.1"));
-        assertFalse(StatsManager.isIPv6("10.2.233.134"));
+        assertThat(StatsManager.isIPv6("0:0:0:0:0:0:0:1")).isTrue();
+        assertThat(StatsManager.isIPv6("2607:fb10:2:232:72f3:95ff:fe03:a6e7")).isTrue();
+        assertThat(StatsManager.isIPv6("127.0.0.1")).isFalse();
+        assertThat(StatsManager.isIPv6("10.2.233.134")).isFalse();
     }
 }

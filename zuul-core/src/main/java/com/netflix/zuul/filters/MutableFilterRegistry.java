@@ -27,13 +27,15 @@ import javax.annotation.Nullable;
 public final class MutableFilterRegistry implements FilterRegistry {
     private final ConcurrentHashMap<String, ZuulFilter<?, ?>> filters = new ConcurrentHashMap<>();
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public ZuulFilter<?, ?> remove(String key) {
         return filters.remove(Objects.requireNonNull(key, "key"));
     }
 
     @Override
-    @Nullable public ZuulFilter<?, ?> get(String key) {
+    @Nullable
+    public ZuulFilter<?, ?> get(String key) {
         return filters.get(Objects.requireNonNull(key, "key"));
     }
 

@@ -16,10 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
@@ -100,11 +98,11 @@ class ServerTest {
         s.start();
 
         List<NamedSocketAddress> addrs = s.getListeningAddresses();
-        assertEquals(2, addrs.size());
+        assertThat(addrs.size()).isEqualTo(2);
         for (NamedSocketAddress address : addrs) {
-            assertTrue(address.unwrap() instanceof InetSocketAddress);
+            assertThat(address.unwrap() instanceof InetSocketAddress).isTrue();
             int port = ((InetSocketAddress) address.unwrap()).getPort();
-            assertNotEquals(0, port);
+            assertThat(port).isNotEqualTo(0);
             checkConnection(port);
         }
 
@@ -112,10 +110,10 @@ class ServerTest {
 
         s.stop();
 
-        assertEquals(2, nioChannels.size());
+        assertThat(nioChannels.size()).isEqualTo(2);
 
         for (NioSocketChannel ch : nioChannels) {
-            assertTrue(ch.isShutdown(), "isShutdown");
+            assertThat(ch.isShutdown()).as("isShutdown").isTrue();
         }
     }
 

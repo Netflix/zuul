@@ -48,7 +48,8 @@ public final class Attrs {
         /**
          * Returns the value in the attributes, or {@code null} if absent.
          */
-        @Nullable @SuppressWarnings("unchecked")
+        @Nullable
+        @SuppressWarnings("unchecked")
         public T get(Attrs attrs) {
             Objects.requireNonNull(attrs, "attrs");
             return (T) attrs.storage.get(this);

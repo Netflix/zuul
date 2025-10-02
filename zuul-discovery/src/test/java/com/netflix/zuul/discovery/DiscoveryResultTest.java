@@ -16,10 +16,8 @@
 
 package com.netflix.zuul.discovery;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.truth.Truth;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.client.config.DefaultClientConfigImpl;
@@ -34,21 +32,20 @@ class DiscoveryResultTest {
     @Test
     void hashCodeForNull() {
         DiscoveryResult discoveryResult = new DiscoveryResult(null);
-        assertNotNull(discoveryResult.hashCode());
-        assertEquals(0, discoveryResult.hashCode());
+        assertThat(discoveryResult.hashCode()).isEqualTo(0);
     }
 
     @Test
     void serverStatsForEmptySentinel() {
-        Truth.assertThat(DiscoveryResult.EMPTY.getServerStats().toString()).isEqualTo("no stats configured for server");
+        assertThat(DiscoveryResult.EMPTY.getServerStats().toString()).isEqualTo("no stats configured for server");
     }
 
     @Test
     void hostAndPortForNullServer() {
         DiscoveryResult discoveryResult = new DiscoveryResult(null);
 
-        assertEquals("undefined", discoveryResult.getHost());
-        assertEquals(-1, discoveryResult.getPort());
+        assertThat(discoveryResult.getHost()).isEqualTo("undefined");
+        assertThat(discoveryResult.getPort()).isEqualTo(-1);
     }
 
     @Test
@@ -66,7 +63,7 @@ class DiscoveryResultTest {
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
         DiscoveryResult result1 = new DiscoveryResult(serverSecure, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result.getServerStats()).isSameInstanceAs(result1.getServerStats());
+        assertThat(result.getServerStats()).isSameAs(result1.getServerStats());
     }
 
     @Test
@@ -89,7 +86,7 @@ class DiscoveryResultTest {
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
         DiscoveryResult result1 = new DiscoveryResult(serverSecure, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result.getServerStats()).isNotSameInstanceAs(result1.getServerStats());
+        assertThat(result.getServerStats()).isNotSameAs(result1.getServerStats());
     }
 
     @Test
@@ -106,7 +103,7 @@ class DiscoveryResultTest {
         DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result.getIPAddr()).isEqualTo(Optional.of(ipAddr));
+        assertThat(result.getIPAddr()).isEqualTo(Optional.of(ipAddr));
     }
 
     @Test
@@ -121,7 +118,7 @@ class DiscoveryResultTest {
         DynamicServerListLoadBalancer<Server> lb = new DynamicServerListLoadBalancer<>(new DefaultClientConfigImpl());
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result.getIPAddr()).isEqualTo(Optional.empty());
+        assertThat(result.getIPAddr()).isEqualTo(Optional.empty());
     }
 
     @Test
@@ -140,7 +137,7 @@ class DiscoveryResultTest {
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
         DiscoveryResult otherResult = new DiscoveryResult(otherServer, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result).isEqualTo(otherResult);
+        assertThat(result).isEqualTo(otherResult);
     }
 
     @Test
@@ -164,7 +161,7 @@ class DiscoveryResultTest {
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
         DiscoveryResult otherResult = new DiscoveryResult(otherServer, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result).isNotEqualTo(otherResult);
+        assertThat(result).isNotEqualTo(otherResult);
     }
 
     @Test
@@ -189,7 +186,7 @@ class DiscoveryResultTest {
         DiscoveryResult result = new DiscoveryResult(server, lb.getLoadBalancerStats());
         DiscoveryResult secure = new DiscoveryResult(secureServer, lb.getLoadBalancerStats());
 
-        Truth.assertThat(result.isSecurePortEnabled()).isFalse();
-        Truth.assertThat(secure.isSecurePortEnabled()).isTrue();
+        assertThat(result.isSecurePortEnabled()).isFalse();
+        assertThat(secure.isSecurePortEnabled()).isTrue();
     }
 }

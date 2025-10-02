@@ -16,11 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.google.common.net.InetAddresses;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
@@ -74,12 +71,13 @@ class ClientRequestReceiverTest {
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
-        assertEquals((int) result.getClientDestinationPort().get(), hapmDestinationAddress.getPort());
+        assertThat(hapmDestinationAddress.getPort())
+                .isEqualTo((int) result.getClientDestinationPort().get());
         int destinationPort = ((InetSocketAddress)
                         result.getContext().get(CommonContextKeys.PROXY_PROTOCOL_DESTINATION_ADDRESS))
                 .getPort();
-        assertEquals(444, destinationPort);
-        assertEquals(444, result.getOriginalPort());
+        assertThat(destinationPort).isEqualTo(444);
+        assertThat(result.getOriginalPort()).isEqualTo(444);
         channel.close();
     }
 
@@ -99,7 +97,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
+        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
         channel.close();
     }
@@ -120,7 +118,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertEquals("/foo/bar/somePath/%5E1.0.0", result.getPath());
+        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
         channel.close();
     }
@@ -138,7 +136,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertEquals("asdf", result.getPath());
+        assertThat(result.getPath()).isEqualTo("asdf");
 
         channel.close();
     }
@@ -159,9 +157,9 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertEquals("foo", result.getQueryParams().getFirst("param1"));
-        assertEquals("bar", result.getQueryParams().getFirst("param2"));
-        assertEquals("baz", result.getQueryParams().getFirst("param3"));
+        assertThat(result.getQueryParams().getFirst("param1")).isEqualTo("foo");
+        assertThat(result.getQueryParams().getFirst("param2")).isEqualTo("bar");
+        assertThat(result.getQueryParams().getFirst("param3")).isEqualTo("baz");
 
         channel.close();
     }
@@ -192,8 +190,8 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertNull(result.getContext().getError());
-        assertFalse(result.getContext().shouldSendErrorResponse());
+        assertThat(result.getContext().getError()).isNull();
+        assertThat(result.getContext().shouldSendErrorResponse()).isFalse();
         channel.close();
     }
 
@@ -223,12 +221,14 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertNotNull(result.getContext().getError());
-        assertTrue(result.getContext().getError().getMessage().contains("too large"));
-        assertTrue(result.getContext().shouldSendErrorResponse());
-        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(result));
-        assertTrue(StatusCategoryUtils.getStatusCategoryReason(result.getContext())
-                .startsWith("Invalid request provided: Request body size "));
+        assertThat(result.getContext().getError()).isNotNull();
+        assertThat(result.getContext().getError().getMessage().contains("too large"))
+                .isTrue();
+        assertThat(result.getContext().shouldSendErrorResponse()).isTrue();
+        assertThat(StatusCategoryUtils.getStatusCategory(result))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(result.getContext()))
+                .startsWith("Invalid request provided: Request body size ");
         channel.close();
     }
 
@@ -262,12 +262,10 @@ class ClientRequestReceiverTest {
         channel.close();
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertEquals(
-                ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                StatusCategoryUtils.getStatusCategory(request.getContext()));
-        assertEquals(
-                "Invalid request provided: Decode failure",
-                StatusCategoryUtils.getStatusCategoryReason(request.getContext()));
+        assertThat(StatusCategoryUtils.getStatusCategory(request.getContext()))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(request.getContext()))
+                .isEqualTo("Invalid request provided: Decode failure");
     }
 
     @Test
@@ -294,11 +292,11 @@ class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         SessionContext context = request.getContext();
-        assertEquals(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, StatusCategoryUtils.getStatusCategory(context));
-        assertEquals("Multiple Host headers", context.getError().getMessage());
-        assertEquals(
-                "Invalid request provided: Multiple Host headers",
-                StatusCategoryUtils.getStatusCategoryReason(context));
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertThat(context.getError().getMessage()).isEqualTo("Multiple Host headers");
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(context))
+                .isEqualTo("Invalid request provided: Multiple Host headers");
     }
 
     @Test
@@ -325,9 +323,8 @@ class ClientRequestReceiverTest {
                         new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.BAD_REQUEST)));
         channel.close();
 
-        assertEquals(
-                ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT,
-                StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()));
+        assertThat(StatusCategoryUtils.getStatusCategory(inboundRequest.getContext()))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_PIPELINE_REJECT);
     }
 
     @Test
@@ -356,12 +353,12 @@ class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         Headers headers = request.getHeaders();
-        assertEquals(4, headers.size());
-        assertEquals("Value1", headers.getFirst("Header1"));
-        assertEquals("Value2", headers.getFirst("Header2"));
+        assertThat(headers.size()).isEqualTo(4);
+        assertThat(headers.getFirst("Header1")).isEqualTo("Value1");
+        assertThat(headers.getFirst("Header2")).isEqualTo("Value2");
 
         List<String> duplicates = headers.getAll("Duplicate");
-        assertEquals(Arrays.asList("Duplicate1", "Duplicate2"), duplicates);
+        assertThat(duplicates).isEqualTo(Arrays.asList("Duplicate1", "Duplicate2"));
     }
 
     @Test
@@ -385,6 +382,6 @@ class ClientRequestReceiverTest {
         channel.close();
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertEquals(clientIp, request.getClientIp());
+        assertThat(request.getClientIp()).isEqualTo(clientIp);
     }
 }

@@ -23,10 +23,8 @@ import static com.netflix.zuul.context.Debug.getRequestDebug;
 import static com.netflix.zuul.context.Debug.getRoutingDebug;
 import static com.netflix.zuul.context.Debug.setDebugRequest;
 import static com.netflix.zuul.context.Debug.setDebugRouting;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.truth.Truth;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
@@ -71,18 +69,18 @@ class DebugTest {
 
     @Test
     void testRequestDebug() {
-        assertFalse(debugRouting(ctx));
-        assertFalse(debugRequest(ctx));
+        assertThat(debugRouting(ctx)).isFalse();
+        assertThat(debugRequest(ctx)).isFalse();
         setDebugRouting(ctx, true);
         setDebugRequest(ctx, true);
-        assertTrue(debugRouting(ctx));
-        assertTrue(debugRequest(ctx));
+        assertThat(debugRouting(ctx)).isTrue();
+        assertThat(debugRequest(ctx)).isTrue();
 
         addRoutingDebug(ctx, "test1");
-        assertTrue(getRoutingDebug(ctx).contains("test1"));
+        assertThat(getRoutingDebug(ctx).contains("test1")).isTrue();
 
         addRequestDebug(ctx, "test2");
-        assertTrue(getRequestDebug(ctx).contains("test2"));
+        assertThat(getRequestDebug(ctx).contains("test2")).isTrue();
     }
 
     @Test
@@ -92,8 +90,8 @@ class DebugTest {
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
                         "REQUEST_INBOUND:: > HDR: Content-Length:13",
                         "REQUEST_INBOUND:: > HDR: lah:deda");
@@ -106,8 +104,8 @@ class DebugTest {
         Debug.writeDebugRequest(ctx, request, false).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "REQUEST_OUTBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
                         "REQUEST_OUTBOUND:: > HDR: Content-Length:13",
                         "REQUEST_OUTBOUND:: > HDR: lah:deda");
@@ -120,8 +118,8 @@ class DebugTest {
         Debug.writeDebugRequest(ctx, request, true).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "REQUEST_INBOUND:: > LINE: POST /some/where?k1=v1 HTTP/1.1",
                         "REQUEST_INBOUND:: > HDR: Content-Length:13",
                         "REQUEST_INBOUND:: > HDR: lah:deda",
@@ -135,8 +133,8 @@ class DebugTest {
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "RESPONSE_INBOUND:: < STATUS: 200",
                         "RESPONSE_INBOUND:: < HDR: Content-Length:13",
                         "RESPONSE_INBOUND:: < HDR: lah:deda");
@@ -149,8 +147,8 @@ class DebugTest {
         Debug.writeDebugResponse(ctx, response, false).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "RESPONSE_OUTBOUND:: < STATUS: 200",
                         "RESPONSE_OUTBOUND:: < HDR: Content-Length:13",
                         "RESPONSE_OUTBOUND:: < HDR: lah:deda");
@@ -163,8 +161,8 @@ class DebugTest {
         Debug.writeDebugResponse(ctx, response, true).toBlocking().single();
 
         List<String> debugLines = getRequestDebug(ctx);
-        Truth.assertThat(debugLines)
-                .containsExactly(
+        assertThat(debugLines)
+                .containsExactlyInAnyOrder(
                         "RESPONSE_INBOUND:: < STATUS: 200",
                         "RESPONSE_INBOUND:: < HDR: Content-Length:13",
                         "RESPONSE_INBOUND:: < HDR: lah:deda",

@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.monitoring;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Gauge;
@@ -42,16 +41,16 @@ class ConnCounterTest {
         counter.increment("end");
 
         Gauge meter1 = registry.gauge(registry.createId("foo.start", "from", "nascent"));
-        assertNotNull(meter1);
-        assertEquals(1, meter1.value(), 0);
+        assertThat(meter1).isNotNull();
+        assertThat(meter1.value()).isCloseTo(1.0, org.assertj.core.data.Offset.offset(0.0));
 
         Gauge meter2 = registry.gauge(registry.createId("foo.middle", "from", "start"));
-        assertNotNull(meter2);
-        assertEquals(1, meter2.value(), 0);
+        assertThat(meter2).isNotNull();
+        assertThat(meter2.value()).isCloseTo(1.0, org.assertj.core.data.Offset.offset(0.0));
 
         Gauge meter3 = registry.gauge(registry.createId("foo.end", "from", "middle", "bar", "baz"));
-        assertNotNull(meter3);
-        assertEquals(1, meter3.value(), 0);
+        assertThat(meter3).isNotNull();
+        assertThat(meter3.value()).isCloseTo(1.0, org.assertj.core.data.Offset.offset(0.0));
     }
 
     @Test
@@ -67,6 +66,7 @@ class ConnCounterTest {
         ConnCounter.from(channel).increment("active");
         ConnCounter.from(channel).increment("active");
 
-        assertEquals(1, ConnCounter.from(channel).getCurrentActiveConns(), 0);
+        assertThat(ConnCounter.from(channel).getCurrentActiveConns())
+                .isCloseTo(1.0, org.assertj.core.data.Offset.offset(0.0));
     }
 }

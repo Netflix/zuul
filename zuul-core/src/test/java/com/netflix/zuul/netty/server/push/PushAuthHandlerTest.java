@@ -16,8 +16,7 @@
 
 package com.netflix.zuul.netty.server.push;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -37,14 +36,14 @@ class PushAuthHandlerTest {
                 new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/ws", Unpooled.buffer());
 
         // Invalid input
-        assertTrue(authHandler.isInvalidOrigin(request));
+        assertThat(authHandler.isInvalidOrigin(request)).isTrue();
         request.headers().add(HttpHeaderNames.ORIGIN, "zuul-push.foo.com");
-        assertTrue(authHandler.isInvalidOrigin(request));
+        assertThat(authHandler.isInvalidOrigin(request)).isTrue();
 
         // Valid input
         request.headers().remove(HttpHeaderNames.ORIGIN);
         request.headers().add(HttpHeaderNames.ORIGIN, "zuul-push.netflix.com");
-        assertFalse(authHandler.isInvalidOrigin(request));
+        assertThat(authHandler.isInvalidOrigin(request)).isFalse();
     }
 
     class ZuulPushAuthHandlerTest extends PushAuthHandler {

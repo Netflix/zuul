@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.stats.status;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -33,6 +33,6 @@ public class ZuulStatusCategoryTest {
     public void categoriesUseUniqueIds() {
         ZuulStatusCategory[] values = ZuulStatusCategory.values();
         Set<String> ids = Arrays.stream(values).map(ZuulStatusCategory::getId).collect(Collectors.toSet());
-        assertEquals(values.length, ids.size());
+        assertThat(ids.size()).isEqualTo(values.length);
     }
 }

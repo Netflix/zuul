@@ -97,7 +97,6 @@ public class PushConnection {
     }
 
     public void closeConnection(WebSocketCloseStatus status, String message) {
-        ctx.writeAndFlush(new CloseWebSocketFrame(status, message))
-                .addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(new CloseWebSocketFrame(status, message)).addListener(ChannelFutureListener.CLOSE);
     }
 }

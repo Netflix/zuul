@@ -16,9 +16,8 @@
 
 package com.netflix.zuul.message.http;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -78,24 +77,22 @@ class HttpRequestMessageImplTest {
         request.storeInboundRequest();
         HttpRequestInfo originalRequest = request.getInboundRequest();
 
-        assertEquals(request.getPort(), originalRequest.getPort());
-        assertEquals(request.getPath(), originalRequest.getPath());
-        assertEquals(
-                request.getQueryParams().getFirst("flag"),
-                originalRequest.getQueryParams().getFirst("flag"));
-        assertEquals(
-                request.getHeaders().getFirst("Host"),
-                originalRequest.getHeaders().getFirst("Host"));
+        assertThat(originalRequest.getPort()).isEqualTo(request.getPort());
+        assertThat(originalRequest.getPath()).isEqualTo(request.getPath());
+        assertThat(originalRequest.getQueryParams().getFirst("flag"))
+                .isEqualTo(request.getQueryParams().getFirst("flag"));
+        assertThat(originalRequest.getHeaders().getFirst("Host"))
+                .isEqualTo(request.getHeaders().getFirst("Host"));
 
         request.setPort(8080);
         request.setPath("/another/place");
         request.getQueryParams().set("flag", "20");
         request.getHeaders().set("Host", "wah.netflix.com");
 
-        assertEquals(7002, originalRequest.getPort());
-        assertEquals("/some/where", originalRequest.getPath());
-        assertEquals("5", originalRequest.getQueryParams().getFirst("flag"));
-        assertEquals("blah.netflix.com", originalRequest.getHeaders().getFirst("Host"));
+        assertThat(originalRequest.getPort()).isEqualTo(7002);
+        assertThat(originalRequest.getPath()).isEqualTo("/some/where");
+        assertThat(originalRequest.getQueryParams().getFirst("flag")).isEqualTo("5");
+        assertThat(originalRequest.getHeaders().getFirst("Host")).isEqualTo("blah.netflix.com");
     }
 
     @Test
@@ -115,7 +112,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("https://blah.netflix.com:7002/some/where?flag=5");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -132,7 +129,7 @@ class HttpRequestMessageImplTest {
                 "http",
                 7002,
                 "localhost");
-        assertEquals("http://place.netflix.com/some/where", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("http://place.netflix.com/some/where");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -150,7 +147,7 @@ class HttpRequestMessageImplTest {
                 "http",
                 7002,
                 "localhost");
-        assertEquals("https://place.netflix.com/some/where", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("https://place.netflix.com/some/where");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -165,7 +162,7 @@ class HttpRequestMessageImplTest {
                 "http",
                 7002,
                 "localhost");
-        assertEquals("http://localhost:7002/some/where", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("http://localhost:7002/some/where");
 
         queryParams = new HttpQueryParams();
         queryParams.add("flag", "5");
@@ -182,7 +179,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("https://localhost:7002/some%20where?flag=5&flag+B=9", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("https://localhost:7002/some%20where?flag=5&flag+B=9");
     }
 
     @Test
@@ -206,8 +203,8 @@ class HttpRequestMessageImplTest {
                 true);
 
         // Check it's the same value 2nd time.
-        assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
-        assertEquals("https://blah.netflix.com:7002/some/where?flag=5", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("https://blah.netflix.com:7002/some/where?flag=5");
+        assertThat(request.reconstructURI()).isEqualTo("https://blah.netflix.com:7002/some/where?flag=5");
 
         // Check that cached on 1st usage.
         request = new HttpRequestMessageImpl(
@@ -226,15 +223,15 @@ class HttpRequestMessageImplTest {
         request = spy(request);
         when(request._reconstructURI()).thenReturn("http://testhost/blah");
         verify(request, times(1))._reconstructURI();
-        assertEquals("http://testhost/blah", request.reconstructURI());
-        assertEquals("http://testhost/blah", request.reconstructURI());
+        assertThat(request.reconstructURI()).isEqualTo("http://testhost/blah");
+        assertThat(request.reconstructURI()).isEqualTo("http://testhost/blah");
 
         // Check that throws exception if we try to mutate it.
         try {
             request.setPath("/new-path");
             fail();
         } catch (IllegalStateException e) {
-            assertTrue(true);
+            assertThat(true).isTrue();
         }
     }
 
@@ -255,11 +252,11 @@ class HttpRequestMessageImplTest {
                 "localhost");
 
         // Check that value changes.
-        assertEquals("/some/where?flag=5", request.getPathAndQuery());
+        assertThat(request.getPathAndQuery()).isEqualTo("/some/where?flag=5");
         request.getQueryParams().add("k", "v");
-        assertEquals("/some/where?flag=5&k=v", request.getPathAndQuery());
+        assertThat(request.getPathAndQuery()).isEqualTo("/some/where?flag=5&k=v");
         request.setPath("/other");
-        assertEquals("/other?flag=5&k=v", request.getPathAndQuery());
+        assertThat(request.getPathAndQuery()).isEqualTo("/other?flag=5&k=v");
     }
 
     @Test
@@ -281,8 +278,8 @@ class HttpRequestMessageImplTest {
                 true);
 
         // Check it's the same value 2nd time.
-        assertEquals("/some/where?flag=5", request.getPathAndQuery());
-        assertEquals("/some/where?flag=5", request.getPathAndQuery());
+        assertThat(request.getPathAndQuery()).isEqualTo("/some/where?flag=5");
+        assertThat(request.getPathAndQuery()).isEqualTo("/some/where?flag=5");
 
         // Check that cached on 1st usage.
         request = new HttpRequestMessageImpl(
@@ -301,8 +298,8 @@ class HttpRequestMessageImplTest {
         request = spy(request);
         when(request.generatePathAndQuery()).thenReturn("/blah");
         verify(request, times(1)).generatePathAndQuery();
-        assertEquals("/blah", request.getPathAndQuery());
-        assertEquals("/blah", request.getPathAndQuery());
+        assertThat(request.getPathAndQuery()).isEqualTo("/blah");
+        assertThat(request.getPathAndQuery()).isEqualTo("/blah");
     }
 
     @Test
@@ -325,12 +322,12 @@ class HttpRequestMessageImplTest {
                 true);
 
         // Check it's the same value 2nd time.
-        assertEquals("blah.netflix.com", request.getOriginalHost());
-        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("blah.netflix.com");
+        assertThat(request.getOriginalHost()).isEqualTo("blah.netflix.com");
 
         // Update the Host header value and ensure the result didn't change.
         headers.set("Host", "testOriginalHost2");
-        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("blah.netflix.com");
     }
 
     @Test
@@ -349,7 +346,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("blah.netflix.com");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -365,7 +362,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("0.0.0.1", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("0.0.0.1");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -381,7 +378,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("0.0.0.1", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("0.0.0.1");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -397,7 +394,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("[::2]", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("[::2]");
 
         queryParams = new HttpQueryParams();
         headers = new Headers();
@@ -413,7 +410,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("[::2]", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("[::2]");
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com");
@@ -429,7 +426,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("foo.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("foo.netflix.com");
 
         headers = new Headers();
         headers.add("X-Forwarded-Host", "foo.netflix.com");
@@ -444,7 +441,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("foo.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("foo.netflix.com");
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com:8080");
@@ -459,7 +456,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("blah.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("blah.netflix.com");
     }
 
     @Test
@@ -480,7 +477,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("my_underscore_endpoint.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("my_underscore_endpoint.netflix.com");
 
         headers = new Headers();
         headers.add("Host", "my_underscore_endpoint.netflix.com:8080");
@@ -495,7 +492,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("my_underscore_endpoint.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("my_underscore_endpoint.netflix.com");
 
         headers = new Headers();
         headers.add("Host", "my_underscore_endpoint^including~more-chars.netflix.com");
@@ -510,7 +507,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("my_underscore_endpoint^including~more-chars.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("my_underscore_endpoint^including~more-chars.netflix.com");
 
         headers = new Headers();
         headers.add("Host", "hostname%5Ewith-url-encoded.netflix.com");
@@ -525,7 +522,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals("hostname%5Ewith-url-encoded.netflix.com", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("hostname%5Ewith-url-encoded.netflix.com");
     }
 
     @Test
@@ -545,7 +542,8 @@ class HttpRequestMessageImplTest {
                 7002,
                 "localhost");
 
-        assertThrows(URISyntaxException.class, () -> HttpRequestMessageImpl.getOriginalHost(headers, "server"));
+        assertThatThrownBy(() -> HttpRequestMessageImpl.getOriginalHost(headers, "server"))
+                .isInstanceOf(URISyntaxException.class);
     }
 
     @Test
@@ -567,7 +565,7 @@ class HttpRequestMessageImplTest {
                 7002,
                 "server");
 
-        assertEquals("server", request.getOriginalHost());
+        assertThat(request.getOriginalHost()).isEqualTo("server");
     }
 
     @Test
@@ -585,7 +583,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7002, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(7002);
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com");
@@ -601,7 +599,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(443, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(443);
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com:443");
@@ -616,7 +614,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(443, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(443);
 
         headers = new Headers();
         headers.add("Host", "127.0.0.2:443");
@@ -631,7 +629,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(443, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(443);
 
         headers = new Headers();
         headers.add("Host", "127.0.0.2");
@@ -646,7 +644,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7002, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(7002);
 
         headers = new Headers();
         headers.add("Host", "[::2]:443");
@@ -661,7 +659,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(443, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(443);
 
         headers = new Headers();
         headers.add("Host", "[::2]");
@@ -676,7 +674,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7002, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(7002);
 
         headers = new Headers();
         headers.add("Host", "blah.netflix.com:443");
@@ -692,7 +690,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7005, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(7005);
 
         headers = new Headers();
         headers.add("Host", "host_with_underscores.netflix.com:8080");
@@ -707,7 +705,9 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7002, request.getOriginalPort(), "should fallback to server port");
+        assertThat(request.getOriginalPort())
+                .as("should fallback to server port")
+                .isEqualTo(7002);
     }
 
     @Test
@@ -728,7 +728,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(8080, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(8080);
 
         headers = new Headers();
         headers.add("Host", "host-with-carrots^1.0.0.netflix.com:8080");
@@ -743,7 +743,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(8080, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(8080);
 
         headers = new Headers();
         headers.add("Host", "host-with-carrots-no-port^1.0.0.netflix.com");
@@ -758,7 +758,7 @@ class HttpRequestMessageImplTest {
                 "https",
                 7002,
                 "localhost");
-        assertEquals(7002, request.getOriginalPort());
+        assertThat(request.getOriginalPort()).isEqualTo(7002);
     }
 
     @Test
@@ -766,7 +766,8 @@ class HttpRequestMessageImplTest {
         Headers headers = new Headers();
         headers.add("Host", "ba::33");
 
-        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+        assertThat(HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999))
+                .isEqualTo(9999);
     }
 
     @Test
@@ -775,7 +776,8 @@ class HttpRequestMessageImplTest {
         headers.add(HttpHeaderNames.X_FORWARDED_PORT, "");
 
         // Default to using server port
-        assertEquals(9999, HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999));
+        assertThat(HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999))
+                .isEqualTo(9999);
     }
 
     @Test
@@ -786,21 +788,19 @@ class HttpRequestMessageImplTest {
                 new InetSocketAddress(InetAddresses.forString("1.1.1.1"), 443));
         Headers headers = new Headers();
         headers.add("X-Forwarded-Port", "6000");
-        assertEquals(443, HttpRequestMessageImpl.getOriginalPort(context, headers, 9999));
+        assertThat(HttpRequestMessageImpl.getOriginalPort(context, headers, 9999))
+                .isEqualTo(443);
     }
 
     @Test
     void testCleanCookieHeaders() {
-        assertEquals(
-                "BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; Secure, something=67890;"));
-        assertEquals(
-                "BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; something=67890;"));
-        assertEquals(
-                " BlahId=12345; something=67890;",
-                HttpRequestMessageImpl.cleanCookieHeader(" Secure, BlahId=12345; Secure, something=67890;"));
-        assertEquals("", HttpRequestMessageImpl.cleanCookieHeader(""));
+        assertThat(HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; Secure, something=67890;"))
+                .isEqualTo("BlahId=12345; something=67890;");
+        assertThat(HttpRequestMessageImpl.cleanCookieHeader("BlahId=12345; something=67890;"))
+                .isEqualTo("BlahId=12345; something=67890;");
+        assertThat(HttpRequestMessageImpl.cleanCookieHeader(" Secure, BlahId=12345; Secure, something=67890;"))
+                .isEqualTo(" BlahId=12345; something=67890;");
+        assertThat(HttpRequestMessageImpl.cleanCookieHeader("")).isEqualTo("");
     }
 
     @Test
@@ -819,7 +819,7 @@ class HttpRequestMessageImplTest {
                 new InetSocketAddress("api.netflix.com", 443),
                 true);
 
-        assertEquals(message.getClientDestinationPort(), Optional.of(443));
+        assertThat(Optional.of(443)).isEqualTo(message.getClientDestinationPort());
     }
 
     @Test
@@ -840,10 +840,10 @@ class HttpRequestMessageImplTest {
                 new InetSocketAddress("api.netflix.com", 443),
                 true);
         Cookies cookies = message.parseCookies();
-        assertEquals(2, cookies.getAll().size());
+        assertThat(cookies.getAll().size()).isEqualTo(2);
         List<Cookie> kCookies = cookies.get("k");
-        assertEquals(2, kCookies.size());
-        assertEquals("v1", kCookies.get(0).value());
-        assertEquals("v2", kCookies.get(1).value());
+        assertThat(kCookies.size()).isEqualTo(2);
+        assertThat(kCookies.get(0).value()).isEqualTo("v1");
+        assertThat(kCookies.get(1).value()).isEqualTo("v2");
     }
 }

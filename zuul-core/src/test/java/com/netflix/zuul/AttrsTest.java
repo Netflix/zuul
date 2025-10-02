@@ -16,11 +16,9 @@
 
 package com.netflix.zuul;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.common.truth.Truth;
 import org.junit.jupiter.api.Test;
 
 class AttrsTest {
@@ -32,12 +30,12 @@ class AttrsTest {
         Attrs.Key<String> key2 = Attrs.newKey("foo");
         key2.put(attrs, "baz");
 
-        Truth.assertThat(attrs.keySet()).containsExactly(key1, key2);
+        assertThat(attrs.keySet()).containsExactlyInAnyOrder(key1, key2);
     }
 
     @Test
     void newKeyFailsOnNull() {
-        assertThrows(NullPointerException.class, () -> Attrs.newKey(null));
+        assertThatThrownBy(() -> Attrs.newKey(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -45,7 +43,7 @@ class AttrsTest {
         Attrs attrs = Attrs.newInstance();
         Attrs.Key<String> key = Attrs.newKey("foo");
 
-        assertThrows(NullPointerException.class, () -> key.put(attrs, null));
+        assertThatThrownBy(() -> key.put(attrs, null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -55,8 +53,8 @@ class AttrsTest {
         key.put(attrs, "bar");
         key.put(attrs, "baz");
 
-        assertEquals("baz", key.get(attrs));
-        Truth.assertThat(attrs.keySet()).containsExactly(key);
+        assertThat(key.get(attrs)).isEqualTo("baz");
+        assertThat(attrs.keySet()).containsExactly(key);
     }
 
     @Test
@@ -64,7 +62,7 @@ class AttrsTest {
         Attrs attrs = Attrs.newInstance();
         Attrs.Key<String> key = Attrs.newKey("foo");
 
-        assertNull(key.get(attrs));
+        assertThat(key.get(attrs)).isNull();
     }
 
     @Test
@@ -72,7 +70,7 @@ class AttrsTest {
         Attrs attrs = Attrs.newInstance();
         Attrs.Key<String> key = Attrs.newKey("foo");
 
-        assertEquals("bar", key.getOrDefault(attrs, "bar"));
+        assertThat(key.getOrDefault(attrs, "bar")).isEqualTo("bar");
     }
 
     @Test
@@ -81,6 +79,6 @@ class AttrsTest {
         Attrs.Key<String> key = Attrs.newKey("foo");
         key.put(attrs, "bar");
 
-        assertThrows(NullPointerException.class, () -> key.getOrDefault(attrs, null));
+        assertThatThrownBy(() -> key.getOrDefault(attrs, null)).isInstanceOf(NullPointerException.class);
     }
 }

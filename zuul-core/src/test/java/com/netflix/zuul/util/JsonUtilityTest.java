@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,7 +38,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\"}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -50,7 +50,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myKey2\":\"myValue2\"}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -66,7 +66,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":\"myValue\",\"myNestedData\":{\"myNestedKey\":\"myNestedValue\"}}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -84,7 +84,7 @@ class JsonUtilityTest {
         String expected =
                 "{\"myKey\":\"myValue\",\"myNestedData\":{\"myNestedKey\":\"myNestedValue\",\"myNestedKey2\":\"myNestedValue2\"}}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -96,7 +96,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[1,2,3,4]}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -108,7 +108,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[\"one\",\"two\",\"three\",\"four\"]}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -124,7 +124,7 @@ class JsonUtilityTest {
         String json = JsonUtility.jsonFromMap(jsonData);
         String expected = "{\"myKey\":[\"one\",\"two\",\"three\",\"four\"]}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -146,7 +146,7 @@ class JsonUtilityTest {
         String expected =
                 "{\"myKey\":\"myValue\",\"myNumbers\":[1,2,3,4],\"myNestedData\":{\"myNestedKey\":\"myNestedValue\",\"myNestedKey2\":\"myNestedValue2\",\"myStringNumbers\":[\"one\",\"two\",\"three\",\"four\"]}}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 
     @Test
@@ -170,6 +170,6 @@ class JsonUtilityTest {
         String expected =
                 "{\"messages\":[{\"a\":\"valueA1\",\"b\":\"valueB1\"},{\"a\":\"valueA2\",\"b\":\"valueB2\"}]}";
 
-        assertEquals(expected, json);
+        assertThat(json).isEqualTo(expected);
     }
 }

@@ -16,7 +16,7 @@
 
 package com.netflix.netty.common.metrics;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.buffer.ByteBuf;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,12 +37,12 @@ class InstrumentedResourceLeakDetectorTest {
     @Test
     void test() {
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(1, leakDetector.leakCounter.get());
+        assertThat(leakDetector.leakCounter.get()).isEqualTo(1);
 
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(2, leakDetector.leakCounter.get());
+        assertThat(leakDetector.leakCounter.get()).isEqualTo(2);
 
         leakDetector.reportTracedLeak("test", "test");
-        assertEquals(3, leakDetector.leakCounter.get());
+        assertThat(leakDetector.leakCounter.get()).isEqualTo(3);
     }
 }

@@ -16,10 +16,8 @@
 
 package com.netflix.zuul.netty.server;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.netflix.zuul.netty.server.SocketAddressProperty.BindType;
 import io.netty.channel.unix.DomainSocketAddress;
@@ -37,114 +35,115 @@ class SocketAddressPropertyTest {
         SocketAddressProperty prop = new SocketAddressProperty("com.netflix.zuul.netty.server.testprop", "=7001");
 
         SocketAddress address = prop.getValue();
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
     }
 
     @Test
     void bindTypeWorks_any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("ANY=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
     }
 
     @Test
     void bindTypeWorks_blank() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
     }
 
     @Test
     void bindTypeWorks_ipv4Any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV4_ANY=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
-        assertTrue(inetSocketAddress.getAddress() instanceof Inet4Address);
-        assertTrue(inetSocketAddress.getAddress().isAnyLocalAddress());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
+        assertThat(inetSocketAddress.getAddress() instanceof Inet4Address).isTrue();
+        assertThat(inetSocketAddress.getAddress().isAnyLocalAddress()).isTrue();
     }
 
     @Test
     void bindTypeWorks_ipv6Any() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV6_ANY=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
-        assertTrue(inetSocketAddress.getAddress() instanceof Inet6Address);
-        assertTrue(inetSocketAddress.getAddress().isAnyLocalAddress());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
+        assertThat(inetSocketAddress.getAddress() instanceof Inet6Address).isTrue();
+        assertThat(inetSocketAddress.getAddress().isAnyLocalAddress()).isTrue();
     }
 
     @Test
     void bindTypeWorks_anyLocal() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("ANY_LOCAL=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
-        assertTrue(inetSocketAddress.getAddress().isLoopbackAddress());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
+        assertThat(inetSocketAddress.getAddress().isLoopbackAddress()).isTrue();
     }
 
     @Test
     void bindTypeWorks_ipv4Local() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV4_LOCAL=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
-        assertTrue(inetSocketAddress.getAddress() instanceof Inet4Address);
-        assertTrue(inetSocketAddress.getAddress().isLoopbackAddress());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
+        assertThat(inetSocketAddress.getAddress() instanceof Inet4Address).isTrue();
+        assertThat(inetSocketAddress.getAddress().isLoopbackAddress()).isTrue();
     }
 
     @Test
     void bindTypeWorks_ipv6Local() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("IPV6_LOCAL=7001");
 
-        assertEquals(InetSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(InetSocketAddress.class);
         InetSocketAddress inetSocketAddress = (InetSocketAddress) address;
-        assertEquals(7001, inetSocketAddress.getPort());
-        assertFalse(inetSocketAddress.isUnresolved());
-        assertTrue(inetSocketAddress.getAddress() instanceof Inet6Address);
-        assertTrue(inetSocketAddress.getAddress().isLoopbackAddress());
+        assertThat(inetSocketAddress.getPort()).isEqualTo(7001);
+        assertThat(inetSocketAddress.isUnresolved()).isFalse();
+        assertThat(inetSocketAddress.getAddress() instanceof Inet6Address).isTrue();
+        assertThat(inetSocketAddress.getAddress().isLoopbackAddress()).isTrue();
     }
 
     @Test
     void bindTypeWorks_uds() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("UDS=/var/run/zuul.sock");
 
-        assertEquals(DomainSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(DomainSocketAddress.class);
         DomainSocketAddress domainSocketAddress = (DomainSocketAddress) address;
-        assertEquals("/var/run/zuul.sock", domainSocketAddress.path());
+        assertThat(domainSocketAddress.path()).isEqualTo("/var/run/zuul.sock");
     }
 
     @Test
     void bindTypeWorks_udsWithEquals() {
         SocketAddress address = SocketAddressProperty.Decoder.INSTANCE.apply("UDS=/var/run/zuul=.sock");
 
-        assertEquals(DomainSocketAddress.class, address.getClass());
+        assertThat(address.getClass()).isEqualTo(DomainSocketAddress.class);
         DomainSocketAddress domainSocketAddress = (DomainSocketAddress) address;
-        assertEquals("/var/run/zuul=.sock", domainSocketAddress.path());
+        assertThat(domainSocketAddress.path()).isEqualTo("/var/run/zuul=.sock");
     }
 
     @Test
     void failsOnMissingEqual() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            SocketAddressProperty.Decoder.INSTANCE.apply("ANY");
-        });
+        assertThatThrownBy(() -> {
+                    SocketAddressProperty.Decoder.INSTANCE.apply("ANY");
+                })
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -156,18 +155,20 @@ class SocketAddressPropertyTest {
                 BindType.ANY_LOCAL,
                 BindType.IPV4_LOCAL,
                 BindType.IPV6_LOCAL)) {
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-                SocketAddressProperty.Decoder.INSTANCE.apply(type.name() + "=bogus");
-            });
-            assertTrue(exception.getMessage().contains("Port"));
+            assertThatThrownBy(() -> {
+                        SocketAddressProperty.Decoder.INSTANCE.apply(type.name() + "=bogus");
+                    })
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Port");
         }
     }
 
     @Test
     public void failsOnBadAddress() throws Exception {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            SocketAddressProperty.Decoder.INSTANCE.apply("");
-        });
-        assertEquals("Invalid address", exception.getMessage());
+        assertThatThrownBy(() -> {
+                    SocketAddressProperty.Decoder.INSTANCE.apply("");
+                })
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid address");
     }
 }

@@ -169,7 +169,8 @@ public abstract class BaseServerStartup {
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
         Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
-        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
+        PercentileTimer httpRequestHeadersReadTimer =
+                PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
         Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);
@@ -196,7 +197,8 @@ public abstract class BaseServerStartup {
         channelDeps.set(ZuulDependencyKeys.requestCompleteHandler, reqCompleteHandler);
         Counter httpRequestHeadersReadTimeoutCounter = registry.counter("server.http.request.headers.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimeoutCounter, httpRequestHeadersReadTimeoutCounter);
-        PercentileTimer httpRequestHeadersReadTimer = PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
+        PercentileTimer httpRequestHeadersReadTimer =
+                PercentileTimer.get(registry, registry.createId("server.http.request.headers.read.timer"));
         channelDeps.set(ZuulDependencyKeys.httpRequestHeadersReadTimer, httpRequestHeadersReadTimer);
         Counter httpRequestReadTimeoutCounter = registry.counter("server.http.request.read.timeout");
         channelDeps.set(ZuulDependencyKeys.httpRequestReadTimeoutCounter, httpRequestReadTimeoutCounter);

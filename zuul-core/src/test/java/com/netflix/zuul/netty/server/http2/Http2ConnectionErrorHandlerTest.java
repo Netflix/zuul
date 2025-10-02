@@ -15,7 +15,7 @@
  */
 package com.netflix.zuul.netty.server.http2;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -42,7 +42,7 @@ class Http2ConnectionErrorHandlerTest {
     public void nonHttp2ExceptionsPassedUpPipeline() {
         RuntimeException exception = new RuntimeException();
         channel.pipeline().fireExceptionCaught(exception);
-        assertEquals(exception, exceptionCapturingHandler.caught);
+        assertThat(exceptionCapturingHandler.caught).isEqualTo(exception);
     }
 
     private static class ExceptionCapturingHandler extends ChannelInboundHandlerAdapter {

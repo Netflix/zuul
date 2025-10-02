@@ -16,9 +16,7 @@
 
 package com.netflix.zuul.netty.server.ssl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -60,13 +58,14 @@ class SslHandshakeInfoHandlerTest {
         serverChannel.pipeline().addLast(new SslHandshakeInfoHandler());
 
         Object clientHello = clientChannel.readOutbound();
-        assertNotNull(clientHello);
+        assertThat(clientHello).isNotNull();
         ReferenceCountUtil.retain(clientHello);
 
         serverChannel.writeInbound(clientHello);
 
         // Assert that the handler removes itself from the pipeline, since it was torn down.
-        assertNull(serverChannel.pipeline().context(SslHandshakeInfoHandler.class));
+        assertThat(serverChannel.pipeline().context(SslHandshakeInfoHandler.class))
+                .isNull();
     }
 
     @Test
@@ -74,14 +73,14 @@ class SslHandshakeInfoHandlerTest {
         SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler();
 
         RuntimeException noMessage = new RuntimeException();
-        assertEquals(noMessage.toString(), handler.getFailureCause(noMessage));
+        assertThat(handler.getFailureCause(noMessage)).isEqualTo(noMessage.toString());
 
         RuntimeException withMessage = new RuntimeException("some unexpected message");
-        assertEquals("some unexpected message", handler.getFailureCause(withMessage));
+        assertThat(handler.getFailureCause(withMessage)).isEqualTo("some unexpected message");
 
         RuntimeException openSslMessage = new RuntimeException("javax.net.ssl.SSLHandshakeException: error:1000008e:SSL"
                 + " routines:OPENSSL_internal:DIGEST_CHECK_FAILED");
 
-        assertEquals("DIGEST_CHECK_FAILED", handler.getFailureCause(openSslMessage));
+        assertThat(handler.getFailureCause(openSslMessage)).isEqualTo("DIGEST_CHECK_FAILED");
     }
 }

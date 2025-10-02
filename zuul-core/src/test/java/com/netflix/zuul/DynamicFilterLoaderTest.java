@@ -15,8 +15,7 @@
  */
 package com.netflix.zuul;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.zuul.filters.BaseSyncFilter;
 import com.netflix.zuul.filters.FilterRegistry;
@@ -49,7 +48,7 @@ class DynamicFilterLoaderTest {
         loader.putFiltersForClasses(new String[] {TestZuulFilter.class.getName()});
 
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
-        assertEquals(1, filters.size());
+        assertThat(filters.size()).isEqualTo(1);
     }
 
     @Test
@@ -60,9 +59,9 @@ class DynamicFilterLoaderTest {
         } catch (ClassNotFoundException e) {
             caught = e;
         }
-        assertTrue(caught != null);
+        assertThat(caught != null).isTrue();
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
-        assertEquals(0, filters.size());
+        assertThat(filters.size()).isEqualTo(0);
     }
 
     @Test
@@ -70,14 +69,14 @@ class DynamicFilterLoaderTest {
         loader.putFiltersForClasses(new String[] {TestZuulFilter.class.getName()});
 
         Collection<ZuulFilter<?, ?>> filters = registry.getAllFilters();
-        assertEquals(1, filters.size());
+        assertThat(filters.size()).isEqualTo(1);
 
         Collection<ZuulFilter<?, ?>> list = loader.getFiltersByType(FilterType.INBOUND);
-        assertTrue(list != null);
-        assertEquals(1, list.size());
+        assertThat(list != null).isTrue();
+        assertThat(list.size()).isEqualTo(1);
         ZuulFilter<?, ?> filter = list.iterator().next();
-        assertTrue(filter != null);
-        assertEquals(FilterType.INBOUND, filter.filterType());
+        assertThat(filter != null).isTrue();
+        assertThat(filter.filterType()).isEqualTo(FilterType.INBOUND);
     }
 
     private static final class TestZuulFilter extends BaseSyncFilter {

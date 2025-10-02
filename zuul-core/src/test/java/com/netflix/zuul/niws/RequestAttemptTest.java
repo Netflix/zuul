@@ -16,7 +16,7 @@
 
 package com.netflix.zuul.niws;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -39,7 +39,7 @@ public class RequestAttemptTest {
         RequestAttempt attempt = new RequestAttempt(1, null, null, "target", "chosen", 200, null, null, 0, 0, 0);
         attempt.setException(new RuntimeException("runtime failure"));
 
-        assertEquals("runtime failure", attempt.getError());
+        assertThat(attempt.getError()).isEqualTo("runtime failure");
     }
 
     @Test
@@ -51,8 +51,8 @@ public class RequestAttemptTest {
                 new SSLHandshakeException("Invalid tls cert"),
                 OutboundErrorType.CONNECT_ERROR));
 
-        assertEquals("ORIGIN_CONNECT_ERROR", attempt.getError());
-        assertEquals("Invalid tls cert", attempt.getCause());
+        assertThat(attempt.getError()).isEqualTo("ORIGIN_CONNECT_ERROR");
+        assertThat(attempt.getCause()).isEqualTo("Invalid tls cert");
     }
 
     @Test
@@ -65,8 +65,8 @@ public class RequestAttemptTest {
         attempt.setException(new OriginConnectException(
                 "origin connect failure", handshakeException, OutboundErrorType.CONNECT_ERROR));
 
-        assertEquals("ORIGIN_CONNECT_ERROR", attempt.getError());
-        assertEquals("Cert doesn't match expected", attempt.getCause());
+        assertThat(attempt.getError()).isEqualTo("ORIGIN_CONNECT_ERROR");
+        assertThat(attempt.getCause()).isEqualTo("Cert doesn't match expected");
     }
 
     @Test
@@ -77,8 +77,8 @@ public class RequestAttemptTest {
                 new IOException(new RuntimeException("socket failure")),
                 OutboundErrorType.CONNECT_ERROR));
 
-        assertEquals("ORIGIN_CONNECT_ERROR", attempt.getError());
-        assertEquals("java.lang.RuntimeException: socket failure", attempt.getCause());
+        assertThat(attempt.getError()).isEqualTo("ORIGIN_CONNECT_ERROR");
+        assertThat(attempt.getCause()).isEqualTo("java.lang.RuntimeException: socket failure");
     }
 
     @Test
@@ -107,11 +107,12 @@ public class RequestAttemptTest {
         RequestAttempt attempt = new RequestAttempt(1, null, null, "target", "chosen", 200, null, null, 0, 0, 0);
         attempt.setException(h2Exception);
 
-        assertEquals("Cannot create stream 100 greater than Last-Stream-ID 99 from GOAWAY.", attempt.getError());
-        assertEquals("StreamException", attempt.getExceptionType());
+        assertThat(attempt.getError())
+                .isEqualTo("Cannot create stream 100 greater than Last-Stream-ID 99 from GOAWAY.");
+        assertThat(attempt.getExceptionType()).isEqualTo("StreamException");
 
-        assertEquals(
-                "io.netty.handler.codec.http2.DefaultHttp2Connection.createStream(DefaultHttp2Connection.java:772)",
-                attempt.getCause());
+        assertThat(attempt.getCause())
+                .isEqualTo(
+                        "io.netty.handler.codec.http2.DefaultHttp2Connection.createStream(DefaultHttp2Connection.java:772)");
     }
 }

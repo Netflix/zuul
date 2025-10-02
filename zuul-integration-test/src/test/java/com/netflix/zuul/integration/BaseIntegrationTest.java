@@ -27,10 +27,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.aayushatharva.brotli4j.decoder.DecoderJNI;
 import com.aayushatharva.brotli4j.decoder.DirectDecompress;
@@ -112,8 +109,8 @@ abstract class BaseIntegrationTest {
 
     @BeforeAll
     static void beforeAll() {
-        assertTrue(ResourceLeakDetector.isEnabled());
-        assertEquals(ResourceLeakDetector.Level.PARANOID, ResourceLeakDetector.getLevel());
+        assertThat(ResourceLeakDetector.isEnabled()).isTrue();
+        assertThat(ResourceLeakDetector.getLevel()).isEqualTo(ResourceLeakDetector.Level.PARANOID);
         int wireMockPort = wireMockExtension.getPort();
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("api.ribbon.listOfServers", "127.0.0.1:" + wireMockPort);
@@ -409,7 +406,7 @@ abstract class BaseIntegrationTest {
 
         // first call just to ensure a pooled connection will be used later
         Request getRequest = setupRequestBuilder(false, false).get().build();
-        assertEquals(200, okHttp.newCall(getRequest).execute().code());
+        assertThat(okHttp.newCall(getRequest).execute().code()).isEqualTo(200);
 
         Request request = setupRequestBuilder(false, false).get().build();
         Response response = okHttp.newCall(request).execute();
@@ -425,7 +422,7 @@ abstract class BaseIntegrationTest {
         // make sure a pooled connection will be used in ProxyEndpoint
         wireMock.register(get(anyUrl()).willReturn(aResponse().withStatus(200)));
         Request getRequest = setupRequestBuilder(false, false).get().build();
-        assertEquals(200, okHttp.newCall(getRequest).execute().code());
+        assertThat(okHttp.newCall(getRequest).execute().code()).isEqualTo(200);
 
         stubFor(post(anyUrl())
                 .inScenario("retry200")
@@ -526,16 +523,16 @@ abstract class BaseIntegrationTest {
         connection.setAllowUserInteraction(false);
         connection.setRequestProperty("Accept-Encoding", "deflate");
         InputStream inputStream = connection.getInputStream();
-        assertEquals(200, connection.getResponseCode());
-        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertEquals("deflate", connection.getHeaderField("Content-Encoding"));
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isEqualTo("deflate");
         byte[] compressedData = IOUtils.toByteArray(inputStream);
         Inflater inflater = new Inflater();
         inflater.setInput(compressedData);
         byte[] result = new byte[1000];
         int nBytes = inflater.inflate(result);
         String text = new String(result, 0, nBytes, TestUtil.CHARSET);
-        assertEquals(expectedResponseBody, text);
+        assertThat(text).isEqualTo(expectedResponseBody);
         inputStream.close();
         connection.disconnect();
     }
@@ -556,13 +553,13 @@ abstract class BaseIntegrationTest {
         connection.setAllowUserInteraction(false);
         connection.setRequestProperty("Accept-Encoding", "gzip");
         InputStream inputStream = connection.getInputStream();
-        assertEquals(200, connection.getResponseCode());
-        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertEquals("gzip", connection.getHeaderField("Content-Encoding"));
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isEqualTo("gzip");
         GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
         byte[] data = IOUtils.toByteArray(gzipInputStream);
         String text = new String(data, TestUtil.CHARSET);
-        assertEquals(expectedResponseBody, text);
+        assertThat(text).isEqualTo(expectedResponseBody);
         inputStream.close();
         gzipInputStream.close();
         connection.disconnect();
@@ -585,15 +582,15 @@ abstract class BaseIntegrationTest {
         connection.setAllowUserInteraction(false);
         connection.setRequestProperty("Accept-Encoding", "br");
         InputStream inputStream = connection.getInputStream();
-        assertEquals(200, connection.getResponseCode());
-        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertEquals("br", connection.getHeaderField("Content-Encoding"));
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isEqualTo("br");
         byte[] compressedData = IOUtils.toByteArray(inputStream);
-        assertTrue(compressedData.length > 0);
+        assertThat(compressedData.length > 0).isTrue();
         DirectDecompress decompressResult = DirectDecompress.decompress(compressedData);
-        assertEquals(DecoderJNI.Status.DONE, decompressResult.getResultStatus());
-        assertEquals(
-                "Hello Hello Hello Hello Hello", new String(decompressResult.getDecompressedData(), TestUtil.CHARSET));
+        assertThat(decompressResult.getResultStatus()).isEqualTo(DecoderJNI.Status.DONE);
+        assertThat(new String(decompressResult.getDecompressedData(), TestUtil.CHARSET))
+                .isEqualTo("Hello Hello Hello Hello Hello");
 
         inputStream.close();
         connection.disconnect();
@@ -615,12 +612,12 @@ abstract class BaseIntegrationTest {
         connection.setAllowUserInteraction(false);
         connection.setRequestProperty("Accept-Encoding", ""); // no compression
         InputStream inputStream = connection.getInputStream();
-        assertEquals(200, connection.getResponseCode());
-        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertNull(connection.getHeaderField("Content-Encoding"));
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isNull();
         byte[] data = IOUtils.toByteArray(inputStream);
         String text = new String(data, TestUtil.CHARSET);
-        assertEquals(expectedResponseBody, text);
+        assertThat(text).isEqualTo(expectedResponseBody);
         inputStream.close();
         connection.disconnect();
     }
@@ -641,13 +638,13 @@ abstract class BaseIntegrationTest {
         connection.setAllowUserInteraction(false);
         connection.setRequestProperty("Accept-Encoding", ""); // no compression
         InputStream inputStream = connection.getInputStream();
-        assertEquals(200, connection.getResponseCode());
-        assertEquals("text/plain", connection.getHeaderField("Content-Type"));
-        assertNull(connection.getHeaderField("Content-Encoding"));
-        assertEquals("chunked", connection.getHeaderField("Transfer-Encoding"));
+        assertThat(connection.getResponseCode()).isEqualTo(200);
+        assertThat(connection.getHeaderField("Content-Type")).isEqualTo("text/plain");
+        assertThat(connection.getHeaderField("Content-Encoding")).isNull();
+        assertThat(connection.getHeaderField("Transfer-Encoding")).isEqualTo("chunked");
         byte[] data = IOUtils.toByteArray(inputStream);
         String text = new String(data, TestUtil.CHARSET);
-        assertEquals(expectedResponseBody, text);
+        assertThat(text).isEqualTo(expectedResponseBody);
         inputStream.close();
         connection.disconnect();
     }
