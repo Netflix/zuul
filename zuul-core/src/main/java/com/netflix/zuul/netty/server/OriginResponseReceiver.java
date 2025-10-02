@@ -76,11 +76,11 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try (TaskCloseable a = PerfMark.traceTask("ORR.channelRead")) {
-            channelReadInternal(ctx, msg);
+            channelReadInternal(ctx, msg, true);
         }
     }
 
-    protected void channelReadInternal(ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelReadInternal(ChannelHandlerContext ctx, Object msg, boolean triggerRead) throws Exception {
         if (msg instanceof HttpResponse) {
             if (edgeProxy != null) {
                 edgeProxy.responseFromOrigin((HttpResponse) msg);
@@ -88,14 +88,20 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 // this handles the case of a DefaultFullHttpResponse that could have content that needs to be released
                 ReferenceCountUtil.safeRelease(msg);
             }
-            ctx.channel().read();
+
+            if (triggerRead) {
+                ctx.channel().read();
+            }
         } else if (msg instanceof HttpContent chunk) {
             if (edgeProxy != null) {
                 edgeProxy.invokeNext(chunk);
             } else {
                 ReferenceCountUtil.safeRelease(chunk);
             }
-            ctx.channel().read();
+
+            if (triggerRead) {
+                ctx.channel().read();
+            }
         } else {
             // should never happen
             ReferenceCountUtil.release(msg);
