@@ -25,6 +25,9 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -166,5 +169,28 @@ public class HttpUtils {
             return channel.parent();
         }
         return channel;
+    }
+
+    /**
+     * Parse all IP addresses from an x-forwarded-for header, including IPv6 addresses.
+     * This is useful for security auditing and logging purposes.
+     *
+     * @param xForwardedFor the x-forwarded-for header value
+     * @return list of IP addresses
+     */
+    public static List parseAllIpAddresses(String xForwardedFor) {
+        List addresses = new ArrayList();
+        if (Strings.isNullOrEmpty(xForwardedFor)) {
+            return addresses;
+        }
+        
+        String[] tokens = xForwardedFor.split(",");
+        for (String token : tokens) {
+            String trimmed = token.trim();
+            if (!trimmed.isEmpty()) {
+                addresses.add(trimmed);
+            }
+        }
+        return addresses;
     }
 }
