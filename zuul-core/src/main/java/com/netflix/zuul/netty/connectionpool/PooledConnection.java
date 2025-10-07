@@ -186,10 +186,7 @@ public class PooledConnection {
 
         if (!isShouldClose() && connectionState != ConnectionState.WRITE_READY) {
             CurrentPassport passport = CurrentPassport.fromChannel(channel);
-            LOG.info(
-                    "Error - Attempt to put busy connection into the pool = {}, {}",
-                    this.toString(),
-                    String.valueOf(passport));
+            LOG.info("Error - Attempt to put busy connection into the pool = {}, {}", this, passport);
             this.shouldClose = true;
         }
 
@@ -213,8 +210,12 @@ public class PooledConnection {
     }
 
     public void startReadTimeoutHandler(Duration readTimeout) {
-        getChannel()
-                .pipeline()
+        Channel channel = getChannel();
+        if (!channel.isActive()) {
+            LOG.debug("Tried to start read timeout handler, but channel is not active");
+            return;
+        }
+        channel.pipeline()
                 .addBefore(
                         DefaultOriginChannelInitializer.ORIGIN_NETTY_LOGGER,
                         READ_TIMEOUT_HANDLER_NAME,
