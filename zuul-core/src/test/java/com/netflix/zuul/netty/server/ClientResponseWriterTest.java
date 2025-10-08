@@ -176,9 +176,13 @@ class ClientResponseWriterTest {
         assertThat(request.hasBody()).isEqualTo(hasBodyChunk);
 
         if (hasBodyChunk) {
-            assertThat(warningCounter.count()).as("should warn as is body expected").isEqualTo(1);
+            assertThat(warningCounter.count())
+                    .as("should warn as is body expected")
+                    .isEqualTo(1);
         } else {
-            assertThat(warningCounter.count()).as("should not warn as no body expected").isEqualTo(0);
+            assertThat(warningCounter.count())
+                    .as("should not warn as no body expected")
+                    .isEqualTo(0);
         }
 
         channel.close();
