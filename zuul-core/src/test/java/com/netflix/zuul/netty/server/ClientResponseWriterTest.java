@@ -185,6 +185,7 @@ class ClientResponseWriterTest {
                     .isEqualTo(0);
         }
 
+        request.disposeBufferedBody();
         channel.close();
     }
 }
