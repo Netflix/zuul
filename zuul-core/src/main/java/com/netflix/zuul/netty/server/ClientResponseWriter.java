@@ -118,9 +118,10 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             channel.attr(ClientRequestReceiver.ATTR_ZUUL_RESP).set(zuulResponse);
 
             if (channel.isActive()) {
-                // Track if this is happening.
+                // track if response is being written before receiving LastContent for requests with a body
                 if (!ClientRequestReceiver.isLastContentReceivedForChannel(channel)
-                        && !shouldAllowPreemptiveResponse(channel)) {
+                        && !shouldAllowPreemptiveResponse(channel)
+                        && zuulResponse.getInboundRequest().hasBody()) {
                     responseBeforeReceivedLastContentCounter.increment();
                     logger.warn(
                             "Writing response to client channel before have received the LastContent of request! {},"
