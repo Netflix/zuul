@@ -19,6 +19,9 @@ package com.netflix.zuul.netty.server;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.DefaultRegistry;
+import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.BasicRequestCompleteHandler;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -30,6 +33,7 @@ import com.netflix.zuul.message.util.HttpRequestBuilder;
 import com.netflix.zuul.stats.status.StatusCategory;
 import com.netflix.zuul.stats.status.StatusCategoryUtils;
 import com.netflix.zuul.stats.status.ZuulStatusCategory;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -43,6 +47,8 @@ import io.netty.util.ReferenceCountUtil;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -133,5 +139,48 @@ class ClientResponseWriterTest {
                 .fireUserEventTriggered(new HttpLifecycleChannelHandler.CompleteEvent(
                         HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE, null, nettyResp.get()));
         assertThat(responseWriter.getZuulResponse()).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void warningOnlyForRequestsWithBody(boolean hasBodyChunk) {
+        Registry registry = new DefaultRegistry();
+        Counter warningCounter = registry.counter("server.http.requests.responseBeforeReceivedLastContent");
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler(), registry);
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+
+        SessionContext ctx = new SessionContext();
+        HttpRequestMessage request = new HttpRequestBuilder(ctx).build();
+
+        if (hasBodyChunk) {
+            request.bufferBodyContents(new io.netty.handler.codec.http.DefaultHttpContent(
+                    Unpooled.copiedBuffer("body", java.nio.charset.StandardCharsets.UTF_8)));
+        }
+
+        request.storeInboundRequest();
+
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(ctx, request, 200);
+        response.setHeaders(new Headers());
+
+        channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
+        DefaultHttpRequest nettyRequest = new DefaultHttpRequest(
+                HttpVersion.HTTP_1_1,
+                hasBodyChunk ? HttpMethod.POST : HttpMethod.GET,
+                hasBodyChunk ? "/api" : "/favicon.ico");
+        ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
+
+        channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
+        channel.writeInbound(response);
+
+        assertThat(responseWriter.getZuulResponse()).isNotNull();
+        assertThat(request.hasBody()).isEqualTo(hasBodyChunk);
+
+        if (hasBodyChunk) {
+            assertThat(warningCounter.count()).as("should warn as is body expected").isEqualTo(1);
+        } else {
+            assertThat(warningCounter.count()).as("should not warn as no body expected").isEqualTo(0);
+        }
+
+        channel.close();
     }
 }
