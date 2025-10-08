@@ -1134,7 +1134,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (origin == null) {
             // If no pre-registered and configured RestClient found for this VIP, then register one using default NIWS
             // properties.
-            logger.warn(
+            logger.debug(
                     "Attempting to register RestClient for client that has not been configured. originName={}, uri={}",
                     originName,
                     uri);
