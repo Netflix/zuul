@@ -16,6 +16,7 @@
 
 package com.netflix.zuul.filters.endpoint;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
@@ -88,9 +89,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.URLDecoder;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +98,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
@@ -1047,7 +1045,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override to add custom headers
     }
 
-    private static HttpRequestMessage massageRequestURI(HttpRequestMessage request) {
+    @VisibleForTesting
+    protected static HttpRequestMessage massageRequestURI(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         String modifiedPath;
         HttpQueryParams modifiedQueryParams = null;
@@ -1069,23 +1068,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
                 // Strip the query string off of the URI.
                 String paramString = uri.substring(index + 1);
                 modifiedPath = uri.substring(0, index);
-
-                try {
-                    paramString = URLDecoder.decode(paramString, "UTF-8");
-                    modifiedQueryParams = new HttpQueryParams();
-                    StringTokenizer stk = new StringTokenizer(paramString, "&");
-                    while (stk.hasMoreTokens()) {
-                        String token = stk.nextToken();
-                        int idx = token.indexOf("=");
-                        if (idx != -1) {
-                            String key = token.substring(0, idx);
-                            String val = token.substring(idx + 1);
-                            modifiedQueryParams.add(key, val);
-                        }
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    logger.error("Error decoding url query param - {}", paramString, e);
-                }
+                modifiedQueryParams = HttpQueryParams.parse(paramString);
             } else {
                 modifiedPath = uri;
             }

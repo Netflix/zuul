@@ -35,6 +35,7 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.OutboundErrorType;
+import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -281,6 +282,90 @@ class ProxyEndpointTest {
         ReferenceCountUtil.safeRelease(lastContent);
     }
 
+
+    @Test
+    void testMassageRequestURIWithEncodedAmpersand() {
+        // Test that encoded ampersands in query parameter values are handled correctly
+        // and do not create additional parameters
+        SessionContext context = new SessionContext();
+        context.set("overrideURI", "/path?param=123%26hidden%3Dvalue");
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        assertThat(result.getPath()).isEqualTo("/path");
+        HttpQueryParams params = result.getQueryParams();
+        assertThat(params.getFirst("param")).isEqualTo("123&hidden=value");
+        assertThat(params.contains("hidden")).isFalse();
+    }
+
+    @Test
+    void testMassageRequestURIWithMultipleEncodedParams() {
+        SessionContext context = new SessionContext();
+        context.set("overrideURI", "/path?foo=bar&param=a%26b&another=test%3Dvalue");
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        assertThat(result.getPath()).isEqualTo("/path");
+        HttpQueryParams params = result.getQueryParams();
+        assertThat(params.getFirst("foo")).isEqualTo("bar");
+        assertThat(params.getFirst("param")).isEqualTo("a&b");
+        assertThat(params.getFirst("another")).isEqualTo("test=value");
+    }
+
+    @Test
+    void testMassageRequestURIWithNoQueryString() {
+        SessionContext context = new SessionContext();
+        context.set("overrideURI", "/path/to/resource");
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        assertThat(result.getPath()).isEqualTo("/path/to/resource");
+        assertThat(result.getQueryParams().entries()).isEmpty();
+    }
+
+    @Test
+    void testMassageRequestURIWithRequestURIContext() {
+        SessionContext context = new SessionContext();
+        context.set("requestURI", "/contextpath?key=value%20with%20spaces");
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        assertThat(result.getPath()).isEqualTo("/contextpath");
+        HttpQueryParams params = result.getQueryParams();
+        assertThat(params.getFirst("key")).isEqualTo("value with spaces");
+    }
+
+    @Test
+    void testMassageRequestURIOverrideURITakesPrecedence() {
+        // Test that overrideURI takes precedence over requestURI
+        SessionContext context = new SessionContext();
+        context.set("requestURI", "/first?key=first");
+        context.set("overrideURI", "/second?key=second");
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        assertThat(result.getPath()).isEqualTo("/second");
+        HttpQueryParams params = result.getQueryParams();
+        assertThat(params.getFirst("key")).isEqualTo("second");
+    }
+
+    @Test
+    void testMassageRequestURIWithNoContextOverride() {
+        // Test that when neither requestURI nor overrideURI are set, the request is returned unchanged
+        SessionContext context = new SessionContext();
+
+        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
+
+        // Path and query params should remain as they were in the original request
+        assertThat(result).isSameAs(request);
+    }
+
     private void validateNoRetry() {
         verify(nettyOrigin, never()).connectToOrigin(any(), any(), anyInt(), any(), any(), any());
         passport.getHistory().stream()
@@ -310,5 +395,21 @@ class ProxyEndpointTest {
 
     private void createResponse(HttpResponseStatus status) {
         response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
+    }
+
+    private HttpRequestMessage createRequest(SessionContext context) {
+        return new HttpRequestMessageImpl(
+                context,
+                "HTTP/1.1",
+                "GET",
+                "/original",
+                null,
+                null,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new LocalAddress("777"),
+                false);
     }
 }
