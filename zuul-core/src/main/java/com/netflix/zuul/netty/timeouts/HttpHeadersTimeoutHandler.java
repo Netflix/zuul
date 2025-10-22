@@ -69,7 +69,7 @@ public class HttpHeadersTimeoutHandler {
                                 .schedule(
                                         () -> {
                                             if (!closed) {
-                                                ctx.close();
+                                                ctx.close(); // triggers channelInactive -> destroy
                                                 closed = true;
                                                 if (httpHeadersReadTimeoutCounter != null)
                                                     httpHeadersReadTimeoutCounter.increment();
@@ -98,18 +98,34 @@ public class HttpHeadersTimeoutHandler {
                             ctx.channel().attr(HTTP_HEADERS_READ_START_TIME).get();
                     if (httpHeadersReadTimer != null && readStartTime != null)
                         httpHeadersReadTimer.record(System.nanoTime() - readStartTime, TimeUnit.NANOSECONDS);
-                    ScheduledFuture<Void> future =
-                            ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
-                    if (future != null) {
-                        future.cancel(false);
-                        LOG.debug(
-                                "[{}] Removing HTTP headers read timeout handler",
-                                ctx.channel().id());
-                    }
-                    ctx.pipeline().remove(this);
+                    ctx.pipeline().remove(this); // triggers handlerRemoved -> destroy
                 }
             } finally {
                 super.channelRead(ctx, msg);
+            }
+        }
+
+        @Override
+        public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+            destroy(ctx);
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            destroy(ctx);
+            super.channelInactive(ctx);
+        }
+
+
+        private void destroy(ChannelHandlerContext ctx) {
+            ScheduledFuture<Void> future =
+                    ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).get();
+            if (future != null) {
+                future.cancel(false);
+                ctx.channel().attr(HTTP_HEADERS_READ_TIMEOUT_FUTURE).set(null);
+                LOG.debug(
+                        "[{}] Removing HTTP headers read timeout handler",
+                        ctx.channel().id());
             }
         }
     }
