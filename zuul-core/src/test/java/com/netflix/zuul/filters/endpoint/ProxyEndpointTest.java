@@ -101,19 +101,7 @@ class ProxyEndpointTest {
         doReturn(channel).when(chc).channel();
 
         context = new SessionContext();
-        request = new HttpRequestMessageImpl(
-                context,
-                "HTTP/1.1",
-                "POST",
-                "/some/where",
-                null,
-                null,
-                "192.168.0.2",
-                "https",
-                7002,
-                "localhost",
-                new LocalAddress("777"),
-                false);
+        request = createRequest(context, "POST", "/some/where");
         request.storeInboundRequest();
 
         request.setBody("Hello There".getBytes(UTF_8));
@@ -239,19 +227,7 @@ class ProxyEndpointTest {
 
         doReturn(Mockito.mock(RequestAttempt.class)).when(nettyOrigin).newRequestAttempt(any(), any(), any(), anyInt());
 
-        request = new HttpRequestMessageImpl(
-                context,
-                "HTTP/1.1",
-                "POST",
-                "/some/where",
-                null,
-                null,
-                "192.168.0.2",
-                "https",
-                7002,
-                "localhost",
-                new LocalAddress("777"),
-                false);
+        request = createRequest(context, "POST", "/some/where");
         request.storeInboundRequest();
 
         proxyEndpoint = spy(new ProxyEndpoint(request, chc, null, MethodBinding.NO_OP_BINDING, attemptFactory) {
@@ -398,11 +374,15 @@ class ProxyEndpointTest {
     }
 
     private HttpRequestMessage createRequest(SessionContext context) {
+        return createRequest(context, "GET", "/original");
+    }
+
+    private HttpRequestMessage createRequest(SessionContext context, String method, String path) {
         return new HttpRequestMessageImpl(
                 context,
                 "HTTP/1.1",
-                "GET",
-                "/original",
+                method,
+                path,
                 null,
                 null,
                 "192.168.0.2",
