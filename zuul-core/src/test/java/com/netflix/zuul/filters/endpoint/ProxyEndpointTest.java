@@ -266,7 +266,7 @@ class ProxyEndpointTest {
         SessionContext context = new SessionContext();
         context.set("overrideURI", "/path?param=123%26hidden%3Dvalue");
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         assertThat(result.getPath()).isEqualTo("/path");
@@ -280,7 +280,7 @@ class ProxyEndpointTest {
         SessionContext context = new SessionContext();
         context.set("overrideURI", "/path?foo=bar&param=a%26b&another=test%3Dvalue");
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         assertThat(result.getPath()).isEqualTo("/path");
@@ -295,7 +295,7 @@ class ProxyEndpointTest {
         SessionContext context = new SessionContext();
         context.set("overrideURI", "/path/to/resource");
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         assertThat(result.getPath()).isEqualTo("/path/to/resource");
@@ -307,7 +307,7 @@ class ProxyEndpointTest {
         SessionContext context = new SessionContext();
         context.set("requestURI", "/contextpath?key=value%20with%20spaces");
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         assertThat(result.getPath()).isEqualTo("/contextpath");
@@ -322,7 +322,7 @@ class ProxyEndpointTest {
         context.set("requestURI", "/first?key=first");
         context.set("overrideURI", "/second?key=second");
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         assertThat(result.getPath()).isEqualTo("/second");
@@ -335,7 +335,7 @@ class ProxyEndpointTest {
         // Test that when neither requestURI nor overrideURI are set, the request is returned unchanged
         SessionContext context = new SessionContext();
 
-        HttpRequestMessage request = createRequest(context);
+        HttpRequestMessage request = createRequest(context, "GET", "/original");
         HttpRequestMessage result = ProxyEndpoint.massageRequestURI(request);
 
         // Path and query params should remain as they were in the original request
@@ -371,10 +371,6 @@ class ProxyEndpointTest {
 
     private void createResponse(HttpResponseStatus status) {
         response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
-    }
-
-    private HttpRequestMessage createRequest(SessionContext context) {
-        return createRequest(context, "GET", "/original");
     }
 
     private HttpRequestMessage createRequest(SessionContext context, String method, String path) {
