@@ -48,11 +48,11 @@ public class HttpHeadersTimeoutHandlerTest {
                         () -> 0,
                         timeoutCounter,
                         null));
-
         DefaultFullHttpRequest request = new DefaultFullHttpRequest(
                 HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
 
         assertThrows(ClosedChannelException.class, () -> ch.writeInbound(request));
+
         verify(timeoutCounter).increment();
         assertNull(ch.attr(HttpHeadersTimeoutHandler.HTTP_HEADERS_READ_TIMEOUT_FUTURE).get());
         assertNull(ch.attr(HttpHeadersTimeoutHandler.HTTP_HEADERS_READ_START_TIME).get());
