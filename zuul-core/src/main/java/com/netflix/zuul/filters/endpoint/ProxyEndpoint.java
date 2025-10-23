@@ -157,7 +157,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     private static final DynamicIntegerSetProperty RETRIABLE_STATUSES_FOR_IDEMPOTENT_METHODS =
             new DynamicIntegerSetProperty("zuul.retry.allowed.statuses.idempotent", "500");
     private static final DynamicBooleanProperty ENABLE_MODERN_QUERY_PARSING =
-            new DynamicBooleanProperty("zuul.enable.modern.query.parsing", true);
+            new DynamicBooleanProperty("zuul.feature.enabled.modern.query.parsing", true);
 
     /**
      * Indicates how long Zuul should remember throttle events for an origin.  As of this writing, throttling is used
@@ -1052,7 +1052,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     @VisibleForTesting
-    protected static HttpRequestMessage massageRequestURI(HttpRequestMessage request) {
+    static HttpRequestMessage massageRequestURI(HttpRequestMessage request) {
         SessionContext context = request.getContext();
         String modifiedPath;
         HttpQueryParams modifiedQueryParams = null;
