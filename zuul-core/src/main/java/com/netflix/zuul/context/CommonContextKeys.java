@@ -48,6 +48,8 @@ public class CommonContextKeys {
     public static final SessionContext.Key<RequestAttempts> REQUEST_ATTEMPTS =
             SessionContext.newKey("request_attempts");
 
+    public static final SessionContext.Key<String> BROWNOUT_REASON = SessionContext.newKey("brownout_reason");
+
     public static final SessionContext.Key<IClientConfig> REST_CLIENT_CONFIG =
             SessionContext.newKey("rest_client_config");
 

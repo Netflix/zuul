@@ -19,6 +19,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.netflix.config.DynamicPropertyFactory;
 import com.netflix.zuul.filters.FilterError;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import jakarta.annotation.Nullable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,7 +31,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import lombok.NonNull;
 
 /**
@@ -475,8 +475,22 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         return brownoutMode;
     }
 
+    /**
+     * Flag the server is getting overloaded.
+     * @deprecated use setInBrownoutMode(String reason)
+     */
+    @Deprecated
     public void setInBrownoutMode() {
         this.brownoutMode = true;
+    }
+
+    public void setInBrownoutMode(@NonNull String reason) {
+        this.brownoutMode = true;
+        put(CommonContextKeys.BROWNOUT_REASON, reason);
+    }
+
+    public @Nullable String getBrownoutReason() {
+        return get(CommonContextKeys.BROWNOUT_REASON);
     }
 
     /**
