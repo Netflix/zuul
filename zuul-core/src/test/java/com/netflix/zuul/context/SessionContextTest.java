@@ -139,4 +139,14 @@ class SessionContextTest {
 
         assertThat(context.containsKey(key)).isFalse();
     }
+
+    @Test
+    void setInBrownoutModeWithReason() {
+        SessionContext context = new SessionContext();
+        assertThat(context.getBrownoutReason()).isNull();
+        context.setInBrownoutMode("High CPU usage");
+
+        assertThat(context.isInBrownoutMode()).isTrue();
+        assertThat(context.getBrownoutReason()).isEqualTo("High CPU usage");
+    }
 }
