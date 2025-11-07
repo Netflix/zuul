@@ -48,6 +48,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
             .getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60)
             .get();
 
+    private static final int EVENT_PROPERTIES_INITIAL_SIZE = DynamicPropertyFactory.getInstance()
+            .getIntProperty("com.netflix.zuul.context.SessionContext.eventProperties.initialSize", 128)
+            .get();
+
     private boolean brownoutMode = false;
     private boolean shouldStopFilterProcessing = false;
     private boolean shouldSendErrorResponse = false;
@@ -119,7 +123,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         super(INITIAL_SIZE);
 
         put(KEY_FILTER_EXECS, new StringBuilder());
-        put(KEY_EVENT_PROPS, new HashMap<String, Object>());
+        put(KEY_EVENT_PROPS, new HashMap<String, Object>(EVENT_PROPERTIES_INITIAL_SIZE));
         put(KEY_FILTER_ERRORS, new ArrayList<FilterError>());
     }
 
