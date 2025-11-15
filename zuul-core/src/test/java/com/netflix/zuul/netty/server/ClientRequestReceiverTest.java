@@ -46,6 +46,7 @@ import io.netty.handler.codec.http.HttpVersion;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -383,5 +384,41 @@ class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         assertThat(request.getClientIp()).isEqualTo(clientIp);
+    }
+
+    @Test
+    void handleClientChannelInactiveEventCalledOnInactiveComplete() {
+        TestClientRequestReceiver receiver = new TestClientRequestReceiver();
+        EmbeddedChannel channel = new EmbeddedChannel(receiver);
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+
+        DefaultFullHttpRequest request =
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/post", Unpooled.buffer());
+
+        channel.writeInbound(request);
+        channel.readInbound();
+
+        channel.pipeline()
+                .fireUserEventTriggered(new CompleteEvent(
+                        CompleteReason.INACTIVE,
+                        request,
+                        new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
+        channel.close();
+
+        assertThat(receiver.handleClientCancelledEventCalled).isTrue();
+    }
+
+    private static class TestClientRequestReceiver extends ClientRequestReceiver {
+        boolean handleClientCancelledEventCalled = false;
+
+        TestClientRequestReceiver() {
+            super(null);
+        }
+
+        @Override
+        protected void handleClientChannelInactiveEvent(@NonNull HttpRequestMessage zuulRequest) {
+            handleClientCancelledEventCalled = true;
+            super.handleClientChannelInactiveEvent(zuulRequest);
+        }
     }
 }

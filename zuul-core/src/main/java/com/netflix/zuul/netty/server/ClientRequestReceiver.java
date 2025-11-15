@@ -76,6 +76,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -229,9 +230,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
 
             if (reason == CompleteReason.INACTIVE && zuulRequest != null) {
-                // Client closed connection prematurely.
-                StatusCategoryUtils.setStatusCategory(
-                        zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
+                this.handleClientChannelInactiveEvent(zuulRequest);
             }
 
             if (reason == CompleteReason.PIPELINE_REJECT && zuulRequest != null) {
@@ -284,6 +283,15 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             channel.attr(ATTR_ZUUL_RESP).set(null);
             channel.attr(ATTR_LAST_CONTENT_RECEIVED).set(null);
         }
+    }
+
+    /**
+     * Handle the event when the client channel is moved to inactive,
+     * generally this occurs if the client cancels the request.
+     */
+    protected void handleClientChannelInactiveEvent(@NonNull HttpRequestMessage zuulRequest) {
+        // client closed connection prematurely
+        StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
     }
 
     private static void dumpDebugInfo(List<String> debugInfo) {
