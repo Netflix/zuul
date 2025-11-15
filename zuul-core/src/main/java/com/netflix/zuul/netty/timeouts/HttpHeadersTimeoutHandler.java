@@ -36,9 +36,9 @@ public class HttpHeadersTimeoutHandler {
     @VisibleForTesting
     static final AttributeKey<ScheduledFuture<Void>> HTTP_HEADERS_READ_TIMEOUT_FUTURE =
             AttributeKey.newInstance("httpHeadersReadTimeoutFuture");
+
     @VisibleForTesting
-    static final AttributeKey<Long> HTTP_HEADERS_READ_START_TIME =
-            AttributeKey.newInstance("httpHeadersReadStartTime");
+    static final AttributeKey<Long> HTTP_HEADERS_READ_START_TIME = AttributeKey.newInstance("httpHeadersReadStartTime");
 
     public static class InboundHandler extends ChannelInboundHandlerAdapter {
         private final BooleanSupplier httpHeadersReadTimeoutEnabledSupplier;
@@ -118,7 +118,6 @@ public class HttpHeadersTimeoutHandler {
             destroy(ctx);
             super.channelInactive(ctx);
         }
-
 
         private void destroy(ChannelHandlerContext ctx) {
             ScheduledFuture<Void> future =

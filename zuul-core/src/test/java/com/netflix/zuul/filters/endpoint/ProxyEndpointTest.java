@@ -258,7 +258,6 @@ class ProxyEndpointTest {
         ReferenceCountUtil.safeRelease(lastContent);
     }
 
-
     @Test
     void testMassageRequestURIWithEncodedAmpersand() {
         // Test that encoded ampersands in query parameter values are handled correctly
