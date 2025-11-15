@@ -21,7 +21,6 @@ import com.google.common.base.Preconditions;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
-import com.netflix.netty.common.LeastConnsEventLoopChooserFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
 import com.netflix.spectator.api.Registry;
@@ -63,7 +62,6 @@ import io.netty.channel.uring.IoUringSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultEventExecutorChooserFactory;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.EventExecutorChooserFactory;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -110,13 +108,8 @@ public class Server {
 
     private static final Logger LOG = LoggerFactory.getLogger(Server.class);
 
-    private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS =
-            new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
-
     private static final DynamicBooleanProperty MANUAL_DISCOVERY_STATUS =
             new DynamicBooleanProperty("zuul.server.netty.manual.discovery.status", true);
-
-    private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
     private final Thread jvmShutdownHook;
     private final Registry registry;
@@ -194,7 +187,6 @@ public class Server {
         this.clientConnectionsShutdown =
                 Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.eventLoopGroupMetrics = Preconditions.checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
         this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
 
@@ -212,7 +204,6 @@ public class Server {
         this.clientConnectionsShutdown =
                 Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.eventLoopGroupMetrics = Preconditions.checkNotNull(eventLoopGroupMetrics, "eventLoopGroupMetrics");
         this.jvmShutdownHook = jvmShutdownHook;
     }
 
@@ -227,8 +218,7 @@ public class Server {
             Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
         }
 
-        serverGroup = new ServerGroup(
-                "Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
+        serverGroup = new ServerGroup("Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount());
         serverGroup.initializeTransport();
         List<ChannelFuture> allBindFutures = new ArrayList<>(addressesToInitializers.size());
 
@@ -337,7 +327,6 @@ public class Server {
 
         private final int acceptorThreads;
         private final int workerThreads;
-        private final EventLoopGroupMetrics eventLoopGroupMetrics;
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
@@ -346,12 +335,10 @@ public class Server {
 
         private volatile boolean stopped = false;
 
-        private ServerGroup(
-                String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
+        private ServerGroup(String name, int acceptorThreads, int workerThreads) {
             this.name = name;
             this.acceptorThreads = acceptorThreads;
             this.workerThreads = workerThreads;
-            this.eventLoopGroupMetrics = eventLoopGroupMetrics;
 
             Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
                 @Override
@@ -362,14 +349,6 @@ public class Server {
         }
 
         private void initializeTransport() {
-            // TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
-            EventExecutorChooserFactory chooserFactory;
-            if (USE_LEASTCONNS_FOR_EVENTLOOPS.get()) {
-                chooserFactory = new LeastConnsEventLoopChooserFactory(eventLoopGroupMetrics);
-            } else {
-                chooserFactory = DefaultEventExecutorChooserFactory.INSTANCE;
-            }
-
             Map<ChannelOption<?>, Object> extraOptions = new HashMap<>();
             boolean useNio = FORCE_NIO.get();
             boolean useIoUring = FORCE_IO_URING.get();
@@ -399,8 +378,8 @@ public class Server {
 
             ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
             Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
-            clientToProxyWorkerPool =
-                    new MultiThreadIoEventLoopGroup(workerThreads, workerExecutor, chooserFactory, handlerFactory);
+            clientToProxyWorkerPool = new MultiThreadIoEventLoopGroup(
+                    workerThreads, workerExecutor, DefaultEventExecutorChooserFactory.INSTANCE, handlerFactory);
 
             transportChannelOptions = Collections.unmodifiableMap(extraOptions);
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
