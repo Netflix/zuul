@@ -79,4 +79,8 @@ public class CommonChannelConfigKeys {
             new ChannelConfigKey<>("http2SwallowUnknownExceptionsOnConnClose", false);
     public static final ChannelConfigKey<Boolean> http2CatchConnectionErrors =
             new ChannelConfigKey<>("http2CatchConnectionErrors", true);
+    public static final ChannelConfigKey<Integer> http2EncoderMaxResetFrames =
+            new ChannelConfigKey<>("http2EncoderMaxResetFrames", 200);
+    public static final ChannelConfigKey<Integer> http2EncoderMaxResetFramesWindow =
+            new ChannelConfigKey<>("http2EncoderMaxResetFramesWindow", 30);
 }
