@@ -26,7 +26,7 @@ public record RequestRejectedEvent(
         StatusCategory nfStatus,
         HttpResponseStatus httpStatus,
         String reason,
-        @Nullable String reasonDebugMsg) {
+        @Nullable String reasonMessage) {
 
     public RequestRejectedEvent(
             HttpRequest request, StatusCategory nfStatus, HttpResponseStatus httpStatus, String reason) {
