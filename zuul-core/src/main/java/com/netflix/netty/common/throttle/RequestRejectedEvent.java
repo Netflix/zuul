@@ -19,24 +19,21 @@ package com.netflix.netty.common.throttle;
 import com.netflix.zuul.stats.status.StatusCategory;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import jakarta.annotation.Nullable;
 
-public final class RequestRejectedEvent {
-    private final HttpRequest request;
-    private final StatusCategory nfStatus;
-    private final HttpResponseStatus httpStatus;
-    private final String reason;
+public record RequestRejectedEvent(
+        HttpRequest request,
+        StatusCategory nfStatus,
+        HttpResponseStatus httpStatus,
+        String reason,
+        @Nullable String reasonMessage) {
 
     public RequestRejectedEvent(
             HttpRequest request, StatusCategory nfStatus, HttpResponseStatus httpStatus, String reason) {
-        this.request = request;
-        this.nfStatus = nfStatus;
-        this.httpStatus = httpStatus;
-        this.reason = reason;
+        this(request, nfStatus, httpStatus, reason, null);
     }
 
-    public HttpRequest request() {
-        return request;
-    }
+    // leaving behind old getters for backwards compatibility
 
     public StatusCategory getNfStatus() {
         return nfStatus;
