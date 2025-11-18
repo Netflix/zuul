@@ -82,5 +82,5 @@ public class CommonChannelConfigKeys {
     public static final ChannelConfigKey<Integer> http2EncoderMaxResetFrames =
             new ChannelConfigKey<>("http2EncoderMaxResetFrames", 200);
     public static final ChannelConfigKey<Integer> http2EncoderMaxResetFramesWindow =
-            new ChannelConfigKey<>("http2EncoderMaxResetFrames", 30);
+            new ChannelConfigKey<>("http2EncoderMaxResetFramesWindow", 30);
 }
