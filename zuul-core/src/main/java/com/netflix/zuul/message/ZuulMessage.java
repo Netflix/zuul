@@ -145,7 +145,7 @@ public interface ZuulMessage extends Cloneable {
     ZuulMessage clone();
 
     /**
-     * Returns a string that reprsents this message which is suitable for debugging.
+     * Returns a string that represents this message which is suitable for debugging.
      */
     String getInfoForLogging();
 }

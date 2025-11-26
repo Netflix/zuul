@@ -252,7 +252,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         NettyOrigin origin = null;
-        // allow implementors to override the origin with custom injection logic
+        // allow implementers to override the origin with custom injection logic
         OriginName overrideOriginName = injectCustomOriginName(request);
         if (overrideOriginName != null) {
             // Use the custom vip instead if one has been provided.

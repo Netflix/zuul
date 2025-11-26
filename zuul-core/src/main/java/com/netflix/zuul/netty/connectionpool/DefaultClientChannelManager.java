@@ -263,7 +263,7 @@ public class DefaultClientChannelManager implements ClientChannelManager {
         if (pool != null) {
             return pool.remove(conn);
         } else {
-            // The pool for this server no longer exists (maybe due to it failling out of
+            // The pool for this server no longer exists (maybe due to it failing out of
             // discovery).
             conn.setInPool(false);
             metrics.connsInPool().decrementAndGet();
