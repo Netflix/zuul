@@ -279,14 +279,14 @@ public class Server {
         LOG.info("Proxy listening with {}", serverGroup.channelType);
         serverBootstrap.channel(serverGroup.channelType);
 
-        serverBootstrap.option(ChannelOption.SO_BACKLOG, 128);
+        serverBootstrap.option(ChannelOption.SO_BACKLOG, eventLoopConfig.getBacklogSize());
         serverBootstrap.childOption(ChannelOption.SO_LINGER, -1);
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
         // Apply transport specific socket options.
         for (Map.Entry<ChannelOption<?>, ?> optionEntry : serverGroup.transportChannelOptions.entrySet()) {
-            serverBootstrap = serverBootstrap.option((ChannelOption) optionEntry.getKey(), optionEntry.getValue());
+            applyServerOption(serverBootstrap, optionEntry.getKey(), optionEntry.getValue());
         }
 
         serverBootstrap.handler(new NewConnHandler());
@@ -340,12 +340,7 @@ public class Server {
             this.acceptorThreads = acceptorThreads;
             this.workerThreads = workerThreads;
 
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    LOG.error("Uncaught throwable", e);
-                }
-            });
+            Thread.setDefaultUncaughtExceptionHandler((t, e) -> LOG.error("Uncaught throwable", e));
         }
 
         private void initializeTransport() {
@@ -455,6 +450,11 @@ public class Server {
                     portToInitializer.getValue());
         }
         return Collections.unmodifiableMap(addrsToInitializers);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void applyServerOption(ServerBootstrap bootstrap, ChannelOption<T> key, Object value) {
+        bootstrap.option(key, (T) value);
     }
 
     private static boolean epollIsAvailable() {

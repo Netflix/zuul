@@ -29,6 +29,7 @@ import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import java.io.OutputStream;
@@ -93,6 +94,11 @@ class ServerTest {
             public int acceptorCount() {
                 return 1;
             }
+
+            @Override
+            public int getBacklogSize() {
+                return 1024;
+            }
         };
         Server s = new Server(new NoopRegistry(), ssm, initializers, ccs, elgm, elc);
         s.start();
@@ -107,6 +113,11 @@ class ServerTest {
         }
 
         await().atMost(1, TimeUnit.SECONDS).until(() -> nioChannels.size() == 2);
+
+        nioChannels.stream()
+                .map(NioSocketChannel::parent)
+                .map(ServerSocketChannel::config)
+                .forEach(config -> assertThat(config.getBacklog()).isEqualTo(elc.getBacklogSize()));
 
         s.stop();
 
