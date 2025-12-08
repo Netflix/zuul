@@ -23,6 +23,7 @@ import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Counter;
 import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.spectator.api.patterns.PolledMeter;
@@ -71,6 +72,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
@@ -123,6 +125,7 @@ public class Server {
     private final Map<NamedSocketAddress, Channel> addressesToChannels = new LinkedHashMap<>();
 
     private final EventLoopConfig eventLoopConfig;
+    private final Map<Integer, Counter> acceptCountersByPort = new ConcurrentHashMap<>();
 
     /**
      * This is a hack to expose the channel type to the origin channel.  It is NOT API stable and should not be
@@ -181,13 +184,14 @@ public class Server {
             ClientConnectionsShutdown clientConnectionsShutdown,
             EventLoopGroupMetrics eventLoopGroupMetrics,
             EventLoopConfig eventLoopConfig) {
-        this.registry = Objects.requireNonNull(registry);
-        this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
-        this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
-        this.clientConnectionsShutdown =
-                Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
-        this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
+        this(
+                registry,
+                serverStatusManager,
+                addressesToInitializers,
+                clientConnectionsShutdown,
+                eventLoopGroupMetrics,
+                eventLoopConfig,
+                null);
     }
 
     public Server(
@@ -204,7 +208,8 @@ public class Server {
         this.clientConnectionsShutdown =
                 Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.jvmShutdownHook = jvmShutdownHook;
+        this.jvmShutdownHook =
+                jvmShutdownHook != null ? jvmShutdownHook : new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
 
     public void stop() {
@@ -431,6 +436,15 @@ public class Server {
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             Long now = System.nanoTime();
             Channel child = (Channel) msg;
+
+            int localPort = child.localAddress() instanceof InetSocketAddress localAddr ? localAddr.getPort() : -1;
+            acceptCountersByPort
+                    .computeIfAbsent(
+                            localPort,
+                            p -> registry.counter(
+                                    registry.createId("zuul.conn.acceptor.accepts", "port", String.valueOf(p))))
+                    .increment();
+
             child.attr(CONN_DIMENSIONS).set(Attrs.newInstance());
             ConnTimer timer = ConnTimer.install(child, registry, registry.createId("zuul.conn.client.timing"));
             timer.record(now, "ACCEPT");
