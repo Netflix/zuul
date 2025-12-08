@@ -24,7 +24,10 @@ import static org.mockito.Mockito.mock;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.status.ServerStatusManager;
+import com.netflix.spectator.api.Counter;
+import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.NoopRegistry;
+import com.netflix.spectator.api.Registry;
 import com.netflix.spectator.api.Spectator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -126,6 +129,54 @@ class ServerTest {
         for (NioSocketChannel ch : nioChannels) {
             assertThat(ch.isShutdown()).as("isShutdown").isTrue();
         }
+    }
+
+    @Test
+    void acceptorMetricsAreRegistered() throws Exception {
+        Registry registry = new DefaultRegistry();
+        ServerStatusManager ssm = mock(ServerStatusManager.class);
+        Map<NamedSocketAddress, ChannelInitializer<?>> initializers = new HashMap<>();
+        ChannelInitializer<Channel> init = new ChannelInitializer<>() {
+            @Override
+            protected void initChannel(Channel ch) {}
+        };
+        initializers.put(new NamedSocketAddress("test", new InetSocketAddress(0)), init);
+
+        ClientConnectionsShutdown ccs = new ClientConnectionsShutdown(
+                new DefaultChannelGroup(GlobalEventExecutor.INSTANCE), GlobalEventExecutor.INSTANCE, null);
+        EventLoopGroupMetrics elgm = new EventLoopGroupMetrics(Spectator.globalRegistry());
+        EventLoopConfig elc = new EventLoopConfig() {
+            @Override
+            public int eventLoopCount() {
+                return 1;
+            }
+
+            @Override
+            public int acceptorCount() {
+                return 1;
+            }
+
+            @Override
+            public int getBacklogSize() {
+                return 1024;
+            }
+        };
+
+        Server s = new Server(registry, ssm, initializers, ccs, elgm, elc);
+        s.start();
+
+        List<NamedSocketAddress> addrs = s.getListeningAddresses();
+        int port = ((InetSocketAddress) addrs.getFirst().unwrap()).getPort();
+
+        checkConnection(port);
+        checkConnection(port);
+
+        await().atMost(1, TimeUnit.SECONDS).until(() -> {
+            Counter counter = registry.counter("zuul.conn.acceptor.accepts", "port", String.valueOf(port));
+            return counter.count() >= 2;
+        });
+
+        s.stop();
     }
 
     @SuppressWarnings("EmptyCatch")
