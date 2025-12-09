@@ -246,7 +246,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         // lastcontent
                         // of response to the channel, which causes this CompleteEvent to fire before we have cleaned up
                         // state. But
-                        // thats ok, so don't log in that case.
+                        // that's ok, so don't log in that case.
                         if (Objects.equals(zuulRequest.getProtocol(), "HTTP/2")) {
                             LOG.debug(
                                     "Client {} request UUID {} to {} completed with reason = {}, {}",

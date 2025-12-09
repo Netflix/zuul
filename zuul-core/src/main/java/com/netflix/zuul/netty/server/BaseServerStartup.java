@@ -157,7 +157,7 @@ public abstract class BaseServerStartup {
 
     protected void addChannelDependencies(
             ChannelConfig channelDeps,
-            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName may be overriden by subclasse
+            @SuppressWarnings("unused") String listenAddressName) { // listenAddressName may be overridden by subclasse
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);
@@ -185,7 +185,7 @@ public abstract class BaseServerStartup {
 
     protected void addChannelDependencies(
             ChannelConfig channelDeps,
-            @SuppressWarnings("unused") ListenerSpec listenerSpec) { // listenerSpec may be overriden by subclasses
+            @SuppressWarnings("unused") ListenerSpec listenerSpec) { // listenerSpec may be overridden by subclasses
         channelDeps.set(ZuulDependencyKeys.registry, registry);
 
         channelDeps.set(ZuulDependencyKeys.applicationInfoManager, applicationInfoManager);

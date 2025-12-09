@@ -153,7 +153,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
     }
 
     protected boolean shouldAllowPreemptiveResponse(Channel channel) {
-        // If the request timed-out while being read, then there won't have been any LastContent, but thats ok because
+        // If the request timed-out while being read, then there won't have been any LastContent, but that's ok because
         // the connection will have to be discarded anyway.
         StatusCategory status =
                 StatusCategoryUtils.getStatusCategory(ClientRequestReceiver.getRequestFromChannel(channel));
