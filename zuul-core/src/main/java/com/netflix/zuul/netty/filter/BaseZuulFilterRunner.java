@@ -349,6 +349,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         long execTimeNs = System.nanoTime() - startTime;
         long execTimeMs = execTimeNs / 1_000_000L;
         if (execTimeMs >= FILTER_EXCESSIVE_EXEC_TIME.get()) {
+            zuulCtx.setEventProperty("filter_execution_time_exceeded", true);
             registry.timer(filterExcessiveTimerId
                             .withTag("id", filter.filterName())
                             .withTag("status", status.name()))
