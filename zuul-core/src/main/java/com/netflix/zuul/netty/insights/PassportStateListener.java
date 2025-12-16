@@ -21,7 +21,7 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public class PassportStateListener implements GenericFutureListener {
+public class PassportStateListener implements GenericFutureListener<Future<? super Void>> {
     private final CurrentPassport passport;
     private final PassportState successState;
     private final PassportState failState;
