@@ -8,16 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: Publish
     steps:
       - name: Setup Git
         run: |
           git config --global user.name 'Zuul Build'
           git config --global user.email 'zuul-build@netflix.com'
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: 21
