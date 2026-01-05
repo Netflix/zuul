@@ -36,6 +36,8 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
     private final PushConnectionRegistry pushConnectionRegistry;
     private final PushAuthHandler pushAuthHandler;
 
+    private static final int MAX_CONTENT_LENGTH = 65536; // 64KB
+
     public SampleWebSocketPushChannelInitializer(
             String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
@@ -46,7 +48,7 @@ public class SampleWebSocketPushChannelInitializer extends PushChannelInitialize
     @Override
     protected void addPushHandlers(ChannelPipeline pipeline) {
         pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
-        pipeline.addLast(new WebSocketServerCompressionHandler(0));
+        pipeline.addLast(new WebSocketServerCompressionHandler(MAX_CONTENT_LENGTH));
         pipeline.addLast(new WebSocketServerProtocolHandler(PushProtocol.WEBSOCKET.getPath(), null, true));
         pipeline.addLast(new PushRegistrationHandler(pushConnectionRegistry, PushProtocol.WEBSOCKET));
         pipeline.addLast(new SampleWebSocketPushClientProtocolHandler());
