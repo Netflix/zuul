@@ -78,7 +78,7 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         dependencies {
             errorprone "com.uber.nullaway:nullaway:0.12.4"
-            errorprone "com.google.errorprone:error_prone_core:2.36.0"
+            errorprone "com.google.errorprone:error_prone_core:2.45.0"
         }
 
         options.compilerArgs << "-Werror"
