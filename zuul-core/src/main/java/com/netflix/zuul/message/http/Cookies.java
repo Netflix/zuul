@@ -18,9 +18,11 @@ package com.netflix.zuul.message.http;
 
 import io.netty.handler.codec.http.cookie.Cookie;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * User: Mike Smith
@@ -38,6 +40,10 @@ public class Cookies {
 
     public List<Cookie> getAll() {
         return all;
+    }
+
+    public Set<String> getNames() {
+        return Collections.unmodifiableSet(map.keySet());
     }
 
     public List<Cookie> get(String name) {
