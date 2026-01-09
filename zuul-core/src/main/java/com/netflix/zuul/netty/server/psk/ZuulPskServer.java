@@ -166,10 +166,10 @@ public class ZuulPskServer extends AbstractTlsServer {
                     this.context.getSecurityParametersHandshake().getClientRandom());
         } catch (PskCreationFailureException e) {
             throw switch (e.getTlsAlertMessage()) {
-                case unknown_psk_identity -> new TlsFatalAlert(
-                        AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
-                case decrypt_error -> new TlsFatalAlert(
-                        AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
+                case unknown_psk_identity ->
+                    new TlsFatalAlert(AlertDescription.unknown_psk_identity, "Unknown or null client PSk identity");
+                case decrypt_error ->
+                    new TlsFatalAlert(AlertDescription.decrypt_error, "Invalid or expired client PSk identity");
             };
         }
         TlsSecret pskTlsSecret = getCrypto().createSecret(psk);

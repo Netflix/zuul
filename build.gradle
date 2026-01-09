@@ -1,16 +1,17 @@
 buildscript {
     dependencies {
-        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.74.0'
+        classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.83.0'
     }
 }
 
 plugins {
-    id 'com.netflix.nebula.netflixoss' version '11.6.0'
+    id 'com.netflix.nebula.netflixoss' version '13.0.0'
     id "com.google.osdetector" version '1.7.3'
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '7.12.1'
     id 'net.ltgt.errorprone' version '4.1.0'
-    id 'com.diffplug.spotless' version "6.25.0"
+    id 'com.diffplug.spotless' version "8.1.0"
+    id 'idea'
 }
 
 ext.githubProjectName = rootProject.name
