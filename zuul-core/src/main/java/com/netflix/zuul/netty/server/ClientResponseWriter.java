@@ -175,9 +175,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         String inboundProtocol = zuulRequest.getProtocol();
         if (inboundProtocol.startsWith("HTTP/1")) {
             responseHttpVersion = HttpVersion.valueOf(inboundProtocol);
-        } else {
-            // Default to 1.1. We do this to cope with HTTP/2 inbound requests.
+        } else if (inboundProtocol.startsWith("HTTP/2") || inboundProtocol.startsWith("HTTP/3")) {
+            // Default to 1.1. We do this to cope with inbound modern protocols.
             responseHttpVersion = HttpVersion.HTTP_1_1;
+        } else {
+            // Validate the protocol string to prevent downgrade attacks or arbitrary protocol injection.
+            throw new IllegalArgumentException("Unsupported or invalid protocol: " + inboundProtocol);
         }
 
         // Create the main http response to send, with body.
