@@ -135,9 +135,9 @@ public class ServerStartup extends BaseServerStartup {
          * or directly on the internet.
          */
         switch (SERVER_TYPE) {
-                /* The below settings can be used when running behind an ELB HTTP listener that terminates SSL for you
-                 * and passes XFF headers.
-                 */
+            /* The below settings can be used when running behind an ELB HTTP listener that terminates SSL for you
+             * and passes XFF headers.
+             */
             case HTTP:
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
@@ -158,9 +158,9 @@ public class ServerStartup extends BaseServerStartup {
                 logAddrConfigured(sockAddr);
                 break;
 
-                /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
-                 * SSL in Zuul.
-                 */
+            /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
+             * SSL in Zuul.
+             */
             case HTTP2:
                 sslConfig = ServerSslConfig.withDefaultCiphers(
                         loadFromResources("server.cert"), loadFromResources("server.key"), WWW_PROTOCOLS);
@@ -182,12 +182,12 @@ public class ServerStartup extends BaseServerStartup {
                 logAddrConfigured(sockAddr, sslConfig);
                 break;
 
-                /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
-                 * SSL in Zuul.
-                 *
-                 * Can be tested using certs in resources directory:
-                 *  curl https://localhost:7001/test -vk --cert src/main/resources/ssl/client.cert:zuul123 --key src/main/resources/ssl/client.key
-                 */
+            /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
+             * SSL in Zuul.
+             *
+             * Can be tested using certs in resources directory:
+             *  curl https://localhost:7001/test -vk --cert src/main/resources/ssl/client.cert:zuul123 --key src/main/resources/ssl/client.key
+             */
             case HTTP_MUTUAL_TLS:
                 sslConfig = new ServerSslConfig(
                         WWW_PROTOCOLS,
@@ -216,8 +216,8 @@ public class ServerStartup extends BaseServerStartup {
                 logAddrConfigured(sockAddr, sslConfig);
                 break;
 
-                /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
-                 * server using WebSockets */
+            /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
+             * server using WebSockets */
             case WEBSOCKET:
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
@@ -240,8 +240,8 @@ public class ServerStartup extends BaseServerStartup {
                 logAddrConfigured(pushSockAddr);
                 break;
 
-                /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
-                 * server using Server Sent Events (SSE) */
+            /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
+             * server using Server Sent Events (SSE) */
             case SSE:
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
