@@ -68,6 +68,7 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -75,6 +76,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.net.ssl.SSLException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -437,9 +440,52 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         int queryIndex = path.indexOf('?');
         if (queryIndex > -1) {
-            return path.substring(0, queryIndex);
-        } else {
-            return path;
+            path = path.substring(0, queryIndex);
+        }
+
+        // Normalize the path to prevent path traversal attacks
+        return normalizePath(path);
+    }
+
+    /**
+     * Normalizes a URL path to prevent path traversal attacks.
+     * - Decodes URL-encoded characters (e.g., %2e%2e -> ..)
+     * - Removes . and .. segments using Path normalization
+     * - Prevents escaping the root directory
+     * - Removes trailing slashes for consistency
+     */
+    private String normalizePath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "/";
+        }
+
+        try {
+            // decode twice to handle double-encoded attacks
+            String decodedPath = URLDecoder.decode(path, "UTF-8");
+            decodedPath = URLDecoder.decode(decodedPath, "UTF-8");
+
+            Path nioPath = Paths.get(decodedPath).normalize();
+            String normalizedPath = nioPath.toString();
+
+            normalizedPath = normalizedPath.replace('\\', '/');
+
+            if (!normalizedPath.startsWith("/") && path.startsWith("/")) {
+                normalizedPath = "/" + normalizedPath;
+            }
+
+            if (normalizedPath.length() > 1 && normalizedPath.endsWith("/")) {
+                normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
+            }
+
+            if (normalizedPath.isEmpty()) {
+                return path.startsWith("/") ? "/" : "";
+            }
+
+            return normalizedPath;
+        } catch (Exception e) {
+            LOG.warn("Failed to normalize path: {}", path, e);
+            // Fail secure
+            return path.startsWith("/") ? "/" : path;
         }
     }
 
