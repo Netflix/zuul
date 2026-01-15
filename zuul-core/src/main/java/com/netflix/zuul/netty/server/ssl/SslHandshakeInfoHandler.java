@@ -39,9 +39,13 @@ import io.netty.util.AttributeKey;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.ExtendedSSLSession;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import org.slf4j.Logger;
@@ -116,7 +120,15 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
                             .get();
 
+                    List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
+                    String requestedSni = serverNames.stream()
+                            .filter(sni -> sni instanceof SNIHostName)
+                            .findFirst()
+                            .map(sni -> ((SNIHostName)sni).getAsciiName())
+                            .orElse("none");
+
                     SslHandshakeInfo info = new SslHandshakeInfo(
+                            requestedSni,
                             isSSlFromIntermediary,
                             session.getProtocol(),
                             session.getCipherSuite(),
@@ -141,7 +153,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             CurrentPassport.fromChannel(ctx.channel()).getState();
                     if (cause instanceof ClosedChannelException
                             && (passportState == PassportState.SERVER_CH_INACTIVE
-                                    || passportState == PassportState.SERVER_CH_IDLE_TIMEOUT)) {
+                            || passportState == PassportState.SERVER_CH_IDLE_TIMEOUT)) {
                         // Either client closed the connection without/before having completed a handshake, or
                         // the connection idle timed-out before handshake.
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then
@@ -178,7 +190,30 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                                 logger.debug(msg, cause);
                             }
                         }
-                        incrementCounters(sslEvent, null);
+
+                        SslHandshakeInfo info = null;
+
+                        SSLSession session = getSSLSession(ctx);
+                        if (session != null) {
+                            List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
+                            String requestedSni = serverNames.stream()
+                                    .filter(sni -> sni instanceof SNIHostName)
+                                    .findFirst()
+                                    .map(sni -> ((SNIHostName)sni).getAsciiName())
+                                    .orElse("none");
+
+                            info = new SslHandshakeInfo(
+                                    requestedSni,
+                                    isSSlFromIntermediary,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    false,
+                                    null);
+                        }
+                        incrementCounters(sslEvent, info);
                     }
                 }
             } catch (Throwable e) {
@@ -246,6 +281,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                                 "server.ssl.handshake",
                                 "success",
                                 "true",
+                                "sni",
+                                handshakeInfo.getRequestedSni(),
                                 "protocol",
                                 proto,
                                 "ciphersuite",
@@ -259,6 +296,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                                 "server.ssl.handshake",
                                 "success",
                                 "false",
+                                "sni",
+                                handshakeInfo.getRequestedSni(),
                                 "failure_cause",
                                 getFailureCause(sslHandshakeCompletionEvent.cause()))
                         .increment();
