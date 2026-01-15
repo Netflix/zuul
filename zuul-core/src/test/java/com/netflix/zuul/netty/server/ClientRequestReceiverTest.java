@@ -98,8 +98,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        // Path is now decoded and normalized (%5E becomes ^)
-        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/^1.0.0");
+        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
         channel.close();
     }
@@ -120,8 +119,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        // Path is now decoded and normalized (%5E becomes ^)
-        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/^1.0.0");
+        assertThat(result.getPath()).isEqualTo("/foo/bar/somePath/%5E1.0.0");
 
         channel.close();
     }
