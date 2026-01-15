@@ -460,11 +460,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         try {
-            // decode twice to handle double-encoded attacks
-            String decodedPath = URLDecoder.decode(path, "UTF-8");
-            decodedPath = URLDecoder.decode(decodedPath, "UTF-8");
+            // consider path encoding normalizations
 
-            Path nioPath = Paths.get(decodedPath).normalize();
+            Path nioPath = Paths.get(path).normalize();
             String normalizedPath = nioPath.toString();
 
             normalizedPath = normalizedPath.replace('\\', '/');
