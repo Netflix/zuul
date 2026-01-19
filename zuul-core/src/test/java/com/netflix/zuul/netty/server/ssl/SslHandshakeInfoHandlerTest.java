@@ -48,6 +48,7 @@ import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -57,8 +58,13 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 public class SslHandshakeInfoHandlerTest {
 
+    @BeforeEach
+    public void setup() {
+        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
+    }
+
     @Test
-    void sslEarlyHandshakeFailure() throws Exception {
+    public void sslEarlyHandshakeFailure() throws Exception {
         EmbeddedChannel clientChannel = new EmbeddedChannel();
         SSLEngine clientEngine = SslContextBuilder.forClient().build().newEngine(clientChannel.alloc());
         clientChannel.pipeline().addLast(new SslHandler(clientEngine));
@@ -109,8 +115,6 @@ public class SslHandshakeInfoHandlerTest {
     @Test
     public void handshakeFailureWithSSLException() throws Exception {
         Registry registry = new DefaultRegistry();
-
-        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
 
         // Mock SSL engine and session
         SSLEngine sslEngine = mock(SSLEngine.class);
@@ -222,8 +226,6 @@ public class SslHandshakeInfoHandlerTest {
     @ValueSource(strings = {"www.netflix.com", ""})
     public void handshakeSuccessWithSNI(String sni) throws Exception {
         Registry registry = new DefaultRegistry();
-
-        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
 
         // Create handler
         SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
