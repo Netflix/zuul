@@ -69,7 +69,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     // see https://github.com/google/boringssl/blob/d206f3db6ac2b74e8949ddd9947b94a5424d6a1d/include/openssl/err.h#L231
     private static final Pattern OPEN_SSL_PATTERN = Pattern.compile("OPENSSL_internal:(.+)");
 
-    private static DynamicBooleanProperty SNI_LOGGING_ENABLED =
+    static DynamicBooleanProperty SNI_LOGGING_ENABLED =
             new DynamicBooleanProperty("zuul.ssl.handshake.snilogging.enabled", false);
 
     private final Registry spectatorRegistry;
@@ -179,7 +179,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                                 ChannelUtils.channelInfoForLogging(ctx.channel()));
                     } else if (cause instanceof SSLException
                             && cause.getMessage().contains("failure when writing TLS control frames")) {
-                        // This can happen if the ClientHello is sent followed  by a RST packet, before we can respond.
+                        // This can happen if the ClientHello is sent followed by an RST packet, before we can respond.
                         logger.debug(
                                 "Client terminated handshake early., client_ip = {}, channel_info = {}",
                                 clientIP,

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.spectator.api.Counter;
@@ -60,7 +61,7 @@ public class SslHandshakeInfoHandlerTest {
 
     @BeforeEach
     public void setup() {
-        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
+        SslHandshakeInfoHandler.SNI_LOGGING_ENABLED = new DynamicBooleanProperty("zuul.ssl.handshake.snilogging.enabled", true);
     }
 
     @Test
