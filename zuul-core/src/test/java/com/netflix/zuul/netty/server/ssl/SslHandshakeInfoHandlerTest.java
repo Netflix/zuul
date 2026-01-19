@@ -110,6 +110,8 @@ public class SslHandshakeInfoHandlerTest {
     public void handshakeFailureWithSSLException() throws Exception {
         Registry registry = new DefaultRegistry();
 
+        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
+
         // Mock SSL engine and session
         SSLEngine sslEngine = mock(SSLEngine.class);
         ExtendedSSLSession sslSession = mock(ExtendedSSLSession.class);
@@ -220,6 +222,8 @@ public class SslHandshakeInfoHandlerTest {
     @ValueSource(strings = {"www.netflix.com", ""})
     public void handshakeSuccessWithSNI(String sni) throws Exception {
         Registry registry = new DefaultRegistry();
+
+        System.setProperty("zuul.ssl.handshake.snilogging.enabled", "true");
 
         // Create handler
         SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);

@@ -18,10 +18,12 @@ package com.netflix.zuul.netty.server.ssl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
+import com.netflix.spectator.api.Tag;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.netty.server.psk.ClientPSKIdentityInfo;
 import com.netflix.zuul.netty.server.psk.TlsPskHandler;
@@ -39,6 +41,7 @@ import io.netty.util.AttributeKey;
 import java.nio.channels.ClosedChannelException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -65,6 +68,9 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     // error:[error code]:[library name]:OPENSSL_internal:[reason string]
     // see https://github.com/google/boringssl/blob/d206f3db6ac2b74e8949ddd9947b94a5424d6a1d/include/openssl/err.h#L231
     private static final Pattern OPEN_SSL_PATTERN = Pattern.compile("OPENSSL_internal:(.+)");
+
+    private static DynamicBooleanProperty SNI_LOGGING_ENABLED =
+            new DynamicBooleanProperty("zuul.ssl.handshake.snilogging.enabled", false);
 
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
@@ -272,36 +278,28 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     private void incrementCounters(
             SslHandshakeCompletionEvent sslHandshakeCompletionEvent, SslHandshakeInfo handshakeInfo) {
         try {
+            List<Tag> tagList = new ArrayList<>();
             if (sslHandshakeCompletionEvent.isSuccess()) {
-                String proto = handshakeInfo.getProtocol().length() > 0 ? handshakeInfo.getProtocol() : "unknown";
-                String ciphsuite =
-                        handshakeInfo.getCipherSuite().length() > 0 ? handshakeInfo.getCipherSuite() : "unknown";
-                spectatorRegistry
-                        .counter(
-                                "server.ssl.handshake",
-                                "success",
-                                "true",
-                                "sni",
-                                handshakeInfo.getRequestedSni(),
-                                "protocol",
-                                proto,
-                                "ciphersuite",
-                                ciphsuite,
-                                "clientauth",
-                                String.valueOf(handshakeInfo.getClientAuthRequirement()))
-                        .increment();
+                tagList.add(Tag.of("protocol",
+                        handshakeInfo.getProtocol().isEmpty() ? "unknown" : handshakeInfo.getProtocol()));
+                tagList.add(Tag.of("ciphersuite",
+                        handshakeInfo.getCipherSuite().isEmpty() ? "unknown" : handshakeInfo.getCipherSuite()));
+                tagList.add(Tag.of("clientauth",
+                        String.valueOf(handshakeInfo.getClientAuthRequirement())));
+
             } else {
-                spectatorRegistry
-                        .counter(
-                                "server.ssl.handshake",
-                                "success",
-                                "false",
-                                "sni",
-                                handshakeInfo.getRequestedSni(),
-                                "failure_cause",
-                                getFailureCause(sslHandshakeCompletionEvent.cause()))
-                        .increment();
+                tagList.add(Tag.of("failure_cause",
+                        getFailureCause(sslHandshakeCompletionEvent.cause())));
             }
+
+            tagList.add(Tag.of("success", String.valueOf(sslHandshakeCompletionEvent.isSuccess())));
+            if (SNI_LOGGING_ENABLED.get()) {
+                tagList.add(Tag.of("sni",
+                        handshakeInfo.getRequestedSni()));
+            }
+            spectatorRegistry
+                    .counter(
+                            "server.ssl.handshake", tagList).increment();
         } catch (Exception e) {
             logger.error("Error incrementing counters for SSL handshake!", e);
         }
