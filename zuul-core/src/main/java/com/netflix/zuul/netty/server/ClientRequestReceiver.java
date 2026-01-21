@@ -68,6 +68,8 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.List;
@@ -159,6 +161,24 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         ctx,
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
                         "decodefailure",
+                        clientRequest,
+                        /* injectedLatencyMillis= */ null);
+                return;
+            } else if (zuulRequest.getPath().startsWith("/..")) {
+                LOG.warn(
+                        "Invalid http request. clientRequest = {} , uri = {}, info = {}",
+                        clientRequest,
+                        clientRequest.uri(),
+                        ChannelUtils.channelInfoForLogging(ctx.channel()),
+                        clientRequest.decoderResult().cause());
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(),
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "Invalid request provided: invalid path");
+                RejectionUtils.rejectByClosingConnection(
+                        ctx,
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "invalidPath",
                         clientRequest,
                         /* injectedLatencyMillis= */ null);
                 return;
@@ -415,6 +435,15 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private String parsePath(String uri) {
         String path;
+        try {
+            URI uriObject = new URI(uri);
+            uriObject = uriObject.normalize();
+            path =  uriObject.getRawPath();
+            return path;
+        } catch (URISyntaxException e) {
+            LOG.debug("URI syntax error: " + e.getMessage());
+        }
+        // manual path parsing
         // relative uri
         if (uri.startsWith("/")) {
             path = uri;
@@ -442,45 +471,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         if (queryIndex > -1) {
             path = path.substring(0, queryIndex);
         }
-
-        // Normalize the path to prevent path traversal attacks
-        return normalizePath(path);
-    }
-
-    /**
-     * Normalizes a URL path to prevent path traversal attacks.
-     * - Decodes URL-encoded characters (e.g., %2e%2e -> ..)
-     * - Removes . and .. segments using Path normalization
-     * - Prevents escaping the root directory
-     * - Removes trailing slashes for consistency
-     */
-    private String normalizePath(String path) {
-        if (path == null || path.isEmpty()) {
-            return "/";
-        }
-
-        try {
-            // consider path encoding normalizations
-
-            Path nioPath = Paths.get(path).normalize();
-            String normalizedPath = nioPath.toString();
-
-            normalizedPath = normalizedPath.replace('\\', '/');
-
-            if (!normalizedPath.startsWith("/") && path.startsWith("/")) {
-                normalizedPath = "/" + normalizedPath;
-            }
-
-            if (normalizedPath.length() > 1 && normalizedPath.endsWith("/")) {
-                normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
-            }
-
-            return normalizedPath;
-        } catch (Exception e) {
-            LOG.warn("Failed to normalize path: {}", path, e);
-            // Fail secure
-            return path.startsWith("/") ? "/" : path;
-        }
+        return path;
     }
 
     private static Headers copyHeaders(HttpRequest req) {

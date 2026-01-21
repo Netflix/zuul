@@ -434,7 +434,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/admin");
+        assertThat(result.getPath()).isEqualTo("/admin/");
         channel.close();
     }
 
@@ -450,7 +450,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/a/d");
+        assertThat(result.getPath()).isEqualTo("/a/d/");
         channel.close();
     }
 
@@ -466,7 +466,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/foo/bar");
+        assertThat(result.getPath()).isEqualTo("/foo/bar/");
         channel.close();
     }
 
@@ -482,24 +482,27 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/foo/bar/baz");
+        assertThat(result.getPath()).isEqualTo("/bar/baz");
         channel.close();
     }
 
     @Test
     void pathTraversal_escapeRoot() {
-        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(receiver);
+        // Required for messages
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        HttpRequestMessageImpl result;
-        {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
-            result = channel.readInbound();
-            result.disposeBufferedBody();
-        }
 
-        assertThat(result.getPath()).isEqualTo("/etc/passwd");
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
+        channel.readInbound();
         channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        assertThat(StatusCategoryUtils.getStatusCategory(request.getContext()))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(request.getContext()))
+                .isEqualTo("Invalid request provided: invalid path");
     }
 
     @Test
@@ -514,7 +517,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/foo/baz");
+        assertThat(result.getPath()).isEqualTo("/foo/baz/");
         channel.close();
     }
 
@@ -530,7 +533,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/admin");
+        assertThat(result.getPath()).isEqualTo("/admin/");
         assertThat(result.getQueryParams().getFirst("param")).isEqualTo("value");
         channel.close();
     }
@@ -547,7 +550,7 @@ class ClientRequestReceiverTest {
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("/");
+        assertThat(result.getPath()).isEqualTo("");
         channel.close();
     }
 
