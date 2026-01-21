@@ -475,10 +475,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
             }
 
-            if (normalizedPath.isEmpty()) {
-                return path.startsWith("/") ? "/" : "";
-            }
-
             return normalizedPath;
         } catch (Exception e) {
             LOG.warn("Failed to normalize path: {}", path, e);
