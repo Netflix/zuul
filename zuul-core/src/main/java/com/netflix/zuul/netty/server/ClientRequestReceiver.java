@@ -68,6 +68,9 @@ import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -75,6 +78,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.net.ssl.SSLException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -412,6 +417,18 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private String parsePath(String uri) {
         String path;
+        try {
+            URI uriObject = new URI(uri);
+            uriObject = uriObject.normalize();
+            path =  uriObject.getRawPath();
+            while (path.startsWith("/..")) {
+                path = path.substring(3);
+            }
+            return path;
+        } catch (URISyntaxException ex) {
+            LOG.debug("URI syntax error: {}", ex);
+        }
+        // manual path parsing
         // relative uri
         if (uri.startsWith("/")) {
             path = uri;
@@ -437,10 +454,13 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
         int queryIndex = path.indexOf('?');
         if (queryIndex > -1) {
-            return path.substring(0, queryIndex);
-        } else {
-            return path;
+            path = path.substring(0, queryIndex);
         }
+
+        while (path.startsWith("/..")) {
+            path = path.substring(3);
+        }
+        return path;
     }
 
     private static Headers copyHeaders(HttpRequest req) {
