@@ -502,7 +502,7 @@ class ClientRequestReceiverTest {
         assertThat(StatusCategoryUtils.getStatusCategory(request.getContext()))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
         assertThat(StatusCategoryUtils.getStatusCategoryReason(request.getContext()))
-                .isEqualTo("Invalid request provided: invalid path");
+                .isEqualTo("Invalid request provided: Invalid Path");
     }
 
     @Test
