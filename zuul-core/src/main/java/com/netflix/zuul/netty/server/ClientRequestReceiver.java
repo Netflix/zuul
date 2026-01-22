@@ -165,23 +165,20 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         /* injectedLatencyMillis= */ null);
                 return;
             } else if (zuulRequest.getPath().startsWith("/..")) {
-                LOG.warn(
+                LOG.debug(
                         "Invalid http request. clientRequest = {} , uri = {}, info = {}",
                         clientRequest,
                         clientRequest.uri(),
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
+                ZuulException ze = new ZuulException("Invalid Path");
+                ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
                 StatusCategoryUtils.setStatusCategory(
                         zuulRequest.getContext(),
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                        "Invalid request provided: invalid path");
-                RejectionUtils.rejectByClosingConnection(
-                        ctx,
-                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                        "invalidPath",
-                        clientRequest,
-                        /* injectedLatencyMillis= */ null);
-                return;
+                        "Invalid request provided: Invalid Path");
+                zuulRequest.getContext().setError(ze);
+                zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
                         + "clientRequest = " + clientRequest.toString()
@@ -440,8 +437,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             uriObject = uriObject.normalize();
             path =  uriObject.getRawPath();
             return path;
-        } catch (URISyntaxException e) {
-            LOG.debug("URI syntax error: " + e.getMessage());
+        } catch (URISyntaxException ex) {
+            LOG.debug("URI syntax error: {}", ex);
         }
         // manual path parsing
         // relative uri
