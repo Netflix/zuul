@@ -488,21 +488,19 @@ class ClientRequestReceiverTest {
 
     @Test
     void pathTraversal_escapeRoot() {
-        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
-        EmbeddedChannel channel = new EmbeddedChannel(receiver);
-        // Required for messages
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
 
-        channel.writeInbound(new DefaultFullHttpRequest(
-                HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
-        channel.readInbound();
-        channel.close();
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(
+                    HttpVersion.HTTP_1_1, HttpMethod.GET, "/../../../etc/passwd", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
 
-        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
-        assertThat(StatusCategoryUtils.getStatusCategory(request.getContext()))
-                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-        assertThat(StatusCategoryUtils.getStatusCategoryReason(request.getContext()))
-                .isEqualTo("Invalid request provided: Invalid Path");
+        assertThat(result.getPath()).isEqualTo("/etc/passwd");
+        channel.close();
     }
 
     @Test

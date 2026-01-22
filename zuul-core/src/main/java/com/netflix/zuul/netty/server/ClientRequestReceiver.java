@@ -164,21 +164,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         clientRequest,
                         /* injectedLatencyMillis= */ null);
                 return;
-            } else if (zuulRequest.getPath().startsWith("/..")) {
-                LOG.debug(
-                        "Invalid http request. clientRequest = {} , uri = {}, info = {}",
-                        clientRequest,
-                        clientRequest.uri(),
-                        ChannelUtils.channelInfoForLogging(ctx.channel()),
-                        clientRequest.decoderResult().cause());
-                ZuulException ze = new ZuulException("Invalid Path");
-                ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-                StatusCategoryUtils.setStatusCategory(
-                        zuulRequest.getContext(),
-                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                        "Invalid request provided: Invalid Path");
-                zuulRequest.getContext().setError(ze);
-                zuulRequest.getContext().setShouldSendErrorResponse(true);
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
                         + "clientRequest = " + clientRequest.toString()
@@ -436,6 +421,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             URI uriObject = new URI(uri);
             uriObject = uriObject.normalize();
             path =  uriObject.getRawPath();
+            while (path.startsWith("/..")) {
+                path = path.substring(3);
+            }
             return path;
         } catch (URISyntaxException ex) {
             LOG.debug("URI syntax error: {}", ex);
@@ -467,6 +455,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         int queryIndex = path.indexOf('?');
         if (queryIndex > -1) {
             path = path.substring(0, queryIndex);
+        }
+
+        while (path.startsWith("/..")) {
+            path = path.substring(3);
         }
         return path;
     }
