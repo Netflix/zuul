@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
  */
 public class SslHandshakeInfo {
 
+    private final String requestedSni;
     private final String protocol;
     private final String cipherSuite;
     private final ClientAuth clientAuthRequirement;
@@ -37,12 +38,14 @@ public class SslHandshakeInfo {
 
     // for backward compatibility
     public SslHandshakeInfo(
+            String requestedSni,
             boolean isOfIntermediary,
             String protocol,
             String cipherSuite,
             ClientAuth clientAuthRequirement,
             Certificate serverCertificate,
             X509Certificate clientCertificate) {
+        this.requestedSni = requestedSni;
         this.protocol = protocol;
         this.cipherSuite = cipherSuite;
         this.clientAuthRequirement = clientAuthRequirement;
@@ -54,6 +57,7 @@ public class SslHandshakeInfo {
     }
 
     public SslHandshakeInfo(
+            String requestedSni,
             boolean isOfIntermediary,
             String protocol,
             String cipherSuite,
@@ -62,6 +66,7 @@ public class SslHandshakeInfo {
             X509Certificate clientCertificate,
             boolean usingExternalPSK,
             ClientPSKIdentityInfo clientPSKIdentityInfo) {
+        this.requestedSni = requestedSni;
         this.protocol = protocol;
         this.cipherSuite = cipherSuite;
         this.clientAuthRequirement = clientAuthRequirement;
@@ -70,6 +75,10 @@ public class SslHandshakeInfo {
         this.isOfIntermediary = isOfIntermediary;
         this.usingExternalPSK = usingExternalPSK;
         this.clientPSKIdentityInfo = clientPSKIdentityInfo;
+    }
+
+    public String getRequestedSni() {
+        return requestedSni;
     }
 
     public boolean isOfIntermediary() {
