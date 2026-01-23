@@ -846,4 +846,51 @@ class HttpRequestMessageImplTest {
         assertThat(kCookies.get(0).value()).isEqualTo("v1");
         assertThat(kCookies.get(1).value()).isEqualTo("v2");
     }
+
+    @Test
+    public void testGetDecodedPath() {
+        Headers headers = new Headers();
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/%C3%B1",
+                new HttpQueryParams(),
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost");
+        assertThat(request.getPath()).isEqualTo("/%C3%B1");
+        assertThat(request.getDecodedPath()).isEqualTo("/ñ");
+
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/ñ",
+                new HttpQueryParams(),
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost");
+        assertThat(request.getPath()).isEqualTo("/ñ");
+        assertThat(request.getDecodedPath()).isEqualTo("/ñ");
+
+        request = new HttpRequestMessageImpl(
+                new SessionContext(),
+                "HTTP/1.1",
+                "POST",
+                "/path",
+                new HttpQueryParams(),
+                headers,
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost");
+        assertThat(request.getPath()).isEqualTo("/path");
+        assertThat(request.getDecodedPath()).isEqualTo("/path");
+
+    }
 }

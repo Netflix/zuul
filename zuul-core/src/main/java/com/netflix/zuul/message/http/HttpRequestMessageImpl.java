@@ -290,6 +290,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
         return path;
     }
 
+    public String getDecodedPath() {
+        return decodedPath;
+    }
+
     @Override
     public void setPath(String path) {
         immutableCheck();
