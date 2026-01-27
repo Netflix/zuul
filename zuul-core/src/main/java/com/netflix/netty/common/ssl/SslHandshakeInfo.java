@@ -36,7 +36,16 @@ public class SslHandshakeInfo {
     private final boolean usingExternalPSK;
     private final ClientPSKIdentityInfo clientPSKIdentityInfo;
 
-    // for backward compatibility
+    public SslHandshakeInfo(
+            boolean isOfIntermediary,
+            String protocol,
+            String cipherSuite,
+            ClientAuth clientAuthRequirement,
+            Certificate serverCertificate,
+            X509Certificate clientCertificate) {
+        this("", isOfIntermediary, protocol, cipherSuite, clientAuthRequirement, serverCertificate, clientCertificate);
+    }
+
     public SslHandshakeInfo(
             String requestedSni,
             boolean isOfIntermediary,
@@ -45,15 +54,19 @@ public class SslHandshakeInfo {
             ClientAuth clientAuthRequirement,
             Certificate serverCertificate,
             X509Certificate clientCertificate) {
-        this.requestedSni = requestedSni;
-        this.protocol = protocol;
-        this.cipherSuite = cipherSuite;
-        this.clientAuthRequirement = clientAuthRequirement;
-        this.serverCertificate = serverCertificate;
-        this.clientCertificate = clientCertificate;
-        this.isOfIntermediary = isOfIntermediary;
-        this.usingExternalPSK = false;
-        this.clientPSKIdentityInfo = null;
+        this(requestedSni, isOfIntermediary, protocol, cipherSuite, clientAuthRequirement, serverCertificate, clientCertificate, false, null);
+    }
+
+    public SslHandshakeInfo(
+            boolean isOfIntermediary,
+            String protocol,
+            String cipherSuite,
+            ClientAuth clientAuthRequirement,
+            Certificate serverCertificate,
+            X509Certificate clientCertificate,
+            boolean usingExternalPSK,
+            ClientPSKIdentityInfo clientPSKIdentityInfo) {
+        this("", isOfIntermediary, protocol, cipherSuite, clientAuthRequirement, serverCertificate, clientCertificate, usingExternalPSK, clientPSKIdentityInfo);
     }
 
     public SslHandshakeInfo(
