@@ -127,14 +127,20 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             .get();
 
                     String requestedSni = "none";
-                    List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
-                    if (serverNames != null) {
-                        requestedSni = serverNames.stream()
-                                .filter(sni -> sni instanceof SNIHostName)
-                                .findFirst()
-                                .map(sni -> ((SNIHostName)sni).getAsciiName())
-                                .orElse("none");
+                    try{
+                        List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
+                        if (serverNames != null) {
+                            requestedSni = serverNames.stream()
+                                    .filter(sni -> sni instanceof SNIHostName)
+                                    .findFirst()
+                                    .map(sni -> ((SNIHostName)sni).getAsciiName())
+                                    .orElse("none");
+                        }
                     }
+                    catch (Exception e) {
+                        logger.warn("Error getting the request server names.", e);
+                    }
+
                     SslHandshakeInfo info = new SslHandshakeInfo(
                             requestedSni,
                             isSSlFromIntermediary,
