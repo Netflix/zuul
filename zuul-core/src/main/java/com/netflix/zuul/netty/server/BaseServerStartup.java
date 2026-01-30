@@ -320,6 +320,20 @@ public abstract class BaseServerStartup {
                 CommonChannelConfigKeys.maxHttp2HeaderListSize,
                 chooseIntChannelProperty(listenAddressName, "http2.maxheaderlistsize", 32768)));
 
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.http2EncoderMaxResetFrames,
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "http2.maxResetFrames",
+                        CommonChannelConfigKeys.http2EncoderMaxResetFrames.defaultValue())));
+
+        config.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.http2EncoderMaxResetFramesWindow,
+                chooseIntChannelProperty(
+                        listenAddressName,
+                        "http2.maxResetFramesWindow",
+                        CommonChannelConfigKeys.http2EncoderMaxResetFramesWindow.defaultValue())));
+
         // Override this to a lower value, as we'll be using ELB TCP listeners for h2, and therefore the connection
         // is direct from each device rather than shared in an ELB pool.
         config.add(new ChannelConfigValue<>(
