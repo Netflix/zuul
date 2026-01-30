@@ -126,13 +126,15 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
                             .get();
 
+                    String requestedSni = "none";
                     List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
-                    String requestedSni = serverNames.stream()
-                            .filter(sni -> sni instanceof SNIHostName)
-                            .findFirst()
-                            .map(sni -> ((SNIHostName)sni).getAsciiName())
-                            .orElse("none");
-
+                    if (serverNames != null) {
+                        requestedSni = serverNames.stream()
+                                .filter(sni -> sni instanceof SNIHostName)
+                                .findFirst()
+                                .map(sni -> ((SNIHostName)sni).getAsciiName())
+                                .orElse("none");
+                    }
                     SslHandshakeInfo info = new SslHandshakeInfo(
                             requestedSni,
                             isSSlFromIntermediary,
