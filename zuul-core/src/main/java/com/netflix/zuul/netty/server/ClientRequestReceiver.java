@@ -420,7 +420,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         try {
             URI uriObject = new URI(uri);
             uriObject = uriObject.normalize();
-            path =  uriObject.getRawPath();
+            path = uriObject.getRawPath();
+            if (path == null) {
+                // If we have an opaque URI, match existing behavior of using the URI as the path.
+                return uri;
+            }
             while (path.startsWith("/..")) {
                 path = path.substring(3);
             }

@@ -537,6 +537,22 @@ class ClientRequestReceiverTest {
     }
 
     @Test
+    void pathTraversal_withOpaqueURI() {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        HttpRequestMessageImpl result;
+        {
+            channel.writeInbound(new DefaultFullHttpRequest(
+                    HttpVersion.HTTP_1_1, HttpMethod.GET, "foo.netflix.net:443", Unpooled.buffer()));
+            result = channel.readInbound();
+            result.disposeBufferedBody();
+        }
+
+        assertThat(result.getPath()).isEqualTo("foo.netflix.net:443");
+        channel.close();
+    }
+
+    @Test
     void pathNormalization_emptyPath() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
