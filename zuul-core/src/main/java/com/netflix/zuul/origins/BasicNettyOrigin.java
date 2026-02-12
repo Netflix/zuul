@@ -71,7 +71,7 @@ public class BasicNettyOrigin implements NettyOrigin {
         this.originName = Objects.requireNonNull(originName, "originName");
         this.registry = registry;
         this.config = setupClientConfig(originName);
-        this.clientChannelManager = new DefaultClientChannelManager(originName, config, registry);
+        this.clientChannelManager = createClientChannelManager(originName, config, registry);
         this.clientChannelManager.init();
         this.requestAttemptFactory = new NettyRequestAttemptFactory();
 
@@ -92,6 +92,20 @@ public class BasicNettyOrigin implements NettyOrigin {
         niwsClientConfig.set(CommonClientConfigKey.ClientClassName, originName.getNiwsClientName());
         niwsClientConfig.loadProperties(originName.getNiwsClientName());
         return niwsClientConfig;
+    }
+
+    /**
+     * Factory method to create the ClientChannelManager.
+     * Override this method in subclasses to provide a custom ClientChannelManager implementation.
+     *
+     * @param originName the origin name
+     * @param config the client configuration
+     * @param registry the Spectator registry
+     * @return a ClientChannelManager instance
+     */
+    protected ClientChannelManager createClientChannelManager(
+            OriginName originName, IClientConfig config, Registry registry) {
+        return new DefaultClientChannelManager(originName, config, registry);
     }
 
     @Override
