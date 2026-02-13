@@ -29,6 +29,7 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
+import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import io.netty.channel.ChannelHandlerContext;
@@ -141,6 +142,54 @@ public class BaseZuulFilterRunnerTest {
                 .until(() -> errorCapturingHandler.error.get() != null);
     }
 
+    @Test
+    public void endpointFilterNeverSkipped() {
+        EndpointFilter filter = new EndpointFilter(false);
+        message.getContext().stopFilterProcessing();
+        message.getContext().cancel();
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
+    @Test
+    public void stopFilterProcessingSkipsFilter() {
+        InboundFilter filter = new InboundFilter(true);
+        message.getContext().stopFilterProcessing();
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void stopFilterProcessingDoesNotSkipWhenOverridden() {
+        OverrideStopFilter filter = new OverrideStopFilter(true);
+        message.getContext().stopFilterProcessing();
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
+    @Test
+    public void cancelledRequestSkipsFilter() {
+        InboundFilter filter = new InboundFilter(true);
+        message.getContext().cancel();
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void constrainedFilterSkipped() {
+        InboundFilter filter = new InboundFilter(true);
+        runner.constrained = true;
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void shouldFilterFalseSkipsFilter() {
+        InboundFilter filter = new InboundFilter(false);
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void shouldFilterTrueDoesNotSkip() {
+        InboundFilter filter = new InboundFilter(true);
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
     private static class AsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
 
@@ -179,6 +228,8 @@ public class BaseZuulFilterRunnerTest {
 
     private class TestBaseZuulFilterRunner extends BaseZuulFilterRunner<ZuulMessage, ZuulMessage> {
 
+        boolean constrained;
+
         protected TestBaseZuulFilterRunner(
                 FilterType filterType,
                 FilterUsageNotifier usageNotifier,
@@ -197,6 +248,11 @@ public class BaseZuulFilterRunnerTest {
 
         @Override
         public void filter(ZuulMessage zuulMesg, HttpContent chunk) {}
+
+        @Override
+        public boolean isFilterConstrained(ZuulMessage zuulMesg, ZuulFilter<ZuulMessage, ZuulMessage> filter) {
+            return constrained;
+        }
     }
 
     private static class ErrorCapturingHandler extends ChannelInboundHandlerAdapter {
@@ -206,6 +262,71 @@ public class BaseZuulFilterRunnerTest {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             error.set(cause);
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, order = 1)
+    private static class InboundFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        InboundFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
+        }
+    }
+
+    @Filter(type = FilterType.ENDPOINT, order = 1)
+    private static class EndpointFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        EndpointFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, order = 1)
+    private static class OverrideStopFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        OverrideStopFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public boolean overrideStopFilterProcessing() {
+            return true;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
         }
     }
 }
