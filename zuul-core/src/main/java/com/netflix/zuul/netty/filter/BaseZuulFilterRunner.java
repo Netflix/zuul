@@ -84,7 +84,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         this.filterExcessiveTimerId = registry.createId("zuul.request.timing.filterExcessive");
     }
 
-    public static final ChannelHandlerContext getChannelHandlerContext(ZuulMessage mesg) {
+    public static ChannelHandlerContext getChannelHandlerContext(ZuulMessage mesg) {
         return (ChannelHandlerContext) com.google.common.base.Preconditions.checkNotNull(
                 mesg.getContext().get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT),
                 "channel handler context");
@@ -297,10 +297,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         if (zuulCtx.isCancelled()) {
             return true;
         }
-        if (!filter.shouldFilter(inMesg)) {
+        if (isFilterConstrained(inMesg, filter)) {
             return true;
         }
-        return false;
+        return !filter.shouldFilter(inMesg);
     }
 
     private boolean isMessageBodyReadyForFilter(ZuulFilter<I, O> filter, I inMesg) {

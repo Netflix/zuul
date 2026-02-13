@@ -17,6 +17,7 @@ package com.netflix.zuul.filters;
 
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.FilterCategory;
+import com.netflix.zuul.FilterConstraint;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
@@ -74,6 +75,11 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
         } else {
             return FilterCategory.UNSPECIFIED;
         }
+    }
+
+    default Class<? extends FilterConstraint>[] constraints() {
+        Filter annotation = getClass().getAnnotation(Filter.class);
+        return annotation.constraints();
     }
 
     /**

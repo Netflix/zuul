@@ -53,6 +53,11 @@ public @interface Filter {
      */
     FilterSyncType sync() default FilterSyncType.SYNC;
 
+    /**
+     * Indicates if this filter has any constraints that should prevent it from executing
+     */
+    Class<? extends FilterConstraint>[] constraints() default {};
+
     @Target({ElementType.PACKAGE})
     @Retention(RetentionPolicy.CLASS)
     @Documented
