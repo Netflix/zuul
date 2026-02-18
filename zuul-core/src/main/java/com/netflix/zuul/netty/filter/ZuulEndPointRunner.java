@@ -126,14 +126,15 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
                     endpoint.filterName(),
                     zuulReq.getContext().getUUID());
             setEndpoint(zuulReq, endpoint);
-            HttpResponseMessage zuulResp = filter(endpoint, zuulReq);
+            FilterExecutionResult<HttpResponseMessage> result = executeFilter(endpoint, zuulReq);
 
-            if ((zuulResp != null) && !(endpoint instanceof ProxyEndpoint)) {
+            if (result instanceof FilterExecutionResult.Complete<HttpResponseMessage>(HttpResponseMessage message)
+                    && !(endpoint instanceof ProxyEndpoint)) {
                 // EdgeProxyEndpoint calls invokeNextStage internally
                 logger.debug(
                         "Endpoint calling invokeNextStage, UUID {}",
                         zuulReq.getContext().getUUID());
-                invokeNextStage(zuulResp);
+                invokeNextStage(message);
             }
         } catch (Exception ex) {
             handleException(zuulReq, endpointName, ex);
@@ -171,7 +172,12 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
                         && !(endpoint instanceof ProxyEndpoint)) {
                     // whole body has arrived, resume filter chain
                     ByteBufUtil.touch(newChunk, "Endpoint body complete, resume chain, ZuulMessage: ", zuulReq);
-                    invokeNextStage(filter(endpoint, zuulReq));
+                    FilterExecutionResult<HttpResponseMessage> result = executeFilter(endpoint, zuulReq);
+                    if (result
+                            instanceof
+                            FilterExecutionResult.Complete<HttpResponseMessage>(HttpResponseMessage message)) {
+                        invokeNextStage(message);
+                    }
                 }
             }
         } catch (Exception ex) {

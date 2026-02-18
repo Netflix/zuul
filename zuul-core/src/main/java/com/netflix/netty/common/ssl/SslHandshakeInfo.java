@@ -54,7 +54,16 @@ public class SslHandshakeInfo {
             ClientAuth clientAuthRequirement,
             Certificate serverCertificate,
             X509Certificate clientCertificate) {
-        this(requestedSni, isOfIntermediary, protocol, cipherSuite, clientAuthRequirement, serverCertificate, clientCertificate, false, null);
+        this(
+                requestedSni,
+                isOfIntermediary,
+                protocol,
+                cipherSuite,
+                clientAuthRequirement,
+                serverCertificate,
+                clientCertificate,
+                false,
+                null);
     }
 
     public SslHandshakeInfo(
@@ -66,7 +75,16 @@ public class SslHandshakeInfo {
             X509Certificate clientCertificate,
             boolean usingExternalPSK,
             ClientPSKIdentityInfo clientPSKIdentityInfo) {
-        this("", isOfIntermediary, protocol, cipherSuite, clientAuthRequirement, serverCertificate, clientCertificate, usingExternalPSK, clientPSKIdentityInfo);
+        this(
+                "",
+                isOfIntermediary,
+                protocol,
+                cipherSuite,
+                clientAuthRequirement,
+                serverCertificate,
+                clientCertificate,
+                usingExternalPSK,
+                clientPSKIdentityInfo);
     }
 
     public SslHandshakeInfo(

@@ -42,11 +42,14 @@ import io.netty.handler.codec.http.HttpContent;
 import io.perfmark.Link;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import jakarta.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.ThreadSafe;
+import lombok.Getter;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observer;
@@ -62,6 +65,8 @@ import rx.functions.Action1;
 public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends ZuulMessage> implements FilterRunner<I, O> {
 
     private final FilterUsageNotifier usageNotifier;
+
+    @Getter
     private final FilterRunner<O, ? extends ZuulMessage> nextStage;
 
     private final String RUNNING_FILTER_IDX_SESSION_CTX_KEY;
@@ -84,14 +89,9 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         this.filterExcessiveTimerId = registry.createId("zuul.request.timing.filterExcessive");
     }
 
+    @NonNull
     public static ChannelHandlerContext getChannelHandlerContext(ZuulMessage mesg) {
-        return (ChannelHandlerContext) com.google.common.base.Preconditions.checkNotNull(
-                mesg.getContext().get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT),
-                "channel handler context");
-    }
-
-    public FilterRunner<O, ? extends ZuulMessage> getNextStage() {
-        return nextStage;
+        return (ChannelHandlerContext) mesg.getContext().get(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT);
     }
 
     protected final AtomicInteger initRunningFilterIndex(I zuulMesg) {
@@ -189,32 +189,17 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         PerfMark.attachTag("uuid", inMesg, m -> m.getContext().getUUID());
     }
 
-    protected final O filter(ZuulFilter<I, O> filter, I inMesg) {
+    protected final FilterExecutionResult<O> executeFilter(ZuulFilter<I, O> filter, I inMesg) {
         long startTime = System.nanoTime();
         ZuulMessage snapshot = inMesg.getContext().debugRouting() ? inMesg.clone() : null;
-        FilterChainResumer resumer = null;
 
         try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".filter")) {
             addPerfMarkTags(inMesg);
-            ExecutionStatus filterRunStatus = null;
-            if (filter.filterType() == FilterType.INBOUND && inMesg.getContext().shouldSendErrorResponse()) {
-                // Pass request down the pipeline, all the way to error endpoint if error response needs to be generated
-                filterRunStatus = ExecutionStatus.SKIPPED;
-            }
 
-            try (TaskCloseable ignored2 = PerfMark.traceTask(filter, f -> f.filterName() + ".shouldSkipFilter")) {
-                if (shouldSkipFilter(inMesg, filter)) {
-                    filterRunStatus = ExecutionStatus.SKIPPED;
-                }
-            }
-
-            if (filter.isDisabled()) {
-                filterRunStatus = ExecutionStatus.DISABLED;
-            }
-
-            if (filterRunStatus != null) {
-                recordFilterCompletion(filterRunStatus, filter, startTime, inMesg, snapshot);
-                return filter.getDefaultOutput(inMesg);
+            ExecutionStatus executionStatus = checkFilterPreconditions(filter, inMesg);
+            if (executionStatus != null) {
+                recordFilterCompletion(executionStatus, filter, startTime, inMesg, snapshot);
+                return FilterExecutionResult.completed(filter.getDefaultOutput(inMesg));
             }
 
             if (!isMessageBodyReadyForFilter(filter, inMesg)) {
@@ -223,7 +208,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                         "Filter {} waiting for body, UUID {}",
                         filter.filterName(),
                         inMesg.getContext().getUUID());
-                return null; // wait for whole body to be buffered
+                return FilterExecutionResult.pending();
             }
             setFilterAwaitingBody(inMesg, false);
 
@@ -238,47 +223,82 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             inMesg.runBufferedBodyContentThroughFilter(filter);
 
             if (filter.getSyncType() == FilterSyncType.SYNC) {
-                SyncZuulFilter<I, O> syncFilter = (SyncZuulFilter<I, O>) filter;
-                O outMesg;
-                try (TaskCloseable ignored2 = PerfMark.traceTask(filter, f -> f.filterName() + ".apply")) {
-                    addPerfMarkTags(inMesg);
-                    outMesg = syncFilter.apply(inMesg);
-                }
-                recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
-                return (outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg);
+                return executeSyncFilter((SyncZuulFilter<I, O>) filter, inMesg, startTime, snapshot);
             }
 
-            // async filter
-            try (TaskCloseable ignored2 = PerfMark.traceTask(filter, f -> f.filterName() + ".applyAsync")) {
-                Link nettyToSchedulerLink = PerfMark.linkOut();
-                filter.incrementConcurrency();
-                resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
-                filter.applyAsync(inMesg)
-                        .doOnSubscribe(() -> {
-                            try (TaskCloseable ignored3 =
-                                    PerfMark.traceTask(filter, f -> f.filterName() + ".onSubscribeAsync")) {
-                                PerfMark.linkIn(nettyToSchedulerLink);
-                            }
-                        })
-                        .doOnNext(resumer.onNextStarted(nettyToSchedulerLink))
-                        .doOnError(resumer.onErrorStarted(nettyToSchedulerLink))
-                        .doOnCompleted(resumer.onCompletedStarted(nettyToSchedulerLink))
-                        .observeOn(new EventExecutorScheduler(
-                                getChannelHandlerContext(inMesg).executor()))
-                        .doOnUnsubscribe(resumer::decrementConcurrency)
-                        .subscribe(resumer);
-            }
-
-            return null; // wait for the async filter to finish
+            return executeAsyncFilter(filter, inMesg, startTime, snapshot);
         } catch (Throwable t) {
-            if (resumer != null) {
-                resumer.decrementConcurrency();
-            }
             O outMesg = handleFilterException(inMesg, filter, t);
             outMesg.finishBufferedBodyIfIncomplete();
             recordFilterCompletion(ExecutionStatus.FAILED, filter, startTime, inMesg, snapshot);
-            return outMesg;
+            return FilterExecutionResult.completed(outMesg);
         }
+    }
+
+    @Nullable
+    private ExecutionStatus checkFilterPreconditions(ZuulFilter<I, O> filter, I inMesg) {
+        if (filter.filterType() == FilterType.INBOUND && inMesg.getContext().shouldSendErrorResponse()) {
+            // Pass request down the pipeline, all the way to error endpoint if error response needs to be generated
+            return ExecutionStatus.SKIPPED;
+        }
+
+        try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".shouldSkipFilter")) {
+            if (shouldSkipFilter(inMesg, filter)) {
+                return ExecutionStatus.SKIPPED;
+            }
+        }
+
+        if (filter.isDisabled()) {
+            return ExecutionStatus.DISABLED;
+        }
+
+        return null;
+    }
+
+    /**
+     * Execute a SyncZuulFilter apply on the current event loop thread.
+     */
+    private FilterExecutionResult<O> executeSyncFilter(
+            SyncZuulFilter<I, O> filter, I inMesg, long startTime, ZuulMessage snapshot) {
+        O outMesg;
+        try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".apply")) {
+            addPerfMarkTags(inMesg);
+            outMesg = filter.apply(inMesg);
+        }
+        recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
+        return FilterExecutionResult.completed((outMesg != null) ? outMesg : filter.getDefaultOutput(inMesg));
+    }
+
+    /**
+     * Execute a ZuulFilter's async apply, subscribing to resume the filter chain once the observable completes.
+     */
+    private FilterExecutionResult<O> executeAsyncFilter(
+            ZuulFilter<I, O> filter, I inMesg, long startTime, ZuulMessage snapshot) {
+        FilterChainResumer resumer;
+        filter.incrementConcurrency();
+        try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".applyAsync")) {
+            Link nettyToSchedulerLink = PerfMark.linkOut();
+            resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
+            filter.applyAsync(inMesg)
+                    .doOnSubscribe(() -> {
+                        try (TaskCloseable ignored2 =
+                                PerfMark.traceTask(filter, f -> f.filterName() + ".onSubscribeAsync")) {
+                            PerfMark.linkIn(nettyToSchedulerLink);
+                        }
+                    })
+                    .doOnNext(resumer.onNextStarted(nettyToSchedulerLink))
+                    .doOnError(resumer.onErrorStarted(nettyToSchedulerLink))
+                    .doOnCompleted(resumer.onCompletedStarted(nettyToSchedulerLink))
+                    .observeOn(new EventExecutorScheduler(
+                            getChannelHandlerContext(inMesg).executor()))
+                    .doOnUnsubscribe(resumer::decrementConcurrency)
+                    .subscribe(resumer);
+        } catch (Throwable t) {
+            filter.decrementConcurrency();
+            throw t;
+        }
+
+        return FilterExecutionResult.pending();
     }
 
     /**
@@ -297,7 +317,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         if (zuulCtx.isCancelled()) {
             return true;
         }
-        if (isFilterConstrained(inMesg, filter)) {
+
+        if(isFilterConstrained(inMesg, filter)) {
             return true;
         }
         return !filter.shouldFilter(inMesg);
@@ -415,6 +436,27 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             methodBinding(zuulMesg).bind(() -> resume(zuulMesg));
         } catch (Exception ex) {
             handleException(zuulMesg, filterName, ex);
+        }
+    }
+
+    /**
+     * FilterExecutionResult indicates if the filter is still processing a request, such as waiting
+     * on an async filter execution or for a full body to buffer, or has completed.
+     */
+    protected sealed interface FilterExecutionResult<O> {
+        record Complete<O>(@Nullable O message) implements FilterExecutionResult<O> {}
+
+        record Pending<O>() implements FilterExecutionResult<O> {}
+
+        Pending<?> pending = new Pending<>();
+
+        @SuppressWarnings("unchecked")
+        static <O> FilterExecutionResult<O> pending() {
+            return (FilterExecutionResult<O>) pending;
+        }
+
+        static <O> FilterExecutionResult<O> completed(O message) {
+            return new Complete<>(message);
         }
     }
 

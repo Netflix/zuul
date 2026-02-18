@@ -105,7 +105,7 @@ public class BaseZuulFilterRunnerTest {
             return m;
         };
 
-        runner.filter(asyncFilter, message);
+        runner.executeFilter(asyncFilter, message);
         ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
         // sanity check to verify the message was transformed by AsyncFilter
         assertThat(filteredMessage).isNotSameAs(message);
@@ -124,7 +124,7 @@ public class BaseZuulFilterRunnerTest {
             return m;
         };
 
-        runner.filter(asyncFilter, message);
+        runner.executeFilter(asyncFilter, message);
         ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
         // sanity check to verify the message was transformed by AsyncFilter
         assertThat(filteredMessage).isSameAs(message);
@@ -136,7 +136,7 @@ public class BaseZuulFilterRunnerTest {
         AsyncFilter asyncFilter = new AsyncFilter();
         asyncFilter.output.set(message);
 
-        runner.filter(asyncFilter, message);
+        runner.executeFilter(asyncFilter, message);
         Awaitility.await("request should have failed with an exception")
                 .atMost(5, TimeUnit.SECONDS)
                 .until(() -> errorCapturingHandler.error.get() != null);
