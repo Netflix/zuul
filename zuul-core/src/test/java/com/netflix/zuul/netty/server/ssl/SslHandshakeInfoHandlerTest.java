@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
@@ -61,7 +62,8 @@ public class SslHandshakeInfoHandlerTest {
 
     @BeforeEach
     public void setup() {
-        SslHandshakeInfoHandler.SNI_LOGGING_ENABLED = new DynamicBooleanProperty("zuul.ssl.handshake.snilogging.enabled", true);
+        SslHandshakeInfoHandler.SNI_LOGGING_ENABLED =
+                new DynamicBooleanProperty("zuul.ssl.handshake.snilogging.enabled", true);
     }
 
     @Test
@@ -128,7 +130,7 @@ public class SslHandshakeInfoHandlerTest {
         when(sslEngine.getWantClientAuth()).thenReturn(false);
         when(sslSession.getProtocol()).thenReturn("TLSv1.3");
         when(sslSession.getCipherSuite()).thenReturn("TLS_AES_256_GCM_SHA384");
-        when(sslSession.getLocalCertificates()).thenReturn(new Certificate[]{serverCert});
+        when(sslSession.getLocalCertificates()).thenReturn(new Certificate[] {serverCert});
         when(sslSession.getPeerCertificates()).thenReturn(new Certificate[0]);
 
         // Setup SNI with www.netflix.com
@@ -157,7 +159,16 @@ public class SslHandshakeInfoHandlerTest {
         handler.userEventTriggered(ctx, failedEvent);
 
         // Verify success counter was incremented
-        assertThat(registry.counter("server.ssl.handshake", "success", "false", "sni", "www.netflix.com", "failure_cause", "Received fatal alert: certificate_unknown").count()).isEqualTo(1);
+        assertThat(registry.counter(
+                                "server.ssl.handshake",
+                                "success",
+                                "false",
+                                "sni",
+                                "www.netflix.com",
+                                "failure_cause",
+                                "Received fatal alert: certificate_unknown")
+                        .count())
+                .isEqualTo(1);
 
         // Verify handler was removed from pipeline
         assertThat(channel.pipeline().context(SslHandshakeInfoHandler.class)).isNull();
@@ -246,7 +257,7 @@ public class SslHandshakeInfoHandlerTest {
         when(sslEngine.getWantClientAuth()).thenReturn(false);
         when(sslSession.getProtocol()).thenReturn("TLSv1.3");
         when(sslSession.getCipherSuite()).thenReturn("TLS_AES_256_GCM_SHA384");
-        when(sslSession.getLocalCertificates()).thenReturn(new Certificate[]{serverCert});
+        when(sslSession.getLocalCertificates()).thenReturn(new Certificate[] {serverCert});
         when(sslSession.getPeerCertificates()).thenReturn(new Certificate[0]);
 
         if (!Objects.equals(sni, "")) {
@@ -271,10 +282,24 @@ public class SslHandshakeInfoHandlerTest {
         String verifySni = Objects.equals(sni, "") ? "none" : sni;
 
         // Verify success counter was incremented
-        assertThat(registry.counter("server.ssl.handshake", "success", "true", "sni", verifySni, "protocol", "TLSv1.3", "ciphersuite", "TLS_AES_256_GCM_SHA384", "clientauth", "NONE").count()).isEqualTo(1);
+        assertThat(registry.counter(
+                                "server.ssl.handshake",
+                                "success",
+                                "true",
+                                "sni",
+                                verifySni,
+                                "protocol",
+                                "TLSv1.3",
+                                "ciphersuite",
+                                "TLS_AES_256_GCM_SHA384",
+                                "clientauth",
+                                "NONE")
+                        .count())
+                .isEqualTo(1);
 
         // Verify SslHandshakeInfo was stored in channel attributes
-        SslHandshakeInfo info = channel.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
+        SslHandshakeInfo info =
+                channel.attr(SslHandshakeInfoHandler.ATTR_SSL_INFO).get();
         assertThat(info).isNotNull();
         assertThat(info.getRequestedSni()).isEqualTo(verifySni);
         assertThat(info.getProtocol()).isEqualTo("TLSv1.3");
