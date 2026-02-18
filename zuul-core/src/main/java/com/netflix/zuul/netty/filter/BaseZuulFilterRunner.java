@@ -318,7 +318,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             return true;
         }
 
-        if(isFilterConstrained(inMesg, filter)) {
+        if (isFilterConstrained(inMesg, filter)) {
             return true;
         }
         return !filter.shouldFilter(inMesg);

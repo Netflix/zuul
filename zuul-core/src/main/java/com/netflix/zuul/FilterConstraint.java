@@ -17,6 +17,7 @@
 package com.netflix.zuul;
 
 import com.netflix.zuul.message.ZuulMessage;
+import lombok.NonNull;
 
 /**
  * A filter constraint can be registered on {@link Filter#constraints()} to indicate that a given filter should
@@ -27,5 +28,5 @@ import com.netflix.zuul.message.ZuulMessage;
  * @since 1/9/26
  */
 public interface FilterConstraint {
-    boolean isConstrained(ZuulMessage msg);
+    boolean isConstrained(@NonNull ZuulMessage msg);
 }
