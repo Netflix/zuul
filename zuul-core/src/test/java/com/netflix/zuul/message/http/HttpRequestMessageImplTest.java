@@ -891,6 +891,5 @@ class HttpRequestMessageImplTest {
                 "localhost");
         assertThat(request.getPath()).isEqualTo("/path");
         assertThat(request.getDecodedPath()).isEqualTo("/path");
-
     }
 }

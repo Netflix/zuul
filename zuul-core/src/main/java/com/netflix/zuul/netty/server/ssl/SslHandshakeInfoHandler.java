@@ -127,17 +127,16 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             .get();
 
                     String requestedSni = "none";
-                    try{
+                    try {
                         List<SNIServerName> serverNames = ((ExtendedSSLSession) session).getRequestedServerNames();
                         if (serverNames != null) {
                             requestedSni = serverNames.stream()
                                     .filter(sni -> sni instanceof SNIHostName)
                                     .findFirst()
-                                    .map(sni -> ((SNIHostName)sni).getAsciiName())
+                                    .map(sni -> ((SNIHostName) sni).getAsciiName())
                                     .orElse("none");
                         }
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         logger.warn("Error getting the request server names.", e);
                     }
 
@@ -167,7 +166,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             CurrentPassport.fromChannel(ctx.channel()).getState();
                     if (cause instanceof ClosedChannelException
                             && (passportState == PassportState.SERVER_CH_INACTIVE
-                            || passportState == PassportState.SERVER_CH_IDLE_TIMEOUT)) {
+                                    || passportState == PassportState.SERVER_CH_IDLE_TIMEOUT)) {
                         // Either client closed the connection without/before having completed a handshake, or
                         // the connection idle timed-out before handshake.
                         // NOTE: we were seeing a lot of these in prod and can repro by just telnetting to port and then
@@ -213,19 +212,11 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             String requestedSni = serverNames.stream()
                                     .filter(sni -> sni instanceof SNIHostName)
                                     .findFirst()
-                                    .map(sni -> ((SNIHostName)sni).getAsciiName())
+                                    .map(sni -> ((SNIHostName) sni).getAsciiName())
                                     .orElse("none");
 
                             info = new SslHandshakeInfo(
-                                    requestedSni,
-                                    isSSlFromIntermediary,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    false,
-                                    null);
+                                    requestedSni, isSSlFromIntermediary, null, null, null, null, null, false, null);
                         }
                         incrementCounters(sslEvent, info);
                     }
@@ -288,26 +279,22 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
         try {
             List<Tag> tagList = new ArrayList<>();
             if (sslHandshakeCompletionEvent.isSuccess()) {
-                tagList.add(Tag.of("protocol",
-                        handshakeInfo.getProtocol().isEmpty() ? "unknown" : handshakeInfo.getProtocol()));
-                tagList.add(Tag.of("ciphersuite",
+                tagList.add(Tag.of(
+                        "protocol", handshakeInfo.getProtocol().isEmpty() ? "unknown" : handshakeInfo.getProtocol()));
+                tagList.add(Tag.of(
+                        "ciphersuite",
                         handshakeInfo.getCipherSuite().isEmpty() ? "unknown" : handshakeInfo.getCipherSuite()));
-                tagList.add(Tag.of("clientauth",
-                        String.valueOf(handshakeInfo.getClientAuthRequirement())));
+                tagList.add(Tag.of("clientauth", String.valueOf(handshakeInfo.getClientAuthRequirement())));
 
             } else {
-                tagList.add(Tag.of("failure_cause",
-                        getFailureCause(sslHandshakeCompletionEvent.cause())));
+                tagList.add(Tag.of("failure_cause", getFailureCause(sslHandshakeCompletionEvent.cause())));
             }
 
             tagList.add(Tag.of("success", String.valueOf(sslHandshakeCompletionEvent.isSuccess())));
             if (SNI_LOGGING_ENABLED.get()) {
-                tagList.add(Tag.of("sni",
-                        handshakeInfo.getRequestedSni()));
+                tagList.add(Tag.of("sni", handshakeInfo.getRequestedSni()));
             }
-            spectatorRegistry
-                    .counter(
-                            "server.ssl.handshake", tagList).increment();
+            spectatorRegistry.counter("server.ssl.handshake", tagList).increment();
         } catch (Exception e) {
             logger.error("Error incrementing counters for SSL handshake!", e);
         }
