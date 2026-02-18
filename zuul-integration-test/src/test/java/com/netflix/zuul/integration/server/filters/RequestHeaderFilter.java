@@ -22,7 +22,7 @@ import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.integration.server.HeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import java.util.UUID;
-import rx.Observable;
+import java.util.concurrent.CompletableFuture;
 
 @Filter(order = 10, type = FilterType.INBOUND)
 public class RequestHeaderFilter extends HttpInboundFilter {
@@ -32,9 +32,9 @@ public class RequestHeaderFilter extends HttpInboundFilter {
     }
 
     @Override
-    public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage request) {
+    public CompletableFuture<HttpRequestMessage> applyAsync(HttpRequestMessage request) {
         request.getHeaders().set(HeaderNames.REQUEST_ID, "RQ-" + UUID.randomUUID());
         request.storeInboundRequest();
-        return Observable.just(request);
+        return CompletableFuture.completedFuture(request);
     }
 }

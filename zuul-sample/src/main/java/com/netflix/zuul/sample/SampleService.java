@@ -16,9 +16,9 @@
 
 package com.netflix.zuul.sample;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import rx.Observable;
 
 /**
  * Sample Service for demonstration in SampleServiceFilter.
@@ -39,7 +39,8 @@ public class SampleService {
         return status.get();
     }
 
-    public Observable<String> makeSlowRequest() {
-        return Observable.just("test").delay(500, TimeUnit.MILLISECONDS);
+    public CompletableFuture<String> makeSlowRequest() {
+        return CompletableFuture.supplyAsync(
+                () -> "test", CompletableFuture.delayedExecutor(500, TimeUnit.MILLISECONDS));
     }
 }
