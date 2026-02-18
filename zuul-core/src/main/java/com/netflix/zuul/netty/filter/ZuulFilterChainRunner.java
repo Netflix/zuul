@@ -151,11 +151,13 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             while (i < filters.length) {
                 ZuulFilter<T, T> filter = filters[i];
                 filterName = filter.filterName();
-                T outMesg = filter(filter, inMesg);
-                if (outMesg == null) {
-                    return; // either async filter or waiting for the message body to be buffered
+                FilterExecutionResult<T> result = executeFilter(filter, inMesg);
+                if (result instanceof FilterExecutionResult.Pending<T>) {
+                    return;
                 }
-                inMesg = outMesg;
+                if (result instanceof FilterExecutionResult.Complete<T>(T message)) {
+                    inMesg = message;
+                }
                 i = runningFilterIdx.incrementAndGet();
             }
 
