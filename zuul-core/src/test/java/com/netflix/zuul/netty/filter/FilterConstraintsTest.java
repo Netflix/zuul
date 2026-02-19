@@ -96,14 +96,14 @@ class FilterConstraintsTest {
 
     private class ConstraintA implements FilterConstraint {
         @Override
-        public boolean isConstrained(ZuulMessage msg) {
+        public boolean isConstrained(@NonNull ZuulMessage msg) {
             return constraintAResult;
         }
     }
 
     private class ConstraintB implements FilterConstraint {
         @Override
-        public boolean isConstrained(ZuulMessage msg) {
+        public boolean isConstrained(@NonNull ZuulMessage msg) {
             return constraintBResult;
         }
     }

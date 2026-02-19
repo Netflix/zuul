@@ -4,6 +4,7 @@ apply plugin: "java-library"
 dependencies {
 
     compileOnly libraries.lombok
+    testCompileOnly(libraries.lombok)
     annotationProcessor(libraries.lombok)
 
     implementation libraries.guava
