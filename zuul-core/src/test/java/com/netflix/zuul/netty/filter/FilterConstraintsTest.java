@@ -105,6 +105,20 @@ class FilterConstraintsTest {
         assertThat(limited.isConstrained(request, filter)).isFalse();
     }
 
+    @Test
+    public void constraintsCached() {
+        FilterConstraints limited = new FilterConstraints(List.of(new ConstraintA(), new ConstraintB()));
+        constraintAResult = false;
+        constraintBResult = true;
+        ZuulFilter<?, ?> filter = mockFilter(new Class[] {ConstraintA.class});
+        assertThat(limited.isConstrained(request, filter)).isFalse();
+
+        // this can't happen with a real annotation, but test the caching logic by changing the constraints. Because
+        // the initial constraints are cached the new one should be ignored
+        when(filter.constraints()).thenReturn(new Class[] {ConstraintA.class, ConstraintB.class});
+        assertThat(limited.isConstrained(request, filter)).isFalse();
+    }
+
     private ZuulFilter<?, ?> mockFilter(Class<? extends FilterConstraint>[] constraints) {
         ZuulFilter<?, ?> filter = mock(ZuulFilter.class);
         when(filter.constraints()).thenReturn(constraints);
