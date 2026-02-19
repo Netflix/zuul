@@ -44,9 +44,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import rx.Observable;
 
 class ZuulFilterChainRunnerTest {
     private HttpRequestMessage request;
@@ -121,6 +121,53 @@ class ZuulFilterChainRunnerTest {
         verifyNoMoreInteractions(notifier);
     }
 
+    @Test
+    void mixedChainWithLegacyAndAsyncFilters() {
+        SimpleInboundFilter legacyFilter = spy(new SimpleInboundFilter(true));
+        AsyncInboundFilter cfFilter = spy(new AsyncInboundFilter(true));
+
+        ZuulFilter[] filters = new ZuulFilter[] {legacyFilter, cfFilter};
+
+        FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
+        Registry registry = mock(Registry.class);
+
+        ZuulFilterChainRunner runner =
+                new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
+        runner.filter(request);
+
+        verify(notifier).notify(eq(legacyFilter), eq(ExecutionStatus.SUCCESS));
+        verify(notifier).notify(eq(cfFilter), eq(ExecutionStatus.SUCCESS));
+        verifyNoMoreInteractions(notifier);
+    }
+
+    class AsyncInboundFilter extends HttpInboundFilter {
+        private final boolean shouldFilter;
+
+        public AsyncInboundFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public int filterOrder() {
+            return 1;
+        }
+
+        @Override
+        public FilterType filterType() {
+            return FilterType.INBOUND;
+        }
+
+        @Override
+        public CompletableFuture<HttpRequestMessage> applyAsync(HttpRequestMessage input) {
+            return CompletableFuture.completedFuture(input);
+        }
+
+        @Override
+        public boolean shouldFilter(HttpRequestMessage msg) {
+            return this.shouldFilter;
+        }
+    }
+
     @Filter(order = 1)
     class SimpleInboundFilter extends HttpInboundFilter {
         private final boolean shouldFilter;
@@ -140,8 +187,8 @@ class ZuulFilterChainRunnerTest {
         }
 
         @Override
-        public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<HttpRequestMessage> applyAsync(HttpRequestMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override
@@ -169,8 +216,8 @@ class ZuulFilterChainRunnerTest {
         }
 
         @Override
-        public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<HttpResponseMessage> applyAsync(HttpResponseMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override
