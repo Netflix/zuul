@@ -79,7 +79,11 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
 
     default Class<? extends FilterConstraint>[] constraints() {
         Filter annotation = getClass().getAnnotation(Filter.class);
-        return annotation.constraints();
+        if(annotation != null) {
+            return annotation.constraints();
+        } else {
+            return null;
+        }
     }
 
     /**
