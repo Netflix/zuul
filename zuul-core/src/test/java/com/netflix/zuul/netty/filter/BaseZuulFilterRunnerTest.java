@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doThrow;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Filter;
+import com.netflix.zuul.FilterConstraint;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -43,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import lombok.NonNull;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,9 +72,11 @@ public class BaseZuulFilterRunnerTest {
     private MultithreadEventLoopGroup group;
     private TestResumer resumer;
     private ErrorCapturingHandler errorCapturingHandler;
+    private TestConstraint constraint;
 
     @BeforeEach
     public void setup() {
+        constraint = new TestConstraint();
         runner = new TestBaseZuulFilterRunner(FilterType.INBOUND, notifier, nextStage, new NoopRegistry());
         SessionContext sessionContext = new SessionContext();
         message = new HttpRequestBuilder(sessionContext).build();
@@ -174,7 +178,7 @@ public class BaseZuulFilterRunnerTest {
     @Test
     public void constrainedFilterSkipped() {
         InboundFilter filter = new InboundFilter(true);
-        runner.constrained = true;
+        constraint.constrained = true;
         assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
     }
 
@@ -228,14 +232,12 @@ public class BaseZuulFilterRunnerTest {
 
     private class TestBaseZuulFilterRunner extends BaseZuulFilterRunner<ZuulMessage, ZuulMessage> {
 
-        boolean constrained;
-
         protected TestBaseZuulFilterRunner(
                 FilterType filterType,
                 FilterUsageNotifier usageNotifier,
                 FilterRunner<ZuulMessage, ?> nextStage,
                 Registry registry) {
-            super(filterType, usageNotifier, nextStage, new FilterConstraints(List.of()), registry);
+            super(filterType, usageNotifier, nextStage, new FilterConstraints(List.of(constraint)), registry);
         }
 
         @Override
@@ -260,7 +262,10 @@ public class BaseZuulFilterRunnerTest {
         }
     }
 
-    @Filter(type = FilterType.INBOUND, order = 1)
+    @Filter(
+            type = FilterType.INBOUND,
+            order = 1,
+            constraints = {TestConstraint.class})
     private static class InboundFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
 
         private final boolean shouldFilter;
@@ -322,6 +327,16 @@ public class BaseZuulFilterRunnerTest {
         @Override
         public boolean shouldFilter(ZuulMessage msg) {
             return shouldFilter;
+        }
+    }
+
+    private static class TestConstraint implements FilterConstraint {
+
+        boolean constrained;
+
+        @Override
+        public boolean isConstrained(@NonNull ZuulMessage msg) {
+            return constrained;
         }
     }
 }
