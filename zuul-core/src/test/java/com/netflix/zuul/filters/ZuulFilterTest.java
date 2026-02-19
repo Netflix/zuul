@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.netflix.zuul.filters.common.GZipResponseFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
-import rx.Observable;
 
 class ZuulFilterTest {
 
@@ -60,8 +60,8 @@ class ZuulFilterTest {
 
     private static class NoOpBaseFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
         @Override
-        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override
