@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.NullMarked;
 
 /**
+ * Class responsible for checking {@link FilterConstraint}.
+ * Register this class with custom constraints by using {@link com.netflix.zuul.netty.server.ZuulDependencyKeys#filterConstraints}
+ * in {@link com.netflix.zuul.netty.server.BaseZuulChannelInitializer}
+ *
  * @author Justin Guerra
  * @since 1/9/26
  */
