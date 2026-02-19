@@ -41,6 +41,8 @@ import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -98,8 +100,8 @@ public class BaseZuulFilterRunnerTest {
     }
 
     @Test
-    public void onCompleteCalledBeforeResume() throws Exception {
-        AsyncFilter asyncFilter = new AsyncFilter();
+    public void onCompleteCalledBeforeResume() {
+        LegacyObservableFilter asyncFilter = new LegacyObservableFilter();
         asyncFilter.output.set(message.clone());
 
         resumer.validator = m -> {
@@ -110,14 +112,15 @@ public class BaseZuulFilterRunnerTest {
         };
 
         runner.executeFilter(asyncFilter, message);
-        ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
-        // sanity check to verify the message was transformed by AsyncFilter
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        // sanity check to verify the message was transformed by LegacyObservableFilter
         assertThat(filteredMessage).isNotSameAs(message);
     }
 
     @Test
-    public void onCompleteCalledWithNullMessage() throws Exception {
-        AsyncFilter asyncFilter = new AsyncFilter();
+    public void onCompleteCalledWithNullMessage() {
+        LegacyObservableFilter asyncFilter = new LegacyObservableFilter();
         asyncFilter.output.set(null);
 
         resumer.validator = m -> {
@@ -129,15 +132,16 @@ public class BaseZuulFilterRunnerTest {
         };
 
         runner.executeFilter(asyncFilter, message);
-        ZuulMessage filteredMessage = resumer.future.get(5, TimeUnit.SECONDS);
-        // sanity check to verify the message was transformed by AsyncFilter
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        // sanity check to verify the message was transformed by LegacyObservableFilter
         assertThat(filteredMessage).isSameAs(message);
     }
 
     @Test
     public void onCompleteThrows() {
         doThrow(new RuntimeException()).when(notifier).notify(any(), any());
-        AsyncFilter asyncFilter = new AsyncFilter();
+        LegacyObservableFilter asyncFilter = new LegacyObservableFilter();
         asyncFilter.output.set(message);
 
         runner.executeFilter(asyncFilter, message);
@@ -194,19 +198,143 @@ public class BaseZuulFilterRunnerTest {
         assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
     }
 
+    @Test
+    public void completableFutureFilterResumesChain() {
+        AsyncFilter cfFilter = new AsyncFilter();
+        ZuulMessage output = message.clone();
+        cfFilter.output.set(output);
+
+        resumer.validator = m -> {
+            assertThat(cfFilter.getConcurrency())
+                    .as("concurrency should have been decremented before the filter chain was resumed")
+                    .isEqualTo(0);
+            return m;
+        };
+
+        runner.executeFilter(cfFilter, message);
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        assertThat(filteredMessage).isSameAs(output);
+    }
+
+    @Test
+    public void completableFutureFilterHandlesNullResult() {
+        AsyncFilter cfFilter = new AsyncFilter();
+        cfFilter.output.set(null);
+
+        runner.executeFilter(cfFilter, message);
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        assertThat(filteredMessage).isSameAs(message);
+    }
+
+    @Test
+    public void completableFutureFilterHandlesException() {
+        FailingAsyncFilter failingFilter = new FailingAsyncFilter();
+
+        runner.executeFilter(failingFilter, message);
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        assertThat(filteredMessage).isNotNull();
+        assertThat(failingFilter.getConcurrency()).isEqualTo(0);
+    }
+
+    @Test
+    public void completableFutureFilterWorksAcrossThreadBoundary() {
+        CrossThreadAsyncFilter crossThreadFilter = new CrossThreadAsyncFilter();
+
+        resumer.validator = m -> {
+            assertThat(crossThreadFilter.getConcurrency()).isEqualTo(0);
+            return m;
+        };
+
+        runner.executeFilter(crossThreadFilter, message);
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        assertThat(filteredMessage).isSameAs(message);
+        crossThreadFilter.shutdown();
+    }
+
+    @Test
+    public void legacyObservableFilterStillWorksViaAdapter() {
+        LegacyObservableFilter legacyFilter = new LegacyObservableFilter();
+        legacyFilter.output.set(message.clone());
+
+        resumer.validator = m -> {
+            assertThat(legacyFilter.getConcurrency()).isEqualTo(0);
+            return m;
+        };
+
+        runner.executeFilter(legacyFilter, message);
+        ZuulMessage filteredMessage =
+                resumer.future.orTimeout(5, TimeUnit.SECONDS).join();
+        assertThat(filteredMessage).isNotSameAs(message);
+    }
+
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
-    private static class AsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+    private static class LegacyObservableFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
 
         private AtomicReference<ZuulMessage> output = new AtomicReference<>();
 
         @Override
-        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+        @SuppressWarnings("deprecation")
+        public Observable<ZuulMessage> applyAsyncObservable(ZuulMessage input) {
             return Observable.just(output.get());
         }
 
         @Override
         public boolean shouldFilter(ZuulMessage msg) {
             return true;
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 2)
+    private static class AsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final AtomicReference<ZuulMessage> output = new AtomicReference<>();
+
+        @Override
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(output.get());
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return true;
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 3)
+    private static class FailingAsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        @Override
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.failedFuture(new RuntimeException("intentional test failure"));
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return true;
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 4)
+    private static class CrossThreadAsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        @Override
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.supplyAsync(() -> input, executor);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return true;
+        }
+
+        void shutdown() {
+            executor.shutdown();
         }
     }
 
@@ -275,8 +403,8 @@ public class BaseZuulFilterRunnerTest {
         }
 
         @Override
-        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override
@@ -295,8 +423,8 @@ public class BaseZuulFilterRunnerTest {
         }
 
         @Override
-        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override
@@ -320,8 +448,8 @@ public class BaseZuulFilterRunnerTest {
         }
 
         @Override
-        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
-            return Observable.just(input);
+        public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(input);
         }
 
         @Override

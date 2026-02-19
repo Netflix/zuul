@@ -21,10 +21,9 @@ import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import rx.Observable;
 
 /**
  * @author Justin Guerra
@@ -40,10 +39,8 @@ public class CrossThreadBoundaryFilter extends HttpInboundFilter {
     }
 
     @Override
-    public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage input) {
-        // force a thread boundary change
-        Future<HttpRequestMessage> future = executor.submit(() -> input);
-        return Observable.from(future);
+    public CompletableFuture<HttpRequestMessage> applyAsync(HttpRequestMessage input) {
+        return CompletableFuture.supplyAsync(() -> input, executor);
     }
 
     @Override

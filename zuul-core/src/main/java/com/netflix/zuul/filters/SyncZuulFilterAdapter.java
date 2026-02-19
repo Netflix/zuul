@@ -17,7 +17,7 @@
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.message.ZuulMessage;
-import rx.Observable;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Base class to help implement SyncZuulFilter. Note that the class BaseSyncFilter does exist but it derives from
@@ -66,8 +66,8 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
     }
 
     @Override
-    public Observable<O> applyAsync(I input) {
-        return Observable.just(apply(input));
+    public CompletableFuture<O> applyAsync(I input) {
+        return CompletableFuture.completedFuture(apply(input));
     }
 
     @Override
