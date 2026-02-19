@@ -22,6 +22,7 @@ import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
+import java.util.concurrent.CompletableFuture;
 import rx.Observable;
 
 /**
@@ -60,7 +61,12 @@ public abstract class TestFilter implements ZuulFilter<ZuulMessage, ZuulMessage>
     }
 
     @Override
-    public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+    public Observable<ZuulMessage> applyAsyncObservable(ZuulMessage input) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public CompletableFuture<ZuulMessage> applyAsync(ZuulMessage input) {
         throw new UnsupportedOperationException();
     }
 
