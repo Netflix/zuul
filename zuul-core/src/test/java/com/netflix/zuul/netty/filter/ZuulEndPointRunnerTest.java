@@ -43,10 +43,10 @@ import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import rx.Observable;
 
 class ZuulEndPointRunnerTest {
     private static final String BASIC_ENDPOINT = "basicEndpoint";
@@ -133,8 +133,8 @@ class ZuulEndPointRunnerTest {
         }
 
         @Override
-        public Observable applyAsync(ZuulMessage input) {
-            return Observable.just(buildHttpResponseMessage(input));
+        public CompletableFuture applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(buildHttpResponseMessage(input));
         }
     }
 
@@ -147,8 +147,8 @@ class ZuulEndPointRunnerTest {
         }
 
         @Override
-        public Observable applyAsync(ZuulMessage input) {
-            return Observable.just(buildHttpResponseMessage(input));
+        public CompletableFuture applyAsync(ZuulMessage input) {
+            return CompletableFuture.completedFuture(buildHttpResponseMessage(input));
         }
     }
 

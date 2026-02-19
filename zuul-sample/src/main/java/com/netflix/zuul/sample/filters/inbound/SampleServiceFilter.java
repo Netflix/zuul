@@ -20,9 +20,9 @@ import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.sample.SampleService;
 import jakarta.inject.Inject;
+import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observable;
 
 /**
  * Sample Service Filter to demonstrate Guice injection of services and
@@ -52,8 +52,8 @@ public class SampleServiceFilter extends HttpInboundFilter {
     }
 
     @Override
-    public Observable<HttpRequestMessage> applyAsync(HttpRequestMessage request) {
-        return sampleService.makeSlowRequest().map(response -> {
+    public CompletableFuture<HttpRequestMessage> applyAsync(HttpRequestMessage request) {
+        return sampleService.makeSlowRequest().thenApply(response -> {
             log.info("Fetched sample service result: {}", response);
             return request;
         });

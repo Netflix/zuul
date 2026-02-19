@@ -39,22 +39,19 @@ import com.netflix.zuul.netty.SpectatorUtils;
 import com.netflix.zuul.netty.server.MethodBinding;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.util.concurrent.EventExecutor;
 import io.perfmark.Link;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import jakarta.annotation.Nullable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.ThreadSafe;
 import lombok.Getter;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx.Observer;
-import rx.functions.Action0;
-import rx.functions.Action1;
 
 /**
  * Subclasses of this class are supposed to be thread safe
@@ -276,35 +273,57 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     }
 
     /**
-     * Execute a ZuulFilter's async apply, subscribing to resume the filter chain once the observable completes.
+     * Execute a ZuulFilter's async apply, wiring up the completion callback to resume the filter chain.
      */
     private FilterExecutionResult<O> executeAsyncFilter(
             ZuulFilter<I, O> filter, I inMesg, long startTime, ZuulMessage snapshot) {
-        FilterChainResumer resumer;
         filter.incrementConcurrency();
         try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".applyAsync")) {
-            Link nettyToSchedulerLink = PerfMark.linkOut();
-            resumer = new FilterChainResumer(inMesg, filter, snapshot, startTime);
-            filter.applyAsync(inMesg)
-                    .doOnSubscribe(() -> {
-                        try (TaskCloseable ignored2 =
-                                PerfMark.traceTask(filter, f -> f.filterName() + ".onSubscribeAsync")) {
-                            PerfMark.linkIn(nettyToSchedulerLink);
-                        }
-                    })
-                    .doOnNext(resumer.onNextStarted(nettyToSchedulerLink))
-                    .doOnError(resumer.onErrorStarted(nettyToSchedulerLink))
-                    .doOnCompleted(resumer.onCompletedStarted(nettyToSchedulerLink))
-                    .observeOn(new EventExecutorScheduler(
-                            getChannelHandlerContext(inMesg).executor()))
-                    .doOnUnsubscribe(resumer::decrementConcurrency)
-                    .subscribe(resumer);
+            Link perfMarkLink = PerfMark.linkOut();
+            CompletableFuture<O> future = filter.applyAsync(inMesg);
+            EventExecutor eventExecutor = getChannelHandlerContext(inMesg).executor();
+            future.whenComplete((result, error) -> executeOnEventLoop(
+                    eventExecutor,
+                    () -> onAsyncFilterComplete(filter, inMesg, result, error, startTime, snapshot, perfMarkLink)));
         } catch (Throwable t) {
             filter.decrementConcurrency();
             throw t;
         }
-
         return FilterExecutionResult.pending();
+    }
+
+    private void onAsyncFilterComplete(
+            ZuulFilter<I, O> filter,
+            I inMesg,
+            @Nullable O result,
+            @Nullable Throwable error,
+            long startTime,
+            ZuulMessage snapshot,
+            Link perfMarkLink) {
+        try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".asyncComplete")) {
+            PerfMark.linkIn(perfMarkLink);
+            filter.decrementConcurrency();
+            O outMesg;
+            if (error != null) {
+                recordFilterCompletion(ExecutionStatus.FAILED, filter, startTime, inMesg, snapshot);
+                outMesg = handleFilterException(inMesg, filter, error);
+                outMesg.finishBufferedBodyIfIncomplete();
+            } else {
+                outMesg = (result != null) ? result : filter.getDefaultOutput(inMesg);
+                recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
+            }
+            resumeInBindingContext(outMesg, filter.filterName());
+        } catch (Exception e) {
+            handleException(inMesg, filter.filterName(), e);
+        }
+    }
+
+    private static void executeOnEventLoop(@NonNull EventExecutor eventExecutor, @NonNull Runnable task) {
+        if (eventExecutor.inEventLoop()) {
+            task.run();
+        } else {
+            eventExecutor.execute(task);
+        }
     }
 
     /**
@@ -463,102 +482,6 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         static <O> FilterExecutionResult<O> completed(O message) {
             return new Complete<>(message);
-        }
-    }
-
-    private final class FilterChainResumer implements Observer<O> {
-        private final I inMesg;
-        private final ZuulFilter<I, O> filter;
-        private final long startTime;
-        private final ZuulMessage snapshot;
-        private final AtomicBoolean concurrencyDecremented;
-
-        private final AtomicReference<Link> onNextLinkOut = new AtomicReference<>();
-        private final AtomicReference<Link> onErrorLinkOut = new AtomicReference<>();
-        private final AtomicReference<Link> onCompletedLinkOut = new AtomicReference<>();
-
-        // no synchronization needed since onNext and onCompleted are always called on the same thread
-        private O outMesg;
-
-        public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
-            this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
-            this.filter = Preconditions.checkNotNull(filter, "filter");
-            this.snapshot = snapshot;
-            this.startTime = startTime;
-            this.concurrencyDecremented = new AtomicBoolean(false);
-        }
-
-        void decrementConcurrency() {
-            if (concurrencyDecremented.compareAndSet(false, true)) {
-                filter.decrementConcurrency();
-            }
-        }
-
-        @Override
-        public void onNext(O outMesg) {
-            try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onNextAsync")) {
-                PerfMark.linkIn(onNextLinkOut.get());
-                addPerfMarkTags(inMesg);
-                this.outMesg = outMesg;
-            } catch (Exception e) {
-                decrementConcurrency();
-                handleException(inMesg, filter.filterName(), e);
-            }
-        }
-
-        @Override
-        public void onError(Throwable ex) {
-            try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onErrorAsync")) {
-                PerfMark.linkIn(onErrorLinkOut.get());
-                decrementConcurrency();
-                recordFilterCompletion(ExecutionStatus.FAILED, filter, startTime, inMesg, snapshot);
-                O outMesg = handleFilterException(inMesg, filter, ex);
-                resumeInBindingContext(outMesg, filter.filterName());
-            } catch (Exception e) {
-                handleException(inMesg, filter.filterName(), e);
-            }
-        }
-
-        @Override
-        public void onCompleted() {
-            try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onCompletedAsync")) {
-                PerfMark.linkIn(onCompletedLinkOut.get());
-                decrementConcurrency();
-                if (outMesg == null) {
-                    outMesg = filter.getDefaultOutput(inMesg);
-                }
-                recordFilterCompletion(ExecutionStatus.SUCCESS, filter, startTime, inMesg, snapshot);
-                resumeInBindingContext(outMesg, filter.filterName());
-            } catch (Exception e) {
-                handleException(inMesg, filter.filterName(), e);
-            }
-        }
-
-        private Action1<O> onNextStarted(Link onNextLinkIn) {
-            return o -> {
-                try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onNext")) {
-                    PerfMark.linkIn(onNextLinkIn);
-                    onNextLinkOut.compareAndSet(null, PerfMark.linkOut());
-                }
-            };
-        }
-
-        private Action1<Throwable> onErrorStarted(Link onErrorLinkIn) {
-            return t -> {
-                try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onError")) {
-                    PerfMark.linkIn(onErrorLinkIn);
-                    onErrorLinkOut.compareAndSet(null, PerfMark.linkOut());
-                }
-            };
-        }
-
-        private Action0 onCompletedStarted(Link onCompletedLinkIn) {
-            return () -> {
-                try (TaskCloseable ignored = PerfMark.traceTask(filter, f -> f.filterName() + ".onCompleted")) {
-                    PerfMark.linkIn(onCompletedLinkIn);
-                    onCompletedLinkOut.compareAndSet(null, PerfMark.linkOut());
-                }
-            };
         }
     }
 }

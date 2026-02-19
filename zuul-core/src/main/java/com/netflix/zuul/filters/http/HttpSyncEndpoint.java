@@ -17,6 +17,7 @@
 package com.netflix.zuul.filters.http;
 
 import com.netflix.config.CachedDynamicBooleanProperty;
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.SyncZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
@@ -25,8 +26,7 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.LastHttpContent;
-import rx.Observable;
-import rx.Subscriber;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * User: Mike Smith
@@ -39,7 +39,8 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
     private static final CachedDynamicBooleanProperty WAIT_FOR_LASTCONTENT =
             new CachedDynamicBooleanProperty("zuul.endpoint.sync.wait_for_lastcontent", true);
 
-    private static final String KEY_FOR_SUBSCRIBER = "_HttpSyncEndpoint_subscriber";
+    private static final SessionContext.Key<ResponseState> KEY_FOR_SUBSCRIBER =
+            SessionContext.newKey("_HttpSyncEndpoint_subscriber");
 
     @Override
     public HttpResponseMessage getDefaultOutput(HttpRequestMessage request) {
@@ -47,30 +48,25 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
     }
 
     @Override
-    public Observable<HttpResponseMessage> applyAsync(HttpRequestMessage input) {
+    public CompletableFuture<HttpResponseMessage> applyAsync(HttpRequestMessage input) {
         if (WAIT_FOR_LASTCONTENT.get() && !input.hasCompleteBody()) {
-            // Return an observable that won't complete until after we have received the LastContent from client (ie.
-            // that we've
-            // received the whole request body), so that we can't potentially corrupt the clients' http state on this
-            // connection.
-            return Observable.create(subscriber -> {
-                ZuulMessage response = this.apply(input);
-                ResponseState state = new ResponseState(response, subscriber);
-                input.getContext().set(KEY_FOR_SUBSCRIBER, state);
-            });
+            // defer completion until we have received the full request body from the client,
+            // so that we can't potentially corrupt the clients' http state on this connection
+            HttpResponseMessage response = this.apply(input);
+            CompletableFuture<HttpResponseMessage> future = new CompletableFuture<>();
+            input.getContext().put(KEY_FOR_SUBSCRIBER, new ResponseState(response, future));
+            return future;
         } else {
-            return Observable.just(this.apply(input));
+            return CompletableFuture.completedFuture(this.apply(input));
         }
     }
 
     @Override
     public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
-        // Only call onNext() after we've received the LastContent of request from client.
         if (chunk instanceof LastHttpContent) {
-            ResponseState state = (ResponseState) zuulMessage.getContext().get(KEY_FOR_SUBSCRIBER);
+            ResponseState state = zuulMessage.getContext().get(KEY_FOR_SUBSCRIBER);
             if (state != null) {
-                state.subscriber.onNext(state.response);
-                state.subscriber.onCompleted();
+                state.future.complete(state.response);
                 zuulMessage.getContext().remove(KEY_FOR_SUBSCRIBER);
             }
         }
@@ -87,13 +83,5 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
         // NOOP, since this is supposed to be a SYNC filter in spirit
     }
 
-    private static class ResponseState {
-        final ZuulMessage response;
-        final Subscriber subscriber;
-
-        public ResponseState(ZuulMessage response, Subscriber subscriber) {
-            this.response = response;
-            this.subscriber = subscriber;
-        }
-    }
+    private record ResponseState(HttpResponseMessage response, CompletableFuture<HttpResponseMessage> future) {}
 }
