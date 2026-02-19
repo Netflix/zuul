@@ -11,6 +11,7 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import java.util.List;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
