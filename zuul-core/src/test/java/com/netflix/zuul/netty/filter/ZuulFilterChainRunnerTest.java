@@ -23,10 +23,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.ExecutionStatus;
+import com.netflix.zuul.Filter;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -41,7 +41,8 @@ import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.ImmediateEventExecutor;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,9 +56,10 @@ class ZuulFilterChainRunnerTest {
     void before() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
-        ChannelHandlerContext chc = mock(ChannelHandlerContext.class);
-        when(chc.executor()).thenReturn(ImmediateEventExecutor.INSTANCE);
-        context.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, chc);
+
+        EmbeddedChannel channel = new EmbeddedChannel(new ChannelInboundHandlerAdapter());
+        ChannelHandlerContext ctx = channel.pipeline().context(ChannelInboundHandlerAdapter.class);
+        context.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, ctx);
         request = new HttpRequestMessageImpl(
                 context,
                 "http",
@@ -83,7 +85,8 @@ class ZuulFilterChainRunnerTest {
         FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         Registry registry = mock(Registry.class);
 
-        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
+        ZuulFilterChainRunner runner =
+                new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
 
         runner.filter(request);
 
@@ -105,7 +108,8 @@ class ZuulFilterChainRunnerTest {
         FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         Registry registry = mock(Registry.class);
 
-        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
+        ZuulFilterChainRunner runner =
+                new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
 
         runner.filter(response);
 
@@ -117,6 +121,7 @@ class ZuulFilterChainRunnerTest {
         verifyNoMoreInteractions(notifier);
     }
 
+    @Filter(order = 1)
     class SimpleInboundFilter extends HttpInboundFilter {
         private final boolean shouldFilter;
 
@@ -145,6 +150,7 @@ class ZuulFilterChainRunnerTest {
         }
     }
 
+    @Filter(order = 1)
     class SimpleOutboundFilter extends HttpOutboundFilter {
         private final boolean shouldFilter;
 
