@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - zuul-v4
 
 jobs:
   build:
