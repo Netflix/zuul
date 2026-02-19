@@ -23,6 +23,7 @@ import static org.mockito.Mockito.doThrow;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.Filter;
+import com.netflix.zuul.FilterConstraint;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
@@ -38,10 +39,12 @@ import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import lombok.NonNull;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,9 +72,11 @@ public class BaseZuulFilterRunnerTest {
     private MultithreadEventLoopGroup group;
     private TestResumer resumer;
     private ErrorCapturingHandler errorCapturingHandler;
+    private TestConstraint constraint;
 
     @BeforeEach
     public void setup() {
+        constraint = new TestConstraint();
         runner = new TestBaseZuulFilterRunner(FilterType.INBOUND, notifier, nextStage, new NoopRegistry());
         SessionContext sessionContext = new SessionContext();
         message = new HttpRequestBuilder(sessionContext).build();
@@ -141,6 +146,54 @@ public class BaseZuulFilterRunnerTest {
                 .until(() -> errorCapturingHandler.error.get() != null);
     }
 
+    @Test
+    public void endpointFilterNeverSkipped() {
+        EndpointFilter filter = new EndpointFilter(false);
+        message.getContext().stopFilterProcessing();
+        message.getContext().cancel();
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
+    @Test
+    public void stopFilterProcessingSkipsFilter() {
+        InboundFilter filter = new InboundFilter(true);
+        message.getContext().stopFilterProcessing();
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void stopFilterProcessingDoesNotSkipWhenOverridden() {
+        OverrideStopFilter filter = new OverrideStopFilter(true);
+        message.getContext().stopFilterProcessing();
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
+    @Test
+    public void cancelledRequestSkipsFilter() {
+        InboundFilter filter = new InboundFilter(true);
+        message.getContext().cancel();
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void constrainedFilterSkipped() {
+        InboundFilter filter = new InboundFilter(true);
+        constraint.constrained = true;
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void shouldFilterFalseSkipsFilter() {
+        InboundFilter filter = new InboundFilter(false);
+        assertThat(runner.shouldSkipFilter(message, filter)).isTrue();
+    }
+
+    @Test
+    public void shouldFilterTrueDoesNotSkip() {
+        InboundFilter filter = new InboundFilter(true);
+        assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
     @Filter(type = FilterType.INBOUND, sync = FilterSyncType.ASYNC, order = 1)
     private static class AsyncFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
 
@@ -184,7 +237,7 @@ public class BaseZuulFilterRunnerTest {
                 FilterUsageNotifier usageNotifier,
                 FilterRunner<ZuulMessage, ?> nextStage,
                 Registry registry) {
-            super(filterType, usageNotifier, nextStage, registry);
+            super(filterType, usageNotifier, nextStage, new FilterConstraints(List.of(constraint)), registry);
         }
 
         @Override
@@ -206,6 +259,84 @@ public class BaseZuulFilterRunnerTest {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             error.set(cause);
+        }
+    }
+
+    @Filter(
+            type = FilterType.INBOUND,
+            order = 1,
+            constraints = {TestConstraint.class})
+    private static class InboundFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        InboundFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
+        }
+    }
+
+    @Filter(type = FilterType.ENDPOINT, order = 1)
+    private static class EndpointFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        EndpointFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
+        }
+    }
+
+    @Filter(type = FilterType.INBOUND, order = 1)
+    private static class OverrideStopFilter extends BaseFilter<ZuulMessage, ZuulMessage> {
+
+        private final boolean shouldFilter;
+
+        OverrideStopFilter(boolean shouldFilter) {
+            this.shouldFilter = shouldFilter;
+        }
+
+        @Override
+        public boolean overrideStopFilterProcessing() {
+            return true;
+        }
+
+        @Override
+        public Observable<ZuulMessage> applyAsync(ZuulMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(ZuulMessage msg) {
+            return shouldFilter;
+        }
+    }
+
+    private static class TestConstraint implements FilterConstraint {
+
+        boolean constrained;
+
+        @Override
+        public boolean isConstrained(@NonNull ZuulMessage msg) {
+            return constrained;
         }
     }
 }

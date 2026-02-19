@@ -50,6 +50,7 @@ import com.netflix.zuul.filters.passport.OutboundPassportStampingFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
+import com.netflix.zuul.netty.filter.FilterConstraints;
 import com.netflix.zuul.netty.filter.FilterRunner;
 import com.netflix.zuul.netty.filter.ZuulEndPointRunner;
 import com.netflix.zuul.netty.filter.ZuulFilterChainHandler;
@@ -70,6 +71,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
@@ -143,6 +145,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected final FilterLoader filterLoader;
     protected final FilterUsageNotifier filterUsageNotifier;
     protected final SourceAddressChannelHandler sourceAddressChannelHandler;
+    protected final FilterConstraints filterConstraints;
 
     /** A collection of all the active channels that we can use to things like graceful shutdown */
     protected final ChannelGroup channels;
@@ -222,6 +225,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
         this.filterLoader = channelDependencies.get(ZuulDependencyKeys.filterLoader);
         this.filterUsageNotifier = channelDependencies.get(ZuulDependencyKeys.filterUsageNotifier);
+
+        FilterConstraints filterConstraints = channelDependencies.get(ZuulDependencyKeys.filterConstraints);
+        this.filterConstraints = filterConstraints != null ? filterConstraints : new FilterConstraints(List.of());
 
         this.sourceAddressChannelHandler = new SourceAddressChannelHandler();
     }
@@ -350,17 +356,18 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain,
             FilterUsageNotifier filterUsageNotifier,
             FilterLoader filterLoader) {
-        return new ZuulEndPointRunner(filterUsageNotifier, filterLoader, responseFilterChain, registry);
+        return new ZuulEndPointRunner(
+                filterUsageNotifier, filterLoader, responseFilterChain, filterConstraints, registry);
     }
 
     protected <T extends ZuulMessage> ZuulFilterChainRunner<T> getFilterChainRunner(
             ZuulFilter<T, T>[] filters, FilterUsageNotifier filterUsageNotifier) {
-        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, registry);
+        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterConstraints, registry);
     }
 
     protected <T extends ZuulMessage, R extends ZuulMessage> ZuulFilterChainRunner<T> getFilterChainRunner(
             ZuulFilter<T, T>[] filters, FilterUsageNotifier filterUsageNotifier, FilterRunner<T, R> filterRunner) {
-        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterRunner, registry);
+        return new ZuulFilterChainRunner<>(filters, filterUsageNotifier, filterRunner, filterConstraints, registry);
     }
 
     @SuppressWarnings("unchecked") // For the conversion from getFiltersByType.  It's not safe, sorry.
