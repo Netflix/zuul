@@ -21,6 +21,7 @@ import com.netflix.zuul.FilterConstraint;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
+import java.util.concurrent.CompletableFuture;
 import rx.Observable;
 
 /**
@@ -102,9 +103,34 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     void incrementConcurrency() throws ZuulFilterConcurrencyExceededException;
 
     /**
-     * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+     * @deprecated Override {@link #applyAsync} instead. Will be removed in a future version of Zuul.
      */
-    Observable<O> applyAsync(I input);
+    @Deprecated
+    @SuppressWarnings("deprecation")
+    default Observable<O> applyAsyncObservable(I input) {
+        CompletableFuture<O> future = applyAsync(input);
+        return Observable.create(subscriber -> {
+            future.whenComplete((result, error) -> {
+                if (error != null) {
+                    subscriber.onError(error);
+                } else {
+                    subscriber.onNext(result);
+                    subscriber.onCompleted();
+                }
+            });
+        });
+    }
+
+    /**
+     * If shouldFilter() is true, this method will be invoked. This is the core method of a ZuulFilter.
+     */
+    @SuppressWarnings("deprecation")
+    default CompletableFuture<O> applyAsync(I input) {
+        CompletableFuture<O> future = new CompletableFuture<>();
+        applyAsyncObservable(input)
+                .subscribe(future::complete, future::completeExceptionally, () -> future.complete(null));
+        return future;
+    }
 
     /**
      * Called by zuul filter after request is processed by this filter.
