@@ -53,6 +53,7 @@ dependencies {
 
     implementation 'io.perfmark:perfmark-api:0.27.0'
     api 'jakarta.inject:jakarta.inject-api:2.0.1'
+    api 'org.jspecify:jspecify:1.0.0'
 
     testImplementation libraries.jupiterApi, libraries.jupiterParams, libraries.jupiterEngine, libraries.junitPlatformLauncher, libraries.jupiterMockito,
             libraries.mockito,

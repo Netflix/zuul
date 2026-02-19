@@ -78,15 +78,21 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     private final Registry registry;
     private final Id filterExcessiveTimerId;
+    private final FilterConstraints filterConstraints;
 
     protected BaseZuulFilterRunner(
-            FilterType filterType, FilterUsageNotifier usageNotifier, FilterRunner<O, ?> nextStage, Registry registry) {
+            FilterType filterType,
+            FilterUsageNotifier usageNotifier,
+            FilterRunner<O, ?> nextStage,
+            FilterConstraints filterConstraints,
+            Registry registry) {
         this.usageNotifier = Preconditions.checkNotNull(usageNotifier, "filter usage notifier");
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
         this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";
         this.registry = registry;
         this.filterExcessiveTimerId = registry.createId("zuul.request.timing.filterExcessive");
+        this.filterConstraints = filterConstraints;
     }
 
     @NonNull
@@ -318,7 +324,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             return true;
         }
 
-        if (isFilterConstrained(inMesg, filter)) {
+        if (filterConstraints.isConstrained(inMesg, filter)) {
             return true;
         }
         return !filter.shouldFilter(inMesg);

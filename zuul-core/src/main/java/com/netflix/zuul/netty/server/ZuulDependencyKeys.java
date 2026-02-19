@@ -29,6 +29,7 @@ import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.SessionContextDecorator;
+import com.netflix.zuul.netty.filter.FilterConstraints;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import io.netty.channel.ChannelHandler;
 import jakarta.inject.Provider;
@@ -72,4 +73,6 @@ public class ZuulDependencyKeys {
             new ChannelConfigKey<>("sslClientCertCheckChannelHandlerProvider");
     public static final ChannelConfigKey<PushConnectionRegistry> pushConnectionRegistry =
             new ChannelConfigKey<>("pushConnectionRegistry");
+    public static final ChannelConfigKey<FilterConstraints> filterConstraints =
+            new ChannelConfigKey<>("filterConstraints");
 }

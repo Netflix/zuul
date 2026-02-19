@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * This class is supposed to be thread safe and hence should not have any non final member variables
+ * This class is supposed to be thread safe
  * Created by saroskar on 5/17/17.
  */
 @ThreadSafe
@@ -46,13 +46,18 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             ZuulFilter<T, T>[] zuulFilters,
             FilterUsageNotifier usageNotifier,
             FilterRunner<T, ?> nextStage,
+            FilterConstraints filterConstraints,
             Registry registry) {
-        super(zuulFilters[0].filterType(), usageNotifier, nextStage, registry);
+        super(zuulFilters[0].filterType(), usageNotifier, nextStage, filterConstraints, registry);
         this.filters = zuulFilters;
     }
 
-    public ZuulFilterChainRunner(ZuulFilter<T, T>[] zuulFilters, FilterUsageNotifier usageNotifier, Registry registry) {
-        this(zuulFilters, usageNotifier, null, registry);
+    public ZuulFilterChainRunner(
+            ZuulFilter<T, T>[] zuulFilters,
+            FilterUsageNotifier usageNotifier,
+            FilterConstraints filterConstraints,
+            Registry registry) {
+        this(zuulFilters, usageNotifier, null, filterConstraints, registry);
     }
 
     @Override

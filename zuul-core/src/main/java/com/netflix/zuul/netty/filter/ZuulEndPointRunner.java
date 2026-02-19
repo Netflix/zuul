@@ -63,8 +63,9 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             FilterUsageNotifier usageNotifier,
             FilterLoader filterLoader,
             FilterRunner<HttpResponseMessage, HttpResponseMessage> respFilters,
+            FilterConstraints filterConstraints,
             Registry registry) {
-        super(FilterType.ENDPOINT, usageNotifier, respFilters, registry);
+        super(FilterType.ENDPOINT, usageNotifier, respFilters, filterConstraints, registry);
         this.filterLoader = filterLoader;
     }
 

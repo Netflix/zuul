@@ -42,6 +42,7 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import rx.Observable;
@@ -82,7 +83,7 @@ class ZuulFilterChainRunnerTest {
         FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         Registry registry = mock(Registry.class);
 
-        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
 
         runner.filter(request);
 
@@ -104,7 +105,7 @@ class ZuulFilterChainRunnerTest {
         FilterUsageNotifier notifier = mock(FilterUsageNotifier.class);
         Registry registry = mock(Registry.class);
 
-        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, registry);
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(filters, notifier, new FilterConstraints(List.of()), registry);
 
         runner.filter(response);
 

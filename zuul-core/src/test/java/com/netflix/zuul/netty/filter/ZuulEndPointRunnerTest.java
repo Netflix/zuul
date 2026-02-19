@@ -42,6 +42,7 @@ import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -68,7 +69,8 @@ class ZuulEndPointRunnerTest {
 
         filterRunner = mock(FilterRunner.class);
         registry = new NoopRegistry();
-        endpointRunner = new ZuulEndPointRunner(usageNotifier, filterLoader, filterRunner, registry);
+        endpointRunner = new ZuulEndPointRunner(
+                usageNotifier, filterLoader, filterRunner, new FilterConstraints(List.of()), registry);
 
         SessionContext context = new SessionContext();
         Headers headers = new Headers();

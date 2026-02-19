@@ -29,7 +29,6 @@ import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.BaseFilter;
 import com.netflix.zuul.filters.FilterSyncType;
 import com.netflix.zuul.filters.FilterType;
-import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,6 +38,7 @@ import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -235,7 +235,7 @@ public class BaseZuulFilterRunnerTest {
                 FilterUsageNotifier usageNotifier,
                 FilterRunner<ZuulMessage, ?> nextStage,
                 Registry registry) {
-            super(filterType, usageNotifier, nextStage, registry);
+            super(filterType, usageNotifier, nextStage, new FilterConstraints(List.of()), registry);
         }
 
         @Override
@@ -248,11 +248,6 @@ public class BaseZuulFilterRunnerTest {
 
         @Override
         public void filter(ZuulMessage zuulMesg, HttpContent chunk) {}
-
-        @Override
-        public boolean isFilterConstrained(ZuulMessage zuulMesg, ZuulFilter<ZuulMessage, ZuulMessage> filter) {
-            return constrained;
-        }
     }
 
     private static class ErrorCapturingHandler extends ChannelInboundHandlerAdapter {
