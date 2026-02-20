@@ -24,7 +24,6 @@ import com.netflix.netty.common.ssl.SslHandshakeInfo;
 import com.netflix.netty.common.throttle.RejectionUtils;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.context.CommonContextKeys;
-import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.context.SessionContextDecorator;
 import com.netflix.zuul.exception.ZuulException;
@@ -71,7 +70,6 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -273,11 +271,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         }
                     }
                 }
-                if (zuulCtx.debugRequest()) {
-                    LOG.debug("Endpoint = {}", zuulCtx.getEndpoint());
-                    dumpDebugInfo(Debug.getRequestDebug(zuulCtx));
-                    dumpDebugInfo(Debug.getRoutingDebug(zuulCtx));
-                }
             }
 
             if (zuulRequest == null) {
@@ -307,10 +300,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     protected void handleClientChannelInactiveEvent(@NonNull HttpRequestMessage zuulRequest) {
         // client closed connection prematurely
         StatusCategoryUtils.setStatusCategory(zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_CANCELLED);
-    }
-
-    private static void dumpDebugInfo(List<String> debugInfo) {
-        debugInfo.forEach((dbg) -> LOG.debug(dbg));
     }
 
     private void handleExpect100Continue(ChannelHandlerContext ctx, HttpRequest req) {
