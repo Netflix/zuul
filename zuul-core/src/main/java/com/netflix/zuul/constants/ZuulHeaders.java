@@ -44,7 +44,6 @@ public class ZuulHeaders {
     public static final String X_ZUUL_PROXY_ATTEMPTS = X_ZUUL + "-Proxy-Attempts";
     public static final String X_ZUUL_INSTANCE = X_ZUUL + "-Instance";
     public static final String X_ZUUL_ERROR_CAUSE = X_ZUUL + "-Error-Cause";
-    public static final String X_ZUUL_SURGICAL_FILTER = X_ZUUL + "-Surgical-Filter";
     public static final String X_ZUUL_FILTER_EXECUTION_STATUS = X_ZUUL + "-Filter-Executions";
 
     // Prevent instantiation
