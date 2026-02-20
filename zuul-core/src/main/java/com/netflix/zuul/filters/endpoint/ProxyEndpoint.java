@@ -18,7 +18,6 @@ package com.netflix.zuul.filters.endpoint;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.ForOverride;
 import com.netflix.client.ClientException;
@@ -28,7 +27,6 @@ import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
-import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.exception.ErrorType;
@@ -229,15 +227,6 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         SessionContext context = request.getContext();
         OriginManager<NettyOrigin> originManager =
                 (OriginManager<NettyOrigin>) context.get(CommonContextKeys.ORIGIN_MANAGER);
-        if (Debug.debugRequest(context)) {
-
-            ImmutableList.Builder<String> routingLogEntries = context.get(CommonContextKeys.ROUTING_LOG);
-            if (routingLogEntries != null) {
-                for (String entry : routingLogEntries.build()) {
-                    Debug.addRequestDebug(context, "RoutingLog: " + entry);
-                }
-            }
-        }
 
         String primaryRoute = context.getRouteVIP();
         if (Strings.isNullOrEmpty(primaryRoute)) {

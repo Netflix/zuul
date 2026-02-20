@@ -35,9 +35,7 @@ import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
-import com.netflix.zuul.sample.filters.Debug;
 import com.netflix.zuul.sample.filters.endpoint.Healthcheck;
-import com.netflix.zuul.sample.filters.inbound.DebugRequest;
 import com.netflix.zuul.sample.filters.inbound.Routes;
 import com.netflix.zuul.sample.filters.inbound.SampleServiceFilter;
 import com.netflix.zuul.sample.filters.outbound.ZuulResponseFilter;
@@ -65,11 +63,9 @@ public class Bootstrap {
     static {
         Set<Class<? extends ZuulFilter<?, ?>>> classes = new LinkedHashSet<>();
         classes.add(Healthcheck.class);
-        classes.add(Debug.class);
         classes.add(Routes.class);
         classes.add(SampleServiceFilter.class);
         classes.add(ZuulResponseFilter.class);
-        classes.add(DebugRequest.class);
 
         FILTER_TYPES = Collections.unmodifiableSet(classes);
     }
