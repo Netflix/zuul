@@ -10,7 +10,7 @@ plugins {
     id 'me.champeau.jmh' version '0.7.2'
     id 'org.openrewrite.rewrite' version '7.12.1'
     id 'net.ltgt.errorprone' version '4.1.0'
-    id 'com.diffplug.spotless' version "8.1.0"
+    id 'com.diffplug.spotless' version "8.2.1"
     id 'idea'
 }
 
