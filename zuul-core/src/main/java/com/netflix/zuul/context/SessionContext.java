@@ -56,9 +56,6 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     private boolean shouldStopFilterProcessing = false;
     private boolean shouldSendErrorResponse = false;
     private boolean errorResponseSent = false;
-    private boolean debugRouting = false;
-    private boolean debugRequest = false;
-    private boolean debugRequestHeadersOnly = false;
     private boolean cancelled = false;
 
     private static final String KEY_UUID = "_uuid";
@@ -264,7 +261,7 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * Makes a copy of the RequestContext. This is used for debugging.
+     * Makes a copy of the SessionContext.
      */
     @Override
     public SessionContext clone() {
@@ -354,51 +351,6 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
 
     public void setErrorEndpoint(String name) {
         put("_error-endpoint", name);
-    }
-
-    /**
-     * sets  debugRouting
-     */
-    public void setDebugRouting(boolean bDebug) {
-        this.debugRouting = bDebug;
-    }
-
-    /**
-     * @return "debugRouting"
-     */
-    public boolean debugRouting() {
-        return debugRouting;
-    }
-
-    /**
-     * sets "debugRequestHeadersOnly" to bHeadersOnly
-     *
-     */
-    public void setDebugRequestHeadersOnly(boolean bHeadersOnly) {
-        this.debugRequestHeadersOnly = bHeadersOnly;
-    }
-
-    /**
-     * @return "debugRequestHeadersOnly"
-     */
-    public boolean debugRequestHeadersOnly() {
-        return this.debugRequestHeadersOnly;
-    }
-
-    /**
-     * sets "debugRequest"
-     */
-    public void setDebugRequest(boolean bDebug) {
-        this.debugRequest = bDebug;
-    }
-
-    /**
-     * gets debugRequest
-     *
-     * @return debugRequest
-     */
-    public boolean debugRequest() {
-        return this.debugRequest;
     }
 
     /**
