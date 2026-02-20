@@ -26,7 +26,6 @@ import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_PROXY_ATTEMPTS;
 import static com.netflix.zuul.constants.ZuulHeaders.X_ZUUL_STATUS;
 
 import com.netflix.config.DynamicBooleanProperty;
-import com.netflix.zuul.context.Debug;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.filters.http.HttpOutboundSyncFilter;
@@ -101,11 +100,6 @@ public class ZuulResponseFilter extends HttpOutboundSyncFilter {
             if (logger.isDebugEnabled()) {
                 logger.debug("Filter execution summary :: {}", context.getFilterExecutionSummary());
             }
-        }
-
-        if (context.debugRequest()) {
-            Debug.getRequestDebug(context).forEach(s -> logger.info("REQ_DEBUG: {}", s));
-            Debug.getRoutingDebug(context).forEach(s -> logger.info("ZUUL_DEBUG: {}", s));
         }
 
         return response;
