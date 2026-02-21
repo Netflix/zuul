@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpContent;
@@ -30,6 +29,7 @@ import io.netty.util.ReferenceCountUtil;
 import java.util.List;
 
 /**
+ * Validates that HTTP/2 request content-length headers are consistent with the actual body.
  * This class is only suitable for use on HTTP/2 child channels.
  */
 public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHandlerAdapter {
@@ -39,71 +39,63 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
 
     private long seenContentLength;
 
-    /**
-     * This checks that the content length does what it says, preventing a client from causing Zuul to misinterpret the
-     * request.  Because this class is meant to work in an HTTP/2 setting, the content length and transfer encoding
-     * checks are more semantics.  In particular, this checks:
-     * <ul>
-     *     <li>No duplicate Content length</li>
-     *     <li>Content Length (if present) must always be greater than or equal to how much content has been seen</li>
-     *     <li>Content Length (if present) must always be equal to how much content has been seen by the end</li>
-     *     <li>Content Length cannot be present along with chunked transfer encoding.</li>
-     * </ul>
-     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequest req) {
+        if (msg instanceof HttpRequest req && !validateRequest(req)) {
+            rejectAndRelease(ctx, msg);
+            return;
+        }
 
-            List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
-            if (lengthHeaders.size() > 1) {
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            } else if (lengthHeaders.size() == 1) {
-                try {
-                    expectedContentLength = Long.parseLong(lengthHeaders.getFirst());
-                } catch (NumberFormatException e) {
-                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                    ReferenceCountUtil.safeRelease(msg);
-                    return;
-                }
-                if (expectedContentLength < 0) {
-                    // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                    ReferenceCountUtil.safeRelease(msg);
-                    return;
-                }
-            }
-            if (hasContentLength() && HttpUtil.isTransferEncodingChunked(req)) {
-                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            }
+        if (msg instanceof HttpContent httpContent && !validateContent(httpContent)) {
+            rejectAndRelease(ctx, msg);
+            return;
         }
-        if (msg instanceof HttpContent) {
-            ByteBuf content = ((HttpContent) msg).content();
-            incrementSeenContent(content.readableBytes());
-            if (hasContentLength() && seenContentLength > expectedContentLength) {
-                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            }
+
+        if (msg instanceof LastHttpContent && !validateEndOfStream()) {
+            rejectAndRelease(ctx, msg);
+            return;
         }
-        if (msg instanceof LastHttpContent) {
-            if (hasContentLength() && seenContentLength != expectedContentLength) {
-                // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
-                ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
-                ReferenceCountUtil.safeRelease(msg);
-                return;
-            }
-        }
+
         super.channelRead(ctx, msg);
     }
 
-    private boolean hasContentLength() {
-        return expectedContentLength != UNSET_CONTENT_LENGTH;
+    private boolean validateRequest(HttpRequest req) {
+        List<String> lengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
+        if (lengthHeaders.size() > 1) {
+            return false;
+        }
+
+        if (lengthHeaders.size() == 1) {
+            try {
+                expectedContentLength = Long.parseLong(lengthHeaders.getFirst());
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            if (expectedContentLength < 0) {
+                return false;
+            }
+        }
+
+        return isContentLengthUnset() || !HttpUtil.isTransferEncodingChunked(req);
+    }
+
+    private boolean validateContent(HttpContent httpContent) {
+        incrementSeenContent(httpContent.content().readableBytes());
+        return isContentLengthUnset() || seenContentLength <= expectedContentLength;
+    }
+
+    private boolean validateEndOfStream() {
+        return isContentLengthUnset() || seenContentLength == expectedContentLength;
+    }
+
+    private void rejectAndRelease(ChannelHandlerContext ctx, Object msg) {
+        // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
+        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+        ReferenceCountUtil.safeRelease(msg);
+    }
+
+    private boolean isContentLengthUnset() {
+        return expectedContentLength == UNSET_CONTENT_LENGTH;
     }
 
     private void incrementSeenContent(int length) {
