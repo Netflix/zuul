@@ -30,67 +30,47 @@ import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http2.Http2ResetFrame;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class Http2ContentLengthEnforcingHandlerTest {
 
-    @Test
-    void failsOnMultipleContentLength() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
+    private EmbeddedChannel channel;
 
-        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
-        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
-        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
-        chan.writeInbound(req);
-
-        Object out = chan.readOutbound();
-        assertThat(out).isInstanceOf(Http2ResetFrame.class);
+    @BeforeEach
+    void setup() {
+        channel = new EmbeddedChannel(new Http2ContentLengthEnforcingHandler());
     }
 
     @Test
-    void failsOnMixedContentLengthAndChunked() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
+    void validRequestPassesThrough() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
+        req.headers().set(HttpHeaderNames.CONTENT_LENGTH, 3);
+        channel.writeInbound(req);
 
-        HttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
-        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
-        req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "identity, chunked");
-        req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "fzip");
-        chan.writeInbound(req);
-
-        Object out = chan.readOutbound();
-        assertThat(out).isInstanceOf(Http2ResetFrame.class);
+        assertThat(channel.<Object>readOutbound()).isNull();
+        assertThat(channel.<Object>readInbound()).isSameAs(req);
     }
 
     @Test
-    void failsOnShortContentLength() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
+    void requestWithNoContentLengthPassesThrough() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        channel.writeInbound(req);
 
+        assertThat(channel.<Object>readOutbound()).isNull();
+        assertThat(channel.<Object>readInbound()).isSameAs(req);
+    }
+
+    @Test
+    void rejectsMultipleContentLengthHeaders() {
         DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
-        chan.writeInbound(req);
+        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
+        channel.writeInbound(req);
 
-        Object out = chan.readOutbound();
-        assertThat(out).isNull();
-
-        DefaultHttpContent content =
-                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
-        chan.writeInbound(content);
-
-        out = chan.readOutbound();
-        assertThat(out).isNull();
-
-        DefaultHttpContent content2 =
-                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
-        chan.writeInbound(content2);
-
-        out = chan.readOutbound();
-        assertThat(out).isInstanceOf(Http2ResetFrame.class);
+        assertThat((Object) channel.readOutbound()).isInstanceOf(Http2ResetFrame.class);
     }
 
     @Test
@@ -110,28 +90,56 @@ class Http2ContentLengthEnforcingHandlerTest {
     }
 
     @Test
-    void failsOnShortContent() {
-        EmbeddedChannel chan = new EmbeddedChannel();
-        chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
+    void rejectsNegativeContentLength() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
+        req.headers().set(HttpHeaderNames.CONTENT_LENGTH, -5);
+        channel.writeInbound(req);
 
+        assertThat((Object) channel.readOutbound()).isInstanceOf(Http2ResetFrame.class);
+    }
+
+    @Test
+    void rejectsMixedContentLengthAndChunked() {
         DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
-        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
-        chan.writeInbound(req);
+        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
+        req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "identity, chunked");
+        req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, "fzip");
+        channel.writeInbound(req);
 
-        Object out = chan.readOutbound();
-        assertThat(out).isNull();
+        assertThat((Object) channel.readOutbound()).isInstanceOf(Http2ResetFrame.class);
+    }
+
+    @Test
+    void rejectsContentExceedingDeclaredLength() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
+        channel.writeInbound(req);
+        assertThat(channel.<Object>readOutbound()).isNull();
 
         DefaultHttpContent content =
                 new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
-        chan.writeInbound(content);
+        channel.writeInbound(content);
+        assertThat(channel.<Object>readOutbound()).isNull();
 
-        out = chan.readOutbound();
-        assertThat(out).isNull();
+        DefaultHttpContent content2 =
+                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
+        channel.writeInbound(content2);
+        assertThat((Object) channel.readOutbound()).isInstanceOf(Http2ResetFrame.class);
+    }
 
-        DefaultHttpContent content2 = new DefaultLastHttpContent();
-        chan.writeInbound(content2);
+    @Test
+    void rejectsContentShorterThanDeclaredLength() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "");
+        req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 2);
+        channel.writeInbound(req);
+        assertThat(channel.<Object>readOutbound()).isNull();
 
-        out = chan.readOutbound();
-        assertThat(out).isInstanceOf(Http2ResetFrame.class);
+        DefaultHttpContent content =
+                new DefaultHttpContent(ByteBufUtil.writeUtf8(UnpooledByteBufAllocator.DEFAULT, "a"));
+        channel.writeInbound(content);
+        assertThat(channel.<Object>readOutbound()).isNull();
+
+        channel.writeInbound(new DefaultLastHttpContent());
+        assertThat((Object) channel.readOutbound()).isInstanceOf(Http2ResetFrame.class);
     }
 }
