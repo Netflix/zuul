@@ -781,6 +781,15 @@ class HttpRequestMessageImplTest {
     }
 
     @Test
+    void getOriginalPort_nonNumericXFFPort() {
+        Headers headers = new Headers();
+        headers.add(HttpHeaderNames.X_FORWARDED_PORT, "not_a_number");
+
+        assertThat(HttpRequestMessageImpl.getOriginalPort(new SessionContext(), headers, 9999))
+                .isEqualTo(9999);
+    }
+
+    @Test
     void getOriginalPort_respectsProxyProtocol() throws URISyntaxException {
         SessionContext context = new SessionContext();
         context.set(
