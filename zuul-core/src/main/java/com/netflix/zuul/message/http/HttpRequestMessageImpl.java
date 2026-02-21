@@ -568,11 +568,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
         }
         String portStr = headers.getFirst(HttpHeaderNames.X_FORWARDED_PORT);
         if (portStr != null && !portStr.isEmpty()) {
-            try {
-                return Integer.parseInt(portStr);
-            } catch (NumberFormatException e) {
-                LOG.debug("Invalid X-Forwarded-Port header value: {}", portStr, e);
-            }
+            return Integer.parseInt(portStr);
         }
 
         try {
