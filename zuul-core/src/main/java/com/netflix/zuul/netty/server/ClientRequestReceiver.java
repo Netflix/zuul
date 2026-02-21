@@ -453,6 +453,12 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
         }
 
+        // Hardening: Prevent path traversal by ensuring no ".." segments are processed.
+        if (path.contains("..")) {
+            LOG.warn("Suspicious path segment detected and rejected: {}", path);
+            throw new IllegalArgumentException("Path contains invalid segments");
+        }
+
         int queryIndex = path.indexOf('?');
         if (queryIndex > -1) {
             path = path.substring(0, queryIndex);
