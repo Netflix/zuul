@@ -60,7 +60,13 @@ public final class Http2ContentLengthEnforcingHandler extends ChannelInboundHand
                 ReferenceCountUtil.safeRelease(msg);
                 return;
             } else if (lengthHeaders.size() == 1) {
-                expectedContentLength = Long.parseLong(lengthHeaders.get(0));
+                try {
+                    expectedContentLength = Long.parseLong(lengthHeaders.getFirst());
+                } catch (NumberFormatException e) {
+                    ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
+                    ReferenceCountUtil.safeRelease(msg);
+                    return;
+                }
                 if (expectedContentLength < 0) {
                     // TODO(carl-mastrangelo): this is not right, but meh.  Fix this to return a proper 400.
                     ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.PROTOCOL_ERROR));
