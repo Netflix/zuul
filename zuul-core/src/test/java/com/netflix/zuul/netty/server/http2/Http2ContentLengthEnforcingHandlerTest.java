@@ -18,12 +18,16 @@ package com.netflix.zuul.netty.server.http2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -87,6 +91,22 @@ class Http2ContentLengthEnforcingHandlerTest {
 
         out = chan.readOutbound();
         assertThat(out).isInstanceOf(Http2ResetFrame.class);
+    }
+
+    @Test
+    void failsOnNonNumericContentLength() {
+        EmbeddedChannel chan = new EmbeddedChannel();
+        chan.pipeline().addLast(new Http2ContentLengthEnforcingHandler());
+
+        ByteBuf content = Unpooled.buffer(8);
+        FullHttpRequest req = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/", content);
+        req.headers().set(HttpHeaderNames.CONTENT_LENGTH, "not_a_number");
+
+        chan.writeInbound(req);
+
+        Object out = chan.readOutbound();
+        assertThat(out).isInstanceOf(Http2ResetFrame.class);
+        assertThat(content.refCnt()).isEqualTo(0);
     }
 
     @Test
