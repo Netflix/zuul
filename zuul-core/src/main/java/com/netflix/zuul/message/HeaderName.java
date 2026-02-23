@@ -28,7 +28,6 @@ import java.util.Locale;
 public final class HeaderName {
     private final String name;
     private final String normalised;
-    private final int hashCode;
 
     public HeaderName(String name) {
         if (name == null) {
@@ -36,13 +35,11 @@ public final class HeaderName {
         }
         this.name = name;
         this.normalised = normalize(name);
-        this.hashCode = this.normalised.hashCode();
     }
 
     HeaderName(String name, String normalised) {
         this.name = name;
         this.normalised = normalised;
-        this.hashCode = normalised.hashCode();
     }
 
     /**
@@ -74,7 +71,7 @@ public final class HeaderName {
 
     @Override
     public int hashCode() {
-        return hashCode;
+        return normalised.hashCode();
     }
 
     @Override
