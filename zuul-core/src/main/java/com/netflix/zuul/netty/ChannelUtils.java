@@ -37,8 +37,6 @@ public class ChannelUtils {
                 .append(ch.isRegistered())
                 .append(", writable=")
                 .append(ch.isWritable())
-                .append(", id=")
-                .append(ch.id())
                 .append(", Passport: ")
                 .append(passport);
         return builder.toString();
