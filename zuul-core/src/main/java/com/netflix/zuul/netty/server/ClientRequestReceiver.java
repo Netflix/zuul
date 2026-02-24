@@ -144,10 +144,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
             // Handle invalid HTTP requests.
             if (clientRequest.decoderResult().isFailure()) {
+                String clientIp = Objects.requireNonNullElse(getClientIp(ctx.channel()), "unknown");
                 LOG.warn(
-                        "Invalid http request. clientRequest = {} , uri = {}, info = {}",
+                        "Invalid http request. clientRequest = {}, clientIp = {}, info = {}",
                         clientRequest,
-                        clientRequest.uri(),
+                        clientIp,
                         ChannelUtils.channelInfoForLogging(ctx.channel()),
                         clientRequest.decoderResult().cause());
                 StatusCategoryUtils.setStatusCategory(
@@ -155,11 +156,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
                         "Invalid request provided: Decode failure");
                 RejectionUtils.rejectByClosingConnection(
-                        ctx,
-                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
-                        "decodefailure",
-                        clientRequest,
-                        /* injectedLatencyMillis= */ null);
+                        ctx, ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, "decodefailure", clientRequest, null);
                 return;
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
@@ -427,7 +424,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             }
             return path;
         } catch (URISyntaxException ex) {
-            LOG.debug("URI syntax error: {}", ex);
+            LOG.debug("URI syntax error", ex);
         }
         // manual path parsing
         // relative uri
