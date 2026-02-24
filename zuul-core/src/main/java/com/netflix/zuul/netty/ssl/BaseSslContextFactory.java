@@ -27,6 +27,7 @@ import com.netflix.spectator.api.patterns.PolledMeter;
 import io.netty.handler.ssl.CipherSuiteFilter;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.OpenSslContextOption;
 import io.netty.handler.ssl.OpenSslSessionStats;
 import io.netty.handler.ssl.ReferenceCountedOpenSslContext;
 import io.netty.handler.ssl.SslContext;
@@ -62,6 +63,9 @@ public class BaseSslContextFactory implements SslContextFactory {
     private static final DynamicBooleanProperty ALLOW_USE_OPENSSL =
             new DynamicBooleanProperty("zuul.ssl.openssl.allow", true);
 
+    // matches Netty's OpenSSL defaults (@see io.netty.handler.ssl.OpenSsl)
+    private static final String[] DEFAULT_NAMED_GROUPS = {"x25519", "secp256r1", "secp384r1", "secp521r1"};
+
     static {
         // Install BouncyCastle provider.
         java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -86,7 +90,8 @@ public class BaseSslContextFactory implements SslContextFactory {
             SslContextBuilder builder = newBuilderForServer()
                     .ciphers(getCiphers(), getCiphersFilter())
                     .sessionTimeout(serverSslConfig.getSessionTimeout())
-                    .sslProvider(sslProvider);
+                    .sslProvider(sslProvider)
+                    .option(OpenSslContextOption.GROUPS, getNamedGroups());
 
             if (serverSslConfig.getClientAuth() != null && trustedCerts != null && !trustedCerts.isEmpty()) {
                 builder = builder.trustManager(trustedCerts.toArray(new X509Certificate[0]))
@@ -181,6 +186,10 @@ public class BaseSslContextFactory implements SslContextFactory {
 
     protected CipherSuiteFilter getCiphersFilter() {
         return SupportedCipherSuiteFilter.INSTANCE;
+    }
+
+    protected String[] getNamedGroups() {
+        return DEFAULT_NAMED_GROUPS;
     }
 
     protected List<X509Certificate> getTrustedX509Certificates()

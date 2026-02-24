@@ -18,7 +18,9 @@ package com.netflix.zuul.netty.ssl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslProvider;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,5 +30,18 @@ class BaseSslContextFactoryTest {
     @Test
     void testDefaultSslProviderIsOpenSsl() {
         assertThat(BaseSslContextFactory.chooseSslProvider()).isEqualTo(SslProvider.OPENSSL);
+    }
+
+    @Test
+    void defaultNamedGroupsMatchNettyDefaults() throws Exception {
+        Field nettyDefaultsField = OpenSsl.class.getDeclaredField("DEFAULT_NAMED_GROUPS");
+        nettyDefaultsField.setAccessible(true);
+        String[] nettyDefaultNamedGroups = (String[]) nettyDefaultsField.get(null);
+
+        Field zuulField = BaseSslContextFactory.class.getDeclaredField("DEFAULT_NAMED_GROUPS");
+        zuulField.setAccessible(true);
+        String[] zuulGroups = (String[]) zuulField.get(null);
+
+        assertThat(zuulGroups).as("should match netty defaults").containsExactly(nettyDefaultNamedGroups);
     }
 }
