@@ -60,6 +60,8 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     private final long maxHeaderTableSize;
     private final long maxHeaderListSize;
     private final boolean catchConnectionErrors;
+    private final boolean connectProtocolEnabled;
+
     // controls the number of rst frames that will be sent to a client before closing the connection
     private final int maxEncoderRstFrames;
     private final int maxEncoderRstFramesWindow;
@@ -78,6 +80,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.catchConnectionErrors = channelConfig.get(CommonChannelConfigKeys.http2CatchConnectionErrors);
         this.maxEncoderRstFrames = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFrames);
         this.maxEncoderRstFramesWindow = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFramesWindow);
+        this.connectProtocolEnabled = channelConfig.get(CommonChannelConfigKeys.http2ConnectProtocolEnabled);
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 
@@ -143,7 +146,8 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .maxConcurrentStreams(maxConcurrentStreams)
                 .initialWindowSize(initialWindowSize)
                 .headerTableSize(maxHeaderTableSize)
-                .maxHeaderListSize(maxHeaderListSize);
+                .maxHeaderListSize(maxHeaderListSize)
+                .connectProtocolEnabled(connectProtocolEnabled);
 
         Http2FrameCodec frameCodec = Http2FrameCodecBuilder.forServer()
                 .frameLogger(FRAME_LOGGER)

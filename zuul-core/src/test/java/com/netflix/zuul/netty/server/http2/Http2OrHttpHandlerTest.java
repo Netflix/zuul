@@ -30,7 +30,10 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
+import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.ssl.ApplicationProtocolNames;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -39,11 +42,23 @@ import org.junit.jupiter.api.Test;
  */
 class Http2OrHttpHandlerTest {
 
+    private EmbeddedChannel channel;
+    private ChannelConfig channelConfig;
+
+    @BeforeEach
+    void setUp() {
+        channel = new EmbeddedChannel();
+        channelConfig = new ChannelConfig();
+    }
+
+    @AfterEach
+    void tearDown() {
+        channel.finishAndReleaseAll();
+    }
+
     @Test
     void swapInHttp2HandlerBasedOnALPN() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel();
         NoopRegistry registry = new NoopRegistry();
-        ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
         Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
@@ -74,8 +89,6 @@ class Http2OrHttpHandlerTest {
 
     @Test
     void protocolCloseHandlerAddedByDefault() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel();
-        ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
         Http2OrHttpHandler http2OrHttpHandler =
@@ -91,8 +104,6 @@ class Http2OrHttpHandlerTest {
 
     @Test
     void skipProtocolCloseHandler() throws Exception {
-        EmbeddedChannel channel = new EmbeddedChannel();
-        ChannelConfig channelConfig = new ChannelConfig();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.http2CatchConnectionErrors, false));
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
@@ -105,5 +116,42 @@ class Http2OrHttpHandlerTest {
         http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
         assertThat(channel.pipeline().context(Http2ConnectionErrorHandler.class))
                 .isNull();
+    }
+
+    @Test
+    void validateHttp2Settings() throws Exception {
+
+        boolean connectProtocolEnabled = !CommonChannelConfigKeys.http2ConnectProtocolEnabled.defaultValue();
+        int maxConcurrentStreams = CommonChannelConfigKeys.maxConcurrentStreams.defaultValue() + 1;
+        int initialWindowSize = CommonChannelConfigKeys.initialWindowSize.defaultValue() + 1;
+        int maxHeaderTableSize = CommonChannelConfigKeys.maxHttp2HeaderTableSize.defaultValue() + 1;
+        int maxHeaderListSize = 1024;
+
+        channelConfig.add(
+                new ChannelConfigValue<>(CommonChannelConfigKeys.http2ConnectProtocolEnabled, connectProtocolEnabled));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxConcurrentStreams, maxConcurrentStreams));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.initialWindowSize, initialWindowSize));
+        channelConfig.add(
+                new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize, maxHeaderTableSize));
+        channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, maxHeaderListSize));
+
+        Http2OrHttpHandler http2OrHttpHandler =
+                new Http2OrHttpHandler(new ChannelInboundHandlerAdapter(), channelConfig, cp -> {});
+
+        channel.pipeline().addLast("codec_placeholder", new DummyChannelHandler());
+        channel.pipeline().addLast(Http2OrHttpHandler.class.getSimpleName(), http2OrHttpHandler);
+
+        http2OrHttpHandler.configurePipeline(channel.pipeline().lastContext(), ApplicationProtocolNames.HTTP_2);
+        // triggers settings to be written
+        channel.pipeline().fireChannelActive();
+
+        Http2FrameCodec http2FrameCodec = channel.pipeline().get(Http2FrameCodec.class);
+        Http2Settings http2Settings = http2FrameCodec.encoder().pollSentSettings();
+
+        assertThat(http2Settings.connectProtocolEnabled()).isEqualTo(connectProtocolEnabled);
+        assertThat(http2Settings.maxConcurrentStreams()).isEqualTo(maxConcurrentStreams);
+        assertThat(http2Settings.initialWindowSize()).isEqualTo(initialWindowSize);
+        assertThat(http2Settings.headerTableSize()).isEqualTo(maxHeaderTableSize);
+        assertThat(http2Settings.maxHeaderListSize()).isEqualTo(maxHeaderListSize);
     }
 }
