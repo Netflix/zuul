@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.filter;
 
-import com.google.common.base.Preconditions;
 import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import com.netflix.netty.common.HttpRequestReadTimeoutEvent;
@@ -44,6 +43,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import java.nio.channels.ClosedChannelException;
 import javax.net.ssl.SSLException;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,10 +59,10 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(ZuulFilterChainHandler.class);
 
     public ZuulFilterChainHandler(
-            ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
-            ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain) {
-        this.requestFilterChain = Preconditions.checkNotNull(requestFilterChain, "request filter chain");
-        this.responseFilterChain = Preconditions.checkNotNull(responseFilterChain, "response filter chain");
+            @NonNull ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
+            @NonNull ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain) {
+        this.requestFilterChain = requestFilterChain;
+        this.responseFilterChain = responseFilterChain;
     }
 
     @Override
