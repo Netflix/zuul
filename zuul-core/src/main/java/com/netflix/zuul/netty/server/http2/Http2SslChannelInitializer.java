@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.google.common.base.Preconditions;
 import com.netflix.netty.common.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.SwallowSomeHttp2ExceptionsHandler;
@@ -32,6 +31,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,7 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
     public Http2SslChannelInitializer(
             String metricId, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
         super(metricId, channelConfig, channelDependencies, channels);
-        this.http2SslMetricId = Preconditions.checkNotNull(metricId, "metricId");
+        this.http2SslMetricId = Objects.requireNonNull(metricId, "metricId");
 
         this.swallowSomeHttp2ExceptionsHandler = new SwallowSomeHttp2ExceptionsHandler(registry);
 

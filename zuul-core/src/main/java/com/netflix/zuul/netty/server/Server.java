@@ -17,7 +17,6 @@
 package com.netflix.zuul.netty.server;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.CategorizedThreadFactory;
@@ -204,10 +203,10 @@ public class Server {
             Thread jvmShutdownHook) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
-        this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
+        this.serverStatusManager = Objects.requireNonNull(serverStatusManager, "serverStatusManager");
         this.clientConnectionsShutdown =
-                Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
-        this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
+                Objects.requireNonNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = Objects.requireNonNull(eventLoopConfig, "eventLoopConfig");
         this.jvmShutdownHook =
                 jvmShutdownHook != null ? jvmShutdownHook : new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }

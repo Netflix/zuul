@@ -18,7 +18,6 @@ package com.netflix.zuul.netty.filter;
 
 import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
@@ -30,6 +29,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -74,7 +74,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
 
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(inMesg);
-            Preconditions.checkNotNull(inMesg, "input message");
+            Objects.requireNonNull(inMesg, "input message");
 
             AtomicInteger runningFilterIdx = getRunningFilterIndex(inMesg);
             int limit = runningFilterIdx.get();
@@ -150,7 +150,7 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
         T inMesg = mesg;
         String filterName = "-";
         try {
-            Preconditions.checkNotNull(mesg, "Input message");
+            Objects.requireNonNull(mesg, "Input message");
             int i = runningFilterIdx.get();
 
             while (i < filters.length) {
