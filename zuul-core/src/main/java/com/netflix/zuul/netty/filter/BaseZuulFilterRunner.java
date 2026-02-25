@@ -19,7 +19,6 @@ package com.netflix.zuul.netty.filter;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.ExecutionStatus;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -43,6 +42,7 @@ import io.perfmark.Link;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import jakarta.annotation.Nullable;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,11 +78,11 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected BaseZuulFilterRunner(
             FilterType filterType,
-            FilterUsageNotifier usageNotifier,
+            @NonNull FilterUsageNotifier usageNotifier,
             FilterRunner<O, ?> nextStage,
             FilterConstraints filterConstraints,
             Registry registry) {
-        this.usageNotifier = Preconditions.checkNotNull(usageNotifier, "filter usage notifier");
+        this.usageNotifier = usageNotifier;
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
         this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";
@@ -105,7 +105,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
     protected final AtomicInteger getRunningFilterIndex(I zuulMesg) {
         SessionContext ctx = zuulMesg.getContext();
         return (AtomicInteger)
-                Preconditions.checkNotNull(ctx.get(RUNNING_FILTER_IDX_SESSION_CTX_KEY), "runningFilterIndex");
+                Objects.requireNonNull(ctx.get(RUNNING_FILTER_IDX_SESSION_CTX_KEY), "runningFilterIndex");
     }
 
     protected final boolean isFilterAwaitingBody(SessionContext context) {

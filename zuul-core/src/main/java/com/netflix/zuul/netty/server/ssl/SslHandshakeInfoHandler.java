@@ -17,7 +17,6 @@
 package com.netflix.zuul.netty.server.ssl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
@@ -39,6 +38,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import java.nio.channels.ClosedChannelException;
+import lombok.NonNull;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -79,8 +79,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
 
-    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary) {
-        this.spectatorRegistry = Preconditions.checkNotNull(spectatorRegistry);
+    public SslHandshakeInfoHandler(@NonNull Registry spectatorRegistry, boolean isSSlFromIntermediary) {
+        this.spectatorRegistry = spectatorRegistry;
         this.isSSlFromIntermediary = isSSlFromIntermediary;
     }
 
