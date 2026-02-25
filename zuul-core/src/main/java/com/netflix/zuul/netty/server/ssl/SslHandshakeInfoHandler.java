@@ -17,7 +17,6 @@
 package com.netflix.zuul.netty.server.ssl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.ssl.SslHandshakeInfo;
@@ -51,6 +50,7 @@ import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,10 +80,11 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     private final boolean isSSlFromIntermediary;
     private final String listenerName;
 
-    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary, String listenerName) {
-        this.spectatorRegistry = Preconditions.checkNotNull(spectatorRegistry);
+    public SslHandshakeInfoHandler(
+            @NonNull Registry spectatorRegistry, boolean isSSlFromIntermediary, @NonNull String listenerName) {
+        this.spectatorRegistry = spectatorRegistry;
         this.isSSlFromIntermediary = isSSlFromIntermediary;
-        this.listenerName = Preconditions.checkNotNull(listenerName);
+        this.listenerName = listenerName;
     }
 
     @VisibleForTesting
