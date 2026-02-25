@@ -78,11 +78,11 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected BaseZuulFilterRunner(
             FilterType filterType,
-            FilterUsageNotifier usageNotifier,
+            @NonNull FilterUsageNotifier usageNotifier,
             FilterRunner<O, ?> nextStage,
             FilterConstraints filterConstraints,
             Registry registry) {
-        this.usageNotifier = Objects.requireNonNull(usageNotifier, "filter usage notifier");
+        this.usageNotifier = usageNotifier;
         this.nextStage = nextStage;
         this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
         this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";

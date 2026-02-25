@@ -38,6 +38,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import io.netty.util.AttributeKey;
 import java.nio.channels.ClosedChannelException;
+import lombok.NonNull;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -78,8 +79,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
 
-    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary) {
-        this.spectatorRegistry = Objects.requireNonNull(spectatorRegistry);
+    public SslHandshakeInfoHandler(@NonNull Registry spectatorRegistry, boolean isSSlFromIntermediary) {
+        this.spectatorRegistry = spectatorRegistry;
         this.isSSlFromIntermediary = isSSlFromIntermediary;
     }
 

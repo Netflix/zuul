@@ -24,7 +24,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ProtocolDetectionState;
 import io.netty.handler.codec.haproxy.HAProxyMessageDecoder;
-import java.util.Objects;
+import lombok.NonNull;
 
 /**
  * Decides if we need to decode a HAProxyMessage. If so, adds the decoder followed by the handler.
@@ -36,9 +36,9 @@ public final class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerA
     private final boolean withProxyProtocol;
     private final Registry registry;
 
-    public ElbProxyProtocolChannelHandler(Registry registry, boolean withProxyProtocol) {
+    public ElbProxyProtocolChannelHandler(@NonNull Registry registry, boolean withProxyProtocol) {
         this.withProxyProtocol = withProxyProtocol;
-        this.registry = Objects.requireNonNull(registry);
+        this.registry = registry;
     }
 
     public void addProxyProtocol(ChannelPipeline pipeline) {

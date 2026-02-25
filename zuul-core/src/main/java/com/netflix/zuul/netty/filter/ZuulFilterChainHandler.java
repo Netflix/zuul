@@ -42,8 +42,8 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import java.nio.channels.ClosedChannelException;
-import java.util.Objects;
 import javax.net.ssl.SSLException;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,10 +59,10 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(ZuulFilterChainHandler.class);
 
     public ZuulFilterChainHandler(
-            ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
-            ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain) {
-        this.requestFilterChain = Objects.requireNonNull(requestFilterChain, "request filter chain");
-        this.responseFilterChain = Objects.requireNonNull(responseFilterChain, "response filter chain");
+            @NonNull ZuulFilterChainRunner<HttpRequestMessage> requestFilterChain,
+            @NonNull ZuulFilterChainRunner<HttpResponseMessage> responseFilterChain) {
+        this.requestFilterChain = requestFilterChain;
+        this.responseFilterChain = responseFilterChain;
     }
 
     @Override

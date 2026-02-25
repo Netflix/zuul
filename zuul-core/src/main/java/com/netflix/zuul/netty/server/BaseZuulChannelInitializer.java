@@ -71,7 +71,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AttributeKey;
 import java.util.List;
-import java.util.Objects;
+import lombok.NonNull;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
@@ -169,12 +169,11 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     private BaseZuulChannelInitializer(
             int port,
-            String metricId,
+            @NonNull String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
         this.port = port;
-        Objects.requireNonNull(metricId, "metricId");
         this.metricId = metricId;
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;

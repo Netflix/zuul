@@ -70,13 +70,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,19 +194,18 @@ public class Server {
     }
 
     public Server(
-            Registry registry,
-            ServerStatusManager serverStatusManager,
+            @NonNull Registry registry,
+            @NonNull ServerStatusManager serverStatusManager,
             Map<NamedSocketAddress, ? extends ChannelInitializer<?>> addressesToInitializers,
-            ClientConnectionsShutdown clientConnectionsShutdown,
+            @NonNull ClientConnectionsShutdown clientConnectionsShutdown,
             EventLoopGroupMetrics eventLoopGroupMetrics,
-            EventLoopConfig eventLoopConfig,
+            @NonNull EventLoopConfig eventLoopConfig,
             Thread jvmShutdownHook) {
-        this.registry = Objects.requireNonNull(registry);
+        this.registry = registry;
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
-        this.serverStatusManager = Objects.requireNonNull(serverStatusManager, "serverStatusManager");
-        this.clientConnectionsShutdown =
-                Objects.requireNonNull(clientConnectionsShutdown, "clientConnectionsShutdown");
-        this.eventLoopConfig = Objects.requireNonNull(eventLoopConfig, "eventLoopConfig");
+        this.serverStatusManager = serverStatusManager;
+        this.clientConnectionsShutdown = clientConnectionsShutdown;
+        this.eventLoopConfig = eventLoopConfig;
         this.jvmShutdownHook =
                 jvmShutdownHook != null ? jvmShutdownHook : new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
