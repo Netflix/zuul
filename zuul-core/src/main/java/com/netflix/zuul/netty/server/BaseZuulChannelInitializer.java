@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.netty.server;
 
-import com.google.common.base.Preconditions;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
@@ -74,6 +73,7 @@ import io.netty.util.AttributeKey;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
+import lombok.NonNull;
 
 /**
  * User: Mike Smith
@@ -175,12 +175,11 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     private BaseZuulChannelInitializer(
             int port,
-            String metricId,
+            @NonNull String metricId,
             ChannelConfig channelConfig,
             ChannelConfig channelDependencies,
             ChannelGroup channels) {
         this.port = port;
-        Preconditions.checkNotNull(metricId, "metricId");
         this.metricId = metricId;
         this.channelConfig = channelConfig;
         this.channelDependencies = channelDependencies;

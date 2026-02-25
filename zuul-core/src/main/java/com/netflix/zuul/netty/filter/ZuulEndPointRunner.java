@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import com.netflix.config.DynamicStringProperty;
 import com.netflix.netty.common.ByteBufUtil;
 import com.netflix.spectator.api.Registry;
-import com.netflix.spectator.impl.Preconditions;
 import com.netflix.zuul.FilterLoader;
 import com.netflix.zuul.FilterUsageNotifier;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -41,6 +40,7 @@ import io.netty.handler.codec.http.HttpContent;
 import io.netty.util.ReferenceCountUtil;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import org.slf4j.Logger;
@@ -119,7 +119,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
         String endpointName = getEndPointName(zuulReq.getContext());
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filter")) {
-            Preconditions.checkNotNull(zuulReq, "input message");
+            Objects.requireNonNull(zuulReq, "input message");
             addPerfMarkTags(zuulReq);
 
             ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint = getEndpoint(endpointName, zuulReq);
@@ -154,7 +154,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
         try (TaskCloseable ignored = PerfMark.traceTask(this, s -> s.getClass().getSimpleName() + ".filterChunk")) {
             addPerfMarkTags(zuulReq);
             ZuulFilter<HttpRequestMessage, HttpResponseMessage> endpoint =
-                    Preconditions.checkNotNull(getEndpoint(zuulReq), "endpoint");
+                    Objects.requireNonNull(getEndpoint(zuulReq), "endpoint");
             endpointName = endpoint.filterName();
 
             ByteBufUtil.touch(chunk, "Endpoint processing chunk, ZuulMessage: ", zuulReq);
