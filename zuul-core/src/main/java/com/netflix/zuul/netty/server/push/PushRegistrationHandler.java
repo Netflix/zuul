@@ -41,7 +41,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
     protected final PushProtocol pushProtocol;
 
     /* Identity */
-    private volatile PushUserAuth authEvent;
+    protected volatile PushUserAuth authEvent;
 
     /* state */
     protected final AtomicBoolean destroyed;
