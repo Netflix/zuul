@@ -162,8 +162,12 @@ public class ServerStartup extends BaseServerStartup {
              * SSL in Zuul.
              */
             case HTTP2:
-                sslConfig = ServerSslConfig.withDefaultCiphers(
-                        loadFromResources("server.cert"), loadFromResources("server.key"), WWW_PROTOCOLS);
+                sslConfig = ServerSslConfig.builder()
+                        .protocols(WWW_PROTOCOLS)
+                        .ciphers(ServerSslConfig.getDefaultCiphers())
+                        .certChainFile(loadFromResources("server.cert"))
+                        .keyFile(loadFromResources("server.key"))
+                        .build();
 
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
@@ -189,15 +193,15 @@ public class ServerStartup extends BaseServerStartup {
              *  curl https://localhost:7001/test -vk --cert src/main/resources/ssl/client.cert:zuul123 --key src/main/resources/ssl/client.key
              */
             case HTTP_MUTUAL_TLS:
-                sslConfig = new ServerSslConfig(
-                        WWW_PROTOCOLS,
-                        ServerSslConfig.getDefaultCiphers(),
-                        loadFromResources("server.cert"),
-                        loadFromResources("server.key"),
-                        ClientAuth.REQUIRE,
-                        loadFromResources("truststore.jks"),
-                        loadFromResources("truststore.key"),
-                        false);
+                sslConfig = ServerSslConfig.builder()
+                        .protocols(WWW_PROTOCOLS)
+                        .ciphers(ServerSslConfig.getDefaultCiphers())
+                        .certChainFile(loadFromResources("server.cert"))
+                        .keyFile(loadFromResources("server.key"))
+                        .clientAuth(ClientAuth.REQUIRE)
+                        .clientAuthTrustStoreFile(loadFromResources("truststore.jks"))
+                        .clientAuthTrustStorePasswordFile(loadFromResources("truststore.key"))
+                        .build();
 
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,

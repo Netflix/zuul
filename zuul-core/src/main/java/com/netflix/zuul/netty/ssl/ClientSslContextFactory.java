@@ -37,8 +37,10 @@ public final class ClientSslContextFactory extends BaseSslContextFactory {
 
     private static final Logger log = LoggerFactory.getLogger(ClientSslContextFactory.class);
 
-    private static final ServerSslConfig DEFAULT_CONFIG = new ServerSslConfig(
-            maybeAddTls13(ENABLE_CLIENT_TLS13.get(), "TLSv1.2"), ServerSslConfig.getDefaultCiphers(), null, null);
+    private static final ServerSslConfig DEFAULT_CONFIG = ServerSslConfig.builder()
+            .protocols(maybeAddTls13(ENABLE_CLIENT_TLS13.get(), "TLSv1.2"))
+            .ciphers(ServerSslConfig.getDefaultCiphers())
+            .build();
 
     public ClientSslContextFactory(Registry spectatorRegistry) {
         super(spectatorRegistry, DEFAULT_CONFIG);
