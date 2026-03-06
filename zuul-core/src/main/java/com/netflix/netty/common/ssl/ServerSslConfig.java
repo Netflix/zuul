@@ -24,23 +24,29 @@ import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 /**
- * User: michaels@netflix.com
- * Date: 8/16/16
- * Time: 2:40 PM
+ * Server-side SSL/TLS configuration including protocols, ciphers, certificate
+ * material, client authentication, and session settings.
  */
+@Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class ServerSslConfig {
     private static final DynamicLongProperty DEFAULT_SESSION_TIMEOUT =
             new DynamicLongProperty("server.ssl.session.timeout", (18 * 60)); // 18 hours
 
-    private static final String[] DEFAULT_CIPHERS;
+    private static final List<String> DEFAULT_CIPHERS;
 
     static {
         try {
             SSLContext context = SSLContext.getDefault();
             SSLSocketFactory sf = context.getSocketFactory();
-            DEFAULT_CIPHERS = sf.getSupportedCipherSuites();
+            DEFAULT_CIPHERS = List.of(sf.getSupportedCipherSuites());
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -51,23 +57,40 @@ public class ServerSslConfig {
     private final File certChainFile;
     private final File keyFile;
 
-    private final ClientAuth clientAuth;
+    @Builder.Default
+    private final ClientAuth clientAuth = ClientAuth.NONE;
+
     private final File clientAuthTrustStoreFile;
     private final String clientAuthTrustStorePassword;
     private final File clientAuthTrustStorePasswordFile;
 
-    private final long sessionTimeout;
-    private final boolean sessionTicketsEnabled;
+    @Builder.Default
+    private final long sessionTimeout = DEFAULT_SESSION_TIMEOUT.get();
 
+    @Builder.Default
+    private final boolean sessionTicketsEnabled = false;
+
+    /**
+     * @deprecated Use {@link ServerSslConfig#builder()} instead.
+     */
+    @Deprecated
     public ServerSslConfig(String[] protocols, String[] ciphers, File certChainFile, File keyFile) {
         this(protocols, ciphers, certChainFile, keyFile, ClientAuth.NONE, null, (File) null, false);
     }
 
+    /**
+     * @deprecated Use {@link ServerSslConfig#builder()} instead.
+     */
+    @Deprecated
     public ServerSslConfig(
             String[] protocols, String[] ciphers, File certChainFile, File keyFile, ClientAuth clientAuth) {
         this(protocols, ciphers, certChainFile, keyFile, clientAuth, null, (File) null, true);
     }
 
+    /**
+     * @deprecated Use {@link ServerSslConfig#builder()} instead.
+     */
+    @Deprecated
     public ServerSslConfig(
             String[] protocols,
             String[] ciphers,
@@ -89,6 +112,10 @@ public class ServerSslConfig {
         this.sessionTicketsEnabled = sessionTicketsEnabled;
     }
 
+    /**
+     * @deprecated Use {@link ServerSslConfig#builder()} instead.
+     */
+    @Deprecated
     public ServerSslConfig(
             String[] protocols,
             String[] ciphers,
@@ -110,52 +137,21 @@ public class ServerSslConfig {
         this.sessionTicketsEnabled = sessionTicketsEnabled;
     }
 
-    public static String[] getDefaultCiphers() {
+    public static List<String> getDefaultCiphers() {
         return DEFAULT_CIPHERS;
     }
 
+    /**
+     * @deprecated Use {@link ServerSslConfig#builder()} instead.
+     */
+    @Deprecated
     public static ServerSslConfig withDefaultCiphers(File certChainFile, File keyFile, String... protocols) {
-        return new ServerSslConfig(protocols, getDefaultCiphers(), certChainFile, keyFile);
-    }
-
-    public String[] getProtocols() {
-        return protocols;
-    }
-
-    public List<String> getCiphers() {
-        return ciphers;
-    }
-
-    public File getCertChainFile() {
-        return certChainFile;
-    }
-
-    public File getKeyFile() {
-        return keyFile;
-    }
-
-    public ClientAuth getClientAuth() {
-        return clientAuth;
-    }
-
-    public File getClientAuthTrustStoreFile() {
-        return clientAuthTrustStoreFile;
-    }
-
-    public String getClientAuthTrustStorePassword() {
-        return clientAuthTrustStorePassword;
-    }
-
-    public File getClientAuthTrustStorePasswordFile() {
-        return clientAuthTrustStorePasswordFile;
-    }
-
-    public long getSessionTimeout() {
-        return sessionTimeout;
-    }
-
-    public boolean sessionTicketsEnabled() {
-        return sessionTicketsEnabled;
+        return ServerSslConfig.builder()
+                .protocols(protocols)
+                .ciphers(getDefaultCiphers())
+                .certChainFile(certChainFile)
+                .keyFile(keyFile)
+                .build();
     }
 
     @Override
