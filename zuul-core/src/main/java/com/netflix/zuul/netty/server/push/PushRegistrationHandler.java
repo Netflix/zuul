@@ -114,7 +114,7 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
 
     private void closeIfNotAuthenticated() {
         if (!isAuthenticated()) {
-            logger.error(
+            logger.debug(
                     "Closing connection because it is still unauthenticated after {} seconds.",
                     UNAUTHENTICATED_CONN_TTL.get());
             forceCloseConnectionFromServerSide();
