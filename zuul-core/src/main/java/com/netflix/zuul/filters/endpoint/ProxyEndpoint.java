@@ -112,7 +112,7 @@ import org.slf4j.LoggerFactory;
  */
 @Filter(order = 0, type = FilterType.ENDPOINT)
 public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage>
-        implements GenericFutureListener<Future<PooledConnection>> {
+        implements EndpointLifecycle, GenericFutureListener<Future<PooledConnection>> {
 
     private static final String ZUUL_ORIGIN_ATTEMPT_IPADDR_MAP_KEY = "_zuul_origin_attempt_ipaddr_map";
     private static final String ZUUL_ORIGIN_REQUEST_URI = "_zuul_origin_request_uri";
@@ -302,6 +302,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
     }
 
+    @Override
     public void finish(boolean error) {
         Channel origCh = unlinkFromOrigin();
 
