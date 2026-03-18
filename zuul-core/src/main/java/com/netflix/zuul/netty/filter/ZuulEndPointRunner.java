@@ -29,6 +29,7 @@ import com.netflix.zuul.filters.Endpoint;
 import com.netflix.zuul.filters.FilterType;
 import com.netflix.zuul.filters.SyncZuulFilterAdapter;
 import com.netflix.zuul.filters.ZuulFilter;
+import com.netflix.zuul.filters.endpoint.EndpointLifecycle;
 import com.netflix.zuul.filters.endpoint.MissingEndpointHandlingFilter;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
 import com.netflix.zuul.message.ZuulMessage;
@@ -130,7 +131,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
             FilterExecutionResult<HttpResponseMessage> result = executeFilter(endpoint, zuulReq);
 
             if (result instanceof FilterExecutionResult.Complete<HttpResponseMessage>(HttpResponseMessage message)
-                    && !(endpoint instanceof ProxyEndpoint)) {
+                    && !(endpoint instanceof EndpointLifecycle)) {
                 // EdgeProxyEndpoint calls invokeNextStage internally
                 logger.debug(
                         "Endpoint calling invokeNextStage, UUID {}",
@@ -170,7 +171,7 @@ public class ZuulEndPointRunner extends BaseZuulFilterRunner<HttpRequestMessage,
 
                 if (isFilterAwaitingBody(zuulReq.getContext())
                         && zuulReq.hasCompleteBody()
-                        && !(endpoint instanceof ProxyEndpoint)) {
+                        && !(endpoint instanceof EndpointLifecycle)) {
                     // whole body has arrived, resume filter chain
                     ByteBufUtil.touch(newChunk, "Endpoint body complete, resume chain, ZuulMessage: ", zuulReq);
                     FilterExecutionResult<HttpResponseMessage> result = executeFilter(endpoint, zuulReq);
