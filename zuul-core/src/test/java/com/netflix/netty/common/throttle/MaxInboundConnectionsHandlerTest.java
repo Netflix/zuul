@@ -25,7 +25,11 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.http2.DummyChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,19 +37,19 @@ class MaxInboundConnectionsHandlerTest {
 
     private final Registry registry = new DefaultRegistry();
     private final String listener = "test-throttled";
+
     private Id counterId;
+    private EmbeddedChannel channel;
 
     @BeforeEach
     void setup() {
         counterId = registry.createId("server.connections.throttled").withTags("id", listener);
+        channel = new EmbeddedChannel(new MaxInboundConnectionsHandler(registry, listener, 1));
     }
 
     @Test
     void verifyPassportStateAndAttrs() {
-
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(new DummyChannelHandler());
-        channel.pipeline().addLast(new MaxInboundConnectionsHandler(registry, listener, 1));
+        channel.pipeline().addFirst(new DummyChannelHandler());
 
         // Fire twice to increment current conns. count
         channel.pipeline().context(DummyChannelHandler.class).fireChannelActive();
@@ -57,5 +61,23 @@ class MaxInboundConnectionsHandlerTest {
         assertThat(CurrentPassport.fromChannel(channel).getState()).isEqualTo(PassportState.SERVER_CH_THROTTLING);
         assertThat(channel.attr(MaxInboundConnectionsHandler.ATTR_CH_THROTTLED).get())
                 .isTrue();
+    }
+
+    @Test
+    void verifyCloseNotOnPipeline() {
+        AtomicBoolean seen = new AtomicBoolean(false);
+        channel.pipeline().addLast(new ChannelDuplexHandler() {
+            @Override
+            public void close(ChannelHandlerContext ctx, ChannelPromise promise) {
+                seen.set(true);
+                ctx.close(promise);
+            }
+        });
+
+        channel.pipeline().fireChannelActive();
+        channel.pipeline().fireChannelActive();
+
+        assertThat(channel.isActive()).isFalse();
+        assertThat(seen).isFalse();
     }
 }
