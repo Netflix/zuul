@@ -33,6 +33,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     static final int DEFAULT_MAX_CONNS_PER_HOST = 50;
     static final int DEFAULT_PER_SERVER_WATERLINE = 4;
     static final int DEFAULT_MAX_REQUESTS_PER_CONNECTION = 1000;
+    static final boolean DEFAULT_TCP_NO_DELAY = true;
 
     // TODO(argha-c): Document why these values were chosen, as opposed to defaults of 32k/64k
     static final int DEFAULT_WRITE_BUFFER_HIGH_WATER_MARK = 32 * 1024;
@@ -109,7 +110,7 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     @Override
     public boolean getTcpNoDelay() {
-        return clientConfig.getPropertyAsBoolean(TCP_NO_DELAY, false);
+        return clientConfig.getPropertyAsBoolean(TCP_NO_DELAY, DEFAULT_TCP_NO_DELAY);
     }
 
     @Override

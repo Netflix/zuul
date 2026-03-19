@@ -115,7 +115,7 @@ class ConnectionPoolConfigImplTest {
 
     @Test
     void testGetTcpNoDelay() {
-        assertThat(connectionPoolConfig.getTcpNoDelay()).isFalse();
+        assertThat(connectionPoolConfig.getTcpNoDelay()).isTrue();
     }
 
     @Test
