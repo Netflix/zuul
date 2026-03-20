@@ -64,7 +64,7 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
                 Channel channel = ctx.channel();
                 channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
                 CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
-                channel.close();
+                ctx.close();
                 connectionThrottled.increment();
             }
         }
