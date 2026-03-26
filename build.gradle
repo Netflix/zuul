@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+
 buildscript {
     dependencies {
         classpath 'com.palantir.javaformat:gradle-palantir-java-format:2.83.0'
@@ -75,15 +77,16 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         dependencies {
-            errorprone "com.uber.nullaway:nullaway:0.12.4"
+            errorprone "com.uber.nullaway:nullaway:0.13.1"
             errorprone "com.google.errorprone:error_prone_core:2.45.0"
         }
 
         options.compilerArgs << "-Werror"
 
         options.errorprone {
-            check("NullAway", net.ltgt.gradle.errorprone.CheckSeverity.OFF)
-            option("NullAway:AnnotatedPackages", "com.netflix.zuul")
+            enabled = !name.contains('Jmh') && !name.contains('Test')
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:OnlyNullMarked", "true")
             errorproneArgs.addAll(
                 // Uncomment and remove -Werror javac flag to automatically apply fixes for a check.
                 // N.B: disables all other checks while enabled.
