@@ -142,7 +142,7 @@ public class SslHandshakeInfoHandlerTest {
         CurrentPassport.fromChannel(channel);
         channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).set("192.168.1.1");
 
-        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "test");
 
         SslHandler sslHandler = mock(SslHandler.class);
         when(sslHandler.engine()).thenReturn(sslEngine);
@@ -161,6 +161,8 @@ public class SslHandshakeInfoHandlerTest {
         // Verify success counter was incremented
         assertThat(registry.counter(
                                 "server.ssl.handshake",
+                                "listener",
+                                "test",
                                 "success",
                                 "false",
                                 "sni",
@@ -182,7 +184,7 @@ public class SslHandshakeInfoHandlerTest {
         when(registry.counter(anyString())).thenReturn(counter);
 
         // Create handler with mocked registry
-        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "test");
 
         // Create channel and context
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -211,7 +213,7 @@ public class SslHandshakeInfoHandlerTest {
         when(registry.counter(anyString())).thenReturn(counter);
 
         // Create handler with mocked registry
-        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "test");
 
         // Create channel and context
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -240,7 +242,7 @@ public class SslHandshakeInfoHandlerTest {
         Registry registry = new DefaultRegistry();
 
         // Create handler
-        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "test");
 
         // Create channel
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -283,6 +285,8 @@ public class SslHandshakeInfoHandlerTest {
 
         assertThat(registry.counter(
                                 "server.ssl.handshake",
+                                "listener",
+                                "test",
                                 "success",
                                 "true",
                                 "sni",
@@ -318,7 +322,7 @@ public class SslHandshakeInfoHandlerTest {
     public void handshakeSuccessWithNamedGroup() throws Exception {
         Registry registry = new DefaultRegistry();
 
-        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false);
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "test");
 
         EmbeddedChannel channel = new EmbeddedChannel();
         CurrentPassport.fromChannel(channel);
@@ -348,6 +352,8 @@ public class SslHandshakeInfoHandlerTest {
 
         assertThat(registry.counter(
                                 "server.ssl.handshake",
+                                "listener",
+                                "test",
                                 "success",
                                 "true",
                                 "sni",
@@ -369,5 +375,55 @@ public class SslHandshakeInfoHandlerTest {
         assertThat(info.getNamedGroup()).isEqualTo("x25519");
         assertThat(info.getProtocol()).isEqualTo("TLSv1.3");
         assertThat(info.getCipherSuite()).isEqualTo("TLS_AES_128_GCM_SHA256");
+    }
+
+    @Test
+    public void handshakeSuccessIncludesListenerTag() throws Exception {
+        Registry registry = new DefaultRegistry();
+
+        SslHandshakeInfoHandler handler = new SslHandshakeInfoHandler(registry, false, "main_7001");
+
+        EmbeddedChannel channel = new EmbeddedChannel();
+        CurrentPassport.fromChannel(channel);
+
+        SSLEngine sslEngine = mock(SSLEngine.class);
+        ExtendedSSLSession sslSession = mock(ExtendedSSLSession.class);
+        X509Certificate serverCert = mock(X509Certificate.class);
+
+        when(sslEngine.getSession()).thenReturn(sslSession);
+        when(sslEngine.getNeedClientAuth()).thenReturn(false);
+        when(sslEngine.getWantClientAuth()).thenReturn(false);
+        when(sslSession.getProtocol()).thenReturn("TLSv1.3");
+        when(sslSession.getCipherSuite()).thenReturn("TLS_AES_256_GCM_SHA384");
+        when(sslSession.getLocalCertificates()).thenReturn(new Certificate[] {serverCert});
+        when(sslSession.getPeerCertificates()).thenReturn(new Certificate[0]);
+        when(sslSession.getRequestedServerNames()).thenReturn(List.of(new SNIHostName("www.netflix.com")));
+
+        SslHandler sslHandler = mock(SslHandler.class);
+        when(sslHandler.engine()).thenReturn(sslEngine);
+        channel.pipeline().addLast("ssl", sslHandler);
+        channel.pipeline().addLast(handler);
+
+        ChannelHandlerContext ctx = channel.pipeline().context(handler);
+        handler.userEventTriggered(ctx, SslHandshakeCompletionEvent.SUCCESS);
+
+        assertThat(registry.counter(
+                                "server.ssl.handshake",
+                                "listener",
+                                "main_7001",
+                                "success",
+                                "true",
+                                "sni",
+                                "www.netflix.com",
+                                "protocol",
+                                "TLSv1.3",
+                                "ciphersuite",
+                                "TLS_AES_256_GCM_SHA384",
+                                "clientauth",
+                                "NONE",
+                                "namedgroup",
+                                "unknown")
+                        .count())
+                .isEqualTo(1);
     }
 }
