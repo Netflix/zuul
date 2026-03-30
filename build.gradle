@@ -97,6 +97,13 @@ subprojects {
                 "-Xep:FutureReturnValueIgnored:OFF",
                 "-Xep:InlineMeSuggester:OFF",
                 "-Xep:MissingSummary:OFF",
+                "-Xep:BooleanLiteral:OFF",
+                "-Xep:EffectivelyPrivate:OFF",
+                "-Xep:AssignmentExpression:OFF",
+                "-Xep:UnnecessaryStringBuilder:OFF",
+                "-Xep:PatternMatchingInstanceof:OFF",
+                "-Xep:StatementSwitchToExpressionSwitch:OFF",
+                "-Xep:StringConcatToTextBlock:OFF",
             )
         }
     }

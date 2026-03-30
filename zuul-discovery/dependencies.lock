@@ -1,10 +1,10 @@
 {
     "annotationProcessor": {
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.36.0"
+            "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.4"
+            "locked": "0.13.1"
         }
     },
     "compileClasspath": {
@@ -48,10 +48,10 @@
     },
     "jmhAnnotationProcessor": {
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.36.0"
+            "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.4"
+            "locked": "0.13.1"
         }
     },
     "jmhCompileClasspath": {
@@ -124,7 +124,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.21.0"
+            "locked": "5.23.0"
         },
         "org.openjdk.jmh:jmh-core": {
             "locked": "1.36"
@@ -164,10 +164,10 @@
     },
     "testAnnotationProcessor": {
         "com.google.errorprone:error_prone_core": {
-            "locked": "2.36.0"
+            "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.12.4"
+            "locked": "0.13.1"
         }
     },
     "testCompileClasspath": {
@@ -208,7 +208,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.21.0"
+            "locked": "5.23.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
@@ -252,7 +252,7 @@
             "locked": "1.13.4"
         },
         "org.mockito:mockito-core": {
-            "locked": "5.21.0"
+            "locked": "5.23.0"
         },
         "org.slf4j:slf4j-api": {
             "locked": "2.0.16"
