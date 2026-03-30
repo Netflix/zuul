@@ -78,16 +78,19 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
     private final Registry spectatorRegistry;
     private final boolean isSSlFromIntermediary;
+    private final String listenerName;
 
-    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary) {
+    public SslHandshakeInfoHandler(Registry spectatorRegistry, boolean isSSlFromIntermediary, String listenerName) {
         this.spectatorRegistry = Preconditions.checkNotNull(spectatorRegistry);
         this.isSSlFromIntermediary = isSSlFromIntermediary;
+        this.listenerName = Preconditions.checkNotNull(listenerName);
     }
 
     @VisibleForTesting
     SslHandshakeInfoHandler() {
         spectatorRegistry = new NoopRegistry();
         isSSlFromIntermediary = false;
+        listenerName = "unknown";
     }
 
     @Override
@@ -286,6 +289,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
             SslHandshakeCompletionEvent sslHandshakeCompletionEvent, SslHandshakeInfo handshakeInfo) {
         try {
             List<Tag> tagList = new ArrayList<>();
+            tagList.add(Tag.of("listener", listenerName));
+
             if (sslHandshakeCompletionEvent.isSuccess()) {
                 tagList.add(Tag.of(
                         "protocol", handshakeInfo.getProtocol().isEmpty() ? "unknown" : handshakeInfo.getProtocol()));

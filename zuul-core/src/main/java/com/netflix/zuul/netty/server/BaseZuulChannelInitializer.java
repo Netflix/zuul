@@ -307,7 +307,7 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     }
 
     protected void addSslInfoHandlers(ChannelPipeline pipeline, boolean isSSlFromIntermediary) {
-        pipeline.addLast("ssl_info", new SslHandshakeInfoHandler(registry, isSSlFromIntermediary));
+        pipeline.addLast("ssl_info", new SslHandshakeInfoHandler(registry, isSSlFromIntermediary, metricId));
         pipeline.addLast("ssl_exceptions", new SslExceptionsHandler(registry));
     }
 
