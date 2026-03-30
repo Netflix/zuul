@@ -97,6 +97,7 @@ subprojects {
                 "-Xep:FutureReturnValueIgnored:OFF",
                 "-Xep:InlineMeSuggester:OFF",
                 "-Xep:MissingSummary:OFF",
+                "-Xep:StringConcatToTextBlock:OFF",
             )
         }
     }
