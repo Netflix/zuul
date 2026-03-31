@@ -81,9 +81,9 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
     }
 
     protected void channelReadInternal(ChannelHandlerContext ctx, Object msg, boolean triggerRead) throws Exception {
-        if (msg instanceof HttpResponse) {
+        if (msg instanceof HttpResponse httpResponse) {
             if (edgeProxy != null) {
-                edgeProxy.responseFromOrigin((HttpResponse) msg);
+                edgeProxy.responseFromOrigin(httpResponse);
             } else if (ReferenceCountUtil.refCnt(msg) > 0) {
                 // this handles the case of a DefaultFullHttpResponse that could have content that needs to be released
                 ReferenceCountUtil.safeRelease(msg);
@@ -120,7 +120,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             if ((reason != CompleteReason.SESSION_COMPLETE) && (edgeProxy != null)) {
                 if (reason == CompleteReason.CLOSE
                         && Objects.equals(
-                                ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get(), Boolean.TRUE)) {
+                                ctx.channel().attr(SSL_CLOSE_NOTIFY_SEEN).get(), true)) {
                     logger.warn(
                             "Origin request completed with close, after getting a SslCloseCompletionEvent event: {}",
                             ChannelUtils.channelInfoForLogging(ctx.channel()));
@@ -143,8 +143,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             } finally {
                 postCompleteHook(ctx, evt);
             }
-        } else if (evt instanceof SslHandshakeCompletionEvent && !((SslHandshakeCompletionEvent) evt).isSuccess()) {
-            Throwable cause = ((SslHandshakeCompletionEvent) evt).cause();
+        } else if (evt instanceof SslHandshakeCompletionEvent sslHandshakeCompletionEvent && !sslHandshakeCompletionEvent.isSuccess()) {
+            Throwable cause = sslHandshakeCompletionEvent.cause();
             ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(cause);
         } else if (evt instanceof IdleStateEvent) {
             if (edgeProxy != null) {
@@ -220,7 +220,7 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             return;
         }
 
-        if (msg instanceof HttpRequestMessage) {
+        if (msg instanceof HttpRequestMessage zuulReq) {
             promise.addListener((future) -> {
                 if (!future.isSuccess()) {
                     Throwable cause = ctx.channel()
@@ -242,7 +242,6 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
                 }
             });
 
-            HttpRequestMessage zuulReq = (HttpRequestMessage) msg;
             preWriteHook(ctx, zuulReq);
 
             super.write(ctx, buildOriginHttpRequest(zuulReq), promise);

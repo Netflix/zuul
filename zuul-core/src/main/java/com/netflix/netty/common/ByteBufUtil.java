@@ -52,8 +52,8 @@ public class ByteBufUtil {
     }
 
     public static void touch(HttpResponse originResponse, String hint, ZuulMessage msg) {
-        if (isAdvancedLeakDetection && originResponse instanceof ReferenceCounted) {
-            ((ReferenceCounted) originResponse).touch(hint + msg);
+        if (isAdvancedLeakDetection && originResponse instanceof ReferenceCounted referenceCounted) {
+            referenceCounted.touch(hint + msg);
         }
     }
 }

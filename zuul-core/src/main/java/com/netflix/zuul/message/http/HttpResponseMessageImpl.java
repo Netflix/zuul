@@ -274,10 +274,6 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
     @Override
     public String getInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? getOutboundRequest() : getInboundRequest();
-        StringBuilder sb = new StringBuilder()
-                .append(req.getInfoForLogging())
-                .append(",proxy-status=")
-                .append(getStatus());
-        return sb.toString();
+        return req.getInfoForLogging() + ",proxy-status=" + getStatus();
     }
 }

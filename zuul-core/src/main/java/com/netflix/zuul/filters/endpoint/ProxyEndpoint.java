@@ -768,8 +768,8 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void handleError(Throwable cause) {
-        ZuulException ze = (cause instanceof ZuulException)
-                ? (ZuulException) cause
+        ZuulException ze = (cause instanceof ZuulException zuulException)
+                ? zuulException
                 : requestAttemptFactory.mapNettyToOutboundException(cause, context);
         logger.debug("Proxy endpoint failed.", cause);
         if (!startedSendingResponseToClient) {
@@ -894,10 +894,10 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         zuulResponse.storeInboundResponse();
         channelCtx.channel().attr(ClientRequestReceiver.ATTR_ZUUL_RESP).set(zuulResponse);
 
-        if (httpResponse instanceof DefaultFullHttpResponse) {
+        if (httpResponse instanceof DefaultFullHttpResponse defaultFullHttpResponse) {
             ByteBufUtil.touch(
                     httpResponse, "ProxyEndpoint converting Netty response to Zuul response, request: ", zuulRequest);
-            ByteBuf chunk = ((DefaultFullHttpResponse) httpResponse).content();
+            ByteBuf chunk = defaultFullHttpResponse.content();
             zuulResponse.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
 

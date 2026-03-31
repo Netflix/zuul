@@ -61,7 +61,7 @@ class HttpServerLifecycleChannelHandlerTest {
 
         channel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
         // emulate pipeline rejection
-        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
+        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(true);
         // Fire close
         channel.pipeline().close();
 
@@ -97,7 +97,7 @@ class HttpServerLifecycleChannelHandlerTest {
 
             assertThat(channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT)
                             .get())
-                    .isEqualTo(Boolean.TRUE);
+                    .isEqualTo(true);
             assertThat(buffer.refCnt()).isEqualTo(0);
         } finally {
             if (buffer.refCnt() != 0) {

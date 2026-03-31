@@ -125,8 +125,8 @@ public class BaseSslContextFactory implements SslContextFactory {
     @Override
     public void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId) {
         // Setup metrics tracking the OpenSSL stats.
-        if (sslContext instanceof ReferenceCountedOpenSslContext) {
-            OpenSslSessionStats stats = ((ReferenceCountedOpenSslContext) sslContext)
+        if (sslContext instanceof ReferenceCountedOpenSslContext referenceCountedOpenSslContext) {
+            OpenSslSessionStats stats = referenceCountedOpenSslContext
                     .sessionContext()
                     .stats();
 

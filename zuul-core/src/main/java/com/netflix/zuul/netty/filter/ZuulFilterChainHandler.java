@@ -67,16 +67,16 @@ public class ZuulFilterChainHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof HttpRequestMessage) {
-            zuulRequest = (HttpRequestMessage) msg;
+        if (msg instanceof HttpRequestMessage httpRequestMessage) {
+            zuulRequest = httpRequestMessage;
 
             // Replace NETTY_SERVER_CHANNEL_HANDLER_CONTEXT in SessionContext
             SessionContext zuulCtx = zuulRequest.getContext();
             zuulCtx.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, ctx);
 
             requestFilterChain.filter(zuulRequest);
-        } else if ((msg instanceof HttpContent) && (zuulRequest != null)) {
-            requestFilterChain.filter(zuulRequest, (HttpContent) msg);
+        } else if ((msg instanceof HttpContent httpContent) && (zuulRequest != null)) {
+            requestFilterChain.filter(zuulRequest, httpContent);
         } else {
             logger.debug(
                     "Received unrecognized message type. {}", msg.getClass().getName());

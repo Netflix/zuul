@@ -235,10 +235,9 @@ public final class DiscoveryResult implements ResolverResult {
             return true;
         }
 
-        if (!(obj instanceof DiscoveryResult)) {
+        if (!(obj instanceof DiscoveryResult other)) {
             return false;
         }
-        DiscoveryResult other = (DiscoveryResult) obj;
         return server.equals(other.server);
     }
 }

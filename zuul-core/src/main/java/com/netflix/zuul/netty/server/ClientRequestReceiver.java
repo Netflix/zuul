@@ -134,11 +134,11 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // This is needed for ClientResponseReceiver to know whether it's yet safe to start writing
         // a response to the client channel.
         if (msg instanceof LastHttpContent) {
-            ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(Boolean.TRUE);
+            ctx.channel().attr(ATTR_LAST_CONTENT_RECEIVED).set(true);
         }
 
-        if (msg instanceof HttpRequest) {
-            clientRequest = (HttpRequest) msg;
+        if (msg instanceof HttpRequest httpRequest) {
+            clientRequest = httpRequest;
 
             zuulRequest = buildZuulHttpRequest(clientRequest, ctx);
 
@@ -161,7 +161,7 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
                         + "clientRequest = " + clientRequest.toString()
-                        + ", uri = " + String.valueOf(clientRequest.uri())
+                        + ", uri = " + clientRequest.uri()
                         + ", info = " + ChannelUtils.channelInfoForLogging(ctx.channel());
                 ZuulException ze = new ZuulException(errorMsg);
                 ze.setStatusCode(HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code());
@@ -204,9 +204,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 // arriving
                 ReferenceCountUtil.release(msg);
             }
-        } else if (msg instanceof HAProxyMessage) {
+        } else if (msg instanceof HAProxyMessage haProxyMessage) {
             // do nothing, should already be handled by ElbProxyProtocolHandler
-            LOG.debug("Received HAProxyMessage for Proxy Protocol IP: {}", ((HAProxyMessage) msg).sourceAddress());
+            LOG.debug("Received HAProxyMessage for Proxy Protocol IP: {}", haProxyMessage.sourceAddress());
             ReferenceCountUtil.release(msg);
         } else {
             LOG.debug("Received unrecognized message type. {}", msg.getClass().getName());
@@ -216,8 +216,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof CompleteEvent) {
-            CompleteReason reason = ((CompleteEvent) evt).getReason();
+        if (evt instanceof CompleteEvent completeEvent) {
+            CompleteReason reason = completeEvent.getReason();
             if (zuulRequest != null) {
                 zuulRequest.getContext().cancel();
                 zuulRequest.disposeBufferedBody();
@@ -397,8 +397,8 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // Store zuul request on netty channel for later use.
         channel.attr(ATTR_ZUUL_REQ).set(request);
 
-        if (nativeRequest instanceof DefaultFullHttpRequest) {
-            ByteBuf chunk = ((DefaultFullHttpRequest) nativeRequest).content();
+        if (nativeRequest instanceof DefaultFullHttpRequest defaultFullHttpRequest) {
+            ByteBuf chunk = defaultFullHttpRequest.content();
             request.bufferBodyContents(new DefaultLastHttpContent(chunk));
         }
 

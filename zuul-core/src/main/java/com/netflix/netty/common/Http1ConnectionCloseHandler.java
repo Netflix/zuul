@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(Http1ConnectionCloseHandler.class);
 
-    private final AtomicBoolean requestInflight = new AtomicBoolean(Boolean.FALSE);
+    private final AtomicBoolean requestInflight = new AtomicBoolean(false);
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -67,9 +67,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // Track when there's an inflight request.
         if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
-            requestInflight.set(Boolean.TRUE);
+            requestInflight.set(true);
         } else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
-            requestInflight.set(Boolean.FALSE);
+            requestInflight.set(false);
         }
 
         super.userEventTriggered(ctx, evt);
@@ -77,17 +77,9 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
 
     protected void closeChannel(ChannelHandlerContext ctx, ConnectionCloseType evt, ChannelPromise promise) {
         switch (evt) {
-            case DELAYED_GRACEFUL:
-                gracefully(ctx, promise);
-                break;
-            case GRACEFUL:
-                gracefully(ctx, promise);
-                break;
-            case IMMEDIATE:
-                immediately(ctx, promise);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + String.valueOf(evt));
+            case DELAYED_GRACEFUL, GRACEFUL -> gracefully(ctx, promise);
+            case IMMEDIATE -> immediately(ctx, promise);
+            default-> throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + evt);
         }
     }
 

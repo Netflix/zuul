@@ -43,16 +43,16 @@ public class NettyRequestAttemptFactory {
             return OutboundErrorType.ORIGIN_CONCURRENCY_EXCEEDED;
         }
 
-        if (t instanceof OriginConnectException) {
-            return ((OriginConnectException) t).getErrorType();
+        if (t instanceof OriginConnectException originConnectException) {
+            return originConnectException.getErrorType();
         }
 
-        if (t instanceof OutboundException) {
-            return ((OutboundException) t).getOutboundErrorType();
+        if (t instanceof OutboundException outboundException) {
+            return outboundException.getOutboundErrorType();
         }
 
-        if (t instanceof Errors.NativeIoException
-                && ((Errors.NativeIoException) t).expectedErr() == Errors.ERRNO_ECONNRESET_NEGATIVE) {
+        if (t instanceof Errors.NativeIoException nativeIoException
+                && nativeIoException.expectedErr() == Errors.ERRNO_ECONNRESET_NEGATIVE) {
             // This is a "Connection reset by peer" which we see fairly often happening when Origin servers are
             // overloaded.
             LOG.warn("ERRNO_ECONNRESET_NEGATIVE mapped to RESET_CONNECTION", t);
@@ -77,8 +77,8 @@ public class NettyRequestAttemptFactory {
     }
 
     public OutboundException mapNettyToOutboundException(Throwable t, SessionContext context) {
-        if (t instanceof OutboundException) {
-            return (OutboundException) t;
+        if (t instanceof OutboundException outboundException) {
+            return outboundException;
         }
 
         // Map this throwable to zuul's OutboundException.

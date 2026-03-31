@@ -116,10 +116,9 @@ public final class Attrs {
     @Override
     @VisibleForTesting
     public boolean equals(Object other) {
-        if (!(other instanceof Attrs)) {
+        if (!(other instanceof Attrs that)) {
             return false;
         }
-        Attrs that = (Attrs) other;
         return Objects.equals(this.storage, that.storage);
     }
 

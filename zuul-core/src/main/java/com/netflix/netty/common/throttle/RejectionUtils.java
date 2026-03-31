@@ -190,7 +190,7 @@ public final class RejectionUtils {
 
         if (shouldRejectNow) {
             // Send a rejection response.
-            HttpRequest request = msg instanceof HttpRequest ? (HttpRequest) msg : null;
+            HttpRequest request = msg instanceof HttpRequest httpRequest ? httpRequest : null;
             reject(
                     ctx,
                     rejectionType,
@@ -269,7 +269,7 @@ public final class RejectionUtils {
             String rejectedBody,
             Map<String, String> rejectionHeaders) {
         switch (rejectionType) {
-            case REJECT:
+            case REJECT ->
                 sendRejectionResponse(
                         ctx,
                         nfStatus,
@@ -279,13 +279,8 @@ public final class RejectionUtils {
                         rejectedCode,
                         rejectedBody,
                         rejectionHeaders);
-                return;
-            case CLOSE:
-                rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
-                return;
-            case ALLOW_THEN_CLOSE:
-                allowThenClose(ctx);
-                return;
+            case CLOSE -> rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
+            case ALLOW_THEN_CLOSE -> allowThenClose(ctx);
         }
         throw new AssertionError("Bad rejection type: " + rejectionType);
     }

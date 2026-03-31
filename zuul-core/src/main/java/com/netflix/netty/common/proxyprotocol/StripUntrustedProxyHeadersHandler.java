@@ -64,22 +64,16 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest req) {
             switch (allowWhen) {
-                case NEVER:
-                    stripXFFHeaders(req);
-                    break;
-                case MUTUAL_SSL_AUTH:
+                case NEVER -> stripXFFHeaders(req);
+                case MUTUAL_SSL_AUTH -> {
                     if (!connectionIsUsingMutualSSLWithAuthEnforced(ctx.channel())) {
                         stripXFFHeaders(req);
                     } else {
                         checkBlacklist(req, XFF_BLACKLIST.get());
                     }
-                    break;
-                case ALWAYS:
-                    checkBlacklist(req, XFF_BLACKLIST.get());
-                    break;
-                default:
-                    // default to not allow.
-                    stripXFFHeaders(req);
+                }
+                case ALWAYS -> checkBlacklist(req, XFF_BLACKLIST.get());
+                default -> stripXFFHeaders(req); // default to not allow.
             }
         }
 

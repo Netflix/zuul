@@ -427,7 +427,7 @@ public class CurrentPassport {
             return now;
         }
 
-        public void setNow(long now) {
+        void setNow(long now) {
             this.now = now;
         }
     }

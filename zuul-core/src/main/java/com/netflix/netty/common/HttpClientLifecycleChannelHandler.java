@@ -36,8 +36,8 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
     private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (msg instanceof HttpResponse) {
-                ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
+            if (msg instanceof HttpResponse httpResponse) {
+                ctx.channel().attr(ATTR_HTTP_RESP).set(httpResponse);
             }
 
             try {
@@ -63,8 +63,8 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
     private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-            if (msg instanceof HttpRequest) {
-                fireStartEvent(ctx, (HttpRequest) msg);
+            if (msg instanceof HttpRequest httpRequest) {
+                fireStartEvent(ctx, httpRequest);
             }
 
             super.write(ctx, msg, promise);

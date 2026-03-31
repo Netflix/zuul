@@ -158,8 +158,8 @@ public class PushRegistrationHandler extends ChannelInboundHandlerAdapter {
                 ctx.executor()
                         .schedule(this::closeIfNotAuthenticated, UNAUTHENTICATED_CONN_TTL.get(), TimeUnit.SECONDS);
                 logger.debug("WebSocket handshake complete.");
-            } else if (evt instanceof PushUserAuth) {
-                authEvent = (PushUserAuth) evt;
+            } else if (evt instanceof PushUserAuth pushUserAuth) {
+                authEvent = pushUserAuth;
                 if (authEvent.isSuccess() && (pushConnection != null)) {
                     logger.debug("registering client {}", authEvent);
                     ctx.pipeline().remove(PushAuthHandler.NAME);

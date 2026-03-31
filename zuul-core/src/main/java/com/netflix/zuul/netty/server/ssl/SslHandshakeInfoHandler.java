@@ -95,9 +95,8 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof SslHandshakeCompletionEvent) {
+        if (evt instanceof SslHandshakeCompletionEvent sslEvent) {
             try {
-                SslHandshakeCompletionEvent sslEvent = (SslHandshakeCompletionEvent) evt;
                 if (sslEvent.isSuccess()) {
 
                     CurrentPassport.fromChannel(ctx.channel()).add(PassportState.SERVER_CH_SSL_HANDSHAKE_COMPLETE);
@@ -127,7 +126,7 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
                             ctx.channel()
                                     .attr(ZuulPskServer.TLS_HANDSHAKE_USING_EXTERNAL_PSK)
                                     .get(),
-                            Boolean.TRUE);
+                            true);
 
                     ClientPSKIdentityInfo clientPSKIdentityInfo = ctx.channel()
                             .attr(TlsPskHandler.CLIENT_PSK_IDENTITY_ATTRIBUTE_KEY)
@@ -240,10 +239,9 @@ public class SslHandshakeInfoHandler extends ChannelInboundHandlerAdapter {
             }
         } else if (evt instanceof SslCloseCompletionEvent) {
             // TODO - increment a separate metric for this event?
-        } else if (evt instanceof SniCompletionEvent) {
+        } else if (evt instanceof SniCompletionEvent sniCompletionEvent) {
             logger.debug("SNI Parsing Complete: {}", evt);
 
-            SniCompletionEvent sniCompletionEvent = (SniCompletionEvent) evt;
             if (sniCompletionEvent.isSuccess()) {
                 spectatorRegistry.counter("zuul.sni.parse.success").increment();
             } else {

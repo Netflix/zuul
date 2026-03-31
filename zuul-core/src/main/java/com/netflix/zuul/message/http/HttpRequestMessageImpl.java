@@ -284,7 +284,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     @Override
     public String getPath() {
-        if (Objects.equals(message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI), Boolean.TRUE)) {
+        if (Objects.equals(message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI), true)) {
             return decodedPath;
         }
         return path;
@@ -497,14 +497,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     protected String generateInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
-        StringBuilder sb = new StringBuilder()
-                .append("uri=")
-                .append(req.reconstructURI())
-                .append(", method=")
-                .append(req.getMethod())
-                .append(", clientip=")
-                .append(HttpUtils.getClientIP(req));
-        return sb.toString();
+        return "uri=" + req.reconstructURI() + ", method=" + req.getMethod() + ", clientip=" + HttpUtils.getClientIP(req);
     }
 
     /**

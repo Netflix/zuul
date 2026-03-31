@@ -314,7 +314,7 @@ class ClientRequestReceiverTest {
         HttpRequestMessage inboundRequest = ClientRequestReceiver.getRequestFromChannel(channel);
 
         // Set the attr to emulate pipelining rejection
-        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
+        channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_PIPELINE_REJECT).set(true);
 
         // Fire completion event
         channel.pipeline()

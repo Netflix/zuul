@@ -103,11 +103,11 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
     }
 
     private boolean isEndOfRequestResponse(Object msg) {
-        if (msg instanceof Http2HeadersFrame) {
-            return ((Http2HeadersFrame) msg).isEndStream();
+        if (msg instanceof Http2HeadersFrame http2HeadersFrame) {
+            return http2HeadersFrame.isEndStream();
         }
-        if (msg instanceof Http2DataFrame) {
-            return ((Http2DataFrame) msg).isEndStream();
+        if (msg instanceof Http2DataFrame http2DataFrame) {
+            return http2DataFrame.isEndStream();
         }
         return false;
     }
@@ -138,15 +138,9 @@ public class Http2ConnectionCloseHandler extends ChannelDuplexHandler {
         port = port == null ? -1 : port;
         incrementCounter(closeType, port);
         switch (closeType) {
-            case DELAYED_GRACEFUL:
-                gracefullyWithDelay(ctx.executor(), parent, promise);
-                break;
-            case GRACEFUL:
-            case IMMEDIATE:
-                immediate(parent, promise);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + closeType);
+            case DELAYED_GRACEFUL -> gracefullyWithDelay(ctx.executor(), parent, promise);
+            case GRACEFUL, IMMEDIATE -> immediate(parent, promise);
+            default -> throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + closeType);
         }
     }
 

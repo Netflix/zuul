@@ -299,10 +299,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * sets a key value to Boolean.TRUE
+     * sets a key value to true
      */
     public void set(String key) {
-        put(key, Boolean.TRUE);
+        put(key, true);
     }
 
     /**

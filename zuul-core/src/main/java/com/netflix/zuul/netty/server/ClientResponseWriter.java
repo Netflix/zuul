@@ -219,8 +219,8 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             startedSendingResponseToClient = false;
             closeConnection = false;
             zuulResponse = null;
-        } else if (evt instanceof CompleteEvent) {
-            HttpResponse response = ((CompleteEvent) evt).getResponse();
+        } else if (evt instanceof CompleteEvent completeEvent) {
+            HttpResponse response = completeEvent.getResponse();
             if (response != null) {
                 if ("close".equalsIgnoreCase(response.headers().get("Connection"))) {
                     closeConnection = true;
@@ -234,7 +234,6 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
             handleComplete(ctx.channel());
 
             // Choose to either close the connection, or prepare it for next use.
-            CompleteEvent completeEvent = (CompleteEvent) evt;
             CompleteReason reason = completeEvent.getReason();
             if (reason == CompleteReason.SESSION_COMPLETE || reason == CompleteReason.INACTIVE) {
                 if (!closeConnection) {

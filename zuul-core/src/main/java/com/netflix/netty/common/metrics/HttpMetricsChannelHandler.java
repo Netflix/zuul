@@ -79,8 +79,8 @@ public class HttpMetricsChannelHandler extends ChannelInboundHandlerAdapter {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
             incrementCurrentRequestsInFlight(ctx);
-        } else if (evt instanceof CompleteEvent
-                && ((CompleteEvent) evt).getReason() == CompleteReason.PIPELINE_REJECT) {
+        } else if (evt instanceof CompleteEvent completeEvent
+                && completeEvent.getReason() == CompleteReason.PIPELINE_REJECT) {
             unSupportedPipeliningCounter.increment();
         } else if (evt instanceof CompleteEvent) {
             decrementCurrentRequestsIfOneInflight(ctx);

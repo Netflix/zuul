@@ -55,10 +55,10 @@ public class Http2MetricsChannelHandlers {
 
     protected void incrementCounter(Registry registry, String counterName, String metricId, Http2Frame frame) {
         long errorCode;
-        if (frame instanceof Http2ResetFrame) {
-            errorCode = ((Http2ResetFrame) frame).errorCode();
-        } else if (frame instanceof Http2GoAwayFrame) {
-            errorCode = ((Http2GoAwayFrame) frame).errorCode();
+        if (frame instanceof Http2ResetFrame resetFrame) {
+            errorCode = resetFrame.errorCode();
+        } else if (frame instanceof Http2GoAwayFrame goAwayFrame) {
+            errorCode = goAwayFrame.errorCode();
         } else {
             errorCode = -1;
         }
@@ -74,7 +74,7 @@ public class Http2MetricsChannelHandlers {
         private final String frameCounterName;
         private final String errorCounterName;
 
-        public Inbound(Registry registry, String metricId, String metricPrefix) {
+        Inbound(Registry registry, String metricId, String metricPrefix) {
             this.registry = registry;
             this.metricId = metricId;
             this.frameCounterName = metricPrefix + ".http2.frame.inbound";
@@ -84,8 +84,8 @@ public class Http2MetricsChannelHandlers {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
-                if (msg instanceof Http2Frame) {
-                    incrementCounter(registry, frameCounterName, metricId, (Http2Frame) msg);
+                if (msg instanceof Http2Frame h2Frame) {
+                    incrementCounter(registry, frameCounterName, metricId, h2Frame);
                 }
             } finally {
                 super.channelRead(ctx, msg);
@@ -95,8 +95,8 @@ public class Http2MetricsChannelHandlers {
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
             try {
-                if (evt instanceof Http2Frame) {
-                    incrementCounter(registry, frameCounterName, metricId, (Http2Frame) evt);
+                if (evt instanceof Http2Frame h2Frame) {
+                    incrementCounter(registry, frameCounterName, metricId, h2Frame);
                 }
             } finally {
                 super.userEventTriggered(ctx, evt);
@@ -106,8 +106,8 @@ public class Http2MetricsChannelHandlers {
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             try {
-                if (cause instanceof Http2Exception) {
-                    incrementErrorCounter(registry, errorCounterName, metricId, (Http2Exception) cause);
+                if (cause instanceof Http2Exception h2Exception) {
+                    incrementErrorCounter(registry, errorCounterName, metricId, h2Exception);
                 }
             } finally {
                 super.exceptionCaught(ctx, cause);
@@ -122,7 +122,7 @@ public class Http2MetricsChannelHandlers {
         private final String frameCounterName;
         private final String errorCounterName;
 
-        public Outbound(Registry registry, String metricId, String metricPrefix) {
+        Outbound(Registry registry, String metricId, String metricPrefix) {
             this.registry = registry;
             this.metricId = metricId;
             this.frameCounterName = metricPrefix + ".http2.frame.outbound";
@@ -133,16 +133,16 @@ public class Http2MetricsChannelHandlers {
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             super.write(ctx, msg, promise);
 
-            if (msg instanceof Http2Frame) {
-                incrementCounter(registry, frameCounterName, metricId, (Http2Frame) msg);
+            if (msg instanceof Http2Frame h2Frame) {
+                incrementCounter(registry, frameCounterName, metricId, h2Frame);
             }
         }
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
             try {
-                if (cause instanceof Http2Exception) {
-                    incrementErrorCounter(registry, errorCounterName, metricId, (Http2Exception) cause);
+                if (cause instanceof Http2Exception h2Exception) {
+                    incrementErrorCounter(registry, errorCounterName, metricId, h2Exception);
                 }
             } finally {
                 super.exceptionCaught(ctx, cause);

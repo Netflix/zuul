@@ -65,10 +65,9 @@ public final class HeaderName {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof HeaderName)) {
+        if (!(o instanceof HeaderName that)) {
             return false;
         }
-        HeaderName that = (HeaderName) o;
         return this.normalised.equals(that.normalised);
     }
 

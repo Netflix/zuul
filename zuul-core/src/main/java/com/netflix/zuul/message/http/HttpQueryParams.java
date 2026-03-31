@@ -232,11 +232,10 @@ public class HttpQueryParams implements Cloneable {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof HttpQueryParams)) {
+        if (!(obj instanceof HttpQueryParams hqp2)) {
             return false;
         }
 
-        HttpQueryParams hqp2 = (HttpQueryParams) obj;
         return Iterables.elementsEqual(delegate.entries(), hqp2.delegate.entries());
     }
 }

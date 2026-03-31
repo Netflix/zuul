@@ -49,23 +49,23 @@ public class JsonUtility {
 
             for (String key : jsonData.keySet()) {
                 Object data = jsonData.get(key);
-                if (data instanceof Map) {
+                if (data instanceof Map map) {
                     /* it's a nested map, so we'll recursively add the JSON of this map to the current JSON */
-                    json.addValue(key, jsonFromMap((Map<String, Object>) data));
-                } else if (data instanceof Object[]) {
+                    json.addValue(key, jsonFromMap(map));
+                } else if (data instanceof Object[] arr) {
                     /* it's an object array, so we'll iterate the elements and put them all in here */
-                    json.addValue(key, "[" + stringArrayFromObjectArray((Object[]) data) + "]");
-                } else if (data instanceof Collection) {
+                    json.addValue(key, "[" + stringArrayFromObjectArray(arr) + "]");
+                } else if (data instanceof Collection collection) {
                     /* it's a collection, so we'll iterate the elements and put them all in here */
-                    json.addValue(key, "[" + stringArrayFromObjectArray(((Collection) data).toArray()) + "]");
-                } else if (data instanceof int[]) {
+                    json.addValue(key, "[" + stringArrayFromObjectArray(collection.toArray()) + "]");
+                } else if (data instanceof int[] arr) {
                     /* it's an int array, so we'll get the string representation */
-                    String intArray = Arrays.toString((int[]) data);
+                    String intArray = Arrays.toString(arr);
                     /* remove whitespace */
                     intArray = intArray.replaceAll(" ", "");
                     json.addValue(key, intArray);
-                } else if (data instanceof JsonCapableObject) {
-                    json.addValue(key, jsonFromMap(((JsonCapableObject) data).jsonMap()));
+                } else if (data instanceof JsonCapableObject jsonCapableObject) {
+                    json.addValue(key, jsonFromMap(jsonCapableObject.jsonMap()));
                 } else {
                     /* all other objects we assume we are to just put the string value in */
                     json.addValue(key, String.valueOf(data));
@@ -93,8 +93,8 @@ public class JsonUtility {
             }
             if (o instanceof Map) {
                 arrayAsString.append(jsonFromMap((Map<String, Object>) o));
-            } else if (o instanceof JsonCapableObject) {
-                arrayAsString.append(jsonFromMap(((JsonCapableObject) o).jsonMap()));
+            } else if (o instanceof JsonCapableObject jsonCapableObject) {
+                arrayAsString.append(jsonFromMap(jsonCapableObject.jsonMap()));
             } else {
                 arrayAsString.append("\"").append(String.valueOf(o)).append("\"");
             }
@@ -107,18 +107,18 @@ public class JsonUtility {
 
         private boolean newGroup = false;
 
-        public JsonDocument startGroup() {
+        JsonDocument startGroup() {
             newGroup = true;
             json.append("{");
             return this;
         }
 
-        public JsonDocument endGroup() {
+        JsonDocument endGroup() {
             json.append("}");
             return this;
         }
 
-        public JsonDocument addValue(String key, String value) {
+        JsonDocument addValue(String key, String value) {
             if (!newGroup) {
                 // if this is not the first value in a group, put a comma
                 json.append(",");
