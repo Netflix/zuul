@@ -96,13 +96,13 @@
             "locked": "2.0.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -224,13 +224,13 @@
             "locked": "2.0.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -367,13 +367,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -522,13 +522,13 @@
             "locked": "2.0.1"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -643,13 +643,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
@@ -795,13 +795,13 @@
             "locked": "4.2.2"
         },
         "org.bouncycastle:bcpkix-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "locked": "1.0.0"
