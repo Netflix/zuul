@@ -115,8 +115,8 @@ public class SampleServerStartup extends BaseServerStartup {
         {
             int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
             sockAddr = new SocketAddressProperty("zuul.server.addr.main", "=" + port).getValue();
-            if (sockAddr instanceof InetSocketAddress) {
-                metricId = String.valueOf(((InetSocketAddress) sockAddr).getPort());
+            if (sockAddr instanceof InetSocketAddress inetSocketAddress) {
+                metricId = String.valueOf(inetSocketAddress.getPort());
             } else {
                 // Just pick something.   This would likely be a UDS addr or a LocalChannel addr.
                 metricId = sockAddr.toString();
@@ -141,7 +141,7 @@ public class SampleServerStartup extends BaseServerStartup {
             /* The below settings can be used when running behind an ELB HTTP listener that terminates SSL for you
              * and passes XFF headers.
              */
-            case HTTP:
+            case HTTP -> {
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
                         StripUntrustedProxyHeadersHandler.AllowWhen.ALWAYS);
@@ -153,12 +153,12 @@ public class SampleServerStartup extends BaseServerStartup {
                         new NamedSocketAddress("http", sockAddr),
                         new ZuulServerChannelInitializer(metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
-                break;
+            }
 
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
              * SSL in Zuul.
              */
-            case HTTP2:
+            case HTTP2 -> {
                 sslConfig = ServerSslConfig.builder()
                         .protocols(WWW_PROTOCOLS)
                         .ciphers(ServerSslConfig.getDefaultCiphers())
@@ -181,7 +181,7 @@ public class SampleServerStartup extends BaseServerStartup {
                         new NamedSocketAddress("http2", sockAddr),
                         new Http2SslChannelInitializer(metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
-                break;
+            }
 
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
              * SSL in Zuul.
@@ -189,7 +189,7 @@ public class SampleServerStartup extends BaseServerStartup {
              * Can be tested using certs in resources directory:
              *  curl https://localhost:7001/test -vk --cert src/main/resources/ssl/client.cert:zuul123 --key src/main/resources/ssl/client.key
              */
-            case HTTP_MUTUAL_TLS:
+            case HTTP_MUTUAL_TLS -> {
                 sslConfig = ServerSslConfig.builder()
                         .protocols(WWW_PROTOCOLS)
                         .ciphers(ServerSslConfig.getDefaultCiphers())
@@ -215,11 +215,11 @@ public class SampleServerStartup extends BaseServerStartup {
                         new Http1MutualSslChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr, sslConfig);
-                break;
+            }
 
             /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
              * server using WebSockets */
-            case WEBSOCKET:
+            case WEBSOCKET -> {
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
                         StripUntrustedProxyHeadersHandler.AllowWhen.NEVER);
@@ -235,14 +235,15 @@ public class SampleServerStartup extends BaseServerStartup {
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
 
+
                 // port to accept push message from the backend, should be accessible on internal network only.
                 addrsToChannels.put(new NamedSocketAddress("http.push", pushSockAddr), pushSenderInitializer);
                 logAddrConfigured(pushSockAddr);
-                break;
+            }
 
             /* Settings to be used when running behind an ELB TCP listener with proxy protocol as a Push notification
              * server using Server Sent Events (SSE) */
-            case SSE:
+            case SSE -> {
                 channelConfig.set(
                         CommonChannelConfigKeys.allowProxyHeadersWhen,
                         StripUntrustedProxyHeadersHandler.AllowWhen.NEVER);
@@ -257,10 +258,11 @@ public class SampleServerStartup extends BaseServerStartup {
                         new SampleSSEPushChannelInitializer(
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
+
                 // port to accept push message from the backend, should be accessible on internal network only.
                 addrsToChannels.put(new NamedSocketAddress("http.push", pushSockAddr), pushSenderInitializer);
                 logAddrConfigured(pushSockAddr);
-                break;
+            }
         }
 
         return Collections.unmodifiableMap(addrsToChannels);

@@ -84,8 +84,8 @@ public class CurrentPassport {
     }
 
     private Unlocker lock() {
-        boolean locked = false;
-        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !(locked = historyLock.tryLock())) {
+        boolean locked = historyLock.tryLock();
+        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !locked) {
             Thread owner = historyLock.getOwner();
             String ownerStack = String.valueOf(owner != null ? Arrays.asList(owner.getStackTrace()) : historyLock);
             logger.warn(
@@ -463,33 +463,15 @@ class CountingCurrentPassport extends CurrentPassport {
 
     private void incrementStateCounter(PassportState state) {
         switch (state) {
-            case IN_REQ_HEADERS_RECEIVED:
-                IN_REQ_HEADERS_RECEIVED_CNT.increment();
-                break;
-            case IN_REQ_LAST_CONTENT_RECEIVED:
-                IN_REQ_LAST_CONTENT_RECEIVED_CNT.increment();
-                break;
-            case OUT_REQ_HEADERS_SENT:
-                OUT_REQ_HEADERS_SENT_CNT.increment();
-                break;
-            case OUT_REQ_LAST_CONTENT_SENT:
-                OUT_REQ_LAST_CONTENT_SENT_CNT.increment();
-                break;
-            case IN_RESP_HEADERS_RECEIVED:
-                IN_RESP_HEADERS_RECEIVED_CNT.increment();
-                break;
-            case IN_RESP_LAST_CONTENT_RECEIVED:
-                IN_RESP_LAST_CONTENT_RECEIVED_CNT.increment();
-                break;
-            case OUT_RESP_HEADERS_SENT:
-                OUT_RESP_HEADERS_SENT_CNT.increment();
-                break;
-            case OUT_RESP_LAST_CONTENT_SENT:
-                OUT_RESP_LAST_CONTENT_SENT_CNT.increment();
-                break;
-            default:
-                logger.debug("Not incrementing any state counter for state {}", state);
-                break;
+            case IN_REQ_HEADERS_RECEIVED -> IN_REQ_HEADERS_RECEIVED_CNT.increment();
+            case IN_REQ_LAST_CONTENT_RECEIVED -> IN_REQ_LAST_CONTENT_RECEIVED_CNT.increment();
+            case OUT_REQ_HEADERS_SENT -> OUT_REQ_HEADERS_SENT_CNT.increment();
+            case OUT_REQ_LAST_CONTENT_SENT -> OUT_REQ_LAST_CONTENT_SENT_CNT.increment();
+            case IN_RESP_HEADERS_RECEIVED -> IN_RESP_HEADERS_RECEIVED_CNT.increment();
+            case IN_RESP_LAST_CONTENT_RECEIVED -> IN_RESP_LAST_CONTENT_RECEIVED_CNT.increment();
+            case OUT_RESP_HEADERS_SENT -> OUT_RESP_HEADERS_SENT_CNT.increment();
+            case OUT_RESP_LAST_CONTENT_SENT -> OUT_RESP_LAST_CONTENT_SENT_CNT.increment();
+            default -> logger.debug("Not incrementing any state counter for state {}", state);
         }
     }
 }

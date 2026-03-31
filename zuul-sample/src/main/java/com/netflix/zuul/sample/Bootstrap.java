@@ -145,7 +145,7 @@ public class Bootstrap {
 
         private final DefaultFilterFactory filterFactory;
 
-        public SampleFilterFactory() {
+        SampleFilterFactory() {
             filterFactory = new DefaultFilterFactory();
         }
 
