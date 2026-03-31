@@ -91,7 +91,7 @@ public abstract class HttpSyncEndpoint extends Endpoint<HttpRequestMessage, Http
         final ZuulMessage response;
         final Subscriber subscriber;
 
-        public ResponseState(ZuulMessage response, Subscriber subscriber) {
+        ResponseState(ZuulMessage response, Subscriber subscriber) {
             this.response = response;
             this.subscriber = subscriber;
         }

@@ -38,7 +38,7 @@ public class Http2FrameLoggingPerClientIpHandler extends ChannelInboundHandlerAd
                     .get();
 
             if (IPS.get().contains(clientIP)) {
-                ctx.channel().attr(DynamicHttp2FrameLogger.ATTR_ENABLE).set(Boolean.TRUE);
+                ctx.channel().attr(DynamicHttp2FrameLogger.ATTR_ENABLE).set(true);
                 ctx.pipeline().remove(this);
             }
         } finally {

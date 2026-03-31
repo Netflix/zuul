@@ -165,7 +165,7 @@ public class Debug {
         }
 
         if (obs == null) {
-            obs = Observable.just(Boolean.FALSE);
+            obs = Observable.just(false);
         }
 
         return obs;
@@ -183,7 +183,7 @@ public class Debug {
         }
 
         if (obs == null) {
-            obs = Observable.just(Boolean.FALSE);
+            obs = Observable.just(false);
         }
 
         return obs;
@@ -208,7 +208,7 @@ public class Debug {
         }
 
         if (obs == null) {
-            obs = Observable.just(Boolean.FALSE);
+            obs = Observable.just(false);
         }
 
         return obs;

@@ -134,10 +134,9 @@ public final class OriginName {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof OriginName)) {
+        if (!(o instanceof OriginName that)) {
             return false;
         }
-        OriginName that = (OriginName) o;
         return Objects.equals(niwsClientName, that.niwsClientName)
                 && Objects.equals(target, that.target)
                 && Objects.equals(authority, that.authority);

@@ -58,11 +58,9 @@ public class RouteStatusCodeMonitor implements NamedCount {
         if (this == o) {
             return true;
         }
-        if (o == null || !(o instanceof RouteStatusCodeMonitor)) {
+        if (o == null || !(o instanceof RouteStatusCodeMonitor statsData)) {
             return false;
         }
-
-        RouteStatusCodeMonitor statsData = (RouteStatusCodeMonitor) o;
 
         if (statusCode != statsData.statusCode) {
             return false;

@@ -254,15 +254,8 @@ public class DynamicHttp2FrameLogger extends Http2FrameLogger {
     private void log(
             Direction direction, String frame, ChannelHandlerContext ctx, @FormatString String format, Object... args) {
         if (shouldLogFrame(frame)) {
-            StringBuilder b = new StringBuilder(200)
-                    .append(direction.name())
-                    .append(": ")
-                    .append(frame)
-                    .append(": ")
-                    .append(String.format(format, args))
-                    .append(" -- ")
-                    .append(String.valueOf(ctx.channel()));
-            logger.log(level, b.toString());
+            String b = direction.name() + ": " + frame + ": " + String.format(format, args) + " -- " + ctx.channel();
+            logger.log(level, b);
         }
     }
 

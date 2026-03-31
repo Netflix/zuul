@@ -573,10 +573,9 @@ public final class Headers {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Headers)) {
+        if (!(obj instanceof Headers other)) {
             return false;
         }
-        Headers other = (Headers) obj;
 
         return asMap().equals(other.asMap());
     }

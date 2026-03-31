@@ -35,10 +35,10 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
     public static final class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (msg instanceof HttpRequest) {
+            if (msg instanceof HttpRequest req) {
                 // Fire start event, and if that succeeded, then allow processing to
                 // continue to next handler in pipeline.
-                if (fireStartEvent(ctx, (HttpRequest) msg)) {
+                if (fireStartEvent(ctx, req)) {
                     super.channelRead(ctx, msg);
                 } else {
                     ReferenceCountUtil.release(msg);
@@ -59,8 +59,8 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
     public static final class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-            if (msg instanceof HttpResponse) {
-                ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
+            if (msg instanceof HttpResponse resp) {
+                ctx.channel().attr(ATTR_HTTP_RESP).set(resp);
             }
 
             try {
@@ -69,13 +69,13 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
                 if (msg instanceof LastHttpContent) {
 
                     boolean dontFireCompleteYet = false;
-                    if (msg instanceof HttpResponse) {
+                    if (msg instanceof HttpResponse httpResponse) {
                         // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to
                         // client
                         // that it can continue sending the initial request body.
                         // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd
                         // response.
-                        if (Objects.equals(((HttpResponse) msg).status(), HttpResponseStatus.CONTINUE)) {
+                        if (Objects.equals(httpResponse.status(), HttpResponseStatus.CONTINUE)) {
                             dontFireCompleteYet = true;
                         }
                     }

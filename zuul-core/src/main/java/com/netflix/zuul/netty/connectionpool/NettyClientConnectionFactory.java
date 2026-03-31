@@ -46,9 +46,9 @@ public class NettyClientConnectionFactory {
     public ChannelFuture connect(
             EventLoop eventLoop, SocketAddress socketAddress, CurrentPassport passport, IConnectionPool pool) {
         Objects.requireNonNull(socketAddress, "socketAddress");
-        if (socketAddress instanceof InetSocketAddress) {
+        if (socketAddress instanceof InetSocketAddress inetSocketAddress) {
             // This should be checked by the ClientConnectionManager
-            assert !((InetSocketAddress) socketAddress).isUnresolved() : socketAddress;
+            assert !inetSocketAddress.isUnresolved() : socketAddress;
         }
         Bootstrap bootstrap = new Bootstrap()
                 .channel(Server.defaultOutboundChannelType.get())

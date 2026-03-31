@@ -91,7 +91,7 @@ public class ZuulResponseFilter extends HttpOutboundSyncFilter {
                 Throwable error = context.getError();
                 headers.set(
                         X_ZUUL_ERROR_CAUSE,
-                        error instanceof ZuulException ? ((ZuulException) error).getErrorCause() : "UNKNOWN_CAUSE");
+                        error instanceof ZuulException zuulException ? zuulException.getErrorCause() : "UNKNOWN_CAUSE");
             }
 
             if (response.getStatus() >= 500) {

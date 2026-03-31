@@ -68,8 +68,8 @@ public class InstrumentedResourceLeakDetector<T> extends ResourceLeakDetector<T>
             Field reportedLeaks = ResourceLeakDetector.class.getDeclaredField("reportedLeaks");
             reportedLeaks.setAccessible(true);
             Object f = reportedLeaks.get(this);
-            if (f instanceof Map) {
-                ((Map) f).clear();
+            if (f instanceof Map map) {
+                map.clear();
             }
         } catch (Throwable t) {
             // do nothing

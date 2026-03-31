@@ -85,10 +85,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
             SocketAddress srcAddr;
             switch (hapm.proxiedProtocol()) {
-                case UNKNOWN:
-                    throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
-                case TCP4:
-                case TCP6:
+                case TCP4, TCP6 -> {
                     InetSocketAddress inetAddr;
                     srcAddr =
                             inetAddr = new InetSocketAddress(InetAddresses.forString(sourceAddress), hapm.sourcePort());
@@ -100,14 +97,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                     } else {
                         HAPM_SRC_IP_VERSION.put(attrs, "unknown");
                     }
-                    break;
-                case UNIX_STREAM: // TODO: implement
-                case UDP4:
-                case UDP6:
-                case UNIX_DGRAM:
-                    throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
-                default:
-                    throw new AssertionError(hapm.proxiedProtocol());
+                }
+                // TODO: implement
+                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM -> throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
+                default -> throw new AssertionError(hapm.proxiedProtocol());
             }
             channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).set(srcAddr);
         }
@@ -120,10 +113,7 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
 
             SocketAddress dstAddr;
             switch (hapm.proxiedProtocol()) {
-                case UNKNOWN:
-                    throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
-                case TCP4:
-                case TCP6:
+                case TCP4, TCP6 -> {
                     InetSocketAddress inetAddr =
                             new InetSocketAddress(InetAddresses.forString(destinationAddress), hapm.destinationPort());
                     dstAddr = inetAddr;
@@ -139,14 +129,10 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                         HAPM_DEST_IP_VERSION.put(attrs, "unknown");
                     }
                     HAPM_DEST_PORT.put(attrs, hapm.destinationPort());
-                    break;
-                case UNIX_STREAM: // TODO: implement
-                case UDP4:
-                case UDP6:
-                case UNIX_DGRAM:
-                    throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
-                default:
-                    throw new AssertionError(hapm.proxiedProtocol());
+                }
+                // TODO: implement
+                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM -> throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
+                default -> throw new AssertionError(hapm.proxiedProtocol());
             }
             channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(dstAddr);
         }

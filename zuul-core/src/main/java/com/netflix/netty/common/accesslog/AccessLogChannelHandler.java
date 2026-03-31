@@ -63,18 +63,18 @@ public final class AccessLogChannelHandler {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            if (msg instanceof HttpRequest) {
+            if (msg instanceof HttpRequest httpRequest) {
                 RequestState state = new RequestState();
-                state.request = (HttpRequest) msg;
+                state.request = httpRequest;
                 state.startTimeNs = System.nanoTime();
                 state.requestBodySize = 0;
                 ctx.channel().attr(ATTR_REQ_STATE).set(state);
             }
 
-            if (msg instanceof HttpContent) {
+            if (msg instanceof HttpContent httpContent) {
                 RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
                 if (state != null) {
-                    state.requestBodySize += ((HttpContent) msg).content().readableBytes();
+                    state.requestBodySize += httpContent.content().readableBytes();
                 }
             }
 
@@ -83,7 +83,7 @@ public final class AccessLogChannelHandler {
 
         @Override
         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-            if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+            if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent completeEvent) {
                 // Get the stored request, and remove the attr from channel to cleanup.
                 RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
                 ctx.channel().attr(ATTR_REQ_STATE).set(null);
@@ -97,7 +97,7 @@ public final class AccessLogChannelHandler {
                 if (state.response == null) {
                     LOG.debug(
                             "Response null in AccessLog, Complete reason={}, duration={}, url={}, method={}",
-                            ((HttpLifecycleChannelHandler.CompleteEvent) evt).getReason(),
+                            completeEvent.getReason(),
                             durationNs / (1000 * 1000),
                             state.request != null ? state.request.uri() : "-",
                             state.request != null ? state.request.method() : "-");
@@ -124,13 +124,13 @@ public final class AccessLogChannelHandler {
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             RequestState state = ctx.channel().attr(ATTR_REQ_STATE).get();
 
-            if (msg instanceof HttpResponse) {
-                state.response = (HttpResponse) msg;
+            if (msg instanceof HttpResponse httpResponse) {
+                state.response = httpResponse;
                 state.responseBodySize = 0;
             }
 
-            if (msg instanceof HttpContent) {
-                state.responseBodySize += ((HttpContent) msg).content().readableBytes();
+            if (msg instanceof HttpContent httpContent) {
+                state.responseBodySize += httpContent.content().readableBytes();
             }
 
             super.write(ctx, msg, promise);

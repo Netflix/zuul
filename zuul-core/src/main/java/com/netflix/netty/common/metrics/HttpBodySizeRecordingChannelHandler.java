@@ -68,11 +68,11 @@ public final class HttpBodySizeRecordingChannelHandler {
             }
 
             // Update the inbound body size with this chunk.
-            if (msg instanceof HttpContent) {
+            if (msg instanceof HttpContent httpContent) {
                 if (state == null) {
                     state = getOrCreateCurrentState(ctx.channel());
                 }
-                state.inboundBodySize += ((HttpContent) msg).content().readableBytes();
+                state.inboundBodySize += httpContent.content().readableBytes();
             }
 
             super.channelRead(ctx, msg);
@@ -101,11 +101,11 @@ public final class HttpBodySizeRecordingChannelHandler {
             }
 
             // Update the outbound body size with this chunk.
-            if (msg instanceof HttpContent) {
+            if (msg instanceof HttpContent httpContent) {
                 if (state == null) {
                     state = getOrCreateCurrentState(ctx.channel());
                 }
-                state.outboundBodySize += ((HttpContent) msg).content().readableBytes();
+                state.outboundBodySize += httpContent.content().readableBytes();
             }
 
             super.write(ctx, msg, promise);

@@ -241,8 +241,8 @@ public class Server {
         // Add metrics to monitor that allocator's memory usage.
         if (!allBindFutures.isEmpty()) {
             ByteBufAllocator alloc = allBindFutures.get(0).channel().alloc();
-            if (alloc instanceof ByteBufAllocatorMetricProvider) {
-                ByteBufAllocatorMetric metrics = ((ByteBufAllocatorMetricProvider) alloc).metric();
+            if (alloc instanceof ByteBufAllocatorMetricProvider byteBufAllocatorMetricProvider) {
+                ByteBufAllocatorMetric metrics = byteBufAllocatorMetricProvider.metric();
                 PolledMeter.using(registry)
                         .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
                         .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);

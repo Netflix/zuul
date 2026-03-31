@@ -65,11 +65,11 @@ public class ZuulPskServer extends AbstractTlsServer {
             handshakeCompleteTimer = registry.timer("zuul.psk.handshake.complete.time");
         }
 
-        public void recordHandshakeStarting() {
+        void recordHandshakeStarting() {
             handshakeStartTime = System.nanoTime();
         }
 
-        public void recordHandshakeComplete() {
+        void recordHandshakeComplete() {
             handshakeCompleteTimer.record(System.nanoTime() - handshakeStartTime, TimeUnit.NANOSECONDS);
         }
     }

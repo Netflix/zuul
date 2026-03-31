@@ -124,36 +124,27 @@ public final class SocketAddressProperty extends StringDerivedProperty<SocketAdd
             int port;
 
             switch (bindType) {
-                case ANY: // fallthrough
-                case IPV4_ANY: // fallthrough
-                case IPV6_ANY: // fallthrough
-                case ANY_LOCAL: // fallthrough
-                case IPV4_LOCAL: // fallthrough
-                case IPV6_LOCAL: // fallthrough
+                case ANY, IPV4_ANY, IPV6_ANY, ANY_LOCAL, IPV4_LOCAL, IPV6_LOCAL -> {
                     try {
                         port = Integer.parseInt(rawAddress);
                     } catch (NumberFormatException e) {
                         throw new IllegalArgumentException("Invalid Port " + input, e);
                     }
-                    break;
-                case UDS:
-                    port = -1;
-                    break;
-                default:
-                    throw new AssertionError("Missed cased: " + bindType);
+                }
+                case UDS -> port = -1;
+                default -> throw new AssertionError("Missed cased: " + bindType);
             }
 
             switch (bindType) {
-                case ANY:
+                case ANY -> {
                     return new InetSocketAddress(port);
-                case IPV4_ANY: // fallthrough
-                case IPV6_ANY: // fallthrough
-                case ANY_LOCAL: // fallthrough
-                case IPV4_LOCAL: // fallthrough
-                case IPV6_LOCAL: // fallthrough
+                }
+                case IPV4_ANY, IPV6_ANY, ANY_LOCAL, IPV4_LOCAL, IPV6_LOCAL -> {
                     return new InetSocketAddress(bindType.addressSupplier.get(), port);
-                case UDS:
+                }
+                case UDS -> {
                     return new DomainSocketAddress(rawAddress);
+                }
             }
             throw new AssertionError("Missed cased: " + bindType);
         }

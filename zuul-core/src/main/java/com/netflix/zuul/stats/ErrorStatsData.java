@@ -57,11 +57,9 @@ public class ErrorStatsData implements NamedCount {
         if (this == o) {
             return true;
         }
-        if (o == null || !(o instanceof ErrorStatsData)) {
+        if (o == null || !(o instanceof ErrorStatsData that)) {
             return false;
         }
-
-        ErrorStatsData that = (ErrorStatsData) o;
 
         return !(errorCause != null ? !errorCause.equals(that.errorCause) : that.errorCause != null);
     }

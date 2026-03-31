@@ -171,8 +171,8 @@ abstract class BaseIntegrationTest {
     static Stream<Arguments> arguments() {
         List<Arguments> list = new ArrayList<Arguments>();
         for (Protocol protocol : ImmutableSet.of(Protocol.HTTP_1_1)) {
-            for (boolean requestBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
-                for (boolean responseBodyBuffering : ImmutableSet.of(Boolean.TRUE, Boolean.FALSE)) {
+            for (boolean requestBodyBuffering : ImmutableSet.of(true, false)) {
+                for (boolean responseBodyBuffering : ImmutableSet.of(true, false)) {
                     list.add(Arguments.of(
                             protocol.name(), setupOkHttpClient(protocol), requestBodyBuffering, responseBodyBuffering));
                 }

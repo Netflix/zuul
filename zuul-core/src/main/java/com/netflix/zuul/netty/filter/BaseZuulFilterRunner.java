@@ -118,7 +118,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final void setFilterAwaitingBody(I zuulMesg, boolean flag) {
         if (flag) {
-            zuulMesg.getContext().put(AWAITING_BODY_FLAG_SESSION_CTX_KEY, Boolean.TRUE);
+            zuulMesg.getContext().put(AWAITING_BODY_FLAG_SESSION_CTX_KEY, true);
         } else {
             zuulMesg.getContext().remove(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
         }
@@ -180,8 +180,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final void addPerfMarkTags(ZuulMessage inMesg) {
         HttpRequestInfo req = null;
-        if (inMesg instanceof HttpRequestInfo) {
-            req = (HttpRequestInfo) inMesg;
+        if (inMesg instanceof HttpRequestInfo httpRequestInfo) {
+            req = httpRequestInfo;
         }
         if (inMesg instanceof HttpResponseMessage msg) {
 
@@ -347,7 +347,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         // Add a log statement for this exception.
         String errorMsg = "Filter Exception: filter=" + filter.filterName() + ", request-info="
                 + inMesg.getInfoForLogging() + ", msg=" + String.valueOf(t.getMessage());
-        if (t instanceof ZuulException && !((ZuulException) t).shouldLogAsError()) {
+        if (t instanceof ZuulException zuulException && !zuulException.shouldLogAsError()) {
             logger.warn(errorMsg);
         } else {
             logger.error(errorMsg, t);
@@ -385,12 +385,12 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
         // Record the execution summary in context.
         switch (status) {
-            case FAILED:
+            case FAILED -> {
                 if (logger.isDebugEnabled()) {
                     zuulCtx.addFilterExecutionSummary(filter.filterName(), ExecutionStatus.FAILED.name(), execTimeMs);
                 }
-                break;
-            case SUCCESS:
+            }
+            case SUCCESS -> {
                 if (logger.isDebugEnabled()) {
                     zuulCtx.addFilterExecutionSummary(filter.filterName(), ExecutionStatus.SUCCESS.name(), execTimeMs);
                 }
@@ -403,9 +403,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
                                     + "} Execution time = " + execTimeMs + "ms");
                     Debug.compareContextState(filter.filterName(), zuulCtx, startSnapshot.getContext());
                 }
-                break;
-            default:
-                break;
+            }
+            default -> {}
         }
 
         logger.debug(
@@ -419,10 +418,10 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected void handleException(ZuulMessage zuulMesg, String filterName, Exception ex) {
         HttpRequestInfo zuulReq = null;
-        if (zuulMesg instanceof HttpRequestMessage) {
-            zuulReq = (HttpRequestMessage) zuulMesg;
-        } else if (zuulMesg instanceof HttpResponseMessage) {
-            zuulReq = ((HttpResponseMessage) zuulMesg).getInboundRequest();
+        if (zuulMesg instanceof HttpRequestMessage httpRequestMessage) {
+            zuulReq = httpRequestMessage;
+        } else if (zuulMesg instanceof HttpResponseMessage httpResponseMessage) {
+            zuulReq = httpResponseMessage.getInboundRequest();
         }
         String path = (zuulReq != null) ? zuulReq.getPathAndQuery() : "-";
         String method = (zuulReq != null) ? zuulReq.getMethod() : "-";
@@ -480,7 +479,7 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
         // no synchronization needed since onNext and onCompleted are always called on the same thread
         private O outMesg;
 
-        public FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
+        FilterChainResumer(I inMesg, ZuulFilter<I, O> filter, ZuulMessage snapshot, long startTime) {
             this.inMesg = Preconditions.checkNotNull(inMesg, "input message");
             this.filter = Preconditions.checkNotNull(filter, "filter");
             this.snapshot = snapshot;

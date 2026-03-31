@@ -42,14 +42,16 @@ public enum FilterType {
     public static FilterType parse(String str) {
         str = str.toLowerCase(Locale.ROOT);
         switch (str) {
-            case "in":
+            case "in" -> {
                 return INBOUND;
-            case "out":
+            }
+            case "out" -> {
                 return OUTBOUND;
-            case "end":
+            }
+            case "end" -> {
                 return ENDPOINT;
-            default:
-                throw new IllegalArgumentException("Unknown filter type! type=" + String.valueOf(str));
+            }
+            default -> throw new IllegalArgumentException("Unknown filter type! type=" + String.valueOf(str));
         }
     }
 }

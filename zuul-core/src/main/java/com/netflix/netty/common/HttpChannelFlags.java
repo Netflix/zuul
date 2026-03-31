@@ -39,7 +39,7 @@ public class HttpChannelFlags {
         }
 
         public void set(Channel ch) {
-            ch.attr(attributeKey).set(Boolean.TRUE);
+            ch.attr(attributeKey).set(true);
         }
 
         public void set(ChannelHandlerContext ctx) {

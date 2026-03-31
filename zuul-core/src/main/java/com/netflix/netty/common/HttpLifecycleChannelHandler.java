@@ -62,7 +62,7 @@ public abstract class HttpLifecycleChannelHandler {
                     "Received a http request on connection where we already have a request being processed. Closing"
                             + " the connection now. channel = {}",
                     channel.id().asLongText());
-            channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(Boolean.TRUE);
+            channel.attr(ATTR_HTTP_PIPELINE_REJECT).set(true);
             channel.close();
             return false;
         }
