@@ -192,19 +192,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -731,19 +731,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -960,19 +960,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -1337,19 +1337,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.78.1"
+            "locked": "1.83"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
