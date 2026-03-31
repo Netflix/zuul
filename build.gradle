@@ -98,6 +98,7 @@ subprojects {
                 "-Xep:InlineMeSuggester:OFF",
                 "-Xep:MissingSummary:OFF",
                 "-Xep:StringConcatToTextBlock:OFF",
+                "-Xep:AssignmentExpression:OFF",
             )
         }
     }

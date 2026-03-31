@@ -84,8 +84,8 @@ public class CurrentPassport {
     }
 
     private Unlocker lock() {
-        boolean locked = historyLock.tryLock();
-        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !locked) {
+        boolean locked = false;
+        if ((historyLock.isLocked() && !historyLock.isHeldByCurrentThread()) || !(locked = historyLock.tryLock())) {
             Thread owner = historyLock.getOwner();
             String ownerStack = String.valueOf(owner != null ? Arrays.asList(owner.getStackTrace()) : historyLock);
             logger.warn(
