@@ -269,7 +269,7 @@ public final class RejectionUtils {
             String rejectedBody,
             Map<String, String> rejectionHeaders) {
         switch (rejectionType) {
-            case REJECT ->
+            case REJECT -> {
                 sendRejectionResponse(
                         ctx,
                         nfStatus,
@@ -279,8 +279,16 @@ public final class RejectionUtils {
                         rejectedCode,
                         rejectedBody,
                         rejectionHeaders);
-            case CLOSE -> rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
-            case ALLOW_THEN_CLOSE -> allowThenClose(ctx);
+                return;
+            }
+            case CLOSE -> {
+                rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
+                return;
+            }
+            case ALLOW_THEN_CLOSE -> {
+                allowThenClose(ctx);
+                return;
+            }
         }
         throw new AssertionError("Bad rejection type: " + rejectionType);
     }
