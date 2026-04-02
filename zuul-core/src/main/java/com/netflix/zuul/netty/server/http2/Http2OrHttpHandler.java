@@ -65,6 +65,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     // controls the number of rst frames that will be sent to a client before closing the connection
     private final int maxEncoderRstFrames;
     private final int maxEncoderRstFramesWindow;
+    private final int maxConsecutiveContinuationFrames;
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
     public Http2OrHttpHandler(
@@ -81,6 +82,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.maxEncoderRstFrames = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFrames);
         this.maxEncoderRstFramesWindow = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFramesWindow);
         this.connectProtocolEnabled = channelConfig.get(CommonChannelConfigKeys.http2ConnectProtocolEnabled);
+        this.maxConsecutiveContinuationFrames = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxConsecutiveContinuationFrames);
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 
@@ -154,7 +156,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .initialSettings(settings)
                 .validateHeaders(true)
                 .encoderEnforceMaxRstFramesPerWindow(maxEncoderRstFrames, maxEncoderRstFramesWindow)
-                .decoderEnforceMaxSmallContinuationFrames(0)
+                .decoderEnforceMaxSmallContinuationFrames(maxConsecutiveContinuationFrames)
                 .build();
         Http2Connection conn = frameCodec.connection();
         // Use the uniform byte distributor until https://github.com/netty/netty/issues/10525 is fixed.

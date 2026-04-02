@@ -85,4 +85,6 @@ public class CommonChannelConfigKeys {
             new ChannelConfigKey<>("http2EncoderMaxResetFramesWindow", 30);
     public static final ChannelConfigKey<Boolean> http2ConnectProtocolEnabled =
             new ChannelConfigKey<>("http2ConnectProtocolEnabled", false);
+    public static final ChannelConfigKey<Integer> http2EncoderMaxConsecutiveContinuationFrames =
+            new ChannelConfigKey<>("http2EncoderMaxConsecutiveContinuationFrames", 0);
 }
