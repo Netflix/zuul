@@ -154,6 +154,7 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
                 .initialSettings(settings)
                 .validateHeaders(true)
                 .encoderEnforceMaxRstFramesPerWindow(maxEncoderRstFrames, maxEncoderRstFramesWindow)
+                .decoderEnforceMaxSmallContinuationFrames(0)
                 .build();
         Http2Connection conn = frameCodec.connection();
         // Use the uniform byte distributor until https://github.com/netty/netty/issues/10525 is fixed.
