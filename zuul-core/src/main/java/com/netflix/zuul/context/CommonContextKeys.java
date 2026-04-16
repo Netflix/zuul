@@ -88,6 +88,4 @@ public class CommonContextKeys {
             SessionContext.newKey("response_body_size");
 
     public static final SessionContext.Key<CurrentPassport> PASSPORT = SessionContext.newKey("_passport");
-    public static final SessionContext.Key<Boolean> ZUUL_USE_DECODED_URI =
-            SessionContext.newKey("zuul_use_decoded_uri");
 }
