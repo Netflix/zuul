@@ -24,6 +24,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,9 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Enforces HTTP/1.1 message framing rules from RFC 9112 section 6.3, rejecting requests with ambiguous framing that
  * enable request smuggling. Drops the connection with no response when Transfer-Encoding and Content-Length are both
- * present, when Content-Length appears multiple times or is not a non-negative integer, or when Transfer-Encoding is
- * set without chunked as the final coding.
+ * present, when Content-Length appears multiple times or is not a non-negative integer, when Transfer-Encoding is set
+ * without chunked as the final coding, or when Transfer-Encoding is present on a non-HTTP/1.1 request (per RFC 9112
+ * section 6.1, HTTP/1.0 requests with Transfer-Encoding must be treated as faulty framing).
  * <br/>
  * Force-closing (rather than writing a 400) is deliberate: once framing is ambiguous, we cannot trust where the
  * message body ends, and any bytes left in the decoder buffer would otherwise be parsed as the next request.
@@ -62,6 +64,11 @@ public final class Http1FramingEnforcingHandler extends ChannelInboundHandlerAda
 
         if (!contentLengthHeaders.isEmpty() && !transferEncodingHeaders.isEmpty()) {
             rejectAndClose(ctx, req, msg, "both transfer-encoding and content-length present");
+            return;
+        }
+
+        if (!transferEncodingHeaders.isEmpty() && !HttpVersion.HTTP_1_1.equals(req.protocolVersion())) {
+            rejectAndClose(ctx, req, msg, "transfer-encoding on non-HTTP/1.1 request");
             return;
         }
 
