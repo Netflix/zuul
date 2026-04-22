@@ -21,8 +21,6 @@ import com.netflix.zuul.message.HeaderName;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpHeaderNames;
 import com.netflix.zuul.message.http.HttpRequestMessage;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User: michaels@netflix.com
@@ -32,33 +30,6 @@ import java.util.Set;
 public class ProxyUtils {
     private static final CachedDynamicBooleanProperty OVERWRITE_XF_HEADERS =
             new CachedDynamicBooleanProperty("zuul.headers.xforwarded.overwrite", false);
-
-    private static final Set<HeaderName> RESP_HEADERS_TO_STRIP = new HashSet<>();
-
-    static {
-        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
-        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
-        RESP_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
-    }
-
-    private static final Set<HeaderName> REQ_HEADERS_TO_STRIP = new HashSet<>();
-
-    static {
-        REQ_HEADERS_TO_STRIP.add(
-                HttpHeaderNames
-                        .CONTENT_LENGTH); // Because the httpclient library sets this itself, and doesn't like it if set
-        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.CONNECTION);
-        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.TRANSFER_ENCODING);
-        REQ_HEADERS_TO_STRIP.add(HttpHeaderNames.KEEP_ALIVE);
-    }
-
-    public static boolean isValidRequestHeader(HeaderName headerName) {
-        return !REQ_HEADERS_TO_STRIP.contains(headerName);
-    }
-
-    public static boolean isValidResponseHeader(HeaderName headerName) {
-        return !RESP_HEADERS_TO_STRIP.contains(headerName);
-    }
 
     public static void addXForwardedHeaders(HttpRequestMessage request) {
         // Add standard Proxy request headers.
