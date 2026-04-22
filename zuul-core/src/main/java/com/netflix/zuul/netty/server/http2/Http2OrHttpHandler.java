@@ -82,7 +82,8 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         this.maxEncoderRstFrames = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFrames);
         this.maxEncoderRstFramesWindow = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxResetFramesWindow);
         this.connectProtocolEnabled = channelConfig.get(CommonChannelConfigKeys.http2ConnectProtocolEnabled);
-        this.maxConsecutiveContinuationFrames = channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxConsecutiveContinuationFrames);
+        this.maxConsecutiveContinuationFrames =
+                channelConfig.get(CommonChannelConfigKeys.http2EncoderMaxConsecutiveContinuationFrames);
         this.addHttpHandlerFn = addHttpHandlerFn;
     }
 

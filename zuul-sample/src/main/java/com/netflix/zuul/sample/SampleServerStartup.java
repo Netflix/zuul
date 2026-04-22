@@ -235,7 +235,6 @@ public class SampleServerStartup extends BaseServerStartup {
                                 metricId, channelConfig, channelDependencies, clientChannels));
                 logAddrConfigured(sockAddr);
 
-
                 // port to accept push message from the backend, should be accessible on internal network only.
                 addrsToChannels.put(new NamedSocketAddress("http.push", pushSockAddr), pushSenderInitializer);
                 logAddrConfigured(pushSockAddr);

@@ -31,16 +31,14 @@ class TlsPskHandlerTest {
 
     @Test
     void cipherSuiteMapContainsAes128Gcm() {
-        assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP)
-                .containsKey(CipherSuite.TLS_AES_128_GCM_SHA256);
+        assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP).containsKey(CipherSuite.TLS_AES_128_GCM_SHA256);
         assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP.get(CipherSuite.TLS_AES_128_GCM_SHA256))
                 .isEqualTo("TLS_AES_128_GCM_SHA256");
     }
 
     @Test
     void cipherSuiteMapContainsAes256Gcm() {
-        assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP)
-                .containsKey(CipherSuite.TLS_AES_256_GCM_SHA384);
+        assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP).containsKey(CipherSuite.TLS_AES_256_GCM_SHA384);
         assertThat(TlsPskHandler.SUPPORTED_TLS_PSK_CIPHER_SUITE_MAP.get(CipherSuite.TLS_AES_256_GCM_SHA384))
                 .isEqualTo("TLS_AES_256_GCM_SHA384");
     }
@@ -53,10 +51,7 @@ class TlsPskHandlerTest {
     @Test
     void handlerAddedInsertsTlsPskDecoder() {
         ExternalTlsPskProvider pskProvider = mock(ExternalTlsPskProvider.class);
-        TlsPskHandler handler = new TlsPskHandler(
-                new DefaultRegistry(),
-                pskProvider,
-                Set.of(ProtocolName.HTTP_2_TLS));
+        TlsPskHandler handler = new TlsPskHandler(new DefaultRegistry(), pskProvider, Set.of(ProtocolName.HTTP_2_TLS));
 
         EmbeddedChannel channel = new EmbeddedChannel(handler);
         ChannelPipeline pipeline = channel.pipeline();
@@ -69,10 +64,7 @@ class TlsPskHandlerTest {
     @Test
     void applicationProtocolNullBeforeHandshake() {
         ExternalTlsPskProvider pskProvider = mock(ExternalTlsPskProvider.class);
-        TlsPskHandler handler = new TlsPskHandler(
-                new DefaultRegistry(),
-                pskProvider,
-                Set.of(ProtocolName.HTTP_2_TLS));
+        TlsPskHandler handler = new TlsPskHandler(new DefaultRegistry(), pskProvider, Set.of(ProtocolName.HTTP_2_TLS));
 
         assertThat(handler.getApplicationProtocol()).isNull();
     }
@@ -80,10 +72,7 @@ class TlsPskHandlerTest {
     @Test
     void sessionAvailableBeforeHandshake() {
         ExternalTlsPskProvider pskProvider = mock(ExternalTlsPskProvider.class);
-        TlsPskHandler handler = new TlsPskHandler(
-                new DefaultRegistry(),
-                pskProvider,
-                Set.of(ProtocolName.HTTP_1_1));
+        TlsPskHandler handler = new TlsPskHandler(new DefaultRegistry(), pskProvider, Set.of(ProtocolName.HTTP_1_1));
 
         assertThat(handler.getSession()).isNotNull();
     }

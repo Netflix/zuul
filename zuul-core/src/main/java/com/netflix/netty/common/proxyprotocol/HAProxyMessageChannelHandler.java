@@ -99,7 +99,8 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                     }
                 }
                 // TODO: implement
-                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM -> throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
+                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM ->
+                    throw new IllegalArgumentException("unknown proxy protocol" + sourceAddress);
                 default -> throw new AssertionError(hapm.proxiedProtocol());
             }
             channel.attr(SourceAddressChannelHandler.ATTR_REMOTE_ADDR).set(srcAddr);
@@ -131,7 +132,8 @@ public final class HAProxyMessageChannelHandler extends ChannelInboundHandlerAda
                     HAPM_DEST_PORT.put(attrs, hapm.destinationPort());
                 }
                 // TODO: implement
-                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM -> throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
+                case UNKNOWN, UNIX_STREAM, UDP4, UDP6, UNIX_DGRAM ->
+                    throw new IllegalArgumentException("unknown proxy protocol" + destinationAddress);
                 default -> throw new AssertionError(hapm.proxiedProtocol());
             }
             channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_ADDR).set(dstAddr);

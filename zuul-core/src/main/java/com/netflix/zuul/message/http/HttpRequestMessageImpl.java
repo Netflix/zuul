@@ -497,7 +497,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     protected String generateInfoForLogging() {
         HttpRequestInfo req = getInboundRequest() == null ? this : getInboundRequest();
-        return "uri=" + req.reconstructURI() + ", method=" + req.getMethod() + ", clientip=" + HttpUtils.getClientIP(req);
+        return "uri=" + req.reconstructURI() + ", method=" + req.getMethod() + ", clientip="
+                + HttpUtils.getClientIP(req);
     }
 
     /**

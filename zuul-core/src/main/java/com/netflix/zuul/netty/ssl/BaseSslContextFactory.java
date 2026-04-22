@@ -126,9 +126,8 @@ public class BaseSslContextFactory implements SslContextFactory {
     public void configureOpenSslStatsMetrics(SslContext sslContext, String sslContextId) {
         // Setup metrics tracking the OpenSSL stats.
         if (sslContext instanceof ReferenceCountedOpenSslContext referenceCountedOpenSslContext) {
-            OpenSslSessionStats stats = referenceCountedOpenSslContext
-                    .sessionContext()
-                    .stats();
+            OpenSslSessionStats stats =
+                    referenceCountedOpenSslContext.sessionContext().stats();
 
             openSslStatGauge(stats, sslContextId, "accept", OpenSslSessionStats::accept);
             openSslStatGauge(stats, sslContextId, "accept_good", OpenSslSessionStats::acceptGood);

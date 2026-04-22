@@ -143,7 +143,8 @@ public class OriginResponseReceiver extends ChannelDuplexHandler {
             } finally {
                 postCompleteHook(ctx, evt);
             }
-        } else if (evt instanceof SslHandshakeCompletionEvent sslHandshakeCompletionEvent && !sslHandshakeCompletionEvent.isSuccess()) {
+        } else if (evt instanceof SslHandshakeCompletionEvent sslHandshakeCompletionEvent
+                && !sslHandshakeCompletionEvent.isSuccess()) {
             Throwable cause = sslHandshakeCompletionEvent.cause();
             ctx.channel().attr(SSL_HANDSHAKE_UNSUCCESS_FROM_ORIGIN_THROWABLE).set(cause);
         } else if (evt instanceof IdleStateEvent) {

@@ -79,7 +79,7 @@ public class Http1ConnectionCloseHandler extends ChannelDuplexHandler {
         switch (evt) {
             case DELAYED_GRACEFUL, GRACEFUL -> gracefully(ctx, promise);
             case IMMEDIATE -> immediately(ctx, promise);
-            default-> throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + evt);
+            default -> throw new IllegalArgumentException("Unknown ConnectionCloseEvent type! - " + evt);
         }
     }
 
