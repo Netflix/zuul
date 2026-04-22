@@ -99,6 +99,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     public static final CachedDynamicIntProperty HTTP_REQUEST_HEADERS_READ_TIMEOUT =
             new CachedDynamicIntProperty("server.http.request.headers.read.timeout", 10000);
 
+    public static final CachedDynamicBooleanProperty HTTP1_FRAMING_ENFORCEMENT_ENABLED =
+            new CachedDynamicBooleanProperty("zuul.http1.framing.enforcement.enabled", true);
+
     /**
      * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
      * may differ from the actual listening port.  For example:
@@ -256,6 +259,10 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
+
+        if (HTTP1_FRAMING_ENFORCEMENT_ENABLED.get()) {
+            pipeline.addLast(new Http1FramingEnforcingHandler());
+        }
 
         pipeline.addLast(new Http1ConnectionCloseHandler());
         pipeline.addLast(
