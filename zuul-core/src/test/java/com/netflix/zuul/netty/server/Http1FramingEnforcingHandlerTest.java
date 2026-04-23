@@ -119,6 +119,19 @@ class Http1FramingEnforcingHandlerTest {
     }
 
     @Test
+    void http10RequestWithTransferEncodingIsRejected() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_0, HttpMethod.POST, "/");
+        req.headers().set(HttpHeaderNames.TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
+
+        channel.writeInbound(req);
+
+        assertThat(channel.<Object>readInbound()).isNull();
+        assertThat(channel.<Object>readOutbound()).isNull();
+        assertThat(channel.isOpen()).isFalse();
+        assertThat(capturedEvents.getFirst().reason()).isEqualTo("http1_framing_violation");
+    }
+
+    @Test
     void duplicateContentLengthIsRejected() {
         DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
         req.headers().add(HttpHeaderNames.CONTENT_LENGTH, 1);
