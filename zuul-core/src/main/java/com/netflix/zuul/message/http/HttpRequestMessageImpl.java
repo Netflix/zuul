@@ -83,7 +83,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
     private String protocol;
     private String method;
     private String path;
-    private String decodedPath;
     private HttpQueryParams queryParams;
     private String clientIp;
     private String scheme;
@@ -151,13 +150,6 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
         this.protocol = protocol;
         this.method = method;
         this.path = path;
-        try {
-            this.decodedPath = URLDecoder.decode(path, "UTF-8");
-        } catch (Exception e) {
-            // fail to decode URI
-            // just set decodedPath to original path
-            this.decodedPath = path;
-        }
         // Don't allow this to be null.
         this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
         this.clientIp = clientIp;
@@ -284,21 +276,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
     @Override
     public String getPath() {
-        if (Objects.equals(message.getContext().get(CommonContextKeys.ZUUL_USE_DECODED_URI), true)) {
-            return decodedPath;
-        }
         return path;
-    }
-
-    public String getDecodedPath() {
-        return decodedPath;
     }
 
     @Override
     public void setPath(String path) {
         immutableCheck();
         this.path = path;
-        this.decodedPath = path;
     }
 
     @Override
