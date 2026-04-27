@@ -53,9 +53,13 @@ import jakarta.inject.Singleton;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Singleton
 public class ServerStartup extends BaseServerStartup {
@@ -68,7 +72,7 @@ public class ServerStartup extends BaseServerStartup {
         SSE
     }
 
-    private static final String[] WWW_PROTOCOLS = new String[] {"TLSv1.3", "TLSv1.2", "TLSv1.1", "TLSv1", "SSLv3"};
+    private static final String[] WWW_PROTOCOLS = new String[] {"TLSv1.3", "TLSv1.2"};
     private static final ServerType SERVER_TYPE = ServerType.HTTP;
     private final PushConnectionRegistry pushConnectionRegistry;
     //    private final SamplePushMessageSenderInitializer pushSenderInitializer;
@@ -189,8 +193,9 @@ public class ServerStartup extends BaseServerStartup {
             /* The below settings can be used when running behind an ELB TCP listener with proxy protocol, terminating
              * SSL in Zuul.
              *
-             * Can be tested using certs in resources directory:
-             *  curl https://localhost:7001/test -vk --cert src/main/resources/ssl/client.cert:zuul123 --key src/main/resources/ssl/client.key
+             * Can be tested using the generated client materials in
+             * zuul-integration-test/build/resources/test/ssl/ after running processTestResources:
+             *  curl https://localhost:7001/test -vk --cert zuul-integration-test/build/resources/test/ssl/client.cert --key zuul-integration-test/build/resources/test/ssl/client.key
              */
             case HTTP_MUTUAL_TLS:
                 sslConfig = ServerSslConfig.builder()
@@ -272,6 +277,14 @@ public class ServerStartup extends BaseServerStartup {
     }
 
     private File loadFromResources(String s) {
-        return new File(ClassLoader.getSystemResource("ssl/" + s).getFile());
+        URL resource = Objects.requireNonNull(
+                ServerStartup.class.getClassLoader().getResource("ssl/" + s),
+                () -> "Missing generated SSL resource ssl/" + s
+                        + ". Run :zuul-integration-test:processTestResources.");
+        try {
+            return Path.of(resource.toURI()).toFile();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Invalid generated SSL resource location for ssl/" + s, e);
+        }
     }
 }
