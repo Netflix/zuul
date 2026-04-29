@@ -75,8 +75,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -95,10 +93,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ClientRequestReceiver.class);
     private static final String SCHEME_HTTP = "http";
     private static final String SCHEME_HTTPS = "https";
-
-    // via @stephenhay https://mathiasbynens.be/demo/url-regex, groups added
-    // group 1: scheme, group 2: domain, group 3: path+query
-    private static final Pattern URL_REGEX = Pattern.compile("^(https?)://([^\\s/$.?#].[^\\s/]*)([^\\s]*)$");
 
     private final SessionContextDecorator decorator;
 
@@ -363,7 +357,25 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         // Strip off the query from the path.
-        String path = parsePath(nativeRequest.uri());
+        String path;
+        try {
+            path = parsePath(nativeRequest.uri());
+        } catch (URISyntaxException ex) {
+            LOG.warn(
+                    "Invalid URI in request. clientRequest = {}, clientIp = {}, info = {}",
+                    nativeRequest,
+                    clientIp,
+                    ChannelUtils.channelInfoForLogging(clientCtx.channel()),
+                    ex);
+            // Used for storeInboundRequest
+            path = nativeRequest.uri();
+            ZuulException ze = new ZuulException("Invalid URI");
+            ze.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
+            StatusCategoryUtils.setStatusCategory(
+                    context, ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, "Invalid request provided: Bad URI");
+            context.setError(ze);
+            context.setShouldSendErrorResponse(true);
+        }
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessageImpl(
@@ -409,52 +421,14 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         return channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
     }
 
-    private String parsePath(String uri) {
-        String path;
-        try {
-            URI uriObject = new URI(uri);
-            uriObject = uriObject.normalize();
-            path = uriObject.getRawPath();
-            if (path == null) {
-                // If we have an opaque URI, match existing behavior of using the URI as the path.
-                return uri;
-            }
-            while (path.startsWith("/..")) {
-                path = path.substring(3);
-            }
-            return path;
-        } catch (URISyntaxException ex) {
-            LOG.debug("URI syntax error", ex);
+    private String parsePath(String uri) throws URISyntaxException {
+        URI uriObject = new URI(uri);
+        uriObject = uriObject.normalize();
+        String path = uriObject.getRawPath();
+        if (path == null) {
+            // If we have an opaque URI, match existing behavior of using the URI as the path.
+            return uri;
         }
-        // manual path parsing
-        // relative uri
-        if (uri.startsWith("/")) {
-            path = uri;
-        } else {
-            Matcher m = URL_REGEX.matcher(uri);
-
-            // absolute uri
-            if (m.matches()) {
-                String match = m.group(3);
-                if (match == null) {
-                    // in case of no match, default to existing behavior
-                    path = uri;
-                } else {
-                    path = match;
-                }
-            }
-            // unknown value
-            else {
-                // in case of unknown value, default to existing behavior
-                path = uri;
-            }
-        }
-
-        int queryIndex = path.indexOf('?');
-        if (queryIndex > -1) {
-            path = path.substring(0, queryIndex);
-        }
-
         while (path.startsWith("/..")) {
             path = path.substring(3);
         }
