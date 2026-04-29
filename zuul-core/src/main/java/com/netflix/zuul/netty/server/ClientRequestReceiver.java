@@ -423,16 +423,18 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
 
     private String parsePath(String uri) throws URISyntaxException {
         URI uriObject = new URI(uri);
-        uriObject = uriObject.normalize();
-        String path = uriObject.getRawPath();
-        if (path == null) {
+        if (uriObject.isOpaque()) {
             // If we have an opaque URI, match existing behavior of using the URI as the path.
             return uri;
         }
-        while (path.startsWith("/..")) {
-            path = path.substring(3);
+        // getPath() decodes %2e%2e → .. before normalize; also strips query naturally
+        // https://datatracker.ietf.org/doc/html/rfc3986#section-2.4
+        String decodedPath = uriObject.getPath();
+        String normalized = new URI(null, null, decodedPath, null).normalize().getRawPath();
+        while (normalized.startsWith("/..")) {
+            normalized = normalized.substring(3);
         }
-        return path;
+        return normalized;
     }
 
     private static Headers copyHeaders(HttpRequest req) {
