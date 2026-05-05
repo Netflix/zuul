@@ -24,6 +24,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.AttributeKey;
 
 /**
  * @author michaels
@@ -31,6 +32,9 @@ import io.netty.handler.codec.http.LastHttpContent;
 public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler {
     public static final ChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
     public static final ChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
+
+    public static final AttributeKey<Boolean> ATTR_OUTBOUND_LAST_CONTENT_PENDING =
+            AttributeKey.newInstance("_outbound_last_content_pending");
 
     @ChannelHandler.Sharable
     private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
@@ -64,7 +68,17 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
         @Override
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             if (msg instanceof HttpRequest httpRequest) {
+                ctx.channel().attr(ATTR_OUTBOUND_LAST_CONTENT_PENDING).set(Boolean.TRUE);
                 fireStartEvent(ctx, httpRequest);
+            }
+
+            if (msg instanceof LastHttpContent) {
+                // only clear after content write succeeds to account for retrans
+                promise.addListener(future -> {
+                    if (future.isSuccess()) {
+                        ctx.channel().attr(ATTR_OUTBOUND_LAST_CONTENT_PENDING).set(null);
+                    }
+                });
             }
 
             super.write(ctx, msg, promise);

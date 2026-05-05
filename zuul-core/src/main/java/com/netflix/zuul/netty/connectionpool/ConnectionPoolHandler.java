@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.connectionpool;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
 import static com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 
+import com.netflix.netty.common.HttpClientLifecycleChannelHandler;
 import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.origins.OriginName;
@@ -80,6 +81,15 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
                                 + " - completed because of expired keep-alive. "
                                 + ChannelUtils.channelInfoForLogging(ctx.channel());
                         metrics.headerCloseCounter().increment();
+                        closeConnection(ctx, msg);
+                    } else if (isOutboundLastContentPending(ctx)) {
+                        // response arrived before zuul finished writing the request body; the
+                        // HttpClientCodec encoder is mid-body and the connection cannot be reused
+                        metrics.outboundIncompleteCounter().increment();
+                        String msg = "Origin channel for origin - " + originName
+                                + " - response completed before request body fully written, closing. "
+                                + ChannelUtils.channelInfoForLogging(ctx.channel());
+                        LOG.warn(msg);
                         closeConnection(ctx, msg);
                     } else {
                         conn.setConnectionState(PooledConnection.ConnectionState.WRITE_READY);
@@ -146,6 +156,12 @@ public class ConnectionPoolHandler extends ChannelDuplexHandler {
             pooledConnection.flagShouldClose();
             pooledConnection.release();
         }
+    }
+
+    private static boolean isOutboundLastContentPending(ChannelHandlerContext ctx) {
+        return Boolean.TRUE.equals(ctx.channel()
+                .attr(HttpClientLifecycleChannelHandler.ATTR_OUTBOUND_LAST_CONTENT_PENDING)
+                .get());
     }
 
     private static String getConnectionHeader(CompleteEvent completeEvt) {

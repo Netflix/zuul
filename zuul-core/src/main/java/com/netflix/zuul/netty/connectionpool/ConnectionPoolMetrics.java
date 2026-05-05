@@ -50,7 +50,8 @@ public record ConnectionPoolMetrics(
         Counter inactiveCounter,
         Counter errorCounter,
         Counter headerCloseCounter,
-        Counter sslCloseCompletionCounter) {
+        Counter sslCloseCompletionCounter,
+        Counter outboundIncompleteCounter) {
 
     public static ConnectionPoolMetrics create(OriginName originName, Registry registry) {
         Counter createNewConnCounter = newCounter("connectionpool_create", originName, registry);
@@ -77,6 +78,7 @@ public record ConnectionPoolMetrics(
         Counter errorCounter = newCounter("connectionpool_error", originName, registry);
         Counter headerCloseCounter = newCounter("connectionpool_headerClose", originName, registry);
         Counter sslCloseCompletionCounter = newCounter("connectionpool_sslClose", originName, registry);
+        Counter outboundIncompleteCounter = newCounter("connectionpool_outboundIncomplete", originName, registry);
 
         PercentileTimer connEstablishTimer = PercentileTimer.get(
                 registry, registry.createId("connectionpool_createTiming", "id", originName.getMetricId()));
@@ -107,7 +109,8 @@ public record ConnectionPoolMetrics(
                 inactiveCounter,
                 errorCounter,
                 headerCloseCounter,
-                sslCloseCompletionCounter);
+                sslCloseCompletionCounter,
+                outboundIncompleteCounter);
     }
 
     private static Counter newCounter(String metricName, OriginName originName, Registry registry) {

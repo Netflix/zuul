@@ -60,6 +60,7 @@ class ConnectionPoolMetricsTest {
         validateCounter("connectionpool_error", metrics.errorCounter());
         validateCounter("connectionpool_headerClose", metrics.headerCloseCounter());
         validateCounter("connectionpool_sslClose", metrics.sslCloseCompletionCounter());
+        validateCounter("connectionpool_outboundIncomplete", metrics.outboundIncompleteCounter());
     }
 
     private void validateCounter(String name, Counter counter) {
