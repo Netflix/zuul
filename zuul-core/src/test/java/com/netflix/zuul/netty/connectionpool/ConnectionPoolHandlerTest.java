@@ -26,6 +26,7 @@ import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.zuul.discovery.DiscoveryResult;
 import com.netflix.zuul.origins.OriginName;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,7 @@ class ConnectionPoolHandlerTest {
     private DefaultRegistry registry;
     private ConnectionPoolMetrics metrics;
     private ConnectionPoolHandler handler;
+    private EmbeddedChannel channel;
 
     @BeforeEach
     void setup() {
@@ -48,12 +50,17 @@ class ConnectionPoolHandlerTest {
         OriginName originName = OriginName.fromVipAndApp("whatever", "whatever");
         metrics = ConnectionPoolMetrics.create(originName, registry);
         handler = new ConnectionPoolHandler(metrics);
+        channel = new EmbeddedChannel(handler);
+    }
+
+    @AfterEach
+    void tearDown() {
+        channel.finishAndReleaseAll();
     }
 
     @Test
     void sessionCompleteReleasesConnectionToPoolWhenNothingPending() {
-        EmbeddedChannel channel = new EmbeddedChannel(handler);
-        PooledConnection conn = newPooledConnection(channel);
+        PooledConnection conn = newPooledConnection();
 
         channel.pipeline().fireUserEventTriggered(new CompleteEvent(CompleteReason.SESSION_COMPLETE, null, null));
 
@@ -64,8 +71,7 @@ class ConnectionPoolHandlerTest {
 
     @Test
     void sessionCompleteClosesConnectionWhenLastContentStillPending() {
-        EmbeddedChannel channel = new EmbeddedChannel(handler);
-        PooledConnection conn = newPooledConnection(channel);
+        PooledConnection conn = newPooledConnection();
         channel.attr(HttpClientLifecycleChannelHandler.ATTR_OUTBOUND_LAST_CONTENT_PENDING)
                 .set(Boolean.TRUE);
 
@@ -76,7 +82,7 @@ class ConnectionPoolHandlerTest {
         verify(channelManager).release(conn);
     }
 
-    private PooledConnection newPooledConnection(EmbeddedChannel channel) {
+    private PooledConnection newPooledConnection() {
         return new PooledConnection(
                 channel,
                 DiscoveryResult.EMPTY,

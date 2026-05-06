@@ -25,14 +25,26 @@ import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class HttpClientLifecycleChannelHandlerTest {
 
+    private EmbeddedChannel channel;
+
+    @BeforeEach
+    void setup() {
+        channel = new EmbeddedChannel(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
+    }
+
+    @AfterEach
+    void tearDown() {
+        channel.finishAndReleaseAll();
+    }
+
     @Test
     void lastContentPendingAfterRequestHeadersOnly() {
-        EmbeddedChannel channel = new EmbeddedChannel(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
-
         channel.writeOutbound(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/foo"));
         channel.writeOutbound(new DefaultHttpContent(Unpooled.wrappedBuffer(new byte[] {1, 2, 3})));
 
@@ -43,8 +55,6 @@ class HttpClientLifecycleChannelHandlerTest {
 
     @Test
     void lastContentPendingClearedAfterLastHttpContent() {
-        EmbeddedChannel channel = new EmbeddedChannel(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
-
         channel.writeOutbound(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/foo"));
         channel.writeOutbound(new DefaultHttpContent(Unpooled.wrappedBuffer(new byte[] {1, 2, 3})));
         channel.writeOutbound(new DefaultLastHttpContent());
@@ -56,8 +66,6 @@ class HttpClientLifecycleChannelHandlerTest {
 
     @Test
     void lastContentPendingResetsOnNewRequest() {
-        EmbeddedChannel channel = new EmbeddedChannel(HttpClientLifecycleChannelHandler.OUTBOUND_CHANNEL_HANDLER);
-
         channel.writeOutbound(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/first"));
         channel.writeOutbound(new DefaultLastHttpContent());
         assertThat(channel.attr(HttpClientLifecycleChannelHandler.ATTR_OUTBOUND_LAST_CONTENT_PENDING)
