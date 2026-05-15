@@ -6,6 +6,9 @@ on:
       - master
       - zuul-v4
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
