@@ -204,6 +204,39 @@ class Http1FramingEnforcingHandlerTest {
         assertThat(channel.<Object>readOutbound()).isNull();
     }
 
+    // Fix for VUL 3711095: per-coding Transfer-Encoding parameters are stripped before the
+    // request is forwarded, eliminating the desync between Zuul's view of framing and a backend
+    // parser that might treat "chunked; smuggle=1" as an unrecognized coding.
+    @Test
+    void transferEncodingWithChunkedParameterIsNormalized_repro_vul3711095() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
+        req.headers().set(HttpHeaderNames.TRANSFER_ENCODING, "chunked; smuggle=1");
+
+        channel.writeInbound(req);
+
+        Object inbound = channel.readInbound();
+        assertThat(inbound)
+                .as("framing handler still accepts chunked as valid")
+                .isSameAs(req);
+        assertThat(req.headers().get(HttpHeaderNames.TRANSFER_ENCODING))
+                .as("parameters are stripped before forwarding")
+                .isEqualTo("chunked");
+        assertThat(channel.isOpen()).isTrue();
+        assertThat(capturedEvents).isEmpty();
+    }
+
+    @Test
+    void transferEncodingMultipleCodingsWithParametersAreNormalized() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
+        req.headers().set(HttpHeaderNames.TRANSFER_ENCODING, "gzip; q=1, chunked; smuggle=1");
+
+        channel.writeInbound(req);
+
+        assertThat(channel.<Object>readInbound()).isSameAs(req);
+        assertThat(req.headers().get(HttpHeaderNames.TRANSFER_ENCODING)).isEqualTo("gzip, chunked");
+        assertThat(channel.isOpen()).isTrue();
+    }
+
     @Test
     void nonHttpRequestMessagesArePassedThrough() {
         channel.writeInbound("not-an-http-request");

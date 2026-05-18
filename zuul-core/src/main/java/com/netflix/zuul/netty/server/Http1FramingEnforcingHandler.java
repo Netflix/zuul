@@ -82,7 +82,35 @@ public final class Http1FramingEnforcingHandler extends ChannelInboundHandlerAda
             return;
         }
 
+        if (!transferEncodingHeaders.isEmpty()) {
+            normalizeTransferEncoding(req, transferEncodingHeaders);
+        }
+
         super.channelRead(ctx, msg);
+    }
+
+    /**
+     * Rewrite each Transfer-Encoding header so per-coding parameters are dropped before the request
+     * is forwarded. Validation accepts "chunked; foo=bar" as chunked, but forwarding the literal
+     * parameter-bearing value to a backend whose parser disagrees enables request smuggling
+     * (VUL 3711095).
+     */
+    private static void normalizeTransferEncoding(HttpRequest req, List<String> transferEncodingHeaders) {
+        req.headers().remove(HttpHeaderNames.TRANSFER_ENCODING);
+        for (String headerValue : transferEncodingHeaders) {
+            List<String> codings = TRANSFER_ENCODING_SPLITTER.splitToList(headerValue);
+            if (codings.isEmpty()) {
+                continue;
+            }
+            StringBuilder normalized = new StringBuilder();
+            for (int i = 0; i < codings.size(); i++) {
+                if (i > 0) {
+                    normalized.append(", ");
+                }
+                normalized.append(stripTransferParameters(codings.get(i)));
+            }
+            req.headers().add(HttpHeaderNames.TRANSFER_ENCODING, normalized.toString());
+        }
     }
 
     private static boolean isValidContentLength(String value) {
