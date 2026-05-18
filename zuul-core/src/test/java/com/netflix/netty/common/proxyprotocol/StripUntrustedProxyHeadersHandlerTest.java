@@ -157,6 +157,26 @@ class StripUntrustedProxyHeadersHandlerTest {
         assertThat(headers.contains("x-forwarded-for")).isFalse();
     }
 
+    // Repro for VUL report 3711095 (2026-05-11): x-forwarded-host is NOT in HEADERS_TO_STRIP,
+    // so an untrusted client can poison getOriginalHost() / reconstructURI() / outbound X-Forwarded-Host.
+    @Test
+    void strip_does_not_remove_x_forwarded_host_repro_vul3711095() {
+        StripUntrustedProxyHeadersHandler stripHandler = getHandler(AllowWhen.MUTUAL_SSL_AUTH);
+
+        headers.add("x-forwarded-for", "1.2.3.4");
+        headers.add("x-forwarded-host", "evil.example.com");
+        headers.add("x-forwarded-proto", "https");
+        headers.add("x-real-ip", "1.2.3.4");
+
+        stripHandler.stripXFFHeaders(msg);
+
+        assertThat(headers.contains("x-forwarded-for")).isFalse();
+        assertThat(headers.contains("x-forwarded-proto")).isFalse();
+        assertThat(headers.contains("x-real-ip")).isFalse();
+        // Fix for VUL 3711095: x-forwarded-host is now stripped along with the other XFF headers.
+        assertThat(headers.contains("x-forwarded-host")).isFalse();
+    }
+
     private StripUntrustedProxyHeadersHandler getHandler(AllowWhen allowWhen) {
         return spy(new StripUntrustedProxyHeadersHandler(allowWhen));
     }
