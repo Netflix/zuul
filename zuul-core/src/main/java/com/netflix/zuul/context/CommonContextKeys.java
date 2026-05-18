@@ -44,6 +44,7 @@ public class CommonContextKeys {
             SessionContext.newKey("origin_status_category");
     public static final SessionContext.Key<String> ORIGIN_STATUS_CATEGORY_REASON =
             SessionContext.newKey("origin_status_category_reason");
+    public static final SessionContext.Key<String> BAD_URI_REASON = SessionContext.newKey("bad_uri");
     public static final SessionContext.Key<Integer> ORIGIN_STATUS = SessionContext.newKey("origin_status");
     public static final SessionContext.Key<RequestAttempts> REQUEST_ATTEMPTS =
             SessionContext.newKey("request_attempts");

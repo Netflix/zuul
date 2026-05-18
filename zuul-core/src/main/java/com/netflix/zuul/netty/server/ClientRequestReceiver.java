@@ -94,7 +94,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ClientRequestReceiver.class);
     private static final String SCHEME_HTTP = "http";
     private static final String SCHEME_HTTPS = "https";
-    private static final String BAD_URI = "bad_uri";
 
     private final SessionContextDecorator decorator;
 
@@ -154,9 +153,9 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                 RejectionUtils.rejectByClosingConnection(
                         ctx, ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, "decodefailure", clientRequest, null);
                 return;
-            } else if (zuulRequest.getContext().containsKey(BAD_URI)) {
+            } else if (zuulRequest.getContext().containsKey(CommonContextKeys.BAD_URI_REASON)) {
                 String clientIp = Objects.requireNonNullElse(getClientIp(ctx.channel()), "unknown");
-                String badUriReason = (String) zuulRequest.getContext().get(BAD_URI);
+                String badUriReason = zuulRequest.getContext().get(CommonContextKeys.BAD_URI_REASON);
                 LOG.warn(
                         "Invalid URI in request. reason = {}, clientRequest = {}, clientIp = {}, info = {}",
                         badUriReason,
@@ -382,11 +381,10 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         // Strip off the query from the path.
         String path;
         try {
-            path = preProcessPath(nativeRequest.uri());
-            path = parsePath(path);
+            path = parsePath(preProcessPath(nativeRequest.uri()));
         } catch (URISyntaxException ex) {
             path = nativeRequest.uri();
-            context.set(BAD_URI, ex.getReason());
+            context.put(CommonContextKeys.BAD_URI_REASON, ex.getReason());
         }
 
         // Setup the req/resp message objects.

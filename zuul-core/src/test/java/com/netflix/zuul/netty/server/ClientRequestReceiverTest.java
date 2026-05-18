@@ -292,7 +292,7 @@ class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         SessionContext context = request.getContext();
-        assertThat(context.containsKey("bad_uri")).isTrue();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
         assertThat(StatusCategoryUtils.getStatusCategory(context))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
         // Raw URI preserved for access logging, not replaced with a placeholder.
@@ -322,7 +322,7 @@ class ClientRequestReceiverTest {
 
         HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
         SessionContext context = request.getContext();
-        assertThat(context.containsKey("bad_uri")).isTrue();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
         assertThat(StatusCategoryUtils.getStatusCategory(context))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
     }
@@ -622,7 +622,7 @@ class ClientRequestReceiverTest {
 
         SessionContext context =
                 ClientRequestReceiver.getRequestFromChannel(channel).getContext();
-        assertThat(context.containsKey("bad_uri")).isTrue();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
         assertThat(StatusCategoryUtils.getStatusCategory(context))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
         assertThat(StatusCategoryUtils.getStatusCategoryReason(context)).isEqualTo("encoded slash in path");
@@ -639,7 +639,7 @@ class ClientRequestReceiverTest {
 
         SessionContext context =
                 ClientRequestReceiver.getRequestFromChannel(channel).getContext();
-        assertThat(context.containsKey("bad_uri")).isTrue();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
         assertThat(StatusCategoryUtils.getStatusCategory(context))
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
         assertThat(StatusCategoryUtils.getStatusCategoryReason(context)).isEqualTo("opaque URI");
