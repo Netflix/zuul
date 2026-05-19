@@ -80,13 +80,10 @@ http://instea.sk/2015/04/netflix-zuul-vs-nginx-performance/
 # How to release Zuul
 
 This project uses a GitHub Action workflow for publishing a new release.
-The workflow is triggered by a Git tag.
+The workflow is triggered by following these steps:
 
-```
-git checkout master
-git tag vX.Y.Z
-git push --tags
-git push git@github.com:Netflix/zuul.git --tags // alternative for ssh access
-```
-
-Then be sure to approve the new release in the Actions tab in GitHub.
+1. Go to the Releases page [here](https://github.com/Netflix/zuul/releases) 
+2. Draft a new release
+3. Click `Select tag`, then `Create new tag` (ex. `vX.Y.Z)
+4. Select `Generate release notes` and Click `Publish release`
+5. Approve the new release in the [Actions](https://github.com/Netflix/zuul/actions) tab
