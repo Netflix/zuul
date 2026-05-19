@@ -446,11 +446,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             throw new URISyntaxException(uri, "opaque URI");
         }
         String rawPath = uriObject.getRawPath();
-        // Mirrors Envoy's REJECT_REQUEST
-        // https://github.com/envoyproxy/envoy/blob/main/source/extensions/http/header_validators/envoy_default/path_normalizer.cc#L91
-        if (containsEncodedSlash(rawPath)) {
-            throw new URISyntaxException(uri, "encoded slash in path");
-        }
         // Fold %2E → '.' (unreserved per RFC 3986 §2.4) so normalize() can remove dot-segments.
         String prepared = rawPath.replace("%2e", ".").replace("%2E", ".");
         String normalized = new URI(prepared).normalize().getRawPath();
@@ -459,10 +454,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
             normalized = normalized.substring(3);
         }
         return normalized;
-    }
-
-    private static boolean containsEncodedSlash(String rawPath) {
-        return rawPath.contains("%2F") || rawPath.contains("%2f");
     }
 
     private static Headers copyHeaders(HttpRequest req) {

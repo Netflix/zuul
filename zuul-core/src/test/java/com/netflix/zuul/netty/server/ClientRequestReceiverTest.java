@@ -611,23 +611,6 @@ class ClientRequestReceiverTest {
         channel.close();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"/public/%2F../secret", "/public/%2f../secret"})
-    void encodedSlash_rejected(String uri) {
-        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
-        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
-        channel.writeInbound(new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
-        channel.readInbound();
-        channel.close();
-
-        SessionContext context =
-                ClientRequestReceiver.getRequestFromChannel(channel).getContext();
-        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
-        assertThat(StatusCategoryUtils.getStatusCategory(context))
-                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
-        assertThat(StatusCategoryUtils.getStatusCategoryReason(context)).isEqualTo("encoded slash in path");
-    }
-
     @Test
     void opaqueUri_rejected() {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
