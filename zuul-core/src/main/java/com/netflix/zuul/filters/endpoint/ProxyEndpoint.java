@@ -910,7 +910,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // Collect some info about the received response.
         origin.recordFinalResponse(zuulResponse);
         origin.recordFinalError(zuulRequest, ex);
-        StatusCategoryUtils.setStatusCategory(zuulCtx, statusCategory);
+        StatusCategoryUtils.storeStatusCategoryIfNotAlreadyFailure(zuulCtx, statusCategory);
         zuulCtx.setError(ex);
         zuulCtx.put("origin_http_status", Integer.toString(respStatus));
 
