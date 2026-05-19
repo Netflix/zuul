@@ -86,5 +86,7 @@ The workflow is triggered by a Git tag.
 git checkout master
 git tag vX.Y.Z
 git push --tags
+git push git@github.com:Netflix/zuul.git --tags // alternative for ssh access
 ```
 
+Then be sure to approve this new release in the Actions tab in GitHub.
