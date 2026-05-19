@@ -89,4 +89,4 @@ git push --tags
 git push git@github.com:Netflix/zuul.git --tags // alternative for ssh access
 ```
 
-Then be sure to approve this new release in the Actions tab in GitHub.
+Then be sure to approve the new release in the Actions tab in GitHub.
