@@ -73,10 +73,9 @@ import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -95,10 +94,6 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ClientRequestReceiver.class);
     private static final String SCHEME_HTTP = "http";
     private static final String SCHEME_HTTPS = "https";
-
-    // via @stephenhay https://mathiasbynens.be/demo/url-regex, groups added
-    // group 1: scheme, group 2: domain, group 3: path+query
-    private static final Pattern URL_REGEX = Pattern.compile("^(https?)://([^\\s/$.?#].[^\\s/]*)([^\\s]*)$");
 
     private final SessionContextDecorator decorator;
 
@@ -157,6 +152,27 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
                         "Invalid request provided: Decode failure");
                 RejectionUtils.rejectByClosingConnection(
                         ctx, ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, "decodefailure", clientRequest, null);
+                return;
+            } else if (zuulRequest.getContext().containsKey(CommonContextKeys.BAD_URI_REASON)) {
+                String clientIp = Objects.requireNonNullElse(getClientIp(ctx.channel()), "unknown");
+                String badUriReason = zuulRequest.getContext().get(CommonContextKeys.BAD_URI_REASON);
+                LOG.warn(
+                        "Invalid URI in request. reason = {}, clientRequest = {}, clientIp = {}, info = {}",
+                        badUriReason,
+                        clientRequest,
+                        clientIp,
+                        ChannelUtils.channelInfoForLogging(ctx.channel()));
+                StatusCategoryUtils.setStatusCategory(
+                        zuulRequest.getContext(), ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST, badUriReason);
+                RejectionUtils.sendRejectionResponse(
+                        ctx,
+                        ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST,
+                        "invaliduri",
+                        clientRequest,
+                        null,
+                        HttpResponseStatus.BAD_REQUEST,
+                        badUriReason,
+                        Map.of());
                 return;
             } else if (zuulRequest.hasBody() && zuulRequest.getBodyLength() > zuulRequest.getMaxBodySize()) {
                 String errorMsg = "Request too large. "
@@ -363,7 +379,13 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         }
 
         // Strip off the query from the path.
-        String path = parsePath(nativeRequest.uri());
+        String path;
+        try {
+            path = parsePath(preProcessPath(nativeRequest.uri()));
+        } catch (URISyntaxException ex) {
+            path = nativeRequest.uri();
+            context.put(CommonContextKeys.BAD_URI_REASON, ex.getReason());
+        }
 
         // Setup the req/resp message objects.
         HttpRequestMessage request = new HttpRequestMessageImpl(
@@ -409,56 +431,29 @@ public class ClientRequestReceiver extends ChannelDuplexHandler {
         return channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).get();
     }
 
-    private String parsePath(String uri) {
-        String path;
-        try {
-            URI uriObject = new URI(uri);
-            uriObject = uriObject.normalize();
-            path = uriObject.getRawPath();
-            if (path == null) {
-                // If we have an opaque URI, match existing behavior of using the URI as the path.
-                return uri;
-            }
-            while (path.startsWith("/..")) {
-                path = path.substring(3);
-            }
-            return path;
-        } catch (URISyntaxException ex) {
-            LOG.debug("URI syntax error", ex);
-        }
-        // manual path parsing
-        // relative uri
-        if (uri.startsWith("/")) {
-            path = uri;
-        } else {
-            Matcher m = URL_REGEX.matcher(uri);
+    protected String preProcessPath(String uri) {
+        return uri;
+    }
 
-            // absolute uri
-            if (m.matches()) {
-                String match = m.group(3);
-                if (match == null) {
-                    // in case of no match, default to existing behavior
-                    path = uri;
-                } else {
-                    path = match;
-                }
-            }
-            // unknown value
-            else {
-                // in case of unknown value, default to existing behavior
-                path = uri;
-            }
-        }
-
-        int queryIndex = path.indexOf('?');
+    private String parsePath(String uri) throws URISyntaxException {
+        int queryIndex = uri.indexOf('?');
         if (queryIndex > -1) {
-            path = path.substring(0, queryIndex);
+            uri = uri.substring(0, queryIndex);
         }
 
-        while (path.startsWith("/..")) {
-            path = path.substring(3);
+        URI uriObject = new URI(uri);
+        if (uriObject.isOpaque()) {
+            throw new URISyntaxException(uri, "opaque URI");
         }
-        return path;
+        String rawPath = uriObject.getRawPath();
+        // Fold %2E → '.' (unreserved per RFC 3986 §2.4) so normalize() can remove dot-segments.
+        String prepared = rawPath.replace("%2e", ".").replace("%2E", ".");
+        String normalized = new URI(prepared).normalize().getRawPath();
+        // RFC 3986 §5.2.4 discards leading "/..", but Java preserves it for relative paths.
+        while (normalized.startsWith("/..")) {
+            normalized = normalized.substring(3);
+        }
+        return normalized;
     }
 
     private static Headers copyHeaders(HttpRequest req) {

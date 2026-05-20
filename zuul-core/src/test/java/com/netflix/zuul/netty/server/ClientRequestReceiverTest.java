@@ -49,6 +49,8 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
@@ -267,6 +269,62 @@ class ClientRequestReceiverTest {
                 .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
         assertThat(StatusCategoryUtils.getStatusCategoryReason(request.getContext()))
                 .isEqualTo("Invalid request provided: Decode failure");
+    }
+
+    @Test
+    void invalidUri_setBadRequestStatus() {
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
+        PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
+
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.pipeline().addLast(new HttpServerCodec());
+        channel.pipeline().addLast(receiver);
+        channel.pipeline().addLast(loggingHandler);
+
+        HttpRequest httpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/{invalid}");
+
+        channel.writeOutbound(httpRequest);
+        ByteBuf byteBuf = channel.readOutbound();
+        channel.writeInbound(byteBuf);
+        channel.readInbound();
+        channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        SessionContext context = request.getContext();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        // Raw URI preserved for access logging, not replaced with a placeholder.
+        assertThat(request.getPath()).isEqualTo("/{invalid}");
+    }
+
+    @Test
+    void invalidPercentEncoding_setBadRequestStatus() {
+        // %GG is invalid (G is not a hex digit) — old fallback forwarded the un-normalized path to origin
+        ClientRequestReceiver receiver = new ClientRequestReceiver(null);
+        EmbeddedChannel channel = new EmbeddedChannel(new HttpRequestEncoder());
+        PassportLoggingHandler loggingHandler = new PassportLoggingHandler(new DefaultRegistry());
+
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.pipeline().addLast(new HttpServerCodec());
+        channel.pipeline().addLast(receiver);
+        channel.pipeline().addLast(loggingHandler);
+
+        HttpRequest httpRequest =
+                new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/api/%GG/../../actuator/env");
+
+        channel.writeOutbound(httpRequest);
+        ByteBuf byteBuf = channel.readOutbound();
+        channel.writeInbound(byteBuf);
+        channel.readInbound();
+        channel.close();
+
+        HttpRequestMessage request = ClientRequestReceiver.getRequestFromChannel(channel);
+        SessionContext context = request.getContext();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
     }
 
     @Test
@@ -536,20 +594,38 @@ class ClientRequestReceiverTest {
         channel.close();
     }
 
-    @Test
-    void pathTraversal_withOpaqueURI() {
+    @ParameterizedTest
+    @ValueSource(strings = {"/public/%2e%2e/admin/", "/public/%2E%2E/admin/"})
+    void pathTraversal_encodedDotDot(String uri) {
         EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
         HttpRequestMessageImpl result;
         {
-            channel.writeInbound(new DefaultFullHttpRequest(
-                    HttpVersion.HTTP_1_1, HttpMethod.GET, "foo.netflix.net:443", Unpooled.buffer()));
+            channel.writeInbound(
+                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri, Unpooled.buffer()));
             result = channel.readInbound();
             result.disposeBufferedBody();
         }
 
-        assertThat(result.getPath()).isEqualTo("foo.netflix.net:443");
+        assertThat(result.getPath()).isEqualTo("/admin/");
         channel.close();
+    }
+
+    @Test
+    void opaqueUri_rejected() {
+        EmbeddedChannel channel = new EmbeddedChannel(new ClientRequestReceiver(null));
+        channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(1234);
+        channel.writeInbound(new DefaultFullHttpRequest(
+                HttpVersion.HTTP_1_1, HttpMethod.GET, "foo.netflix.net:443", Unpooled.buffer()));
+        channel.readInbound();
+        channel.close();
+
+        SessionContext context =
+                ClientRequestReceiver.getRequestFromChannel(channel).getContext();
+        assertThat(context.get(CommonContextKeys.BAD_URI_REASON)).isNotNull();
+        assertThat(StatusCategoryUtils.getStatusCategory(context))
+                .isEqualTo(ZuulStatusCategory.FAILURE_CLIENT_BAD_REQUEST);
+        assertThat(StatusCategoryUtils.getStatusCategoryReason(context)).isEqualTo("opaque URI");
     }
 
     @Test
