@@ -29,6 +29,7 @@ import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.zuul.netty.insights.ServerStateHandler;
 import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -36,6 +37,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -52,6 +54,7 @@ class BaseZuulChannelInitializerTest {
     void resetProperties() {
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.clearProperty("zuul.http1.framing.enforcement.enabled");
+        config.clearProperty("zuul.http1.validateHeaders");
     }
 
     @Test
@@ -217,5 +220,42 @@ class BaseZuulChannelInitializerTest {
         assertThat(channel.pipeline().context(Http1ConnectionCloseHandler.class))
                 .as("Http1ConnectionCloseHandler is still wired even when the enforcement handler is off")
                 .isNotNull();
+    }
+
+    @Test
+    void malformedHeaderNameIsRejectedEndToEnd() {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("zuul.http1.validateHeaders", "true");
+
+        ChannelConfig channelConfig = new ChannelConfig();
+        ChannelConfig channelDependencies = new ChannelConfig();
+        channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
+        channelDependencies.set(
+                ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(
+                ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+        BaseZuulChannelInitializer init =
+                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
+                    @Override
+                    protected void initChannel(Channel ch) {}
+                };
+
+        EmbeddedChannel channel =
+                new EmbeddedChannel(init.createHttpServerCodec(), new Http1FramingEnforcingHandler());
+
+        String payload = "POST / HTTP/1.1\r\n"
+                + "Host: localhost\r\n"
+                + "Transfer-Encoding: chunked\r\n"
+                + "Content-Length : 4\r\n"
+                + "\r\n";
+        channel.writeInbound(Unpooled.copiedBuffer(payload.getBytes(StandardCharsets.ISO_8859_1)));
+
+        assertThat(channel.<Object>readInbound())
+                .as("malformed request must not propagate past Http1FramingEnforcingHandler")
+                .isNull();
+        assertThat(channel.isOpen())
+                .as("connection must be closed so residual bytes are not re-parsed as a new request")
+                .isFalse();
     }
 }

@@ -24,6 +24,7 @@ import com.netflix.zuul.stats.status.ZuulStatusCategory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -209,5 +210,18 @@ class Http1FramingEnforcingHandlerTest {
         channel.writeInbound("not-an-http-request");
 
         assertThat(channel.<Object>readInbound()).isEqualTo("not-an-http-request");
+    }
+
+    @Test
+    void requestWithDecoderFailureIsRejected() {
+        DefaultHttpRequest req = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/");
+        req.setDecoderResult(DecoderResult.failure(new IllegalArgumentException("bad header")));
+
+        channel.writeInbound(req);
+
+        assertThat(channel.<Object>readInbound()).isNull();
+        assertThat(channel.<Object>readOutbound()).isNull();
+        assertThat(channel.isOpen()).isFalse();
+        assertThat(capturedEvents.getFirst().reason()).isEqualTo("http1_framing_violation");
     }
 }

@@ -102,6 +102,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     public static final CachedDynamicBooleanProperty HTTP1_FRAMING_ENFORCEMENT_ENABLED =
             new CachedDynamicBooleanProperty("zuul.http1.framing.enforcement.enabled", true);
 
+    public static final CachedDynamicBooleanProperty HTTP1_VALIDATE_HEADERS =
+            new CachedDynamicBooleanProperty("zuul.http1.validateHeaders", true);
+
     /**
      * The port that the server intends to listen on.  Subclasses should NOT use this field, as it may not be set, and
      * may differ from the actual listening port.  For example:
@@ -272,7 +275,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     }
 
     protected HttpServerCodec createHttpServerCodec() {
-        return new HttpServerCodec(MAX_INITIAL_LINE_LENGTH.get(), MAX_HEADER_SIZE.get(), MAX_CHUNK_SIZE.get(), false);
+        return new HttpServerCodec(
+                MAX_INITIAL_LINE_LENGTH.get(), MAX_HEADER_SIZE.get(), MAX_CHUNK_SIZE.get(),
+                HTTP1_VALIDATE_HEADERS.get());
     }
 
     protected void addHttpRelatedHandlers(ChannelPipeline pipeline) {
