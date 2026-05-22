@@ -368,6 +368,47 @@ class ProxyEndpointTest {
         return DiscoveryResult.from(instanceInfo, true);
     }
 
+    // --- 1xx interim response tests ---
+
+    @Test
+    void interimResponseIsForwardedWithoutSettingStartedSendingFlag() {
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+
+        // invokeNext must be called to forward the 103 to the downstream client
+        verify(proxyEndpoint).invokeNext(any(HttpResponseMessage.class));
+        // startedSendingResponseToClient must remain false so that retries remain possible
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isFalse();
+    }
+
+    @Test
+    void finalResponseIsForwardedAfterInterimResponse() {
+        // 1xx from origin: HttpResponse(103) then empty LastHttpContent
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        // Real 200 arrives next — must still be routed correctly
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+        // invokeNext(HttpResponseMessage) must have been called twice: once for 103, once for 200
+        verify(proxyEndpoint, times(2)).invokeNext(any(HttpResponseMessage.class));
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
+    }
+
+    @Test
+    void multiple1xxResponsesBeforeFinalResponseAreAllForwarded() {
+        proxyEndpoint.responseFromOrigin(
+                new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROCESSING));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+        verify(proxyEndpoint, times(3)).invokeNext(any(HttpResponseMessage.class));
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
+    }
+
     private void createResponse(HttpResponseStatus status) {
         response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
     }
