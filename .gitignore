@@ -74,3 +74,9 @@ zuul-sample/src/main/generated/
 
 # publishing secrets
 secrets/signing-key
+
+# TLS and keystore material
+*.key
+*.jks
+*.pem
+*.p12

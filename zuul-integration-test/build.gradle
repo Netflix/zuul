@@ -1,5 +1,29 @@
+import com.netflix.zuul.build.SslFixtureGenerator
+
 apply plugin: "java"
 apply plugin: 'application'
+
+def generatedSslResourcesDir = layout.buildDirectory.dir("generated/resources/dev-ssl")
+
+tasks.register("generateIntegrationTestSslFixtures") {
+    description = "Generates short-lived SSL fixtures for integration tests."
+    outputs.dir(generatedSslResourcesDir)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        SslFixtureGenerator.generate(generatedSslResourcesDir.get().asFile.toPath())
+    }
+}
+
+sourceSets {
+    test {
+        resources.srcDir(tasks.named("generateIntegrationTestSslFixtures"))
+    }
+}
+
+tasks.named("processTestResources") {
+    dependsOn(tasks.named("generateIntegrationTestSslFixtures"))
+}
 
 dependencies {
     implementation project(":zuul-core"),
