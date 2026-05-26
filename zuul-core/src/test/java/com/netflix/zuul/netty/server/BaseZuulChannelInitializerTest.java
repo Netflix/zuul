@@ -29,6 +29,7 @@ import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.zuul.netty.insights.ServerStateHandler;
 import com.netflix.zuul.netty.ratelimiting.NullChannelHandlerProvider;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -36,6 +37,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -52,6 +54,7 @@ class BaseZuulChannelInitializerTest {
     void resetProperties() {
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.clearProperty("zuul.http1.framing.enforcement.enabled");
+        config.clearProperty("server.http.request.headers.validation.enabled");
     }
 
     @Test
@@ -171,16 +174,23 @@ class BaseZuulChannelInitializerTest {
                 .collect(Collectors.toList());
 
         int codecIndex = handlerClasses.indexOf(HttpServerCodec.class);
+        int decoderFailureIndex = handlerClasses.indexOf(Http1DecoderFailureRejectingHandler.class);
         int enforcerIndex = handlerClasses.indexOf(Http1FramingEnforcingHandler.class);
         int closeHandlerIndex = handlerClasses.indexOf(Http1ConnectionCloseHandler.class);
 
         assertThat(codecIndex).as("HttpServerCodec must be present").isNotNegative();
+        assertThat(decoderFailureIndex)
+                .as("Http1DecoderFailureRejectingHandler must be present")
+                .isNotNegative();
         assertThat(closeHandlerIndex)
                 .as("Http1ConnectionCloseHandler must be present")
                 .isNotNegative();
-        assertThat(enforcerIndex)
-                .as("Http1FramingEnforcingHandler must run after HttpServerCodec")
+        assertThat(decoderFailureIndex)
+                .as("Http1DecoderFailureRejectingHandler must run immediately after HttpServerCodec")
                 .isGreaterThan(codecIndex);
+        assertThat(enforcerIndex)
+                .as("Http1FramingEnforcingHandler must run after Http1DecoderFailureRejectingHandler")
+                .isGreaterThan(decoderFailureIndex);
         assertThat(enforcerIndex)
                 .as("Http1FramingEnforcingHandler must run before Http1ConnectionCloseHandler")
                 .isLessThan(closeHandlerIndex);
@@ -211,11 +221,51 @@ class BaseZuulChannelInitializerTest {
         assertThat(channel.pipeline().context(Http1FramingEnforcingHandler.class))
                 .as("Http1FramingEnforcingHandler must not be wired when the killswitch is disabled")
                 .isNull();
+        assertThat(channel.pipeline().context(Http1DecoderFailureRejectingHandler.class))
+                .as("Http1DecoderFailureRejectingHandler must be wired independent of the framing killswitch")
+                .isNotNull();
         assertThat(channel.pipeline().context(HttpServerCodec.class))
                 .as("HttpServerCodec is still wired even when the enforcement handler is off")
                 .isNotNull();
         assertThat(channel.pipeline().context(Http1ConnectionCloseHandler.class))
                 .as("Http1ConnectionCloseHandler is still wired even when the enforcement handler is off")
                 .isNotNull();
+    }
+
+    @Test
+    void malformedHeaderNameIsRejectedEndToEnd() {
+        AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+        config.setProperty("server.http.request.headers.validation.enabled", "true");
+
+        ChannelConfig channelConfig = new ChannelConfig();
+        ChannelConfig channelDependencies = new ChannelConfig();
+        channelDependencies.set(ZuulDependencyKeys.registry, new NoopRegistry());
+        channelDependencies.set(
+                ZuulDependencyKeys.rateLimitingChannelHandlerProvider, new NullChannelHandlerProvider());
+        channelDependencies.set(
+                ZuulDependencyKeys.sslClientCertCheckChannelHandlerProvider, new NullChannelHandlerProvider());
+        ChannelGroup channelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+        BaseZuulChannelInitializer init =
+                new BaseZuulChannelInitializer("1234", channelConfig, channelDependencies, channelGroup) {
+                    @Override
+                    protected void initChannel(Channel ch) {}
+                };
+
+        EmbeddedChannel channel =
+                new EmbeddedChannel(init.createHttpServerCodec(), new Http1DecoderFailureRejectingHandler());
+
+        String payload = "POST / HTTP/1.1\r\n"
+                + "Host: localhost\r\n"
+                + "Transfer-Encoding: chunked\r\n"
+                + "Content-Length : 4\r\n"
+                + "\r\n";
+        channel.writeInbound(Unpooled.copiedBuffer(payload.getBytes(StandardCharsets.ISO_8859_1)));
+
+        assertThat(channel.<Object>readInbound())
+                .as("malformed request must not propagate past Http1DecoderFailureRejectingHandler")
+                .isNull();
+        assertThat(channel.isOpen())
+                .as("connection must be closed so residual bytes are not re-parsed as a new request")
+                .isFalse();
     }
 }
