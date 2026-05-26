@@ -54,7 +54,7 @@ class BaseZuulChannelInitializerTest {
     void resetProperties() {
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.clearProperty("zuul.http1.framing.enforcement.enabled");
-        config.clearProperty("zuul.http1.validateHeaders");
+        config.clearProperty("server.http.request.headers.validation.enabled");
     }
 
     @Test
@@ -225,7 +225,7 @@ class BaseZuulChannelInitializerTest {
     @Test
     void malformedHeaderNameIsRejectedEndToEnd() {
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
-        config.setProperty("zuul.http1.validateHeaders", "true");
+        config.setProperty("server.http.request.headers.validation.enabled", "true");
 
         ChannelConfig channelConfig = new ChannelConfig();
         ChannelConfig channelDependencies = new ChannelConfig();
