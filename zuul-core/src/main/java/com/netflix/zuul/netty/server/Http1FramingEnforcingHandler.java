@@ -54,11 +54,6 @@ public final class Http1FramingEnforcingHandler extends ChannelInboundHandlerAda
             return;
         }
 
-        if (req.decoderResult().isFailure()) {
-            rejectAndClose(ctx, req, msg, "decoder failure: " + req.decoderResult().cause());
-            return;
-        }
-
         List<String> contentLengthHeaders = req.headers().getAll(HttpHeaderNames.CONTENT_LENGTH);
         List<String> transferEncodingHeaders = req.headers().getAll(HttpHeaderNames.TRANSFER_ENCODING);
 

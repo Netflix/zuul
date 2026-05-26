@@ -263,6 +263,8 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
     protected void addHttp1Handlers(ChannelPipeline pipeline) {
         pipeline.addLast(HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
 
+        pipeline.addLast(new Http1DecoderFailureRejectingHandler());
+
         if (HTTP1_FRAMING_ENFORCEMENT_ENABLED.get()) {
             pipeline.addLast(new Http1FramingEnforcingHandler());
         }

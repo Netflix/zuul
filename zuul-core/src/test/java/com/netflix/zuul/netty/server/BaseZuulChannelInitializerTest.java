@@ -174,16 +174,23 @@ class BaseZuulChannelInitializerTest {
                 .collect(Collectors.toList());
 
         int codecIndex = handlerClasses.indexOf(HttpServerCodec.class);
+        int decoderFailureIndex = handlerClasses.indexOf(Http1DecoderFailureRejectingHandler.class);
         int enforcerIndex = handlerClasses.indexOf(Http1FramingEnforcingHandler.class);
         int closeHandlerIndex = handlerClasses.indexOf(Http1ConnectionCloseHandler.class);
 
         assertThat(codecIndex).as("HttpServerCodec must be present").isNotNegative();
+        assertThat(decoderFailureIndex)
+                .as("Http1DecoderFailureRejectingHandler must be present")
+                .isNotNegative();
         assertThat(closeHandlerIndex)
                 .as("Http1ConnectionCloseHandler must be present")
                 .isNotNegative();
-        assertThat(enforcerIndex)
-                .as("Http1FramingEnforcingHandler must run after HttpServerCodec")
+        assertThat(decoderFailureIndex)
+                .as("Http1DecoderFailureRejectingHandler must run immediately after HttpServerCodec")
                 .isGreaterThan(codecIndex);
+        assertThat(enforcerIndex)
+                .as("Http1FramingEnforcingHandler must run after Http1DecoderFailureRejectingHandler")
+                .isGreaterThan(decoderFailureIndex);
         assertThat(enforcerIndex)
                 .as("Http1FramingEnforcingHandler must run before Http1ConnectionCloseHandler")
                 .isLessThan(closeHandlerIndex);
@@ -214,6 +221,9 @@ class BaseZuulChannelInitializerTest {
         assertThat(channel.pipeline().context(Http1FramingEnforcingHandler.class))
                 .as("Http1FramingEnforcingHandler must not be wired when the killswitch is disabled")
                 .isNull();
+        assertThat(channel.pipeline().context(Http1DecoderFailureRejectingHandler.class))
+                .as("Http1DecoderFailureRejectingHandler must be wired independent of the framing killswitch")
+                .isNotNull();
         assertThat(channel.pipeline().context(HttpServerCodec.class))
                 .as("HttpServerCodec is still wired even when the enforcement handler is off")
                 .isNotNull();
@@ -242,7 +252,7 @@ class BaseZuulChannelInitializerTest {
                 };
 
         EmbeddedChannel channel =
-                new EmbeddedChannel(init.createHttpServerCodec(), new Http1FramingEnforcingHandler());
+                new EmbeddedChannel(init.createHttpServerCodec(), new Http1DecoderFailureRejectingHandler());
 
         String payload = "POST / HTTP/1.1\r\n"
                 + "Host: localhost\r\n"
@@ -252,7 +262,7 @@ class BaseZuulChannelInitializerTest {
         channel.writeInbound(Unpooled.copiedBuffer(payload.getBytes(StandardCharsets.ISO_8859_1)));
 
         assertThat(channel.<Object>readInbound())
-                .as("malformed request must not propagate past Http1FramingEnforcingHandler")
+                .as("malformed request must not propagate past Http1DecoderFailureRejectingHandler")
                 .isNull();
         assertThat(channel.isOpen())
                 .as("connection must be closed so residual bytes are not re-parsed as a new request")
