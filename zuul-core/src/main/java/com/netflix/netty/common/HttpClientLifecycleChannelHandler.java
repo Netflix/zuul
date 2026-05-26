@@ -23,6 +23,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpStatusClass;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 
@@ -48,7 +49,12 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
                 super.channelRead(ctx, msg);
             } finally {
                 if (msg instanceof LastHttpContent) {
-                    fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+                    HttpResponse resp = ctx.channel().attr(ATTR_HTTP_RESP).get();
+                    boolean isInformational =
+                            resp != null && resp.status().codeClass() == HttpStatusClass.INFORMATIONAL;
+                    if (!isInformational) {
+                        fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+                    }
                 }
             }
         }

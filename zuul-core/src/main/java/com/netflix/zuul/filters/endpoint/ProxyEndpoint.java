@@ -82,6 +82,7 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpStatusClass;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
@@ -137,6 +138,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected MethodBinding<?> methodBinding;
     protected HttpResponseMessage zuulResponse;
     protected boolean startedSendingResponseToClient;
+    private boolean pendingInterimResponse;
     protected Duration timeLeftForAttempt;
 
     /* Individual retry related state */
@@ -432,7 +434,13 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         if (chunk instanceof LastHttpContent) {
-            unlinkFromOrigin();
+            if (pendingInterimResponse) {
+                // This empty LastHttpContent is the tail of a 1xx interim response; the origin connection
+                // must stay open for the real final response that follows.
+                pendingInterimResponse = false;
+            } else {
+                unlinkFromOrigin();
+            }
         }
 
         if (responseFilters != null) {
@@ -838,11 +846,28 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void processResponseFromOrigin(HttpResponse originResponse) {
-        if (originResponse.status().code() >= 500) {
+        if (originResponse.status().codeClass() == HttpStatusClass.INFORMATIONAL) {
+            handleInterimResponse(originResponse);
+        } else if (originResponse.status().code() >= 500) {
             handleOriginNonSuccessResponse(originResponse, chosenServer.get());
         } else {
             handleOriginSuccessResponse(originResponse, chosenServer.get());
         }
+    }
+
+    private void handleInterimResponse(HttpResponse originResponse) {
+        int respStatus = originResponse.status().code();
+        HttpResponseMessage interimZuulResponse = new HttpResponseMessageImpl(context, zuulRequest, respStatus);
+        Headers respHeaders = interimZuulResponse.getHeaders();
+        for (Map.Entry<String, String> entry : originResponse.headers()) {
+            respHeaders.add(entry.getKey(), entry.getValue());
+        }
+        // Track that we are mid-interim-response so filterResponseChunk does not call unlinkFromOrigin()
+        // on the empty LastHttpContent that Netty emits after every 1xx.
+        // Do NOT set startedSendingResponseToClient and do NOT record final metrics or response status.
+        pendingInterimResponse = true;
+        zuulResponse = interimZuulResponse;
+        invokeNext(interimZuulResponse);
     }
 
     protected void handleOriginSuccessResponse(HttpResponse originResponse, DiscoveryResult chosenServer) {
