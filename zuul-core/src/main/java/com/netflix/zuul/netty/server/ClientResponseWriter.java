@@ -302,10 +302,12 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         if (isHandlingRequest
                 && !startedSendingResponseToClient
                 && ctx.channel().isActive()) {
+            // mark the request is being send _before_ flushing: the flush can re-enter channelRead with a buffered
+            // response so we need to make sure we don't attempt to send again on the same stream
+            startedSendingResponseToClient = true;
             HttpResponse httpResponse =
                     new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(status));
             ctx.writeAndFlush(httpResponse).addListener(ChannelFutureListener.CLOSE);
-            startedSendingResponseToClient = true;
         } else {
             ctx.close();
         }

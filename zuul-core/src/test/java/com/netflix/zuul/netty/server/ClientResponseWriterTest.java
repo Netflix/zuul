@@ -44,6 +44,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -139,6 +140,47 @@ class ClientResponseWriterTest {
                 .fireUserEventTriggered(new HttpLifecycleChannelHandler.CompleteEvent(
                         HttpLifecycleChannelHandler.CompleteReason.SESSION_COMPLETE, null, nettyResp.get()));
         assertThat(responseWriter.getZuulResponse()).isNull();
+    }
+
+    @Test
+    void doesNotWriteSecondResponseWhenFlushReentersChannelRead() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+
+        SessionContext ctx = new SessionContext();
+        HttpRequestMessage request = new HttpRequestBuilder(ctx).build();
+        request.storeInboundRequest();
+        DefaultHttpRequest nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
+        channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
+
+        HttpResponseMessageImpl bufferedResponse = new HttpResponseMessageImpl(ctx, request, 200);
+        bufferedResponse.setHeaders(new Headers());
+
+        AtomicInteger responsesWritten = new AtomicInteger();
+
+        // simulate an error response flush completing and firing a CompleteEvent back up
+        channel.pipeline().addFirst(new ChannelOutboundHandlerAdapter() {
+            private boolean reentered;
+
+            @Override
+            public void write(ChannelHandlerContext context, Object msg, ChannelPromise promise) throws Exception {
+                if (msg instanceof HttpResponse) {
+                    responsesWritten.incrementAndGet();
+                }
+                ReferenceCountUtil.safeRelease(msg);
+                promise.setSuccess();
+                if (!reentered) {
+                    reentered = true;
+                    context.fireChannelRead(bufferedResponse);
+                }
+            }
+        });
+
+        channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
+        channel.pipeline().fireExceptionCaught(new RuntimeException("origin read timeout"));
+
+        assertThat(responsesWritten.get()).isEqualTo(1);
     }
 
     @ParameterizedTest
