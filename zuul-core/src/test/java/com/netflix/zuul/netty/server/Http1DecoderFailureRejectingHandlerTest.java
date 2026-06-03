@@ -41,17 +41,15 @@ class Http1DecoderFailureRejectingHandlerTest {
     @BeforeEach
     void setup() {
         capturedEvents = new ArrayList<>();
-        channel = new EmbeddedChannel(
-                new Http1DecoderFailureRejectingHandler(),
-                new ChannelInboundHandlerAdapter() {
-                    @Override
-                    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                        if (evt instanceof RequestRejectedEvent rejectedEvent) {
-                            capturedEvents.add(rejectedEvent);
-                        }
-                        super.userEventTriggered(ctx, evt);
-                    }
-                });
+        channel = new EmbeddedChannel(new Http1DecoderFailureRejectingHandler(), new ChannelInboundHandlerAdapter() {
+            @Override
+            public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                if (evt instanceof RequestRejectedEvent rejectedEvent) {
+                    capturedEvents.add(rejectedEvent);
+                }
+                super.userEventTriggered(ctx, evt);
+            }
+        });
     }
 
     @Test

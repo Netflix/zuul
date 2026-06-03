@@ -278,7 +278,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
 
     protected HttpServerCodec createHttpServerCodec() {
         return new HttpServerCodec(
-                MAX_INITIAL_LINE_LENGTH.get(), MAX_HEADER_SIZE.get(), MAX_CHUNK_SIZE.get(),
+                MAX_INITIAL_LINE_LENGTH.get(),
+                MAX_HEADER_SIZE.get(),
+                MAX_CHUNK_SIZE.get(),
                 HTTP_REQUEST_HEADERS_VALIDATION_ENABLED.get());
     }
 
