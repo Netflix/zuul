@@ -21,6 +21,7 @@ import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.channel.EventLoop;
 import io.netty.util.concurrent.Promise;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -53,6 +54,15 @@ public interface ClientChannelManager {
             AtomicReference<? super InetAddress> selectedHostAddr);
 
     boolean isCold();
+
+    /**
+     * Returns a read-only snapshot of all origin servers this manager currently load-balances over, or an
+     * empty list when the manager cannot expose them. This does not pick or acquire a connection - it is a
+     * view for callers that need per-server discovery metadata.
+     */
+    default List<DiscoveryResult> getServers() {
+        return List.of();
+    }
 
     boolean remove(PooledConnection conn);
 

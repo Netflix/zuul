@@ -17,11 +17,16 @@
 package com.netflix.zuul.discovery;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.DefaultClientConfigImpl;
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
+import com.netflix.loadbalancer.LoadBalancerStats;
+import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.resolver.ResolverListener;
 import java.util.List;
@@ -68,6 +73,41 @@ class DynamicServerResolverTest {
         resolver.onUpdate(ImmutableList.of(server1, server2), ImmutableList.of());
 
         assertThat(listener.updatedList()).containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
+    }
+
+    @Test
+    void getServersMapsDiscoveryServersAndSkipsNonDiscoveryServers() {
+        InstanceInfo first = InstanceInfo.Builder.newBuilder()
+                .setAppName("zuul-discovery-1")
+                .setHostName("zuul-discovery-1")
+                .setIPAddr("100.10.10.1")
+                .setPort(443)
+                .build();
+        InstanceInfo second = InstanceInfo.Builder.newBuilder()
+                .setAppName("zuul-discovery-2")
+                .setHostName("zuul-discovery-2")
+                .setIPAddr("100.10.10.2")
+                .setPort(443)
+                .build();
+        DiscoveryEnabledServer server1 = new DiscoveryEnabledServer(first, true);
+        DiscoveryEnabledServer server2 = new DiscoveryEnabledServer(second, true);
+        Server plainServer = new Server("100.10.10.3", 443);
+
+        @SuppressWarnings("unchecked")
+        DynamicServerListLoadBalancer<Server> loadBalancer = mock(DynamicServerListLoadBalancer.class);
+        when(loadBalancer.getAllServers()).thenReturn(List.of(server1, plainServer, server2));
+        when(loadBalancer.getLoadBalancerStats()).thenReturn(new LoadBalancerStats("test"));
+
+        DynamicServerResolver resolver = new DynamicServerResolver(loadBalancer);
+
+        assertThat(resolver.getServers()).containsExactly(new DiscoveryResult(server1), new DiscoveryResult(server2));
+    }
+
+    @Test
+    void getServersIsEmptyWhenLoadBalancerHasNoServers() {
+        DynamicServerResolver resolver = new DynamicServerResolver(new DefaultClientConfigImpl());
+
+        assertThat(resolver.getServers()).isEmpty();
     }
 
     @Test

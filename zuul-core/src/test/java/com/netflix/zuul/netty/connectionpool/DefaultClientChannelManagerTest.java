@@ -46,6 +46,7 @@ import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -120,6 +121,27 @@ class DefaultClientChannelManagerTest {
                 .as(socketAddress.toString())
                 .isTrue();
         assertThat(socketAddress.getPort()).isEqualTo(443);
+    }
+
+    @Test
+    void getServersDelegatesToResolver() {
+        OriginName originName = OriginName.fromVip("vip", "test");
+        DefaultClientConfigImpl clientConfig = new DefaultClientConfigImpl();
+        DynamicServerResolver resolver = mock(DynamicServerResolver.class);
+
+        DiscoveryResult result = DiscoveryResult.from(
+                InstanceInfo.Builder.newBuilder()
+                        .setAppName("server-list")
+                        .setHostName("server-list")
+                        .setPort(7777)
+                        .build(),
+                false);
+        when(resolver.getServers()).thenReturn(List.of(result));
+
+        DefaultClientChannelManager clientChannelManager =
+                new DefaultClientChannelManager(originName, clientConfig, resolver, new DefaultRegistry());
+
+        assertThat(clientChannelManager.getServers()).containsExactly(result);
     }
 
     @Test

@@ -16,6 +16,8 @@
 
 package com.netflix.zuul.resolver;
 
+import java.util.List;
+
 /**
  * @author Argha C
  * @since 2/25/21
@@ -37,6 +39,16 @@ public interface Resolver<T> {
      * @return true if the resolver has available servers, false otherwise
      */
     boolean hasServers();
+
+    /**
+     * Returns a snapshot of all servers currently known to the resolver, or an empty list when the
+     * resolver does not expose its server list. Unlike resolve, this does not pick or load-balance - it
+     * is a read-only view for callers that need to inspect the whole pool (e.g. per-server discovery
+     * metadata).
+     */
+    default List<T> getServers() {
+        return List.of();
+    }
 
     /**
      * hook to perform activities on shutdown
