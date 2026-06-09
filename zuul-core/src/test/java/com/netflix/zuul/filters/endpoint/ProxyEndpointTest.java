@@ -371,31 +371,30 @@ class ProxyEndpointTest {
     // --- 1xx interim response tests ---
 
     @Test
-    void interimResponseIsForwardedWithoutSettingStartedSendingFlag() {
+    void interimResponseIsSwallowedWithoutForwardingOrStartingResponse() {
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
 
-        // invokeNext must be called to forward the 103 to the downstream client
-        verify(proxyEndpoint).invokeNext(any(HttpResponseMessage.class));
-        // startedSendingResponseToClient must remain false so that retries remain possible
+        // 1xx is swallowed: nothing is forwarded to the client and the response cycle has not started
+        verify(proxyEndpoint, never()).invokeNext(any(HttpResponseMessage.class));
         assertThat(proxyEndpoint.startedSendingResponseToClient).isFalse();
     }
 
     @Test
-    void finalResponseIsForwardedAfterInterimResponse() {
+    void finalResponseIsForwardedAfterSwallowedInterimResponse() {
         // 1xx from origin: HttpResponse(103) then empty LastHttpContent
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
         proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
 
-        // Real 200 arrives next — must still be routed correctly
+        // Real 200 arrives next — must still be routed to the client
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
-        // invokeNext(HttpResponseMessage) must have been called twice: once for 103, once for 200
-        verify(proxyEndpoint, times(2)).invokeNext(any(HttpResponseMessage.class));
+        // only the final 200 is forwarded; the 103 was swallowed
+        verify(proxyEndpoint, times(1)).invokeNext(any(HttpResponseMessage.class));
         assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
     }
 
     @Test
-    void multiple1xxResponsesBeforeFinalResponseAreAllForwarded() {
+    void multipleInterimResponsesAreSwallowedBeforeFinalResponse() {
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROCESSING));
         proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
 
@@ -404,7 +403,8 @@ class ProxyEndpointTest {
 
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
-        verify(proxyEndpoint, times(3)).invokeNext(any(HttpResponseMessage.class));
+        // both 1xx responses are swallowed; only the final 200 is forwarded
+        verify(proxyEndpoint, times(1)).invokeNext(any(HttpResponseMessage.class));
         assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
     }
 

@@ -46,11 +46,15 @@ public final class ClientTimeoutHandler {
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
                 if (msg instanceof LastHttpContent) {
-                    HttpResponse resp = ctx.channel().attr(HttpLifecycleChannelHandler.ATTR_HTTP_RESP).get();
+                    HttpResponse resp = ctx.channel()
+                            .attr(HttpLifecycleChannelHandler.ATTR_HTTP_RESP)
+                            .get();
                     boolean isInformational =
                             resp != null && resp.status().codeClass() == HttpStatusClass.INFORMATIONAL;
                     if (!isInformational) {
-                        LOG.debug("[{}] Removing read timeout handler", ctx.channel().id());
+                        LOG.debug(
+                                "[{}] Removing read timeout handler",
+                                ctx.channel().id());
                         PooledConnection.getFromChannel(ctx.channel()).removeReadTimeoutHandler();
                     }
                 }

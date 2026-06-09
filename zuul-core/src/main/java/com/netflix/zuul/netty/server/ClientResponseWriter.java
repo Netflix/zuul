@@ -41,7 +41,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -95,13 +94,6 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         if (msg instanceof HttpResponseMessage resp) {
 
             if (skipProcessing(resp)) {
-                return;
-            }
-
-            if (isInformational(resp)) {
-                // 1xx interim responses are not terminal: forward them without consuming the
-                // request/response cycle so the real final response can still be written.
-                writeInterimResponse(ctx, resp);
                 return;
             }
 
@@ -173,24 +165,6 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         return false;
     }
 
-    private static boolean isInformational(HttpResponseMessage resp) {
-        int status = resp.getStatus();
-        return status >= 100 && status < 200;
-    }
-
-    private void writeInterimResponse(ChannelHandlerContext ctx, HttpResponseMessage resp) {
-        Channel channel = ctx.channel();
-        try {
-            // RFC 7231 forbids sending a 1xx response to an HTTP/1.0 client; swallow it for them.
-            if (!channel.isActive() || resp.getInboundRequest().getProtocol().startsWith("HTTP/1.0")) {
-                return;
-            }
-            channel.writeAndFlush(buildInterimResponse(resp));
-        } finally {
-            resp.disposeBufferedBody();
-        }
-    }
-
     private static void writeBufferedBodyContent(HttpResponseMessage zuulResponse, Channel channel) {
         zuulResponse.getBodyContents().forEach(chunk -> channel.write(chunk.retain()));
     }
@@ -236,34 +210,6 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         }
 
         return nativeResponse;
-    }
-
-    /**
-     * Builds a headers-only 1xx interim response. It is a {@link FullHttpResponse} with an empty body and
-     * no body framing (no Content-Length, no Transfer-Encoding): Netty's HTTP/2 codec requires a full
-     * response for informational statuses, and the HTTP/1.1 encoder treats 1xx as content-less.
-     */
-    private static HttpResponse buildInterimResponse(HttpResponseMessage zuulResp) {
-        HttpRequestInfo zuulRequest = zuulResp.getInboundRequest();
-        String inboundProtocol = zuulRequest.getProtocol();
-        HttpVersion responseHttpVersion =
-                inboundProtocol.startsWith("HTTP/1") ? HttpVersion.valueOf(inboundProtocol) : HttpVersion.HTTP_1_1;
-
-        FullHttpResponse interimResponse =
-                new DefaultFullHttpResponse(responseHttpVersion, HttpResponseStatus.valueOf(zuulResp.getStatus()));
-        HttpHeaders nativeHeaders = interimResponse.headers();
-        for (Header entry : zuulResp.getHeaders().entries()) {
-            nativeHeaders.add(entry.getKey(), entry.getValue());
-        }
-
-        // Preserve the HTTP/2 stream id so the interim HEADERS frame is routed to the right stream.
-        HttpRequest nativeReq = (HttpRequest) zuulResp.getContext().get(CommonContextKeys.NETTY_HTTP_REQUEST);
-        CharSequence streamIdHeader = HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text();
-        if (nativeReq.headers().contains(streamIdHeader)) {
-            nativeHeaders.set(streamIdHeader, nativeReq.headers().get(streamIdHeader));
-        }
-
-        return interimResponse;
     }
 
     @Override

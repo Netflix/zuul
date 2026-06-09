@@ -90,8 +90,8 @@ class HttpClientLifecycleChannelHandlerTest {
     @Test
     void sessionCompleteNotFiredAfter1xxResponse() {
         CompleteEventCollector collector = new CompleteEventCollector();
-        EmbeddedChannel inboundChannel = new EmbeddedChannel(
-                HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
+        EmbeddedChannel inboundChannel =
+                new EmbeddedChannel(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
         inboundChannel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
 
         // Netty decodes a 1xx from the origin as two separate events
@@ -105,8 +105,8 @@ class HttpClientLifecycleChannelHandlerTest {
     @Test
     void sessionCompleteFiredAfterFinalResponseFollowing1xx() {
         CompleteEventCollector collector = new CompleteEventCollector();
-        EmbeddedChannel inboundChannel = new EmbeddedChannel(
-                HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
+        EmbeddedChannel inboundChannel =
+                new EmbeddedChannel(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
         inboundChannel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
 
         // 1xx pair — must NOT trigger SESSION_COMPLETE
@@ -125,8 +125,8 @@ class HttpClientLifecycleChannelHandlerTest {
     @Test
     void sessionCompleteFiredForNormalFinalResponse() {
         CompleteEventCollector collector = new CompleteEventCollector();
-        EmbeddedChannel inboundChannel = new EmbeddedChannel(
-                HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
+        EmbeddedChannel inboundChannel =
+                new EmbeddedChannel(HttpClientLifecycleChannelHandler.INBOUND_CHANNEL_HANDLER, collector);
         inboundChannel.attr(HttpLifecycleChannelHandler.ATTR_STATE).set(State.STARTED);
 
         inboundChannel.writeInbound(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
