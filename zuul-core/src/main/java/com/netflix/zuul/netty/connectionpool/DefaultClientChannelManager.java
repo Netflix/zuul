@@ -123,6 +123,11 @@ public class DefaultClientChannelManager implements ClientChannelManager {
     }
 
     @Override
+    public List<DiscoveryResult> getServers() {
+        return dynamicServerResolver.getServers();
+    }
+
+    @Override
     public boolean isCold() {
         return false;
     }
