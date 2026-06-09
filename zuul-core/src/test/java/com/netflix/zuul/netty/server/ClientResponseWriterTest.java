@@ -27,6 +27,7 @@ import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
@@ -39,11 +40,15 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.local.LocalAddress;
 import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -229,5 +234,119 @@ class ClientResponseWriterTest {
 
         request.disposeBufferedBody();
         channel.close();
+    }
+
+    @Test
+    void interimResponseWrittenWithoutBodyFraming() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+        List<HttpResponse> written = captureWrites(channel);
+
+        SessionContext ctx = startRequest(channel, "HTTP/1.1");
+        channel.writeInbound(response(ctx, channel, 103));
+
+        assertThat(written).hasSize(1);
+        assertThat(written.getFirst().status().code()).isEqualTo(103);
+        assertThat(written.getFirst().headers().contains(HttpHeaderNames.TRANSFER_ENCODING))
+                .isFalse();
+        assertThat(written.getFirst().headers().contains(HttpHeaderNames.CONTENT_LENGTH))
+                .isFalse();
+        // interim responses are not terminal: the response/retry cycle stays open
+        assertThat(responseWriter.getZuulResponse()).isNull();
+        assertThat(channel.isOpen()).isTrue();
+    }
+
+    @Test
+    void interimResponseThenFinalResponseAreBothWritten() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+        List<HttpResponse> written = captureWrites(channel);
+
+        SessionContext ctx = startRequest(channel, "HTTP/1.1");
+        channel.writeInbound(response(ctx, channel, 103));
+        channel.writeInbound(response(ctx, channel, 200));
+
+        assertThat(written).hasSize(2);
+        assertThat(written.get(0).status().code()).isEqualTo(103);
+        assertThat(written.get(1).status().code()).isEqualTo(200);
+        assertThat(responseWriter.getZuulResponse()).isNotNull();
+        assertThat(channel.isOpen()).isTrue();
+    }
+
+    @Test
+    void multipleInterimResponsesThenFinalResponseAreAllWritten() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+        List<HttpResponse> written = captureWrites(channel);
+
+        SessionContext ctx = startRequest(channel, "HTTP/1.1");
+        channel.writeInbound(response(ctx, channel, 102));
+        channel.writeInbound(response(ctx, channel, 103));
+        channel.writeInbound(response(ctx, channel, 200));
+
+        assertThat(written).hasSize(3);
+        assertThat(written.get(0).status().code()).isEqualTo(102);
+        assertThat(written.get(1).status().code()).isEqualTo(103);
+        assertThat(written.get(2).status().code()).isEqualTo(200);
+        assertThat(channel.isOpen()).isTrue();
+    }
+
+    @Test
+    void interimResponseSwallowedForHttp10Client() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+        List<HttpResponse> written = captureWrites(channel);
+
+        SessionContext ctx = startRequest(channel, "HTTP/1.0");
+        channel.writeInbound(response(ctx, channel, 103));
+
+        // RFC 7231: 1xx must not be sent to an HTTP/1.0 client
+        assertThat(written).isEmpty();
+        assertThat(channel.isOpen()).isTrue();
+    }
+
+    private static List<HttpResponse> captureWrites(EmbeddedChannel channel) {
+        List<HttpResponse> written = new ArrayList<>();
+        channel.pipeline().addFirst(new ChannelOutboundHandlerAdapter() {
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+                if (msg instanceof HttpResponse response) {
+                    written.add(response);
+                }
+                ReferenceCountUtil.safeRelease(msg);
+                promise.setSuccess();
+            }
+        });
+        return written;
+    }
+
+    private static SessionContext startRequest(EmbeddedChannel channel, String protocol) {
+        SessionContext ctx = new SessionContext();
+        HttpRequestMessage request = new HttpRequestMessageImpl(
+                ctx,
+                protocol,
+                "GET",
+                "/",
+                null,
+                new Headers(),
+                "192.168.0.2",
+                "https",
+                7002,
+                "localhost",
+                new LocalAddress("interim"),
+                false);
+        request.storeInboundRequest();
+        channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
+        DefaultHttpRequest nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
+        channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
+        return ctx;
+    }
+
+    private static HttpResponseMessage response(SessionContext ctx, EmbeddedChannel channel, int status) {
+        HttpResponseMessageImpl response =
+                new HttpResponseMessageImpl(ctx, ClientRequestReceiver.getRequestFromChannel(channel), status);
+        response.setHeaders(new Headers());
+        return response;
     }
 }

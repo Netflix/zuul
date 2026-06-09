@@ -396,8 +396,7 @@ class ProxyEndpointTest {
 
     @Test
     void multiple1xxResponsesBeforeFinalResponseAreAllForwarded() {
-        proxyEndpoint.responseFromOrigin(
-                new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROCESSING));
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROCESSING));
         proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
 
         proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
@@ -407,6 +406,15 @@ class ProxyEndpointTest {
 
         verify(proxyEndpoint, times(3)).invokeNext(any(HttpResponseMessage.class));
         assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
+    }
+
+    @Test
+    void interimResponseTrailingLastContentIsNotForwarded() {
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        // the empty terminator that Netty emits after a 1xx must be dropped, not forwarded to the client
+        verify(chc, never()).fireChannelRead(any());
     }
 
     private void createResponse(HttpResponseStatus status) {

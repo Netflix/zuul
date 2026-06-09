@@ -436,11 +436,14 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         if (chunk instanceof LastHttpContent) {
             if (pendingInterimResponse) {
                 // This empty LastHttpContent is the tail of a 1xx interim response; the origin connection
-                // must stay open for the real final response that follows.
+                // must stay open for the real final response that follows. Drop it instead of forwarding:
+                // the interim response carries no body, so a stray terminator would corrupt the client
+                // stream (HTTP/1.1) or close it early via an endStream DATA frame (HTTP/2).
                 pendingInterimResponse = false;
-            } else {
-                unlinkFromOrigin();
+                ReferenceCountUtil.safeRelease(chunk);
+                return;
             }
+            unlinkFromOrigin();
         }
 
         if (responseFilters != null) {
