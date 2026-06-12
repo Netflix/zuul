@@ -368,6 +368,55 @@ class ProxyEndpointTest {
         return DiscoveryResult.from(instanceInfo, true);
     }
 
+    // --- 1xx interim response tests ---
+
+    @Test
+    void interimResponseIsSwallowedWithoutForwardingOrStartingResponse() {
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+
+        // 1xx is swallowed: nothing is forwarded to the client and the response cycle has not started
+        verify(proxyEndpoint, never()).invokeNext(any(HttpResponseMessage.class));
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isFalse();
+    }
+
+    @Test
+    void finalResponseIsForwardedAfterSwallowedInterimResponse() {
+        // 1xx from origin: HttpResponse(103) then empty LastHttpContent
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        // Real 200 arrives next — must still be routed to the client
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+        // only the final 200 is forwarded; the 103 was swallowed
+        verify(proxyEndpoint, times(1)).invokeNext(any(HttpResponseMessage.class));
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
+    }
+
+    @Test
+    void multipleInterimResponsesAreSwallowedBeforeFinalResponse() {
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.PROCESSING));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+
+        // both 1xx responses are swallowed; only the final 200 is forwarded
+        verify(proxyEndpoint, times(1)).invokeNext(any(HttpResponseMessage.class));
+        assertThat(proxyEndpoint.startedSendingResponseToClient).isTrue();
+    }
+
+    @Test
+    void interimResponseTrailingLastContentIsNotForwarded() {
+        proxyEndpoint.responseFromOrigin(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.EARLY_HINTS));
+        proxyEndpoint.invokeNext(LastHttpContent.EMPTY_LAST_CONTENT);
+
+        // the empty terminator that Netty emits after a 1xx must be dropped, not forwarded to the client
+        verify(chc, never()).fireChannelRead(any());
+    }
+
     private void createResponse(HttpResponseStatus status) {
         response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
     }
