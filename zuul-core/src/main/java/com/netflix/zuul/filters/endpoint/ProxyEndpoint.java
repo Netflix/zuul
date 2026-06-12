@@ -860,18 +860,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
 
     /**
      * Swallows 1xx interim responses (100 Continue, 102 Processing, 103 Early Hints) rather than relaying
-     * them to the client. We have no use case that requires propagating informational responses, and
-     * forwarding them is not free: an interim response would otherwise traverse the outbound filter chain
-     * (whose progress state is single-slot per filter type in the {@link SessionContext}, so it cannot run
-     * twice per request without clobbering the final response), pick up terminal-response headers, and need
-     * special framing on both the HTTP/1.1 and HTTP/2 client paths. Swallowing avoids all of that and mirrors
-     * how Zuul already answers the client's {@code Expect: 100-continue} itself instead of relaying it.
+     * them to the client.
      *
-     * <p>The security fix this protects is unaffected: the connection is not returned to the pool here, and
-     * the lifecycle handlers keep it open for the real terminal response (they suppress SESSION_COMPLETE on a
-     * 1xx). {@code pendingInterimResponse} tells {@link #filterResponseChunk} to drop the empty
-     * {@code LastHttpContent} that Netty emits after every 1xx rather than treating it as the end of the
-     * response.
+     * <p>Note: the connection is not returned to the pool here, and the lifecycle handlers keep it open for the real
+     * terminal response (they suppress SESSION_COMPLETE on a 1xx). {@code pendingInterimResponse} tells
+     * {@link #filterResponseChunk} to drop the empty {@code LastHttpContent} that Netty emits after every 1xx rather
+     * than treating it as the end of the response.
      */
     private void handleInterimResponse(HttpResponse originResponse) {
         pendingInterimResponse = true;
