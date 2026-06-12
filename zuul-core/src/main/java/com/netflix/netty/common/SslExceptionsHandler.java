@@ -20,7 +20,7 @@ import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +44,31 @@ public class SslExceptionsHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // In certain cases, depending on the client, these stack traces can get very deep.
         // We intentionally avoid propagating this up the pipeline, to avoid verbose disk logging.
-        if (cause.getCause() instanceof SSLHandshakeException) {
-            logger.debug("SSL handshake failed on channel {}", ctx.channel(), cause);
-            registry.counter("server.ssl.exception.swallowed", "cause", "SSLHandshakeException")
+        SSLException sslException = findSslException(cause);
+        if (sslException != null) {
+            logger.debug("SSL exception swallowed on channel {}", ctx.channel(), cause);
+            registry.counter(
+                            "server.ssl.exception.swallowed",
+                            "cause",
+                            sslException.getClass().getSimpleName())
                     .increment();
         } else {
             super.exceptionCaught(ctx, cause);
         }
+    }
+
+    // SSL errors raised during decode arrive wrapped in a DecoderException,
+    // so the SSLException is not the top-level cause
+    private static SSLException findSslException(Throwable cause) {
+        Throwable current = cause;
+        while (current != null) {
+            if (current instanceof SSLException sslException) {
+                return sslException;
+            }
+
+            current = current.getCause();
+        }
+
+        return null;
     }
 }
