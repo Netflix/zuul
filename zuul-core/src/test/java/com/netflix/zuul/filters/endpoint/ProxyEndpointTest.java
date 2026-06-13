@@ -51,12 +51,14 @@ import com.netflix.zuul.origins.NettyOrigin;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportItem;
 import com.netflix.zuul.passport.PassportState;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.local.LocalAddress;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -156,6 +158,51 @@ class ProxyEndpointTest {
         // when retrying a response, the request body reader should have it's indexes reset
         proxyEndpoint.handleOriginNonSuccessResponse(response, discoveryResult);
         assertThat(new String(request.getBody(), UTF_8)).isEqualTo("Hello There");
+    }
+
+    @Test
+    void bufferedBodyReplayGivesEachOriginAttemptIndependentReaderIndex() {
+        // Each origin attempt/retry must get its own reader index over the shared buffered body.
+        // With a "plain" retain, it shares one ByteBuf across attempts, so when a retry drains it the
+        // first attempt's netty CoalescingBufferQueue is left with readableBytes > 0 and
+        // nothing to produce - so results in an empty-frame OOM (netty #11959)
+        EmbeddedChannel attempt1 = new EmbeddedChannel();
+        EmbeddedChannel attempt2 = new EmbeddedChannel();
+
+        ProxyEndpoint.writeBufferedBodyContent(request, attempt1);
+        ProxyEndpoint.writeBufferedBodyContent(request, attempt2);
+        attempt1.flush();
+        attempt2.flush();
+
+        // the retry's origin fully consumes the body it was handed, exactly as netty advances the reader index
+        // while wrapping the DATA frame
+        consumeAndRelease(attempt2);
+
+        // the first (slow) attempt must still see the full body - its reader index independent of the retry's
+        assertThat(readContentAndRelease(attempt1)).isEqualTo("Hello There");
+
+        request.disposeBufferedBody();
+        attempt1.finishAndReleaseAll();
+        attempt2.finishAndReleaseAll();
+    }
+
+    private static void consumeAndRelease(EmbeddedChannel channel) {
+        HttpContent chunk;
+        while ((chunk = channel.readOutbound()) != null) {
+            ByteBuf content = chunk.content();
+            content.skipBytes(content.readableBytes());
+            chunk.release();
+        }
+    }
+
+    private static String readContentAndRelease(EmbeddedChannel channel) {
+        StringBuilder body = new StringBuilder();
+        HttpContent chunk;
+        while ((chunk = channel.readOutbound()) != null) {
+            body.append(chunk.content().toString(UTF_8));
+            chunk.release();
+        }
+        return body.toString();
     }
 
     @Test
