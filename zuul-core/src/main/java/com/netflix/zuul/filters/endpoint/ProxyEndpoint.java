@@ -646,7 +646,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override for custom metrics or processing
     }
 
-    private static void writeBufferedBodyContent(HttpRequestMessage zuulRequest, Channel channel) {
+    protected void writeBufferedBodyContent(HttpRequestMessage zuulRequest, Channel channel) {
         zuulRequest.getBodyContents().forEach((chunk) -> {
             channel.write(chunk.retain());
         });
