@@ -165,7 +165,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
         return false;
     }
 
-    private static void writeBufferedBodyContent(HttpResponseMessage zuulResponse, Channel channel) {
+    protected void writeBufferedBodyContent(HttpResponseMessage zuulResponse, Channel channel) {
         zuulResponse.getBodyContents().forEach(chunk -> channel.write(chunk.retain()));
     }
 
