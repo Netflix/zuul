@@ -23,10 +23,8 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.ReferenceCountUtil;
-import java.util.Objects;
 
 /**
  * @author michaels
@@ -68,19 +66,19 @@ public final class HttpServerLifecycleChannelHandler extends HttpLifecycleChanne
             } finally {
                 if (msg instanceof LastHttpContent) {
 
-                    boolean dontFireCompleteYet = false;
+                    // Handle case of 100 CONTINUE (or other interim 1xx responses), where the server sends an initial
+                    // 1xx status response to indicate to the client that it can continue sending the initial request
+                    // body. i.e. in this case we don't want to consider the state to be COMPLETE until after the 2nd
+                    // response.
+                    HttpResponse resp;
                     if (msg instanceof HttpResponse httpResponse) {
-                        // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to
-                        // client
-                        // that it can continue sending the initial request body.
-                        // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd
-                        // response.
-                        if (Objects.equals(httpResponse.status(), HttpResponseStatus.CONTINUE)) {
-                            dontFireCompleteYet = true;
-                        }
+                        resp = httpResponse;
+                    } else {
+                        // 1xx responses forwarded from the origin are often forwarded as two separate pipeline events
+                        // (the actual 1xx response and an empty LastHttpContent). In that case, httpResponse is null.
+                        resp = ctx.channel().attr(ATTR_HTTP_RESP).get();
                     }
-
-                    if (!dontFireCompleteYet) {
+                    if (!isInterimResponse(resp)) {
                         if (promise.isDone()) {
                             fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
                         } else {

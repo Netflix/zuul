@@ -22,18 +22,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -126,6 +132,74 @@ class ClientTimeoutHandlerTest {
         public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
             seenWrite = true;
             super.write(ctx, msg, promise);
+        }
+    }
+
+    @Nested
+    @ExtendWith(MockitoExtension.class)
+    class InboundHandlerTest {
+
+        @Mock
+        private PooledConnection pooledConnection;
+
+        private EmbeddedChannel channel;
+
+        @BeforeEach
+        public void setup() {
+            channel = new EmbeddedChannel();
+            channel.attr(PooledConnection.CHANNEL_ATTR).set(pooledConnection);
+            channel.pipeline().addLast(new ClientTimeoutHandler.InboundHandler());
+        }
+
+        @AfterEach
+        public void cleanup() {
+            channel.finishAndReleaseAll();
+        }
+
+        @Test
+        public void removeReadTimeoutHandlerOnTerminalResponse() {
+            simulateInboundResponse(HttpResponseStatus.OK);
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection).removeReadTimeoutHandler();
+        }
+
+        @Test
+        public void doesNotRemoveReadTimeoutHandlerOn1xxInterimResponse() {
+            simulateInboundResponse(HttpResponseStatus.EARLY_HINTS);
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection, never()).removeReadTimeoutHandler();
+        }
+
+        @Test
+        public void removesReadTimeoutHandlerOn101SwitchingProtocols() {
+            // 101 is numerically a 1xx but is terminal (e.g. a WebSocket upgrade), so the timeout must be disarmed.
+            simulateInboundResponse(HttpResponseStatus.SWITCHING_PROTOCOLS);
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection).removeReadTimeoutHandler();
+        }
+
+        @Test
+        public void removesReadTimeoutHandlerAfterTerminalResponseFollowing1xx() {
+            simulateInboundResponse(HttpResponseStatus.EARLY_HINTS);
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection, never()).removeReadTimeoutHandler();
+
+            simulateInboundResponse(HttpResponseStatus.OK);
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection).removeReadTimeoutHandler();
+        }
+
+        @Test
+        public void removesReadTimeoutHandlerIfAttrNotSet() {
+            // null attr is treated as non-informational - safe default is to disarm the timeout
+            channel.writeInbound(new DefaultLastHttpContent());
+            verify(pooledConnection).removeReadTimeoutHandler();
+        }
+
+        private void simulateInboundResponse(HttpResponseStatus status) {
+            // simulate what HttpClientLifecycleChannelHandler does upstream in the pipeline
+            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, status);
+            channel.attr(HttpLifecycleChannelHandler.ATTR_HTTP_RESP).set(response);
         }
     }
 }

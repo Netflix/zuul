@@ -48,7 +48,10 @@ public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandl
                 super.channelRead(ctx, msg);
             } finally {
                 if (msg instanceof LastHttpContent) {
-                    fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+                    HttpResponse resp = ctx.channel().attr(ATTR_HTTP_RESP).get();
+                    if (!isInterimResponse(resp)) {
+                        fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+                    }
                 }
             }
         }

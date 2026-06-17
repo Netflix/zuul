@@ -16,10 +16,12 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.util.AttributeKey;
 import java.time.Duration;
@@ -43,9 +45,15 @@ public final class ClientTimeoutHandler {
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
             try {
                 if (msg instanceof LastHttpContent) {
-                    LOG.debug(
-                            "[{}] Removing read timeout handler", ctx.channel().id());
-                    PooledConnection.getFromChannel(ctx.channel()).removeReadTimeoutHandler();
+                    HttpResponse resp = ctx.channel()
+                            .attr(HttpLifecycleChannelHandler.ATTR_HTTP_RESP)
+                            .get();
+                    if (!HttpLifecycleChannelHandler.isInterimResponse(resp)) {
+                        LOG.debug(
+                                "[{}] Removing read timeout handler",
+                                ctx.channel().id());
+                        PooledConnection.getFromChannel(ctx.channel()).removeReadTimeoutHandler();
+                    }
                 }
             } finally {
                 super.channelRead(ctx, msg);
