@@ -657,9 +657,12 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         // override for custom metrics or processing
     }
 
-    private static void writeBufferedBodyContent(HttpRequestMessage zuulRequest, Channel channel) {
+    protected void writeBufferedBodyContent(HttpRequestMessage zuulRequest, Channel channel) {
         zuulRequest.getBodyContents().forEach((chunk) -> {
-            channel.write(chunk.retain());
+            // Ensure the chunk is retained via retainedDuplicate, not retain - each attempt/retry needs
+            // its own reader index over the shared body, otherwise overlapping attempts
+            // share one index and can desync netty's H2 flow controller into OOM (netty #11959)
+            channel.write(chunk.retainedDuplicate());
         });
     }
 
