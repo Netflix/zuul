@@ -25,6 +25,7 @@ import com.netflix.client.ClientException;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.config.DynamicIntegerSetProperty;
 import com.netflix.netty.common.ByteBufUtil;
+import com.netflix.netty.common.HttpLifecycleChannelHandler;
 import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.Filter;
 import com.netflix.zuul.context.CommonContextKeys;
@@ -137,6 +138,7 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     protected MethodBinding<?> methodBinding;
     protected HttpResponseMessage zuulResponse;
     protected boolean startedSendingResponseToClient;
+    private boolean pendingInterimResponse;
     protected Duration timeLeftForAttempt;
 
     /* Individual retry related state */
@@ -432,6 +434,15 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
         }
 
         if (chunk instanceof LastHttpContent) {
+            if (pendingInterimResponse) {
+                // This empty LastHttpContent is the tail of a 1xx interim response; the origin connection
+                // must stay open for the real final response that follows. Drop it instead of forwarding:
+                // the interim response carries no body, so a stray terminator would corrupt the client
+                // stream (HTTP/1.1) or close it early via an endStream DATA frame (HTTP/2).
+                pendingInterimResponse = false;
+                ReferenceCountUtil.safeRelease(chunk);
+                return;
+            }
             unlinkFromOrigin();
         }
 
@@ -841,11 +852,27 @@ public class ProxyEndpoint extends SyncZuulFilterAdapter<HttpRequestMessage, Htt
     }
 
     private void processResponseFromOrigin(HttpResponse originResponse) {
-        if (originResponse.status().code() >= 500) {
+        if (HttpLifecycleChannelHandler.isInterimResponse(originResponse)) {
+            handleInterimResponse(originResponse);
+        } else if (originResponse.status().code() >= 500) {
             handleOriginNonSuccessResponse(originResponse, chosenServer.get());
         } else {
             handleOriginSuccessResponse(originResponse, chosenServer.get());
         }
+    }
+
+    /**
+     * Swallows 1xx interim responses (100 Continue, 102 Processing, 103 Early Hints) rather than relaying
+     * them to the client.
+     *
+     * <p>Note: the connection is not returned to the pool here, and the lifecycle handlers keep it open for the real
+     * terminal response (they suppress SESSION_COMPLETE on a 1xx). {@code pendingInterimResponse} tells
+     * {@link #filterResponseChunk} to drop the empty {@code LastHttpContent} that Netty emits after every 1xx rather
+     * than treating it as the end of the response.
+     */
+    private void handleInterimResponse(HttpResponse originResponse) {
+        pendingInterimResponse = true;
+        releasePartialResponse(originResponse);
     }
 
     protected void handleOriginSuccessResponse(HttpResponse originResponse, DiscoveryResult chosenServer) {
