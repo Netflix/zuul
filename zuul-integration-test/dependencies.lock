@@ -529,19 +529,19 @@
     },
     "jmhRuntimeClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-linux-aarch64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-linux-x86_64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-osx-aarch64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-osx-x86_64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -676,6 +676,9 @@
             ],
             "locked": "4.2.15.Final"
         },
+        "io.netty:netty-parent": {
+            "locked": "4.2.15.Final"
+        },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -734,13 +737,13 @@
             "locked": "3.18.0"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.2"
+            "locked": "2.25.4"
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.25.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.7"
         },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
@@ -749,19 +752,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -770,16 +773,16 @@
             "locked": "1.0.0"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.13.4"
+            "locked": "1.14.3"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"
@@ -1025,7 +1028,7 @@
     },
     "testCompileClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
             "firstLevelTransitive": [
@@ -1135,6 +1138,9 @@
             ],
             "locked": "4.2.15.Final"
         },
+        "io.netty:netty-parent": {
+            "locked": "4.2.15.Final"
+        },
         "io.netty:netty-transport": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1166,7 +1172,7 @@
             "locked": "3.18.0"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.7"
         },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
@@ -1178,16 +1184,16 @@
             "locked": "1.0.0"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.13.4"
+            "locked": "1.14.3"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"
@@ -1196,7 +1202,7 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "2.0.16"
+            "locked": "2.0.17"
         },
         "org.wiremock:wiremock": {
             "locked": "3.10.0"
@@ -1204,19 +1210,19 @@
     },
     "testRuntimeClasspath": {
         "com.aayushatharva.brotli4j:brotli4j": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-linux-aarch64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-linux-x86_64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-osx-aarch64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.aayushatharva.brotli4j:native-osx-x86_64": {
-            "locked": "1.16.0"
+            "locked": "1.23.0"
         },
         "com.fasterxml.jackson.core:jackson-core": {
             "firstLevelTransitive": [
@@ -1351,6 +1357,9 @@
             ],
             "locked": "4.2.15.Final"
         },
+        "io.netty:netty-parent": {
+            "locked": "4.2.15.Final"
+        },
         "io.netty:netty-tcnative-boringssl-static": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
@@ -1409,13 +1418,13 @@
             "locked": "3.18.0"
         },
         "org.apache.logging.log4j:log4j-core": {
-            "locked": "2.25.2"
+            "locked": "2.25.4"
         },
         "org.apache.logging.log4j:log4j-slf4j2-impl": {
             "locked": "2.25.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.7"
         },
         "org.awaitility:awaitility": {
             "locked": "4.2.2"
@@ -1424,19 +1433,19 @@
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.bouncycastle:bcprov-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.bouncycastle:bctls-jdk18on": {
             "firstLevelTransitive": [
                 "com.netflix.zuul:zuul-core"
             ],
-            "locked": "1.83"
+            "locked": "1.84"
         },
         "org.jspecify:jspecify": {
             "firstLevelTransitive": [
@@ -1445,16 +1454,16 @@
             "locked": "1.0.0"
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.13.4"
+            "locked": "5.14.3"
         },
         "org.junit.platform:junit-platform-launcher": {
-            "locked": "1.13.4"
+            "locked": "1.14.3"
         },
         "org.mockito:mockito-junit-jupiter": {
             "locked": "5.13.0"

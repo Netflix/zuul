@@ -19,13 +19,16 @@ dependencies {
 //    testImplementation "io.netty.incubator:netty-transport-native-io_uring::linux-x86_64"
     testImplementation "org.slf4j:slf4j-api:2.0.16"
     testImplementation 'org.apache.commons:commons-lang3:3.18.0'
-    testImplementation "com.aayushatharva.brotli4j:brotli4j:$versions_brotli4j"
+    // netty-parent owns the brotli4j version, so brotli4j tracks whatever the current
+    // netty release depends on without pinning it ourselves.
+    testImplementation platform("io.netty:netty-parent:${versions_netty}")
+    testImplementation "com.aayushatharva.brotli4j:brotli4j"
     testRuntimeOnly 'org.apache.logging.log4j:log4j-core:2.25.2'
     testRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.25.2'
-    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64:$versions_brotli4j"
-    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64:$versions_brotli4j"
-    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-x86_64:$versions_brotli4j"
-    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-aarch64:$versions_brotli4j"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-aarch64"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-osx-x86_64"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-x86_64"
+    testRuntimeOnly "com.aayushatharva.brotli4j:native-linux-aarch64"
     testRuntimeOnly "io.netty:netty-transport-native-epoll::linux-x86_64"
 }
 
