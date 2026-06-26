@@ -22,7 +22,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.endpoint.ProxyEndpoint;
+import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.http.HttpRequestMessage;
+import com.netflix.zuul.message.util.HttpRequestBuilder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -31,6 +35,7 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
@@ -168,6 +173,30 @@ class OriginResponseReceiverTest {
 
         verify(proxyEndpoint, never()).invokeNext(any(HttpContent.class));
         assertThat(chunk.refCnt()).isEqualTo(0);
+    }
+
+    @Test
+    void buildOriginHttpRequestCopiesAllHeadersPreservingCaseAndMultiValue() {
+        Headers headers = new Headers();
+        headers.add("X-Custom-Header", "one");
+        headers.add("Accept", "value-a");
+        headers.add("Accept", "value-b");
+        HttpRequestMessage zuulRequest = new HttpRequestBuilder(new SessionContext())
+                .withHeaders(headers)
+                .build();
+
+        EmbeddedChannel outboundChannel = new EmbeddedChannel(new OriginResponseReceiver(proxyEndpoint));
+        assertThat(outboundChannel.writeOutbound(zuulRequest)).isTrue();
+
+        HttpRequest nettyRequest = outboundChannel.readOutbound();
+        assertThat(nettyRequest).isNotNull();
+
+        // original (non-normalised) case is preserved
+        assertThat(nettyRequest.headers().names()).contains("X-Custom-Header");
+        assertThat(nettyRequest.headers().get("X-Custom-Header")).isEqualTo("one");
+
+        // every entry is copied, including repeated names
+        assertThat(nettyRequest.headers().getAll("Accept")).containsExactly("value-a", "value-b");
     }
 
     private void verifyProxyLink(OriginResponseReceiver receiver, boolean expectedNull) throws Exception {

@@ -27,7 +27,6 @@ import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.RequestCompleteHandler;
 import com.netflix.zuul.context.CommonContextKeys;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.message.Header;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpResponseMessage;
@@ -186,9 +185,7 @@ public class ClientResponseWriter extends ChannelInboundHandlerAdapter {
 
         // Now set all of the response headers - note this is a multi-set in keeping with HTTP semantics
         HttpHeaders nativeHeaders = nativeResponse.headers();
-        for (Header entry : zuulResp.getHeaders().entries()) {
-            nativeHeaders.add(entry.getKey(), entry.getValue());
-        }
+        zuulResp.getHeaders().forEach((name, value) -> nativeHeaders.add(name, value));
 
         // Netty does not automatically add Content-Length or Transfer-Encoding: chunked. So we add here if missing.
         if (!HttpUtil.isContentLengthSet(nativeResponse) && !HttpUtil.isTransferEncodingChunked(nativeResponse)) {

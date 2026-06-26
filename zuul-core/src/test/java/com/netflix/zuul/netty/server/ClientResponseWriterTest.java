@@ -143,6 +143,51 @@ class ClientResponseWriterTest {
     }
 
     @Test
+    void buildHttpResponseCopiesAllHeadersToNettyResponse() {
+        ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
+        EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
+
+        AtomicReference<HttpResponse> nettyResp = new AtomicReference<>();
+        channel.pipeline().addFirst(new ChannelOutboundHandlerAdapter() {
+            @Override
+            public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+                if (msg instanceof HttpResponse response) {
+                    nettyResp.set(response);
+                }
+                ReferenceCountUtil.safeRelease(msg);
+            }
+        });
+
+        SessionContext ctx = new SessionContext();
+        HttpRequestMessage request = new HttpRequestBuilder(ctx).build();
+        request.storeInboundRequest();
+
+        Headers headers = new Headers();
+        headers.add("X-Custom-Header", "one");
+        headers.add("Set-Cookie", "a=1");
+        headers.add("Set-Cookie", "b=2");
+        HttpResponseMessageImpl response = new HttpResponseMessageImpl(ctx, request, 200);
+        response.setHeaders(headers);
+
+        channel.attr(ClientRequestReceiver.ATTR_ZUUL_REQ).set(request);
+        DefaultHttpRequest nettyRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        ctx.set(CommonContextKeys.NETTY_HTTP_REQUEST, nettyRequest);
+
+        channel.pipeline().fireUserEventTriggered(new HttpLifecycleChannelHandler.StartEvent(nettyRequest));
+        channel.writeInbound(response);
+
+        HttpResponse out = nettyResp.get();
+        assertThat(out).isNotNull();
+
+        // original (non-normalised) case is preserved
+        assertThat(out.headers().names()).contains("X-Custom-Header");
+        assertThat(out.headers().get("X-Custom-Header")).isEqualTo("one");
+
+        // every entry is copied, including repeated names
+        assertThat(out.headers().getAll("Set-Cookie")).containsExactly("a=1", "b=2");
+    }
+
+    @Test
     void doesNotWriteSecondResponseWhenFlushReentersChannelRead() {
         ClientResponseWriter responseWriter = new ClientResponseWriter(new BasicRequestCompleteHandler());
         EmbeddedChannel channel = new EmbeddedChannel(responseWriter);
