@@ -80,6 +80,35 @@ class HttpResponseMessageImplTest {
     }
 
     @Test
+    void removeExistingSetCookieReportsWhetherAnyWereRemovedAndKeepsOtherHeaders() {
+        response.getHeaders().add("Set-Cookie", "c1=1234; Path=/");
+        response.getHeaders().add("X-Other", "keep");
+
+        assertThat(response.removeExistingSetCookie("c1")).isTrue();
+        assertThat(response.removeExistingSetCookie("c1")).isFalse();
+        assertThat(response.getHeaders().getFirst("X-Other")).isEqualTo("keep");
+    }
+
+    @Test
+    void removeExistingSetCookieOnlyMatchesTheExactCookieNamePrefix() {
+        response.getHeaders().add("Set-Cookie", "c1=1234; Path=/");
+        response.getHeaders().add("Set-Cookie", "c12=5678; Path=/");
+
+        response.removeExistingSetCookie("c1");
+
+        assertThat(response.hasSetCookieWithName("c1")).isFalse();
+        assertThat(response.hasSetCookieWithName("c12")).isTrue();
+    }
+
+    @Test
+    void removeExistingSetCookieMatchesSetCookieHeaderCaseInsensitively() {
+        response.getHeaders().add("set-cookie", "c1=1234; Path=/");
+
+        assertThat(response.removeExistingSetCookie("c1")).isTrue();
+        assertThat(response.hasSetCookieWithName("c1")).isFalse();
+    }
+
+    @Test
     void testContentLengthHeaderHasCorrectValue() {
         assertThat(response.getHeaders().getAll("Content-Length").size()).isEqualTo(0);
 
