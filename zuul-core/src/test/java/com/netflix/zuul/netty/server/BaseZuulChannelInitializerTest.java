@@ -19,10 +19,10 @@ package com.netflix.zuul.netty.server;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.netflix.config.ConfigurationManager;
-import com.netflix.netty.common.Http1ConnectionCloseHandler;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.close.Http1ConnectionCloseHandler;
 import com.netflix.netty.common.metrics.PerEventLoopMetricsChannelHandler;
 import com.netflix.netty.common.proxyprotocol.ElbProxyProtocolChannelHandler;
 import com.netflix.netty.common.throttle.MaxInboundConnectionsHandler;

@@ -14,8 +14,9 @@
  *      limitations under the License.
  */
 
-package com.netflix.netty.common;
+package com.netflix.netty.common.close;
 
+import com.google.common.base.Preconditions;
 import com.netflix.config.CachedDynamicLongProperty;
 import com.netflix.zuul.netty.ChannelUtils;
 import com.netflix.zuul.util.HttpUtils;
@@ -23,6 +24,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import java.time.Clock;
 import java.util.concurrent.ThreadLocalRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,55 +34,59 @@ import org.slf4j.LoggerFactory;
  * Date: 7/17/17
  * Time: 10:54 AM
  */
-public abstract class AbstrHttpConnectionExpiryHandler extends ChannelOutboundHandlerAdapter {
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstrHttpConnectionExpiryHandler.class);
+public abstract class AbstractHttpConnectionExpiryHandler extends ChannelOutboundHandlerAdapter {
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractHttpConnectionExpiryHandler.class);
     protected static final CachedDynamicLongProperty MAX_EXPIRY_DELTA =
             new CachedDynamicLongProperty("server.connection.expiry.delta", 20 * 1000);
 
-    protected final ConnectionCloseType connectionCloseType;
     protected final int maxRequests;
     protected final int maxExpiry;
     protected final long connectionStartTime;
     protected final long connectionExpiryTime;
 
     protected int requestCount = 0;
-    protected int maxRequestsUnderBrownout = 0;
 
-    public AbstrHttpConnectionExpiryHandler(
-            ConnectionCloseType connectionCloseType, int maxRequestsUnderBrownout, int maxRequests, int maxExpiry) {
-        this.connectionCloseType = connectionCloseType;
-        this.maxRequestsUnderBrownout = maxRequestsUnderBrownout;
+    private final Clock clock;
+
+    public AbstractHttpConnectionExpiryHandler(int maxRequests, int maxExpiry) {
+        this(maxRequests, maxExpiry, Clock.systemUTC());
+    }
+
+    AbstractHttpConnectionExpiryHandler(int maxRequests, int maxExpiry, Clock clock) {
+        Preconditions.checkArgument(maxExpiry > 0);
+        Preconditions.checkArgument(maxRequests > 0);
+
+        this.clock = clock;
         this.maxRequests = maxRequests;
-
         this.maxExpiry = maxExpiry;
-        this.connectionStartTime = System.currentTimeMillis();
+        this.connectionStartTime = clock.millis();
         long randomDelta = ThreadLocalRandom.current().nextLong(MAX_EXPIRY_DELTA.get());
         this.connectionExpiryTime = connectionStartTime + maxExpiry + randomDelta;
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (isResponseHeaders(msg)) {
+        if (isTerminalResponse(msg)) {
             // Update the request count attribute for this channel.
             requestCount++;
 
             if (isConnectionExpired(ctx.channel())) {
-                // Flag this channel to be closed after response is written.
                 Channel channel = HttpUtils.getMainChannel(ctx);
-                ctx.channel()
-                        .attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE)
-                        .set(ctx.newPromise());
-                ConnectionCloseType.setForChannel(channel, connectionCloseType);
+                promise.addListener(f -> {
+                    channel.pipeline()
+                            .fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.EXPIRATION));
+                });
             }
         }
 
-        super.write(ctx, msg, promise);
+        ctx.write(msg, promise);
     }
 
     protected boolean isConnectionExpired(Channel channel) {
-        boolean expired = requestCount >= maxRequests(channel) || System.currentTimeMillis() > connectionExpiryTime;
+        long now = clock.millis();
+        boolean expired = requestCount >= maxRequests || now > connectionExpiryTime;
         if (expired) {
-            long lifetime = System.currentTimeMillis() - connectionStartTime;
+            long lifetime = now - connectionStartTime;
             LOG.info(
                     "Connection is expired. requestCount={}, lifetime={}, {}",
                     requestCount,
@@ -90,13 +96,5 @@ public abstract class AbstrHttpConnectionExpiryHandler extends ChannelOutboundHa
         return expired;
     }
 
-    protected abstract boolean isResponseHeaders(Object msg);
-
-    protected int maxRequests(Channel ch) {
-        if (HttpChannelFlags.IN_BROWNOUT.get(ch)) {
-            return this.maxRequestsUnderBrownout;
-        } else {
-            return this.maxRequests;
-        }
-    }
+    protected abstract boolean isTerminalResponse(Object msg);
 }

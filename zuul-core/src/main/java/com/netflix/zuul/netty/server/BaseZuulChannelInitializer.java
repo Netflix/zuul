@@ -19,8 +19,6 @@ package com.netflix.zuul.netty.server;
 import com.netflix.config.CachedDynamicBooleanProperty;
 import com.netflix.config.CachedDynamicIntProperty;
 import com.netflix.netty.common.CloseOnIdleStateHandler;
-import com.netflix.netty.common.Http1ConnectionCloseHandler;
-import com.netflix.netty.common.Http1ConnectionExpiryHandler;
 import com.netflix.netty.common.HttpRequestReadTimeoutHandler;
 import com.netflix.netty.common.HttpServerLifecycleChannelHandler;
 import com.netflix.netty.common.SourceAddressChannelHandler;
@@ -29,6 +27,8 @@ import com.netflix.netty.common.accesslog.AccessLogChannelHandler;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.close.Http1ConnectionCloseHandler;
+import com.netflix.netty.common.close.Http1ConnectionExpiryHandler;
 import com.netflix.netty.common.metrics.EventLoopGroupMetrics;
 import com.netflix.netty.common.metrics.HttpBodySizeRecordingChannelHandler;
 import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
@@ -268,11 +268,9 @@ public abstract class BaseZuulChannelInitializer extends ChannelInitializer<Chan
             pipeline.addLast(new Http1FramingEnforcingHandler());
         }
 
-        pipeline.addLast(new Http1ConnectionCloseHandler());
+        pipeline.addLast(new Http1ConnectionCloseHandler(registry));
         pipeline.addLast(
-                "conn_expiry_handler",
-                new Http1ConnectionExpiryHandler(
-                        maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry));
+                "conn_expiry_handler", new Http1ConnectionExpiryHandler(maxRequestsPerConnection, connectionExpiry));
     }
 
     protected HttpServerCodec createHttpServerCodec() {

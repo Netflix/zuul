@@ -16,32 +16,33 @@
 
 package com.netflix.zuul.netty.server;
 
-import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.config.DynamicBooleanProperty;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.StatusChangeEvent;
-import com.netflix.netty.common.ConnectionCloseChannelAttributes;
-import com.netflix.netty.common.ConnectionCloseType;
+import com.netflix.netty.common.close.CloseReason;
+import com.netflix.netty.common.close.ConnectionCloseEvent;
+import com.netflix.netty.common.close.ConnectionCloseEvent.GracefulDelayed;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import io.netty.util.concurrent.ScheduledFuture;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO: Change this class to be an instance per-port.
- * So that then the configuration can be different per-port, which is need for the combined FTL/Cloud clusters.
- * <p>
  * User: michaels@netflix.com
  * Date: 3/6/17
  * Time: 12:36 PM
  */
+@NullMarked
 public class ClientConnectionsShutdown {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientConnectionsShutdown.class);
@@ -52,16 +53,14 @@ public class ClientConnectionsShutdown {
     private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT =
             new DynamicIntProperty("server.outofservice.close.timeout", 30);
 
-    public enum ShutdownType {
-        OUT_OF_SERVICE,
-        SHUTDOWN
-    }
-
     private final ChannelGroup channels;
     private final EventExecutor executor;
+
+    @Nullable
     private final EurekaClient discoveryClient;
 
-    public ClientConnectionsShutdown(ChannelGroup channels, EventExecutor executor, EurekaClient discoveryClient) {
+    public ClientConnectionsShutdown(
+            ChannelGroup channels, EventExecutor executor, @Nullable EurekaClient discoveryClient) {
         this.channels = channels;
         this.executor = executor;
         this.discoveryClient = discoveryClient;
@@ -72,20 +71,22 @@ public class ClientConnectionsShutdown {
     }
 
     private void initDiscoveryListener() {
+        if (discoveryClient == null) {
+            return;
+        }
+
         this.discoveryClient.registerEventListener(event -> {
             if (event instanceof StatusChangeEvent sce) {
 
                 LOG.info("Received {}", sce);
 
-                if (sce.getPreviousStatus() == InstanceInfo.InstanceStatus.UP
-                        && (sce.getStatus() == InstanceInfo.InstanceStatus.OUT_OF_SERVICE
-                                || sce.getStatus() == InstanceInfo.InstanceStatus.DOWN)) {
-                    // TODO - Also should stop accepting any new client connections now too?
-
+                if (sce.getPreviousStatus() == InstanceStatus.UP
+                        && (sce.getStatus() == InstanceStatus.OUT_OF_SERVICE
+                                || sce.getStatus() == InstanceStatus.DOWN)) {
                     // Schedule to gracefully close all the client connections.
                     if (ENABLED.get()) {
                         executor.schedule(
-                                () -> gracefullyShutdownClientChannels(ShutdownType.OUT_OF_SERVICE),
+                                () -> gracefullyShutdownClientChannels(CloseReason.OUT_OF_SERVICE),
                                 DELAY_AFTER_OUT_OF_SERVICE_MS.get(),
                                 TimeUnit.MILLISECONDS);
                     }
@@ -94,25 +95,26 @@ public class ClientConnectionsShutdown {
         });
     }
 
-    public Promise<Void> gracefullyShutdownClientChannels() {
-        return gracefullyShutdownClientChannels(ShutdownType.SHUTDOWN);
+    public Promise<@Nullable Void> gracefullyShutdownClientChannels() {
+        return gracefullyShutdownClientChannels(CloseReason.SHUTDOWN);
     }
 
-    Promise<Void> gracefullyShutdownClientChannels(ShutdownType shutdownType) {
+    Promise<@Nullable Void> gracefullyShutdownClientChannels(CloseReason closeReason) {
         // Mark all active connections to be closed after next response sent.
         LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
 
         // racy situation if new connections are still coming in, but any channels created after newCloseFuture will
         // be closed during the force close stage
         ChannelGroupFuture closeFuture = channels.newCloseFuture();
+        ConnectionCloseEvent closeEvent = new GracefulDelayed(closeReason, getJitterFor(closeReason));
         for (Channel channel : channels) {
-            flagChannelForClose(channel, shutdownType);
+            channel.pipeline().fireUserEventTriggered(closeEvent);
         }
 
-        LOG.info("Setting up scheduled task for {} with shutdownType: {}", closeFuture, shutdownType);
-        Promise<Void> promise = executor.newPromise();
+        LOG.info("Setting up scheduled task for {} with shutdownType: {}", closeFuture, closeReason);
+        Promise<@Nullable Void> promise = executor.newPromise();
         Runnable cancelTimeoutTask;
-        if (shutdownType == ShutdownType.SHUTDOWN) {
+        if (closeReason == CloseReason.SHUTDOWN) {
             ScheduledFuture<?> timeoutTask = executor.schedule(
                     () -> {
                         LOG.warn("Force closing remaining {} active client channels.", channels.size());
@@ -147,9 +149,11 @@ public class ClientConnectionsShutdown {
         return promise;
     }
 
-    protected void flagChannelForClose(Channel channel, ShutdownType shutdownType) {
-        ConnectionCloseType.setForChannel(channel, ConnectionCloseType.DELAYED_GRACEFUL);
-        ChannelPromise closePromise = channel.pipeline().newPromise();
-        channel.attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE).set(closePromise);
+    protected Duration getJitterFor(CloseReason reason) {
+        // configurable..
+        return switch (reason) {
+            case OUT_OF_SERVICE -> Duration.ofMinutes(10);
+            default -> Duration.ofSeconds(60);
+        };
     }
 }

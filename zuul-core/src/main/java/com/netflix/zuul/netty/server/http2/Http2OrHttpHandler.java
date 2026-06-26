@@ -18,7 +18,9 @@ package com.netflix.zuul.netty.server.http2;
 
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.close.Http2ConnectionCloseHandler;
 import com.netflix.netty.common.http2.DynamicHttp2FrameLogger;
+import com.netflix.spectator.api.Spectator;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import com.netflix.zuul.netty.server.psk.TlsPskHandler;
 import io.netty.channel.ChannelHandler;
@@ -176,9 +178,13 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
         if (catchConnectionErrors) {
             pipeline.addLast(new Http2ConnectionErrorHandler());
         }
+        pipeline.addLast(new Http2ConnectionCloseHandler(Spectator.globalRegistry()));
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
+        if (pipeline.get(Http2ConnectionCloseHandler.class) != null) {
+            pipeline.remove(Http2ConnectionCloseHandler.class);
+        }
         addHttpHandlerFn.accept(pipeline);
     }
 
