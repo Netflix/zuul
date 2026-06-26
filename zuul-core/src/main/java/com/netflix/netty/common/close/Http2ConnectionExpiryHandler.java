@@ -14,26 +14,31 @@
  *      limitations under the License.
  */
 
-package com.netflix.netty.common;
+package com.netflix.netty.common.close;
 
 import io.netty.channel.ChannelHandler;
+import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
 /**
- * This needs to be inserted in the pipeline after the Http2 Codex, but before any h2-&gt;h1 conversion.
+ * Stream level handler used for tracking expiration on the parent connection. This handler is safe to share
+ * between streams, but each channel must have a unique instance
+ *
+ * This needs to be inserted in the stream pipeline before any h2->h1 conversion.
  *
  * User: michaels@netflix.com
  * Date: 2/8/17
  * Time: 9:58 AM
  */
 @ChannelHandler.Sharable
-public class Http2ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler {
-    public Http2ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry) {
-        super(ConnectionCloseType.DELAYED_GRACEFUL, maxRequestsUnderBrownout, maxRequests, maxExpiry);
+public class Http2ConnectionExpiryHandler extends AbstractHttpConnectionExpiryHandler {
+    public Http2ConnectionExpiryHandler(int maxRequests, int maxExpiry) {
+        super(maxRequests, maxExpiry);
     }
 
     @Override
-    protected boolean isResponseHeaders(Object msg) {
-        return msg instanceof Http2HeadersFrame;
+    protected boolean isTerminalResponse(Object msg) {
+        return (msg instanceof Http2HeadersFrame headersFrame && headersFrame.isEndStream())
+                || (msg instanceof Http2DataFrame dataFrame && dataFrame.isEndStream());
     }
 }

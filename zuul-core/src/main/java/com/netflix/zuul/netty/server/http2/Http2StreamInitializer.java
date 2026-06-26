@@ -16,9 +16,8 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.netflix.netty.common.Http2ConnectionCloseHandler;
-import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.netty.common.close.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
@@ -65,20 +64,17 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
     private final Consumer<ChannelPipeline> addHttpHandlerFn;
 
     private final Http2MetricsChannelHandlers http2MetricsChannelHandlers;
-    private final Http2ConnectionCloseHandler connectionCloseHandler;
     private final Http2ConnectionExpiryHandler connectionExpiryHandler;
 
     public Http2StreamInitializer(
             Channel parent,
             Consumer<ChannelPipeline> addHttpHandlerFn,
             Http2MetricsChannelHandlers http2MetricsChannelHandlers,
-            Http2ConnectionCloseHandler connectionCloseHandler,
             Http2ConnectionExpiryHandler connectionExpiryHandler) {
         this.parent = parent;
         this.addHttpHandlerFn = addHttpHandlerFn;
 
         this.http2MetricsChannelHandlers = http2MetricsChannelHandlers;
-        this.connectionCloseHandler = connectionCloseHandler;
         this.connectionExpiryHandler = connectionExpiryHandler;
     }
 
@@ -94,7 +90,6 @@ public class Http2StreamInitializer extends ChannelInboundHandlerAdapter {
 
     protected void addHttp2StreamSpecificHandlers(ChannelPipeline pipeline) {
         pipeline.addLast("h2_max_requests_per_conn", connectionExpiryHandler);
-        pipeline.addLast("h2_conn_close", connectionCloseHandler);
 
         pipeline.addLast(http2ResetFrameHandler);
         pipeline.addLast("h2_downgrader", new Http2StreamFrameToHttpObjectCodec(true));

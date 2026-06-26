@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Netflix, Inc.
+ * Copyright 2026 Netflix, Inc.
  *
  *      Licensed under the Apache License, Version 2.0 (the "License");
  *      you may not use this file except in compliance with the License.
@@ -14,22 +14,10 @@
  *      limitations under the License.
  */
 
-package com.netflix.netty.common;
+package com.netflix.netty.common.close;
 
-import io.netty.handler.codec.http.HttpResponse;
-
-/**
- * User: michaels@netflix.com
- * Date: 2/8/17
- * Time: 9:58 AM
- */
-public class Http1ConnectionExpiryHandler extends AbstrHttpConnectionExpiryHandler {
-    public Http1ConnectionExpiryHandler(int maxRequests, int maxRequestsUnderBrownout, int maxExpiry) {
-        super(ConnectionCloseType.GRACEFUL, maxRequestsUnderBrownout, maxRequests, maxExpiry);
-    }
-
-    @Override
-    protected boolean isResponseHeaders(Object msg) {
-        return msg instanceof HttpResponse;
-    }
+public enum CloseReason {
+    OUT_OF_SERVICE,
+    SHUTDOWN,
+    EXPIRATION
 }

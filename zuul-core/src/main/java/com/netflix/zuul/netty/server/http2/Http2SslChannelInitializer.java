@@ -16,11 +16,10 @@
 
 package com.netflix.zuul.netty.server.http2;
 
-import com.netflix.netty.common.Http2ConnectionCloseHandler;
-import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.SwallowSomeHttp2ExceptionsHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.close.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.zuul.logging.Http2FrameLoggingPerClientIpHandler;
@@ -81,12 +80,6 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         SslHandler sslHandler = sslContext.newHandler(ch.alloc());
         sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 
-        //        SSLParameters sslParameters = new SSLParameters();
-        //        AlgorithmConstraints algoConstraints = new AlgorithmConstraints();
-        //        sslParameters.setAlgorithmConstraints(algoConstraints);
-        //        sslParameters.setUseCipherSuitesOrder(true);
-        //        sslHandler.engine().setSSLParameters(sslParameters);
-
         if (LOG.isDebugEnabled()) {
             LOG.debug(
                     "ssl protocols supported: {}",
@@ -118,19 +111,14 @@ public final class Http2SslChannelInitializer extends BaseZuulChannelInitializer
         Http2MetricsChannelHandlers http2MetricsChannelHandlers =
                 new Http2MetricsChannelHandlers(registry, "server", "http2-" + http2SslMetricId);
 
-        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
-        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(
-                maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
+        Http2ConnectionExpiryHandler connectionExpiryHandler =
+                new Http2ConnectionExpiryHandler(maxRequestsPerConnection, connectionExpiry);
 
         pipeline.addLast(
                 "http2CodecSwapper",
                 new Http2OrHttpHandler(
                         new Http2StreamInitializer(
-                                ch,
-                                this::http1Handlers,
-                                http2MetricsChannelHandlers,
-                                connectionCloseHandler,
-                                connectionExpiryHandler),
+                                ch, this::http1Handlers, http2MetricsChannelHandlers, connectionExpiryHandler),
                         channelConfig,
                         cp -> {
                             http1Codec(cp);
