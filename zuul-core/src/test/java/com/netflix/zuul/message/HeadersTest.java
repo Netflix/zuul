@@ -109,6 +109,23 @@ class HeadersTest {
     }
 
     @Test
+    void forEach() {
+        Headers headers = new Headers();
+        headers.add("ViA", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Cookie", "frizzle=Frazzle");
+        Map<String, List<String>> result = new LinkedHashMap<>();
+
+        headers.forEach((k, v) ->
+                result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
+
+        assertThat(result)
+                .containsExactly(
+                        entry("ViA", Collections.singletonList("duct")),
+                        entry("Cookie", Arrays.asList("this=that", "frizzle=Frazzle")));
+    }
+
+    @Test
     void forEachNormalised() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
@@ -123,6 +140,41 @@ class HeadersTest {
                 .containsExactly(
                         entry("via", Collections.singletonList("duct")),
                         entry("cookie", Arrays.asList("this=that", "frizzle=Frazzle")));
+    }
+
+    @Test
+    void anyMatchNormalised() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+
+        assertThat(headers.anyMatchNormalised((name, value) -> name.equals("cookie")))
+                .isTrue();
+        assertThat(headers.anyMatchNormalised((name, value) -> value.equals("duct")))
+                .isTrue();
+        assertThat(headers.anyMatchNormalised((name, value) -> name.isEmpty())).isFalse();
+    }
+
+    @Test
+    void anyMatchNormalisedIsEmptyForNoHeaders() {
+        assertThat(new Headers().anyMatchNormalised((name, value) -> true)).isFalse();
+    }
+
+    @Test
+    void anyMatchNormalisedStopsAtFirstMatch() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Host", "example.com");
+
+        List<String> visited = new ArrayList<>();
+        boolean matched = headers.anyMatchNormalised((name, value) -> {
+            visited.add(name);
+            return name.equals("cookie");
+        });
+
+        assertThat(matched).isTrue();
+        assertThat(visited).containsExactly("via", "cookie");
     }
 
     @Test
@@ -549,6 +601,47 @@ class HeadersTest {
         assertThat(removed).isTrue();
         assertThat(headers.getAll("cOoKie")).containsExactly("frizzle=frazzle");
         assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void removeAllNormalised() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("COOkie", "frizzle=frazzle");
+        headers.add("Soup", "salad");
+
+        boolean removed = headers.removeAllNormalised((name, value) -> name.equals("cookie"));
+
+        assertThat(removed).isTrue();
+        assertThat(headers.contains("cookie")).isFalse();
+        assertThat(headers.getFirst("Via")).isEqualTo("duct");
+        assertThat(headers.getFirst("Soup")).isEqualTo("salad");
+        assertThat(headers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void removeAllNormalisedCanFilterOnValue() {
+        Headers headers = new Headers();
+        headers.add("Accept", "application/json");
+        headers.add("Accept", "text/plain");
+
+        boolean removed = headers.removeAllNormalised((name, value) -> value.equals("text/plain"));
+
+        assertThat(removed).isTrue();
+        assertThat(headers.getAll("accept")).containsExactly("application/json");
+    }
+
+    @Test
+    void removeAllNormalisedReturnsFalseWhenNothingMatches() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Soup", "salad");
+
+        boolean removed = headers.removeAllNormalised((name, value) -> name.equals("cookie"));
+
+        assertThat(removed).isFalse();
+        assertThat(headers.size()).isEqualTo(2);
     }
 
     @Test
