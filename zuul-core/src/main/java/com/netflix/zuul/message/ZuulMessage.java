@@ -62,6 +62,10 @@ public interface ZuulMessage extends Cloneable {
      * Returns the message body.
      * This is the entire buffered body, regardless of whether the underlying body chunks have been read or not.
      * If there is no message body, this returns {@code null}.
+     * <br/>
+     * Callers MUST NOT mutate the returned array. Implementations may return a cached, shared instance that is
+     * reused across calls until the body is next modified, so an in-place mutation would corrupt every other
+     * reader's view of the body.
      */
     @Nullable
     byte[] getBody();

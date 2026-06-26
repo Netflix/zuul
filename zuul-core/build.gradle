@@ -79,6 +79,7 @@ test {
 }
 
 // ./gradlew --no-daemon clean :zuul-core:jmh
+// run a single benchmark: ./gradlew --no-daemon :zuul-core:jmh -Pbenchmark=ZuulMessageBodyBenchmark
 jmh {
     profilers = ["gc"]
     timeOnIteration = "1s"
@@ -86,6 +87,9 @@ jmh {
     fork = 1
     warmupIterations = 10
     iterations = 5
+    if (project.hasProperty("benchmark")) {
+        includes = [project.property("benchmark").toString()]
+    }
     // Not sure why duplicate classes are on the path.  Something Nebula related I think.
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }

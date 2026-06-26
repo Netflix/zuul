@@ -48,6 +48,10 @@ public class ZuulMessageImpl implements ZuulMessage {
     private boolean bodyBufferedCompletely;
     private final List<HttpContent> bodyChunks;
 
+    // cache of the materialized body; nulled on any body mutation so repeat getBody() reads
+    // skip re-walking and re-copying bodyChunks - only set once the body is fully buffered
+    private byte[] cachedBody;
+
     public ZuulMessageImpl(SessionContext context) {
         this(context, new Headers());
     }
@@ -96,6 +100,7 @@ public class ZuulMessageImpl implements ZuulMessage {
     @Override
     public void bufferBodyContents(HttpContent chunk) {
         setHasBody(true);
+        cachedBody = null; // body content changed
         ByteBufUtil.touch(chunk, "ZuulMessage buffering body content.");
         bodyChunks.add(chunk);
         if (chunk instanceof LastHttpContent) {
@@ -138,12 +143,16 @@ public class ZuulMessageImpl implements ZuulMessage {
     @Override
     public String getBodyAsText() {
         byte[] body = getBody();
-        return (body != null && body.length > 0) ? new String(getBody(), Charsets.UTF_8) : null;
+        return (body != null && body.length > 0) ? new String(body, Charsets.UTF_8) : null;
     }
 
     @Override
     public byte[] getBody() {
-        if (bodyChunks.size() == 0) {
+        if (cachedBody != null) {
+            return cachedBody;
+        }
+
+        if (bodyChunks.isEmpty()) {
             return null;
         }
 
@@ -156,6 +165,12 @@ public class ZuulMessageImpl implements ZuulMessage {
             content.getBytes(0, body, offset, len);
             offset += len;
         }
+
+        // only cache a fully-buffered body; an incomplete body may still receive more chunks
+        if (bodyBufferedCompletely) {
+            cachedBody = body;
+        }
+
         return body;
     }
 
@@ -192,6 +207,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     @Override
     public void disposeBufferedBody() {
+        cachedBody = null;
         bodyChunks.forEach(chunk -> {
             if ((chunk != null) && (chunk.refCnt() > 0)) {
                 ByteBufUtil.touch(chunk, "ZuulMessage disposing buffered body");
@@ -218,6 +234,9 @@ public class ZuulMessageImpl implements ZuulMessage {
                 if (refCnt > 0) {
                     origChunk.release(refCnt);
                 }
+
+                // swapping a chunk changes the body - drop the cache
+                cachedBody = null;
             }
         }
     }

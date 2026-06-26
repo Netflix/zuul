@@ -18,8 +18,12 @@ package com.netflix.zuul.message;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.netflix.zuul.context.SessionContext;
+import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
@@ -223,5 +227,141 @@ class ZuulMessageImplTest {
         msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("".getBytes(UTF_8))));
         assertThat(msg.getBodyLength()).isEqualTo(0);
         assertThat(msg.getBody().length).isEqualTo(0);
+    }
+
+    @Test
+    void repeatReadsOfCompleteBodyReturnTheSameCachedArray() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+
+        byte[] first = msg.getBody();
+        byte[] second = msg.getBody();
+
+        assertThat(second).isSameAs(first);
+        assertThat(new String(first, UTF_8)).isEqualTo(TEXT1);
+    }
+
+    @Test
+    void bodyCacheRefreshesAfterSetBody() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+        byte[] first = msg.getBody();
+
+        msg.setBody(TEXT2.getBytes(UTF_8));
+        byte[] second = msg.getBody();
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(new String(first, UTF_8)).isEqualTo(TEXT1);
+        assertThat(new String(second, UTF_8)).isEqualTo(TEXT2);
+    }
+
+    @Test
+    void bodyCacheRefreshesAfterSetBodyAsText() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBodyAsText(TEXT1);
+        byte[] first = msg.getBody();
+
+        msg.setBodyAsText(TEXT2);
+        byte[] second = msg.getBody();
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(new String(second, UTF_8)).isEqualTo(TEXT2);
+    }
+
+    @Test
+    void bodyCacheRefreshesAfterBufferingMoreContent() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer("Hello World!".getBytes(UTF_8))));
+        byte[] first = msg.getBody();
+        assertThat(new String(first, UTF_8)).isEqualTo(TEXT1);
+
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(" Bye".getBytes(UTF_8))));
+        byte[] second = msg.getBody();
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(new String(second, UTF_8)).isEqualTo("Hello World! Bye");
+    }
+
+    @Test
+    void bodyCacheClearedAfterDisposeBufferedBody() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+        assertThat(msg.getBody()).isNotNull();
+
+        msg.disposeBufferedBody();
+
+        assertThat(msg.getBody()).isNull();
+    }
+
+    @Test
+    void bodyCacheRefreshesAfterRunBufferedBodyContentThroughFilter() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(TEXT1.getBytes(UTF_8))));
+        byte[] first = msg.getBody();
+        assertThat(new String(first, UTF_8)).isEqualTo(TEXT1);
+
+        ZuulFilter<?, ?> filter = mock(ZuulFilter.class);
+        when(filter.filterName()).thenReturn("rewrite");
+        when(filter.processContentChunk(any(), any()))
+                .thenReturn(new DefaultLastHttpContent(Unpooled.copiedBuffer(TEXT2.getBytes(UTF_8))));
+
+        msg.runBufferedBodyContentThroughFilter(filter);
+        byte[] second = msg.getBody();
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(new String(second, UTF_8)).isEqualTo(TEXT2);
+    }
+
+    @Test
+    void bodyCacheSurvivesPassThroughFilter() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultLastHttpContent(Unpooled.copiedBuffer(TEXT1.getBytes(UTF_8))));
+        byte[] first = msg.getBody();
+
+        ZuulFilter<?, ?> filter = mock(ZuulFilter.class);
+        when(filter.filterName()).thenReturn("passthrough");
+        when(filter.processContentChunk(any(), any())).thenAnswer(invocation -> invocation.getArgument(1));
+
+        msg.runBufferedBodyContentThroughFilter(filter);
+
+        assertThat(msg.getBody()).isSameAs(first);
+    }
+
+    @Test
+    void cloneHasIndependentBodyCache() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+        byte[] original = msg.getBody();
+
+        ZuulMessage clone = msg.clone();
+        assertThat(new String(clone.getBody(), UTF_8)).isEqualTo(TEXT1);
+        assertThat(clone.getBody()).isNotSameAs(original);
+
+        // mutating the original's body must not leak into the clone
+        msg.setBody(TEXT2.getBytes(UTF_8));
+        assertThat(new String(msg.getBody(), UTF_8)).isEqualTo(TEXT2);
+        assertThat(new String(clone.getBody(), UTF_8)).isEqualTo(TEXT1);
+    }
+
+    @Test
+    void getBodyAsTextReflectsLatestBodyAfterMutation() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.setBody(TEXT1.getBytes(UTF_8));
+        assertThat(msg.getBodyAsText()).isEqualTo(TEXT1);
+
+        msg.setBody(TEXT2.getBytes(UTF_8));
+        assertThat(msg.getBodyAsText()).isEqualTo(TEXT2);
+    }
+
+    @Test
+    void incompleteBodyIsNotCached() {
+        ZuulMessage msg = new ZuulMessageImpl(new SessionContext(), new Headers());
+        msg.bufferBodyContents(new DefaultHttpContent(Unpooled.copiedBuffer("Hello ".getBytes(UTF_8))));
+
+        byte[] first = msg.getBody();
+        byte[] second = msg.getBody();
+
+        assertThat(second).isNotSameAs(first);
+        assertThat(new String(first, UTF_8)).isEqualTo("Hello ");
     }
 }

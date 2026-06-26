@@ -84,7 +84,7 @@ subprojects {
         options.compilerArgs << "-Werror"
 
         options.errorprone {
-            enabled = !name.contains('Jmh') && !name.contains('Test')
+            enabled = !name.toLowerCase().contains('jmh') && !name.toLowerCase().contains('test')
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:OnlyNullMarked", "true")
             errorproneArgs.addAll(
