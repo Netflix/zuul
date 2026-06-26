@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -162,6 +163,17 @@ public final class Headers {
     }
 
     /**
+     * Iterates over the header entries with the given consumer. The first argument will be the original
+     * (non-normalised) header name as returned by {@link HeaderName#getName()}, the second the value. Do not
+     * modify the headers during iteration.
+     */
+    public void forEach(BiConsumer<? super String, ? super String> entryConsumer) {
+        for (int i = 0; i < size(); i++) {
+            entryConsumer.accept(originalName(i), value(i));
+        }
+    }
+
+    /**
      * Iterates over the header entries with the given consumer.  The first argument will be the normalised header
      * name as returned by {@link HeaderName#getNormalised()}.  The second argument will be the value.  Do not modify
      * the headers during iteration.
@@ -170,6 +182,19 @@ public final class Headers {
         for (int i = 0; i < size(); i++) {
             entryConsumer.accept(name(i), value(i));
         }
+    }
+
+    /**
+     * Returns {@code true} if any header entry matches the predicate, stopping at the first match. The first
+     * argument is the normalised header name as returned by {@link HeaderName#getNormalised()}, the second the value.
+     */
+    public boolean anyMatchNormalised(BiPredicate<? super String, ? super String> predicate) {
+        for (int i = 0; i < size(); i++) {
+            if (predicate.test(name(i), value(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -463,6 +488,31 @@ public final class Headers {
         int w = 0;
         for (int r = 0; r < size(); r++) {
             if (filter.test(new SimpleImmutableEntry<>(new HeaderName(originalName(r), name(r)), value(r)))) {
+                removed = true;
+            } else {
+                originalName(w, originalName(r));
+                name(w, name(r));
+                value(w, value(r));
+                w++;
+            }
+        }
+        truncate(w);
+        return removed;
+    }
+
+    /**
+     * Removes all header entries for which the predicate returns {@code true}. The first argument is the normalised
+     * header name as returned by {@link HeaderName#getNormalised()}, the second the value. Do not access the headers
+     * from inside the {@link BiPredicate#test} body.
+     *
+     * @return if any elements were removed.
+     */
+    public boolean removeAllNormalised(BiPredicate<? super String, ? super String> filter) {
+        Objects.requireNonNull(filter, "filter");
+        boolean removed = false;
+        int w = 0;
+        for (int r = 0; r < size(); r++) {
+            if (filter.test(name(r), value(r))) {
                 removed = true;
             } else {
                 originalName(w, originalName(r));
