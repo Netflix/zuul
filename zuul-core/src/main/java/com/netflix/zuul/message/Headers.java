@@ -23,6 +23,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * An abstraction over a collection of http headers. Allows multiple headers with same name, and header names are
@@ -452,6 +454,40 @@ public final class Headers {
         for (int i = 0; i < headers.size(); i++) {
             addNormal(headers.originalName(i), headers.name(i), headers.value(i));
         }
+    }
+
+    /**
+     * Replaces all values for each name present in entries with the values from entries, leaving
+     * names absent from entries untouched. Multiple values per name are preserved, so unlike
+     * repeated set(...) calls this does not collapse multi-valued headers such as Set-Cookie.
+     */
+    public void setAll(@NonNull Iterable<? extends Map.Entry<String, String>> entries) {
+        int existing = size();
+        Set<String> replacedNames = new HashSet<>();
+        for (Map.Entry<String, String> entry : entries) {
+            String normalName = HeaderName.normalize(entry.getKey());
+            replacedNames.add(normalName);
+            addNormal(entry.getKey(), normalName, entry.getValue());
+        }
+
+        if (size() == existing) {
+            return;
+        }
+
+        // compact away the pre-existing entries we just replaced, keeping the newly appended ones
+        int w = 0;
+        for (int r = 0; r < size(); r++) {
+            if (r < existing && replacedNames.contains(name(r))) {
+                continue;
+            }
+
+            originalName(w, originalName(r));
+            name(w, name(r));
+            value(w, value(r));
+            w++;
+        }
+
+        truncate(w);
     }
 
     /**

@@ -525,6 +525,88 @@ class HeadersTest {
     }
 
     @Test
+    void setAllPreservesMultipleValues() {
+        Headers headers = new Headers();
+        headers.add("Set-Cookie", "a");
+
+        headers.setAll(List.of(Map.entry("Set-Cookie", "b"), Map.entry("Set-Cookie", "c")));
+
+        assertThat(headers.getAll("set-cookie")).containsExactly("b", "c");
+        assertThat(headers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void setAllReplacesCaseInsensitively() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("COOKie", "this=that");
+        headers.add("cookIE", "frizzle=frazzle");
+
+        headers.setAll(List.of(Map.entry("cookie", "a=b")));
+
+        assertThat(headers.getAll("Cookie")).containsExactly("a=b");
+        assertThat(headers.getFirst("Via")).isEqualTo("duct");
+        assertThat(headers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void setAllEmptyReplacementIsNoOp() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+
+        List<Map.Entry<String, String>> empty = List.of();
+        headers.setAll(empty);
+
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.getAll("Cookie")).containsExactly("this=that");
+        assertThat(headers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void setAllReplacesOnlyNamesPresentInReplacement() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Soup", "salad");
+
+        headers.setAll(List.of(Map.entry("Cookie", "a=b")));
+
+        assertThat(headers.getAll("Cookie")).containsExactly("a=b");
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.getAll("Soup")).containsExactly("salad");
+        assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void setAllAddsNamesAbsentFromTarget() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+
+        headers.setAll(List.of(Map.entry("X-Netflix-Awesome", "true"), Map.entry("X-Netflix-Awesome", "yes")));
+
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.getAll("x-netflix-awesome")).containsExactly("true", "yes");
+        assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void setAllReplacesInterleavedNamesAndKeepsUntouchedInPlace() {
+        Headers headers = new Headers();
+        headers.add("A", "1");
+        headers.add("B", "2");
+        headers.add("C", "3");
+        headers.add("B", "4");
+
+        headers.setAll(List.of(Map.entry("A", "x"), Map.entry("C", "y"), Map.entry("C", "z")));
+
+        assertThat(headers.getAll("A")).containsExactly("x");
+        assertThat(headers.getAll("B")).containsExactly("2", "4");
+        assertThat(headers.getAll("C")).containsExactly("y", "z");
+        assertThat(headers.size()).isEqualTo(5);
+    }
+
+    @Test
     void remove() {
         Headers headers = new Headers();
         headers.add("Via", "duct");
