@@ -19,6 +19,7 @@ package com.netflix.zuul.netty.filter;
 import com.netflix.zuul.FilterConstraint;
 import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.message.ZuulMessage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,11 +37,10 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class FilterConstraints {
 
-    @SuppressWarnings("unchecked")
-    private static final Class<? extends FilterConstraint>[] NO_CONSTRAINTS = new Class[0];
+    private static final List<FilterConstraint> NONE = List.of();
 
     private final Map<Class<? extends FilterConstraint>, FilterConstraint> lookup;
-    private final Map<String, Class<? extends FilterConstraint>[]> filterConstraints;
+    private final Map<Class<?>, List<FilterConstraint>> filterConstraints;
 
     public FilterConstraints(List<FilterConstraint> constraints) {
         this.lookup = constraints.stream().collect(Collectors.toUnmodifiableMap(FilterConstraint::getClass, c -> c));
@@ -51,19 +51,35 @@ public class FilterConstraints {
      * Checks if any {@link FilterConstraint}'s are active for the given msg
      */
     public boolean isConstrained(ZuulMessage msg, ZuulFilter<?, ?> filter) {
-        Class<? extends FilterConstraint>[] constraints =
-                filterConstraints.computeIfAbsent(filter.getClass().getName(), f -> {
-                    Class<? extends FilterConstraint>[] filterConstraints = filter.constraints();
-                    return filterConstraints != null ? filterConstraints : NO_CONSTRAINTS;
-                });
+        List<FilterConstraint> constraints = this.filterConstraints.get(filter.getClass());
+        if (constraints == null) {
+            // avoid computeIfAbsent directly so the lambda isn't allocated when constraints are already cached
+            constraints = this.filterConstraints.computeIfAbsent(filter.getClass(), k -> this.resolve(filter));
+        }
 
-        for (Class<? extends FilterConstraint> constraint : constraints) {
-            FilterConstraint filterConstraint = lookup.get(constraint);
-            if (filterConstraint != null && filterConstraint.isConstrained(msg)) {
+        for (FilterConstraint constraint : constraints) {
+            if (constraint.isConstrained(msg)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private List<FilterConstraint> resolve(ZuulFilter<?, ?> filter) {
+        Class<? extends FilterConstraint>[] declared = filter.constraints();
+        if (declared == null || declared.length == 0) {
+            return NONE;
+        }
+
+        List<FilterConstraint> resolvedConstraints = new ArrayList<>(declared.length);
+        for (Class<? extends FilterConstraint> c : declared) {
+            FilterConstraint fc = this.lookup.get(c);
+            if (fc != null) {
+                resolvedConstraints.add(fc);
+            }
+        }
+
+        return List.copyOf(resolvedConstraints);
     }
 }
