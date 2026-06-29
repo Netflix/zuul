@@ -27,6 +27,7 @@ import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.util.HttpRequestBuilder;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,6 +118,21 @@ class FilterConstraintsTest {
         // the initial constraints are cached the new one should be ignored
         when(filter.constraints()).thenReturn(new Class[] {ConstraintA.class, ConstraintB.class});
         assertThat(limited.isConstrained(request, filter)).isFalse();
+    }
+
+    @Test
+    void resolvesConstraintInstancesOnce() {
+        AtomicInteger constraintsCalls = new AtomicInteger();
+        ZuulFilter<?, ?> filter = mock(ZuulFilter.class);
+        when(filter.constraints()).thenAnswer(invocation -> {
+            constraintsCalls.incrementAndGet();
+            return new Class[] {ConstraintA.class};
+        });
+
+        filterConstraints.isConstrained(request, filter);
+        filterConstraints.isConstrained(request, filter);
+
+        assertThat(constraintsCalls.get()).isEqualTo(1);
     }
 
     private ZuulFilter<?, ?> mockFilter(Class<? extends FilterConstraint>[] constraints) {
