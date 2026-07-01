@@ -66,7 +66,7 @@ class Http1ConnectionCloseHandlerTest {
     }
 
     @Test
-    void handleCloseEventClosesImmediatelyWhenNoRequestInFlight() {
+    void onCloseEventClosesImmediatelyWhenNoRequestInFlight() {
         channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
 
         assertThat(channel.isOpen()).isFalse();

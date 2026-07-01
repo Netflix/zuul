@@ -34,6 +34,16 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Base handler responsible for orchestrating {@link ConnectionCloseEvent}s. This handler should always be on the
+ * connection channel handler pipeline (i.e. the parent pipeline for http/2). Close implementation should be handled by
+ * concrete subclasses using {@link #onCloseEvent}.
+ *
+ * <p>Upon receiving a {@link ConnectionCloseEvent} this handler will eventually call
+ * {@link #onCloseEvent(ChannelHandlerContext, ConnectionCloseEvent)}, either immediately or after a jitter delay when
+ * the event carries one. {@link #onCloseEvent} is invoked at most once per handler. onCloseEvent is responsible for
+ * either closing a channel or starting a graceful close process. The method {@link this#scheduleCloseTimeout(Runnable, Channel)}
+ * should be used to ensure a close is actually triggered
+ *
  * @author Justin Guerra
  * @since 6/25/26
  */
@@ -46,10 +56,10 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
     private ConnectionCloseEvent closeEvent;
 
     @Nullable
-    protected ScheduledFuture<?> delayedClose;
+    protected ScheduledFuture<?> jitterFuture;
 
     @Nullable
-    protected ScheduledFuture<?> closeTimeout;
+    protected ScheduledFuture<?> forceCloseFuture;
 
     BaseConnectionCloseHandler(Registry registry) {
         this.registry = registry;
@@ -73,14 +83,14 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
 
     @Override
     public final void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (delayedClose != null) {
-            delayedClose.cancel(false);
-            delayedClose = null;
+        if (jitterFuture != null) {
+            jitterFuture.cancel(false);
+            jitterFuture = null;
         }
 
-        if (closeTimeout != null) {
-            closeTimeout.cancel(false);
-            closeTimeout = null;
+        if (forceCloseFuture != null) {
+            forceCloseFuture.cancel(false);
+            forceCloseFuture = null;
         }
 
         ctx.fireChannelInactive();
@@ -88,24 +98,14 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
 
     protected abstract String getProtocol();
 
-    protected abstract void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event);
-
-    protected void scheduleDelayedClose(
-            ChannelHandlerContext ctx, Runnable task, ConnectionCloseEvent.GracefulDelayed event) {
-        if (!ctx.channel().isActive() || delayedClose != null) {
-            return;
-        }
-
-        long jitter = ThreadLocalRandom.current().nextLong(event.maxJitter().toMillis());
-        delayedClose = ctx.executor().schedule(task, jitter, TimeUnit.MILLISECONDS);
-    }
+    protected abstract void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event);
 
     protected void scheduleCloseTimeout(Runnable closeTask, Channel channel) {
-        if (!channel.isActive() || closeTimeout != null) {
+        if (!channel.isActive() || forceCloseFuture != null) {
             return;
         }
 
-        closeTimeout = channel.eventLoop().schedule(closeTask, getCloseTimeout(channel), TimeUnit.SECONDS);
+        forceCloseFuture = channel.eventLoop().schedule(closeTask, getCloseTimeout(channel), TimeUnit.SECONDS);
     }
 
     protected int getPort(Channel channel) {
@@ -114,35 +114,8 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
         return port != null ? port : -1;
     }
 
-    private int getCloseTimeout(Channel channel) {
-        ChannelConfig channelConfig =
-                channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).get();
-        if (channelConfig == null) {
-            return CommonChannelConfigKeys.connCloseDelay.defaultValue();
-        }
-
-        return channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
-    }
-
-    protected void flagForClose(ConnectionCloseEvent event) {
-        this.closeEvent = event;
-    }
-
     protected boolean isFlaggedForClose() {
         return closeEvent != null;
-    }
-
-    protected void countFlagged(int port) {
-        if (closeEvent == null) {
-            return;
-        }
-
-        Id tags = registry.createId("server.connection.close.started")
-                .withTag("close_type", closeType(closeEvent))
-                .withTag("close_reason", closeEvent.reason().name())
-                .withTag("port", Integer.toString(port))
-                .withTag("protocol", getProtocol());
-        registry.counter(tags).increment();
     }
 
     protected void countHandled(int port, String trigger) {
@@ -157,6 +130,49 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
                 .withTag("port", Integer.toString(port))
                 .withTag("protocol", getProtocol());
         registry.counter(tags).increment();
+    }
+
+    private int getCloseTimeout(Channel channel) {
+        ChannelConfig channelConfig =
+                channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).get();
+        if (channelConfig == null) {
+            return CommonChannelConfigKeys.connCloseDelay.defaultValue();
+        }
+
+        return channelConfig.get(CommonChannelConfigKeys.connCloseDelay);
+    }
+
+    private void scheduleDelayedClose(
+            ChannelHandlerContext ctx, Runnable task, ConnectionCloseEvent.GracefulDelayed event) {
+        if (!ctx.channel().isActive() || jitterFuture != null) {
+            return;
+        }
+
+        long jitter = ThreadLocalRandom.current().nextLong(event.maxJitter().toMillis());
+        jitterFuture = ctx.executor().schedule(task, jitter, TimeUnit.MILLISECONDS);
+    }
+
+    private void countStarted(int port) {
+        if (closeEvent == null) {
+            return;
+        }
+
+        Id tags = registry.createId("server.connection.close.started")
+                .withTag("close_type", closeType(closeEvent))
+                .withTag("close_reason", closeEvent.reason().name())
+                .withTag("port", Integer.toString(port))
+                .withTag("protocol", getProtocol());
+        registry.counter(tags).increment();
+    }
+
+    private void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
+        if (isFlaggedForClose()) {
+            return;
+        }
+
+        closeEvent = event;
+        countStarted(getPort(ctx.channel()));
+        onCloseEvent(ctx, event);
     }
 
     private static String closeType(ConnectionCloseEvent event) {

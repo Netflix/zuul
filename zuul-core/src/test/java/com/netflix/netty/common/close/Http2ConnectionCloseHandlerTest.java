@@ -89,7 +89,7 @@ class Http2ConnectionCloseHandlerTest {
     }
 
     @Test
-    void handleCloseEventIsANoOpWhenAlreadyFlaggedForClose() {
+    void onCloseEventIsANoOpWhenAlreadyFlaggedForClose() {
         channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
         Http2GoAwayFrame firstGoaway = channel.readOutbound();
         firstGoaway.release();

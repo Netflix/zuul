@@ -26,14 +26,18 @@ class ConnectionCloseEventTest {
     @Test
     void gracefulDelayedRejectsZeroJitter() {
         assertThatThrownBy(() -> new ConnectionCloseEvent.GracefulDelayed(CloseReason.SHUTDOWN, Duration.ZERO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("maxJitter must be positive");
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void gracefulDelayedRejectsVerySmallJitter() {
+        assertThatThrownBy(() -> new ConnectionCloseEvent.GracefulDelayed(CloseReason.SHUTDOWN, Duration.ofNanos(1)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void gracefulDelayedRejectsNegativeJitter() {
         assertThatThrownBy(() -> new ConnectionCloseEvent.GracefulDelayed(CloseReason.SHUTDOWN, Duration.ofMillis(-1)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("maxJitter must be positive");
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

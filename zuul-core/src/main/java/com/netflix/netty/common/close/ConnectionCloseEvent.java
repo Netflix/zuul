@@ -35,8 +35,8 @@ public sealed interface ConnectionCloseEvent {
      */
     record GracefulDelayed(CloseReason reason, Duration maxJitter) implements ConnectionCloseEvent {
         public GracefulDelayed {
-            if (maxJitter.isZero() || maxJitter.isNegative()) {
-                throw new IllegalArgumentException("maxJitter must be positive but was " + maxJitter);
+            if (maxJitter.toMillis() < 1) {
+                throw new IllegalArgumentException("maxJitter must be at least 1 ms, but was " + maxJitter);
             }
         }
     }

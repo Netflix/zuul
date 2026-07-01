@@ -41,15 +41,7 @@ public class Http2ConnectionCloseHandler extends BaseConnectionCloseHandler {
     }
 
     @Override
-    protected void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
-        if (isFlaggedForClose()) {
-            return;
-        }
-        int port = getPort(ctx.channel());
-
-        flagForClose(event);
-        countFlagged(port);
-
+    protected void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
         /*
         First send a 'graceful shutdown' GOAWAY frame.
 
@@ -65,6 +57,7 @@ public class Http2ConnectionCloseHandler extends BaseConnectionCloseHandler {
 
         scheduleCloseTimeout(
                 () -> {
+                    countHandled(getPort(ctx.channel()), "timeout");
                     // In N secs time, throw an error that causes the Http2ConnectionHandler to send another GOAWAY
                     // frame (this time with accurate lastStreamId) and schedule a close after the window
                     Http2Exception h2e =

@@ -106,7 +106,7 @@ class BaseConnectionCloseHandlerTest {
 
         channel.runScheduledPendingTasks();
 
-        // the already-scheduled delayed task still runs, but handleCloseEvent's own guard suppresses it once flagged
+        // the already-scheduled delayed task still runs, but the base guard suppresses it once flagged
         assertThat(handler.handledEvents).containsExactly(immediate);
     }
 
@@ -132,7 +132,7 @@ class BaseConnectionCloseHandlerTest {
                 .fireUserEventTriggered(
                         new ConnectionCloseEvent.GracefulDelayed(CloseReason.OUT_OF_SERVICE, Duration.ofMillis(1)));
 
-        assertThat((Object) handler.delayedClose).isNull();
+        assertThat((Object) handler.jitterFuture).isNull();
     }
 
     @Test
@@ -140,13 +140,13 @@ class BaseConnectionCloseHandlerTest {
         channel.pipeline()
                 .fireUserEventTriggered(
                         new ConnectionCloseEvent.GracefulDelayed(CloseReason.OUT_OF_SERVICE, Duration.ofMillis(1)));
-        assertThat((Object) handler.delayedClose).isNotNull();
+        assertThat((Object) handler.jitterFuture).isNotNull();
 
         // fire channelInactive directly, bypassing EmbeddedChannel#close()'s internal drain of due
         // scheduled tasks, so the cancellation itself - not a lucky ordering - is what's under test
         channel.pipeline().fireChannelInactive();
 
-        assertThat((Object) handler.delayedClose).isNull();
+        assertThat((Object) handler.jitterFuture).isNull();
         channel.runScheduledPendingTasks();
         assertThat(handler.handledEvents).isEmpty();
     }
@@ -158,11 +158,11 @@ class BaseConnectionCloseHandlerTest {
                     throw new AssertionError("cancelled close timeout must not run");
                 },
                 channel);
-        assertThat((Object) handler.closeTimeout).isNotNull();
+        assertThat((Object) handler.forceCloseFuture).isNotNull();
 
         channel.pipeline().fireChannelInactive();
 
-        assertThat((Object) handler.closeTimeout).isNull();
+        assertThat((Object) handler.forceCloseFuture).isNull();
         channel.runScheduledPendingTasks();
     }
 
@@ -171,7 +171,7 @@ class BaseConnectionCloseHandlerTest {
         AtomicInteger runs = new AtomicInteger();
 
         handler.scheduleCloseTimeout(runs::incrementAndGet, channel);
-        assertThat((Object) handler.closeTimeout).isNotNull();
+        assertThat((Object) handler.forceCloseFuture).isNotNull();
         assertThat(runs).hasValue(0);
 
         channel.runScheduledPendingTasks();
@@ -200,7 +200,7 @@ class BaseConnectionCloseHandlerTest {
                 },
                 channel);
 
-        assertThat((Object) handler.closeTimeout).isNull();
+        assertThat((Object) handler.forceCloseFuture).isNull();
     }
 
     @Test
@@ -216,12 +216,10 @@ class BaseConnectionCloseHandlerTest {
     }
 
     @Test
-    void countFlaggedIsANoOpUntilFlaggedForClose() {
-        handler.countFlagged(PORT);
+    void startedCounterIsRecordedWhenACloseEventIsHandled() {
         assertThat(startedCount("GRACEFUL", CloseReason.SHUTDOWN)).isZero();
 
-        handler.flagForClose(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
-        handler.countFlagged(PORT);
+        channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
 
         assertThat(startedCount("GRACEFUL", CloseReason.SHUTDOWN)).isEqualTo(1);
     }
@@ -229,15 +227,12 @@ class BaseConnectionCloseHandlerTest {
     @Test
     void countHandledIsANoOpUntilFlaggedForClose() {
         handler.countHandled(PORT, "idle");
-        assertThat(handledCount("GRACEFUL_DELAYED", CloseReason.OUT_OF_SERVICE, "idle"))
-                .isZero();
+        assertThat(handledCount("GRACEFUL", CloseReason.SHUTDOWN, "idle")).isZero();
 
-        handler.flagForClose(
-                new ConnectionCloseEvent.GracefulDelayed(CloseReason.OUT_OF_SERVICE, Duration.ofMillis(1)));
+        channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
         handler.countHandled(PORT, "idle");
 
-        assertThat(handledCount("GRACEFUL_DELAYED", CloseReason.OUT_OF_SERVICE, "idle"))
-                .isEqualTo(1);
+        assertThat(handledCount("GRACEFUL", CloseReason.SHUTDOWN, "idle")).isEqualTo(1);
     }
 
     private long startedCount(String closeType, CloseReason reason) {
@@ -273,11 +268,7 @@ class BaseConnectionCloseHandlerTest {
         }
 
         @Override
-        protected void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
-            if (isFlaggedForClose()) {
-                return;
-            }
-            flagForClose(event);
+        protected void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
             handledEvents.add(event);
         }
     }

@@ -73,16 +73,12 @@ public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
         super.userEventTriggered(ctx, evt);
     }
     /**
-     * Flags the channel for close, and if a request is not in flight immediately closes the channel. If a request is
-     * in flight the channel will be closed after response processing completes
+     * If no request is in flight immediately close the channel, otherwise wait for the request to finish
      */
     @Override
-    protected void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
-        int port = getPort(ctx.channel());
-        countFlagged(port);
-        flagForClose(event);
+    protected void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
         if (!requestInFlight) {
-            countHandled(port, "idle");
+            countHandled(getPort(ctx.channel()), "idle");
             ctx.close();
         }
     }
