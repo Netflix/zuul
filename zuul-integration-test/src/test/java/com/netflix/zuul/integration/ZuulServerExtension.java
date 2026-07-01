@@ -25,6 +25,8 @@ import io.netty.channel.group.ChannelGroup;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -44,6 +46,7 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
 
     private Bootstrap bootstrap;
     private int serverPort;
+    private int http2Port;
 
     private ZuulServerExtension(Builder builder) {
         this.eventLoopThreads = builder.eventLoopThreads;
@@ -52,12 +55,15 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        serverPort = findAvailableTcpPort();
+        int[] ports = findAvailableTcpPorts(2);
+        serverPort = ports[0];
+        http2Port = ports[1];
 
         AbstractConfiguration config = ConfigurationManager.getConfigInstance();
         config.setProperty("zuul.server.netty.socket.force_nio", "true");
         config.setProperty("zuul.server.netty.threads.worker", String.valueOf(eventLoopThreads));
         config.setProperty("zuul.server.port.main", serverPort);
+        config.setProperty("zuul.server.port.http2", http2Port);
         config.setProperty("api.ribbon." + CommonClientConfigKey.ReadTimeout.key(), originReadTimeout.toMillis());
         config.setProperty(
                 "api.ribbon.NIWSServerListClassName", "com.netflix.zuul.integration.server.OriginServerList");
@@ -80,6 +86,10 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
         return serverPort;
     }
 
+    public int getHttp2Port() {
+        return http2Port;
+    }
+
     public ChannelGroup getClientChannels() {
         return bootstrap.getClientChannels();
     }
@@ -88,11 +98,30 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
         return new Builder();
     }
 
-    private static int findAvailableTcpPort() {
-        try (ServerSocket sock = new ServerSocket(0)) {
-            return sock.getLocalPort();
+    /**
+     * Reserves distinct free ports by holding every socket open until all have been bound, so no two callers are handed
+     * the same port.
+     */
+    private static int[] findAvailableTcpPorts(int count) {
+        List<ServerSocket> sockets = new ArrayList<>(count);
+        try {
+            int[] ports = new int[count];
+            for (int i = 0; i < count; i++) {
+                ServerSocket sock = new ServerSocket(0);
+                sockets.add(sock);
+                ports[i] = sock.getLocalPort();
+            }
+            return ports;
         } catch (IOException e) {
-            return -1;
+            throw new IllegalStateException("could not reserve free TCP ports", e);
+        } finally {
+            for (ServerSocket sock : sockets) {
+                try {
+                    sock.close();
+                } catch (IOException ignored) {
+                    // best effort
+                }
+            }
         }
     }
 

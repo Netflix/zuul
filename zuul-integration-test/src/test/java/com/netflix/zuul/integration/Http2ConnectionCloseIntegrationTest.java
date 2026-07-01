@@ -21,6 +21,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -30,20 +31,12 @@ import com.netflix.netty.common.close.CloseReason;
 import com.netflix.netty.common.close.ConnectionCloseEvent;
 import com.netflix.netty.common.metrics.CustomLeakDetector;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.util.ResourceLeakDetector;
-import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.ConnectionPool;
-import okhttp3.OkHttpClient;
-import okhttp3.Protocol;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,14 +48,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * @author Justin Guerra
  * @since 7/1/26
  */
-class Http1ConnectionCloseIntegrationTest {
+class Http2ConnectionCloseIntegrationTest {
 
     private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
-    private static final Duration CLIENT_READ_TIMEOUT = Duration.ofSeconds(5);
 
     static {
         System.setProperty("io.netty.customResourceLeakDetector", CustomLeakDetector.class.getCanonicalName());
-        // close the socket immediately once flagged, rather than waiting out the default connCloseDelay
+        // close the connection immediately once flagged, rather than waiting out the default connCloseDelay
         ConfigurationManager.getConfigInstance().setProperty("server.connection.close.delay", "0");
     }
 
@@ -80,7 +72,6 @@ class Http1ConnectionCloseIntegrationTest {
             .build();
 
     private WireMock wireMock;
-    private OkHttpClient client;
 
     @BeforeAll
     static void beforeAll() {
@@ -102,57 +93,82 @@ class Http1ConnectionCloseIntegrationTest {
     @BeforeEach
     void beforeEach() {
         wireMock = wireMockExtension.getRuntimeInfo().getWireMock();
-        client = newClient();
     }
 
     @AfterEach
     void afterEach() throws InterruptedException {
         gatedResponse.reset();
-        if (client != null) {
-            client.connectionPool().evictAll();
-        }
         // ensure all server channels close before the next test
         zuulExtension.getClientChannels().newCloseFuture().await(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
     }
 
     @Test
     void closeEventIdleConnection() throws Exception {
-        wireMock.register(get(anyUrl()).willReturn(ok().withBody("yo")));
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello")));
 
-        try (Response first = client.newCall(request()).execute()) {
-            assertThat(first.code()).isEqualTo(200);
-            assertThat(first.body().string()).isEqualTo("yo");
+        try (Http2TestClient client = new Http2TestClient(zuulExtension.getHttp2Port())) {
+            assertThat(client.get("/test").get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS))
+                    .isEqualTo(200);
+
+            // the connection is now idle; firing the event should send a GOAWAY and close it
+            Channel serverChannel = awaitServerChannel();
+            fireCloseEvent(serverChannel);
+
+            assertThat(client.awaitGoAway().errorCode()).isEqualTo(Http2Error.NO_ERROR.code());
+            await("server should close the http/2 connection after the close event")
+                    .atMost(AWAIT_TIMEOUT)
+                    .until(() -> !serverChannel.isActive());
         }
-
-        // the connection is now idle and kept alive; firing the event should close it
-        Channel serverChannel = awaitServerChannel();
-        fireCloseEvent(serverChannel);
-
-        await("server should close the idle connection after the close event")
-                .atMost(AWAIT_TIMEOUT)
-                .until(() -> !serverChannel.isActive());
     }
 
     @Test
     void closeEventActiveRequest() throws Exception {
-        wireMock.register(get(anyUrl()).willReturn(ok().withBody("yo")));
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello")));
         gatedResponse.init();
 
-        ResponseCallback callback = new ResponseCallback();
-        client.newCall(request()).enqueue(callback);
+        try (Http2TestClient client = new Http2TestClient(zuulExtension.getHttp2Port())) {
+            CompletableFuture<Integer> status = client.get("/test");
 
-        gatedResponse.awaitRequest();
-        Channel serverChannel = awaitServerChannel();
-        fireCloseEvent(serverChannel);
-        gatedResponse.sendResponse();
+            gatedResponse.awaitRequest();
+            Channel serverChannel = awaitServerChannel();
+            fireCloseEvent(serverChannel);
 
-        try (Response response = callback.awaitResponse()) {
-            assertThat(response.code()).isEqualTo(200);
-            assertThat(response.body().string()).isEqualTo("yo");
-            assertThat(response.header("Connection")).isEqualToIgnoringCase("close");
+            assertThat(client.awaitGoAway().errorCode()).isEqualTo(Http2Error.NO_ERROR.code());
+
+            // the in-flight stream is below the GOAWAY's last-stream-id, so it still completes
+            gatedResponse.sendResponse();
+            assertThat(status.get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS)).isEqualTo(200);
+
+            await().atMost(AWAIT_TIMEOUT).until(() -> !serverChannel.isActive());
         }
+    }
 
-        await().atMost(AWAIT_TIMEOUT).until(() -> !serverChannel.isActive());
+    @Test
+    void newStreamIsRefusedAfterGoAway() throws Exception {
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello")));
+        gatedResponse.init();
+
+        try (Http2TestClient client = new Http2TestClient(zuulExtension.getHttp2Port())) {
+            // hold a stream in flight so the connection stays open through the graceful shutdown window
+            CompletableFuture<Integer> inFlight = client.get("/test");
+            gatedResponse.awaitRequest();
+            fireCloseEvent(awaitServerChannel());
+
+            // wait for the second GOAWAY, which carries the real last-stream-id (the first advertises 2^31-1)
+            Http2TestClient.GoAway goAway = client.awaitGracefulShutdownGoAway();
+            assertThat(goAway.errorCode()).isEqualTo(Http2Error.NO_ERROR.code());
+
+            // a stream opened now is above the last-stream-id, so the client should refuse to create it
+            CompletableFuture<Integer> refused = client.get("/test");
+            assertThatThrownBy(() -> refused.get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS))
+                    .as("a new stream opened after the GOAWAY must be refused")
+                    .hasCauseInstanceOf(Http2Exception.class);
+
+            // the already-in-flight stream is below the last-stream-id, so it still completes
+            gatedResponse.sendResponse();
+            assertThat(inFlight.get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS))
+                    .isEqualTo(200);
+        }
     }
 
     private void fireCloseEvent(Channel serverChannel) {
@@ -168,44 +184,5 @@ class Http1ConnectionCloseIntegrationTest {
                 .filter(Channel::isActive)
                 .findFirst()
                 .orElseThrow();
-    }
-
-    private Request request() {
-        return new Request.Builder()
-                .url("http://localhost:" + zuulExtension.getServerPort() + "/test")
-                .build();
-    }
-
-    private static OkHttpClient newClient() {
-        return new OkHttpClient.Builder()
-                .connectTimeout(Duration.ofSeconds(1))
-                .readTimeout(CLIENT_READ_TIMEOUT)
-                .followRedirects(false)
-                .retryOnConnectionFailure(false)
-                .protocols(List.of(Protocol.HTTP_1_1))
-                .connectionPool(new ConnectionPool())
-                .build();
-    }
-
-    private static final class ResponseCallback implements Callback {
-        private final CompletableFuture<Response> future = new CompletableFuture<>();
-
-        @Override
-        public void onFailure(@NotNull Call call, @NotNull IOException e) {
-            future.completeExceptionally(e);
-        }
-
-        @Override
-        public void onResponse(@NotNull Call call, @NotNull Response response) {
-            future.complete(response);
-        }
-
-        Response awaitResponse() {
-            try {
-                return future.get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS);
-            } catch (Exception e) {
-                throw new AssertionError("did not receive a response in time", e);
-            }
-        }
     }
 }

@@ -37,7 +37,6 @@ import com.netflix.zuul.integration.server.filters.ResponseHeaderFilter;
 import com.netflix.zuul.netty.server.ClientRequestReceiver;
 import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
-import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
 import io.netty.channel.group.ChannelGroup;
 import java.util.Collections;
@@ -89,8 +88,7 @@ public class Bootstrap {
                     new EventLoopGroupMetrics(registry),
                     null,
                     new ApplicationInfoManager(null, null, null),
-                    accessLogPublisher,
-                    new PushConnectionRegistry());
+                    accessLogPublisher);
             serverStartup.init();
             server = serverStartup.server();
 
