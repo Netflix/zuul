@@ -18,64 +18,59 @@ package com.netflix.netty.common.close;
 
 import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Exception;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NullMarked;
 
 /**
- *
- *
- * User: michaels@netflix.com
- * Date: 2/8/17
- * Time: 2:03 PM
+ * Http/2 connection level handler that is responsible for handling {@link ConnectionCloseEvent} and closing connections.
  */
+@Slf4j
+@NullMarked
 public class Http2ConnectionCloseHandler extends BaseConnectionCloseHandler {
-
-    private ScheduledFuture<?> scheduledClose;
 
     public Http2ConnectionCloseHandler(Registry registry) {
         super(registry);
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof ConnectionCloseEvent event && !isFlaggedForClose()) {
-            closeEvent = event;
-            int port = getPort(ctx.channel());
-            switch (event) {
-                case ConnectionCloseEvent.Graceful ignored -> {
-                    count(event, port);
-                    ctx.close();
-                }
-                case ConnectionCloseEvent.GracefulDelayed delayed -> {
-                    long jitter = ThreadLocalRandom.current()
-                            .nextLong(delayed.maxJitter().toMillis());
-                    scheduledClose = ctx.executor()
-                            .schedule(
-                                    () -> {
-                                        count(event, port);
-                                        ctx.close();
-                                    },
-                                    jitter,
-                                    TimeUnit.MILLISECONDS);
-                }
-            }
-        }
-
-        ctx.fireUserEventTriggered(evt);
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (scheduledClose != null) {
-            scheduledClose.cancel(false);
-            scheduledClose = null;
-        }
-        ctx.fireChannelInactive();
-    }
-
-    @Override
     protected String getProtocol() {
         return "http/2";
+    }
+
+    @Override
+    protected void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
+        if (isFlaggedForClose()) {
+            return;
+        }
+        int port = getPort(ctx.channel());
+
+        flagForClose(event);
+        countFlagged(port);
+
+        /*
+        First send a 'graceful shutdown' GOAWAY frame.
+
+        "A server that is attempting to gracefully shut down a connection SHOULD send an initial GOAWAY frame with
+        the last stream identifier set to 231-1 and a NO_ERROR code. This signals to the client that a shutdown is
+        imminent and that initiating further requests is prohibited."
+          -- https://http2.github.io/http2-spec/#GOAWAY
+
+         */
+        DefaultHttp2GoAwayFrame goaway = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR);
+        goaway.setExtraStreamIds(Integer.MAX_VALUE);
+        ctx.writeAndFlush(goaway);
+
+        scheduleCloseTimeout(
+                () -> {
+                    // In N secs time, throw an error that causes the Http2ConnectionHandler to send another GOAWAY
+                    // frame (this time with accurate lastStreamId) and schedule a close after the window
+                    Http2Exception h2e =
+                            new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
+                    ctx.pipeline().fireExceptionCaught(h2e);
+                },
+                ctx.channel());
     }
 }

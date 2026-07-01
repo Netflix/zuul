@@ -18,21 +18,26 @@ package com.netflix.netty.common.close;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteReason;
 import com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
 import com.netflix.netty.common.SourceAddressChannelHandler;
+import com.netflix.netty.common.channel.config.ChannelConfig;
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.DefaultRegistry;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
-import java.time.Duration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +54,10 @@ class Http1ConnectionCloseHandlerTest {
         registry = new DefaultRegistry();
         channel = new EmbeddedChannel(new Http1ConnectionCloseHandler(registry));
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(PORT);
+
+        ChannelConfig channelConfig = new ChannelConfig();
+        channelConfig.set(CommonChannelConfigKeys.connCloseDelay, 0);
+        channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).set(channelConfig);
     }
 
     @AfterEach
@@ -57,53 +66,58 @@ class Http1ConnectionCloseHandlerTest {
     }
 
     @Test
-    void gracefulCloseEventWithNoRequestInFlightClosesImmediately() {
+    void handleCloseEventClosesImmediatelyWhenNoRequestInFlight() {
         channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
 
         assertThat(channel.isOpen()).isFalse();
-        assertThat(closeCount("GRACEFUL", CloseReason.SHUTDOWN)).isEqualTo(1);
+        assertThat(closeCount("GRACEFUL", CloseReason.SHUTDOWN, "idle")).isEqualTo(1);
     }
 
     @Test
-    void closeEventDeferredWhileRequestInFlightThenClosesAfterLastContent() {
-        channel.pipeline()
-                .fireUserEventTriggered(
-                        new StartEvent(new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")));
+    void closeIsDeferredUntilLastHttpContentIsWrittenWhileRequestInFlight() {
+        fireStartEvent();
         channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
 
         assertThat(channel.isOpen())
-                .as("close is deferred until the in-flight response completes")
+                .as("close deferred while a response is in flight")
                 .isTrue();
 
         channel.writeOutbound(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-        HttpResponse written = channel.readOutbound();
-        assertThat(written.headers().get(HttpHeaderNames.CONNECTION)).isEqualTo("close");
-
+        channel.readOutbound();
         channel.writeOutbound(LastHttpContent.EMPTY_LAST_CONTENT);
 
         assertThat(channel.isOpen()).isFalse();
-        assertThat(closeCount("GRACEFUL", CloseReason.SHUTDOWN)).isEqualTo(1);
+        assertThat(closeCount("GRACEFUL", CloseReason.SHUTDOWN, "timeout")).isEqualTo(1);
     }
 
     @Test
-    void gracefulDelayedCloseEventSchedulesClose() {
+    void completeEventResetsInFlightTrackingSoALaterCloseEventClosesImmediately() {
+        HttpRequest request = fireStartEvent();
         channel.pipeline()
-                .fireUserEventTriggered(
-                        new ConnectionCloseEvent.GracefulDelayed(CloseReason.OUT_OF_SERVICE, Duration.ofMillis(1)));
+                .fireUserEventTriggered(new CompleteEvent(
+                        CompleteReason.SESSION_COMPLETE,
+                        request,
+                        new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)));
 
-        assertThat(channel.isOpen())
-                .as("close should be deferred until the scheduled task runs")
-                .isTrue();
-        assertThat(closeCount("GRACEFUL_DELAYED", CloseReason.OUT_OF_SERVICE)).isZero();
-
-        channel.runScheduledPendingTasks();
+        channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
 
         assertThat(channel.isOpen()).isFalse();
-        assertThat(closeCount("GRACEFUL_DELAYED", CloseReason.OUT_OF_SERVICE)).isEqualTo(1);
+        assertThat(closeCount("GRACEFUL", CloseReason.SHUTDOWN, "idle")).isEqualTo(1);
     }
 
     @Test
-    void responseNotFlaggedForCloseIsUnmodified() {
+    void writeSetsConnectionCloseHeaderOnResponseWhenFlaggedForClose() {
+        fireStartEvent();
+        channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
+
+        channel.writeOutbound(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+        HttpResponse written = channel.readOutbound();
+
+        assertThat(written.headers().get(HttpHeaderNames.CONNECTION)).isEqualTo("close");
+    }
+
+    @Test
+    void writeLeavesResponseUnmodifiedWhenNotFlaggedForClose() {
         channel.writeOutbound(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
 
         HttpResponse written = channel.readOutbound();
@@ -111,10 +125,17 @@ class Http1ConnectionCloseHandlerTest {
         assertThat(channel.isOpen()).isTrue();
     }
 
-    private long closeCount(String closeType, CloseReason reason) {
+    private HttpRequest fireStartEvent() {
+        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/");
+        channel.pipeline().fireUserEventTriggered(new StartEvent(request));
+        return request;
+    }
+
+    private long closeCount(String closeType, CloseReason reason, String trigger) {
         Id id = registry.createId("server.connection.close.handled")
                 .withTag("close_type", closeType)
                 .withTag("close_reason", reason.name())
+                .withTag("close_trigger", trigger)
                 .withTag("port", Integer.toString(PORT))
                 .withTag("protocol", "http/1.1");
         return registry.counter(id).count();

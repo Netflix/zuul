@@ -16,7 +16,8 @@
 
 package com.netflix.netty.common.close;
 
-import com.netflix.netty.common.HttpLifecycleChannelHandler;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.CompleteEvent;
+import com.netflix.netty.common.HttpLifecycleChannelHandler.StartEvent;
 import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,19 +25,16 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * User: michaels@netflix.com
- * Date: 2/8/17
- * Time: 2:03 PM
+ * Handler responsible for handling {@link ConnectionCloseEvent} and gracefully closing http/1.1 connections.
+ * Upon receiving a {@link ConnectionCloseEvent} this handler will immediately (regardless of
  */
+@NullMarked
 public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
 
     private boolean requestInFlight;
-    private ScheduledFuture<?> closeFuture;
 
     public Http1ConnectionCloseHandler(Registry registry) {
         super(registry);
@@ -51,8 +49,13 @@ public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
 
         if (msg instanceof LastHttpContent && isFlaggedForClose()) {
             ctx.write(msg, promise).addListener((ChannelFuture cf) -> {
-                count(closeEvent, getPort(ctx.channel()));
-                cf.channel().close();
+                int port = getPort(ctx.channel());
+                scheduleCloseTimeout(
+                        () -> {
+                            countHandled(port, "timeout");
+                            cf.channel().close();
+                        },
+                        cf.channel());
             });
         } else {
             ctx.write(msg, promise);
@@ -61,56 +64,26 @@ public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof HttpLifecycleChannelHandler.StartEvent) {
+        if (evt instanceof StartEvent) {
             requestInFlight = true;
-        } else if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+        } else if (evt instanceof CompleteEvent) {
             requestInFlight = false;
-        } else if (evt instanceof ConnectionCloseEvent event) {
-            handleCloseEvent(ctx, event);
         }
 
-        ctx.fireUserEventTriggered(evt);
+        super.userEventTriggered(ctx, evt);
     }
-
+    /**
+     * Flags the channel for close, and if a request is not in flight immediately closes the channel. If a request is
+     * in flight the channel will be closed after response processing completes
+     */
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        if (closeFuture != null) {
-            closeFuture.cancel(false);
-        }
-
-        ctx.fireChannelInactive();
-    }
-
-    private void handleCloseEvent(ChannelHandlerContext context, ConnectionCloseEvent event) {
-        if (isFlaggedForClose()) {
-            return;
-        }
-
-        closeEvent = event;
-        if (requestInFlight) {
-            return;
-        }
-
-        int port = getPort(context.channel());
-        switch (event) {
-            case ConnectionCloseEvent.Graceful ignored -> {
-                count(event, port);
-                context.close();
-            }
-            case ConnectionCloseEvent.GracefulDelayed delayed -> {
-                long jitter =
-                        ThreadLocalRandom.current().nextLong(delayed.maxJitter().toMillis());
-                closeFuture = context.executor()
-                        .schedule(
-                                () -> {
-                                    if (!requestInFlight) {
-                                        count(event, port);
-                                        context.close();
-                                    }
-                                },
-                                jitter,
-                                TimeUnit.MILLISECONDS);
-            }
+    protected void handleCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
+        int port = getPort(ctx.channel());
+        countFlagged(port);
+        flagForClose(event);
+        if (!requestInFlight) {
+            countHandled(port, "idle");
+            ctx.close();
         }
     }
 
