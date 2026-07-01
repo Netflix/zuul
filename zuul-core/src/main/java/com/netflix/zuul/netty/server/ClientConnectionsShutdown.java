@@ -155,7 +155,7 @@ public class ClientConnectionsShutdown {
         return switch (reason) {
             case OUT_OF_SERVICE -> new GracefulDelayed(reason, Duration.ofMillis(OUT_OF_SERVICE_MAX_JITTER.get()));
             case SHUTDOWN -> new Graceful(reason);
-            default -> throw new IllegalArgumentException("should not ");
+            default -> throw new IllegalArgumentException("unable to handle " + reason);
         };
     }
 }
