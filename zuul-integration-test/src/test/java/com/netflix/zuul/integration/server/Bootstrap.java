@@ -39,6 +39,7 @@ import com.netflix.zuul.netty.server.DirectMemoryMonitor;
 import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.netty.server.push.PushConnectionRegistry;
 import com.netflix.zuul.origins.BasicNettyOriginManager;
+import io.netty.channel.group.ChannelGroup;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -65,6 +66,7 @@ public class Bootstrap {
     }
 
     private Server server;
+    private ServerStartup serverStartup;
 
     public void start() {
         long startNanos = System.nanoTime();
@@ -76,7 +78,7 @@ public class Bootstrap {
                     "ACCESS", (channel, httpRequest) -> ClientRequestReceiver.getRequestFromChannel(channel)
                             .getContext()
                             .getUUID());
-            ServerStartup serverStartup = new ServerStartup(
+            serverStartup = new ServerStartup(
                     new NoOpServerStatusManager(),
                     new StaticFilterLoader(new DefaultFilterFactory(), FILTER_TYPES),
                     new ZuulSessionContextDecorator(new BasicNettyOriginManager(registry)),
@@ -104,6 +106,10 @@ public class Bootstrap {
 
     public Server getServer() {
         return this.server;
+    }
+
+    public ChannelGroup getClientChannels() {
+        return serverStartup.getClientChannels();
     }
 
     public boolean isRunning() {

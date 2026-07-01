@@ -73,6 +73,8 @@ public class ServerStartup extends BaseServerStartup {
     private final PushConnectionRegistry pushConnectionRegistry;
     //    private final SamplePushMessageSenderInitializer pushSenderInitializer;
 
+    private ChannelGroup clientChannels;
+
     @Inject
     public ServerStartup(
             ServerStatusManager serverStatusManager,
@@ -106,6 +108,7 @@ public class ServerStartup extends BaseServerStartup {
 
     @Override
     protected Map<NamedSocketAddress, ChannelInitializer<?>> chooseAddrsAndChannels(ChannelGroup clientChannels) {
+        this.clientChannels = clientChannels;
         Map<NamedSocketAddress, ChannelInitializer<?>> addrsToChannels = new HashMap<>();
         SocketAddress sockAddr;
         String metricId;
@@ -269,6 +272,10 @@ public class ServerStartup extends BaseServerStartup {
         }
 
         return Collections.unmodifiableMap(addrsToChannels);
+    }
+
+    public ChannelGroup getClientChannels() {
+        return clientChannels;
     }
 
     private File loadFromResources(String s) {

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.zuul.integration.server.Bootstrap;
+import io.netty.channel.group.ChannelGroup;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
@@ -77,6 +78,10 @@ public class ZuulServerExtension implements AfterAllCallback, BeforeAllCallback 
 
     public int getServerPort() {
         return serverPort;
+    }
+
+    public ChannelGroup getClientChannels() {
+        return bootstrap.getClientChannels();
     }
 
     public static Builder newBuilder() {
