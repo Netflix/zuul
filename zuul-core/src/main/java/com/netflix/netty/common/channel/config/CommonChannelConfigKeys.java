@@ -48,8 +48,6 @@ public class CommonChannelConfigKeys {
 
     public static final ChannelConfigKey<Integer> maxRequestsPerConnection =
             new ChannelConfigKey<>("maxRequestsPerConnection", 4000);
-    public static final ChannelConfigKey<Integer> maxRequestsPerConnectionInBrownout =
-            new ChannelConfigKey<>("maxRequestsPerConnectionInBrownout", 100);
     public static final ChannelConfigKey<Integer> connectionExpiry =
             new ChannelConfigKey<>("connectionExpiry", 20 * 60 * 1000);
 
@@ -62,13 +60,14 @@ public class CommonChannelConfigKeys {
     public static final ChannelConfigKey<AsyncMapping<String, SslContext>> sniMapping =
             new ChannelConfigKey<>("sniMapping");
 
+    /** The amount of time to give a client before closing a connection that has been flagged for graceful closing **/
+    public static final ChannelConfigKey<Integer> connCloseDelay = new ChannelConfigKey<>("connCloseDelay", 10);
+
     // HTTP/2 specific:
     public static final ChannelConfigKey<Integer> maxConcurrentStreams =
             new ChannelConfigKey<>("maxConcurrentStreams", 100);
     public static final ChannelConfigKey<Integer> initialWindowSize =
             new ChannelConfigKey<>("initialWindowSize", 5242880); // 5MB
-    /* The amount of time to wait before closing a connection that has the `Connection: Close` header, in seconds */
-    public static final ChannelConfigKey<Integer> connCloseDelay = new ChannelConfigKey<>("connCloseDelay", 10);
     public static final ChannelConfigKey<Integer> maxHttp2HeaderTableSize =
             new ChannelConfigKey<>("maxHttp2HeaderTableSize", 4096);
     public static final ChannelConfigKey<Integer> maxHttp2HeaderListSize =

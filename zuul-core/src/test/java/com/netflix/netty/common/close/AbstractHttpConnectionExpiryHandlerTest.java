@@ -35,11 +35,8 @@ class AbstractHttpConnectionExpiryHandlerTest {
 
     private static final int MAX_EXPIRY_MILLIS = 30_000;
 
-    // larger than maxExpiry plus the maximum random expiry delta, so the connection is past its expiry deadline
-    // regardless of the jitter chosen at construction
     private static final long PAST_EXPIRY_MILLIS = Duration.ofHours(1).toMillis();
 
-    // unstubbed millis() returns 0, which the handler reads at construction; tests that need expiry re-stub it later
     private Clock clock;
     private CloseEventCaptor closeEvents;
     private EmbeddedChannel channel;
@@ -57,21 +54,21 @@ class AbstractHttpConnectionExpiryHandlerTest {
     }
 
     @Test
-    void terminalResponseIncrementsRequestCount() {
+    void responseIncrementsCount() {
         TestExpiryHandler handler = addHandler(100, MAX_EXPIRY_MILLIS);
 
         channel.writeOutbound(new TerminalMessage());
 
-        assertThat(handler.requestCount).isEqualTo(1);
+        assertThat(handler.getCount()).isEqualTo(1);
     }
 
     @Test
-    void nonTerminalResponseDoesNotIncrementRequestCount() {
+    void nonResponseDoesNotIncrementCount() {
         TestExpiryHandler handler = addHandler(100, MAX_EXPIRY_MILLIS);
 
         channel.writeOutbound("not-terminal");
 
-        assertThat(handler.requestCount).isZero();
+        assertThat(handler.getCount()).isZero();
     }
 
     @Test
@@ -121,18 +118,18 @@ class AbstractHttpConnectionExpiryHandlerTest {
         channel.writeOutbound(new TerminalMessage());
 
         assertThat(closeEvents.events).isEmpty();
-        assertThat(handler.requestCount).isEqualTo(1);
+        assertThat(handler.getCount()).isEqualTo(1);
     }
 
     @Test
-    void nonTerminalResponseNeverTriggersExpiry() {
+    void nonResponseNeverTriggersExpiry() {
         TestExpiryHandler handler = addHandler(1, MAX_EXPIRY_MILLIS);
         when(clock.millis()).thenReturn(PAST_EXPIRY_MILLIS);
 
         channel.writeOutbound("not-terminal");
 
         assertThat(closeEvents.events).isEmpty();
-        assertThat(handler.requestCount).isZero();
+        assertThat(handler.getCount()).isZero();
     }
 
     private TestExpiryHandler addHandler(int maxRequests, int maxExpiry) {
@@ -147,7 +144,7 @@ class AbstractHttpConnectionExpiryHandlerTest {
         }
 
         @Override
-        protected boolean isTerminalResponse(Object msg) {
+        protected boolean isResponse(Object msg) {
             return msg instanceof TerminalMessage;
         }
     }
