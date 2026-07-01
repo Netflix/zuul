@@ -126,6 +126,7 @@ class Http2OrHttpHandlerTest {
         int initialWindowSize = CommonChannelConfigKeys.initialWindowSize.defaultValue() + 1;
         int maxHeaderTableSize = CommonChannelConfigKeys.maxHttp2HeaderTableSize.defaultValue() + 1;
         int maxHeaderListSize = 1024;
+        int gracefulShutdownTimeout = CommonChannelConfigKeys.http2GracefulShutdownTimeoutMillis.defaultValue() + 1;
 
         channelConfig.add(
                 new ChannelConfigValue<>(CommonChannelConfigKeys.http2ConnectProtocolEnabled, connectProtocolEnabled));
@@ -134,6 +135,8 @@ class Http2OrHttpHandlerTest {
         channelConfig.add(
                 new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderTableSize, maxHeaderTableSize));
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, maxHeaderListSize));
+        channelConfig.add(new ChannelConfigValue<>(
+                CommonChannelConfigKeys.http2GracefulShutdownTimeoutMillis, gracefulShutdownTimeout));
 
         Http2OrHttpHandler http2OrHttpHandler =
                 new Http2OrHttpHandler(new ChannelInboundHandlerAdapter(), channelConfig, cp -> {});
@@ -146,6 +149,8 @@ class Http2OrHttpHandlerTest {
         channel.pipeline().fireChannelActive();
 
         Http2FrameCodec http2FrameCodec = channel.pipeline().get(Http2FrameCodec.class);
+        assertThat(http2FrameCodec.gracefulShutdownTimeoutMillis()).isEqualTo(gracefulShutdownTimeout);
+
         Http2Settings http2Settings = http2FrameCodec.encoder().pollSentSettings();
 
         assertThat(http2Settings.connectProtocolEnabled()).isEqualTo(connectProtocolEnabled);
