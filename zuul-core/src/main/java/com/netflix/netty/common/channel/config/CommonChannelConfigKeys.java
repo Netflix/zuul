@@ -87,4 +87,6 @@ public class CommonChannelConfigKeys {
             new ChannelConfigKey<>("http2ConnectProtocolEnabled", false);
     public static final ChannelConfigKey<Integer> http2EncoderMaxConsecutiveContinuationFrames =
             new ChannelConfigKey<>("http2EncoderMaxConsecutiveContinuationFrames", 16);
+    public static final ChannelConfigKey<Integer> http2GracefulShutdownTimeoutMillis =
+            new ChannelConfigKey<>("http2GracefulShutdownTimeoutMillis", 30000);
 }
