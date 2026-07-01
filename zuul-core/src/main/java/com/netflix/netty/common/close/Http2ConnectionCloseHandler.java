@@ -16,6 +16,7 @@
 
 package com.netflix.netty.common.close;
 
+import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Registry;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
@@ -36,9 +37,9 @@ import org.jspecify.annotations.NullMarked;
  * with the last stream identifier set to 2^31-1 and a NO_ERROR code."
  * -- <a href="https://http2.github.io/http2-spec/#GOAWAY">HTTP/2 spec</a></blockquote>
  *
- * <p>Then, once the close timeout elapses, an {@link Http2Exception} carrying
- * {@link Http2Exception.ShutdownHint#GRACEFUL_SHUTDOWN} is fired so netty's {@code Http2ConnectionHandler} sends a
- * second GOAWAY - this time with an accurate last stream id - and closes the connection after its shutdown window.
+ * <p>Then, once the close timeout elapses (see {@link CommonChannelConfigKeys#connCloseDelay}),
+ * netty is instructed to send a second GOAWAY using an accurate last stream id and to start a graceful shutdown. The
+ * graceful shutdown timer can be configured via {@link CommonChannelConfigKeys#http2GracefulShutdownTimeoutMillis}.
  */
 @Slf4j
 @NullMarked
