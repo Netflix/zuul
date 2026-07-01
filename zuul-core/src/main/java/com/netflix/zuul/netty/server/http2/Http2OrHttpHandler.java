@@ -182,9 +182,6 @@ public class Http2OrHttpHandler extends ApplicationProtocolNegotiationHandler {
     }
 
     private void configureHttp1(ChannelPipeline pipeline) {
-        if (pipeline.get(Http2ConnectionCloseHandler.class) != null) {
-            pipeline.remove(Http2ConnectionCloseHandler.class);
-        }
         addHttpHandlerFn.accept(pipeline);
     }
 
