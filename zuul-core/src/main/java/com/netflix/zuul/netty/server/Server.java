@@ -78,6 +78,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +114,9 @@ public class Server {
     private static final DynamicBooleanProperty MANUAL_DISCOVERY_STATUS =
             new DynamicBooleanProperty("zuul.server.netty.manual.discovery.status", true);
 
+    @Nullable
     private final Thread jvmShutdownHook;
+
     private final Registry registry;
     private ServerGroup serverGroup;
     private final ClientConnectionsShutdown clientConnectionsShutdown;
@@ -184,16 +187,18 @@ public class Server {
             ClientConnectionsShutdown clientConnectionsShutdown,
             EventLoopGroupMetrics eventLoopGroupMetrics,
             EventLoopConfig eventLoopConfig) {
-        this(
-                registry,
-                serverStatusManager,
-                addressesToInitializers,
-                clientConnectionsShutdown,
-                eventLoopGroupMetrics,
-                eventLoopConfig,
-                null);
+        this.registry = Objects.requireNonNull(registry);
+        this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
+        this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
+        this.clientConnectionsShutdown =
+                Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
+        this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
+        this.jvmShutdownHook = new Thread(this::stop, "Zuul-JVM-shutdown-hook");
     }
 
+    /**
+     * Pass a null jvmShutdownHook if Server lifecycle is being handled by an external shutdown hook
+     */
     public Server(
             Registry registry,
             ServerStatusManager serverStatusManager,
@@ -201,15 +206,14 @@ public class Server {
             ClientConnectionsShutdown clientConnectionsShutdown,
             EventLoopGroupMetrics eventLoopGroupMetrics,
             EventLoopConfig eventLoopConfig,
-            Thread jvmShutdownHook) {
+            @Nullable Thread jvmShutdownHook) {
         this.registry = Objects.requireNonNull(registry);
         this.addressesToInitializers = Collections.unmodifiableMap(new LinkedHashMap<>(addressesToInitializers));
         this.serverStatusManager = Preconditions.checkNotNull(serverStatusManager, "serverStatusManager");
         this.clientConnectionsShutdown =
                 Preconditions.checkNotNull(clientConnectionsShutdown, "clientConnectionsShutdown");
         this.eventLoopConfig = Preconditions.checkNotNull(eventLoopConfig, "eventLoopConfig");
-        this.jvmShutdownHook =
-                jvmShutdownHook != null ? jvmShutdownHook : new Thread(this::stop, "Zuul-JVM-shutdown-hook");
+        this.jvmShutdownHook = jvmShutdownHook;
     }
 
     public void stop() {
@@ -274,6 +278,10 @@ public class Server {
                     })
                     .get();
         }
+    }
+
+    Thread getJvmShutdownHook() {
+        return jvmShutdownHook;
     }
 
     private ChannelFuture setupServerBootstrap(

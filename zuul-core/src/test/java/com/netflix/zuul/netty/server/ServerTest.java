@@ -179,6 +179,31 @@ class ServerTest {
         s.stop();
     }
 
+    @Test
+    void noShutdownHookWhenNullPassedIn() {
+        Server server = new Server(
+                new NoopRegistry(),
+                mock(ServerStatusManager.class),
+                Map.of(),
+                mock(ClientConnectionsShutdown.class),
+                mock(EventLoopGroupMetrics.class),
+                mock(EventLoopConfig.class),
+                null);
+        assertThat(server.getJvmShutdownHook()).isNull();
+    }
+
+    @Test
+    void shutdownHookAddedByDefault() {
+        Server server = new Server(
+                new NoopRegistry(),
+                mock(ServerStatusManager.class),
+                Map.of(),
+                mock(ClientConnectionsShutdown.class),
+                mock(EventLoopGroupMetrics.class),
+                mock(EventLoopConfig.class));
+        assertThat(server.getJvmShutdownHook()).isNotNull();
+    }
+
     @SuppressWarnings("EmptyCatch")
     private static void checkConnection(int port) {
         Socket sock = null;
