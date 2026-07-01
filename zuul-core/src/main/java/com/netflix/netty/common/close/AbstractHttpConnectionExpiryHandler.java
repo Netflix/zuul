@@ -31,16 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handler that can be used to close connections after handling a configurable number of requests, or after a configurable
- * amount of time. It's important to note that expirations are driven by request processing, so this handler will not
- * close idle, long-lived connections until handling a response.
+ * Expires a connection once it has handled a configurable number of requests or been open for a configurable amount of
+ * time. Expiry is evaluated as responses are written, so an idle long-lived connection is not closed until it next
+ * serves a response.
  *
- * This handler itself does not close channels, it's expected that a handler on the connection's channel handler pipeline
- * handles a {@link ConnectionCloseEvent} and closes the corresponding channel
- *
- * See also,
- * {@link Http1ConnectionCloseHandler}
- * {@link Http2ConnectionCloseHandler}
+ * <p>This handler does not close the channel itself; it fires a {@link ConnectionCloseEvent} that a connection-level
+ * handler (see {@link Http1ConnectionCloseHandler} and {@link Http2ConnectionCloseHandler}) is expected to act on.
  */
 @NullMarked
 public abstract class AbstractHttpConnectionExpiryHandler extends ChannelOutboundHandlerAdapter {

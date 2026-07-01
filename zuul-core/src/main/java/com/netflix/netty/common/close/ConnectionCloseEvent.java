@@ -21,7 +21,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Pipeline event requesting that a connection be closed.
- **/
+ */
 @NullMarked
 public sealed interface ConnectionCloseEvent {
 
@@ -31,7 +31,7 @@ public sealed interface ConnectionCloseEvent {
 
     /**
      * Close the connection after a random delay in {@code [0, maxJitter)}, useful for avoiding thundering herds when
-     * closing a large number of connections
+     * closing a large number of connections.
      */
     record GracefulDelayed(CloseReason reason, Duration maxJitter) implements ConnectionCloseEvent {
         public GracefulDelayed {

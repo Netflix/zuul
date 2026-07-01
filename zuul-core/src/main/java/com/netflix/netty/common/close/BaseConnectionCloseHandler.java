@@ -34,15 +34,16 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Base handler responsible for orchestrating {@link ConnectionCloseEvent}s. This handler should always be on the
- * connection channel handler pipeline (i.e. the parent pipeline for http/2). Close implementation should be handled by
- * concrete subclasses using {@link #onCloseEvent}.
+ * Base handler responsible for orchestrating {@link ConnectionCloseEvent}s. It must sit on the connection-level
+ * pipeline (the parent pipeline for http/2); concrete subclasses supply the actual close behavior via
+ * {@link #onCloseEvent}.
  *
- * <p>Upon receiving a {@link ConnectionCloseEvent} this handler will eventually call
- * {@link #onCloseEvent(ChannelHandlerContext, ConnectionCloseEvent)}, either immediately or after a jitter delay when
- * the event carries one. {@link #onCloseEvent} is invoked at most once per handler. onCloseEvent is responsible for
- * either closing a channel or starting a graceful close process. The method {@link this#scheduleCloseTimeout(Runnable, Channel)}
- * should be used to ensure a close is actually triggered
+ * <p>On receiving a {@link ConnectionCloseEvent} this handler invokes
+ * {@link #onCloseEvent(ChannelHandlerContext, ConnectionCloseEvent)} at most once - immediately for a
+ * {@link ConnectionCloseEvent.Graceful} event, or after a random jitter delay for a
+ * {@link ConnectionCloseEvent.GracefulDelayed} event. An {@code onCloseEvent} implementation should either close the
+ * channel outright or begin a graceful close, using {@link #scheduleCloseTimeout(Runnable, Channel)} to guarantee the
+ * connection is eventually closed.
  *
  * @author Justin Guerra
  * @since 6/25/26

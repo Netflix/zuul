@@ -28,8 +28,9 @@ import io.netty.handler.codec.http.LastHttpContent;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Handler responsible for handling {@link ConnectionCloseEvent} and gracefully closing http/1.1 connections.
- * Upon receiving a {@link ConnectionCloseEvent} this handler will immediately (regardless of
+ * Gracefully closes http/1.1 connections in response to a {@link ConnectionCloseEvent}. If no request is in flight the
+ * connection is closed immediately; otherwise a {@code Connection: close} header is set on the in-flight response and
+ * the connection is closed once that response has been fully written.
  */
 @NullMarked
 public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
@@ -73,7 +74,8 @@ public class Http1ConnectionCloseHandler extends BaseConnectionCloseHandler {
         super.userEventTriggered(ctx, evt);
     }
     /**
-     * If no request is in flight immediately close the channel, otherwise wait for the request to finish
+     * Closes the channel immediately when no request is in flight; otherwise the in-flight response is left to trigger
+     * the close via {@link #write(ChannelHandlerContext, Object, io.netty.channel.ChannelPromise)}.
      */
     @Override
     protected void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {

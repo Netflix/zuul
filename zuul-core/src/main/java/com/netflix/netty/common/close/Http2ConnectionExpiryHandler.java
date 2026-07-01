@@ -22,10 +22,10 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Stream level handler used for tracking request volume on http/2 streams. This handler should
- * be shared between streams on a common connection, but each connection requires a unique instance.
- * A {@link ConnectionCloseEvent} will be fired on the parent (i.e. connection) pipeline, and is expected that
- * a different handler, like {@link Http2ConnectionCloseHandler}, will handle the event.
+ * Stream-level handler that tracks request volume across the streams of an http/2 connection. It is shared between all
+ * streams on a connection, so a unique instance is required per connection. On expiry a {@link ConnectionCloseEvent} is
+ * fired on the parent (connection) pipeline, where a connection-level handler such as
+ * {@link Http2ConnectionCloseHandler} acts on it.
  */
 @NullMarked
 @ChannelHandler.Sharable
