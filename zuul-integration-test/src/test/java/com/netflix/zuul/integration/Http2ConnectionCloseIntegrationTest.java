@@ -51,11 +51,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class Http2ConnectionCloseIntegrationTest {
 
     private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final int MAX_REQUESTS_PER_CONNECTION = 2;
 
     static {
         System.setProperty("io.netty.customResourceLeakDetector", CustomLeakDetector.class.getCanonicalName());
         // close the connection immediately once flagged, rather than waiting out the default connCloseDelay
         ConfigurationManager.getConfigInstance().setProperty("server.connection.close.delay", "0");
+        // expire connections after a couple of requests so expiry can be exercised deterministically (the close-event
+        // tests only issue a single request per connection, so they never trip this)
+        ConfigurationManager.getConfigInstance()
+                .setProperty("server.connection.max.requests", String.valueOf(MAX_REQUESTS_PER_CONNECTION));
     }
 
     private static final GatedResponse gatedResponse = new GatedResponse();
@@ -87,6 +92,7 @@ class Http2ConnectionCloseIntegrationTest {
     static void afterAll() {
         ConfigurationManager.getConfigInstance().clearProperty("api.ribbon.listOfServers");
         ConfigurationManager.getConfigInstance().clearProperty("server.connection.close.delay");
+        ConfigurationManager.getConfigInstance().clearProperty("server.connection.max.requests");
         CustomLeakDetector.assertZeroLeaks();
     }
 
@@ -168,6 +174,24 @@ class Http2ConnectionCloseIntegrationTest {
             gatedResponse.sendResponse();
             assertThat(inFlight.get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS))
                     .isEqualTo(200);
+        }
+    }
+
+    @Test
+    void connectionExpiresAfterMaxRequests() throws Exception {
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("hello")));
+
+        try (Http2TestClient client = new Http2TestClient(zuulExtension.getHttp2Port())) {
+            // each request is served normally until the one that reaches the limit expires the connection
+            for (int i = 0; i < MAX_REQUESTS_PER_CONNECTION; i++) {
+                assertThat(client.get("/test").get(AWAIT_TIMEOUT.toSeconds(), TimeUnit.SECONDS))
+                        .isEqualTo(200);
+            }
+
+            assertThat(client.awaitGoAway().errorCode()).isEqualTo(Http2Error.NO_ERROR.code());
+            await("server should close the connection once it expires")
+                    .atMost(AWAIT_TIMEOUT)
+                    .until(() -> zuulExtension.getClientChannels().stream().noneMatch(Channel::isActive));
         }
     }
 

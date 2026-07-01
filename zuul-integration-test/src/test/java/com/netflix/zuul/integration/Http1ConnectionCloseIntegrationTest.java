@@ -59,11 +59,16 @@ class Http1ConnectionCloseIntegrationTest {
 
     private static final Duration AWAIT_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CLIENT_READ_TIMEOUT = Duration.ofSeconds(5);
+    private static final int MAX_REQUESTS_PER_CONNECTION = 2;
 
     static {
         System.setProperty("io.netty.customResourceLeakDetector", CustomLeakDetector.class.getCanonicalName());
         // close the socket immediately once flagged, rather than waiting out the default connCloseDelay
         ConfigurationManager.getConfigInstance().setProperty("server.connection.close.delay", "0");
+        // expire connections after a couple of requests so expiry can be exercised deterministically (the close-event
+        // tests only issue a single request per connection, so they never trip this)
+        ConfigurationManager.getConfigInstance()
+                .setProperty("server.connection.max.requests", String.valueOf(MAX_REQUESTS_PER_CONNECTION));
     }
 
     private static final GatedResponse gatedResponse = new GatedResponse();
@@ -96,6 +101,7 @@ class Http1ConnectionCloseIntegrationTest {
     static void afterAll() {
         ConfigurationManager.getConfigInstance().clearProperty("api.ribbon.listOfServers");
         ConfigurationManager.getConfigInstance().clearProperty("server.connection.close.delay");
+        ConfigurationManager.getConfigInstance().clearProperty("server.connection.max.requests");
         CustomLeakDetector.assertZeroLeaks();
     }
 
@@ -153,6 +159,25 @@ class Http1ConnectionCloseIntegrationTest {
         }
 
         await().atMost(AWAIT_TIMEOUT).until(() -> !serverChannel.isActive());
+    }
+
+    @Test
+    void connectionExpiresAfterMaxRequests() throws Exception {
+        wireMock.register(get(anyUrl()).willReturn(ok().withBody("yo")));
+
+        // reuse a single kept-alive connection for maxRequests requests (reading each body lets OkHttp pool it). The
+        // expiry handler fires its close event only after the final response is written, so that response carries no
+        // Connection: close header - the server simply closes the connection once it has served maxRequests.
+        for (int i = 0; i < MAX_REQUESTS_PER_CONNECTION; i++) {
+            try (Response response = client.newCall(request()).execute()) {
+                assertThat(response.code()).isEqualTo(200);
+                assertThat(response.body().string()).isEqualTo("yo");
+            }
+        }
+
+        await("server should close the connection once it has served maxRequests")
+                .atMost(AWAIT_TIMEOUT)
+                .until(() -> zuulExtension.getClientChannels().stream().noneMatch(Channel::isActive));
     }
 
     private void fireCloseEvent(Channel serverChannel) {
