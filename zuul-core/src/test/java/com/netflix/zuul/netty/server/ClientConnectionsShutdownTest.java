@@ -32,6 +32,7 @@ import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
 import com.netflix.netty.common.close.CloseReason;
 import com.netflix.netty.common.close.ConnectionCloseEvent;
+import com.netflix.netty.common.close.ConnectionCloseEvent.GracefulDelayed;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -52,6 +53,7 @@ import io.netty.channel.local.LocalIoHandler;
 import io.netty.channel.local.LocalServerChannel;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -255,11 +257,17 @@ class ClientConnectionsShutdownTest {
         CloseEventCaptor captor = new CloseEventCaptor();
         channel.pipeline().addLast(captor);
 
-        for (CloseReason reason : CloseReason.values()) {
+        for (CloseReason reason : List.of(CloseReason.SHUTDOWN, CloseReason.OUT_OF_SERVICE)) {
             shutdown.gracefullyShutdownClientChannels(reason);
             ConnectionCloseEvent event = captor.awaitEvent();
-            assertThat(event).isInstanceOf(ConnectionCloseEvent.GracefulDelayed.class);
             assertThat(event.reason()).isEqualTo(reason);
+
+            if (reason == CloseReason.SHUTDOWN) {
+                assertThat(event).isInstanceOf(ConnectionCloseEvent.Graceful.class);
+            } else {
+                assertThat(event).isInstanceOf(ConnectionCloseEvent.GracefulDelayed.class);
+                assertThat(((GracefulDelayed) event).maxJitter()).isPositive();
+            }
         }
 
         channels.close().await(5, TimeUnit.SECONDS);

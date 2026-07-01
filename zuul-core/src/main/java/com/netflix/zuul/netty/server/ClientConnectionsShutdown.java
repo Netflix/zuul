@@ -23,6 +23,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.StatusChangeEvent;
 import com.netflix.netty.common.close.CloseReason;
 import com.netflix.netty.common.close.ConnectionCloseEvent;
+import com.netflix.netty.common.close.ConnectionCloseEvent.Graceful;
 import com.netflix.netty.common.close.ConnectionCloseEvent.GracefulDelayed;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
@@ -50,6 +51,8 @@ public class ClientConnectionsShutdown {
             new DynamicBooleanProperty("server.outofservice.connections.shutdown", false);
     private static final DynamicIntProperty DELAY_AFTER_OUT_OF_SERVICE_MS =
             new DynamicIntProperty("server.outofservice.connections.delay", 2000);
+    private static final DynamicIntProperty OUT_OF_SERVICE_MAX_JITTER =
+            new DynamicIntProperty("server.outofservice.max.jitter", (int) TimeUnit.MINUTES.toMillis(5));
     private static final DynamicIntProperty GRACEFUL_CLOSE_TIMEOUT =
             new DynamicIntProperty("server.outofservice.close.timeout", 30);
 
@@ -100,13 +103,12 @@ public class ClientConnectionsShutdown {
     }
 
     Promise<@Nullable Void> gracefullyShutdownClientChannels(CloseReason closeReason) {
-        // Mark all active connections to be closed after next response sent.
-        LOG.warn("Flagging CLOSE_AFTER_RESPONSE on {} client channels.", channels.size());
+        ConnectionCloseEvent closeEvent = newCloseEvent(closeReason);
+        LOG.warn("Sending {} on {} client channels.", closeEvent, channels.size());
 
         // racy situation if new connections are still coming in, but any channels created after newCloseFuture will
         // be closed during the force close stage
         ChannelGroupFuture closeFuture = channels.newCloseFuture();
-        ConnectionCloseEvent closeEvent = new GracefulDelayed(closeReason, getJitterFor(closeReason));
         for (Channel channel : channels) {
             channel.pipeline().fireUserEventTriggered(closeEvent);
         }
@@ -149,11 +151,11 @@ public class ClientConnectionsShutdown {
         return promise;
     }
 
-    protected Duration getJitterFor(CloseReason reason) {
-        // configurable..
+    protected ConnectionCloseEvent newCloseEvent(CloseReason reason) {
         return switch (reason) {
-            case OUT_OF_SERVICE -> Duration.ofMinutes(10);
-            default -> Duration.ofSeconds(60);
+            case OUT_OF_SERVICE -> new GracefulDelayed(reason, Duration.ofMillis(OUT_OF_SERVICE_MAX_JITTER.get()));
+            case SHUTDOWN -> new Graceful(reason);
+            default -> throw new IllegalArgumentException("should not ");
         };
     }
 }
