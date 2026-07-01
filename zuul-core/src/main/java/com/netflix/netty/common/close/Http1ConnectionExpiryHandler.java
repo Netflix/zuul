@@ -17,19 +17,21 @@
 package com.netflix.netty.common.close;
 
 import io.netty.handler.codec.http.HttpResponse;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * User: michaels@netflix.com
  * Date: 2/8/17
  * Time: 9:58 AM
  */
+@NullMarked
 public class Http1ConnectionExpiryHandler extends AbstractHttpConnectionExpiryHandler {
     public Http1ConnectionExpiryHandler(int maxRequests, int maxExpiry) {
         super(maxRequests, maxExpiry);
     }
 
     @Override
-    protected boolean isTerminalResponse(Object msg) {
+    protected boolean isResponse(Object msg) {
         return msg instanceof HttpResponse;
     }
 }

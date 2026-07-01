@@ -44,16 +44,14 @@ class Http1ConnectionExpiryHandlerTest {
     }
 
     @Test
-    void httpResponseIsTerminal() {
+    void httpResponse() {
         channel.writeOutbound(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
-
-        assertThat(handler.requestCount).isEqualTo(1);
+        assertThat(handler.getCount()).isEqualTo(1);
     }
 
     @Test
-    void httpContentIsNotTerminal() {
+    void httpContentIsNotCounted() {
         channel.writeOutbound(LastHttpContent.EMPTY_LAST_CONTENT);
-
-        assertThat(handler.requestCount).isZero();
+        assertThat(handler.getCount()).isZero();
     }
 }

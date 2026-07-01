@@ -20,8 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,37 +45,48 @@ class Http2ConnectionExpiryHandlerTest {
     }
 
     @Test
-    void endStreamHeadersFrameIsTerminal() {
+    void endStreamHeadersFrame() {
         channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), true));
-
-        assertThat(handler.requestCount).isEqualTo(1);
+        assertThat(handler.getCount()).isEqualTo(1);
     }
 
     @Test
-    void nonEndStreamHeadersFrameIsNotTerminal() {
+    void manyHeadersFrames() {
+        channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers()));
+        channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers()));
+        channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers()));
+        channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), true));
+        assertThat(handler.getCount()).isEqualTo(1);
+    }
+
+    @Test
+    void nonEndStreamHeadersFrameIsNotEnd() {
         channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false));
-
-        assertThat(handler.requestCount).isZero();
+        assertThat(handler.getCount()).isZero();
     }
 
     @Test
-    void endStreamDataFrameIsTerminal() {
+    void headersAndDataFrame() {
+        channel.writeOutbound(new DefaultHttp2HeadersFrame(new DefaultHttp2Headers()));
         channel.writeOutbound(new DefaultHttp2DataFrame(true));
-
-        assertThat(handler.requestCount).isEqualTo(1);
+        assertThat(handler.getCount()).isEqualTo(1);
     }
 
     @Test
-    void nonEndStreamDataFrameIsNotTerminal() {
+    void endStreamDataFrame() {
+        channel.writeOutbound(new DefaultHttp2DataFrame(true));
+        assertThat(handler.getCount()).isEqualTo(1);
+    }
+
+    @Test
+    void nonEndStreamDataFrame() {
         channel.writeOutbound(new DefaultHttp2DataFrame(false));
-
-        assertThat(handler.requestCount).isZero();
+        assertThat(handler.getCount()).isZero();
     }
 
     @Test
-    void otherFrameIsNotTerminal() {
-        channel.writeOutbound("not-a-frame");
-
-        assertThat(handler.requestCount).isZero();
+    void otherFrameIsNotCounted() {
+        channel.writeOutbound(new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR));
+        assertThat(handler.getCount()).isZero();
     }
 }

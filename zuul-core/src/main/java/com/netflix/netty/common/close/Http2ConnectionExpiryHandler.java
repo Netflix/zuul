@@ -19,17 +19,15 @@ package com.netflix.netty.common.close;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import org.jspecify.annotations.NullMarked;
 
 /**
- * Stream level handler used for tracking expiration on the parent connection. This handler is safe to share
- * between streams, but each channel must have a unique instance
- *
- * This needs to be inserted in the stream pipeline before any h2->h1 conversion.
- *
- * User: michaels@netflix.com
- * Date: 2/8/17
- * Time: 9:58 AM
+ * Stream level handler used for tracking request volume on http/2 streams. This handler should
+ * be shared between streams on a common connection, but each connection requires a unique instance.
+ * A {@link ConnectionCloseEvent} will be fired on the parent (i.e. connection) pipeline, and is expected that
+ * a different handler, like {@link Http2ConnectionCloseHandler}, will handle the event.
  */
+@NullMarked
 @ChannelHandler.Sharable
 public class Http2ConnectionExpiryHandler extends AbstractHttpConnectionExpiryHandler {
     public Http2ConnectionExpiryHandler(int maxRequests, int maxExpiry) {
@@ -37,7 +35,8 @@ public class Http2ConnectionExpiryHandler extends AbstractHttpConnectionExpiryHa
     }
 
     @Override
-    protected boolean isTerminalResponse(Object msg) {
+    protected boolean isResponse(Object msg) {
+        // only count end frames to avoid double counting
         return (msg instanceof Http2HeadersFrame headersFrame && headersFrame.isEndStream())
                 || (msg instanceof Http2DataFrame dataFrame && dataFrame.isEndStream());
     }
