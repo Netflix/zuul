@@ -124,9 +124,7 @@ public class ClientConnectionsShutdown {
                             if (!future.isSuccess()) {
                                 LOG.error("Failed to close all connections", future.cause());
                             }
-                            if (!promise.isDone()) {
-                                promise.setSuccess(null);
-                            }
+                            promise.trySuccess(null);
                         });
                     },
                     GRACEFUL_CLOSE_TIMEOUT.get(),
@@ -145,7 +143,7 @@ public class ClientConnectionsShutdown {
         closeFuture.addListener(future -> {
             LOG.info("CloseFuture completed successfully: {}", future.isSuccess());
             cancelTimeoutTask.run();
-            promise.setSuccess(null);
+            promise.trySuccess(null);
         });
 
         return promise;
@@ -153,7 +151,8 @@ public class ClientConnectionsShutdown {
 
     protected ConnectionCloseEvent newCloseEvent(CloseReason reason) {
         return switch (reason) {
-            case OUT_OF_SERVICE -> new GracefulDelayed(reason, Duration.ofMillis(OUT_OF_SERVICE_MAX_JITTER.get()));
+            case OUT_OF_SERVICE ->
+                new GracefulDelayed(reason, Duration.ofMillis(Math.max(OUT_OF_SERVICE_MAX_JITTER.get(), 1)));
             case SHUTDOWN -> new Graceful(reason);
             default -> throw new IllegalArgumentException("unable to handle " + reason);
         };
