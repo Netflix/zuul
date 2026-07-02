@@ -19,8 +19,6 @@ package com.netflix.netty.common.close;
 import com.netflix.netty.common.SourceAddressChannelHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
-import com.netflix.netty.common.close.ConnectionCloseEvent.Graceful;
-import com.netflix.netty.common.close.ConnectionCloseEvent.GracefulDelayed;
 import com.netflix.spectator.api.Id;
 import com.netflix.spectator.api.Registry;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
@@ -125,7 +123,7 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
         }
 
         Id tags = registry.createId("server.connection.close.handled")
-                .withTag("close_type", closeType(closeEvent))
+                .withTag("close_type", closeEvent.closeType())
                 .withTag("close_reason", closeEvent.reason().name())
                 .withTag("close_trigger", trigger)
                 .withTag("port", Integer.toString(port))
@@ -159,7 +157,7 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
         }
 
         Id tags = registry.createId("server.connection.close.started")
-                .withTag("close_type", closeType(closeEvent))
+                .withTag("close_type", closeEvent.closeType())
                 .withTag("close_reason", closeEvent.reason().name())
                 .withTag("port", Integer.toString(port))
                 .withTag("protocol", getProtocol());
@@ -174,12 +172,5 @@ abstract class BaseConnectionCloseHandler extends ChannelDuplexHandler {
         closeEvent = event;
         countStarted(getPort(ctx.channel()));
         onCloseEvent(ctx, event);
-    }
-
-    private static String closeType(ConnectionCloseEvent event) {
-        return switch (event) {
-            case Graceful ignored -> "GRACEFUL";
-            case GracefulDelayed ignored -> "GRACEFUL_DELAYED";
-        };
     }
 }

@@ -26,8 +26,15 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface ConnectionCloseEvent {
 
     CloseReason reason();
+    String closeType();
 
-    record Graceful(CloseReason reason) implements ConnectionCloseEvent {}
+    record Graceful(CloseReason reason) implements ConnectionCloseEvent {
+
+        @Override
+        public String closeType() {
+            return "GRACEFUL";
+        }
+    }
 
     /**
      * Close the connection after a random delay in {@code [0, maxJitter)}, useful for avoiding thundering herds when
@@ -38,6 +45,11 @@ public sealed interface ConnectionCloseEvent {
             if (maxJitter.toMillis() < 1) {
                 throw new IllegalArgumentException("maxJitter must be at least 1 ms, but was " + maxJitter);
             }
+        }
+
+        @Override
+        public String closeType() {
+            return "GRACEFUL_DELAYED";
         }
     }
 }
