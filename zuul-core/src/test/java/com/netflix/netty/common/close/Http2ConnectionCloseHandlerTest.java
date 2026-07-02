@@ -43,6 +43,7 @@ class Http2ConnectionCloseHandlerTest {
     private Registry registry;
     private EmbeddedChannel channel;
     private RecordingExceptionHandler exceptionHandler;
+    private ChannelConfig channelConfig;
 
     @BeforeEach
     void setup() {
@@ -51,7 +52,7 @@ class Http2ConnectionCloseHandlerTest {
         channel = new EmbeddedChannel(new Http2ConnectionCloseHandler(registry), exceptionHandler);
         channel.attr(SourceAddressChannelHandler.ATTR_SERVER_LOCAL_PORT).set(PORT);
 
-        ChannelConfig channelConfig = new ChannelConfig();
+        channelConfig = new ChannelConfig();
         channelConfig.set(CommonChannelConfigKeys.connCloseDelay, 0);
         channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).set(channelConfig);
     }
@@ -101,6 +102,17 @@ class Http2ConnectionCloseHandlerTest {
     }
 
     @Test
+    void immediatelyClosesWithoutGoAwayWhenGracefulDelayedIsDisabled() {
+        channelConfig.set(CommonChannelConfigKeys.http2AllowGracefulDelayed, false);
+
+        channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
+
+        assertThat(channel.<Http2GoAwayFrame>readOutbound()).isNull();
+        assertThat(channel.isOpen()).isFalse();
+        assertThat(handledCount("GRACEFUL", CloseReason.SHUTDOWN, "immediate")).isEqualTo(1);
+    }
+
+    @Test
     void closeTimeoutFiresAnHttp2ExceptionRequestingGracefulShutdown() {
         channel.pipeline().fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN));
         Http2GoAwayFrame goaway = channel.readOutbound();
@@ -118,6 +130,16 @@ class Http2ConnectionCloseHandlerTest {
         Id id = registry.createId("server.connection.close.started")
                 .withTag("close_type", closeType)
                 .withTag("close_reason", reason.name())
+                .withTag("port", Integer.toString(PORT))
+                .withTag("protocol", "http/2");
+        return registry.counter(id).count();
+    }
+
+    private long handledCount(String closeType, CloseReason reason, String trigger) {
+        Id id = registry.createId("server.connection.close.handled")
+                .withTag("close_type", closeType)
+                .withTag("close_reason", reason.name())
+                .withTag("close_trigger", trigger)
                 .withTag("port", Integer.toString(PORT))
                 .withTag("protocol", "http/2");
         return registry.counter(id).count();

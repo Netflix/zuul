@@ -16,8 +16,11 @@
 
 package com.netflix.netty.common.close;
 
+import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
 import com.netflix.spectator.api.Registry;
+import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Error;
@@ -56,17 +59,37 @@ public class Http2ConnectionCloseHandler extends BaseConnectionCloseHandler {
 
     @Override
     protected void onCloseEvent(ChannelHandlerContext ctx, ConnectionCloseEvent event) {
+        Channel channel = ctx.channel();
+
+        // okhttp circa ~2017 struggled with the two phase go-away shutdown. This escape hatch can be used to switch
+        // to a single go-away and close shutdown
+        if (!allowGracefulDelayed(channel)) {
+            log.debug("Graceful delayed close disabled, skipping two phase go-away close");
+            countHandled(getPort(channel), "immediate");
+            ctx.close();
+            return;
+        }
+
         DefaultHttp2GoAwayFrame goaway = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR);
         goaway.setExtraStreamIds(Integer.MAX_VALUE);
         ctx.writeAndFlush(goaway);
 
         scheduleCloseTimeout(
                 () -> {
-                    countHandled(getPort(ctx.channel()), "timeout");
+                    countHandled(getPort(channel), "timeout");
                     Http2Exception h2e =
                             new Http2Exception(Http2Error.NO_ERROR, Http2Exception.ShutdownHint.GRACEFUL_SHUTDOWN);
                     ctx.pipeline().fireExceptionCaught(h2e);
                 },
-                ctx.channel());
+                channel);
+    }
+
+    private static boolean allowGracefulDelayed(Channel channel) {
+        ChannelConfig channelConfig =
+                channel.attr(BaseZuulChannelInitializer.ATTR_CHANNEL_CONFIG).get();
+        if (channelConfig == null) {
+            return CommonChannelConfigKeys.http2AllowGracefulDelayed.defaultValue();
+        }
+        return channelConfig.get(CommonChannelConfigKeys.http2AllowGracefulDelayed);
     }
 }
