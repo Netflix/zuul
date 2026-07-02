@@ -78,9 +78,7 @@ public abstract class AbstractHttpConnectionExpiryHandler extends ChannelOutboun
             count++;
             if (isConnectionExpired(ctx.channel())) {
                 Channel channel = HttpUtils.getMainChannel(ctx);
-                promise.addListener(f -> {
-                    channel.pipeline().fireUserEventTriggered(EXPIRATION_EVENT);
-                });
+                channel.pipeline().fireUserEventTriggered(EXPIRATION_EVENT);
             }
         }
 

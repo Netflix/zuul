@@ -87,7 +87,7 @@ class AbstractHttpConnectionExpiryHandlerTest {
 
     @Test
     void connectionExpiresOnceMaxRequestsReached() {
-        TestExpiryHandler handler = addHandler(2, MAX_EXPIRY_MILLIS);
+        addHandler(2, MAX_EXPIRY_MILLIS);
 
         channel.writeOutbound(new TerminalMessage());
         assertThat(closeEvents.events).isEmpty();

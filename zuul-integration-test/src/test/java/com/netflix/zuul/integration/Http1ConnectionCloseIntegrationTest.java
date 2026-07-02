@@ -165,13 +165,16 @@ class Http1ConnectionCloseIntegrationTest {
     void connectionExpiresAfterMaxRequests() throws Exception {
         wireMock.register(get(anyUrl()).willReturn(ok().withBody("yo")));
 
-        // reuse a single kept-alive connection for maxRequests requests (reading each body lets OkHttp pool it). The
-        // expiry handler fires its close event only after the final response is written, so that response carries no
-        // Connection: close header - the server simply closes the connection once it has served maxRequests.
         for (int i = 0; i < MAX_REQUESTS_PER_CONNECTION; i++) {
+            boolean lastRequest = i == MAX_REQUESTS_PER_CONNECTION - 1;
             try (Response response = client.newCall(request()).execute()) {
                 assertThat(response.code()).isEqualTo(200);
                 assertThat(response.body().string()).isEqualTo("yo");
+                if (lastRequest) {
+                    assertThat(response.header("Connection")).isEqualToIgnoringCase("close");
+                } else {
+                    assertThat(response.header("Connection")).isNotEqualToIgnoringCase("close");
+                }
             }
         }
 
@@ -181,9 +184,11 @@ class Http1ConnectionCloseIntegrationTest {
     }
 
     private void fireCloseEvent(Channel serverChannel) {
-        serverChannel.eventLoop().execute(() -> serverChannel
-                .pipeline()
-                .fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN)));
+        serverChannel
+                .eventLoop()
+                .execute(() -> serverChannel
+                        .pipeline()
+                        .fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN)));
     }
 
     private static Channel awaitServerChannel() {
