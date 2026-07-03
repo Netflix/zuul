@@ -57,8 +57,14 @@ public class FilterConstraints {
             constraints = this.filterConstraints.computeIfAbsent(filter.getClass(), k -> this.resolve(filter));
         }
 
-        for (FilterConstraint constraint : constraints) {
-            if (constraint.isConstrained(msg)) {
+        if (constraints.isEmpty()) {
+            return false;
+        }
+
+        // intentionally using an index loop rather than an enhanced-for
+        // to avoid allocations on this hot path
+        for (int i = 0; i < constraints.size(); i++) {
+            if (constraints.get(i).isConstrained(msg)) {
                 return true;
             }
         }
