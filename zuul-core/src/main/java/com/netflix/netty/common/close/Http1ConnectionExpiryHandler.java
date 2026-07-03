@@ -14,31 +14,24 @@
  *      limitations under the License.
  */
 
-package com.netflix.netty.common;
+package com.netflix.netty.common.close;
 
-import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpResponse;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * User: michaels@netflix.com
  * Date: 2/8/17
- * Time: 2:04 PM
+ * Time: 9:58 AM
  */
-public enum ConnectionCloseType {
-    IMMEDIATE,
-    GRACEFUL,
-    DELAYED_GRACEFUL;
-
-    public static ConnectionCloseType fromChannel(Channel ch) {
-        ConnectionCloseType type =
-                ch.attr(ConnectionCloseChannelAttributes.CLOSE_TYPE).get();
-        if (type == null) {
-            // Default to immediate.
-            type = ConnectionCloseType.IMMEDIATE;
-        }
-        return type;
+@NullMarked
+public class Http1ConnectionExpiryHandler extends AbstractHttpConnectionExpiryHandler {
+    public Http1ConnectionExpiryHandler(int maxRequests, int maxExpiry) {
+        super(maxRequests, maxExpiry);
     }
 
-    public static void setForChannel(Channel ch, ConnectionCloseType type) {
-        ch.attr(ConnectionCloseChannelAttributes.CLOSE_TYPE).set(type);
+    @Override
+    protected boolean isResponse(Object msg) {
+        return msg instanceof HttpResponse;
     }
 }

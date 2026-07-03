@@ -259,12 +259,6 @@ public abstract class BaseServerStartup {
                 CommonChannelConfigKeys.maxRequestsPerConnection,
                 chooseIntChannelProperty(listenAddressName, "connection.max.requests", 20000)));
         config.add(new ChannelConfigValue<>(
-                CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout,
-                chooseIntChannelProperty(
-                        listenAddressName,
-                        "connection.max.requests.brownout",
-                        CommonChannelConfigKeys.maxRequestsPerConnectionInBrownout.defaultValue())));
-        config.add(new ChannelConfigValue<>(
                 CommonChannelConfigKeys.connectionExpiry,
                 chooseIntChannelProperty(
                         listenAddressName,

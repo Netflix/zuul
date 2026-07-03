@@ -16,7 +16,6 @@
 
 package com.netflix.netty.common.throttle;
 
-import com.netflix.netty.common.ConnectionCloseChannelAttributes;
 import com.netflix.netty.common.proxyprotocol.HAProxyMessageChannelHandler;
 import com.netflix.zuul.passport.CurrentPassport;
 import com.netflix.zuul.passport.PassportState;
@@ -135,20 +134,6 @@ public final class RejectionUtils {
     }
 
     /**
-     * Marks the given channel for being closed after the next response.
-     *
-     * @param ctx the channel handler processing the request
-     */
-    public static void allowThenClose(ChannelHandlerContext ctx) {
-        // Just flag this channel to be closed after response complete.
-        ctx.channel()
-                .attr(ConnectionCloseChannelAttributes.CLOSE_AFTER_RESPONSE)
-                .set(ctx.newPromise());
-
-        // And allow this request through without rejecting.
-    }
-
-    /**
      * Throttle either by sending rejection response message, or by closing the connection now, or just drop the
      * message. Only call this if ThrottleResult.shouldThrottle() returned {@code true}.
      *
@@ -183,8 +168,6 @@ public final class RejectionUtils {
         if (rejectionType == RejectionType.REJECT && msg instanceof LastHttpContent) {
             shouldRejectNow = true;
         } else if (rejectionType == RejectionType.CLOSE && msg instanceof HttpRequest) {
-            shouldRejectNow = true;
-        } else if (rejectionType == RejectionType.ALLOW_THEN_CLOSE && msg instanceof HttpRequest) {
             shouldRejectNow = true;
         }
 
@@ -283,10 +266,6 @@ public final class RejectionUtils {
             }
             case CLOSE -> {
                 rejectByClosingConnection(ctx, nfStatus, reason, request, injectedLatencyMillis);
-                return;
-            }
-            case ALLOW_THEN_CLOSE -> {
-                allowThenClose(ctx);
                 return;
             }
         }
