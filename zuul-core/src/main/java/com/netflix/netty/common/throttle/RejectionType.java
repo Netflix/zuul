@@ -32,12 +32,5 @@ public enum RejectionType {
      * Indicates that the connection should be closed, not allowing the request to proceed.  No HTTP response will be
      * returned.
      */
-    CLOSE,
-
-    /**
-     * Allows the request to proceed, followed by closing the connection.  This is typically used in conjunction with
-     * throttling handling, where the response may need to be handled by the filter chain.  It is not expected that the
-     * request will be proxied.
-     */
-    ALLOW_THEN_CLOSE;
+    CLOSE;
 }

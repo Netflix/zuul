@@ -18,11 +18,10 @@ package com.netflix.zuul.netty.server.http2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.netflix.netty.common.Http2ConnectionCloseHandler;
-import com.netflix.netty.common.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.channel.config.ChannelConfig;
 import com.netflix.netty.common.channel.config.ChannelConfigValue;
 import com.netflix.netty.common.channel.config.CommonChannelConfigKeys;
+import com.netflix.netty.common.close.Http2ConnectionExpiryHandler;
 import com.netflix.netty.common.metrics.Http2MetricsChannelHandlers;
 import com.netflix.spectator.api.NoopRegistry;
 import com.netflix.zuul.netty.server.BaseZuulChannelInitializer;
@@ -61,18 +60,11 @@ class Http2OrHttpHandlerTest {
         NoopRegistry registry = new NoopRegistry();
         channelConfig.add(new ChannelConfigValue<>(CommonChannelConfigKeys.maxHttp2HeaderListSize, 32768));
 
-        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(registry);
-        Http2ConnectionExpiryHandler connectionExpiryHandler =
-                new Http2ConnectionExpiryHandler(100, 100, 20 * 60 * 1000);
+        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(100, 20 * 60 * 1000);
         Http2MetricsChannelHandlers http2MetricsChannelHandlers =
                 new Http2MetricsChannelHandlers(registry, "server", "http2-443");
         Http2OrHttpHandler http2OrHttpHandler = new Http2OrHttpHandler(
-                new Http2StreamInitializer(
-                        channel,
-                        (x) -> {},
-                        http2MetricsChannelHandlers,
-                        connectionCloseHandler,
-                        connectionExpiryHandler),
+                new Http2StreamInitializer(channel, (x) -> {}, http2MetricsChannelHandlers, connectionExpiryHandler),
                 channelConfig,
                 cp -> {});
 

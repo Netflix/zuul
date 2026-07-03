@@ -29,8 +29,6 @@ import io.netty.util.AttributeKey;
 public class HttpChannelFlags {
     public static final Flag IN_BROWNOUT = new Flag("_brownout");
 
-    public static final Flag CLOSING = new Flag("_connection_closing");
-
     public static class Flag {
         private final AttributeKey<Boolean> attributeKey;
 
