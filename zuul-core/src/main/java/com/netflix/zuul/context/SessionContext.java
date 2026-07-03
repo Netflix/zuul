@@ -35,7 +35,7 @@ import lombok.NonNull;
 
 /**
  * Represents the context between client and origin server for the duration of the dedicated connection/session
- * between them. But we're currently still only modelling single request/response pair per session.
+ * between them. But we're currently still only modeling single request/response pair per session.
  *
  * NOTE: Not threadsafe, and not intended to be used concurrently.
  *
@@ -43,7 +43,7 @@ import lombok.NonNull;
  * Date: 4/28/15
  * Time: 6:45 PM
  */
-public final class SessionContext extends HashMap<String, Object> implements Cloneable {
+public final class SessionContext implements Cloneable {
     private static final int INITIAL_SIZE = DynamicPropertyFactory.getInstance()
             .getIntProperty("com.netflix.zuul.context.SessionContext.initialSize", 60)
             .get();
@@ -67,7 +67,8 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
-    private final IdentityHashMap<Key<?>, ?> typedMap = new IdentityHashMap<>();
+    private final Map<String, Object> map;
+    private final IdentityHashMap<Key<?>, Object> typedMap;
 
     /**
      * A Key is type-safe, identity-based key into the Session Context.
@@ -115,9 +116,8 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
 
     @SuppressWarnings("UnnecessaryStringBuilder")
     public SessionContext() {
-        // Use a higher than default initial capacity for the hashmap as we generally have more than the default
-        // 16 entries.
-        super(INITIAL_SIZE);
+        this.map = new HashMap<>(INITIAL_SIZE);
+        this.typedMap = new IdentityHashMap<>();
 
         put(KEY_FILTER_EXECS, new StringBuilder());
         put(KEY_EVENT_PROPS, new HashMap<String, Object>(EVENT_PROPERTIES_INITIAL_SIZE));
@@ -133,20 +133,17 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This method exists for static analysis.
+     * Returns the value for the given string key, or {@code null} if absent.
      */
-    @Override
-    public Object get(Object key) {
-        return super.get(key);
+    public Object get(String key) {
+        return map.get(key);
     }
 
     /**
      * Returns the value in the context, or {@code null} if absent.
      */
-    @SuppressWarnings("unchecked")
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T> T get(@NonNull Key<T> key) {
         T value = (T) typedMap.get(key);
         if (value == null) {
@@ -180,13 +177,17 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This method exists for static analysis.
+     * Returns the value for the given string key, or {@code defaultValue} if absent.
      */
-    @Override
-    public boolean containsKey(Object key) {
-        return super.containsKey(key);
+    public Object getOrDefault(String key, Object defaultValue) {
+        return map.getOrDefault(key, defaultValue);
+    }
+
+    /**
+     * Checks for the existence of the string key in the context.
+     */
+    public boolean containsKey(String key) {
+        return map.containsKey(key);
     }
 
     /**
@@ -197,13 +198,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This method exists for static analysis.
+     * Associates the value with the given string key, returning the previous value or {@code null}.
      */
-    @Override
     public Object put(String key, Object value) {
-        return super.put(key, value);
+        return map.put(key, value);
     }
 
     /**
@@ -222,13 +220,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This method exists for static analysis.
+     * Removes the entry for the given string key only if it is currently mapped to the value.
      */
-    @Override
-    public boolean remove(Object key, Object value) {
-        return super.remove(key, value);
+    public boolean remove(String key, Object value) {
+        return map.remove(key, value);
     }
 
     public <T> boolean remove(Key<T> key, T value) {
@@ -240,13 +235,10 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * <p>This method exists for static analysis.
+     * Removes the entry for the given string key, returning the previous value or {@code null}.
      */
-    @Override
-    public Object remove(Object key) {
-        return super.remove(key);
+    public Object remove(String key) {
+        return map.remove(key);
     }
 
     public <T> T remove(Key<T> key) {
@@ -260,13 +252,24 @@ public final class SessionContext extends HashMap<String, Object> implements Clo
         return Collections.unmodifiableSet(new HashSet<>(typedMap.keySet()));
     }
 
+    public int size() {
+        return map.size() + typedMap.size();
+    }
+
     /**
-     * Makes a copy of the SessionContext.
+     * Makes a shallow copy of the SessionContext.
      */
     @Override
     public SessionContext clone() {
-        // TODO(carl-mastrangelo): copy over the type safe keys
-        return (SessionContext) super.clone();
+        SessionContext copy = new SessionContext();
+        copy.map.putAll(this.map);
+        copy.typedMap.putAll(this.typedMap);
+        copy.brownoutMode = brownoutMode;
+        copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
+        copy.shouldSendErrorResponse = shouldSendErrorResponse;
+        copy.errorResponseSent = errorResponseSent;
+        copy.cancelled = cancelled;
+        return copy;
     }
 
     public String getString(String key) {
