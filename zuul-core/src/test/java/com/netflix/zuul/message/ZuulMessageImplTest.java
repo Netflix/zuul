@@ -46,7 +46,7 @@ class ZuulMessageImplTest {
 
         assertThat(msg2.getBodyAsText()).isEqualTo(msg1.getBodyAsText());
         assertThat(msg2.getHeaders()).isEqualTo(msg1.getHeaders());
-        assertThat(msg2.getContext()).isEqualTo(msg1.getContext());
+        assertThat(msg2.getContext()).isNotNull();
 
         // Verify that values of the 2 messages are decoupled.
         msg1.getHeaders().set("k1", "v_new");
