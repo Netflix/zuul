@@ -21,7 +21,6 @@ import com.netflix.spectator.api.Counter;
 import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.netty.SpectatorUtils;
-import io.netty.handler.codec.http.HttpContent;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -43,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> implements ZuulFilter<I, O> {
 
     private final String baseName;
+    private final boolean processesContentChunks;
     private final AtomicInteger concurrentCount;
     private final Counter concurrencyRejections;
     private final CachedDynamicBooleanProperty filterDisabled;
@@ -53,6 +53,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
     protected BaseFilter() {
         baseName = getClass().getSimpleName() + "." + filterType();
+        processesContentChunks = ZuulFilter.overridesProcessContentChunk(getClass());
         concurrentCount = SpectatorUtils.newGauge("zuul.filter.concurrency.current", baseName, new AtomicInteger(0));
         concurrencyRejections = SpectatorUtils.newCounter("zuul.filter.concurrency.rejected", baseName);
         filterDisabled = new CachedDynamicBooleanProperty(disablePropertyName(), false);
@@ -67,6 +68,11 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public String filterName() {
         return getClass().getName();
+    }
+
+    @Override
+    public boolean processesContentChunks() {
+        return processesContentChunks;
     }
 
     @Override
@@ -115,11 +121,6 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
     @Override
     public boolean needsBodyBuffered(I input) {
         return false;
-    }
-
-    @Override
-    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
-        return chunk;
     }
 
     @Override
