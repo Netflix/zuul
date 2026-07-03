@@ -40,10 +40,13 @@ import io.netty.channel.local.LocalChannel;
 import io.netty.channel.local.LocalIoHandler;
 import io.netty.handler.codec.http.HttpContent;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import lombok.NonNull;
@@ -196,6 +199,46 @@ public class BaseZuulFilterRunnerTest {
     public void shouldFilterTrueDoesNotSkip() {
         InboundFilter filter = new InboundFilter(true);
         assertThat(runner.shouldSkipFilter(message, filter)).isFalse();
+    }
+
+    @Test
+    public void differentFilterTypesUseCorrectKeys() {
+        TestBaseZuulFilterRunner inboundRunner =
+                new TestBaseZuulFilterRunner(FilterType.INBOUND, notifier, nextStage, new NoopRegistry());
+        TestBaseZuulFilterRunner endpointRunner =
+                new TestBaseZuulFilterRunner(FilterType.ENDPOINT, notifier, nextStage, new NoopRegistry());
+        TestBaseZuulFilterRunner outboundRunner =
+                new TestBaseZuulFilterRunner(FilterType.OUTBOUND, notifier, nextStage, new NoopRegistry());
+
+        AtomicInteger inboundIdx = inboundRunner.initRunningFilterIndex(message);
+        AtomicInteger endpointIdx = endpointRunner.initRunningFilterIndex(message);
+        AtomicInteger outboundIdx = outboundRunner.initRunningFilterIndex(message);
+
+        inboundIdx.set(1);
+        endpointIdx.set(2);
+        outboundIdx.set(3);
+
+        assertThat(inboundRunner.getRunningFilterIndex(message)).hasValue(1);
+        assertThat(endpointRunner.getRunningFilterIndex(message)).hasValue(2);
+        assertThat(outboundRunner.getRunningFilterIndex(message)).hasValue(3);
+
+        Map<FilterType, TestBaseZuulFilterRunner> types = Map.of(
+                FilterType.INBOUND,
+                inboundRunner,
+                FilterType.OUTBOUND,
+                outboundRunner,
+                FilterType.ENDPOINT,
+                endpointRunner);
+        for (FilterType type : FilterType.values()) {
+            types.get(type).setFilterAwaitingBody(message, true);
+
+            for (Entry<FilterType, TestBaseZuulFilterRunner> entry : types.entrySet()) {
+                assertThat(entry.getValue().isFilterAwaitingBody(message.getContext()))
+                        .as("runner %s in incorrect state from type %s", entry.getValue(), entry.getKey())
+                        .isEqualTo(entry.getKey() == type);
+            }
+            types.forEach((k, v) -> v.setFilterAwaitingBody(message, false));
+        }
     }
 
     @Test
