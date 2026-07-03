@@ -67,7 +67,7 @@ public final class SessionContext implements Cloneable {
     private static final String KEY_FILTER_ERRORS = "_filter_errors";
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
-    private final HashMap<String, Object> map;
+    private final Map<String, Object> map;
     private final IdentityHashMap<Key<?>, ?> typedMap;
 
     /**
