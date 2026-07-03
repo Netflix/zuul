@@ -42,6 +42,8 @@ import io.perfmark.Link;
 import io.perfmark.PerfMark;
 import io.perfmark.TaskCloseable;
 import jakarta.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -60,17 +62,30 @@ import org.slf4j.LoggerFactory;
 @ThreadSafe
 public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends ZuulMessage> implements FilterRunner<I, O> {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
+    private static final Map<FilterType, SessionContext.Key<AtomicInteger>> RUNNING_FILTER_INDEX_KEYS;
+    private static final Map<FilterType, SessionContext.Key<Boolean>> AWAITING_BODY_FLAG_KEYS;
+    private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME =
+            new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
+
+    static {
+        Map<FilterType, SessionContext.Key<AtomicInteger>> runningFilterIndexKeys = new HashMap<>();
+        Map<FilterType, SessionContext.Key<Boolean>> awaitingBodyFlagKeys = new HashMap<>();
+        for (FilterType type : FilterType.values()) {
+            runningFilterIndexKeys.put(type, SessionContext.newKey(type + "_RunningFilterIndex"));
+            awaitingBodyFlagKeys.put(type, SessionContext.newKey(type + "_IsAwaitingBody"));
+        }
+        RUNNING_FILTER_INDEX_KEYS = Map.copyOf(runningFilterIndexKeys);
+        AWAITING_BODY_FLAG_KEYS = Map.copyOf(awaitingBodyFlagKeys);
+    }
+
     private final FilterUsageNotifier usageNotifier;
 
     @Getter
     private final FilterRunner<O, ? extends ZuulMessage> nextStage;
 
-    private final String RUNNING_FILTER_IDX_SESSION_CTX_KEY;
-    private final String AWAITING_BODY_FLAG_SESSION_CTX_KEY;
-    private static final Logger logger = LoggerFactory.getLogger(BaseZuulFilterRunner.class);
-
-    private static final CachedDynamicIntProperty FILTER_EXCESSIVE_EXEC_TIME =
-            new CachedDynamicIntProperty("zuul.filters.excessive.execTime", 500);
+    private final SessionContext.Key<AtomicInteger> runningFilterIndexSessionKey;
+    private final SessionContext.Key<Boolean> awaitingBodyFlagSessionKey;
 
     private final Registry registry;
     private final Id filterExcessiveTimerId;
@@ -84,8 +99,8 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
             Registry registry) {
         this.usageNotifier = usageNotifier;
         this.nextStage = nextStage;
-        this.RUNNING_FILTER_IDX_SESSION_CTX_KEY = filterType + "RunningFilterIndex";
-        this.AWAITING_BODY_FLAG_SESSION_CTX_KEY = filterType + "IsAwaitingBody";
+        this.runningFilterIndexSessionKey = RUNNING_FILTER_INDEX_KEYS.get(filterType);
+        this.awaitingBodyFlagSessionKey = AWAITING_BODY_FLAG_KEYS.get(filterType);
         this.registry = registry;
         this.filterExcessiveTimerId = registry.createId("zuul.request.timing.filterExcessive");
         this.filterConstraints = filterConstraints;
@@ -98,25 +113,24 @@ public abstract class BaseZuulFilterRunner<I extends ZuulMessage, O extends Zuul
 
     protected final AtomicInteger initRunningFilterIndex(I zuulMesg) {
         AtomicInteger idx = new AtomicInteger(0);
-        zuulMesg.getContext().put(RUNNING_FILTER_IDX_SESSION_CTX_KEY, idx);
+        zuulMesg.getContext().put(runningFilterIndexSessionKey, idx);
         return idx;
     }
 
     protected final AtomicInteger getRunningFilterIndex(I zuulMesg) {
         SessionContext ctx = zuulMesg.getContext();
-        return (AtomicInteger)
-                Objects.requireNonNull(ctx.get(RUNNING_FILTER_IDX_SESSION_CTX_KEY), "runningFilterIndex");
+        return Objects.requireNonNull(ctx.get(runningFilterIndexSessionKey), "runningFilterIndex");
     }
 
     protected final boolean isFilterAwaitingBody(SessionContext context) {
-        return context.containsKey(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
+        return context.containsKey(awaitingBodyFlagSessionKey);
     }
 
     protected final void setFilterAwaitingBody(I zuulMesg, boolean flag) {
         if (flag) {
-            zuulMesg.getContext().put(AWAITING_BODY_FLAG_SESSION_CTX_KEY, true);
+            zuulMesg.getContext().put(awaitingBodyFlagSessionKey, true);
         } else {
-            zuulMesg.getContext().remove(AWAITING_BODY_FLAG_SESSION_CTX_KEY);
+            zuulMesg.getContext().remove(awaitingBodyFlagSessionKey);
         }
     }
 
