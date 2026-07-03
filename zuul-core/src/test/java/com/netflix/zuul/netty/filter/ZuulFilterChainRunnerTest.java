@@ -15,8 +15,11 @@
  */
 package com.netflix.zuul.netty.filter;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -35,14 +38,18 @@ import com.netflix.zuul.filters.ZuulFilter;
 import com.netflix.zuul.filters.http.HttpInboundFilter;
 import com.netflix.zuul.filters.http.HttpOutboundFilter;
 import com.netflix.zuul.message.Headers;
+import com.netflix.zuul.message.ZuulMessage;
 import com.netflix.zuul.message.http.HttpQueryParams;
 import com.netflix.zuul.message.http.HttpRequestMessage;
 import com.netflix.zuul.message.http.HttpRequestMessageImpl;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 import com.netflix.zuul.message.http.HttpResponseMessageImpl;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.DefaultHttpContent;
+import io.netty.handler.codec.http.HttpContent;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,13 +58,14 @@ import rx.Observable;
 class ZuulFilterChainRunnerTest {
     private HttpRequestMessage request;
     private HttpResponseMessage response;
+    private EmbeddedChannel channel;
 
     @BeforeEach
     void before() {
         SessionContext context = new SessionContext();
         Headers headers = new Headers();
 
-        EmbeddedChannel channel = new EmbeddedChannel(new ChannelInboundHandlerAdapter());
+        channel = new EmbeddedChannel(new ChannelInboundHandlerAdapter());
         ChannelHandlerContext ctx = channel.pipeline().context(ChannelInboundHandlerAdapter.class);
         context.put(CommonContextKeys.NETTY_SERVER_CHANNEL_HANDLER_CONTEXT, ctx);
         request = new HttpRequestMessageImpl(
@@ -121,6 +129,50 @@ class ZuulFilterChainRunnerTest {
         verifyNoMoreInteractions(notifier);
     }
 
+    @Test
+    void chunkPathSkipsNoOpFiltersButStillForwardsChunk() {
+        SimpleOutboundFilter outbound1 = spy(new SimpleOutboundFilter(true));
+        SimpleOutboundFilter outbound2 = spy(new SimpleOutboundFilter(true));
+
+        ZuulFilter[] filters = new ZuulFilter[] {outbound1, outbound2};
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
+                filters, mock(FilterUsageNotifier.class), new FilterConstraints(List.of()), mock(Registry.class));
+
+        runner.filter(response);
+        channel.readInbound();
+        clearInvocations(outbound1, outbound2);
+
+        HttpContent chunk = new DefaultHttpContent(Unpooled.copiedBuffer("data".getBytes(UTF_8)));
+        runner.filter(response, chunk);
+
+        verify(outbound1, never()).shouldFilter(any());
+        verify(outbound1, never()).isDisabled();
+        verify(outbound1, never()).processContentChunk(any(), any());
+        verify(outbound2, never()).shouldFilter(any());
+        assertThat((HttpContent) channel.readInbound()).isSameAs(chunk);
+    }
+
+    @Test
+    void chunkPathStillRunsChunkTransformingFilters() {
+        SimpleOutboundFilter noOp = spy(new SimpleOutboundFilter(true));
+        ChunkTransformingOutboundFilter transformer = spy(new ChunkTransformingOutboundFilter());
+
+        ZuulFilter[] filters = new ZuulFilter[] {noOp, transformer};
+        ZuulFilterChainRunner runner = new ZuulFilterChainRunner(
+                filters, mock(FilterUsageNotifier.class), new FilterConstraints(List.of()), mock(Registry.class));
+
+        runner.filter(response);
+        channel.readInbound();
+        clearInvocations(noOp, transformer);
+
+        HttpContent chunk = new DefaultHttpContent(Unpooled.copiedBuffer("data".getBytes(UTF_8)));
+        runner.filter(response, chunk);
+
+        verify(noOp, never()).processContentChunk(any(), any());
+        verify(transformer, times(1)).processContentChunk(eq(response), eq(chunk));
+        assertThat((HttpContent) channel.readInbound()).isSameAs(transformer.replacement);
+    }
+
     @Filter(order = 1)
     class SimpleInboundFilter extends HttpInboundFilter {
         private final boolean shouldFilter;
@@ -176,6 +228,36 @@ class ZuulFilterChainRunnerTest {
         @Override
         public boolean shouldFilter(HttpResponseMessage msg) {
             return this.shouldFilter;
+        }
+    }
+
+    @Filter(order = 1)
+    class ChunkTransformingOutboundFilter extends HttpOutboundFilter {
+        final HttpContent replacement = new DefaultHttpContent(Unpooled.copiedBuffer("gz".getBytes(UTF_8)));
+
+        @Override
+        public int filterOrder() {
+            return 0;
+        }
+
+        @Override
+        public FilterType filterType() {
+            return FilterType.OUTBOUND;
+        }
+
+        @Override
+        public Observable<HttpResponseMessage> applyAsync(HttpResponseMessage input) {
+            return Observable.just(input);
+        }
+
+        @Override
+        public boolean shouldFilter(HttpResponseMessage msg) {
+            return true;
+        }
+
+        @Override
+        public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
+            return replacement;
         }
     }
 }

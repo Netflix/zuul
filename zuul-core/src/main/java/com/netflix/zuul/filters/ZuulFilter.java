@@ -138,5 +138,31 @@ public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extend
     /**
      * Optionally transform HTTP content chunk received.
      */
-    HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk);
+    default HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
+        return chunk;
+    }
+
+    /**
+     * Whether this filter transforms streaming body chunks in processContentChunk.
+     * Given filters _generally_ do not process chunks, this allows the filter running to
+     * skip processing shouldFilter for every chunk.
+     */
+    default boolean processesContentChunks() {
+        return true;
+    }
+
+    /**
+     * Determines if the given filterClass overrides processContentChunk.
+     */
+    static boolean overridesProcessContentChunk(Class<?> filterClass) {
+        try {
+            return filterClass
+                            .getMethod("processContentChunk", ZuulMessage.class, HttpContent.class)
+                            .getDeclaringClass()
+                    != ZuulFilter.class;
+        } catch (NoSuchMethodException e) {
+            // fallback to assuming it does
+            return true;
+        }
+    }
 }

@@ -80,6 +80,10 @@ public class ZuulFilterChainRunner<T extends ZuulMessage> extends BaseZuulFilter
             int limit = runningFilterIdx.get();
             for (int i = 0; i < limit; i++) {
                 ZuulFilter<T, T> filter = filters[i];
+                if (!filter.processesContentChunks()) {
+                    continue;
+                }
+
                 filterName = filter.filterName();
                 if (!filter.isDisabled() && !shouldSkipFilter(inMesg, filter)) {
                     ByteBufUtil.touch(chunk, "Filter runner processing chunk, filter: ", filterName);

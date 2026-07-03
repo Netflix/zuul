@@ -17,7 +17,6 @@
 package com.netflix.zuul.filters;
 
 import com.netflix.zuul.message.ZuulMessage;
-import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 /**
@@ -37,6 +36,8 @@ import rx.Observable;
  */
 public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends ZuulMessage>
         implements SyncZuulFilter<I, O> {
+
+    private final boolean processesContentChunks = ZuulFilter.overridesProcessContentChunk(getClass());
 
     @Override
     public boolean isDisabled() {
@@ -80,8 +81,8 @@ public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends Zuu
     }
 
     @Override
-    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
-        return chunk;
+    public boolean processesContentChunks() {
+        return processesContentChunks;
     }
 
     @Override

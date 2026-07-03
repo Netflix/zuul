@@ -203,6 +203,10 @@ public class ZuulMessageImpl implements ZuulMessage {
 
     @Override
     public void runBufferedBodyContentThroughFilter(ZuulFilter<?, ?> filter) {
+        if (!filter.processesContentChunks()) {
+            return;
+        }
+
         // Loop optimized for the common case: Most filters' processContentChunk() return
         // original chunk passed in as is without any processing
         String filterName = filter.filterName();
