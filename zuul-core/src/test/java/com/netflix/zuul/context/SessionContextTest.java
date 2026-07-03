@@ -141,6 +141,81 @@ class SessionContextTest {
     }
 
     @Test
+    void putAndGetStringKey() {
+        SessionContext context = new SessionContext();
+        assertThat(context.get("foo")).isNull();
+
+        context.put("foo", "bar");
+        assertThat(context.get("foo")).isEqualTo("bar");
+    }
+
+    @Test
+    void putStringKeyReturnsPreviousValue() {
+        SessionContext context = new SessionContext();
+        assertThat(context.put("foo", "bar")).isNull();
+        assertThat(context.put("foo", "baz")).isEqualTo("bar");
+        assertThat(context.get("foo")).isEqualTo("baz");
+    }
+
+    @Test
+    void getOrDefaultStringKey() {
+        SessionContext context = new SessionContext();
+        assertThat(context.getOrDefault("foo", "fallback")).isEqualTo("fallback");
+
+        context.put("foo", "bar");
+        assertThat(context.getOrDefault("foo", "fallback")).isEqualTo("bar");
+    }
+
+    @Test
+    void containsStringKey() {
+        SessionContext context = new SessionContext();
+        assertThat(context.containsKey("foo")).isFalse();
+
+        context.put("foo", "bar");
+        assertThat(context.containsKey("foo")).isTrue();
+    }
+
+    @Test
+    void removeStringKey() {
+        SessionContext context = new SessionContext();
+        context.put("foo", "bar");
+
+        assertThat(context.remove("foo")).isEqualTo("bar");
+        assertThat(context.containsKey("foo")).isFalse();
+    }
+
+    @Test
+    void removeStringKeyOnlyWhenValueMatches() {
+        SessionContext context = new SessionContext();
+        context.put("foo", "bar");
+
+        assertThat(context.remove("foo", "other")).isFalse();
+        assertThat(context.get("foo")).isEqualTo("bar");
+
+        assertThat(context.remove("foo", "bar")).isTrue();
+        assertThat(context.containsKey("foo")).isFalse();
+    }
+
+    @Test
+    void sizeReflectsStringKeys() {
+        SessionContext context = new SessionContext();
+        int initialSize = context.size();
+
+        context.put("foo", "bar");
+        assertThat(context.size()).isEqualTo(initialSize + 1);
+
+        SessionContext.Key<String> key = SessionContext.newKey("foo");
+        context.put(key, "yo");
+        assertThat(context.size()).isEqualTo(initialSize + 2);
+
+        context.remove("foo");
+        assertThat(context.size()).isEqualTo(initialSize + 1);
+
+        context.remove(key);
+        assertThat(context.size()).isEqualTo(initialSize);
+    }
+
+    @Test
     void setInBrownoutModeWithReason() {
         SessionContext context = new SessionContext();
         assertThat(context.getBrownoutReason()).isNull();
