@@ -216,6 +216,31 @@ class SessionContextTest {
     }
 
     @Test
+    void cloneCopiesEntriesAndFlags() {
+        SessionContext context = new SessionContext();
+        SessionContext.Key<String> key = SessionContext.newKey("typed");
+        context.put("stringKey", "stringValue");
+        context.put(key, "typedValue");
+        context.setInBrownoutMode("overloaded");
+        context.stopFilterProcessing();
+        context.setShouldSendErrorResponse(true);
+        context.setErrorResponseSent(true);
+        context.cancel();
+
+        SessionContext copy = context.clone();
+
+        assertThat(copy).isNotSameAs(context);
+        assertThat(copy.get("stringKey")).isEqualTo("stringValue");
+        assertThat(copy.get(key)).isEqualTo("typedValue");
+        assertThat(copy.isInBrownoutMode()).isTrue();
+        assertThat(copy.getBrownoutReason()).isEqualTo("overloaded");
+        assertThat(copy.shouldStopFilterProcessing()).isTrue();
+        assertThat(copy.shouldSendErrorResponse()).isTrue();
+        assertThat(copy.errorResponseSent()).isTrue();
+        assertThat(copy.isCancelled()).isTrue();
+    }
+
+    @Test
     void setInBrownoutModeWithReason() {
         SessionContext context = new SessionContext();
         assertThat(context.getBrownoutReason()).isNull();

@@ -68,7 +68,7 @@ public final class SessionContext implements Cloneable {
     private static final String KEY_FILTER_EXECS = "_filter_executions";
 
     private final Map<String, Object> map;
-    private final IdentityHashMap<Key<?>, ?> typedMap;
+    private final IdentityHashMap<Key<?>, Object> typedMap;
 
     /**
      * A Key is type-safe, identity-based key into the Session Context.
@@ -261,9 +261,9 @@ public final class SessionContext implements Cloneable {
      */
     @Override
     public SessionContext clone() {
-        // TODO(carl-mastrangelo): copy over the type safe keys
         SessionContext copy = new SessionContext();
         copy.map.putAll(this.map);
+        copy.typedMap.putAll(this.typedMap);
         copy.brownoutMode = brownoutMode;
         copy.shouldStopFilterProcessing = shouldStopFilterProcessing;
         copy.shouldSendErrorResponse = shouldSendErrorResponse;
