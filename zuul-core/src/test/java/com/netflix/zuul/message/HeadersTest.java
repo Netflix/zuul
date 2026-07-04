@@ -907,4 +907,189 @@ class HeadersTest {
         assertThatThrownBy(() -> headers.setAndValidate("x-test-br\r\neak2", "a\r\nb\r\nc"))
                 .isInstanceOf(ZuulException.class);
     }
+
+    @Test
+    void collapseMultiValuedHeaders_returnsFalseForEmptyHeaders() {
+        Headers headers = new Headers();
+
+        assertThat(headers.collapseMultiValuedHeaders()).isFalse();
+        assertThat(headers.size()).isZero();
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_returnsFalseWhenAllSingleValued() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("Cookie", "this=that");
+        headers.add("Host", "example.com");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isFalse();
+        assertThat(headers.size()).isEqualTo(3);
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.getAll("Cookie")).containsExactly("this=that");
+        assertThat(headers.getAll("Host")).containsExactly("example.com");
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_keepsLastValueForDuplicatePair() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "first");
+        headers.add("X-Test", "second");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("X-Test")).containsExactly("second");
+        assertThat(headers.size()).isEqualTo(1);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_keepsLastValueForTriplicate() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "a");
+        headers.add("X-Test", "b");
+        headers.add("X-Test", "c");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("X-Test")).containsExactly("c");
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_collapsesIdenticalDuplicates() {
+        // the real-world case: a client sends Content-Type twice
+        Headers headers = new Headers();
+        headers.add("Content-Type", "application/json");
+        headers.add("Content-Type", "application/json");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("Content-Type")).containsExactly("application/json");
+        assertThat(headers.size()).isEqualTo(1);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_treatsNamesCaseInsensitively() {
+        Headers headers = new Headers();
+        headers.add("Content-Type", "text/plain");
+        headers.add("content-type", "application/json");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("Content-Type")).containsExactly("application/json");
+        assertThat(headers.size()).isEqualTo(1);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_collapsesEachDuplicatedName() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "a");
+        headers.add("X-Other", "1");
+        headers.add("X-Test", "b");
+        headers.add("X-Other", "2");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("X-Test")).containsExactly("b");
+        assertThat(headers.getAll("X-Other")).containsExactly("2");
+        assertThat(headers.size()).isEqualTo(2);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_leavesSingleValuedHeadersUntouched() {
+        Headers headers = new Headers();
+        headers.add("Via", "duct");
+        headers.add("X-Test", "a");
+        headers.add("X-Test", "b");
+        headers.add("Host", "example.com");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.getAll("X-Test")).containsExactly("b");
+        assertThat(headers.getAll("Host")).containsExactly("example.com");
+        assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_preservesFirstAppearanceOrder() {
+        Headers headers = new Headers();
+        headers.add("A", "1");
+        headers.add("B", "1");
+        headers.add("A", "2");
+        headers.add("C", "1");
+
+        headers.collapseMultiValuedHeaders();
+
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        headers.forEach((k, v) ->
+                result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
+        assertThat(result)
+                .containsExactly(
+                        entry("A", Collections.singletonList("2")),
+                        entry("B", Collections.singletonList("1")),
+                        entry("C", Collections.singletonList("1")));
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_keepsFirstOccurrenceNameCasing() {
+        Headers headers = new Headers();
+        headers.add("Content-Type", "text/plain");
+        headers.add("content-type", "application/json");
+
+        headers.collapseMultiValuedHeaders();
+
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        headers.forEach((k, v) ->
+                result.computeIfAbsent(k, discard -> new ArrayList<>()).add(v));
+        assertThat(result).containsExactly(entry("Content-Type", Collections.singletonList("application/json")));
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_getFirstReturnsLastValueAfterCollapse() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "first");
+        headers.add("X-Test", "second");
+
+        headers.collapseMultiValuedHeaders();
+
+        assertThat(headers.getFirst("X-Test")).isEqualTo("second");
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_isIdempotent() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "a");
+        headers.add("X-Test", "b");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.collapseMultiValuedHeaders()).isFalse();
+        assertThat(headers.getAll("X-Test")).containsExactly("b");
+        assertThat(headers.size()).isEqualTo(1);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_remainsUsableAfterCollapse() {
+        Headers headers = new Headers();
+        headers.add("X-Test", "a");
+        headers.add("X-Test", "b");
+
+        headers.collapseMultiValuedHeaders();
+        headers.add("X-Test", "c");
+        headers.add("Via", "duct");
+
+        assertThat(headers.getAll("X-Test")).containsExactly("b", "c");
+        assertThat(headers.getAll("Via")).containsExactly("duct");
+        assertThat(headers.size()).isEqualTo(3);
+    }
+
+    @Test
+    void collapseMultiValuedHeaders_collapsesThreeDistinctDuplicatedNames() {
+        Headers headers = new Headers();
+        headers.add("A", "a1");
+        headers.add("B", "b1");
+        headers.add("C", "c1");
+        headers.add("A", "a2");
+        headers.add("B", "b2");
+        headers.add("C", "c2");
+
+        assertThat(headers.collapseMultiValuedHeaders()).isTrue();
+        assertThat(headers.size()).isEqualTo(3);
+        assertThat(headers.getAll("A")).containsExactly("a2");
+        assertThat(headers.getAll("B")).containsExactly("b2");
+        assertThat(headers.getAll("C")).containsExactly("c2");
+    }
 }

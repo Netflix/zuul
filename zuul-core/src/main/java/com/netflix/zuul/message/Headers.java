@@ -289,12 +289,19 @@ public final class Headers {
      * Returns the first index entry that has a matching name.  Returns {@link #ABSENT} if absent.
      */
     private int findNormal(String normalName) {
-        for (int i = 0; i < size(); i++) {
+        return findNormal(normalName, size());
+    }
+
+    /**
+     * Returns the first index before {@code limit} that has a matching name, or {@link #ABSENT}.
+     */
+    private int findNormal(String normalName, int limit) {
+        for (int i = 0; i < limit; i++) {
             if (name(i).equals(normalName)) {
                 return i;
             }
         }
-        return -1;
+        return ABSENT;
     }
 
     /**
@@ -488,6 +495,31 @@ public final class Headers {
         }
 
         truncate(w);
+    }
+
+    /**
+     * Collapses every header that appears more than once to a single entry holding its last value,
+     * matching the last-write-wins rule of set(...).
+     *
+     * @return true if any header was collapsed
+     */
+    public boolean collapseMultiValuedHeaders() {
+        int distinct = 0;
+        for (int i = 0; i < size(); i++) {
+            int seen = findNormal(name(i), distinct);
+            if (seen == ABSENT) {
+                originalName(distinct, originalName(i));
+                name(distinct, name(i));
+                value(distinct, value(i));
+                distinct++;
+            } else {
+                value(seen, value(i)); // last value wins
+            }
+        }
+
+        boolean collapsed = distinct < size();
+        truncate(distinct);
+        return collapsed;
     }
 
     /**
