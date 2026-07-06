@@ -227,6 +227,9 @@ class SessionContextTest {
         context.setShouldSendErrorResponse(true);
         context.setErrorResponseSent(true);
         context.cancel();
+        context.addFilterExecutionSummary("filterA", "SUCCESS", 1);
+        context.setEventProperty("evt", "original");
+        context.getFilterErrors().add(new FilterError("filterA", "inbound", new RuntimeException("boom")));
 
         SessionContext copy = context.clone();
 
@@ -239,21 +242,12 @@ class SessionContextTest {
         assertThat(copy.shouldSendErrorResponse()).isTrue();
         assertThat(copy.errorResponseSent()).isTrue();
         assertThat(copy.isCancelled()).isTrue();
-    }
-
-    @Test
-    void cloneCopiesCollectionsIndependently() {
-        SessionContext context = new SessionContext();
-        context.addFilterExecutionSummary("filterA", "SUCCESS", 1);
-        context.setEventProperty("evt", "original");
-        context.getFilterErrors().add(new FilterError("filterA", "inbound", new RuntimeException("boom")));
-
-        SessionContext copy = context.clone();
         assertThat(copy.getFilterExecutionSummary().toString())
                 .isEqualTo(context.getFilterExecutionSummary().toString());
         assertThat(copy.getEventProperties()).containsEntry("evt", "original");
         assertThat(copy.getFilterErrors()).hasSize(1);
 
+        // the collections must be independent copies, not shared references
         copy.addFilterExecutionSummary("filterB", "SUCCESS", 2);
         copy.setEventProperty("evt", "mutated");
         copy.getFilterErrors().add(new FilterError("filterB", "outbound", new RuntimeException("boom2")));
