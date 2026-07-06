@@ -56,7 +56,9 @@ import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.channel.uring.IoUring;
+import io.netty.channel.uring.IoUringBufferRingConfig;
 import io.netty.channel.uring.IoUringIoHandler;
+import io.netty.channel.uring.IoUringIoHandlerConfig;
 import io.netty.channel.uring.IoUringServerSocketChannel;
 import io.netty.channel.uring.IoUringSocketChannel;
 import io.netty.util.AttributeKey;
@@ -362,7 +364,11 @@ public class Server {
             if (useIoUring && ioUringIsAvailable()) {
                 channelType = IoUringServerSocketChannel.class;
                 defaultOutboundChannelType.set(IoUringSocketChannel.class);
-                handlerFactory = IoUringIoHandler.newFactory();
+                IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
+                ioUringConfig.setBufferRingConfig(
+                        IoUringBufferRingConfig.builder().build());
+                handlerFactory = IoUringIoHandler.newFactory(ioUringConfig);
+
             } else if (!useNio && epollIsAvailable()) {
                 channelType = EpollServerSocketChannel.class;
                 defaultOutboundChannelType.set(EpollSocketChannel.class);
