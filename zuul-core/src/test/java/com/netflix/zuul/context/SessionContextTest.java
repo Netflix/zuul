@@ -18,6 +18,7 @@ package com.netflix.zuul.context;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.netflix.zuul.filters.FilterError;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -226,6 +227,9 @@ class SessionContextTest {
         context.setShouldSendErrorResponse(true);
         context.setErrorResponseSent(true);
         context.cancel();
+        context.addFilterExecutionSummary("filterA", "SUCCESS", 1);
+        context.setEventProperty("evt", "original");
+        context.getFilterErrors().add(new FilterError("filterA", "inbound", new RuntimeException("boom")));
 
         SessionContext copy = context.clone();
 
@@ -238,6 +242,19 @@ class SessionContextTest {
         assertThat(copy.shouldSendErrorResponse()).isTrue();
         assertThat(copy.errorResponseSent()).isTrue();
         assertThat(copy.isCancelled()).isTrue();
+        assertThat(copy.getFilterExecutionSummary().toString())
+                .isEqualTo(context.getFilterExecutionSummary().toString());
+        assertThat(copy.getEventProperties()).containsEntry("evt", "original");
+        assertThat(copy.getFilterErrors()).hasSize(1);
+
+        // the collections must be independent copies, not shared references
+        copy.addFilterExecutionSummary("filterB", "SUCCESS", 2);
+        copy.setEventProperty("evt", "mutated");
+        copy.getFilterErrors().add(new FilterError("filterB", "outbound", new RuntimeException("boom2")));
+
+        assertThat(context.getFilterExecutionSummary().toString()).doesNotContain("filterB");
+        assertThat(context.getEventProperties()).containsEntry("evt", "original");
+        assertThat(context.getFilterErrors()).hasSize(1);
     }
 
     @Test
