@@ -4,7 +4,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         },
         "org.projectlombok:lombok": {
             "locked": "1.18.42"
@@ -48,43 +48,43 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -135,7 +135,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         }
     },
     "jmhCompileClasspath": {
@@ -176,43 +176,43 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -307,7 +307,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -316,40 +316,40 @@
             "locked": "1.10"
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.77.Final"
+            "locked": "2.0.78.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -471,46 +471,46 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.77.Final"
+            "locked": "2.0.78.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -545,7 +545,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         }
     },
     "testCompileClasspath": {
@@ -586,7 +586,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -595,37 +595,37 @@
             "locked": "1.10"
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"
@@ -735,7 +735,7 @@
             "locked": "0.13.2"
         },
         "com.netflix.spectator:spectator-api": {
-            "locked": "1.9.8"
+            "locked": "1.10.1"
         },
         "com.netflix.zuul:zuul-discovery": {
             "project": true
@@ -744,40 +744,40 @@
             "locked": "1.10"
         },
         "io.netty:netty-bom": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-haproxy": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-common": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-handler": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-tcnative-boringssl-static": {
-            "locked": "2.0.77.Final"
+            "locked": "2.0.78.Final"
         },
         "io.netty:netty-transport": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-epoll": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-io_uring": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.netty:netty-transport-native-kqueue": {
-            "locked": "4.2.15.Final"
+            "locked": "4.2.16.Final"
         },
         "io.perfmark:perfmark-api": {
             "locked": "0.27.0"

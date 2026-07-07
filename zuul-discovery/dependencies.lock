@@ -4,7 +4,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         }
     },
     "compileClasspath": {
@@ -51,7 +51,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         }
     },
     "jmhCompileClasspath": {
@@ -167,7 +167,7 @@
             "locked": "2.45.0"
         },
         "com.uber.nullaway:nullaway": {
-            "locked": "0.13.1"
+            "locked": "0.13.7"
         }
     },
     "testCompileClasspath": {
