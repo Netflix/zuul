@@ -17,39 +17,26 @@
 package com.netflix.zuul.filters.endpoint;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelConfig;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CoalescingBufferQueue;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http2.DefaultHttp2Connection;
-import io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2RemoteFlowController;
-import io.netty.handler.codec.http2.Http2Stream;
-import io.netty.util.concurrent.EventExecutor;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 
 /**
- * Replaying a chunk to a retried origin with a shared reader index can leave the real CoalescingBufferQueue
- * reporting readable bytes it can never produce, and a frame stuck in that state spins the real
- * DefaultHttp2RemoteFlowController emitting empty DATA frames forever. retainedDuplicate gives each attempt
- * its own reader index over the shared memory, so it drains cleanly.
+ * Replaying a chunk to a retried origin with a shared reader index (retain) can drain the buffer out from
+ * under a CoalescingBufferQueue, leaving it empty. As of netty 4.2.16 the queue reconciles its readable byte
+ * count back to zero once it drains empty (netty/netty#16946) instead of reporting bytes it can never produce,
+ * so it no longer desyncs. retainedDuplicate gives each attempt its own reader index over the shared memory,
+ * so it drains cleanly and actually produces the bytes.
  */
 class CoalescingBufferQueueReaderIndexDesyncTest {
 
     private static final byte[] BODY = "Hello There".getBytes(StandardCharsets.UTF_8);
 
     @Test
-    void retainSharesReaderIndexAndDesyncsRealCoalescingBufferQueue() {
+    void retainSharesReaderIndexAndNettyReconcilesDrainedQueueToZero() {
         EmbeddedChannel channel = new EmbeddedChannel();
         ByteBuf body = channel.alloc().buffer().writeBytes(BODY);
         int bodyLength = body.readableBytes();
@@ -63,9 +50,10 @@ class CoalescingBufferQueueReaderIndexDesyncTest {
 
         ByteBuf produced = slowAttempt.remove(channel.alloc(), bodyLength, channel.newPromise());
 
+        // netty 4.2.16 reconciles readableBytes to 0 once the queue drains empty instead of reporting phantom bytes
         assertThat(produced.readableBytes()).isZero();
         assertThat(slowAttempt.isEmpty()).isTrue();
-        assertThat(slowAttempt.readableBytes()).isEqualTo(bodyLength);
+        assertThat(slowAttempt.readableBytes()).isZero();
 
         produced.release();
         body.release();
@@ -93,84 +81,5 @@ class CoalescingBufferQueueReaderIndexDesyncTest {
         produced.release();
         body.release();
         channel.finishAndReleaseAll();
-    }
-
-    // TODO(netty #16946): this asserts the *unbounded* spin present in our netty (4.2.15). Once the netty fix
-    // lands writeAllocatedBytes bails after a bounded number of no-progress passes, so flip this to assert
-    // the frame is errored after a small emitted count.
-    @Test
-    @Timeout(value = 20, unit = TimeUnit.SECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
-    void desyncedFrameSpinsRealFlowControllerEmittingUnboundedEmptyFrames() throws Http2Exception {
-        long emptyFrameCap = 200_000L;
-
-        DefaultHttp2Connection connection = new DefaultHttp2Connection(false);
-        DefaultHttp2RemoteFlowController controller = new DefaultHttp2RemoteFlowController(connection);
-        connection.remote().flowController(controller);
-        Http2Stream stream = connection.local().createStream(1, false);
-
-        ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
-        Channel channel = mock(Channel.class);
-        ChannelConfig config = mock(ChannelConfig.class);
-        EventExecutor executor = mock(EventExecutor.class);
-        when(channel.isWritable()).thenReturn(true);
-        when(channel.bytesBeforeUnwritable()).thenReturn(Long.MAX_VALUE);
-        when(channel.config()).thenReturn(config);
-        when(executor.inEventLoop()).thenReturn(true);
-        when(ctx.channel()).thenReturn(channel);
-        when(ctx.executor()).thenReturn(executor);
-        controller.channelHandlerContext(ctx);
-
-        StuckBodyFrame frame = new StuckBodyFrame(BODY.length, emptyFrameCap);
-        controller.addFlowControlled(stream, frame);
-
-        controller.writePendingBytes();
-
-        assertThat(frame.emitted.get()).isGreaterThanOrEqualTo(emptyFrameCap);
-        assertThat(frame.error).isInstanceOf(Http2Exception.class);
-    }
-
-    private static final class StuckBodyFrame implements Http2RemoteFlowController.FlowControlled {
-
-        private final int size;
-        private final long cap;
-        private final AtomicLong emitted = new AtomicLong();
-        private Throwable error;
-
-        StuckBodyFrame(int size, long cap) {
-            this.size = size;
-            this.cap = cap;
-        }
-
-        @Override
-        public int size() {
-            return size;
-        }
-
-        @Override
-        public void error(ChannelHandlerContext ctx, Throwable cause) {
-            error = cause;
-        }
-
-        @Override
-        public void writeComplete() {}
-
-        @Override
-        public void write(ChannelHandlerContext ctx, int allowedBytes) {
-            // size() never shrinks so the frame is never removed; the cap throws to break netty's unbounded loop
-            if (emitted.incrementAndGet() >= cap) {
-                throw new SpinDetected();
-            }
-        }
-
-        @Override
-        public boolean merge(ChannelHandlerContext ctx, Http2RemoteFlowController.FlowControlled next) {
-            return false;
-        }
-    }
-
-    private static final class SpinDetected extends RuntimeException {
-        SpinDetected() {
-            super("flow controller emitted the capped number of empty frames without making progress");
-        }
     }
 }
