@@ -44,7 +44,17 @@ import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.epoll.EpollIoHandler;
+import io.netty.channel.epoll.EpollServerSocketChannel;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueIoHandler;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.channel.kqueue.KQueueSocketChannel;
+import io.netty.channel.nio.NioIoHandler;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.channel.uring.IoUring;
 import io.netty.channel.uring.IoUringAdaptiveBufferRingAllocator;
 import io.netty.channel.uring.IoUringBufferRingConfig;
@@ -337,7 +347,7 @@ public class Server {
 
         private EventLoopGroup clientToProxyBossPool;
         private EventLoopGroup clientToProxyWorkerPool;
-        private Class<? extends ServerChannel> channelType;
+        private Class<? extends ServerChannel> channelType = EpollServerSocketChannel.class;
         private Map<ChannelOption<?>, ?> transportChannelOptions;
         private Map<ChannelOption<?>, ?> transportChannelChildOptions;
 
@@ -359,57 +369,57 @@ public class Server {
             boolean useIoUring = FORCE_IO_URING.get();
 
             final IoHandlerFactory handlerFactory;
-            // For the purposes of the perf test, we're ALWAYS using io_uring, or else failing.
-            //            if (useIoUring && ioUringIsAvailable()) {
-            LOG.error("Starting with IO_URING enabled (available={})", IoUring.isAvailable());
-
+            // Temporary: For the purposes of this test, log availability status
             if (!io.netty.channel.uring.IoUring.isAvailable()) {
                 // This should print the exact underlying cause/exception preventing it from loading
                 LOG.error("IO_URING is unavailable!", IoUring.unavailabilityCause());
             }
 
-            channelType = IoUringServerSocketChannel.class;
-            defaultOutboundChannelType.set(IoUringSocketChannel.class);
+            if (useIoUring && ioUringIsAvailable()) {
+                LOG.error("Starting with IO_URING enabled (available={})", IoUring.isAvailable());
 
-            // 1. Define the unique buffer group ID
-            short MY_BUFFER_GROUP_ID = 1;
+                channelType = IoUringServerSocketChannel.class;
+                defaultOutboundChannelType.set(IoUringSocketChannel.class);
 
-            // 2. Build the buffer ring configuration
-            IoUringBufferRingConfig ringConfig = IoUringBufferRingConfig.builder()
-                    .bufferGroupId(MY_BUFFER_GROUP_ID)
-                    .bufferRingSize((short) 4096) // Number of entries in the ring
-                    .batchAllocation(true)
-                    .allocator(new IoUringAdaptiveBufferRingAllocator(
-                            ByteBufAllocator.DEFAULT, 1024, 1024, 4 * 1024, true))
-                    .build();
+                // 1. Define the unique buffer group ID
+                short MY_BUFFER_GROUP_ID = 1;
 
-            // 3. Register it inside Netty's IO Uring IoHandler
-            IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
-            ioUringConfig.setBufferRingConfig(ringConfig);
+                // 2. Build the buffer ring configuration
+                IoUringBufferRingConfig ringConfig = IoUringBufferRingConfig.builder()
+                        .bufferGroupId(MY_BUFFER_GROUP_ID)
+                        .bufferRingSize((short) 4096) // Number of entries in the ring
+                        .batchAllocation(true)
+                        .allocator(new IoUringAdaptiveBufferRingAllocator(
+                                ByteBufAllocator.DEFAULT, 1024, 1024, 4 * 1024, true))
+                        .build();
 
-            // 4. Boost the completion queue size if using advanced multishot features
-            if (IoUring.isRecvMultishotEnabled()) {
-                ioUringConfig.setCqSize(ioUringConfig.getRingSize() * 4); //
+                // 3. Register it inside Netty's IO Uring IoHandler
+                IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
+                ioUringConfig.setBufferRingConfig(ringConfig);
+
+                // 4. Boost the completion queue size if using advanced multishot features
+                if (IoUring.isRecvMultishotEnabled()) {
+                    ioUringConfig.setCqSize(ioUringConfig.getRingSize() * 4); //
+                }
+                handlerFactory = IoUringIoHandler.newFactory(ioUringConfig);
+
+                // 5. Apply the Group ID to your ServerBootstrap options
+                childOptions.put(IoUringChannelOption.IO_URING_BUFFER_GROUP_ID, MY_BUFFER_GROUP_ID);
+
+            } else if (!useNio && epollIsAvailable()) {
+                channelType = EpollServerSocketChannel.class;
+                defaultOutboundChannelType.set(EpollSocketChannel.class);
+                handlerFactory = EpollIoHandler.newFactory();
+                channelOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
+            } else if (!useNio && kqueueIsAvailable()) {
+                channelType = KQueueServerSocketChannel.class;
+                defaultOutboundChannelType.set(KQueueSocketChannel.class);
+                handlerFactory = KQueueIoHandler.newFactory();
+            } else {
+                channelType = NioServerSocketChannel.class;
+                defaultOutboundChannelType.set(NioSocketChannel.class);
+                handlerFactory = NioIoHandler.newFactory();
             }
-            handlerFactory = IoUringIoHandler.newFactory(ioUringConfig);
-
-            // 5. Apply the Group ID to your ServerBootstrap options
-            childOptions.put(IoUringChannelOption.IO_URING_BUFFER_GROUP_ID, MY_BUFFER_GROUP_ID);
-
-            //            } else if (!useNio && epollIsAvailable()) {
-            //                channelType = EpollServerSocketChannel.class;
-            //                defaultOutboundChannelType.set(EpollSocketChannel.class);
-            //                handlerFactory = EpollIoHandler.newFactory();
-            //                channelOptions.put(EpollChannelOption.TCP_DEFER_ACCEPT, -1);
-            //            } else if (!useNio && kqueueIsAvailable()) {
-            //                channelType = KQueueServerSocketChannel.class;
-            //                defaultOutboundChannelType.set(KQueueSocketChannel.class);
-            //                handlerFactory = KQueueIoHandler.newFactory();
-            //            } else {
-            //                channelType = NioServerSocketChannel.class;
-            //                defaultOutboundChannelType.set(NioSocketChannel.class);
-            //                handlerFactory = NioIoHandler.newFactory();
-            //            }
 
             clientToProxyBossPool = new MultiThreadIoEventLoopGroup(
                     acceptorThreads, new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"), handlerFactory);
