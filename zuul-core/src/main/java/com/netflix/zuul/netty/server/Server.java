@@ -367,7 +367,8 @@ public class Server {
 
             boolean useNio = FORCE_NIO.get();
             boolean useIoUring = FORCE_IO_URING.get();
-
+            // TODO: Temporary.
+            LOG.error("Initializing transport. Searching for IO_URING");
             final IoHandlerFactory handlerFactory;
             // Temporary: For the purposes of this test, log availability status
             if (!io.netty.channel.uring.IoUring.isAvailable()) {
