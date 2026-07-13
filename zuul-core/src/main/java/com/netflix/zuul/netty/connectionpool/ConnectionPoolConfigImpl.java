@@ -21,10 +21,12 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.client.config.IClientConfigKey;
 import com.netflix.zuul.origins.OriginName;
 import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Created by saroskar on 3/24/16.
  */
+@NullMarked
 public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -62,6 +64,9 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
 
     public static final IClientConfigKey<Integer> WRITE_BUFFER_LOW_WATER_MARK =
             new CommonClientConfigKey<>("WriteBufferLowWaterMark") {};
+
+    public static final IClientConfigKey<Boolean> USE_DEFAULT_TCP_BUFFER_SIZES =
+            new CommonClientConfigKey<>("UseDefaultTcpBufferSizes") {};
 
     private final OriginName originName;
     private final IClientConfig clientConfig;
@@ -121,6 +126,11 @@ public class ConnectionPoolConfigImpl implements ConnectionPoolConfig {
     @Override
     public int getTcpSendBufferSize() {
         return clientConfig.getPropertyAsInteger(IClientConfigKey.Keys.SendBufferSize, DEFAULT_BUFFER_SIZE);
+    }
+
+    @Override
+    public boolean useDefaultTcpBufferSizes() {
+        return clientConfig.getPropertyAsBoolean(USE_DEFAULT_TCP_BUFFER_SIZES, false);
     }
 
     @Override
