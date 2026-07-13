@@ -26,6 +26,7 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface ConnectionCloseEvent {
 
     CloseReason reason();
+
     String closeType();
 
     record Graceful(CloseReason reason) implements ConnectionCloseEvent {

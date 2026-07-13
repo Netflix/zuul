@@ -184,11 +184,9 @@ class Http1ConnectionCloseIntegrationTest {
     }
 
     private void fireCloseEvent(Channel serverChannel) {
-        serverChannel
-                .eventLoop()
-                .execute(() -> serverChannel
-                        .pipeline()
-                        .fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN)));
+        serverChannel.eventLoop().execute(() -> serverChannel
+                .pipeline()
+                .fireUserEventTriggered(new ConnectionCloseEvent.Graceful(CloseReason.SHUTDOWN)));
     }
 
     private static Channel awaitServerChannel() {
