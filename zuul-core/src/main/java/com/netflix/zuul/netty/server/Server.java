@@ -247,11 +247,11 @@ public class Server {
             if (alloc instanceof ByteBufAllocatorMetricProvider byteBufAllocatorMetricProvider) {
                 ByteBufAllocatorMetric metrics = byteBufAllocatorMetricProvider.metric();
                 PolledMeter.using(registry)
-                           .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
-                           .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "heap"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedHeapMemory);
                 PolledMeter.using(registry)
-                           .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
-                           .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
+                        .withId(registry.createId("zuul.nettybuffermem.live", "type", "direct"))
+                        .monitorValue(metrics, ByteBufAllocatorMetric::usedDirectMemory);
             }
         }
     }
@@ -273,9 +273,9 @@ public class Server {
     public void waitForEachEventLoop() throws InterruptedException, ExecutionException {
         for (EventExecutor exec : serverGroup.clientToProxyWorkerPool) {
             exec.submit(() -> {
-                    // Do nothing.
-                })
-                .get();
+                        // Do nothing.
+                    })
+                    .get();
         }
     }
 
@@ -334,8 +334,7 @@ public class Server {
      * @param clientToProxyWorkerPool - worker pool
      */
     public void postEventLoopCreationHook(
-            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {
-    }
+            EventLoopGroup clientToProxyBossPool, EventLoopGroup clientToProxyWorkerPool) {}
 
     private final class ServerGroup {
 
@@ -368,8 +367,7 @@ public class Server {
             Map<ChannelOption<?>, Object> childOptions = new HashMap<>();
 
             boolean useNio = FORCE_NIO.get();
-            boolean unused = FORCE_IO_URING.get();
-            boolean useIoUring = true;
+            boolean useIoUring = FORCE_IO_URING.get();
             // TODO: Temporary.
             LOG.error("Initializing transport. Searching for IO_URING");
             final IoHandlerFactory handlerFactory;
@@ -389,16 +387,14 @@ public class Server {
                 short BUFFER_GROUP_ID = 1;
 
                 IoUringBufferRingConfig ringConfig = IoUringBufferRingConfig.builder()
-                                                                            .bufferGroupId(BUFFER_GROUP_ID)
-                                                                            // 4096 will handle ~13600 connections per thread at 30% burst target ratio
-                                                                            .bufferRingSize((short) 4096)
-                                                                            .batchSize(2048)
-                                                                            .batchAllocation(true)
-                                                                            .allocator(
-                                                                                    new IoUringAdaptiveBufferRingAllocator(
-                                                                                            ByteBufAllocator.DEFAULT,
-                                                                                            1024, 4096, 65536, true))
-                                                                            .build();
+                        .bufferGroupId(BUFFER_GROUP_ID)
+                        // 4096 will handle ~13600 connections per thread at 30% burst target ratio
+                        .bufferRingSize((short) 4096)
+                        .batchSize(2048)
+                        .batchAllocation(true)
+                        .allocator(new IoUringAdaptiveBufferRingAllocator(
+                                ByteBufAllocator.DEFAULT, 1024, 4096, 65536, true))
+                        .build();
 
                 IoUringIoHandlerConfig ioUringConfig = getIoUringIoHandlerConfig(ringConfig);
                 handlerFactory = IoUringIoHandler.newFactory(ioUringConfig);
@@ -431,16 +427,16 @@ public class Server {
             postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
         }
 
-        private static IoUringIoHandlerConfig getIoUringIoHandlerConfig(
-                IoUringBufferRingConfig ringConfig) {
+        private static IoUringIoHandlerConfig getIoUringIoHandlerConfig(IoUringBufferRingConfig ringConfig) {
             IoUringIoHandlerConfig ioUringConfig = new IoUringIoHandlerConfig();
+            int defaultCqSize = 8192;
             ioUringConfig.setBufferRingConfig(ringConfig);
             ioUringConfig.setRingSize(4096); // Size of the submission queue
-            // Boost the completion queue size if using advanced multishot features
+            // Boost the completion queue size if using advanced multishot feature
             if (IoUring.isRecvMultishotEnabled()) {
-                ioUringConfig.setCqSize(ioUringConfig.getRingSize() * 4); //
+                ioUringConfig.setCqSize(Math.max(ioUringConfig.getRingSize() * 4, defaultCqSize)); //
             } else {
-                ioUringConfig.setCqSize(8192);
+                ioUringConfig.setCqSize(defaultCqSize);
             }
             return ioUringConfig;
         }
